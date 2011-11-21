@@ -1,0 +1,1 @@
+../../../web/slot/index.php

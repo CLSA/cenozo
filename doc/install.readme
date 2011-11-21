@@ -1,0 +1,22 @@
+DEPENDENCIES
+===============
+The following software must be installed prior to installing cenozo:
+
+- LAMP setup with PHP 5.3.2+
+- PEAR Log (pear install Log)
+- PEAR Twig (pear channel-discover pear.twig-project.org && pear install twig
+- PEAR PhpDocumentor (pear install PhpDocumentor)
+- PEAR PHPExcel
+- ADOdb 5.11+
+- jQuery 1.4.4+
+- jQuery-ui 1.8.8+
+- jQuery plugins:
+    cookie, hoverIntent, layout, extruder, flipText, metadata, loading, loading.overflow,
+    jeditable, timepicker, rightClick, timers and tooltip
+
+The client-side software was developed to be used by firefox version 3.6.13+.  HTML user
+interface elements have not been developed to be cross-browser compatible so use any other
+browser at your own risk.
+
+Though they are not required, the firebug and firephp extensions to firefox are strongly
+recommended for development.
