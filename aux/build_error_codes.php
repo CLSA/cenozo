@@ -126,53 +126,6 @@ foreach( $grep_line_list as $grep_line )
   }
 }
 
-// now look in the web directory for exceptions thrown outside of a class
-$grep_line_list = array();
-exec( 'grep -Hrn "new exc" web/*',
-      $grep_line_list, $return_status );
-
-if( 0 != $return_status ) die( 'There was an error when fetching exception list.' );
-
-foreach( $grep_line_list as $grep_line )
-{
-  // get the script name
-
-  // find the first / before the first :
-  $colon_position = strpos( $grep_line, ':' );
-  if( false === $colon_position ) continue;
-  $start_match = '/';
-  $end_match = '.php';
-  $start = strrpos( substr( $grep_line, 0, $colon_position ), $start_match ) +
-           strlen( $start_match );
-  $end = strpos( $grep_line, $end_match, $start );
-  
-  // make sure a match was found
-  if( false === $start || false === $end ) continue;
-  $script_name = substr( $grep_line, $start, $end - $start );
-  
-  // get the exception type
-  $start_match = 'exc\\';
-  $start = strpos( $grep_line, $start_match );
-  if( false === $start ) $start_match = 'exception\\';
-  $start = strpos( $grep_line, $start_match );
-  if( false === $start ) continue;
-  $start += strlen( $start_match );
-
-  $end_match = '(';
-  $end = strpos( $grep_line, $end_match, $start );
-    
-  // make sure a match was found
-  if( false === $start || false === $end ) continue;
-  $exception_type = substr( $grep_line, $start, $end - $start );
-
-  // now add the error code
-  if( !array_key_exists( $exception_type, $error_codes ) )
-    $error_codes[$exception_type] = array();
-  if( !array_key_exists( $script_name, $error_codes[$exception_type] ) )
-    $error_codes[$exception_type][$script_name] = array();
-  $error_codes[$exception_type][$script_name][] = 'script';
-}
-
 // now print out the file
 print <<<OUTPUT
 <?php

@@ -85,7 +85,7 @@ class util
     if( !is_null( $file_path ) )
     {
       require $file_path;
-      if( !class_exists( $class_name, false ) )
+      if( !class_exists( $class_name, false ) && !interface_exists( $class_name, false ) )
         throw new exception\runtime( 'Unable to load class: '.$class_name, __METHOD__ );
 
       return;
@@ -148,7 +148,13 @@ class util
   }
 
   /**
-   * TODO: document
+   * If the application has a file corresponding to the given class name then this method
+   * will return the path to that class, or NULL if no such file exists.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access protected
+   * @static
    */
   protected static function get_application_class_path( $class_name )
   {
@@ -177,7 +183,13 @@ class util
   }
 
   /**
-   * TODO: document
+   * If the framework has a file corresponding to the given class name then this method
+   * will return the path to that class, or NULL if no such file exists.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access protected
+   * @static
    */
   protected static function get_framework_class_path( $class_name )
   {

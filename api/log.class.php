@@ -351,7 +351,7 @@ final class log extends singleton
       }
       else
       { // output the error using the basic php template
-        include WEB_PATH.'/error.php';
+        include CENOZO_PATH.'/app/error.php';
       }
       exit;
     }

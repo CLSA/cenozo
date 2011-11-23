@@ -1,1 +1,0 @@
-../../web/pull.php

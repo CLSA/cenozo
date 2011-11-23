@@ -74,6 +74,16 @@ class user_new extends base_new
     }
 
     parent::finish();
+
+    if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
+    { // add the initial role to the new user
+      $db_user = db\user::get_unique_record( 'name', $columns['name'] );
+      $db_access = new db\access();
+      $db_access->user_id = $db_user->id;
+      $db_access->site_id = $this->site_id;
+      $db_access->role_id = $this->role_id;
+      $db_access->save();
+    }
   }
 
   /**

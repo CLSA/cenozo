@@ -68,7 +68,7 @@ class user_add extends base_view
     $sites = array();
     if( $is_top_tier )
     {
-      foreach( db\site::select( $modifier ) as $db_site )
+      foreach( db\site::select() as $db_site )
         $sites[$db_site->id] = $db_site->name;
     }
 
@@ -79,7 +79,7 @@ class user_add extends base_view
     $this->set_item( 'active', true, true );
     $value = $is_top_tier ? current( $sites ) : $session->get_site()->id;
     $this->set_item( 'site_id', $value, true, $is_top_tier ? $sites : NULL );
-    $this->set_item( 'role_id', array_search( 'operator', $roles ), true, $roles );
+    $this->set_item( 'role_id', current( $roles ), true, $roles );
 
     $this->finish_setting_items();
   }

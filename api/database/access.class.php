@@ -70,7 +70,7 @@ class access extends record
    */
   public function save()
   {
-    $db_access_role = new db\role( $this->role_id );
+    $db_access_role = new role( $this->role_id );
 
     if( $db_access_role->tier > bus\session::self()->get_role()->tier )
       throw new exc\permission(

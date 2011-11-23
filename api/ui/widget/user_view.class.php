@@ -87,10 +87,6 @@ class user_view extends base_view
 
     $this->finish_setting_items();
     
-    $is_operator = $this->get_record()->has_access(
-                     bus\session::self()->get_site(),
-                     db\role::get_unique_record( 'name', 'operator' ) );
-
     // only show reset and/or set password buttons if current user is allowed
     $this->set_variable( 'reset_password',
       $this->reset_password &&

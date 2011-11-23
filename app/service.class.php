@@ -1,0 +1,483 @@
+<?php
+/**
+ * service.class.php
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @package cenozo\business
+ * @filesource
+ */
+
+namespace cenozo;
+use cenozo\log, cenozo\util;
+
+/**
+ * This class is responsible for handling all types of web-service requests to the application.
+ * Based on the request url and method it responds differently, providing main, widget, pull and
+ * push operations.
+ * 
+ * @package cenozo\business
+ */
+final class service
+{
+  /**
+   * Constructor.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function __construct()
+  {
+    // WARNING!  When we construct the service we haven't finished setting up the system yet, so
+    // don't use the log class in this method!
+    
+    // determine the arguments
+    if( 'GET' == $_SERVER['REQUEST_METHOD'] && isset( $_GET ) ) $this->arguments = $_GET;
+    else if( 'POST' == $_SERVER['REQUEST_METHOD'] && isset( $_POST ) ) $this->arguments = $_POST;
+    
+    // determine the service type
+    if( array_key_exists( 'REDIRECT_URL', $_SERVER ) )
+    {
+      $base_self_path = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) + 1 );
+      $this->base_url = str_replace( $base_self_path, '', $_SERVER['REDIRECT_URL'] );
+      $this->url_tokens = explode( '/', $this->base_url );
+
+      if( 'slot' == $this->url_tokens[0] ) $this->type = 'widget';
+      else $this->type = 'GET' == $_SERVER['REQUEST_METHOD'] ? 'pull' : 'push';
+    }
+    else
+    {
+      $this->type = 'main';
+    }
+
+    // determine the operation name
+    if( 'widget' == $this->type )
+    {
+      if( 3 > count( $this->url_tokens ) )
+        throw new exception\runtime(
+          sprintf( 'Invalid %s URL "%s".', $this->type, $this->base_url ) , __METHOD__ );
+      
+      if( 5 <= count( $this->url_tokens ) ) 
+        $this->operation_name = $this->url_tokens[3].'_'.$this->url_tokens[4];
+    }
+    else if( 'main' != $this->type )
+    {
+      if( 2 > count( $this->url_tokens ) )
+        throw new exception\runtime(
+          sprintf( 'Invalid %s URL "%s".', $this->type, $this->base_url ) , __METHOD__ );
+
+      $this->operation_name = $this->url_tokens[0].'_'.$this->url_tokens[1];
+    }
+  }
+  
+  /**
+   * Executes the service.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function execute()
+  {
+    if( 'main' == $this->type ) $this->process_logout();
+
+    session_name( dirname( $_SERVER['SCRIPT_FILENAME'] ) );
+    session_start();
+    $_SESSION['time']['script_start_time'] = microtime( true );
+
+    // set up error handling (error_reporting is also called in session's constructor)
+    ini_set( 'display_errors', '0' );
+    error_reporting( E_ALL | E_STRICT );
+
+    // include the framework's initialization settings
+    require_once( dirname( __FILE__ ).'/settings.ini.php' );
+    $this->settings = $SETTINGS;
+
+    $this->settings[ 'path' ][ 'CENOZO_API' ] = $this->settings[ 'path' ][ 'CENOZO' ].'/api';
+    $this->settings[ 'path' ][ 'CENOZO_TPL' ] = $this->settings[ 'path' ][ 'CENOZO' ].'/tpl';
+
+    $this->settings[ 'path' ][ 'API' ] = $this->settings[ 'path' ][ 'APPLICATION' ].'/api';
+    $this->settings[ 'path' ][ 'TPL' ] = $this->settings[ 'path' ][ 'APPLICATION' ].'/tpl';
+
+    // the web directory cannot be extended
+    $this->settings[ 'path' ][ 'WEB' ] = $this->settings[ 'path' ][ 'CENOZO' ].'/web';
+
+    foreach( $this->settings[ 'path' ] as $path_name => $path_value ) define( $path_name.'_PATH', $path_value );
+    foreach( $this->settings[ 'url' ] as $path_name => $path_value ) define( $path_name.'_URL', $path_value );
+
+    // include the autoloader and error code files (search for appname::util first)
+    require_once
+      file_exists( API_PATH.'/util.class.php' ) ?
+      API_PATH.'/util.class.php' :
+      CENOZO_API_PATH.'/util.class.php';
+
+    require_once CENOZO_API_PATH.'/exception/error_codes.inc.php';
+    if( file_exists( API_PATH.'/exception/error_codes.inc.php' ) )
+      require_once API_PATH.'/exception/error_codes.inc.php';
+
+    // registers an autoloader so classes don't have to be included manually
+    util::register( $this->settings[ 'general' ][ 'application_name' ] );
+
+    // set up the logger and session
+    log::self();
+    $session = business\session::self( $this->settings );
+    $session->initialize();
+
+    // only let the session know what the arguments are under particular circumstances
+    if( !( 'main' == $this->type ||
+        ( 'widget' == $this->type && 'load' != $this->url_tokens[2] ) ) )
+      business\session::self()->set_arguments( $this->arguments );
+   
+    // now determine and execute the operation
+    $result_array = array();
+    try
+    {
+      // execute service type-specific operations
+      $type = $this->type;
+      $result_array = $this->$type();
+    }
+    catch( exception\base_exception $e )
+    {
+      $type = $e->get_type();
+      $result_array['success'] = false;
+      $result_array['error_type'] = ucfirst( $type );
+      $result_array['error_code'] = $e->get_code();
+      $result_array['error_message'] = $e->get_raw_message();
+    
+      // log all but notice and permission exceptions
+      if( 'notice' != $type && 'permission' != $type ) log::err( ucwords( $type ).' '.$e );
+    }
+    catch( \Twig_Error $e )
+    {
+      $class_name = get_class( $e );
+      if( 'Twig_Error_Syntax' == $class_name ) $code = 1;
+      else if( 'Twig_Error_Runtime' == $class_name ) $code = 2;
+      else if( 'Twig_Error_Loader' == $class_name ) $code = 3;
+      else $code = 0;
+    
+      $code = util::convert_number_to_code( TEMPLATE_BASE_ERROR_NUMBER + $code );
+      $result_array['success'] = false;
+      $result_array['error_type'] = 'Template';
+      $result_array['error_code'] = $code;
+      $result_array['error_message'] = $e->getMessage();
+    
+      log::err( 'Template '.$e );
+    }
+    catch( \Exception $e )
+    {
+      $code = class_exists( 'cenozo\util' )
+            ? util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER )
+            : 0;
+      $result_array['success'] = false;
+      $result_array['error_type'] = 'System';
+      $result_array['error_code'] = $code;
+      $result_array['error_message'] = $e->getMessage();
+    
+      if( class_exists( 'cenozo\log' ) ) log::err( 'Last minute '.$e );
+    }
+
+    // deal with the result of the operation (whether successful or not)
+    if( true == $result_array['success'] )
+    {
+      if( 'main' == $this->type || 'widget' == $this->type )
+      {
+        print $result_array['output'];
+      }
+      else if( 'push' == $this->type )
+      {
+        print json_encode( $result_array );
+      }
+      else if( 'pull' == $this->type )
+      {
+        if( 'json' == $data_type )
+        {
+          $result_array['data'] = $data;
+          $output = json_encode( $result_array );
+          header( 'Content-Type: application/json' );
+          header( 'Content-Length: '.strlen( $output ) );
+          print $output;
+        }
+        else
+        {
+          header( 'Pragma: public');
+          header( 'Expires: 0');
+          header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
+          header( 'Cache-Control: private', false );
+          header( 'Content-Type: application/force-download' );
+          header( 'Content-Type: application/octet-stream' );
+          header( 'Content-Type: application/ms-excel' );
+          header( 'Content-Disposition: attachment; filename='.$pull_name.'.'.$data_type );
+          header( 'Content-Transfer-Encoding: binary ' );
+          header( 'Content-Length: '.strlen( $data ) );
+          print $data;
+        }
+      }
+      else throw new exception\runtime( 'Invalid operation type.', __METHOD__ );
+      
+      // only let the session know what the operation completed under particular circumstances
+      if( !( 'main' == $this->type ||
+          ( 'widget' == $this->type && 'load' != $this->url_tokens[2] ) ) )
+        business\session::self()->set_completed( true );
+    }
+    else
+    {
+      // make sure to fail any active transaction
+      if( class_exists( 'cenozo\business\session' ) &&
+          business\session::exists() &&
+          business\session::self()->is_initialized() )
+        business\session::self()->get_database()->fail_transaction();
+      
+      if( 'widget' == $this->type ||
+          'push' == $this->type ||
+          'pull' == $this->type && ( !isset( $data_type ) || 'json' == $data_type ) )
+      {
+        util::send_http_error( json_encode( $result_array ) );
+      }
+      else
+      {
+        // Since the error may have been caused by the template engine, output using a php template
+        include dirname( __FILE__ ).'/error.php';
+      }
+    }
+  }
+  
+  /**
+   * Hack for logging out HTTP authentication.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
+   */
+  private function process_logout()
+  {
+    if( array_key_exists( 'logout', $_COOKIE ) && $_COOKIE['logout'] )
+    {
+      setcookie( 'logout', false, time() - 100 * 3600 * 24 );
+
+      // force the user to log out by sending a header with invalid HTTP auth credentials
+      header( sprintf( 'Location: %s://none:none@%s%s',
+                       'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' ),
+                       $_SERVER['HTTP_HOST'],
+                       $_SERVER['REQUEST_URI'] ) );
+      exit;
+    }
+  }
+  
+  // setup Twig
+  private function render_template( $template, $variables )
+  {
+    require_once 'Twig/Autoloader.php';
+    \Twig_Autoloader::register();
+  
+    // set up the template engine
+    $template_paths = array();
+    if( file_exists( TPL_PATH ) ) $template_paths[] = TPL_PATH;
+    $template_paths[] = CENOZO_TPL_PATH;
+  
+    $theme = business\session::self()->get_theme();
+    $loader = new \Twig_Loader_Filesystem( $template_paths );
+    $this->twig = new \Twig_Environment( $loader, array( 'debug' => util::in_devel_mode(),
+                                                   'strict_variables' => util::in_devel_mode(),
+                                                   'cache' => TEMPLATE_CACHE_PATH ) );
+    $this->twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
+    $this->twig->addFilter( 'nl2br', new \Twig_Filter_Function( 'nl2br' ) );
+    $this->twig->addFilter( 'ucwords', new \Twig_Filter_Function( 'ucwords' ) );
+    $this->twig->addGlobal( 'FOREGROUND_COLOR', util::get_foreground_color( $theme ) );
+    $this->twig->addGlobal( 'BACKGROUND_COLOR', util::get_background_color( $theme ) );
+
+    $twig_template = $this->twig->loadTemplate( $template.'.twig' );
+    return $twig_template->render( $variables );
+  }
+
+  /**
+   * Creates the operation to be performed by the service request.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return ui\operation
+   * @access private
+   */
+  private function create_operation()
+  {
+    if( is_null( $this->operation_name ) )
+      throw new exception\runtime( 'Unable to determine operation name.', __METHOD__ );
+      
+    $class_name = util::get_full_class_name(
+      sprintf( 'ui\\%s\\%s',
+               $this->type,
+               $this->operation_name ) );
+           
+    $operation = new $class_name( $this->arguments );
+    if( !is_subclass_of( $operation, 'cenozo\\ui\\'.$this->type ) )
+      throw new exception\runtime(
+        'Invoked operation "'.$class_name.'" is invalid.', __METHOD__ );
+
+    // only let the session know what the operation is under particular circumstances
+    if( !( 'main' == $this->type ||
+        ( 'widget' == $this->type && 'load' != $this->url_tokens[2] ) ) )
+      business\session::self()->set_operation( $operation );
+
+    return $operation;
+  }      
+  
+  /**
+   * Performs actions of the "main" type.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
+   */
+  private function main()
+  {
+    $result_array = array( 'success' => true );
+
+    $session = business\session::self();
+    $ldap_manager = business\ldap_manager::self();
+    $setting_manager = business\setting_manager::self();
+
+    $variables = array();
+    $variables['jquery_ui_css_path'] =
+      sprintf( '/%s/jquery-ui-%s.custom.css',
+               business\session::self()->get_theme(),
+               business\setting_manager::self()->get_setting( 'version', 'JQUERY_UI' ) );
+    $variables['reset_password'] =
+      $ldap_manager->validate_user( business\session::self()->get_user()->name, 'password' );
+    $variables['application_name'] = 
+      ucwords( $setting_manager->get_setting( 'general', 'application_name' ) );
+
+    $result_array['output'] = $this->render_template( 'main', $variables );
+    return $result_array;
+  }
+    
+  /**
+   * Performs actions of the "widget" type.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
+   */
+  private function widget()
+  {
+    $result_array = array( 'success' => true );
+
+    $session = business\session::self();
+    $slot_name = $this->url_tokens[1];
+    $slot_action = $this->url_tokens[2];
+
+    // determine which widget to render based on the GET variables
+    $current_widget = $session->slot_current( $slot_name );
+
+    // if we are loading the same widget as last time then merge the arguments
+    if( !is_null( $current_widget ) &&
+        is_array( $current_widget['args'] ) &&
+        $this->operation_name == $current_widget['name'] )
+    {
+      // A simple array_merge call will not work since we may have a multi-dimensional array
+      // so we have to go through each argument, add them if it isn't an array and merge it
+      // if it is
+      foreach( $current_widget['args'] as $key => $arg )
+      {
+        $this->arguments[$key] = is_array( $arg ) && array_key_exists( $key, $this->arguments )
+                              ? array_merge( $arg, $this->arguments[$key] )
+                              : $arg;
+      }
+    }
+
+    // if the prev, next or refresh buttons were invoked, change the operation name appropriately
+    if( 'prev' == $slot_action )
+    {
+      $prev_widget = $session->slot_prev( $slot_name );
+      $this->operation_name = $prev_widget['name'];
+      $this->arguments = $prev_widget['args'];
+    }
+    else if( 'next' == $slot_action )
+    {
+      $next_widget = $session->slot_next( $slot_name );
+      $this->operation_name = $next_widget['name'];
+      $this->arguments = $next_widget['args'];
+    }
+    else if( 'refresh' == $slot_action && !is_null( $current_widget ) )
+    {
+      $this->operation_name = $current_widget['name'];
+      $this->arguments = $current_widget['args'];
+    }
+
+    $operation = $this->create_operation();
+    $operation->finish();
+    
+    // render the widget and report to the session
+    $result_array['output'] =
+      $this->render_template( $this->operation_name, $operation->get_variables() );
+
+    // only push on load slot actions
+    if( 'load' == $slot_action )
+      $session->slot_push( $slot_name, $this->operation_name, $this->arguments );
+    return $result_array;
+  }
+
+  /**
+   * Performs actions of the "pull" type.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
+   */
+  private function pull()
+  {
+    $result_array = array( 'success' => true );
+    $operation = $this->create_operation();
+    $result_array['data_type'] = $operation->get_data_type();
+    $result_array['data'] = $operation->finish();
+    return $result_array();
+  }
+
+  /**
+   * Performs actions of the "push" type.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
+   */
+  private function push()
+  {
+    $result_array = array( 'success' => true );
+    $operation = $this->create_operation();
+    $operation->finish();
+    return $result_array;
+  }
+
+  /**
+   * Contains all initialization parameters.
+   * @var array
+   * @access private
+   */
+  private $settings;
+
+  /**
+   * The base url of the service request.
+   * @var string
+   * @access private
+   */
+  private $base_url;
+
+  /**
+   * Contains the parts of the url that describe the service request.
+   * @var array
+   * @access private
+   */
+  private $url_tokens;
+
+  /**
+   * Contains the GET or POST variables.
+   * @var array
+   * @access private
+   */
+  private $arguments = NULL;
+
+  /**
+   * The name of the operation being performed (in <subject>_<name> format)
+   * @var string
+   * @access private
+   */
+  private $operation_name = NULL;
+
+  /**
+   * The twig class which renders templates.
+   * @var \Twig_Environment
+   * @access private
+   */
+  private $twig;
+}
+?>

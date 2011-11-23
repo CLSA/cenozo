@@ -10,11 +10,11 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-  <title>Cenozo</title>
+  <title>{{ application_name }}</title>
   <script type="text/javascript"></script>
   <link href="{{ constant('JQUERY_UI_URL') }}/css{{ jquery_ui_css_path }}" rel="stylesheet" />
   <link href="{{ constant('JQUERY_FULLCALENDAR_CSS_URL') }}" rel="stylesheet" />
-  <link href="css/main.css" rel="stylesheet" />
+  <link href="{{ constant('CSS_URL') }}/main.css" rel="stylesheet" />
   
   {# need to dynamically specify left flap colors #}
   <style media="screen" type="text/css">
@@ -45,7 +45,7 @@
   <script type="text/javascript" src="{{ constant('JQUERY_FULLCALENDAR_JS_URL') }}"></script>
   <script type="text/javascript" src="{{ constant('JQUERY_FONTSCALE_JS_URL') }}"></script>
   <script type="text/javascript" src="{{ constant('JQUERY_TIMERS_JS_URL') }}"></script>
-  <script type="text/javascript" src="js/main.js"></script>
+  <script type="text/javascript" src="{{ constant('JS_URL') }}/main.js"></script>
 
   <script type="text/javascript">
     $( function() {
@@ -80,27 +80,28 @@
         onExtClose: function() {}
       } );
     
-      {% if not is_operator %}
-        // setup the left extruder
-        $( "#left_extruder" ).buildMbExtruder( {
-          position: "left",
-          positionFixed: true,
-          width: 240,
-          sensibility: 500,
-          extruderOpacity: 1,
-          autoCloseTime: 0,
-          hidePanelsOnClose: true,
-          onExtOpen: function() {},
-          onExtContentLoad: function() {},
-          onExtClose: function() {}
-        } );
-      {% endif %}
-  
+      // setup the left extruder
+      $( "#left_extruder" ).buildMbExtruder( {
+        position: "left",
+        positionFixed: true,
+        width: 240,
+        sensibility: 500,
+        extruderOpacity: 1,
+        autoCloseTime: 0,
+        hidePanelsOnClose: true,
+        onExtOpen: function() {},
+        onExtContentLoad: function() {},
+        onExtClose: function() {}
+      } );
+
+      loading_image = new Image();
+      loading_image.src = "{{ constant('CENOZO_URL') }}/img/loading.gif";
+
       // refresh all slots
       slot_refresh( "status" );
       slot_refresh( "shortcuts" );
       slot_refresh( "settings" );
-      {% if not is_operator %}slot_refresh( "menu" );{% endif %}
+      slot_refresh( "menu" );
       slot_refresh( "main" );
 
       // apply jquery-ui theme to the extruders
@@ -124,11 +125,9 @@
   <div id="top_extruder" class="{title:'settings'}">
     <div id="settings_slot"></div>
   </div>
-  {% if not is_operator %}
-    <div id="left_extruder" class="{title:'menu'}">
-      <div id="menu_slot"></div>
-    </div>
-  {% endif %}
+  <div id="left_extruder" class="{title:'menu'}">
+    <div id="menu_slot"></div>
+  </div>
   <div class="ui-widget-content" id="app_ui">
     <table>
       <tr>

@@ -1,1 +1,0 @@
-../../web/cenozo.ini.php
