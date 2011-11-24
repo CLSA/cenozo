@@ -212,6 +212,18 @@ print <<<OUTPUT
  * "system" error codes
  * 
  * Since system errors already have codes this list is likely to stay empty.
+ * Note the following PHP error codes:
+ *      1: error,
+ *      2: warning,
+ *      4: parse,
+ *      8: notice,
+ *     16: core error,
+ *     32: core warning,
+ *     64: compile error,
+ *    128: compile warning,
+ *    256: user error,
+ *    512: user warning,
+ *   1024: user notice
  */
 
 /**

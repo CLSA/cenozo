@@ -41,32 +41,35 @@ final class service
       $this->base_url = str_replace( $base_self_path, '', $_SERVER['REDIRECT_URL'] );
       $this->url_tokens = explode( '/', $this->base_url );
 
-      if( 'slot' == $this->url_tokens[0] ) $this->type = 'widget';
-      else $this->type = 'GET' == $_SERVER['REQUEST_METHOD'] ? 'pull' : 'push';
+      if( 'slot' == $this->url_tokens[0] ) $this->operation_type = 'widget';
+      else $this->operation_type = 'GET' == $_SERVER['REQUEST_METHOD'] ? 'pull' : 'push';
     }
     else
     {
-      $this->type = 'main';
+      $this->operation_type = 'main';
     }
 
     // determine the operation name
-    if( 'widget' == $this->type )
+    if( 'widget' == $this->operation_type )
     {
       if( 3 > count( $this->url_tokens ) )
         throw new exception\runtime(
-          sprintf( 'Invalid %s URL "%s".', $this->type, $this->base_url ) , __METHOD__ );
+          sprintf( 'Invalid %s URL "%s".', $this->operation_type, $this->base_url ) , __METHOD__ );
       
       if( 5 <= count( $this->url_tokens ) ) 
         $this->operation_name = $this->url_tokens[3].'_'.$this->url_tokens[4];
     }
-    else if( 'main' != $this->type )
+    else if( 'main' != $this->operation_type )
     {
       if( 2 > count( $this->url_tokens ) )
         throw new exception\runtime(
-          sprintf( 'Invalid %s URL "%s".', $this->type, $this->base_url ) , __METHOD__ );
+          sprintf( 'Invalid %s URL "%s".', $this->operation_type, $this->base_url ) , __METHOD__ );
 
       $this->operation_name = $this->url_tokens[0].'_'.$this->url_tokens[1];
     }
+
+    // turn on output buffering for all but the main operation type
+    if( 'main' != $this->operation_type ) ob_start();
   }
   
   /**
@@ -77,7 +80,7 @@ final class service
    */
   public function execute()
   {
-    if( 'main' == $this->type ) $this->process_logout();
+    if( 'main' == $this->operation_type ) $this->process_logout();
 
     session_name( dirname( $_SERVER['SCRIPT_FILENAME'] ) );
     session_start();
@@ -100,8 +103,10 @@ final class service
     // the web directory cannot be extended
     $this->settings[ 'path' ][ 'WEB' ] = $this->settings[ 'path' ][ 'CENOZO' ].'/web';
 
-    foreach( $this->settings[ 'path' ] as $path_name => $path_value ) define( $path_name.'_PATH', $path_value );
-    foreach( $this->settings[ 'url' ] as $path_name => $path_value ) define( $path_name.'_URL', $path_value );
+    foreach( $this->settings[ 'path' ] as $path_name => $path_value )
+      define( $path_name.'_PATH', $path_value );
+    foreach( $this->settings[ 'url' ] as $path_name => $path_value )
+      define( $path_name.'_URL', $path_value );
 
     // include the autoloader and error code files (search for appname::util first)
     require_once
@@ -114,25 +119,23 @@ final class service
       require_once API_PATH.'/exception/error_codes.inc.php';
 
     // registers an autoloader so classes don't have to be included manually
-    util::register( $this->settings[ 'general' ][ 'application_name' ] );
+    util::register(
+      $this->settings[ 'general' ][ 'application_name' ],
+      $this->operation_type,
+      $this->settings[ 'general' ][ 'development_mode' ] );
 
     // set up the logger and session
     log::self();
     $session = business\session::self( $this->settings );
     $session->initialize();
 
-    // only let the session know what the arguments are under particular circumstances
-    if( !( 'main' == $this->type ||
-        ( 'widget' == $this->type && 'load' != $this->url_tokens[2] ) ) )
-      business\session::self()->set_arguments( $this->arguments );
-   
     // now determine and execute the operation
     $result_array = array();
     try
     {
       // execute service type-specific operations
-      $type = $this->type;
-      $result_array = $this->$type();
+      $method_name = $this->operation_type;
+      $result_array = $this->$method_name();
     }
     catch( exception\base_exception $e )
     {
@@ -173,19 +176,28 @@ final class service
     
       if( class_exists( 'cenozo\log' ) ) log::err( 'Last minute '.$e );
     }
+    
+    // make sure to fail any active transaction
+    if( util::use_transaction() )
+    {
+      if( false == $result_array['success'] ) $session->get_database()->fail_transaction();
+      $session->get_database()->complete_transaction();
+    }
+
+    $session->set_error_code(
+      array_key_exists( 'error_code', $result_array ) ? $result_array['error_code'] : NULL );
+
+    // we can end output buffering now
+    if( 'main' != $this->operation_type ) ob_end_clean();
 
     // deal with the result of the operation (whether successful or not)
     if( true == $result_array['success'] )
     {
-      if( 'main' == $this->type || 'widget' == $this->type )
-      {
-        print $result_array['output'];
-      }
-      else if( 'push' == $this->type )
+      if( 'push' == $this->operation_type )
       {
         print json_encode( $result_array );
       }
-      else if( 'pull' == $this->type )
+      else if( 'pull' == $this->operation_type )
       {
         if( 'json' == $data_type )
         {
@@ -210,24 +222,16 @@ final class service
           print $data;
         }
       }
-      else throw new exception\runtime( 'Invalid operation type.', __METHOD__ );
-      
-      // only let the session know what the operation completed under particular circumstances
-      if( !( 'main' == $this->type ||
-          ( 'widget' == $this->type && 'load' != $this->url_tokens[2] ) ) )
-        business\session::self()->set_completed( true );
+      else // 'main', 'widget'
+      {
+        print $result_array['output'];
+      }
     }
     else
     {
-      // make sure to fail any active transaction
-      if( class_exists( 'cenozo\business\session' ) &&
-          business\session::exists() &&
-          business\session::self()->is_initialized() )
-        business\session::self()->get_database()->fail_transaction();
-      
-      if( 'widget' == $this->type ||
-          'push' == $this->type ||
-          'pull' == $this->type && ( !isset( $data_type ) || 'json' == $data_type ) )
+      if( 'widget' == $this->operation_type ||
+          'push' == $this->operation_type ||
+          'pull' == $this->operation_type && ( !isset( $data_type ) || 'json' == $data_type ) )
       {
         util::send_http_error( json_encode( $result_array ) );
       }
@@ -273,9 +277,10 @@ final class service
   
     $theme = business\session::self()->get_theme();
     $loader = new \Twig_Loader_Filesystem( $template_paths );
-    $this->twig = new \Twig_Environment( $loader, array( 'debug' => util::in_devel_mode(),
-                                                   'strict_variables' => util::in_devel_mode(),
-                                                   'cache' => TEMPLATE_CACHE_PATH ) );
+    $this->twig = new \Twig_Environment( $loader,
+      array( 'debug' => util::in_development_mode(),
+             'strict_variables' => util::in_development_mode(),
+             'cache' => TEMPLATE_CACHE_PATH ) );
     $this->twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
     $this->twig->addFilter( 'nl2br', new \Twig_Filter_Function( 'nl2br' ) );
     $this->twig->addFilter( 'ucwords', new \Twig_Filter_Function( 'ucwords' ) );
@@ -300,18 +305,21 @@ final class service
       
     $class_name = util::get_full_class_name(
       sprintf( 'ui\\%s\\%s',
-               $this->type,
+               $this->operation_type,
                $this->operation_name ) );
            
     $operation = new $class_name( $this->arguments );
-    if( !is_subclass_of( $operation, 'cenozo\\ui\\'.$this->type ) )
+    if( !is_subclass_of( $operation, 'cenozo\\ui\\'.$this->operation_type ) )
       throw new exception\runtime(
         'Invoked operation "'.$class_name.'" is invalid.', __METHOD__ );
 
-    // only let the session know what the operation is under particular circumstances
-    if( !( 'main' == $this->type ||
-        ( 'widget' == $this->type && 'load' != $this->url_tokens[2] ) ) )
-      business\session::self()->set_operation( $operation );
+    // Only register the operation if the operation is not a widget doing
+    // anything other than loading
+    if( !( 'widget' == $this->operation_type && 'load' != $this->url_tokens[2] ) )
+      business\session::self()->set_operation( $operation, $this->arguments );
+
+    // if requested to, start a transaction
+    if( util::use_transaction() ) business\session::self()->get_database()->start_transaction();
 
     return $operation;
   }      
@@ -333,10 +341,10 @@ final class service
     $variables = array();
     $variables['jquery_ui_css_path'] =
       sprintf( '/%s/jquery-ui-%s.custom.css',
-               business\session::self()->get_theme(),
-               business\setting_manager::self()->get_setting( 'version', 'JQUERY_UI' ) );
+               $session->get_theme(),
+               $setting_manager->get_setting( 'version', 'JQUERY_UI' ) );
     $variables['reset_password'] =
-      $ldap_manager->validate_user( business\session::self()->get_user()->name, 'password' );
+      $ldap_manager->validate_user( $session->get_user()->name, 'password' );
     $variables['application_name'] = 
       ucwords( $setting_manager->get_setting( 'general', 'application_name' ) );
 
@@ -465,6 +473,13 @@ final class service
    * @access private
    */
   private $arguments = NULL;
+
+  /**
+   * The type of the operation being performed
+   * @var string
+   * @access private
+   */
+  private $operation_type = NULL;
 
   /**
    * The name of the operation being performed (in <subject>_<name> format)

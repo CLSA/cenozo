@@ -33,15 +33,20 @@ class util
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $application_name The name of the application (for namespace purposes)
+   * @param string $operation_type The type of operation being performe
+   * @param boolean $development_mode Whether the system is in development mode
    * @static
    * @access public
    */
-  public static function register( $application_name )
+  public static function register(
+    $application_name, $operation_type, $development_mode )
   {
     if( !self::$registered )
     {
       self::$registered = true;
       self::$application_name = $application_name;
+      self::$operation_type = $operation_type;
+      self::$development_mode = $development_mode;
       ini_set( 'unserialize_callback_func', 'spl_autoload_call' );
       spl_autoload_register( array( new self, 'autoload' ) );
     }
@@ -215,69 +220,57 @@ class util
   }
 
   /**
-   * Returns whether the system is in development mode.
+   * Returns the type of operation being performed.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
-   * @return boolean
+   * @return string
    * @access public
    */
-  public static function in_devel_mode()
+  public static function get_operation_type()
   {
-    return true == business\setting_manager::self()->get_setting( 'general', 'development_mode' );
+    return self::$operation_type;
   }
 
   /**
-   * Returns whether the system is in pull mode.
+   * Returns whether the application is in development mode.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
    * @return boolean
    * @access public
    */
-  public static function in_pull_mode()
+  public static function in_development_mode()
   {
-    if( is_null( self::$pull_mode ) )
-      self::$pull_mode =
-        'pull' == business\setting_manager::self()->get_setting( 'general', 'operation_type' );
-    
-    return self::$pull_mode;
+    return self::$development_mode;
   }
-  
+
   /**
-   * Returns whether the system is in push mode.
+   * Returns whether to use a database transaction.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
    * @return boolean
    * @access public
    */
-  public static function in_push_mode()
+  public static function use_transaction()
   {
-    if( is_null( self::$push_mode ) )
-      self::$push_mode =
-        'push' == business\setting_manager::self()->get_setting( 'general', 'operation_type' );
-    
-    return self::$push_mode;
+    return self::$transaction;
   }
-  
+
   /**
-   * Returns whether the system is in widget mode.
+   * Set whether to use a database transaction.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $transaction
    * @static
-   * @return boolean
    * @access public
    */
-  public static function in_widget_mode()
+  public static function set_use_transaction( $transaction )
   {
-    if( is_null( self::$widget_mode ) )
-      self::$widget_mode =
-        'widget' == business\setting_manager::self()->get_setting( 'general', 'operation_type' );
-    
-    return self::$widget_mode;
+    self::$transaction = $transaction;
   }
-  
+
   /**
    * Returns the elapsed time in seconds since the script began.
    * 
@@ -578,6 +571,7 @@ class util
 
   /**
    * Sends an HTTP error status along with the specified data.
+   * Warning, calling this method will cause the process to exit.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $data The data to send along with the error.
@@ -770,36 +764,36 @@ class util
   }
 
   /**
-   * Cache for pull_mode method.
-   * @var bool
-   * @access protected
-   * @static
-   */
-  protected static $pull_mode = NULL;
-
-  /**
-   * Cache for push_mode method.
-   * @var bool
-   * @access protected
-   * @static
-   */
-  protected static $push_mode = NULL;
-
-  /**
-   * Cache for widget_mode method.
-   * @var bool
-   * @access protected
-   * @static
-   */
-  protected static $widget_mode = NULL;
- 
-  /**
    * Name of the application.
    * @var string
    * @access protected
    * @static
    */
   protected static $application_name = NULL;
+
+  /**
+   * The type of operation being performed.
+   * @var string
+   * @access protected
+   * @static
+   */
+  protected static $operation_type = NULL;
+
+  /**
+   * Whether the application is in development mode
+   * @var boolean
+   * @access protected
+   * @static
+   */
+  protected static $development_mode = NULL;
+
+  /**
+   * Whether a database transaction needs to be performed.
+   * @var boolean
+   * @access protected
+   * @static
+   */
+  protected static $transaction = false;
 
   /**
    * Used to track whether the util class has been registered.

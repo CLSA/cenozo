@@ -33,6 +33,9 @@ abstract class push extends operation
   public function __construct( $subject, $name, $args )
   {
     parent::__construct( 'push', $subject, $name, $args );
+
+    // by default use transactions when performing pull operations
+    util::set_use_transaction( true );
   }
 }
 ?>

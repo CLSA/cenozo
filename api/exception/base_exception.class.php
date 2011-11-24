@@ -29,22 +29,10 @@ class base_exception extends \Exception
    */
   public function __construct( $message, $context, $previous = NULL )
   {
-    $session = bus\session::self();
     $this->raw_message = $message;
 
-    $who = 'unknown';
-    if( class_exists( 'cenozo\business\session' ) && $session->is_initialized() )
-    {
-      $user_name = $session->get_user()->name;
-      $role_name = $session->get_role()->name;
-      $site_name = $session->get_site()->name;
-      $who = "$user_name:$role_name@$site_name";
-    }
-    
     // determine the error number
     $code = 0;
-    
-    // try and determine the error type base code
     $constant_name = strtoupper( $this->get_type() ).'_BASE_ERROR_NUMBER';
     $base_code = defined( $constant_name ) ? constant( $constant_name ) : 0;
 
@@ -68,7 +56,10 @@ class base_exception extends \Exception
     }
     
     $this->error_number_constant_name = $constant_name;
-    parent::__construct( "$constant_name ($code) : $who : $this->raw_message", $code, $previous );
+    parent::__construct( sprintf( '%s (%s) : %s',
+                                  $constant_name,
+                                  $code,
+                                  $this->raw_message ), $code, $previous );
   }
   
   /**

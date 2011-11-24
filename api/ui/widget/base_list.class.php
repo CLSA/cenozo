@@ -462,17 +462,17 @@ abstract class base_list extends \cenozo\ui\widget
   /**
    * Which column to sort by, or none if set to an empty string.
    * @var string
-   * @access private
+   * @access protected
    */
-  private $sort_column = '';
+  protected $sort_column = '';
   
   /**
    * Whether to sort in descending order.
    * Starts as true so that when initial sorting is selected it will be ascending
    * @var boolean
-   * @access private
+   * @access protected
    */
-  private $sort_desc = true;
+  protected $sort_desc = true;
   
   /**
    * An associative array of restrictions to apply to the list.

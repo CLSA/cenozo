@@ -53,10 +53,6 @@ class database extends \cenozo\base_object
     
     $this->connect();
 
-    // only start a transaction for the main database (this is an ADOdb limitation)
-    if( bus\setting_manager::self()->get_setting( 'db', 'database' ) == $database )
-      $this->connection->StartTrans();
-
     $column_mod = new modifier();
     $column_mod->where( 'TABLE_SCHEMA', '=', $this->name );
     $column_mod->order( 'TABLE_NAME' );
@@ -124,13 +120,27 @@ class database extends \cenozo\base_object
   }
 
   /**
-   * Destructor
+   * Start a database transaction.
+   * Transactions are automatically completed in the destructor.  To force-fail (rollback)
+   * a transaction call fail_transaction()
    * 
-   * The main application database completes its transaction at destruction.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function __destruct()
+  public function start_transaction()
+  {
+    // only start a transaction for the main database (this is an ADOdb limitation)
+    if( bus\setting_manager::self()->get_setting( 'db', 'database' ) == $this->name )
+      $this->connection->StartTrans();
+  }
+  
+  /**
+   * Complete the database transaction.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function complete_transaction()
   {
     // only complete a transaction for the main database (this is an ADOdb limitation)
     if( class_exists( '\cenozo\business\setting_manager' ) &&
@@ -138,7 +148,7 @@ class database extends \cenozo\base_object
         bus\setting_manager::self()->get_setting( 'db', 'database' ) == $this->name )
       $this->connection->CompleteTrans();
   }
-  
+
   /**
    * Fail the current transaction
    * 

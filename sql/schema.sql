@@ -149,7 +149,7 @@ CREATE  TABLE IF NOT EXISTS `activity` (
   `operation_id` INT UNSIGNED NULL DEFAULT NULL ,
   `query` VARCHAR(511) NOT NULL ,
   `elapsed` FLOAT NOT NULL DEFAULT 0 COMMENT 'The total time to perform the operation in seconds.' ,
-  `completed` TINYINT(1)  NOT NULL DEFAULT false ,
+  `error_code` VARCHAR(20) NULL DEFAULT '(in progress)' COMMENT 'NULL if no error occurred.' ,
   `datetime` DATETIME NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,

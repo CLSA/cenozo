@@ -39,9 +39,9 @@ final class log extends singleton
    */
   protected function __construct()
   {
-    $this->loggers[ 'display' ] = NULL;
-    $this->loggers[ 'file' ] = NULL;
-    $this->loggers[ 'firebug' ] = NULL;
+    $this->loggers['display'] = NULL;
+    $this->loggers['file'] = NULL;
+    $this->loggers['firebug'] = NULL;
   }
 
   /**
@@ -169,14 +169,22 @@ final class log extends singleton
   private function backtrace()
   {
     $backtrace = "";
+    $first = true;
     foreach( debug_backtrace( false ) as $index => $trace )
     {
-      if( 0 == $index ) continue; // first trace is this function
-      if( 1 == $index ) continue; // second trace is the log function
-      if( 2 == $index ) continue; // second trace is the public log function
-      $backtrace .= '  ['.( $index - 2 ).'] '.
-                    ( isset( $trace['class'] ) ? $trace['class'].'::' : '' ).
-                    $trace[ 'function' ].'()'."\n";
+      if( 0 != $index && // first trace is this function
+          1 != $index && // second trace is the log function
+          2 != $index && // second trace is the public log function
+          'error_handler' != $trace['function'] &&
+          'fatal_error_handler' != $trace['function'] )
+      {
+        $backtrace .= sprintf( '%s#%d %s%s()',
+                               $first ? '' : "\n",
+                               $index - 3,
+                               isset( $trace['class'] ) ? $trace['class'].'::' : '',
+                               $trace['function'] );
+        $first = false;
+      }
     }
     return $backtrace;
   }
@@ -193,9 +201,33 @@ final class log extends singleton
   {
     // make sure we have a session
     if( !class_exists( 'cenozo\business\session' ) || !business\session::exists() ) return;
+    $session = business\session::self();
+
+    if( PEAR_LOG_INFO != $type &&
+        PEAR_LOG_NOTICE != $type &&
+        PEAR_LOG_DEBUG != $type )
+      $message = sprintf( '<%s:%s@%s> %s',
+                          $session->get_user()->name,
+                          $session->get_role()->name,
+                          $session->get_site()->name,
+                          $message );
+    
+    // add the backtrace
+    if( PEAR_LOG_NOTICE == $type ||
+        PEAR_LOG_DEBUG == $type ||
+        ( !util::in_development_mode() && PEAR_LOG_INFO ) )
+    {
+      if( !preg_match( '/{main}$/', $message ) )
+      {
+        $backtrace = $this->backtrace();
+        $message .= strlen( $backtrace )
+                  ? "\nStack trace:\n".$this->backtrace()
+                  : "\nNo stack trace available.";
+      }
+    }
 
     // if in devel mode log everything to firephp
-    if( util::in_devel_mode() )
+    if( util::in_development_mode() )
     {
       $type_string = self::log_level_to_string( $type );
       $firephp = \FirePHP::getInstance( true );
@@ -205,16 +237,15 @@ final class log extends singleton
       {
         $firephp->info( $message, $type_string );
       }
-      else if( PEAR_LOG_EMERG == $type ||
-               PEAR_LOG_ALERT == $type ||
-               PEAR_LOG_CRIT == $type ||
-               PEAR_LOG_ERR == $type )
+      else
       {
-        $firephp->error( $message, $type_string );
-      }
-      else // PEAR_LOG_WARNING
-      {
-        $firephp->warn( $message." backtrace: ".$this->backtrace(), $type_string );
+        $method_name = PEAR_LOG_EMERG == $type ||
+                       PEAR_LOG_ALERT == $type ||
+                       PEAR_LOG_CRIT == $type ||
+                       PEAR_LOG_ERR == $type
+                     ? 'error' : 'warn';
+
+        $firephp->$method_name( $message, $type_string );
       }
     }
     else // we are in production mode
@@ -227,7 +258,7 @@ final class log extends singleton
       {
         // log major stuff to an error log
         $this->initialize_logger( 'file' );
-        $this->loggers[ 'file' ]->log( $this->backtrace().$message."\n", $type );
+        $this->loggers[ 'file' ]->log( $message."\n", $type );
       }
       else // PEAR_LOG_WARNING, PEAR_LOG_NOTICE, PEAR_LOG_DEBUG
       {
@@ -328,7 +359,12 @@ final class log extends singleton
     // ignore ldap errors
     if( 0 < preg_match( '/^ldap_[a-z_0-9]()/', $message ) ) return;
 
-    $message .= "\n in $file on line $line (errno: $level)";
+    $e = new exception\system( $message, $level );
+    $message = sprintf( '(%s) : %s in %s on line %d',
+                        $e->get_number(),
+                        $message,
+                        $file,
+                        $line );
     if( E_PARSE == $level ||
         E_COMPILE_ERROR == $level ||
         E_USER_ERROR == $level ||
@@ -336,16 +372,30 @@ final class log extends singleton
         E_ERROR == $level )
     {
       log::emerg( $message );
+
       // When this function is called due to a fatal error it will die afterwards so we cannot
       // throw an exception.  Instead we can build the exception and emulate what is done in
-      // the index/widget/push/pull scripts.
-      $e = new exception\base_exception( $message, $level );
+      // the service class.
       $result_array = array(
         'error_type' => ucfirst( $e->get_type() ),
         'error_code' => $e->get_code(),
         'error_message' => '' );
 
-      if( util::in_push_mode() || util::in_widget_mode() )
+      // try and set the current operations error code, if possible
+      if( class_exists( 'cenozo\business\session' ) && business\session::exists() )
+      {
+        $session = business\session::self();
+
+        // we need to complete the transaction if there is one in progress
+        if( util::use_transaction() )
+        {
+          $session->get_database()->fail_transaction();
+          $session->get_database()->complete_transaction();
+        }
+        $session->set_error_code( $e->get_code() );
+      }
+
+      if( 'main' != util::get_operation_type() )
       { // send the error in json format in an http error header
         util::send_http_error( json_encode( $result_array ) );
       }

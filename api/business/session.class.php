@@ -41,6 +41,9 @@ final class session extends \cenozo\singleton
     // set error reporting
     error_reporting(
       $setting_manager->get_setting( 'general', 'development_mode' ) ? E_ALL | E_STRICT : E_ALL );
+    
+    // make sure pull actions don't time out
+    if( 'pull' == util::get_operation_type() ) set_time_limit( 0 );
 
     // setup the session variables
     if( !isset( $_SESSION['slot'] ) ) $_SESSION['slot'] = array();
@@ -275,38 +278,13 @@ final class session extends \cenozo\singleton
   }
   
   /**
-   * Define what HTTP arguments came along with the operation.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args The arguments passed to the operation.
-   * @access public
-   */
-  public function set_arguments( $args )
-  {
-    // make sure we have an activity
-    if( is_null( $this->activity ) )
-    {
-      $this->activity = new db\activity();
-      $this->activity->user_id = $this->user->id;
-      $this->activity->site_id = $this->site->id;
-      $this->activity->role_id = $this->role->id;
-      $this->activity->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-    }
-
-    // add the arguments to the activity and save it
-    $this->activity->query = serialize( $args );
-    $this->activity->elapsed = util::get_elapsed_time();
-    $this->activity->save();
-  }
-
-  /**
    * Define the operation being performed.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param ui\operation $operation
    * @access public
    */
-  public function set_operation( $operation )
+  public function set_operation( $operation, $arguments )
   {
     // make sure we have an activity
     if( is_null( $this->activity ) )
@@ -320,24 +298,25 @@ final class session extends \cenozo\singleton
 
     // add the operation to the activity and save it
     $this->activity->operation_id = $operation->get_id();
+    $this->activity->query = serialize( $arguments );
     $this->activity->elapsed = util::get_elapsed_time();
     $this->activity->save();
   }
 
   /**
-   * Define whether the current operation has been completed.
+   * Define the error code for the current operation.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $completed
+   * @param string $error_code;
    * @access public
    */
-  public function set_completed( $completed )
+  public function set_error_code( $error_code )
   {
     // make sure we have an activity
     if( !is_null( $this->activity ) )
     {
       // add the operation to the activity and save it
-      $this->activity->completed = $completed;
+      $this->activity->error_code = $error_code;
       $this->activity->elapsed = util::get_elapsed_time();
       $this->activity->save();
     }
