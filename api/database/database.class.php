@@ -143,7 +143,7 @@ class database extends \cenozo\base_object
   public function complete_transaction()
   {
     // only complete a transaction for the main database (this is an ADOdb limitation)
-    if( class_exists( '\cenozo\business\setting_manager' ) &&
+    if( class_exists( 'cenozo\business\setting_manager' ) &&
         bus\setting_manager::exists() &&
         bus\setting_manager::self()->get_setting( 'db', 'database' ) == $this->name )
       $this->connection->CompleteTrans();
