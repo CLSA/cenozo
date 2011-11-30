@@ -41,7 +41,7 @@ class self_primary extends \cenozo\ui\pull
    */
   public function finish()
   {
-    $db_user = bus\session::self()->get_user();
+    $db_user = util::create( 'business\\session' )->get_user();
     $data = array();
     foreach( $db_user->get_column_names() as $column ) $data[ $column ] = $db_user->$column;
     return $data;

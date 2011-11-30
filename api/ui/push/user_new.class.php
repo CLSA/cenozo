@@ -61,7 +61,7 @@ class user_new extends base_new
       throw util::create( 'exception\notice', 'The user\'s last name cannot be left blank.', __METHOD__ );
 
     // add the user to ldap
-    $ldap_manager = bus\ldap_manager::self();
+    $ldap_manager = util::create( 'business\\ldap_manager' );
     try
     {
       $ldap_manager->new_user(
@@ -77,7 +77,8 @@ class user_new extends base_new
 
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user
-      $db_user = db\user::get_unique_record( 'name', $columns['name'] );
+      $user_class_name = util::get_class_name( 'database\user' );
+      $db_user = $user_class_name::get_unique_record( 'name', $columns['name'] );
       $db_access = util::create( 'database\access' );
       $db_access->user_id = $db_user->id;
       $db_access->site_id = $this->site_id;

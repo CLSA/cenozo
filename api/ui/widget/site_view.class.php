@@ -74,7 +74,8 @@ class site_view extends base_view
     parent::finish();
     
     // create enum arrays
-    $timezones = db\site::get_enum_values( 'timezone' );
+    $site_class_name = util::get_class_name( 'database\site' );
+    $timezones = $site_class_name::get_enum_values( 'timezone' );
     $timezones = array_combine( $timezones, $timezones );
 
     // set the view's items
@@ -113,9 +114,10 @@ class site_view extends base_view
    */
   public function determine_access_count( $modifier = NULL )
   {
+    $access_class_name = util::get_class_name( 'database\access' );
     if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $this->get_record()->id );
-    return db\access::count( $modifier );
+    return $access_class_name::count( $modifier );
   }
 
   /**
@@ -128,9 +130,10 @@ class site_view extends base_view
    */
   public function determine_access_list( $modifier = NULL )
   {
+    $access_class_name = util::get_class_name( 'database\access' );
     if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $this->get_record()->id );
-    return db\access::select( $modifier );
+    return $access_class_name::select( $modifier );
   }
 
   /**

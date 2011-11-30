@@ -32,8 +32,6 @@ class user_list extends site_restricted_list
   {
     parent::__construct( 'user', $args );
     
-    $session = bus\session::self();
-
     $this->add_column( 'name', 'string', 'Username', true );
     $this->add_column( 'active', 'boolean', 'Active', true );
     $this->add_column( 'site.name', 'string', 'Site', false );

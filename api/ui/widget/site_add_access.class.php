@@ -51,7 +51,8 @@ class site_add_access extends base_add_access
   public function determine_user_count( $modifier = NULL )
   {
     // we want to display all users
-    return db\user::count( $modifier );
+    $user_class_name = util::get_class_name( 'database\user' );
+    return $user_class_name::count( $modifier );
   }
 
   /**
@@ -65,7 +66,8 @@ class site_add_access extends base_add_access
   public function determine_user_list( $modifier = NULL )
   {
     // we want to display all users
-    return db\user::select( $modifier );
+    $user_class_name = util::get_class_name( 'database\user' );
+    return $user_class_name::select( $modifier );
   }
 }
 ?>

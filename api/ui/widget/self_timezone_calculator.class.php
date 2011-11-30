@@ -45,10 +45,11 @@ class self_timezone_calculator extends \cenozo\ui\widget
     parent::finish();
 
     // get all timezones from the site table
-    $current_timezone = bus\session::self()->get_site()->timezone;
+    $current_timezone = util::create( 'business\\session' )->get_site()->timezone;
     $datetime_obj = util::get_datetime_object();
     $timezone_list = array();
-    foreach( db\site::get_enum_values( 'timezone' ) as $timezone )
+    $site_class_name = util::get_class_name( 'database\site' );
+    foreach( $site_class_name::get_enum_values( 'timezone' ) as $timezone )
     {
       $timezone_obj = new \DateTimeZone( $timezone );
       $timezone_list[ preg_replace( '/\W/', '_', $timezone ) ] = array(

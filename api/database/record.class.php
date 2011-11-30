@@ -125,14 +125,16 @@ abstract class record extends \cenozo\base_object
                    $this->column_values[static::get_primary_key_name()] ),
           __METHOD__ );
 
+      $database_class_name = util::get_class_name( 'database\database' );
+
       // convert any date, time or datetime columns
       foreach( $row as $key => $val )
       {
         if( array_key_exists( $key, $this->column_values ) )
         {
-          if( database::is_time_column( $key ) )
+          if( $database_class_name::is_time_column( $key ) )
             $this->column_values[$key] = util::from_server_datetime( $val, 'H:i:s' );
-          else if( database::is_datetime_column( $key ) )
+          else if( $database_class_name::is_datetime_column( $key ) )
             $this->column_values[$key] = util::from_server_datetime( $val );
           else $this->column_values[$key] = $val;
         }
@@ -207,18 +209,20 @@ abstract class record extends \cenozo\base_object
     // now add the rest of the columns
     foreach( $this->column_values as $key => $val )
     {
+      $database_class_name = util::get_class_name( 'database\database' );
+
       if( static::get_primary_key_name() != $key )
       {
         // convert any time or datetime columns
-        if( database::is_time_column( $key ) )
+        if( $database_class_name::is_time_column( $key ) )
           $val = util::to_server_datetime( $val, 'H:i:s' );
-        else if( database::is_datetime_column( $key ) )
+        else if( $database_class_name::is_datetime_column( $key ) )
           $val = util::to_server_datetime( $val );
         
         $sets .= sprintf( '%s %s = %s',
                           $first ? '' : ',',
                           $key,
-                          database::format_string( $val ) );
+                          $database_class_name::format_string( $val ) );
 
         $first = false;
       }
@@ -509,8 +513,9 @@ abstract class record extends \cenozo\base_object
     }
       
     // this method varies depending on the relationship type
+    $relationship_class_name = util::get_class_name( 'database\relationship' );
     $relationship = static::get_relationship( $record_type );
-    if( relationship::NONE == $relationship )
+    if( $relationship_class_name::NONE == $relationship )
     {
       log::err(
         sprintf( 'Tried to get a %s list from a %s, but there is no relationship between the two.',
@@ -518,7 +523,7 @@ abstract class record extends \cenozo\base_object
                  $table_name ) );
       return $count ? 0 : array();
     }
-    else if( relationship::ONE_TO_ONE == $relationship )
+    else if( $relationship_class_name::ONE_TO_ONE == $relationship )
     {
       log::err(
         sprintf( 'Tried to get a %s list from a %s, but there is a '.
@@ -527,7 +532,7 @@ abstract class record extends \cenozo\base_object
                  $table_name() ) );
       return $count ? 0 : array();
     }
-    else if( relationship::ONE_TO_MANY == $relationship )
+    else if( $relationship_class_name::ONE_TO_MANY == $relationship )
     {
       if( is_null( $modifier ) ) $modifier = new modifier();
       if( $inverted )
@@ -541,7 +546,7 @@ abstract class record extends \cenozo\base_object
         ? $foreign_class_name::count( $modifier )
         : $foreign_class_name::select( $modifier );
     }
-    else if( relationship::MANY_TO_MANY == $relationship )
+    else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
       $joining_table_name = static::get_joining_table_name( $record_type );
       $foreign_key_name = $record_type.'.'.$foreign_class_name::get_primary_key_name();
@@ -596,7 +601,7 @@ abstract class record extends \cenozo\base_object
       {
         $ids = static::db()->get_col( $sql );
         $records = array();
-        foreach( $ids as $id ) $records[] = util::create( $foreign_class_name, $id );
+        foreach( $ids as $id ) $records[] = util::create( 'database\\'.$record_type, $id );
         return $records;
       }
     }
@@ -654,8 +659,9 @@ abstract class record extends \cenozo\base_object
     }
 
     // this method only supports many-to-many relationships.
+    $relationship_class_name = util::get_class_name( 'database\relationship' );
     $relationship = static::get_relationship( $record_type );
-    if( relationship::MANY_TO_MANY != $relationship )
+    if( $relationship_class_name::MANY_TO_MANY != $relationship )
     {
       log::err(
         sprintf( 'Tried to add %s to a %s without a many-to-many relationship between the two.',
@@ -664,6 +670,7 @@ abstract class record extends \cenozo\base_object
       return;
     }
     
+    $database_class_name = util::get_class_name( 'database\database' );
     $joining_table_name = static::get_joining_table_name( $record_type );
     
     // if ids is not an array then create a single-element array with it
@@ -677,8 +684,8 @@ abstract class record extends \cenozo\base_object
       $values .= sprintf( $this->include_timestamps
                           ? '(NULL, %s, %s)'
                           : '(%s, %s)',
-                          database::format_string( $primary_key_value ),
-                          database::format_string( $foreign_key_value ) );
+                          $database_class_name::format_string( $primary_key_value ),
+                          $database_class_name::format_string( $foreign_key_value ) );
       $first = false;
     }
     
@@ -720,15 +727,16 @@ abstract class record extends \cenozo\base_object
     }
 
     // this method varies depending on the relationship type
+    $relationship_class_name = util::get_class_name( 'database\relationship' );
     $relationship = static::get_relationship( $record_type );
-    if( relationship::NONE == $relationship )
+    if( $relationship_class_name::NONE == $relationship )
     {
       log::err(
         sprintf( 'Tried to remove a %s from a %s, but there is no relationship between the two.',
                  $record_type,
                  static::get_table_name() ) );
     }
-    else if( relationship::ONE_TO_ONE == $relationship )
+    else if( $relationship_class_name::ONE_TO_ONE == $relationship )
     {
       log::err(
         sprintf( 'Tried to remove a %s from a %s, but there is a '.
@@ -736,12 +744,12 @@ abstract class record extends \cenozo\base_object
                  $record_type,
                  static::get_table_name() ) );
     }
-    else if( relationship::ONE_TO_MANY == $relationship )
+    else if( $relationship_class_name::ONE_TO_MANY == $relationship )
     {
       $record = util::create( 'database\\'.$record_type, $id );
       $record->delete();
     }
-    else if( relationship::MANY_TO_MANY == $relationship )
+    else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
       $joining_table_name = static::get_joining_table_name( $record_type );
   
@@ -803,17 +811,18 @@ abstract class record extends \cenozo\base_object
    */
   public static function get_relationship( $record_type )
   {
-    $type = relationship::NONE;
+    $relationship_class_name = util::get_class_name( 'database\relationship' );
+    $type = $relationship_class_name::NONE;
     $class_name = util::get_class_name( 'database\\'.$record_type );
     if( $class_name::column_exists( static::get_table_name().'_id' ) )
     { // the record_type has a foreign key for this record
       $type = static::column_exists( $record_type.'_id' )
-            ? relationship::ONE_TO_ONE
-            : relationship::ONE_TO_MANY;
+            ? $relationship_class_name::ONE_TO_ONE
+            : $relationship_class_name::ONE_TO_MANY;
     }
     else if( 0 < strlen( static::get_joining_table_name( $record_type ) ) )
     { // a joining table was found
-      $type = relationship::MANY_TO_MANY;
+      $type = $relationship_class_name::MANY_TO_MANY;
     }
 
     return $type;
@@ -1072,8 +1081,7 @@ abstract class record extends \cenozo\base_object
    */
   public static function db()
   {
-    $class_name = util::get_class_name( 'business\session' );
-    return $class_name::self()->get_database();
+    return util::create( 'business\\session' )->get_database();
   }
 
   /**

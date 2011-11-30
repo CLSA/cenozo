@@ -40,7 +40,7 @@ class system_message_delete extends base_delete
   public function finish()
   {
     // make sure that only top tier roles can remove system messages not belonging to the current site
-    $session = bus\session::self();
+    $session = util::create( 'business\\session' );
 
     if( 3 != $session->get_role()->tier && $session->get_site()->id != $this->get_record()->site_id )
     {

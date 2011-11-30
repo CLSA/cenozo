@@ -46,13 +46,14 @@ abstract class base_list extends \cenozo\ui\widget
     $this->restrictions = $this->get_argument( 'restrictions', $this->restrictions );
     
     // determine properties based on the current user's permissions
-    $session = bus\session::self();
+    $operation_class_name = util::get_class_name( 'database\operation' );
+    $session = util::create( 'business\\session' );
     $this->viewable = $session->is_allowed(
-      db\operation::get_operation( 'widget', $this->get_subject(), 'view' ) );
+      $operation_class_name::get_operation( 'widget', $this->get_subject(), 'view' ) );
     $this->addable = $session->is_allowed(
-      db\operation::get_operation( 'widget', $this->get_subject(), 'add' ) );
+      $operation_class_name::get_operation( 'widget', $this->get_subject(), 'add' ) );
     $this->removable = $session->is_allowed(
-      db\operation::get_operation( 'push', $this->get_subject(), 'delete' ) );
+      $operation_class_name::get_operation( 'push', $this->get_subject(), 'delete' ) );
   }
   
   /**
@@ -215,12 +216,13 @@ abstract class base_list extends \cenozo\ui\widget
     else // 'view' == $mode
     {
       // add/remove operations are relative to the parent
-      $session = bus\session::self();
+      $operation_class_name = util::get_class_name( 'database\operation' );
+      $session = util::create( 'business\\session' );
       $this->addable = $session->is_allowed( 
-        db\operation::get_operation(
+        $operation_class_name::get_operation(
           'widget', $this->parent->get_subject(), 'add_'.$this->get_subject() ) );
       $this->removable = $session->is_allowed(
-        db\operation::get_operation(
+        $operation_class_name::get_operation(
           'push', $this->parent->get_subject(), 'delete_'.$this->get_subject() ) );
     }
   }

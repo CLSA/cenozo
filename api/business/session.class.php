@@ -17,7 +17,6 @@ use cenozo\exception as exc;
  *
  * The session class is used to track all information from the time a user logs into the system
  * until they log out.
- * This class is a singleton, instead of using the new operator call the self() method.
  * @package cenozo\business
  */
 class session extends \cenozo\singleton
@@ -34,10 +33,9 @@ class session extends \cenozo\singleton
   {
     // WARNING!  When we construct the session we haven't finished setting up the system yet, so
     // don't use the log class in this method!
-    
+
     // the first argument is the settings array from an .ini file
-    $class_name = util::get_class_name( 'business\setting_manager' );
-    $setting_manager = $class_name::self( $arguments[0] );
+    $setting_manager = util::create( 'business\setting_manager', $arguments[0] );
     
     // set error reporting
     error_reporting(
@@ -63,8 +61,7 @@ class session extends \cenozo\singleton
     // don't initialize more than once
     if( $this->initialized ) return;
 
-    $class_name = util::get_class_name( 'business\setting_manager' );
-    $setting_manager = $class_name::self();
+    $setting_manager = util::create( 'business\\setting_manager' );
 
     // create the databases
     $this->database = util::create( 'database\database',
@@ -77,11 +74,13 @@ class session extends \cenozo\singleton
 
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
-
-    $this->set_user( db\user::get_unique_record( 'name', $user_name ) );
+    
+    $user_class_name = util::get_class_name( 'database\\user' );
+    $operation_class_name = util::get_class_name( 'database\\operation' );
+    $this->set_user( $user_class_name::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
       throw util::create( 'exception\permission',
-        db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
+        $operation_class_name::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
 
     $this->initialized = true;
   }
@@ -163,8 +162,12 @@ class session extends \cenozo\singleton
           $_SESSION['current_role_id'] = $this->role->id;
         }
       }
-      else throw util::create( 'exception\permission',
-        db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
+      else
+      {
+        $operation_class_name = util::get_class_name( 'database\operation' );
+        throw util::create( 'exception\permission',
+          $operation_class_name::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
+      }
     }
   }
 
@@ -221,7 +224,8 @@ class session extends \cenozo\singleton
         $activity_mod->where( 'user_id', '=', $this->user->id );
         $activity_mod->order_desc( 'datetime' );
         $activity_mod->limit( 1 );
-        $db_activity = current( db\activity::select( $activity_mod ) );
+        $activity_class_name = util::get_class_name( 'database\activity' );
+        $db_activity = current( $activity_class_name::select( $activity_mod ) );
         if( $db_activity )
         {
           // make sure the user still has access to the site/role
@@ -271,7 +275,7 @@ class session extends \cenozo\singleton
    */
   public function get_theme()
   {
-    $theme = setting_manager::self()->get_setting( 'interface', 'default_theme' );
+    $theme = util::create( 'business\\setting_manager' )->get_setting( 'interface', 'default_theme' );
 
     if( !is_null( $this->user ) )
     {

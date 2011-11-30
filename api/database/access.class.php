@@ -70,12 +70,12 @@ class access extends record
    */
   public function save()
   {
+    $operation_class_name = util::get_class_name( 'database\operation' );
     $db_access_role = new role( $this->role_id );
-
-    if( $db_access_role->tier > bus\session::self()->get_role()->tier )
+    if( $db_access_role->tier > util::create( 'business\\session' )->get_role()->tier )
       throw util::create( 'exception\permission',
         // fake the operation
-        operation::get_operation( 'push', 'user', 'new_access' ), __METHOD__ );
+        $operation_class_name::get_operation( 'push', 'user', 'new_access' ), __METHOD__ );
 
     parent::save();
   }
@@ -89,10 +89,11 @@ class access extends record
    */
   public function delete()
   {
-    if( $this->get_role()->tier > bus\session::self()->get_role()->tier )
+    $operation_class_name = util::get_class_name( 'database\operation' );
+    if( $this->get_role()->tier > util::create( 'business\\session' )->get_role()->tier )
       throw util::create( 'exception\permission',
         // fake the operation
-        operation::get_operation( 'push', 'access', 'delete' ), __METHOD__ );
+        $operation_class_name::get_operation( 'push', 'access', 'delete' ), __METHOD__ );
 
     parent::delete();
   }

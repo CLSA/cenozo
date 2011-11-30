@@ -50,7 +50,7 @@ class self_set_role extends \cenozo\ui\push
       throw util::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
     }
     
-    $session = bus\session::self();
+    $session = util::create( 'business\\session' );
     $session->set_site_and_role( $session->get_site(), $db_role );
   }
 }

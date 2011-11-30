@@ -75,11 +75,12 @@ class setting_manager extends \cenozo\singleton
     }
     else // check if the setting exists in the database
     {
-      $db_setting = db\setting::get_setting( $category, $name );
+      $setting_class_name = util::get_class_name( 'database\setting' );
+      $db_setting = $setting_class_name::get_setting( $category, $name );
       if( !is_null( $db_setting ) )
       {
         $modifier = util::create( 'database\modifier' );
-        $modifier->where( 'site_id', '=', session::self()->get_site()->id );
+        $modifier->where( 'site_id', '=', util::create( 'business\\session' )->get_site()->id );
         $setting_value_list = $db_setting->get_setting_value_list( $modifier );
         
         $string_value = count( $setting_value_list )

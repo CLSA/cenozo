@@ -42,7 +42,7 @@ abstract class site_restricted_list extends base_list
     }
     else // anyone else is restricted to their own site
     {
-      $this->db_restrict_site = bus\session::self()->get_site();
+      $this->db_restrict_site = util::create( 'business\\session' )->get_site();
     }
     
     // if restricted, show the site's name in the heading
@@ -67,8 +67,9 @@ abstract class site_restricted_list extends base_list
       // (for lists with no parent only!)
       if( is_null( $this->parent ) )
       {
+        $site_class_name = util::get_class_name( 'database\site' );
         $sites = array();
-        foreach( db\site::select() as $db_site )
+        foreach( $site_class_name::select() as $db_site )
           $sites[$db_site->id] = $db_site->name;
         $this->set_variable( 'sites', $sites );
       }
@@ -136,7 +137,7 @@ abstract class site_restricted_list extends base_list
    */
   public static function may_restrict()
   {
-    return 3 == bus\session::self()->get_role()->tier;
+    return 3 == util::create( 'business\\session' )->get_role()->tier;
   }
 
   /**

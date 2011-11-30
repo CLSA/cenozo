@@ -43,7 +43,7 @@ class self_settings extends \cenozo\ui\widget
   {
     parent::finish();
 
-    $session = bus\session::self();
+    $session = util::create( 'business\\session' );
 
     // create and setup the widget
     $db_user = $session->get_user();
@@ -67,7 +67,7 @@ class self_settings extends \cenozo\ui\widget
 
     $this->set_variable( 'user', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'version',
-      bus\setting_manager::self()->get_setting( 'general', 'version' ) );
+      util::create( 'business\\setting_manager' )->get_setting( 'general', 'version' ) );
     $this->set_variable( 'development', util::in_development_mode() );
     $this->set_variable( 'current_site_id', $db_current_site->id );
     $this->set_variable( 'current_site_name', $db_current_site->name );

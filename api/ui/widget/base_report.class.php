@@ -74,7 +74,7 @@ abstract class base_report extends \cenozo\ui\widget
         $this->add_parameter( 'restrict_site_id', 'hidden' );
 
         // if restricted, show the site's name in the heading
-        $predicate = bus\session::self()->get_site()->name;
+        $predicate = util::create( 'business\\session' )->get_site()->name;
         $this->set_heading( $this->get_heading().' for '.$predicate );
       }
     }
@@ -119,7 +119,7 @@ abstract class base_report extends \cenozo\ui\widget
       // build time time zone help text
       $date_obj = util::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            bus\session::self()->get_site()->name,
+                            util::create( 'business\\session' )->get_site()->name,
                             $date_obj->format( 'T' ) );
       $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }
@@ -235,20 +235,23 @@ abstract class base_report extends \cenozo\ui\widget
    */
   public function finish()
   {
+    $site_class_name = util::get_class_name( 'database\site' );
+    $region_class_name = util::get_class_name( 'database\region' );
+
     if( $this->restrictions[ 'site' ] )
     {
       if( static::may_restrict_by_site() )
       {
         // if allowed, give them a list of sites to choose from
         $sites = array( 0 => 'All sites' );
-        foreach( db\site::select() as $db_site )
+        foreach( $site_class_name::select() as $db_site )
           $sites[$db_site->id] = $db_site->name;
   
         $this->set_parameter( 'restrict_site_id', key( $sites ), true, $sites );
       }
       else
       {
-        $this->set_parameter( 'restrict_site_id', bus\session::self()->get_site()->id );
+        $this->set_parameter( 'restrict_site_id', util::create( 'business\\session' )->get_site()->id );
       }
     }
     
@@ -258,7 +261,7 @@ abstract class base_report extends \cenozo\ui\widget
       $region_mod->order( 'abbreviation' );
       $region_mod->where( 'country', '=', 'Canada' );
       $region_types = array( 'All provinces' );
-      foreach( db\region::select( $region_mod ) as $db_region )
+      foreach( $region_class_name::select( $region_mod ) as $db_region )
         $region_types[ $db_region->id ] = $db_region->name;
 
       $this->set_parameter( 'restrict_province_id', current( $region_types ), true, $region_types );
@@ -298,7 +301,7 @@ abstract class base_report extends \cenozo\ui\widget
    */
   public static function may_restrict_by_site()
   {
-    return 3 == bus\session::self()->get_role()->tier;
+    return 3 == util::create( 'business\\session' )->get_role()->tier;
   }
 
   /**

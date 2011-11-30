@@ -44,8 +44,8 @@ class self_home extends \cenozo\ui\widget
   {
     parent::finish();
 
-    $session = bus\session::self();
-    $setting_manager = bus\setting_manager::self();
+    $session = util::create( 'business\\session' );
+    $setting_manager = util::create( 'business\\setting_manager' );
     $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -68,12 +68,13 @@ class self_home extends \cenozo\ui\widget
 
     // add any messages that apply to this user
     $message_list = array();
+    $message_class_name = util::get_class_name( 'database\message' );
 
     // global messages go first
     $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', NULL );
     $modifier->where( 'role_id', '=', NULL );
-    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
                                'note' => $db_system_message->note );
@@ -83,7 +84,7 @@ class self_home extends \cenozo\ui\widget
     $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', NULL );
     $modifier->where( 'role_id', '=', $db_role->id );
-    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
                                'note' => $db_system_message->note );
@@ -93,7 +94,7 @@ class self_home extends \cenozo\ui\widget
     $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'role_id', '=', NULL );
-    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
                                'note' => $db_system_message->note );
@@ -103,7 +104,7 @@ class self_home extends \cenozo\ui\widget
     $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'role_id', '=', $db_role->id );
-    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
                                'note' => $db_system_message->note );

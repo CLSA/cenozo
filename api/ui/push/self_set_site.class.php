@@ -50,7 +50,7 @@ class self_set_site extends \cenozo\ui\push
       throw util::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
     }
     
-    $session = bus\session::self();
+    $session = util::create( 'business\\session' );
     $db_user = $session->get_user();
     $db_role = NULL;
 
@@ -67,7 +67,8 @@ class self_set_site extends \cenozo\ui\push
     $activity_mod->where( 'site_id', '=', $db_site->id );
     $activity_mod->order_desc( 'datetime' );
     $activity_mod->limit( 1 );
-    $db_activity = current( db\activity::select( $activity_mod ) );
+    $activity_class_name = util::get_class_name( 'database\activity' );
+    $db_activity = current( $activity_class_name::select( $activity_mod ) );
     if( $db_activity )
     {
       // make sure the user still has access to the site/role

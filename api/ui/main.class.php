@@ -28,9 +28,9 @@ class main extends \cenozo\base_object
    */
   public static function get_variables()
   {
-    $session = bus\session::self();
-    $ldap_manager = bus\ldap_manager::self();
-    $setting_manager = bus\setting_manager::self();
+    $session = util::create( 'business\\session' );
+    $ldap_manager = util::create( 'business\\ldap_manager' );
+    $setting_manager = util::create( 'business\\setting_manager' );
 
     $variables = array();
     $variables['jquery_ui_css_path'] =

@@ -126,10 +126,8 @@ final class service
       $this->settings['general']['development_mode'] );
 
     // set up the logger and session
-    $class_name = util::get_class_name( 'log' );
-    $class_name::self();
-    $class_name = util::get_class_name( 'business\session' );
-    $session = $class_name::self( $this->settings );
+    util::create( 'log' );
+    $session = util::create( 'business\\session', $this->settings );
     $session->initialize();
 
     // now determine and execute the operation
@@ -279,7 +277,7 @@ final class service
     if( file_exists( TPL_PATH ) ) $template_paths[] = TPL_PATH;
     $template_paths[] = CENOZO_TPL_PATH;
   
-    $theme = business\session::self()->get_theme();
+    $theme = util::create( 'business\\session' )->get_theme();
     $loader = new \Twig_Loader_Filesystem( $template_paths );
     $this->twig = new \Twig_Environment( $loader,
       array( 'debug' => util::in_development_mode(),
@@ -320,10 +318,10 @@ final class service
     // Only register the operation if the operation is not a widget doing
     // anything other than loading
     if( !( 'widget' == $this->operation_type && 'load' != $this->url_tokens[2] ) )
-      business\session::self()->set_operation( $operation, $this->arguments );
+      util::create( 'business\\session' )->set_operation( $operation, $this->arguments );
 
     // if requested to, start a transaction
-    if( util::use_transaction() ) business\session::self()->get_database()->start_transaction();
+    if( util::use_transaction() ) util::create( 'business\\session' )->get_database()->start_transaction();
 
     return $operation;
   }      
@@ -379,7 +377,7 @@ final class service
    */
   private function widget()
   {
-    $session = business\session::self();
+    $session = util::create( 'business\\session' );
     $slot_name = $this->url_tokens[1];
     $slot_action = $this->url_tokens[2];
 

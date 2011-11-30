@@ -130,7 +130,7 @@ class database extends \cenozo\base_object
   public function start_transaction()
   {
     // only start a transaction for the main database (this is an ADOdb limitation)
-    if( bus\setting_manager::self()->get_setting( 'db', 'database' ) == $this->name )
+    if( util::create( 'business\\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
       $this->connection->StartTrans();
   }
   
@@ -143,9 +143,10 @@ class database extends \cenozo\base_object
   public function complete_transaction()
   {
     // only complete a transaction for the main database (this is an ADOdb limitation)
+    $class_name = util::get_class_name( 'business\setting_manager' );
     if( class_exists( 'cenozo\business\setting_manager' ) &&
-        bus\setting_manager::exists() &&
-        bus\setting_manager::self()->get_setting( 'db', 'database' ) == $this->name )
+        $class_name::exists() &&
+        util::create( 'business\\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
       $this->connection->CompleteTrans();
   }
 

@@ -50,7 +50,7 @@ class note_new extends \cenozo\ui\push
         sprintf( 'Tried to create new note to %s which cannot have notes.', $category ),
         __METHOD__ );
 
-    $db_record->add_note( bus\session::self()->get_user(), $note );
+    $db_record->add_note( util::create( 'business\\session' )->get_user(), $note );
   }
 }
 ?>

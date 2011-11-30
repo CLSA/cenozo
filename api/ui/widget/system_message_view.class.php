@@ -34,7 +34,7 @@ class system_message_view extends base_view
 
     // define all columns defining this record
 
-    $type = 3 == bus\session::self()->get_role()->tier ? 'enum' : 'hidden';
+    $type = 3 == util::create( 'business\\session' )->get_role()->tier ? 'enum' : 'hidden';
     $this->add_item( 'site_id', $type, 'Site',
       'Leaving the site blank will show the message across all sites.' );
     $this->add_item( 'role_id', 'enum', 'Role',
@@ -52,20 +52,23 @@ class system_message_view extends base_view
   public function finish()
   {
     parent::finish();
-    $session = bus\session::self();
+
+    $site_class_name = util::get_class_name( 'database\site' );
+    $role_class_name = util::get_class_name( 'database\role' );
+    $session = util::create( 'business\\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays
     if( $is_top_tier )
     {
       $sites = array();
-      foreach( db\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+      foreach( $site_class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
     }
 
     $roles = array();
     $modifier = util::create( 'database\modifier' );
     $modifier->where( 'tier', '<=', $session->get_role()->tier );
-    foreach( db\role::select( $modifier ) as $db_role ) $roles[$db_role->id] = $db_role->name;
+    foreach( $role_class_name::select( $modifier ) as $db_role ) $roles[$db_role->id] = $db_role->name;
 
     // set the view's items
     $this->set_item(

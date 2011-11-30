@@ -44,15 +44,17 @@ class site extends base_access
     if( 0 >= $role_id )
       throw util::create( 'exception\argument', 'role_id', $role_id, __METHOD__ );
 
+    $database_class_name = util::get_class_name( 'database\database' );
+
     $values = '';
     $first = true;
     foreach( $user_id_list as $id )
     {
       if( !$first ) $values .= ', ';
       $values .= sprintf( '(NULL, %s, %s, %s)',
-                       database::format_string( $id ),
-                       database::format_string( $role_id ),
-                       database::format_string( $this->id ) );
+                       $database_class_name::format_string( $id ),
+                       $database_class_name::format_string( $role_id ),
+                       $database_class_name::format_string( $this->id ) );
       $first = false;
     }
 

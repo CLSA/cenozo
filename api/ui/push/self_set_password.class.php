@@ -41,13 +41,13 @@ class self_set_password extends \cenozo\ui\push
    */
   public function finish()
   {
-    $db_user = bus\session::self()->get_user();
+    $db_user = util::create( 'business\\session' )->get_user();
     $old = $this->get_argument( 'old', 'password' );
     $new = $this->get_argument( 'new' );
     $confirm = $this->get_argument( 'confirm' );
     
     // make sure the old password is correct
-    $ldap_manager = bus\ldap_manager::self();
+    $ldap_manager = util::create( 'business\\ldap_manager' );
     if( !$ldap_manager->validate_user( $db_user->name, $old ) )
       throw util::create( 'exception\notice', 'The password you have provided is incorrect.', __METHOD__ );
     

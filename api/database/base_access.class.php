@@ -107,11 +107,12 @@ abstract class base_access extends record
       return NULL;
     }
     
+    $activity_class_name = util::get_class_name( 'database\activity' );
     $modifier = new modifier();
     $modifier->where( $subject_name.'_id', '=', $this->id );
     $modifier->order_desc( 'datetime' );
     $modifier->limit( 1 );
-    $activity_list = activity::select( $modifier );
+    $activity_list = $activity_class_name::select( $modifier );
     
     return 0 == count( $activity_list ) ? NULL : current( $activity_list );
   }
@@ -133,9 +134,10 @@ abstract class base_access extends record
       return 0;
     }
     
+    $activity_class_name = util::get_class_name( 'database\activity' );
     if( is_null( $modifier ) ) $modifier = new modifier();
     $modifier->where( $subject_name.'_id', '=', $this->id );
-    return activity::count( $modifier );
+    return $activity_class_name::count( $modifier );
   }
 
   /**
@@ -156,9 +158,10 @@ abstract class base_access extends record
       return $activity_list;
     }
     
+    $activity_class_name = util::get_class_name( 'database\activity' );
     if( is_null( $modifier ) ) $modifier = new modifier();
     $modifier->where( $subject_name.'_id', '=', $this->id );
-    return activity::select( $modifier );
+    return $activity_class_name::select( $modifier );
   }
 
   /**

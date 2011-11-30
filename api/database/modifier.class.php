@@ -252,12 +252,13 @@ class modifier extends \cenozo\base_object
    */
   public function get_where( $appending = false )
   {
+    $database_class_name = util::get_class_name( 'database\database' );
     $sql = '';
     $first_item = true;
     foreach( $this->where_list as $where )
     {
-      $convert_time = database::is_time_column( $where['column'] );
-      $convert_datetime = database::is_datetime_column( $where['column'] );
+      $convert_time = $database_class_name::is_time_column( $where['column'] );
+      $convert_datetime = $database_class_name::is_datetime_column( $where['column'] );
 
       if( 'IN' == $where['operator'] || 'NOT IN' == $where['operator'] )
       {
@@ -271,7 +272,7 @@ class modifier extends \cenozo\base_object
             {
               if( $convert_time ) $value = util::to_server_datetime( $value, 'H:i:s' );
               else if( $convert_datetime ) $value = util::to_server_datetime( $value );
-              $value = database::format_string( $value );
+              $value = $database_class_name::format_string( $value );
             }
 
             $compare .= $first_value
@@ -289,7 +290,7 @@ class modifier extends \cenozo\base_object
           {
             if( $convert_time ) $value = util::to_server_datetime( $value, 'H:i:s' );
             else if( $convert_datetime ) $value = util::to_server_datetime( $value );
-            $value = database::format_string( $value );
+            $value = $database_class_name::format_string( $value );
           }
 
           $compare = sprintf( '%s %s( %s )',
@@ -305,7 +306,7 @@ class modifier extends \cenozo\base_object
         {
           if( $convert_time ) $value = util::to_server_datetime( $value, 'H:i:s' );
           else if( $convert_datetime ) $value = util::to_server_datetime( $value );
-          $value = database::format_string( $value );
+          $value = $database_class_name::format_string( $value );
         }
         
         if( 'NULL' == $value )

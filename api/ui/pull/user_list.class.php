@@ -41,6 +41,8 @@ class user_list extends base_list
    */
   public function finish()
   {
+    $site_class_name = util::get_class_name( 'database\site' );
+    $role_class_name = util::get_class_name( 'database\role' );
     $site_mod = NULL;
     $role_mod = NULL;
     $new_restrictions = array();
@@ -67,7 +69,7 @@ class user_list extends base_list
     if( !is_null( $site_mod ) )
     {
       $site_ids = array();
-      foreach( db\site::select( $site_mod ) as $db_site ) $site_ids[] = $db_site->id;
+      foreach( $site_class_name::select( $site_mod ) as $db_site ) $site_ids[] = $db_site->id;
 
       if( 1 == count( $site_ids ) )
         $new_restrictions[] = array(
@@ -85,7 +87,7 @@ class user_list extends base_list
     if( !is_null( $role_mod ) )
     {
       $role_ids = array();
-      foreach( db\role::select( $role_mod ) as $db_role ) $role_ids[] = $db_role->id;
+      foreach( $role_class_name::select( $role_mod ) as $db_role ) $role_ids[] = $db_role->id;
 
       if( 1 == count( $role_ids ) )
         $new_restrictions[] = array(

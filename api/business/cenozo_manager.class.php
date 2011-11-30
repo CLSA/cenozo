@@ -60,9 +60,11 @@ class cenozo_manager extends \cenozo\factory
   {
     if( !$this->enabled || $this->logged_in ) return;
 
+    $session = util::create( 'business\\session' );
+
     // log in using the current user/role/site
-    $this->set_site( session::self()->get_site() );
-    $this->set_role( session::self()->get_role() );
+    $this->set_site( $session->get_site() );
+    $this->set_role( $session->get_role() );
       
     $this->logged_in = true;
   }

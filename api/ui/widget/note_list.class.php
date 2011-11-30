@@ -72,7 +72,7 @@ class note_list extends \cenozo\ui\widget
     $this->set_variable( 'note_list', $note_list );
 
     // allow upper tier roles to modify notes
-    if( 1 < bus\session::self()->get_role()->tier )
+    if( 1 < util::create( 'business\\session' )->get_role()->tier )
     {
       $this->set_variable( 'stickable', true );
       $this->set_variable( 'removable', true );

@@ -32,7 +32,7 @@ class setting_view extends base_view
   {
     parent::__construct( 'setting', 'view', $args );
     
-    $is_mid_tier = 2 == bus\session::self()->get_role()->tier;
+    $is_mid_tier = 2 == util::create( 'business\\session' )->get_role()->tier;
 
     // create an associative array with everything we want to display about the setting
     $this->add_item( 'category', 'constant', 'Category' );
@@ -61,7 +61,8 @@ class setting_view extends base_view
   {
     parent::finish();
 
-    $is_mid_tier = 2 == bus\session::self()->get_role()->tier;
+    $session = util::create( 'business\\session' );
+    $is_mid_tier = 2 == $session->get_role()->tier;
 
     // set the view's items
     $this->set_item( 'category', $this->get_record()->category, true );
@@ -70,7 +71,7 @@ class setting_view extends base_view
     if( $is_mid_tier )
     { // include the site's value
       $modifier = util::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
+      $modifier->where( 'site_id', '=', $session->get_site()->id );
       $setting_value_list = $this->get_record()->get_setting_value_list( $modifier );
 
       $value = 1 == count( $setting_value_list ) ? $setting_value_list[0]->value : NULL;

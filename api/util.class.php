@@ -42,6 +42,7 @@ class util
    */
   public static function create( $class_name )
   {
+    $debug = 'business\\session' == $class_name;
     // remove the class name from the arguments
     $a = func_get_args();
     $class_name = array_shift( $a );
@@ -49,7 +50,7 @@ class util
 
     // determine the full class name
     $class_name = self::get_class_name( $class_name );
-    
+
     if( is_subclass_of( $class_name, 'cenozo\singleton' ) )
     {
       if( 0 == $count ) return $class_name::self();
@@ -204,7 +205,7 @@ class util
   public static function get_class_name( $class_name )
   {
     // if the path is null then return back the argument
-    return sprintf( '%s\\%s',
+    return sprintf( '\\%s\\%s',
                     is_null( self::get_application_class_path( $class_name ) ) ?
                     'cenozo' : APPNAME,
                     $class_name );
@@ -397,7 +398,7 @@ class util
    */
   public static function get_timezone_object( $server = false )
   {
-    $db_site = business\session::self()->get_site();
+    $db_site = util::create( 'business\\session' )->get_site();
     return new \DateTimeZone( $server || !$db_site ? 'UTC' : $db_site->timezone );
   }
 

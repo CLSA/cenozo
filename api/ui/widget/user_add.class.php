@@ -38,7 +38,7 @@ class user_add extends base_view
     $this->add_item( 'last_name', 'string', 'Last name' );
     $this->add_item( 'active', 'boolean', 'Active' );
 
-    $type = 3 == bus\session::self()->get_role()->tier
+    $type = 3 == util::create( 'business\\session' )->get_role()->tier
           ? 'enum'
           : 'hidden';
     $this->add_item( 'site_id', $type, 'Site' );
@@ -55,20 +55,22 @@ class user_add extends base_view
   {
     parent::finish();
     
-    $session = bus\session::self();
+    $role_class_name = util::get_class_name( 'database\role' );
+    $site_class_name = util::get_class_name( 'database\site' );
+    $session = util::create( 'business\\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays
     $modifier = util::create( 'database\modifier' );
     $modifier->where( 'tier', '<=', $session->get_role()->tier );
     $roles = array();
-    foreach( db\role::select( $modifier ) as $db_role )
+    foreach( $role_class_name::select( $modifier ) as $db_role )
       $roles[$db_role->id] = $db_role->name;
     
     $sites = array();
     if( $is_top_tier )
     {
-      foreach( db\site::select() as $db_site )
+      foreach( $site_class_name::select() as $db_site )
         $sites[$db_site->id] = $db_site->name;
     }
 

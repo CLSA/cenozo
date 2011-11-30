@@ -33,7 +33,7 @@ class user_add_access extends base_add_access
   {
     parent::__construct( 'user', $args );
     
-    $session = bus\session::self();
+    $session = util::create( 'business\\session' );
     if( 3 == $session->get_role()->tier )
     {
       // This widget is special.  We need a list of sites and roles, not an access list, so we
@@ -65,7 +65,8 @@ class user_add_access extends base_add_access
   public function determine_site_count( $modifier = NULL )
   {
     // we want to display all sites
-    return db\site::count( $modifier );
+    $site_class_name = util::get_class_name( 'database\site' );
+    return $site_class_name::count( $modifier );
   }
 
   /**
@@ -79,7 +80,8 @@ class user_add_access extends base_add_access
   public function determine_site_list( $modifier = NULL )
   {
     // we want to display all sites
-    return db\site::select( $modifier );
+    $site_class_name = util::get_class_name( 'database\site' );
+    return $site_class_name::select( $modifier );
   }
 }
 ?>

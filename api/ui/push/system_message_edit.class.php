@@ -41,7 +41,7 @@ class system_message_edit extends base_edit
   public function finish()
   {
     // make sure that only top tier roles can edit system messages not belonging to the current site
-    $session = bus\session::self();
+    $session = util::create( 'business\\session' );
 
     if( 3 != $session->get_role()->tier && $session->get_site()->id != $this->get_record()->site_id )
     {
