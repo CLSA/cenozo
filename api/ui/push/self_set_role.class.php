@@ -43,11 +43,11 @@ class self_set_role extends \cenozo\ui\push
   {
     try
     {
-      $db_role = new db\role( $this->get_argument( 'id' ) );
+      $db_role = util::create( 'database\role', $this->get_argument( 'id' ) );
     } 
     catch( exc\runtime $e )
     {
-      throw new exc\argument( 'id', $this->get_argument( 'id' ), __METHOD__, $e );
+      throw util::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
     }
     
     $session = bus\session::self();

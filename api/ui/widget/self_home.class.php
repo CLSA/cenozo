@@ -70,7 +70,7 @@ class self_home extends \cenozo\ui\widget
     $message_list = array();
 
     // global messages go first
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', NULL );
     $modifier->where( 'role_id', '=', NULL );
     foreach( db\system_message::select( $modifier ) as $db_system_message )
@@ -80,7 +80,7 @@ class self_home extends \cenozo\ui\widget
     }
     
     // then all-site messages
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', NULL );
     $modifier->where( 'role_id', '=', $db_role->id );
     foreach( db\system_message::select( $modifier ) as $db_system_message )
@@ -90,7 +90,7 @@ class self_home extends \cenozo\ui\widget
     }
 
     // then all-role site-specific messages
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'role_id', '=', NULL );
     foreach( db\system_message::select( $modifier ) as $db_system_message )
@@ -100,7 +100,7 @@ class self_home extends \cenozo\ui\widget
     }
 
     // then role-specific site-specific messages
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'role_id', '=', $db_role->id );
     foreach( db\system_message::select( $modifier ) as $db_system_message )

@@ -49,7 +49,7 @@ class report extends \cenozo\base_object
    */
   public function __call( $name, $args )
   {
-    $exception = new exc\runtime(
+    $exception = util::create( 'exception\runtime',
       sprintf( 'Call to undefined function: %s::%s().',
                get_called_class(),
                $name ), __METHOD__ );
@@ -69,7 +69,7 @@ class report extends \cenozo\base_object
     // check the arguments
     if( ( !$setting && 0 != count( $args ) ) || // get takes 0 arguments
         (  $setting && 1 != count( $args ) ) )  // set takes 1 argument
-      throw new exc\argument( 'args', $args, __METHOD__ );
+      throw util::create( 'exception\argument', 'args', $args, __METHOD__ );
     
     if( $setting )
     {
@@ -127,7 +127,7 @@ class report extends \cenozo\base_object
     }
     catch( \Exception $e )
     {
-      throw new exc\runtime( 'Error while setting cell value in report.', __METHOD__, $e );
+      throw util::create( 'exception\runtime', 'Error while setting cell value in report.', __METHOD__, $e );
     }
 
     return $cell_obj;
@@ -148,7 +148,7 @@ class report extends \cenozo\base_object
     }
     catch( \Exception $e )
     {
-      throw new exc\runtime( 'Error while merging cells in report.', __METHOD__, $e );
+      throw util::create( 'exception\runtime', 'Error while merging cells in report.', __METHOD__, $e );
     }
   }
 

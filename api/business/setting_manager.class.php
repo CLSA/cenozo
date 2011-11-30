@@ -44,7 +44,7 @@ class setting_manager extends \cenozo\singleton
       // make sure the category exists
       if( !array_key_exists( $category, $static_settings ) )
       {
-        throw new exc\argument( 'static_settings['.$category.']', NULL, __METHOD__ );
+        throw util::create( 'exception\argument', 'static_settings['.$category.']', NULL, __METHOD__ );
       }
       $this->static_settings[ $category ] = $static_settings[ $category ];
     }
@@ -78,7 +78,7 @@ class setting_manager extends \cenozo\singleton
       $db_setting = db\setting::get_setting( $category, $name );
       if( !is_null( $db_setting ) )
       {
-        $modifier = new db\modifier();
+        $modifier = util::create( 'database\modifier' );
         $modifier->where( 'site_id', '=', session::self()->get_site()->id );
         $setting_value_list = $db_setting->get_setting_value_list( $modifier );
         

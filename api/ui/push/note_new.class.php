@@ -47,7 +47,7 @@ class note_new extends \cenozo\ui\push
     $category_class = util::get_class_name( 'database\\'.$category );
     $db_record = new $category_class( $category_id );
     if( !is_a( $db_record, util::get_class_name( 'database\\has_note' ) ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         sprintf( 'Tried to create new note to %s which cannot have notes.', $category ),
         __METHOD__ );
 

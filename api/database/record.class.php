@@ -38,7 +38,7 @@ abstract class record extends \cenozo\base_object
     $columns = $this->get_column_names();
 
     if( !is_array( $columns ) || 0 == count( $columns ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         "No column names returned for table ".static::get_table_name(), __METHOD__ );
     
     // set the default value for all columns
@@ -68,7 +68,7 @@ abstract class record extends \cenozo\base_object
       if( 1 != count( $primary_key_names ) ||
           static::get_primary_key_name() != $primary_key_names[0] )
       {
-        throw new exc\runtime(
+        throw util::create( 'exception\runtime',
           'Unable to create record, single-column primary key "'.
           static::get_primary_key_name().'" does not exist.', __METHOD__ );
       }
@@ -118,7 +118,7 @@ abstract class record extends \cenozo\base_object
       $row = static::db()->get_row( $sql );
 
       if( 0 == count( $row ) )
-        throw new exc\runtime(
+        throw util::create( 'exception\runtime',
           sprintf( 'Load failed to find record for %s with %s = %d.',
                    static::get_table_name(),
                    static::get_primary_key_name(),
@@ -170,7 +170,7 @@ abstract class record extends \cenozo\base_object
       if( 0 != $interval->invert ||
         ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
       {
-        throw new exc\runtime(
+        throw util::create( 'exception\runtime',
           'Tried to set end time which is not after the start time.', __METHOD__ );
       }
     }
@@ -185,7 +185,7 @@ abstract class record extends \cenozo\base_object
       if( 0 != $interval->invert ||
         ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
       {
-        throw new exc\runtime(
+        throw util::create( 'exception\runtime',
           'Tried to set end datetime which is not after the start datetime.', __METHOD__ );
       }
     }
@@ -284,7 +284,7 @@ abstract class record extends \cenozo\base_object
   {
     // make sure the column exists
     if( !static::column_exists( $column_name ) )
-      throw new exc\argument( 'column_name', $column_name, __METHOD__ );
+      throw util::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
     
     return isset( $this->column_values[ $column_name ] ) ?
       $this->column_values[ $column_name ] : NULL;
@@ -305,7 +305,7 @@ abstract class record extends \cenozo\base_object
   {
     // make sure the column exists
     if( !static::column_exists( $column_name ) )
-      throw new exc\argument( 'column_name', $column_name, __METHOD__ );
+      throw util::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
     
     $this->column_values[ $column_name ] = $value;
   }
@@ -347,7 +347,7 @@ abstract class record extends \cenozo\base_object
   public function __call( $name, $args )
   {
     // create an exception which will be thrown if anything bad happens
-    $exception = new exc\runtime(
+    $exception = util::create( 'exception\runtime',
       sprintf( 'Call to undefined function: %s::%s().',
                get_called_class(),
                $name ), __METHOD__ );
@@ -372,7 +372,7 @@ abstract class record extends \cenozo\base_object
     { // calling: add_<record>( $ids )
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || !is_array( $args[0] ) || 0 == count( $args[0] ) )
-        throw new exc\argument( 'args', $args, __METHOD__ );
+        throw util::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $ids = $args[0];
       $this->add_records( $subject, $ids );
@@ -382,7 +382,7 @@ abstract class record extends \cenozo\base_object
     { // calling: remove_<record>( $ids )
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || 0 >= $args[0] )
-        throw new exc\argument( 'args', $args, __METHOD__ );
+        throw util::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $id = $args[0];
       $this->remove_record( $subject, $id );
@@ -411,7 +411,7 @@ abstract class record extends \cenozo\base_object
             !is_null( $args[0] ) &&
             is_object( $args[0] ) &&
             'cenozo\\database\\modifier' != get_class( $args[0] ) )
-          throw new exc\argument( 'args', $args, __METHOD );
+          throw util::create( 'exception\argument', 'args', $args, __METHOD );
         
         // determine the sub action and whether to invert the result
         $inverted = false;

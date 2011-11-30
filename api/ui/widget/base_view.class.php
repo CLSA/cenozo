@@ -124,7 +124,7 @@ abstract class base_view extends base_record
   {
     // make sure the item exists
     if( !array_key_exists( $item_id, $this->items ) )
-      throw new exc\argument( 'item_id', $item_id, __METHOD__ );
+      throw util::create( 'exception\argument', 'item_id', $item_id, __METHOD__ );
     
     $type = $this->items[$item_id]['type'];
     
@@ -176,7 +176,7 @@ abstract class base_view extends base_record
     {
       $enum = $data;
       if( is_null( $enum ) )
-        throw new exc\runtime(
+        throw util::create( 'exception\runtime',
           'Trying to set enum item without enum values.', __METHOD__ );
       
       // add a null entry (to the front of the array) if the item is not required

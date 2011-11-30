@@ -109,7 +109,7 @@ abstract class widget extends operation
     { // the argument is missing
       if( 1 == func_num_args() )
       { // if only one argument was passed to this method then the argument is required
-        throw new exc\argument( $name, NULL, __METHOD__ );
+        throw util::create( 'exception\argument', $name, NULL, __METHOD__ );
       }
 
       // if the argument was not required, then use the default instead

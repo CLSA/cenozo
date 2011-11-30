@@ -54,11 +54,11 @@ class user_new extends base_new
     
     // make sure the name, first name and last name are not blank
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
-      throw new exc\notice( 'The user\'s user name cannot be left blank.', __METHOD__ );
+      throw util::create( 'exception\notice', 'The user\'s user name cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'first_name', $columns ) || 0 == strlen( $columns['first_name'] ) )
-      throw new exc\notice( 'The user\'s first name cannot be left blank.', __METHOD__ );
+      throw util::create( 'exception\notice', 'The user\'s first name cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'last_name', $columns ) || 0 == strlen( $columns['last_name'] ) )
-      throw new exc\notice( 'The user\'s last name cannot be left blank.', __METHOD__ );
+      throw util::create( 'exception\notice', 'The user\'s last name cannot be left blank.', __METHOD__ );
 
     // add the user to ldap
     $ldap_manager = bus\ldap_manager::self();
@@ -78,7 +78,7 @@ class user_new extends base_new
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user
       $db_user = db\user::get_unique_record( 'name', $columns['name'] );
-      $db_access = new db\access();
+      $db_access = util::create( 'database\access' );
       $db_access->user_id = $db_user->id;
       $db_access->site_id = $this->site_id;
       $db_access->role_id = $this->role_id;

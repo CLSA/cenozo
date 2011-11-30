@@ -69,7 +69,7 @@ class setting_view extends base_view
     $this->set_item( 'type', $this->get_record()->type, true );
     if( $is_mid_tier )
     { // include the site's value
-      $modifier = new db\modifier();
+      $modifier = util::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
       $setting_value_list = $this->get_record()->get_setting_value_list( $modifier );
 

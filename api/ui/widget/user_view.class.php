@@ -120,7 +120,7 @@ class user_view extends base_view
    */
   public function determine_access_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new db\modifier();
+    if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
     if( !site_restricted_list::may_restrict() )
       $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
@@ -137,7 +137,7 @@ class user_view extends base_view
    */
   public function determine_access_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new db\modifier();
+    if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
     if( !site_restricted_list::may_restrict() )
       $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
@@ -155,7 +155,7 @@ class user_view extends base_view
   {
     if( !site_restricted_list::may_restrict() )
     {
-      if( NULL == $modifier ) $modifier = new db\modifier();
+      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
     }
 
@@ -174,7 +174,7 @@ class user_view extends base_view
   {
     if( !site_restricted_list::may_restrict() )
     {
-      if( NULL == $modifier ) $modifier = new db\modifier();
+      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
     }
 

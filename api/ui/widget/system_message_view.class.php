@@ -63,7 +63,7 @@ class system_message_view extends base_view
     }
 
     $roles = array();
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'tier', '<=', $session->get_role()->tier );
     foreach( db\role::select( $modifier ) as $db_role ) $roles[$db_role->id] = $db_role->name;
 

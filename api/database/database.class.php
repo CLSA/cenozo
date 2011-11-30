@@ -218,7 +218,7 @@ class database extends \cenozo\base_object
   public function get_column_names( $table_name )
   {
     if( !$this->table_exists( $table_name ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         sprintf( "Tried to get column names for table '%s' which doesn't exist.",
                  $table_name ), __METHOD__ );
 
@@ -237,7 +237,7 @@ class database extends \cenozo\base_object
   public function get_column_type( $table_name, $column_name )
   {
     if( !$this->column_exists( $table_name, $column_name ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         sprintf( "Tried to get column type for '%s.%s' which doesn't exist.",
                  $table_name,
                  $column_name ), __METHOD__ );
@@ -257,7 +257,7 @@ class database extends \cenozo\base_object
   public function get_column_data_type( $table_name, $column_name )
   {
     if( !$this->column_exists( $table_name, $column_name ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         sprintf( "Tried to get column data type for '%s.%s' which doesn't exist.",
                  $table_name,
                  $column_name ), __METHOD__ );
@@ -277,7 +277,7 @@ class database extends \cenozo\base_object
   public function get_column_key( $table_name, $column_name )
   {
     if( !$this->column_exists( $table_name, $column_name ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         sprintf( "Tried to get column key for '%s.%s' which doesn't exist.",
                  $table_name,
                  $column_name ), __METHOD__ );
@@ -297,7 +297,7 @@ class database extends \cenozo\base_object
   public function get_column_default( $table_name, $column_name )
   {
     if( !$this->column_exists( $table_name, $column_name ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         sprintf( "Tried to get column default for '%s.%s' which doesn't exist.",
                  $table_name,
                  $column_name ), __METHOD__ );
@@ -317,7 +317,7 @@ class database extends \cenozo\base_object
   public function get_unique_keys( $table_name )
   {
     if( !$this->table_exists( $table_name ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         sprintf( "Tried to get unique keys for table '%s' which doesn't exist.", $table_name ),
         __METHOD__ );
 
@@ -360,7 +360,7 @@ class database extends \cenozo\base_object
     if( false === $result )
     {
       // pass the db error code instead of a class error code
-      throw new exc\database(
+      throw util::create( 'exception\database',
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
@@ -385,7 +385,7 @@ class database extends \cenozo\base_object
     if( false === $result )
     {
       // pass the db error code instead of a class error code
-      throw new exc\database(
+      throw util::create( 'exception\database',
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
@@ -410,7 +410,7 @@ class database extends \cenozo\base_object
     if( false === $result )
     {
       // pass the db error code instead of a class error code
-      throw new exc\database(
+      throw util::create( 'exception\database',
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
@@ -435,7 +435,7 @@ class database extends \cenozo\base_object
     if( false === $result )
     {
       // pass the db error code instead of a class error code
-      throw new exc\database(
+      throw util::create( 'exception\database',
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
@@ -461,7 +461,7 @@ class database extends \cenozo\base_object
     if( false === $result )
     {
       // pass the database error code instead of a class error code
-      throw new exc\database(
+      throw util::create( 'exception\database',
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
@@ -578,7 +578,7 @@ class database extends \cenozo\base_object
     {
       if( false == $this->connection->Connect(
         $this->server, $this->username, $this->password, $this->name ) )
-        throw new exc\runtime(
+        throw util::create( 'exception\runtime',
           sprintf( 'Unable to connect to the "%s" database.', $this->name ), __METHOD__ );
       static::$current_database = $this->name;
     }

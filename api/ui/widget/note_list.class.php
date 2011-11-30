@@ -50,7 +50,7 @@ class note_list extends \cenozo\ui\widget
     $category_class = util::get_class_name( 'database\\'.$category );
     $db_record = new $category_class( $category_id );
     if( !is_a( $db_record, util::get_class_name( 'database\\has_note' ) ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         sprintf( 'Tried to list notes for %s which cannot have notes.', $category ),
         __METHOD__ );
     

@@ -58,7 +58,7 @@ abstract class base_edit extends base_record
 
       if( strtotime( $start_value ) >= strtotime( $end_value ) )
       {
-        throw new exc\notice(
+        throw util::create( 'exception\notice',
           sprintf( 'Start and end times (%s to %s) are not valid.',
                    $start_value,
                    $end_value ),
@@ -77,7 +77,7 @@ abstract class base_edit extends base_record
 
       if( strtotime( $start_value ) >= strtotime( $end_value ) )
       {
-        throw new exc\notice(
+        throw util::create( 'exception\notice',
           sprintf( 'Start and end date-times (%s to %s) are not valid.',
                    $start_value,
                    $end_value ),
@@ -97,7 +97,7 @@ abstract class base_edit extends base_record
       if( $e->is_duplicate_entry() )
       {
         reset( $columns );
-        throw new exc\notice(
+        throw util::create( 'exception\notice',
           1 == count( $columns )
           ? sprintf( 'Unable to set %s to "%s" because that value is already being used.',
                      key( $columns ),

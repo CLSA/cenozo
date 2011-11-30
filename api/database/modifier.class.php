@@ -43,7 +43,7 @@ class modifier extends \cenozo\base_object
     $column, $operator, $value, $format = true, $or = false )
   {
     if( !is_string( $column ) || 0 == strlen( $column ) )
-      throw new exc\argument( 'column', $column, __METHOD__ );
+      throw util::create( 'exception\argument', 'column', $column, __METHOD__ );
 
     $this->where_list[] = array( 'column' => $column,
                                  'operator' => strtoupper( $operator ),
@@ -85,7 +85,7 @@ class modifier extends \cenozo\base_object
   public function group( $column )
   {
     if( !is_string( $column ) || 0 == strlen( $column ) )
-      throw new exc\argument( 'column', $column, __METHOD__ );
+      throw util::create( 'exception\argument', 'column', $column, __METHOD__ );
 
     $this->group_list[] = $column;
   }
@@ -103,7 +103,7 @@ class modifier extends \cenozo\base_object
   public function order( $column, $desc = false )
   {
     if( !is_string( $column ) || 0 == strlen( $column ) )
-      throw new exc\argument( 'column', $column, __METHOD__ );
+      throw util::create( 'exception\argument', 'column', $column, __METHOD__ );
 
     $this->order_list[$column] = $desc;
   }
@@ -135,10 +135,10 @@ class modifier extends \cenozo\base_object
   public function limit( $count, $offset = 0 )
   {
     if( 0 > $count )
-      throw new exc\argument( 'count', $count, __METHOD__ );
+      throw util::create( 'exception\argument', 'count', $count, __METHOD__ );
 
     if( 0 > $offset )
-      throw new exc\argument( 'offset', $offset, __METHOD__ );
+      throw util::create( 'exception\argument', 'offset', $offset, __METHOD__ );
 
     $this->limit_count = $count;
     $this->limit_offset = $offset;

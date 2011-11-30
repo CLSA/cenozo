@@ -35,7 +35,7 @@ abstract class base_report extends \cenozo\ui\pull
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'report', $args );
-    $this->report = new bus\report();
+    $this->report = util::create( 'business\report' );
   }
 
   /**
@@ -99,7 +99,7 @@ abstract class base_report extends \cenozo\ui\pull
       $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
       if( $restrict_site_id )
       {
-        $db_site = new db\site( $restrict_site_id );
+        $db_site = util::create( 'database\site', $restrict_site_id );
         $main_title = $main_title.' for '.$db_site->name;
       }
       else

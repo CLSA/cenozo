@@ -40,13 +40,13 @@ abstract class operation extends \cenozo\base_object
   {
     // type must either be a pull, push or widget
     if( 'push' != $type && 'pull' != $type && 'widget' != $type )
-      throw new exc\argument( 'type', $type, __METHOD__ );
+      throw util::create( 'exception\argument', 'type', $type, __METHOD__ );
     
     $this->operation_record =
       db\operation::get_operation( $type, $subject, $name );
     
     if( is_null( $this->operation_record ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         sprintf( 'Unable to create operation record for %s: %s_%s',
                  $type, $subject, $name ),
         __METHOD__ );
@@ -55,7 +55,7 @@ abstract class operation extends \cenozo\base_object
     
     // throw a permission exception if the user is not allowed to perform this operation
     if( !bus\session::self()->is_allowed( $this->operation_record ) )
-      throw new exc\permission( $this->operation_record, __METHOD__ );
+      throw util::create( 'exception\permission', $this->operation_record, __METHOD__ );
 
     $this->set_heading( $this->get_subject().' '.$this->get_name() );  
   }
@@ -129,7 +129,7 @@ abstract class operation extends \cenozo\base_object
     $argument = NULL;
     if( !array_key_exists( $name, $this->arguments ) )
     {
-      if( 1 == func_num_args() ) throw new exc\argument( $name, NULL, __METHOD__ );
+      if( 1 == func_num_args() ) throw util::create( 'exception\argument', $name, NULL, __METHOD__ );
       $argument = $default;
     }
     else

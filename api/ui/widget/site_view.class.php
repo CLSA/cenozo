@@ -113,7 +113,7 @@ class site_view extends base_view
    */
   public function determine_access_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new db\modifier();
+    if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $this->get_record()->id );
     return db\access::count( $modifier );
   }
@@ -128,7 +128,7 @@ class site_view extends base_view
    */
   public function determine_access_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new db\modifier();
+    if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $this->get_record()->id );
     return db\access::select( $modifier );
   }

@@ -42,7 +42,7 @@ abstract class base_list extends \cenozo\ui\pull
    */
   public function finish()
   {
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     foreach( $this->restrictions as $restrict )
       $modifier->where( $restrict['column'], $restrict['operator'], $restrict['value'] );
 
@@ -68,7 +68,7 @@ abstract class base_list extends \cenozo\ui\pull
     $this->restrictions = array();
     $restrictions = $this->get_argument( 'restrictions', array() );
     
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     if( is_array( $restrictions ) ) foreach( $restrictions as $column => $restrict )
     {
       $operator = NULL;

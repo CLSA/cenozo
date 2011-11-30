@@ -37,7 +37,7 @@ abstract class site_restricted_list extends base_list
     {
       $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
       $this->db_restrict_site = $restrict_site_id
-                              ? new db\site( $restrict_site_id )
+                              ? util::create( 'database\site', $restrict_site_id )
                               : NULL;
     }
     else // anyone else is restricted to their own site
@@ -100,7 +100,7 @@ abstract class site_restricted_list extends base_list
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = new db\modifier();
+      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 
@@ -119,7 +119,7 @@ abstract class site_restricted_list extends base_list
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = new db\modifier();
+      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 

@@ -44,7 +44,7 @@ class system_message_delete extends base_delete
 
     if( 3 != $session->get_role()->tier && $session->get_site()->id != $this->get_record()->site_id )
     {
-      throw new exc\notice(
+      throw util::create( 'exception\notice',
         'You do not have access to remove this system message.', __METHOD__ );
     }
 

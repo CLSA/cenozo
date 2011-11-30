@@ -67,7 +67,7 @@ class session extends \cenozo\singleton
     $setting_manager = $class_name::self();
 
     // create the databases
-    $this->database = new db\database(
+    $this->database = util::create( 'database\database',
       $setting_manager->get_setting( 'db', 'driver' ),
       $setting_manager->get_setting( 'db', 'server' ),
       $setting_manager->get_setting( 'db', 'username' ),
@@ -80,7 +80,7 @@ class session extends \cenozo\singleton
 
     $this->set_user( db\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
-      throw new exc\permission(
+      throw util::create( 'exception\permission',
         db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
 
     $this->initialized = true;
@@ -163,7 +163,7 @@ class session extends \cenozo\singleton
           $_SESSION['current_role_id'] = $this->role->id;
         }
       }
-      else throw new exc\permission(
+      else throw util::create( 'exception\permission',
         db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
     }
   }
@@ -187,7 +187,7 @@ class session extends \cenozo\singleton
     }
     else if( !$this->user->active )
     {
-      throw new exc\notice(
+      throw util::create( 'exception\notice',
         'Your account has been deactivated.<br>'.
         'Please contact a superior to regain access to the system.', __METHOD__ );
     }
@@ -200,8 +200,8 @@ class session extends \cenozo\singleton
       // see if we already have the current site stored in the php session
       if( isset( $_SESSION['current_site_id'] ) && isset( $_SESSION['current_role_id'] ) )
       {
-        $this->set_site_and_role( new db\site( $_SESSION['current_site_id'] ),
-                                  new db\role( $_SESSION['current_role_id'] ) );
+        $this->set_site_and_role( util::create( 'database\site', $_SESSION['current_site_id'] ),
+                                  util::create( 'database\role', $_SESSION['current_role_id'] ) );
       }
       
       // we still don't have a site and role, we need to pick them
@@ -212,12 +212,12 @@ class session extends \cenozo\singleton
 
         $site_list = $this->user->get_site_list();
         if( 0 == count( $site_list ) )
-          throw new exc\notice(
+          throw util::create( 'exception\notice',
             'Your account does not have access to any site.<br>'.
             'Please contact a superior to be granted access to a site.', __METHOD__ );
         
         // if the user has logged in before, use whatever site/role they last used
-        $activity_mod = new db\modifier();
+        $activity_mod = util::create( 'database\modifier' );
         $activity_mod->where( 'user_id', '=', $this->user->id );
         $activity_mod->order_desc( 'datetime' );
         $activity_mod->limit( 1 );
@@ -225,20 +225,20 @@ class session extends \cenozo\singleton
         if( $db_activity )
         {
           // make sure the user still has access to the site/role
-          $role_mod = new db\modifier();
+          $role_mod = util::create( 'database\modifier' );
           $role_mod->where( 'site_id', '=', $db_activity->site_id );
           $role_mod->where( 'role_id', '=', $db_activity->role_id );
           $db_role = current( $this->user->get_role_list( $role_mod ) );
           
           // only bother setting the site if the access exists
-          if( $db_role ) $db_site = new db\site( $db_activity->site_id );
+          if( $db_role ) $db_site = util::create( 'database\site', $db_activity->site_id );
         }
 
         // if we still don't have a site/role then load the first one we can find
         if( !$db_role || !$db_site ) 
         {
           $db_site = current( $site_list );
-          $role_mod = new db\modifier();
+          $role_mod = util::create( 'database\modifier' );
           $role_mod->where( 'site_id', '=', $db_site->id );
           $db_role = current( $this->user->get_role_list( $role_mod ) );
         }
@@ -294,7 +294,7 @@ class session extends \cenozo\singleton
     // make sure we have an activity
     if( is_null( $this->activity ) )
     {
-      $this->activity = new db\activity();
+      $this->activity = util::create( 'database\activity' );
       $this->activity->user_id = $this->user->id;
       $this->activity->site_id = $this->site->id;
       $this->activity->role_id = $this->role->id;

@@ -67,7 +67,7 @@ abstract class base_list extends \cenozo\ui\widget
   {
     parent::finish();
     
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
 
     // apply column restrictions
     if( is_array( $this->restrictions ) ) foreach( $this->restrictions as $column => $restrict )

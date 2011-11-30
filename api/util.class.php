@@ -142,7 +142,7 @@ class util
       {
         require $cenozo_file_path;
         if( !class_exists( $cenozo_class_name, false ) )
-          throw new exception\runtime( 'Unable to load class: '.$cenozo_class_name, __METHOD__ );
+          throw util::create( 'exception\runtime', 'Unable to load class: '.$cenozo_class_name, __METHOD__ );
       }
     }
 
@@ -152,13 +152,13 @@ class util
     {
       require $file_path;
       if( !class_exists( $class_name, false ) && !interface_exists( $class_name, false ) )
-        throw new exception\runtime( 'Unable to load class: '.$class_name, __METHOD__ );
+        throw util::create( 'exception\runtime', 'Unable to load class: '.$class_name, __METHOD__ );
 
       return;
     }
 
     // if we get here then the file is missing
-    throw new exception\runtime( 'Missing class: '.$class_name, __METHOD__ );
+    throw util::create( 'exception\runtime', 'Missing class: '.$class_name, __METHOD__ );
   }
 
   /**

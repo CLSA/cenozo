@@ -43,26 +43,26 @@ class self_set_site extends \cenozo\ui\push
   {
     try
     {
-      $db_site = new db\site( $this->get_argument( 'id' ) );
+      $db_site = util::create( 'database\site', $this->get_argument( 'id' ) );
     }
     catch( exc\runtime $e )
     {
-      throw new exc\argument( 'id', $this->get_argument( 'id' ), __METHOD__, $e );
+      throw util::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
     }
     
     $session = bus\session::self();
     $db_user = $session->get_user();
     $db_role = NULL;
 
-    $role_mod = new db\modifier();
+    $role_mod = util::create( 'database\modifier' );
     $role_mod->where( 'site_id', '=', $db_site->id );
     $role_list = $db_user->get_role_list( $role_mod );
     if( 0 == count( $role_list ) )
-      throw new exc\runtime(
+      throw util::create( 'exception\runtime',
         'User does not have access to the given site.',  __METHOD__ );
   
     // try loading the same role as the last time this site was accessed
-    $activity_mod = new db\modifier();
+    $activity_mod = util::create( 'database\modifier' );
     $activity_mod->where( 'user_id', '=', $db_user->id );
     $activity_mod->where( 'site_id', '=', $db_site->id );
     $activity_mod->order_desc( 'datetime' );
@@ -71,7 +71,7 @@ class self_set_site extends \cenozo\ui\push
     if( $db_activity )
     {
       // make sure the user still has access to the site/role
-      $role_mod = new db\modifier();
+      $role_mod = util::create( 'database\modifier' );
       $role_mod->where( 'site_id', '=', $db_activity->site_id );
       $role_mod->where( 'role_id', '=', $db_activity->role_id );
       $db_role = current( $db_user->get_role_list( $role_mod ) );

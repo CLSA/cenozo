@@ -36,17 +36,17 @@ class access extends record
     if( !is_object( $db_user ) ||
         !is_a( $db_user, util::get_class_name( 'database\\user' ) ) )
     {
-      throw new exc\argument( 'user', $db_user, __METHOD__ );
+      throw util::create( 'exception\argument', 'user', $db_user, __METHOD__ );
     }
     else if( !is_object( $db_role ) ||
              !is_a( $db_role, util::get_class_name( 'database\\role' ) ) )
     {
-      throw new exc\argument( 'role', $db_role, __METHOD__ );
+      throw util::create( 'exception\argument', 'role', $db_role, __METHOD__ );
     }
     else if( !is_object( $db_site ) ||
              !is_a( $db_site, util::get_class_name( 'database\\site' ) ) )
     {
-      throw new exc\argument( 'site', $db_site, __METHOD__ );
+      throw util::create( 'exception\argument', 'site', $db_site, __METHOD__ );
     }
 
     $modifier = new modifier();
@@ -73,7 +73,7 @@ class access extends record
     $db_access_role = new role( $this->role_id );
 
     if( $db_access_role->tier > bus\session::self()->get_role()->tier )
-      throw new exc\permission(
+      throw util::create( 'exception\permission',
         // fake the operation
         operation::get_operation( 'push', 'user', 'new_access' ), __METHOD__ );
 
@@ -90,7 +90,7 @@ class access extends record
   public function delete()
   {
     if( $this->get_role()->tier > bus\session::self()->get_role()->tier )
-      throw new exc\permission(
+      throw util::create( 'exception\permission',
         // fake the operation
         operation::get_operation( 'push', 'access', 'delete' ), __METHOD__ );
 

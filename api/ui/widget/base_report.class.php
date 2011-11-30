@@ -59,7 +59,7 @@ abstract class base_report extends \cenozo\ui\widget
   protected function add_restriction( $restriction_type )
   {
     if( !array_key_exists( $restriction_type, $this->restrictions ) )
-      throw new exc\argument( 'restriction_type', $restriction_type, __METHOD__ );
+      throw util::create( 'exception\argument', 'restriction_type', $restriction_type, __METHOD__ );
 
     if( 'site' == $restriction_type )
     {
@@ -143,7 +143,7 @@ abstract class base_report extends \cenozo\ui\widget
   {
     // make sure the parameter exists
     if( !array_key_exists( $param_id, $this->parameters ) )
-      throw new exc\argument( 'param_id', $param_id, __METHOD__ );
+      throw util::create( 'exception\argument', 'param_id', $param_id, __METHOD__ );
 
     // process the value so that it displays correctly
     if( 'boolean' == $this->parameters[$param_id]['type'] )
@@ -189,7 +189,7 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $enum = $data;
       if( is_null( $enum ) )
-        throw new exc\runtime(
+        throw util::create( 'exception\runtime',
           'Trying to set enum parameter without enum values.', __METHOD__ );
 
       // add a null entry (to the front of the array) if the parameter is not required
@@ -254,7 +254,7 @@ abstract class base_report extends \cenozo\ui\widget
     
     if( $this->restrictions[ 'province' ] )
     {
-      $region_mod = new db\modifier();
+      $region_mod = util::create( 'database\modifier' );
       $region_mod->order( 'abbreviation' );
       $region_mod->where( 'country', '=', 'Canada' );
       $region_types = array( 'All provinces' );

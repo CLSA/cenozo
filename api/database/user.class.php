@@ -52,11 +52,11 @@ class user extends base_access
   {
     // make sure the site id list argument is a non-empty array of ids
     if( !is_array( $site_id_list ) || 0 == count( $site_id_list ) )
-      throw new exc\argument( 'site_id_list', $site_id_list, __METHOD__ );
+      throw util::create( 'exception\argument', 'site_id_list', $site_id_list, __METHOD__ );
 
     // make sure the role id argument is valid
     if( 0 >= $role_id )
-      throw new exc\argument( 'role_id', $role_id, __METHOD__ );
+      throw util::create( 'exception\argument', 'role_id', $role_id, __METHOD__ );
 
     $values = '';
     $first = true;

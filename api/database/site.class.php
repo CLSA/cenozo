@@ -38,11 +38,11 @@ class site extends base_access
 
     // make sure the user id list argument is a non-empty array of ids
     if( !is_array( $user_id_list ) || 0 == count( $user_id_list ) )
-      throw new exc\argument( 'user_id_list', $user_id_list, __METHOD__ );
+      throw util::create( 'exception\argument', 'user_id_list', $user_id_list, __METHOD__ );
     
     // make sure the role id argument is valid
     if( 0 >= $role_id )
-      throw new exc\argument( 'role_id', $role_id, __METHOD__ );
+      throw util::create( 'exception\argument', 'role_id', $role_id, __METHOD__ );
 
     $values = '';
     $first = true;

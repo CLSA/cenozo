@@ -52,12 +52,12 @@ class user_list extends base_list
       $col_name = substr( strstr( $restriction['column'], '.' ), 1 );
       if( 'site' == $table )
       {
-        if( is_null( $site_mod ) ) $site_mod = new db\modifier();
+        if( is_null( $site_mod ) ) $site_mod = util::create( 'database\modifier' );
         $site_mod->where( $col_name, $restriction['operator'], $restriction['value'] );
       }
       else if( 'role' == $table )
       {
-        if( is_null( $role_mod ) ) $role_mod = new db\modifier();
+        if( is_null( $role_mod ) ) $role_mod = util::create( 'database\modifier' );
         $role_mod->where( $col_name, $restriction['operator'], $restriction['value'] );
       }
       else $new_restrictions[] = $restriction;

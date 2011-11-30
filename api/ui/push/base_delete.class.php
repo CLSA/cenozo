@@ -51,7 +51,7 @@ abstract class base_delete extends base_record
     { // help describe exceptions to the user
       if( $e->is_constrained() )
       {
-        throw new exc\notice(
+        throw util::create( 'exception\notice',
           'Unable to delete the '.$this->get_subject().
           ' because it is being referenced by the database.', __METHOD__, $e );
       }

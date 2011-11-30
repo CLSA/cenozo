@@ -59,7 +59,7 @@ class user_add extends base_view
     $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'tier', '<=', $session->get_role()->tier );
     $roles = array();
     foreach( db\role::select( $modifier ) as $db_role )

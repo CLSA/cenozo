@@ -49,7 +49,7 @@ class self_menu extends \cenozo\ui\widget
     // get all calendar widgets that the user has access to
     $calendars = array();
 
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'calendar' );
     $widgets = $db_role->get_operation_list( $modifier );
@@ -64,7 +64,7 @@ class self_menu extends \cenozo\ui\widget
     // get all list widgets that the user has access to
     $lists = array();
 
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'list' );
     $widgets = $db_role->get_operation_list( $modifier );
@@ -81,7 +81,7 @@ class self_menu extends \cenozo\ui\widget
     // get all report widgets that the user has access to
     $reports = array();
 
-    $modifier = new db\modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'report' );
     $widgets = $db_role->get_operation_list( $modifier );

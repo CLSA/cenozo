@@ -172,11 +172,11 @@ class cenozo_manager extends \cenozo\factory
     if( 400 == $code )
     { // duplicate cenozo exception
       $body = json_decode( $message->body );
-      throw new exc\cenozo_service( $body->error_type, $body->error_code, $body->error_message );
+      throw util::create( 'exception\cenozo_service', $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
     { // A non-cenozo error has happened
-      throw new exc\runtime( sprintf(
+      throw util::create( 'exception\runtime', sprintf(
         'Unable to connect to Cenozo service at %s (code: %s)',
         '',
         $code ), __METHOD__ );
