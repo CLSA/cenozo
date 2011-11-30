@@ -41,8 +41,7 @@ abstract class base_add_record extends base_record
     $this->get_argument( 'id' );
 
     // build the child add widget
-    $class_name = util::get_class_name( 'ui\\widget\\'.$child.'_add' );
-    $this->add_widget = new $class_name( $args );
+    $this->add_widget = util::create( 'ui\\widget\\'.$child.'_add', $args );
     $this->add_widget->set_parent( $this, 'edit' );
 
     $this->add_widget->set_heading(

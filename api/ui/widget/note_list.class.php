@@ -47,8 +47,7 @@ class note_list extends \cenozo\ui\widget
     // make sure there is a valid note category
     $category = $this->get_argument( 'category' );
     $category_id = $this->get_argument( 'category_id' );
-    $category_class = util::get_class_name( 'database\\'.$category );
-    $db_record = new $category_class( $category_id );
+    $db_record = util::create( 'database\\'.$category, $category_id );
     if( !is_a( $db_record, util::get_class_name( 'database\\has_note' ) ) )
       throw util::create( 'exception\runtime',
         sprintf( 'Tried to list notes for %s which cannot have notes.', $category ),

@@ -323,8 +323,7 @@ final class log extends singleton
     }
     else
     {
-      $class_name = util::get_class_name( 'exception\runtime' );
-      throw new $class_name(
+      throw util::create( 'exception\runtime',
         'Unable to create invalid logger type "'.$type.'"', __METHOD__ );
     }
   }
@@ -365,8 +364,7 @@ final class log extends singleton
     // ignore ldap errors
     if( 0 < preg_match( '/^ldap_[a-z_0-9]()/', $message ) ) return;
 
-    $class_name = util::get_class_name( 'exception\system' );
-    $e = new $class_name( $message, $level );
+    $e = util::create( 'exception\system', $message, $level );
     $message = sprintf( '(%s) : %s in %s on line %d',
                         $e->get_number(),
                         $message,

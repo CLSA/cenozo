@@ -69,8 +69,7 @@ abstract class has_note extends record
     $date_obj = util::get_datetime_object();
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $note_class_name = util::get_class_name( 'database\\'.$table_name.'_note' );
-    $db_note = new $note_class_name();
+    $db_note = util::create( 'database\\'.$table_name.'_note' );
     $db_note->user_id = $user->id;
     $db_note->$subject_key_name = $this->id;
     $db_note->datetime = $date_obj->format( 'Y-m-d H:i:s' );
@@ -88,8 +87,7 @@ abstract class has_note extends record
    */
   public static function get_note( $id = NULL )
   {
-    $note_class_name = util::get_class_name( 'database\\'.static::get_table_name().'_note' );
-    return new $note_class_name( $id );
+    return util::create( 'database\\'.static::get_table_name().'_note', $id );
   }
 }
 ?>

@@ -475,8 +475,7 @@ abstract class record extends \cenozo\base_object
     $record = NULL;
     if( !is_null( $this->column_values[$foreign_key_name] ) )
     {
-      $class_name = util::get_class_name( 'database\\'.$record_type );
-      $record = new $class_name( $this->column_values[$foreign_key_name] );
+      $record = util::create( 'database\\'.$record_type, $this->column_values[$foreign_key_name] );
     }
 
     return $record;
@@ -597,7 +596,7 @@ abstract class record extends \cenozo\base_object
       {
         $ids = static::db()->get_col( $sql );
         $records = array();
-        foreach( $ids as $id ) $records[] = new $foreign_class_name( $id );
+        foreach( $ids as $id ) $records[] = util::create( $foreign_class_name, $id );
         return $records;
       }
     }
@@ -739,8 +738,7 @@ abstract class record extends \cenozo\base_object
     }
     else if( relationship::ONE_TO_MANY == $relationship )
     {
-      $foreign_class_name = util::get_class_name( 'database\\'.$record_type );
-      $record = new $foreign_class_name( $id );
+      $record = util::create( 'database\\'.$record_type, $id );
       $record->delete();
     }
     else if( relationship::MANY_TO_MANY == $relationship )

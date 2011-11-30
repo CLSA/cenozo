@@ -34,8 +34,7 @@ abstract class base_record
   {
     parent::__construct( $subject, $name, $args );
 
-    $class_name = util::get_class_name( 'database\\'.$this->get_subject() );
-    $this->set_record( new $class_name( $this->get_argument( 'id', NULL ) ) );
+    $this->set_record( util::create( 'database\\'.$this->get_subject(), $this->get_argument( 'id', NULL ) ) );
   }
   
   /**
