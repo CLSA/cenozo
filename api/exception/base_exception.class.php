@@ -33,7 +33,7 @@ class base_exception extends \Exception
 
     // determine the error number
     $code = 0;
-    $constant_name = strtoupper( $this->get_type() ).'_BASE_ERROR_NUMBER';
+    $constant_name = strtoupper( $this->get_type() ).'_CENOZO_BASE_ERRNO';
     $base_code = defined( $constant_name ) ? constant( $constant_name ) : 0;
 
     if( is_numeric( $context ) )
@@ -45,11 +45,9 @@ class base_exception extends \Exception
       // in case this is a method name then we need to replace :: with __
       $context = str_replace( '::', '__', $context );
 
-      // remove namespaces
-      $index = strrchr( $context, '\\' );
-      if( false !== $index ) $context = substr( $index, 1 );
-
-      $constant_name = strtoupper( sprintf( '%s_%s_ERROR_NUMBER',
+      // replace namespaces backslashes with underscores
+      $context = str_replace( '\\', '_', $context );
+      $constant_name = strtoupper( sprintf( '%s__%s__ERRNO',
                                    $this->get_type(),
                                    $context ) );
       $code = defined( $constant_name ) ? constant( $constant_name ) : $base_code;

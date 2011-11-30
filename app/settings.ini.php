@@ -111,9 +111,6 @@ if( !array_key_exists( 'JQUERY_FULLCALENDAR_JS', $SETTINGS['url'] ) )
 if( !array_key_exists( 'JQUERY_FONTSCALE_JS', $SETTINGS['url'] ) )
   $SETTINGS['url']['JQUERY_FONTSCALE_JS'] =
     $SETTINGS['url']['JQUERY_PLUGINS'].'/fontscale.js';
-if( !array_key_exists( 'JQUERY_TIMERS_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_TIMERS_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/timers.js';
 
 // css files
 if( !array_key_exists( 'JQUERY_UI', $SETTINGS['url'] ) )

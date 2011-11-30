@@ -33,7 +33,7 @@ class notice extends base_exception
   public function __construct( $message, $context, $previous = NULL )
   {
     $message = is_object( $message ) &&
-               is_a( $message, util::get_full_class_name( 'exception\\base_exception' ) )
+               is_a( $message, util::get_class_name( 'exception\\base_exception' ) )
              ? $message->get_raw_message()
              : $message;
     parent::__construct( $message, $context, $previous );

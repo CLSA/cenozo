@@ -9,6 +9,7 @@
 
 // load web-script common code
 require_once 'settings.ini.php';
+require_once 'settings.local.ini.php';
 require_once $SETTINGS['path']['CENOZO'].'/app/service.class.php';
 $service = new \cenozo\service();
 $service->execute();

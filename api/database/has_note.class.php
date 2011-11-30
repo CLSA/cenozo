@@ -30,7 +30,7 @@ abstract class has_note extends record
   {
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $note_class_name = util::get_full_class_name( 'database\\'.$table_name.'_note' );
+    $note_class_name = util::get_class_name( 'database\\'.$table_name.'_note' );
 
     if ( is_null( $modifier ) ) $modifier = new modifier();
     $modifier->where( $subject_key_name, '=', $this->id );
@@ -48,7 +48,7 @@ abstract class has_note extends record
   {
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $note_class_name = util::get_full_class_name( 'database\\'.$table_name.'_note' );
+    $note_class_name = util::get_class_name( 'database\\'.$table_name.'_note' );
 
     if ( is_null( $modifier ) ) $modifier = new modifier();
     $modifier->where( $subject_key_name, '=', $this->id );
@@ -69,7 +69,7 @@ abstract class has_note extends record
     $date_obj = util::get_datetime_object();
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $note_class_name = util::get_full_class_name( 'database\\'.$table_name.'_note' );
+    $note_class_name = util::get_class_name( 'database\\'.$table_name.'_note' );
     $db_note = new $note_class_name();
     $db_note->user_id = $user->id;
     $db_note->$subject_key_name = $this->id;
@@ -88,7 +88,7 @@ abstract class has_note extends record
    */
   public static function get_note( $id = NULL )
   {
-    $note_class_name = util::get_full_class_name( 'database\\'.static::get_table_name().'_note' );
+    $note_class_name = util::get_class_name( 'database\\'.static::get_table_name().'_note' );
     return new $note_class_name( $id );
   }
 }

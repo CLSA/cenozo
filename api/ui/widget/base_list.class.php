@@ -247,7 +247,7 @@ abstract class base_list extends \cenozo\ui\widget
     }
     else
     {
-      $class_name = util::get_full_class_name( 'database\\'.$this->get_subject() );
+      $class_name = util::get_class_name( 'database\\'.$this->get_subject() );
       return $class_name::count( $modifier );
     }
   }
@@ -274,7 +274,7 @@ abstract class base_list extends \cenozo\ui\widget
     }
     else
     {
-      $class_name = util::get_full_class_name( 'database\\'.$this->get_subject() );
+      $class_name = util::get_class_name( 'database\\'.$this->get_subject() );
       return $class_name::select( $modifier );
     }
   }

@@ -42,8 +42,11 @@ abstract class factory
   {
     // make sure there is at least one argument and it is a native type
     if( 1 > func_num_args() )
-      throw new exception\runtime(
+    {
+      $class_name = util::get_class_name( 'exception\runtime' );
+      throw new $class_name(
         'Tried to call self() method without at least one argument.', __METHOD__ );
+    }
     
     $arguments = func_get_args();
     if( !self::exists( $arguments[0] ) )
@@ -63,10 +66,13 @@ abstract class factory
         'double' != $type &&
         'string' != $type &&
         'NULL' != $type )
-      throw new exception\runtime(
+    {
+      $class_name = util::get_class_name( 'exception\runtime' );
+      throw new $class_name(
         sprintf( 'Tried to use an incorrect argument type "%s" to identify factory '.
                  '(must be one of boolean, integer, double, string or NULL).',
                  $type ), __METHOD__ );
+    }
     
     return isset( self::$instance_list[ get_called_class() ][ serialize( $arg ) ]  );
   }

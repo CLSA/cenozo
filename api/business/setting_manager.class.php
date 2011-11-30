@@ -34,14 +34,18 @@ class setting_manager extends \cenozo\singleton
     $categories = array( 'db',
                          'general',
                          'interface',
-                         'version',
-                         'ldap' );
+                         'ldap',
+                         'path',
+                         'url',
+                         'version' );
+
     foreach( $categories as $category )
     {
       // make sure the category exists
       if( !array_key_exists( $category, $static_settings ) )
+      {
         throw new exc\argument( 'static_settings['.$category.']', NULL, __METHOD__ );
-      
+      }
       $this->static_settings[ $category ] = $static_settings[ $category ];
     }
   }
@@ -57,15 +61,15 @@ class setting_manager extends \cenozo\singleton
   public function get_setting( $category, $name )
   {
     // first check for the setting in static settings
-    if( isset( $this->static_settings[ $category ] ) &&
-        isset( $this->static_settings[ $category ][ $name ] ) )
+    if( array_key_exists( $category, $this->static_settings ) &&
+        array_key_exists( $name, $this->static_settings[ $category ] ) )
     {
       return $this->static_settings[ $category ][ $name ];
     }
 
     // now check in dynamic settings 
-    if( isset( $this->dynamic_settings[ $category ] ) &&
-        isset( $this->dynamic_settings[ $category ][ $name ] ) )
+    if( array_key_exists( $category, $this->dynamic_settings ) &&
+        array_key_exists( $name, $this->dynamic_settings[ $category ] ) )
     {
       return $this->dynamic_settings[ $category ][ $name ];
     }
@@ -96,6 +100,21 @@ class setting_manager extends \cenozo\singleton
     log::err( "Tried getting value for setting [$category][$name] which doesn't exist." );
     
     return NULL;
+  }
+
+  /**
+   * Get all settings in a category.
+   * Note, this only works with static settings.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $category The category the setting belongs to.
+   * @access public
+   */
+  public function get_setting_category( $category )
+  {
+    return array_key_exists( $category, $this->static_settings )
+         ? $this->static_settings[ $category ]
+         : array();
   }
 
   /**

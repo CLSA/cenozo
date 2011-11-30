@@ -124,19 +124,6 @@ abstract class widget extends operation
   }
 
   /**
-   * Set a widget variable.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name The name of the variable.
-   * @param string $value The value to set the variable to.
-   * @access public
-   */
-  public function set_variable( $name, $value )
-  {
-    $this->variables[ $name ] = $value;
-  }
-
-  /**
    * Set the widget's parent.
    * 
    * Embed this widget into a parent widget, or unparent the widget by setting the parent to NULL.
@@ -151,11 +138,40 @@ abstract class widget extends operation
   }
 
   /**
+   * Set a widget variable.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name The name of the variable.
+   * @param string $value The value to set the variable to.
+   * @access public
+   */
+  public function set_variable( $name, $value )
+  {
+    $this->variables[ $name ] = $value;
+  }
+
+  /**
+   * Get a widget variable.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name The name of the variable.
+   * @return mixed
+   * @access public
+   */
+  public function get_variable( $name )
+  {
+    return array_key_exists( $name, $this->variables )
+         ? $this->variables[$name]
+         : NULL;
+  }
+  
+  /**
    * Get the widget's variables array.
    * 
    * This method is to be used by the widget engine to render display widgets.
    * Do not use this method to set variables, instead use {@link set_variable}.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
    * @access public
    */
   public function get_variables()

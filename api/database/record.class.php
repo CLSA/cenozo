@@ -475,7 +475,7 @@ abstract class record extends \cenozo\base_object
     $record = NULL;
     if( !is_null( $this->column_values[$foreign_key_name] ) )
     {
-      $class_name = util::get_full_class_name( 'database\\'.$record_type );
+      $class_name = util::get_class_name( 'database\\'.$record_type );
       $record = new $class_name( $this->column_values[$foreign_key_name] );
     }
 
@@ -499,7 +499,7 @@ abstract class record extends \cenozo\base_object
   {
     $table_name = static::get_table_name();
     $primary_key_name = $table_name.'.'.static::get_primary_key_name();
-    $foreign_class_name = util::get_full_class_name( 'database\\'.$record_type );
+    $foreign_class_name = util::get_class_name( 'database\\'.$record_type );
 
     // check the primary key value
     $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
@@ -739,7 +739,7 @@ abstract class record extends \cenozo\base_object
     }
     else if( relationship::ONE_TO_MANY == $relationship )
     {
-      $foreign_class_name = util::get_full_class_name( 'database\\'.$record_type );
+      $foreign_class_name = util::get_class_name( 'database\\'.$record_type );
       $record = new $foreign_class_name( $id );
       $record->delete();
     }
@@ -806,7 +806,7 @@ abstract class record extends \cenozo\base_object
   public static function get_relationship( $record_type )
   {
     $type = relationship::NONE;
-    $class_name = util::get_full_class_name( 'database\\'.$record_type );
+    $class_name = util::get_class_name( 'database\\'.$record_type );
     if( $class_name::column_exists( static::get_table_name().'_id' ) )
     { // the record_type has a foreign key for this record
       $type = static::column_exists( $record_type.'_id' )
@@ -860,7 +860,7 @@ abstract class record extends \cenozo\base_object
           $foreign_key_name = $table.'_id';
           if( static::column_exists( $foreign_key_name ) )
           {
-            $class_name = util::get_full_class_name( 'database\\'.$table );
+            $class_name = util::get_class_name( 'database\\'.$table );
             // add the table to the list to select and join it in the modifier
             $table_list[] = $table;
             $modifier->where(
@@ -1074,7 +1074,8 @@ abstract class record extends \cenozo\base_object
    */
   public static function db()
   {
-    return bus\session::self()->get_database();
+    $class_name = util::get_class_name( 'business\session' );
+    return $class_name::self()->get_database();
   }
 
   /**

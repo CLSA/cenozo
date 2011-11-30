@@ -20,7 +20,7 @@ use cenozo\exception as exc;
  * This class is a singleton, instead of using the new operator call the self() method.
  * @package cenozo\business
  */
-final class session extends \cenozo\singleton
+class session extends \cenozo\singleton
 {
   /**
    * Constructor.
@@ -36,7 +36,8 @@ final class session extends \cenozo\singleton
     // don't use the log class in this method!
     
     // the first argument is the settings array from an .ini file
-    $setting_manager = setting_manager::self( $arguments[0] );
+    $class_name = util::get_class_name( 'business\setting_manager' );
+    $setting_manager = $class_name::self( $arguments[0] );
     
     // set error reporting
     error_reporting(
@@ -62,7 +63,8 @@ final class session extends \cenozo\singleton
     // don't initialize more than once
     if( $this->initialized ) return;
 
-    $setting_manager = setting_manager::self();
+    $class_name = util::get_class_name( 'business\setting_manager' );
+    $setting_manager = $class_name::self();
 
     // create the databases
     $this->database = new db\database(
@@ -75,11 +77,12 @@ final class session extends \cenozo\singleton
 
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
+
     $this->set_user( db\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
       throw new exc\permission(
         db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
-
+die($this->user->name);
     $this->initialized = true;
   }
   
@@ -129,6 +132,7 @@ final class session extends \cenozo\singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\site $db_site
    * @param database\role $db_role
+   * @throws exception\permission
    * @access public
    */
   public function set_site_and_role( $db_site, $db_role )
@@ -169,6 +173,7 @@ final class session extends \cenozo\singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user $db_user
+   * @throws exception\notice
    * @access public
    */
   public function set_user( $db_user )

@@ -40,7 +40,7 @@ abstract class base_add_list extends base_record
     $this->get_argument( 'id' );
 
     // build the list widget
-    $class_name = util::get_full_class_name( 'ui\\widget\\'.$child.'_list' );
+    $class_name = util::get_class_name( 'ui\\widget\\'.$child.'_list' );
     $this->list_widget = new $class_name( $args );
     $this->list_widget->set_parent( $this, 'edit' );
 

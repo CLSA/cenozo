@@ -29,22 +29,83 @@ class util
   private final function __construct() {}
 
   /**
+   * Object factory building method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $class_name The type of object to create, including all but the base
+   *        (framework or application) namespace.
+   * @param mixed $arg1 The first argument to pass to the constructor
+   * @param mixed $arg2 The second argument to pass to the constructor
+   * @param mixed $arg3 The third argument to pass to the constructor
+   * @param mixed $arg4 Etc...
+   * @access public
+   */
+  public static function create( $class_name )
+  {
+    // remove the class name from the arguments
+    $a = func_get_args();
+    $class_name = array_shift( $a );
+    $count = count( $a );
+
+    // determine the full class name
+    $class_name = self::get_class_path( $class_name );
+    
+    if( is_subclass_of( $class_name, 'cenozo\singleton' ) )
+    {
+      if( 0 == $count ) return $class_name::self();
+      if( 1 == $count ) return $class_name::self( $a[0] );
+      if( 2 == $count ) return $class_name::self( $a[0], $a[1] );
+      if( 3 == $count ) return $class_name::self( $a[0], $a[1], $a[2] );
+      if( 4 == $count ) return $class_name::self( $a[0], $a[1], $a[2], $a[3] );
+      if( 5 == $count ) return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4] );
+      if( 6 == $count ) return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4],
+                                                  $a[5] );
+      if( 7 == $count ) return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4],
+                                                  $a[5], $a[6] );
+      if( 8 == $count ) return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4],
+                                                  $a[5], $a[6], $a[7] );
+      if( 9 == $count ) return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4],
+                                                  $a[5], $a[6], $a[7], $a[8] );
+  
+      // limit to 10 arguments
+      return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4],
+                                $a[5], $a[6], $a[7], $a[8], $a[9] );
+    }
+
+    if( 0 == $count ) return new $class_name();
+    if( 1 == $count ) return new $class_name( $a[0] );
+    if( 2 == $count ) return new $class_name( $a[0], $a[1] );
+    if( 3 == $count ) return new $class_name( $a[0], $a[1], $a[2] );
+    if( 4 == $count ) return new $class_name( $a[0], $a[1], $a[2], $a[3] );
+    if( 5 == $count ) return new $class_name( $a[0], $a[1], $a[2], $a[3], $a[4] );
+    if( 6 == $count ) return new $class_name( $a[0], $a[1], $a[2], $a[3], $a[4],
+                                              $a[5] );
+    if( 7 == $count ) return new $class_name( $a[0], $a[1], $a[2], $a[3], $a[4],
+                                              $a[5], $a[6] );
+    if( 8 == $count ) return new $class_name( $a[0], $a[1], $a[2], $a[3], $a[4],
+                                              $a[5], $a[6], $a[7] );
+    if( 9 == $count ) return new $class_name( $a[0], $a[1], $a[2], $a[3], $a[4],
+                                              $a[5], $a[6], $a[7], $a[8] );
+
+    // limit to 10 arguments
+    return new $class_name( $a[0], $a[1], $a[2], $a[3], $a[4],
+                            $a[5], $a[6], $a[7], $a[8], $a[9] );
+  }
+
+  /**
    * Registers this class with PHP as an autoloader.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $application_name The name of the application (for namespace purposes)
    * @param string $operation_type The type of operation being performe
    * @param boolean $development_mode Whether the system is in development mode
    * @static
    * @access public
    */
-  public static function register(
-    $application_name, $operation_type, $development_mode )
+  public static function register( $operation_type, $development_mode )
   {
     if( !self::$registered )
     {
       self::$registered = true;
-      self::$application_name = $application_name;
       self::$operation_type = $operation_type;
       self::$development_mode = $development_mode;
       ini_set( 'unserialize_callback_func', 'spl_autoload_call' );
@@ -65,17 +126,17 @@ class util
   {
     // only work on classes in the cenozo or application namespace
     if( false === strpos( $class_name, 'cenozo\\' ) &&
-        false === strpos( $class_name, self::$application_name.'\\' ) ) return;
+        false === strpos( $class_name, APPNAME.'\\' ) ) return;
 
     // If we are loading a class from the application namespace then we must also include
     // the same class from the framework, if one exists.
     // This is the only way to allow an application class to extend a framework class by
     // the same name and namespace.
-    $pos = strpos( $class_name, self::$application_name.'\\' );
+    $pos = strpos( $class_name, APPNAME.'\\' );
     if( false !== $pos )
     {
       $cenozo_class_name =
-        'cenozo\\'.substr( $class_name, $pos + strlen( self::$application_name.'\\' ) );
+        'cenozo\\'.substr( $class_name, $pos + strlen( APPNAME.'\\' ) );
       $cenozo_file_path = self::get_full_class_path( $cenozo_class_name, true );
       if( !is_null( $cenozo_file_path ) )
       {
@@ -140,15 +201,12 @@ class util
    * @access public
    * @static
    */
-  public static function get_full_class_name( $class_name )
+  public static function get_class_name( $class_name )
   {
-    $application_name =
-      business\setting_manager::self()->get_setting( 'general', 'application_name' );
-    
     // if the path is null then return back the argument
     return sprintf( '%s\\%s',
                     is_null( self::get_application_class_path( $class_name ) ) ?
-                    'cenozo' : $application_name,
+                    'cenozo' : APPNAME,
                     $class_name );
   }
 
@@ -168,7 +226,7 @@ class util
     
     // if the base of the namespace is cenozo or the application name then remove it
     if( false !== strpos( $class_name, 'cenozo/' ) ||
-        false !== strpos( $class_name, self::$application_name.'/' ) )
+        false !== strpos( $class_name, APPNAME.'/' ) )
     {
       $class_name = substr( $class_name, strpos( $class_name, '/' ) + 1 );
     }
@@ -203,7 +261,7 @@ class util
     
     // if the base of the namespace is cenozo or the application name then remove it
     if( false !== strpos( $class_name, 'cenozo/' ) ||
-        false !== strpos( $class_name, self::$application_name.'/' ) )
+        false !== strpos( $class_name, APPNAME.'/' ) )
     {
       $class_name = substr( $class_name, strpos( $class_name, '/' ) + 1 );
     }
@@ -762,14 +820,6 @@ class util
 
     return bin2hex( $crypt );
   }
-
-  /**
-   * Name of the application.
-   * @var string
-   * @access protected
-   * @static
-   */
-  protected static $application_name = NULL;
 
   /**
    * The type of operation being performed.

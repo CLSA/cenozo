@@ -46,7 +46,7 @@ abstract class base_list extends \cenozo\ui\pull
     foreach( $this->restrictions as $restrict )
       $modifier->where( $restrict['column'], $restrict['operator'], $restrict['value'] );
 
-    $class_name = util::get_full_class_name( 'database\\'.$this->get_subject() );
+    $class_name = util::get_class_name( 'database\\'.$this->get_subject() );
     $list = array();
     foreach( $class_name::select( $modifier ) as $record )
     {

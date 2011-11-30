@@ -200,17 +200,22 @@ final class log extends singleton
   private function send( $message, $type )
   {
     // make sure we have a session
-    if( !class_exists( 'cenozo\business\session' ) || !business\session::exists() ) return;
-    $session = business\session::self();
+    $class_name = util::get_class_name( 'business\session' );
+
+    if( !class_exists( $class_name ) || !$class_name::exists() ) return;
+    $session = $class_name::self();
+    $db_user = $session->get_user();
+    $db_role = $session->get_role();
+    $db_site = $session->get_site();
+    $user_and_role = is_null( $db_user ) || is_null( $db_role )
+                   ? 'unknown'
+                   : $db_user->name.':'.$db_role->name;
+    $site = is_null( $db_site ) ? 'unknown' : $db_site->name;
 
     if( PEAR_LOG_INFO != $type &&
         PEAR_LOG_NOTICE != $type &&
         PEAR_LOG_DEBUG != $type )
-      $message = sprintf( '<%s:%s@%s> %s',
-                          $session->get_user()->name,
-                          $session->get_role()->name,
-                          $session->get_site()->name,
-                          $message );
+      $message = sprintf( '<%s@%s> %s', $user_and_role, $site, $message );
     
     // add the backtrace
     if( PEAR_LOG_NOTICE == $type ||
@@ -318,7 +323,8 @@ final class log extends singleton
     }
     else
     {
-      throw new exception\runtime(
+      $class_name = util::get_class_name( 'exception\runtime' );
+      throw new $class_name(
         'Unable to create invalid logger type "'.$type.'"', __METHOD__ );
     }
   }
@@ -359,7 +365,8 @@ final class log extends singleton
     // ignore ldap errors
     if( 0 < preg_match( '/^ldap_[a-z_0-9]()/', $message ) ) return;
 
-    $e = new exception\system( $message, $level );
+    $class_name = util::get_class_name( 'exception\system' );
+    $e = new $class_name( $message, $level );
     $message = sprintf( '(%s) : %s in %s on line %d',
                         $e->get_number(),
                         $message,
@@ -382,9 +389,10 @@ final class log extends singleton
         'error_message' => '' );
 
       // try and set the current operations error code, if possible
-      if( class_exists( 'cenozo\business\session' ) && business\session::exists() )
+      $class_name = util::get_class_name( 'business\session' );
+      if( class_exists( $class_name ) && $class_name::exists() )
       {
-        $session = business\session::self();
+        $session = $class_name::self();
 
         // we need to complete the transaction if there is one in progress
         if( util::use_transaction() )

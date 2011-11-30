@@ -45,6 +45,7 @@ class self_home extends \cenozo\ui\widget
     parent::finish();
 
     $session = bus\session::self();
+    $setting_manager = bus\setting_manager::self();
     $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -52,8 +53,10 @@ class self_home extends \cenozo\ui\widget
     // determine the user's last activity
     $db_activity = $session->get_user()->get_last_activity();
 
-    $this->set_variable( 'version',
-      bus\setting_manager::self()->get_setting( 'general', 'version' ) );
+    $this->set_variable( 'title',
+      sprintf( 'Welcome to %s version %s',
+               APPNAME,
+               $setting_manager->get_setting( 'general', 'version' ) ) );
     $this->set_variable( 'user_name', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'role_name', $db_role->name );
     $this->set_variable( 'site_name', $db_site->name );

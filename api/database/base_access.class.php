@@ -212,7 +212,7 @@ abstract class base_access extends record
 
     $modifier->where( $subject_name.'_id', '=', $this->id );
     
-    $class_name = util::get_full_class_name( 'database\\'.$related_name );
+    $class_name = util::get_class_name( 'database\\'.$related_name );
     return 'list' == $action
            ? $class_name::select( $modifier )
            : $class_name::count( $modifier );

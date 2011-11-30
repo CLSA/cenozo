@@ -42,7 +42,7 @@ class note_delete extends \cenozo\ui\push
   {
     // make sure there is a valid note category
     $category = $this->get_argument( 'category' );
-    $category_class = util::get_full_class_name( 'database\\'.$category );
+    $category_class = util::get_class_name( 'database\\'.$category );
     $db_note = $category_class::get_note( $this->get_argument( 'id' ) );
     $db_note->delete();
   }

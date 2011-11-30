@@ -34,17 +34,17 @@ class access extends record
   {
     // validate arguments
     if( !is_object( $db_user ) ||
-        !is_a( $db_user, util::get_full_class_name( 'database\\user' ) ) )
+        !is_a( $db_user, util::get_class_name( 'database\\user' ) ) )
     {
       throw new exc\argument( 'user', $db_user, __METHOD__ );
     }
     else if( !is_object( $db_role ) ||
-             !is_a( $db_role, util::get_full_class_name( 'database\\role' ) ) )
+             !is_a( $db_role, util::get_class_name( 'database\\role' ) ) )
     {
       throw new exc\argument( 'role', $db_role, __METHOD__ );
     }
     else if( !is_object( $db_site ) ||
-             !is_a( $db_site, util::get_full_class_name( 'database\\site' ) ) )
+             !is_a( $db_site, util::get_class_name( 'database\\site' ) ) )
     {
       throw new exc\argument( 'site', $db_site, __METHOD__ );
     }

@@ -37,20 +37,12 @@ abstract class singleton
    */
   public static function self()
   {
+    // if any arguments were passed to this method, pass them on to the contructor
     if( !self::exists() )
-    {
-      // if any arguments were passed to this method, pass them on to the contructor
-      if( 0 < func_num_args() )
-      {
-        // this creates a child-class instance (new static = new child_class)
-        self::$instance_list[ get_called_class() ] = new static( func_get_args() );
-      }
-      else
-      {
-        // this creates a child-class instance (new static = new child_class)
+      self::$instance_list[ get_called_class() ] = 0 < func_num_args() ?
+        self::$instance_list[ get_called_class() ] = new static( func_get_args() ) :
         self::$instance_list[ get_called_class() ] = new static();
-      }
-    }
+
     return self::$instance_list[ get_called_class() ];
   }
   

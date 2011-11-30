@@ -5,15 +5,18 @@
  * It uses this information to rebuild the api/exception/error_codes.inc.php file.
  */
 
-function print_exception_block( $type, $list )
+function print_exception_block( $lists, $type )
 {
+  if( !array_key_exists( $type, $lists ) ) return;
+  $list = $lists[$type];
+
   // first find the longest line
   $max_length = 0;
   foreach( $list as $class_name => $method_list )
   {
     foreach( $method_list as $method_name )
     {
-      $length = strlen( sprintf( "define( '%s_%s__%s_ERROR_NUMBER',",
+      $length = strlen( sprintf( "define( '%s__%s__%s__ERRNO',",
                                  strtoupper( $type ),
                                  strtoupper( $class_name ),
                                  strtoupper( $method_name ) ) );
@@ -31,7 +34,7 @@ function print_exception_block( $type, $list )
     foreach( $method_list as $method_name )
     {
       // add the first part
-      $string = sprintf( "define( '%s_%s__%s_ERROR_NUMBER',",
+      $string = sprintf( "define( '%s__%s__%s__ERRNO',",
                          strtoupper( $type ),
                          strtoupper( $class_name ),
                          strtoupper( $method_name ) );
@@ -40,7 +43,7 @@ function print_exception_block( $type, $list )
       $string = str_pad( $string, $max_length );
 
       // now print the whole line
-      printf( "%s %s_BASE_ERROR_NUMBER + %d );\n",
+      printf( "%s %s_CENOZO_BASE_ERRNO + %d );\n",
               $string,
               strtoupper( $type ),
               $counter++ );
@@ -101,15 +104,15 @@ foreach( $grep_line_list as $grep_line )
     // find the first / before the first :
     $colon_position = strpos( $grep_line, ':' );
     if( false === $colon_position ) continue;
-    $start_match = '/';
+    $start_match = 'api/';
     $end_match = '.class';
-    $start = strrpos( substr( $grep_line, 0, $colon_position ), $start_match ) +
+    $start = strpos( substr( $grep_line, 0, $colon_position ), $start_match ) +
              strlen( $start_match );
     $end = strpos( $grep_line, $end_match, $start );
     
     // make sure a match was found
     if( false === $start || false === $end ) continue;
-    $class_name = substr( $grep_line, $start, $end - $start );
+    $class_name = 'beartooth_'.str_replace( '/', '_', substr( $grep_line, $start, $end - $start ) );
 
     // get the method name
     $start_match = 'function ';
@@ -134,23 +137,19 @@ print <<<OUTPUT
  * 
  * This file is where all error codes are defined.
  * All error code are named after the class and function they occur in.
- * @package cenozo\exception
- * @filesource
  */
-
-namespace cenozo\exception;
 
 /**
  * Error number category defines.
  */
-define( 'ARGUMENT_BASE_ERROR_NUMBER',   100000 );
-define( 'DATABASE_BASE_ERROR_NUMBER',   200000 );
-define( 'LDAP_BASE_ERROR_NUMBER',       300000 );
-define( 'NOTICE_BASE_ERROR_NUMBER',     400000 );
-define( 'PERMISSION_BASE_ERROR_NUMBER', 500000 );
-define( 'RUNTIME_BASE_ERROR_NUMBER',    600000 );
-define( 'SYSTEM_BASE_ERROR_NUMBER',     700000 );
-define( 'TEMPLATE_BASE_ERROR_NUMBER',   800000 );
+define( 'ARGUMENT_CENOZO_BASE_ERRNO',   100000 );
+define( 'DATABASE_CENOZO_BASE_ERRNO',   200000 );
+define( 'LDAP_CENOZO_BASE_ERRNO',       300000 );
+define( 'NOTICE_CENOZO_BASE_ERRNO',     400000 );
+define( 'PERMISSION_CENOZO_BASE_ERRNO', 500000 );
+define( 'RUNTIME_CENOZO_BASE_ERRNO',    600000 );
+define( 'SYSTEM_CENOZO_BASE_ERRNO',     700000 );
+define( 'TEMPLATE_CENOZO_BASE_ERRNO',   800000 );
 
 /**
  * "argument" error codes
@@ -159,7 +158,7 @@ define( 'TEMPLATE_BASE_ERROR_NUMBER',   800000 );
 OUTPUT;
 
 // now print all argument exceptions
-print_exception_block( 'argument', $error_codes['argument'] );
+print_exception_block( $error_codes, 'argument' );
 
 print <<<OUTPUT
 
@@ -182,7 +181,7 @@ print <<<OUTPUT
 OUTPUT;
 
 // now print all notice exceptions
-print_exception_block( 'notice', $error_codes['notice'] );
+print_exception_block( $error_codes, 'notice' );
 
 print <<<OUTPUT
 
@@ -193,7 +192,7 @@ print <<<OUTPUT
 OUTPUT;
 
 // now print all permission exceptions
-print_exception_block( 'permission', $error_codes['permission'] );
+print_exception_block( $error_codes, 'permission' );
 
 print <<<OUTPUT
 
@@ -204,7 +203,7 @@ print <<<OUTPUT
 OUTPUT;
 
 // now print all runtime exceptions
-print_exception_block( 'runtime', $error_codes['runtime'] );
+print_exception_block( $error_codes, 'runtime' );
 
 print <<<OUTPUT
 

@@ -10,7 +10,7 @@
 {% block javascript %}
   
   {{ parent() }}
-  {% if reset_password or reset_password %}
+  {% if reset_password or set_password %}
     <script type="text/javascript">
       $( function() {
         {% if reset_password %}
@@ -37,12 +37,12 @@
 
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
-  {% if reset_password or reset_password %}
+  {% if reset_password or set_password %}
     <div class="spacer">
       {% if reset_password %}
         <button id="{{ widget.full }}__reset_password">Reset Password</button>
       {% endif %}
-      {% if reset_password %}
+      {% if set_password %}
         <button id="{{ widget.full }}__set_password">Set Password</button>
       {% endif %}
     </div>

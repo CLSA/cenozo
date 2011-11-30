@@ -5,7 +5,7 @@
 SET AUTOCOMMIT=0;
 
 INSERT INTO site( name, timezone ) VALUES
-( 'My Site', 'Canada/Eastern' );
+( 'Hamilton', 'Canada/Eastern' );
 
 -- Creates default/sample users
 INSERT INTO user( name, first_name, last_name ) VALUES

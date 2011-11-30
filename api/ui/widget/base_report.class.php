@@ -284,7 +284,7 @@ abstract class base_report extends \cenozo\ui\widget
       $restriction_type = 'has_restrict_'.$key;
       $this->set_parameter( $restriction_type,  $value );
     }
-    // this has to be done AFTER the remove_column() call above
+
     parent::finish();
   }
 
@@ -310,11 +310,17 @@ abstract class base_report extends \cenozo\ui\widget
    * "enum" => all possible values if the parameter type is "enum"
    * "required" => boolean describes whether the value can be left blank
    * @var array
-   * @access private
+   * @access protected
    */
-  private $parameters = array();
+  protected $parameters = array();
 
-  private $restrictions = array( 
+  /**
+   * An array of all possible restriction types where array keys are the type and values are
+   * a boolean determining whether to restrict the report by that type or not.
+   * @var array
+   * @access protected
+   */
+  protected $restrictions = array( 
     'site' => false,
     'dates' => false,
     'province' => false,

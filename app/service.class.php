@@ -29,7 +29,7 @@ final class service
   {
     // WARNING!  When we construct the service we haven't finished setting up the system yet, so
     // don't use the log class in this method!
-    
+
     // determine the arguments
     if( 'GET' == $_SERVER['REQUEST_METHOD'] && isset( $_GET ) ) $this->arguments = $_GET;
     else if( 'POST' == $_SERVER['REQUEST_METHOD'] && isset( $_POST ) ) $this->arguments = $_POST;
@@ -94,48 +94,52 @@ final class service
     require_once( dirname( __FILE__ ).'/settings.ini.php' );
     $this->settings = $SETTINGS;
 
-    $this->settings[ 'path' ][ 'CENOZO_API' ] = $this->settings[ 'path' ][ 'CENOZO' ].'/api';
-    $this->settings[ 'path' ][ 'CENOZO_TPL' ] = $this->settings[ 'path' ][ 'CENOZO' ].'/tpl';
+    if( !array_key_exists( 'general', $this->settings ) ||
+        !array_key_exists( 'application_name', $this->settings['general'] ) )
+      die( 'Error, application name not set!' );
 
-    $this->settings[ 'path' ][ 'API' ] = $this->settings[ 'path' ][ 'APPLICATION' ].'/api';
-    $this->settings[ 'path' ][ 'TPL' ] = $this->settings[ 'path' ][ 'APPLICATION' ].'/tpl';
+    define( 'APPNAME', $this->settings['general']['application_name'] );
+    $this->settings['path']['CENOZO_API'] = $this->settings['path']['CENOZO'].'/api';
+    $this->settings['path']['CENOZO_TPL'] = $this->settings['path']['CENOZO'].'/tpl';
+
+    $this->settings['path']['API'] = $this->settings['path']['APPLICATION'].'/api';
+    $this->settings['path']['TPL'] = $this->settings['path']['APPLICATION'].'/tpl';
 
     // the web directory cannot be extended
-    $this->settings[ 'path' ][ 'WEB' ] = $this->settings[ 'path' ][ 'CENOZO' ].'/web';
+    $this->settings['path']['WEB'] = $this->settings['path']['CENOZO'].'/web';
 
-    foreach( $this->settings[ 'path' ] as $path_name => $path_value )
+    foreach( $this->settings['path'] as $path_name => $path_value )
       define( $path_name.'_PATH', $path_value );
-    foreach( $this->settings[ 'url' ] as $path_name => $path_value )
+    foreach( $this->settings['url'] as $path_name => $path_value )
       define( $path_name.'_URL', $path_value );
 
-    // include the autoloader and error code files (search for appname::util first)
-    require_once
-      file_exists( API_PATH.'/util.class.php' ) ?
-      API_PATH.'/util.class.php' :
-      CENOZO_API_PATH.'/util.class.php';
-
+    // include the autoloader and error code files (search for app_path::util first)
+    require_once CENOZO_API_PATH.'/util.class.php';
     require_once CENOZO_API_PATH.'/exception/error_codes.inc.php';
     if( file_exists( API_PATH.'/exception/error_codes.inc.php' ) )
       require_once API_PATH.'/exception/error_codes.inc.php';
 
     // registers an autoloader so classes don't have to be included manually
     util::register(
-      $this->settings[ 'general' ][ 'application_name' ],
+      APPNAME,
       $this->operation_type,
-      $this->settings[ 'general' ][ 'development_mode' ] );
+      $this->settings['general']['development_mode'] );
 
     // set up the logger and session
-    log::self();
-    $session = business\session::self( $this->settings );
+    $class_name = util::get_class_name( 'log' );
+    $class_name::self();
+    $class_name = util::get_class_name( 'business\session' );
+    $session = $class_name::self( $this->settings );
     $session->initialize();
 
     // now determine and execute the operation
-    $result_array = array();
+    $result_array = array( 'success' => true );
+    $output = array( 'type' => NULL, 'data' => NULL );
     try
     {
       // execute service type-specific operations
       $method_name = $this->operation_type;
-      $result_array = $this->$method_name();
+      $output = $this->$method_name();
     }
     catch( exception\base_exception $e )
     {
@@ -156,7 +160,7 @@ final class service
       else if( 'Twig_Error_Loader' == $class_name ) $code = 3;
       else $code = 0;
     
-      $code = util::convert_number_to_code( TEMPLATE_BASE_ERROR_NUMBER + $code );
+      $code = util::convert_number_to_code( TEMPLATE_BASE_ERRNO + $code );
       $result_array['success'] = false;
       $result_array['error_type'] = 'Template';
       $result_array['error_code'] = $code;
@@ -167,7 +171,7 @@ final class service
     catch( \Exception $e )
     {
       $code = class_exists( 'cenozo\util' )
-            ? util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER )
+            ? util::convert_number_to_code( SYSTEM_BASE_ERRNO )
             : 0;
       $result_array['success'] = false;
       $result_array['error_type'] = 'System';
@@ -199,13 +203,13 @@ final class service
       }
       else if( 'pull' == $this->operation_type )
       {
-        if( 'json' == $data_type )
+        if( 'json' == $output['type'] )
         {
-          $result_array['data'] = $data;
-          $output = json_encode( $result_array );
+          $result_array['data'] = $output['data'];
+          $json_output = json_encode( $result_array );
           header( 'Content-Type: application/json' );
-          header( 'Content-Length: '.strlen( $output ) );
-          print $output;
+          header( 'Content-Length: '.strlen( $json_output ) );
+          print $json_output;
         }
         else
         {
@@ -224,7 +228,7 @@ final class service
       }
       else // 'main', 'widget'
       {
-        print $result_array['output'];
+        print $output['data'];
       }
     }
     else
@@ -303,7 +307,7 @@ final class service
     if( is_null( $this->operation_name ) )
       throw new exception\runtime( 'Unable to determine operation name.', __METHOD__ );
       
-    $class_name = util::get_full_class_name(
+    $class_name = util::get_class_name(
       sprintf( 'ui\\%s\\%s',
                $this->operation_type,
                $this->operation_name ) );
@@ -332,26 +336,41 @@ final class service
    */
   private function main()
   {
-    $result_array = array( 'success' => true );
-
-    $session = business\session::self();
-    $ldap_manager = business\ldap_manager::self();
-    $setting_manager = business\setting_manager::self();
-
-    $variables = array();
-    $variables['jquery_ui_css_path'] =
-      sprintf( '/%s/jquery-ui-%s.custom.css',
-               $session->get_theme(),
-               $setting_manager->get_setting( 'version', 'JQUERY_UI' ) );
-    $variables['reset_password'] =
-      $ldap_manager->validate_user( $session->get_user()->name, 'password' );
-    $variables['application_name'] = 
-      ucwords( $setting_manager->get_setting( 'general', 'application_name' ) );
-
-    $result_array['output'] = $this->render_template( 'main', $variables );
-    return $result_array;
+    $class_name = util::get_class_name( 'ui\main' );
+    return array(
+      'type' => 'html',
+      'data' => $this->render_template( 'main', $class_name::get_variables() ) );
   }
     
+  /**
+   * Performs actions of the "pull" type.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
+   */
+  private function pull()
+  {
+    $operation = $this->create_operation();
+    return array(
+      'type' => $operation->get_data_type(),
+      'data' => $operation->finish() );
+  }
+
+  /**
+   * Performs actions of the "push" type.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
+   */
+  private function push()
+  {
+    $operation = $this->create_operation();
+    $operation->finish();
+    return array(
+      'type' => NULL,
+      'data' => NULL );
+  }
+
   /**
    * Performs actions of the "widget" type.
    * 
@@ -360,8 +379,6 @@ final class service
    */
   private function widget()
   {
-    $result_array = array( 'success' => true );
-
     $session = business\session::self();
     $slot_name = $this->url_tokens[1];
     $slot_action = $this->url_tokens[2];
@@ -408,42 +425,15 @@ final class service
     $operation->finish();
     
     // render the widget and report to the session
-    $result_array['output'] =
-      $this->render_template( $this->operation_name, $operation->get_variables() );
+    $data = $this->render_template( $this->operation_name, $operation->get_variables() );
 
     // only push on load slot actions
     if( 'load' == $slot_action )
       $session->slot_push( $slot_name, $this->operation_name, $this->arguments );
-    return $result_array;
-  }
 
-  /**
-   * Performs actions of the "pull" type.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access private
-   */
-  private function pull()
-  {
-    $result_array = array( 'success' => true );
-    $operation = $this->create_operation();
-    $result_array['data_type'] = $operation->get_data_type();
-    $result_array['data'] = $operation->finish();
-    return $result_array();
-  }
-
-  /**
-   * Performs actions of the "push" type.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access private
-   */
-  private function push()
-  {
-    $result_array = array( 'success' => true );
-    $operation = $this->create_operation();
-    $operation->finish();
-    return $result_array;
+    return array(
+      'type' => 'html',
+      'data' => $data );
   }
 
   /**

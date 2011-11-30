@@ -69,11 +69,9 @@ class self_menu extends \cenozo\ui\widget
     $modifier->where( 'operation.name', '=', 'list' );
     $widgets = $db_role->get_operation_list( $modifier );
     
-    $exclude = array( 'operation' );
-
     foreach( $widgets as $db_widget )
     {
-      if( !in_array( $db_widget->subject, $exclude ) )
+      if( !in_array( $db_widget->subject, $this->exclude_widget_list ) )
         $lists[] = array(
           'heading' => util::pluralize( str_replace( '_', ' ', $db_widget->subject ) ),
           'subject' => $db_widget->subject,
@@ -99,5 +97,12 @@ class self_menu extends \cenozo\ui\widget
     $this->set_variable( 'lists', $lists );
     $this->set_variable( 'reports', $reports );
   }
+
+  /**
+   * An array of all widgets which are not to be included in the menu
+   * @var array
+   * @access protected
+   */
+  protected $exclude_widget_list = array( 'operation' );
 }
 ?>

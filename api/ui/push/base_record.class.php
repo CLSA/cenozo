@@ -33,7 +33,7 @@ abstract class base_record
   public function __construct( $subject, $name, $args )
   {
     parent::__construct( $subject, $name, $args );
-    $class_name = util::get_full_class_name( 'database\\'.$this->get_subject() );
+    $class_name = util::get_class_name( 'database\\'.$this->get_subject() );
     $this->set_record( new $class_name( $this->get_argument( 'id', NULL ) ) );
   }
   
