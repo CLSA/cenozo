@@ -44,7 +44,7 @@ class ldap extends base_exception
    */
   public function is_already_exists()
   {
-    $number = LDAP_BASE_ERRNO + self::convert_context( 68 );
+    $number = LDAP_CENOZO_BASE_ERRNO + self::convert_context( 68 );
     return $this->get_number() == $number;
   }
   

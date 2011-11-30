@@ -45,7 +45,7 @@ class database extends base_exception
    */
   public function is_duplicate_entry()
   {
-    return DATABASE_BASE_ERRNO + 1062 == $this->get_number();
+    return DATABASE_CENOZO_BASE_ERRNO + 1062 == $this->get_number();
   }
 
   /**
@@ -57,7 +57,7 @@ class database extends base_exception
    */
   public function is_constrained()
   {
-    return DATABASE_BASE_ERRNO + 1451 == $this->get_number();
+    return DATABASE_CENOZO_BASE_ERRNO + 1451 == $this->get_number();
   }
   
   /**
@@ -69,7 +69,7 @@ class database extends base_exception
    */
   public function is_missing_data()
   {
-    return DATABASE_BASE_ERRNO + 1048  == $this->get_number();
+    return DATABASE_CENOZO_BASE_ERRNO + 1048  == $this->get_number();
   }
 
   /**

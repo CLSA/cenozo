@@ -48,7 +48,7 @@ class util
     $count = count( $a );
 
     // determine the full class name
-    $class_name = self::get_class_path( $class_name );
+    $class_name = self::get_class_name( $class_name );
     
     if( is_subclass_of( $class_name, 'cenozo\singleton' ) )
     {

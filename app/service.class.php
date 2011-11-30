@@ -160,7 +160,7 @@ final class service
       else if( 'Twig_Error_Loader' == $class_name ) $code = 3;
       else $code = 0;
     
-      $code = util::convert_number_to_code( TEMPLATE_BASE_ERRNO + $code );
+      $code = util::convert_number_to_code( TEMPLATE_CENOZO_BASE_ERRNO + $code );
       $result_array['success'] = false;
       $result_array['error_type'] = 'Template';
       $result_array['error_code'] = $code;
@@ -171,7 +171,7 @@ final class service
     catch( \Exception $e )
     {
       $code = class_exists( 'cenozo\util' )
-            ? util::convert_number_to_code( SYSTEM_BASE_ERRNO )
+            ? util::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
             : 0;
       $result_array['success'] = false;
       $result_array['error_type'] = 'System';

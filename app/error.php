@@ -2,7 +2,7 @@
 if( !isset( $result_array ) || !is_array( $result_array ) )
 {
   $code = class_exists( 'cenozo\util' )
-        ? cenozo\util::convert_number_to_code( SYSTEM_BASE_ERRNO )
+        ? cenozo\util::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
         : 0;
   $result_array = array( 'error_type' => 'System',
                          'error_code' => $code,

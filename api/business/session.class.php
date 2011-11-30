@@ -82,7 +82,7 @@ class session extends \cenozo\singleton
     if( NULL == $this->user )
       throw new exc\permission(
         db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
-die($this->user->name);
+
     $this->initialized = true;
   }
   
