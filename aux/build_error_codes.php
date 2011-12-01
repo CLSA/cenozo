@@ -92,7 +92,8 @@ foreach( $grep_line_list as $grep_line )
     
     // make sure a match was found
     if( false === $start || false === $end ) continue;
-    $class_name = 'cenozo_'.str_replace( '/', '_', substr( $grep_line, $start, $end - $start ) );
+    $class_name =
+      'cenozo_'.str_replace( '/', '_', substr( $grep_line, $start, $end - $start ) );
 
     // get the method name
     $start_match = 'function ';

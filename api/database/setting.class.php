@@ -9,8 +9,6 @@
 
 namespace cenozo\database;
 use cenozo\log, cenozo\util;
-use cenozo\business as bus;
-use cenozo\exception as exc;
 
 /**
  * setting: record

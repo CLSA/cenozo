@@ -9,7 +9,6 @@
 
 namespace cenozo\exception;
 use cenozo\log, cenozo\util;
-use cenozo\business as bus;
 
 /**
  * argument: bad or missing argument exception

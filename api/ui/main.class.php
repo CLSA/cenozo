@@ -9,9 +9,6 @@
 
 namespace cenozo\ui;
 use cenozo\log, cenozo\util;
-use cenozo\business as bus;
-use cenozo\database as db;
-use cenozo\exception as exc;
 
 /**
  * Class that manages variables in main user interface template.

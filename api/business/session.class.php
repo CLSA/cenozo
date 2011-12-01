@@ -9,8 +9,6 @@
 
 namespace cenozo\business;
 use cenozo\log, cenozo\util;
-use cenozo\database as db;
-use cenozo\exception as exc;
 
 /**
  * session: handles all session-based information

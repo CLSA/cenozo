@@ -9,8 +9,6 @@
 
 namespace cenozo\database;
 use cenozo\log, cenozo\util;
-use cenozo\business as bus;
-use cenozo\exception as exc;
 
 /**
  * This is an enum class which defines all types of database table relationships.
