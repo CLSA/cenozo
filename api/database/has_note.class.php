@@ -32,7 +32,7 @@ abstract class has_note extends record
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
     $note_class_name = util::get_class_name( 'database\\'.$table_name.'_note' );
 
-    if ( is_null( $modifier ) ) $modifier = new modifier();
+    if ( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
     $modifier->where( $subject_key_name, '=', $this->id );
     return $note_class_name::count( $modifier );
   }
@@ -50,7 +50,7 @@ abstract class has_note extends record
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
     $note_class_name = util::get_class_name( 'database\\'.$table_name.'_note' );
 
-    if ( is_null( $modifier ) ) $modifier = new modifier();
+    if ( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
     $modifier->where( $subject_key_name, '=', $this->id );
     $modifier->order( 'sticky', true );
     $modifier->order( 'datetime' );

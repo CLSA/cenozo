@@ -414,7 +414,7 @@ abstract class record extends \cenozo\base_object
         if( 0 < count( $args ) &&
             !is_null( $args[0] ) &&
             is_object( $args[0] ) &&
-            'cenozo\\database\\modifier' != get_class( $args[0] ) )
+            'cenozo\database\modifier' != get_class( $args[0] ) )
           throw util::create( 'exception\argument', 'args', $args, __METHOD );
         
         // determine the sub action and whether to invert the result
@@ -534,7 +534,7 @@ abstract class record extends \cenozo\base_object
     }
     else if( $relationship_class_name::ONE_TO_MANY == $relationship )
     {
-      if( is_null( $modifier ) ) $modifier = new modifier();
+      if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
       if( $inverted )
       {
         $modifier->where( $table_name.'_id', '=', NULL );
@@ -552,12 +552,12 @@ abstract class record extends \cenozo\base_object
       $foreign_key_name = $record_type.'.'.$foreign_class_name::get_primary_key_name();
       $joining_primary_key_name = $joining_table_name.'.'.$table_name.'_id';
       $joining_foreign_key_name = $joining_table_name.'.'.$record_type.'_id';
-      if( is_null( $modifier ) ) $modifier = new modifier();
+      if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
   
       if( $inverted )
       { // we need to invert the list
         // first create SQL to match all records in the joining table
-        $sub_modifier = new modifier();
+        $sub_modifier = util::create( 'database\modifier' );
         $sub_modifier->where( $foreign_key_name, '=', $joining_foreign_key_name, false );
         $sub_modifier->where( $joining_primary_key_name, '=', $primary_key_name, false );
         $sub_modifier->where( $primary_key_name, '=', $primary_key_value );
@@ -753,7 +753,7 @@ abstract class record extends \cenozo\base_object
     {
       $joining_table_name = static::get_joining_table_name( $record_type );
   
-      $modifier = new modifier();
+      $modifier = util::create( 'database\modifier' );
       $modifier->where( static::get_table_name().'_id', '=', $primary_key_value );
       $modifier->where( $record_type.'_id', '=', $id );
   
@@ -986,7 +986,7 @@ abstract class record extends \cenozo\base_object
     }
     else
     {
-      $modifier = new modifier();
+      $modifier = util::create( 'database\modifier' );
       foreach( $columns as $col => $val ) $modifier->where( $col, '=', $val );
 
       // this returns null if no records are found
@@ -1081,7 +1081,7 @@ abstract class record extends \cenozo\base_object
    */
   public static function db()
   {
-    return util::create( 'business\\session' )->get_database();
+    return util::create( 'business\session' )->get_database();
   }
 
   /**

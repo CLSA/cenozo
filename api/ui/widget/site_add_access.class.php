@@ -35,7 +35,7 @@ class site_add_access extends base_add_access
     
     // This widget is special.  We need a list of users and roles, not an access list, so we
     // override the construction of the list_widget performed by base_add_list's constructor.
-    $this->list_widget = new user_list( $args );
+    $this->list_widget = util::create( 'ui\widget\user_list', $args );
     $this->list_widget->set_parent( $this, 'edit' );
     $this->list_widget->set_heading( 'Choose users to grant access to the site' );
   }

@@ -46,9 +46,9 @@ class self_password extends \cenozo\ui\widget
     parent::finish();
     
     // if the current password is "password" then mark the widget as the first password change
-    $ldap_manager = util::create( 'business\\ldap_manager' );
+    $ldap_manager = util::create( 'business\ldap_manager' );
     $this->set_variable( 'first_password',
-      $ldap_manager->validate_user( self::create( 'business\\session' )->get_user()->name, 'password' ) );
+      $ldap_manager->validate_user( self::create( 'business\session' )->get_user()->name, 'password' ) );
   }
 }
 ?>

@@ -82,7 +82,7 @@ class activity extends record
     $start_datetime_obj = NULL;
     $end_datetime_obj = NULL;
 
-    $modifier = new modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $db_user->id );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'operation.subject', '!=', 'self' );

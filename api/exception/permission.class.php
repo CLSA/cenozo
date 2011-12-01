@@ -32,7 +32,7 @@ class permission extends base_exception
     $this->operation = $db_operation;
     $message = is_null( $db_operation ) ||
                !is_object( $db_operation ) ||
-               !is_a( $db_operation, 'cenozo\\database\\operation' )
+               !is_a( $db_operation, 'cenozo\database\operation' )
              ? 'operation (unknown) denied'
              : sprintf( 'operation "%s %s %s" denied.',
                         $db_operation->type,

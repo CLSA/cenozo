@@ -27,7 +27,7 @@ class ldap_manager extends \cenozo\singleton
    */
   protected function __construct()
   {
-    $setting_manager = util::create( 'business\\setting_manager' );
+    $setting_manager = util::create( 'business\setting_manager' );
     $this->server = $setting_manager->get_setting( 'ldap', 'server' );
     $this->port = $setting_manager->get_setting( 'ldap', 'port' );
     $this->base = $setting_manager->get_setting( 'ldap', 'base' );

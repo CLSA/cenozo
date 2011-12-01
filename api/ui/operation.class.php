@@ -55,7 +55,7 @@ abstract class operation extends \cenozo\base_object
     if( is_array( $args ) ) $this->arguments = $args;
     
     // throw a permission exception if the user is not allowed to perform this operation
-    if( !util::create( 'business\\session' )->is_allowed( $this->operation_record ) )
+    if( !util::create( 'business\session' )->is_allowed( $this->operation_record ) )
       throw util::create( 'exception\permission', $this->operation_record, __METHOD__ );
 
     $this->set_heading( $this->get_subject().' '.$this->get_name() );  

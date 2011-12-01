@@ -34,22 +34,22 @@ class access extends record
   {
     // validate arguments
     if( !is_object( $db_user ) ||
-        !is_a( $db_user, util::get_class_name( 'database\\user' ) ) )
+        !is_a( $db_user, util::get_class_name( 'database\user' ) ) )
     {
       throw util::create( 'exception\argument', 'user', $db_user, __METHOD__ );
     }
     else if( !is_object( $db_role ) ||
-             !is_a( $db_role, util::get_class_name( 'database\\role' ) ) )
+             !is_a( $db_role, util::get_class_name( 'database\role' ) ) )
     {
       throw util::create( 'exception\argument', 'role', $db_role, __METHOD__ );
     }
     else if( !is_object( $db_site ) ||
-             !is_a( $db_site, util::get_class_name( 'database\\site' ) ) )
+             !is_a( $db_site, util::get_class_name( 'database\site' ) ) )
     {
       throw util::create( 'exception\argument', 'site', $db_site, __METHOD__ );
     }
 
-    $modifier = new modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $db_user->id );
     $modifier->where( 'role_id', '=', $db_role->id );
     $modifier->where( 'site_id', '=', $db_site->id );
@@ -71,8 +71,8 @@ class access extends record
   public function save()
   {
     $operation_class_name = util::get_class_name( 'database\operation' );
-    $db_access_role = new role( $this->role_id );
-    if( $db_access_role->tier > util::create( 'business\\session' )->get_role()->tier )
+    $db_access_role = util::create( 'database\role', $this->role_id );
+    if( $db_access_role->tier > util::create( 'business\session' )->get_role()->tier )
       throw util::create( 'exception\permission',
         // fake the operation
         $operation_class_name::get_operation( 'push', 'user', 'new_access' ), __METHOD__ );
@@ -90,7 +90,7 @@ class access extends record
   public function delete()
   {
     $operation_class_name = util::get_class_name( 'database\operation' );
-    if( $this->get_role()->tier > util::create( 'business\\session' )->get_role()->tier )
+    if( $this->get_role()->tier > util::create( 'business\session' )->get_role()->tier )
       throw util::create( 'exception\permission',
         // fake the operation
         $operation_class_name::get_operation( 'push', 'access', 'delete' ), __METHOD__ );

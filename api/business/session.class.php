@@ -61,7 +61,7 @@ class session extends \cenozo\singleton
     // don't initialize more than once
     if( $this->initialized ) return;
 
-    $setting_manager = util::create( 'business\\setting_manager' );
+    $setting_manager = util::create( 'business\setting_manager' );
 
     // create the databases
     $this->database = util::create( 'database\database',
@@ -75,8 +75,8 @@ class session extends \cenozo\singleton
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
     
-    $user_class_name = util::get_class_name( 'database\\user' );
-    $operation_class_name = util::get_class_name( 'database\\operation' );
+    $user_class_name = util::get_class_name( 'database\user' );
+    $operation_class_name = util::get_class_name( 'database\operation' );
     $this->set_user( $user_class_name::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
       throw util::create( 'exception\permission',
@@ -275,7 +275,7 @@ class session extends \cenozo\singleton
    */
   public function get_theme()
   {
-    $theme = util::create( 'business\\setting_manager' )->get_setting( 'interface', 'default_theme' );
+    $theme = util::create( 'business\setting_manager' )->get_setting( 'interface', 'default_theme' );
 
     if( !is_null( $this->user ) )
     {

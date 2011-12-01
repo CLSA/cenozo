@@ -53,7 +53,7 @@ class database extends \cenozo\base_object
     
     $this->connect();
 
-    $column_mod = new modifier();
+    $column_mod = util::create( 'database\modifier' );
     $column_mod->where( 'TABLE_SCHEMA', '=', $this->name );
     $column_mod->order( 'TABLE_NAME' );
     $column_mod->order( 'COLUMN_NAME' );
@@ -86,7 +86,7 @@ class database extends \cenozo\base_object
       }
     }
 
-    $constraint_mod = new modifier();
+    $constraint_mod = util::create( 'database\modifier' );
     $constraint_mod->where( 'TABLE_CONSTRAINTS.TABLE_SCHEMA', '=', $this->name );
     $constraint_mod->where( 'KEY_COLUMN_USAGE.TABLE_SCHEMA', '=', $this->name );
     $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', 'UNIQUE' );
@@ -130,7 +130,7 @@ class database extends \cenozo\base_object
   public function start_transaction()
   {
     // only start a transaction for the main database (this is an ADOdb limitation)
-    if( util::create( 'business\\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
+    if( util::create( 'business\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
       $this->connection->StartTrans();
   }
   
@@ -146,7 +146,7 @@ class database extends \cenozo\base_object
     $class_name = util::get_class_name( 'business\setting_manager' );
     if( class_exists( 'cenozo\business\setting_manager' ) &&
         $class_name::exists() &&
-        util::create( 'business\\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
+        util::create( 'business\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
       $this->connection->CompleteTrans();
   }
 

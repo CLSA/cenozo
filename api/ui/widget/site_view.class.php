@@ -41,7 +41,7 @@ class site_view extends base_view
     try
     {
       // create the access sub-list widget
-      $this->access_list = new access_list( $args );
+      $this->access_list = util::create( 'ui\widget\access_list', $args );
       $this->access_list->set_parent( $this );
       $this->access_list->set_heading( 'Site access list' );
     }
@@ -53,7 +53,7 @@ class site_view extends base_view
     try
     {
       // create the activity sub-list widget
-      $this->activity_list = new activity_list( $args );
+      $this->activity_list = util::create( 'ui\widget\activity_list', $args );
       $this->activity_list->set_parent( $this );
       $this->activity_list->set_heading( 'Site activity' );
     }

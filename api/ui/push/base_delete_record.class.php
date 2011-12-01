@@ -42,7 +42,7 @@ abstract class base_delete_record extends base_record
   public function finish()
   {
     $operation = util::create(
-      sprintf( 'ui\\push\\%s_delete', $this->child_subject ),
+      sprintf( 'ui\push\%s_delete', $this->child_subject ),
       array( 'id' => $this->get_argument( 'remove_id' ) ) );
     $operation->finish();
   }

@@ -44,8 +44,8 @@ class self_home extends \cenozo\ui\widget
   {
     parent::finish();
 
-    $session = util::create( 'business\\session' );
-    $setting_manager = util::create( 'business\\setting_manager' );
+    $session = util::create( 'business\session' );
+    $setting_manager = util::create( 'business\setting_manager' );
     $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -68,7 +68,7 @@ class self_home extends \cenozo\ui\widget
 
     // add any messages that apply to this user
     $message_list = array();
-    $message_class_name = util::get_class_name( 'database\message' );
+    $system_message_class_name = util::get_class_name( 'database\system_message' );
 
     // global messages go first
     $modifier = util::create( 'database\modifier' );

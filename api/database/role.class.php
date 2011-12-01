@@ -34,7 +34,7 @@ class role extends base_access
       return false;
     }
 
-    $modifier = new modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'operation_id', '=', $db_operation->id );
     return 0 < $this->get_operation_count( $modifier );
   }

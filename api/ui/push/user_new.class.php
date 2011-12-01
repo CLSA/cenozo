@@ -61,7 +61,7 @@ class user_new extends base_new
       throw util::create( 'exception\notice', 'The user\'s last name cannot be left blank.', __METHOD__ );
 
     // add the user to ldap
-    $ldap_manager = util::create( 'business\\ldap_manager' );
+    $ldap_manager = util::create( 'business\ldap_manager' );
     try
     {
       $ldap_manager->new_user(

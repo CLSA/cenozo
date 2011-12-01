@@ -41,7 +41,7 @@ class self_set_theme extends \cenozo\ui\push
    */
   public function finish()
   {
-    $session = util::create( 'business\\session' );
+    $session = util::create( 'business\session' );
     $session->get_user()->theme = $this->theme_name;
     $session->get_user()->save();
   }

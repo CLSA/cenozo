@@ -49,23 +49,41 @@ final class service
       $this->operation_type = 'main';
     }
 
-    // determine the operation name
-    if( 'widget' == $this->operation_type )
+    try
     {
-      if( 3 > count( $this->url_tokens ) )
-        throw new exception\runtime(
-          sprintf( 'Invalid %s URL "%s".', $this->operation_type, $this->base_url ) , __METHOD__ );
-      
-      if( 5 <= count( $this->url_tokens ) ) 
-        $this->operation_name = $this->url_tokens[3].'_'.$this->url_tokens[4];
-    }
-    else if( 'main' != $this->operation_type )
-    {
-      if( 2 > count( $this->url_tokens ) )
-        throw new exception\runtime(
-          sprintf( 'Invalid %s URL "%s".', $this->operation_type, $this->base_url ) , __METHOD__ );
+      // determine the operation name
+      if( 'widget' == $this->operation_type )
+      {
+        if( 3 > count( $this->url_tokens ) )
+          throw new \Exception(
+            sprintf( 'Invalid %s URL "%s".', $this->operation_type, $this->base_url ) );
+        
+        if( 5 <= count( $this->url_tokens ) ) 
+          $this->operation_name = $this->url_tokens[3].'_'.$this->url_tokens[4];
+      }
+      else if( 'main' != $this->operation_type )
+      {
+        if( 2 > count( $this->url_tokens ) )
+          throw new \Exception(
+            sprintf( 'Invalid %s URL "%s".', $this->operation_type, $this->base_url ) );
 
-      $this->operation_name = $this->url_tokens[0].'_'.$this->url_tokens[1];
+        $this->operation_name = $this->url_tokens[0].'_'.$this->url_tokens[1];
+      }
+    }
+    catch( \Exception $e )
+    {
+      // emulate a regular exception
+      $result_array = array(
+        'error_type' => 'Notice',
+        'error_code' => 'URL',
+        'error_message' => $e->getMessage() );
+
+      // send the error in json format in an http error header
+      \HttpResponse::status( 400 );
+      \HttpResponse::setContentType( 'application/json' );
+      \HttpResponse::setData( json_encode( $result_array ) );
+      \HttpResponse::send();
+      die;
     }
 
     // turn on output buffering for all but the main operation type
@@ -127,7 +145,7 @@ final class service
 
     // set up the logger and session
     util::create( 'log' );
-    $session = util::create( 'business\\session', $this->settings );
+    $session = util::create( 'business\session', $this->settings );
     $session->initialize();
 
     // now determine and execute the operation
@@ -277,7 +295,7 @@ final class service
     if( file_exists( TPL_PATH ) ) $template_paths[] = TPL_PATH;
     $template_paths[] = CENOZO_TPL_PATH;
   
-    $theme = util::create( 'business\\session' )->get_theme();
+    $theme = util::create( 'business\session' )->get_theme();
     $loader = new \Twig_Loader_Filesystem( $template_paths );
     $this->twig = new \Twig_Environment( $loader,
       array( 'debug' => util::in_development_mode(),
@@ -303,25 +321,21 @@ final class service
   private function create_operation()
   {
     if( is_null( $this->operation_name ) )
-      throw new exception\runtime( 'Unable to determine operation name.', __METHOD__ );
+      throw util::create( 'exception\runtime', 'Unable to determine operation name.', __METHOD__ );
       
-    $class_name = util::get_class_name(
-      sprintf( 'ui\\%s\\%s',
-               $this->operation_type,
-               $this->operation_name ) );
-           
-    $operation = new $class_name( $this->arguments );
-    if( !is_subclass_of( $operation, 'cenozo\\ui\\'.$this->operation_type ) )
-      throw new exception\runtime(
+    $class_name = sprintf( 'ui\%s\%s', $this->operation_type, $this->operation_name );
+    $operation = util::create( $class_name, $this->arguments );
+    if( !is_subclass_of( $operation, 'cenozo\ui\\'.$this->operation_type ) )
+      throw util::create( 'exception\runtime',
         'Invoked operation "'.$class_name.'" is invalid.', __METHOD__ );
 
     // Only register the operation if the operation is not a widget doing
     // anything other than loading
     if( !( 'widget' == $this->operation_type && 'load' != $this->url_tokens[2] ) )
-      util::create( 'business\\session' )->set_operation( $operation, $this->arguments );
+      util::create( 'business\session' )->set_operation( $operation, $this->arguments );
 
     // if requested to, start a transaction
-    if( util::use_transaction() ) util::create( 'business\\session' )->get_database()->start_transaction();
+    if( util::use_transaction() ) util::create( 'business\session' )->get_database()->start_transaction();
 
     return $operation;
   }      
@@ -377,7 +391,7 @@ final class service
    */
   private function widget()
   {
-    $session = util::create( 'business\\session' );
+    $session = util::create( 'business\session' );
     $slot_name = $this->url_tokens[1];
     $slot_action = $this->url_tokens[2];
 

@@ -30,7 +30,7 @@ class setting extends record
    */
   public static function get_setting( $category, $name )
   {
-    $modifier = new modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'category', '=', $category );
     $modifier->where( 'name', '=', $name );
 

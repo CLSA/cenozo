@@ -42,7 +42,7 @@ abstract class site_restricted_list extends base_list
     }
     else // anyone else is restricted to their own site
     {
-      $this->db_restrict_site = util::create( 'business\\session' )->get_site();
+      $this->db_restrict_site = util::create( 'business\session' )->get_site();
     }
     
     // if restricted, show the site's name in the heading
@@ -137,7 +137,7 @@ abstract class site_restricted_list extends base_list
    */
   public static function may_restrict()
   {
-    return 3 == util::create( 'business\\session' )->get_role()->tier;
+    return 3 == util::create( 'business\session' )->get_role()->tier;
   }
 
   /**

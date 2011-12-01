@@ -45,12 +45,12 @@ class note_new extends \cenozo\ui\push
     $category_id = $this->get_argument( 'category_id' );
     $note = $this->get_argument( 'note' );
     $db_record = util::create( 'database\\'.$category, $category_id );
-    if( !is_a( $db_record, util::get_class_name( 'database\\has_note' ) ) )
+    if( !is_a( $db_record, util::get_class_name( 'database\has_note' ) ) )
       throw util::create( 'exception\runtime',
         sprintf( 'Tried to create new note to %s which cannot have notes.', $category ),
         __METHOD__ );
 
-    $db_record->add_note( util::create( 'business\\session' )->get_user(), $note );
+    $db_record->add_note( util::create( 'business\session' )->get_user(), $note );
   }
 }
 ?>

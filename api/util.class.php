@@ -42,7 +42,7 @@ class util
    */
   public static function create( $class_name )
   {
-    $debug = 'business\\session' == $class_name;
+    $debug = 'business\session' == $class_name;
     // remove the class name from the arguments
     $a = func_get_args();
     $class_name = array_shift( $a );
@@ -143,7 +143,7 @@ class util
       {
         require $cenozo_file_path;
         if( !class_exists( $cenozo_class_name, false ) )
-          throw util::create( 'exception\runtime', 'Unable to load class: '.$cenozo_class_name, __METHOD__ );
+          throw self::create( 'exception\runtime', 'Unable to load class: '.$cenozo_class_name, __METHOD__ );
       }
     }
 
@@ -153,13 +153,13 @@ class util
     {
       require $file_path;
       if( !class_exists( $class_name, false ) && !interface_exists( $class_name, false ) )
-        throw util::create( 'exception\runtime', 'Unable to load class: '.$class_name, __METHOD__ );
+        throw self::create( 'exception\runtime', 'Unable to load class: '.$class_name, __METHOD__ );
 
       return;
     }
 
     // if we get here then the file is missing
-    throw util::create( 'exception\runtime', 'Missing class: '.$class_name, __METHOD__ );
+    throw self::create( 'exception\runtime', 'Missing class: '.$class_name, __METHOD__ );
   }
 
   /**
@@ -200,14 +200,25 @@ class util
    *               (application) namespace.
    * @return string
    * @access public
+   * @throws exception\runtime
    * @static
    */
   public static function get_class_name( $class_name )
   {
+    $class_in_application = !is_null( self::get_application_class_path( $class_name ) );
+    $class_in_framework = !is_null( self::get_framework_class_path( $class_name ) );
+
+    // make sure the class exists in either the application or the framework
+    if( !$class_in_application && !$class_in_framework )
+    {
+      throw self::create( 'exception\runtime',
+        sprintf( 'Class name %s doesn\'t exist in either the application or framework.',
+                 $class_name ), __METHOD__ );
+    }
+
     // if the path is null then return back the argument
     return sprintf( '\\%s\\%s',
-                    is_null( self::get_application_class_path( $class_name ) ) ?
-                    'cenozo' : APPNAME,
+                    $class_in_application ? APPNAME : 'cenozo',
                     $class_name );
   }
 
@@ -398,7 +409,7 @@ class util
    */
   public static function get_timezone_object( $server = false )
   {
-    $db_site = util::create( 'business\\session' )->get_site();
+    $db_site = self::create( 'business\session' )->get_site();
     return new \DateTimeZone( $server || !$db_site ? 'UTC' : $db_site->timezone );
   }
 

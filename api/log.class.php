@@ -200,10 +200,9 @@ final class log extends singleton
   private function send( $message, $type )
   {
     // make sure we have a session
-    $class_name = util::get_class_name( 'business\\session' );
-
+    $class_name = util::get_class_name( 'business\session' );
     if( !class_exists( $class_name ) || !$class_name::exists() ) return;
-    $session = util::create( $class_name );
+    $session = util::create( 'business\session' );
     $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -387,10 +386,10 @@ final class log extends singleton
         'error_message' => '' );
 
       // try and set the current operations error code, if possible
-      $class_name = util::get_class_name( 'business\\session' );
+      $class_name = util::get_class_name( 'business\session' );
       if( class_exists( $class_name ) && $class_name::exists() )
       {
-        $session = util::create( $class_name );
+        $session = util::create( 'business\session' );
 
         // we need to complete the transaction if there is one in progress
         if( util::use_transaction() )

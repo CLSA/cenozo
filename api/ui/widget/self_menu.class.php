@@ -44,7 +44,7 @@ class self_menu extends \cenozo\ui\widget
   {
     parent::finish();
 
-    $db_role = util::create( 'business\\session' )->get_role();
+    $db_role = util::create( 'business\session' )->get_role();
 
     // get all calendar widgets that the user has access to
     $calendars = array();

@@ -108,7 +108,7 @@ abstract class base_access extends record
     }
     
     $activity_class_name = util::get_class_name( 'database\activity' );
-    $modifier = new modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( $subject_name.'_id', '=', $this->id );
     $modifier->order_desc( 'datetime' );
     $modifier->limit( 1 );
@@ -135,7 +135,7 @@ abstract class base_access extends record
     }
     
     $activity_class_name = util::get_class_name( 'database\activity' );
-    if( is_null( $modifier ) ) $modifier = new modifier();
+    if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
     $modifier->where( $subject_name.'_id', '=', $this->id );
     return $activity_class_name::count( $modifier );
   }
@@ -159,7 +159,7 @@ abstract class base_access extends record
     }
     
     $activity_class_name = util::get_class_name( 'database\activity' );
-    if( is_null( $modifier ) ) $modifier = new modifier();
+    if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
     $modifier->where( $subject_name.'_id', '=', $this->id );
     return $activity_class_name::select( $modifier );
   }
@@ -209,9 +209,9 @@ abstract class base_access extends record
     
     // define the modifier
     $modifier = 1 == count( $args ) &&
-                false !== strpos( get_class( $args[0] ), 'database\\modifier' )
+                false !== strpos( get_class( $args[0] ), 'database\modifier' )
               ? $args[0]
-              : new modifier();
+              : util::create( 'database\modifier' );
 
     $modifier->where( $subject_name.'_id', '=', $this->id );
     

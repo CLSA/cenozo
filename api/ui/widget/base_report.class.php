@@ -74,7 +74,7 @@ abstract class base_report extends \cenozo\ui\widget
         $this->add_parameter( 'restrict_site_id', 'hidden' );
 
         // if restricted, show the site's name in the heading
-        $predicate = util::create( 'business\\session' )->get_site()->name;
+        $predicate = util::create( 'business\session' )->get_site()->name;
         $this->set_heading( $this->get_heading().' for '.$predicate );
       }
     }
@@ -119,7 +119,7 @@ abstract class base_report extends \cenozo\ui\widget
       // build time time zone help text
       $date_obj = util::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            util::create( 'business\\session' )->get_site()->name,
+                            util::create( 'business\session' )->get_site()->name,
                             $date_obj->format( 'T' ) );
       $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }
@@ -251,7 +251,7 @@ abstract class base_report extends \cenozo\ui\widget
       }
       else
       {
-        $this->set_parameter( 'restrict_site_id', util::create( 'business\\session' )->get_site()->id );
+        $this->set_parameter( 'restrict_site_id', util::create( 'business\session' )->get_site()->id );
       }
     }
     
@@ -301,7 +301,7 @@ abstract class base_report extends \cenozo\ui\widget
    */
   public static function may_restrict_by_site()
   {
-    return 3 == util::create( 'business\\session' )->get_role()->tier;
+    return 3 == util::create( 'business\session' )->get_role()->tier;
   }
 
   /**

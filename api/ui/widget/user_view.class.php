@@ -42,7 +42,7 @@ class user_view extends base_view
     try
     {
       // create the access sub-list widget
-      $this->access_list = new access_list( $args );
+      $this->access_list = util::create( 'ui\widget\access_list', $args );
       $this->access_list->set_parent( $this );
       $this->access_list->set_heading( 'User\'s site access list' );
     }
@@ -54,7 +54,7 @@ class user_view extends base_view
     try
     {
       // create the activity sub-list widget
-      $this->activity_list = new activity_list( $args );
+      $this->activity_list = util::create( 'ui\widget\activity_list', $args );
       $this->activity_list->set_parent( $this );
       $this->activity_list->set_heading( 'User activity' );
     }
@@ -91,11 +91,11 @@ class user_view extends base_view
     $operation_class_name = util::get_class_name( 'database\operation' );
     $this->set_variable( 'reset_password',
       $this->reset_password &&
-      util::create( 'business\\session' )->is_allowed(
+      util::create( 'business\session' )->is_allowed(
         $operation_class_name::get_operation( 'push', 'user', 'reset_password' ) ) );
     $this->set_variable( 'set_password',
       $this->set_password &&
-      util::create( 'business\\session' )->is_allowed(
+      util::create( 'business\session' )->is_allowed(
         $operation_class_name::get_operation( 'push', 'user', 'set_password' ) ) );
 
     if( !is_null( $this->access_list ) )
@@ -126,7 +126,7 @@ class user_view extends base_view
     if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
     if( !$site_restricted_list_class_name::may_restrict() )
-      $modifier->where( 'site_id', '=', util::create( 'business\\session' )->get_site()->id );
+      $modifier->where( 'site_id', '=', util::create( 'business\session' )->get_site()->id );
     return $access_class_name::count( $modifier );
   }
 
@@ -145,7 +145,7 @@ class user_view extends base_view
     if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
     if( !$site_restricted_list_class_name::may_restrict() )
-      $modifier->where( 'site_id', '=', util::create( 'business\\session' )->get_site()->id );
+      $modifier->where( 'site_id', '=', util::create( 'business\session' )->get_site()->id );
     return $access_class_name::select( $modifier );
   }
 
@@ -162,7 +162,7 @@ class user_view extends base_view
     if( !$site_restricted_list_class_name::may_restrict() )
     {
       if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', util::create( 'business\\session' )->get_site()->id );
+      $modifier->where( 'site_id', '=', util::create( 'business\session' )->get_site()->id );
     }
 
     return $this->get_record()->get_activity_count( $modifier );
@@ -182,7 +182,7 @@ class user_view extends base_view
     if( !$site_restricted_list_class_name::may_restrict() )
     {
       if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', util::create( 'business\\session' )->get_site()->id );
+      $modifier->where( 'site_id', '=', util::create( 'business\session' )->get_site()->id );
     }
 
     return $this->get_record()->get_activity_list( $modifier );

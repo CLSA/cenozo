@@ -92,9 +92,6 @@
         } );
       {% endif %}
 
-      loading_image = new Image();
-      loading_image.src = "{{ constant('CENOZO_URL') }}/img/loading.gif";
-
       // refresh all slots
       {% if show_status %}slot_refresh( "status" );{% endif %}
       {% if show_shortcuts %}slot_refresh( "shortcuts" );{% endif %}

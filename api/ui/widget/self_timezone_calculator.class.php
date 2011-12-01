@@ -45,7 +45,7 @@ class self_timezone_calculator extends \cenozo\ui\widget
     parent::finish();
 
     // get all timezones from the site table
-    $current_timezone = util::create( 'business\\session' )->get_site()->timezone;
+    $current_timezone = util::create( 'business\session' )->get_site()->timezone;
     $datetime_obj = util::get_datetime_object();
     $timezone_list = array();
     $site_class_name = util::get_class_name( 'database\site' );

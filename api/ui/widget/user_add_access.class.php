@@ -33,12 +33,12 @@ class user_add_access extends base_add_access
   {
     parent::__construct( 'user', $args );
     
-    $session = util::create( 'business\\session' );
+    $session = util::create( 'business\session' );
     if( 3 == $session->get_role()->tier )
     {
       // This widget is special.  We need a list of sites and roles, not an access list, so we
       // override the construction of the list_widget performed by base_add_list's constructor.
-      $this->list_widget = new site_list( $args );
+      $this->list_widget = util::create( 'ui\widget\site_list', $args );
       $this->list_widget->set_parent( $this, 'edit' );
       $this->list_widget->set_heading( 'Choose sites to grant access to the user' );
     }

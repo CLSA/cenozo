@@ -60,7 +60,7 @@ class cenozo_manager extends \cenozo\factory
   {
     if( !$this->enabled || $this->logged_in ) return;
 
-    $session = util::create( 'business\\session' );
+    $session = util::create( 'business\session' );
 
     // log in using the current user/role/site
     $this->set_site( $session->get_site() );
@@ -123,7 +123,7 @@ class cenozo_manager extends \cenozo\factory
     $request->setMethod( \HttpRequest::METH_GET );
     if( !is_null( $arguments ) )
     {
-      if( !is_array( $arguments ) ) throw new exp\argument( 'arguments', $arguments, __METHOD__ );
+      if( !is_array( $arguments ) ) throw util::create( 'exception\arguments', $arguments, __METHOD__ );
       $request->setQueryData( $arguments );
     }
     
@@ -151,7 +151,7 @@ class cenozo_manager extends \cenozo\factory
     $request->setMethod( \HttpRequest::METH_POST );
     if( !is_null( $arguments ) )
     {
-      if( !is_array( $arguments ) ) throw new exp\argument( 'arguments', $arguments, __METHOD__ );
+      if( !is_array( $arguments ) ) throw util::create( 'exception\arguments', $arguments, __METHOD__ );
       $request->setPostFields( $arguments );
     }
 

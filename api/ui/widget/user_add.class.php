@@ -38,7 +38,7 @@ class user_add extends base_view
     $this->add_item( 'last_name', 'string', 'Last name' );
     $this->add_item( 'active', 'boolean', 'Active' );
 
-    $type = 3 == util::create( 'business\\session' )->get_role()->tier
+    $type = 3 == util::create( 'business\session' )->get_role()->tier
           ? 'enum'
           : 'hidden';
     $this->add_item( 'site_id', $type, 'Site' );
@@ -57,7 +57,7 @@ class user_add extends base_view
     
     $role_class_name = util::get_class_name( 'database\role' );
     $site_class_name = util::get_class_name( 'database\site' );
-    $session = util::create( 'business\\session' );
+    $session = util::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays

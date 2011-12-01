@@ -34,7 +34,7 @@ class system_message_add extends base_view
     
     // define all columns defining this record
 
-    $type = 3 == util::create( 'business\\session' )->get_role()->tier ? 'enum' : 'hidden';
+    $type = 3 == util::create( 'business\session' )->get_role()->tier ? 'enum' : 'hidden';
     $this->add_item( 'site_id', $type, 'Site',
       'Leaving the site blank will show the message across all sites.' );
     $this->add_item( 'role_id', 'enum', 'Role',
@@ -52,7 +52,7 @@ class system_message_add extends base_view
   public function finish()
   {
     parent::finish();
-    $session = util::create( 'business\\session' );
+    $session = util::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
     $site_class_name = util::get_class_name( 'database\site' );
     $role_class_name = util::get_class_name( 'database\role' );

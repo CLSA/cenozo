@@ -78,7 +78,7 @@ class site extends base_access
       return;
     }
 
-    $db_access = new access( $access_id );
+    $db_access = util::create( 'database\access', $access_id );
     $db_access->delete();
   }
 }

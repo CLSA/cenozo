@@ -47,7 +47,7 @@ abstract class base_list extends \cenozo\ui\widget
     
     // determine properties based on the current user's permissions
     $operation_class_name = util::get_class_name( 'database\operation' );
-    $session = util::create( 'business\\session' );
+    $session = util::create( 'business\session' );
     $this->viewable = $session->is_allowed(
       $operation_class_name::get_operation( 'widget', $this->get_subject(), 'view' ) );
     $this->addable = $session->is_allowed(
@@ -217,7 +217,7 @@ abstract class base_list extends \cenozo\ui\widget
     {
       // add/remove operations are relative to the parent
       $operation_class_name = util::get_class_name( 'database\operation' );
-      $session = util::create( 'business\\session' );
+      $session = util::create( 'business\session' );
       $this->addable = $session->is_allowed( 
         $operation_class_name::get_operation(
           'widget', $this->parent->get_subject(), 'add_'.$this->get_subject() ) );

@@ -31,7 +31,7 @@ class operation extends record
    */
   public static function get_operation( $type, $subject, $name )
   {
-    $modifier = new modifier();
+    $modifier = util::create( 'database\modifier' );
     $modifier->where( 'type', '=', $type );
     $modifier->where( 'subject', '=', $subject );
     $modifier->where( 'name', '=', $name );

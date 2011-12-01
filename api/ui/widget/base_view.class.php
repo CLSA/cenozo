@@ -43,7 +43,7 @@ abstract class base_view extends base_record
 
       // determine properties based on the current user's permissions
       $operation_class_name = util::get_class_name( 'database\operation' );
-      $session = util::create( 'business\\session' );
+      $session = util::create( 'business\session' );
       $this->editable = $session->is_allowed(
         $operation_class_name::get_operation( 'push', $subject, 'edit' ) );
       $this->removable = $session->is_allowed( 
@@ -98,7 +98,7 @@ abstract class base_view extends base_record
       // build time time zone help text
       $date_obj = util::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            util::create( 'business\\session' )->get_site()->name,
+                            util::create( 'business\session' )->get_site()->name,
                             $date_obj->format( 'T' ) );
       $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }

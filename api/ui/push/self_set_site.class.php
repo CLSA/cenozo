@@ -50,7 +50,7 @@ class self_set_site extends \cenozo\ui\push
       throw util::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
     }
     
-    $session = util::create( 'business\\session' );
+    $session = util::create( 'business\session' );
     $db_user = $session->get_user();
     $db_role = NULL;
 

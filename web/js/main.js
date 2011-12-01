@@ -131,7 +131,6 @@ function ajax_slot( slot, action, subject, name, args ) {
   $.loading( {
     onAjax: true,
     mask: true,
-    img: loading_image,
     delay: 300, // ms
     align: "center"
   } );
