@@ -10,20 +10,6 @@ function print_exception_block( $lists, $type )
   if( !array_key_exists( $type, $lists ) ) return;
   $list = $lists[$type];
 
-  // first find the longest line
-  $max_length = 0;
-  foreach( $list as $class_name => $method_list )
-  {
-    foreach( $method_list as $method_name )
-    {
-      $length = strlen( sprintf( "define( '%s__%s__%s__ERRNO',",
-                                 strtoupper( $type ),
-                                 strtoupper( $class_name ),
-                                 strtoupper( $method_name ) ) );
-      if( $length > $max_length ) $max_length = $length;
-    }
-  }
-
   // now print out the lines
   $counter = 1;
   ksort( $list );
@@ -33,18 +19,11 @@ function print_exception_block( $lists, $type )
     $method_list = array_unique( $method_list );
     foreach( $method_list as $method_name )
     {
-      // add the first part
-      $string = sprintf( "define( '%s__%s__%s__ERRNO',",
-                         strtoupper( $type ),
-                         strtoupper( $class_name ),
-                         strtoupper( $method_name ) );
-      
-      // pad spaces up to the max
-      $string = str_pad( $string, $max_length );
-
-      // now print the whole line
-      printf( "%s %s_CENOZO_BASE_ERRNO + %d );\n",
-              $string,
+      printf( "define( '%s__%s__%s__ERRNO',\n".
+              "        %s_CENOZO_BASE_ERRNO + %d );\n",
+              strtoupper( $type ),
+              strtoupper( $class_name ),
+              strtoupper( $method_name ),
               strtoupper( $type ),
               $counter++ );
     }
@@ -57,8 +36,11 @@ if( preg_match( '#/aux$#', getcwd() ) ) chdir( '..' );
 // grep for all method declarations and new exceptions in the api/ directory
 $return_status = -1;
 $grep_line_list = array();
-exec( 'grep -Hrn "\(^ *\(public\|private\|protected\)\( static\| final\)* function\)\|\(new exc\)" api/*',
-      $grep_line_list, $return_status );
+exec( sprintf( 'grep -Hrn "\(%s\)\|\(%s\)" api/*',
+               '^ *\(public\|private\|protected\)\( static\| final\)* function',
+               "::create( 'exception" ),
+      $grep_line_list,
+      $return_status );
 
 if( 0 != $return_status ) die( 'There was an error when fetching method list.' );
 
@@ -68,7 +50,7 @@ $current_method_name = NULL;
 
 foreach( $grep_line_list as $grep_line )
 {
-  if( preg_match( '#new exc#', $grep_line ) )
+  if( preg_match( "#::create\\( 'exception#", $grep_line ) )
   { // this line is a new exception
     // make sure we have a class and method name
     if( is_null( $current_class_name ) || is_null( $current_method_name ) )
@@ -76,14 +58,12 @@ foreach( $grep_line_list as $grep_line )
            'class and/or method name that it belongs to.' );
 
     // get the exception type
-    $start_match = 'exc\\';
-    $start = strpos( $grep_line, $start_match );
-    if( false === $start ) $start_match = 'exception\\';
+    $start_match = 'exception\\';
     $start = strpos( $grep_line, $start_match );
     if( false === $start ) continue;
     $start += strlen( $start_match );
 
-    $end_match = '(';
+    $end_match = "'";
     $end = strpos( $grep_line, $end_match, $start );
     
     // make sure a match was found
@@ -112,7 +92,7 @@ foreach( $grep_line_list as $grep_line )
     
     // make sure a match was found
     if( false === $start || false === $end ) continue;
-    $class_name = 'beartooth_'.str_replace( '/', '_', substr( $grep_line, $start, $end - $start ) );
+    $class_name = 'cenozo_'.str_replace( '/', '_', substr( $grep_line, $start, $end - $start ) );
 
     // get the method name
     $start_match = 'function ';
