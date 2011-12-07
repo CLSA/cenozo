@@ -335,7 +335,8 @@ final class service
       util::create( 'business\session' )->set_operation( $operation, $this->arguments );
 
     // if requested to, start a transaction
-    if( util::use_transaction() ) util::create( 'business\session' )->get_database()->start_transaction();
+    if( util::use_transaction() )
+      util::create( 'business\session' )->get_database()->start_transaction();
 
     return $operation;
   }      

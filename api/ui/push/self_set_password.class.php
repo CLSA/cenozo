@@ -46,13 +46,16 @@ class self_set_password extends \cenozo\ui\push
     // make sure the old password is correct
     $ldap_manager = util::create( 'business\ldap_manager' );
     if( !$ldap_manager->validate_user( $db_user->name, $old ) )
-      throw util::create( 'exception\notice', 'The password you have provided is incorrect.', __METHOD__ );
+      throw util::create(
+        'exception\notice', 'The password you have provided is incorrect.', __METHOD__ );
     
     // make sure the new password isn't blank, at least 6 characters long and not "password"
     if( 6 > strlen( $new ) )
-      throw util::create( 'exception\notice', 'Passwords must be at least 6 characters long.', __METHOD__ );
+      throw util::create(
+        'exception\notice', 'Passwords must be at least 6 characters long.', __METHOD__ );
     else if( 'password' == $new )
-      throw util::create( 'exception\notice', 'You cannot choose "password" as your password.', __METHOD__ );
+      throw util::create(
+        'exception\notice', 'You cannot choose "password" as your password.', __METHOD__ );
     
     // and that the user confirmed their new password correctly
     if( $new != $confirm )

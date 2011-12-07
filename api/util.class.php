@@ -145,7 +145,8 @@ class util
         {
           require $cenozo_file_path;
           if( !class_exists( $cenozo_class_name, false ) )
-            throw self::create( 'exception\runtime', 'Unable to load class: '.$cenozo_class_name, __METHOD__ );
+            throw self::create(
+              'exception\runtime', 'Unable to load class: '.$cenozo_class_name, __METHOD__ );
         }
       }
     }
@@ -384,7 +385,8 @@ class util
   public static function var_dump_html( $data )
   {
     // make strings magenta
-    $output = preg_replace( '/("[^"]*")/', '<font color="magenta">${1}</font>', self::var_dump( $data ) );
+    $output = preg_replace(
+      '/("[^"]*")/', '<font color="magenta">${1}</font>', self::var_dump( $data ) );
 
     // make types yellow and type braces red
     $output = preg_replace(

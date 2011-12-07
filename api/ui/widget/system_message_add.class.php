@@ -64,7 +64,8 @@ class system_message_add extends base_view
     $roles = array();
     $modifier = util::create( 'database\modifier' );
     if( !$is_top_tier ) $modifier->where( 'tier', '!=', 3 );
-    foreach( $role_class_name::select( $modifier ) as $db_role ) $roles[$db_role->id] = $db_role->name;
+    foreach( $role_class_name::select( $modifier ) as $db_role )
+      $roles[$db_role->id] = $db_role->name;
 
     // set the view's items
     $this->set_item(

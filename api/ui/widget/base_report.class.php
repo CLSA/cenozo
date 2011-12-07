@@ -248,7 +248,8 @@ abstract class base_report extends \cenozo\ui\widget
       }
       else
       {
-        $this->set_parameter( 'restrict_site_id', util::create( 'business\session' )->get_site()->id );
+        $this->set_parameter(
+          'restrict_site_id', util::create( 'business\session' )->get_site()->id );
       }
     }
     

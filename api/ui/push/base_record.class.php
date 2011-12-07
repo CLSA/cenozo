@@ -30,7 +30,8 @@ abstract class base_record
   public function __construct( $subject, $name, $args )
   {
     parent::__construct( $subject, $name, $args );
-    $this->set_record( util::create( 'database\\'.$this->get_subject(), $this->get_argument( 'id', NULL ) ) );
+    $this->set_record(
+      util::create( 'database\\'.$this->get_subject(), $this->get_argument( 'id', NULL ) ) );
   }
   
   /**

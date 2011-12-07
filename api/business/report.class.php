@@ -125,7 +125,8 @@ class report extends \cenozo\base_object
     }
     catch( \Exception $e )
     {
-      throw util::create( 'exception\runtime', 'Error while setting cell value in report.', __METHOD__, $e );
+      throw util::create(
+        'exception\runtime', 'Error while setting cell value in report.', __METHOD__, $e );
     }
 
     return $cell_obj;
@@ -146,7 +147,8 @@ class report extends \cenozo\base_object
     }
     catch( \Exception $e )
     {
-      throw util::create( 'exception\runtime', 'Error while merging cells in report.', __METHOD__, $e );
+      throw util::create(
+        'exception\runtime', 'Error while merging cells in report.', __METHOD__, $e );
     }
   }
 

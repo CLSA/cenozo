@@ -158,8 +158,8 @@ abstract class record extends \cenozo\base_object
       return;
     }
     
-    // if we have start and end time or datetime columns (which can't be null), make sure the end time
-    // comes after start time
+    // if we have start and end time or datetime columns (which can't be null), make sure the end
+    // time comes after start time
     if( static::column_exists( 'start_time' ) &&
         static::column_exists( 'end_time' ) &&
         !is_null( static::db()->get_column_default( static::get_table_name(), 'end_time' ) ) )

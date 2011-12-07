@@ -62,11 +62,13 @@ class ldap_manager extends \cenozo\singleton
     if( $this->active_directory )
     {
       if( false == @ldap_set_option( $this->resource, LDAP_OPT_PROTOCOL_VERSION, 3 ) )
-        throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+        throw util::create(
+          'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     }
 
     if( !( @ldap_bind( $this->resource, $this->username, $this->password ) ) )
-      throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw util::create(
+        'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
   
   /**
@@ -98,7 +100,8 @@ class ldap_manager extends \cenozo\singleton
     $dn = sprintf( 'uid=%s,ou=Users,%s', $username, $this->base );
     if( !( @ldap_add( $this->resource, $dn, $data ) ) )
       if( 68 != ldap_errno( $this->resource ) ) // ignore already exists errors
-        throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+        throw util::create(
+          'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
 
   /**
@@ -115,7 +118,8 @@ class ldap_manager extends \cenozo\singleton
     
     $dn = sprintf( 'uid=%s,ou=Users,%s', $username, $this->base );
     if( !( @ldap_delete( $this->resource, $dn ) ) )
-      throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw util::create(
+        'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
 
   /**
@@ -134,21 +138,25 @@ class ldap_manager extends \cenozo\singleton
 
     $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(uid=%s))', $username ) );
     if( !$search )
-      throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw util::create(
+        'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   
     $entries = @ldap_get_entries( $this->resource, $search );
     ldap_free_result( $search );
     if( !$entries )
-      throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw util::create(
+        'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   
     if( 0 == $entries['count'] )
-      throw util::create( 'exception\runtime', sprintf( 'User %s not found.', $username ), __METHOD__ );
+      throw util::create(
+        'exception\runtime', sprintf( 'User %s not found.', $username ), __METHOD__ );
   
     $dn = $entries[0]['dn'];
     $test = @ldap_bind( $this->resource, $dn, $password );
 
     if( !$test && 49 != ldap_errno( $this->resource ) )
-      throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw util::create(
+        'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     
     return $test;
   }
@@ -168,12 +176,14 @@ class ldap_manager extends \cenozo\singleton
 
     $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(uid=%s))', $username ) );
     if( !$search )
-      throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw util::create(
+        'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     
     $entries = @ldap_get_entries( $this->resource, $search );
     ldap_free_result( $search );
     if( !$entries )
-      throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw util::create(
+        'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     
     if( 0 == $entries['count'] )
       throw util::create( 'exception\runtime', 'LDAP user '.$username.' not found.', __METHOD__ );
@@ -182,7 +192,8 @@ class ldap_manager extends \cenozo\singleton
   
     $dn = $entries[0]['dn'];
     if( !( @ldap_mod_replace( $this->resource, $dn, $data ) ) )
-      throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw util::create(
+        'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
 
   /**

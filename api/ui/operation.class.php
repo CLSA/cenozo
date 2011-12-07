@@ -127,7 +127,8 @@ abstract class operation extends \cenozo\base_object
     $argument = NULL;
     if( !array_key_exists( $name, $this->arguments ) )
     {
-      if( 1 == func_num_args() ) throw util::create( 'exception\argument', $name, NULL, __METHOD__ );
+      if( 1 == func_num_args() )
+        throw util::create( 'exception\argument', $name, NULL, __METHOD__ );
       $argument = $default;
     }
     else

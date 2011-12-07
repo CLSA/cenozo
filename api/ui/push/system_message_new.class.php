@@ -41,9 +41,11 @@ class system_message_new extends base_new
 
     // make sure the title and note are not blank
     if( !array_key_exists( 'title', $columns ) || 0 == strlen( $columns['title'] ) )
-      throw util::create( 'exception\notice', 'The message\'s title cannot be left blank.', __METHOD__ );
+      throw util::create(
+        'exception\notice', 'The message\'s title cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'note', $columns ) || 0 == strlen( $columns['note'] ) )
-      throw util::create( 'exception\notice', 'The message\'s note cannot be left blank.', __METHOD__ );
+      throw util::create(
+        'exception\notice', 'The message\'s note cannot be left blank.', __METHOD__ );
 
     parent::finish();
   }
