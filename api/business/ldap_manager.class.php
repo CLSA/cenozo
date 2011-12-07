@@ -97,7 +97,8 @@ class ldap_manager extends \cenozo\singleton
     
     $dn = sprintf( 'uid=%s,ou=Users,%s', $username, $this->base );
     if( !( @ldap_add( $this->resource, $dn, $data ) ) )
-      throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      if( 68 != ldap_errno( $this->resource ) ) // ignore already exists errors
+        throw util::create( 'exception\ldap', ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
 
   /**

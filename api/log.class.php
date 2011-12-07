@@ -217,8 +217,7 @@ final class log extends singleton
       $message = sprintf( '<%s@%s> %s', $user_and_role, $site, $message );
     
     // add the backtrace
-    if( PEAR_LOG_NOTICE == $type ||
-        PEAR_LOG_DEBUG == $type ||
+    if( ( PEAR_LOG_NOTICE != $type && PEAR_LOG_DEBUG != $type ) ||
         ( !util::in_development_mode() && PEAR_LOG_INFO ) )
     {
       if( !preg_match( '/{main}$/', $message ) )

@@ -30,7 +30,7 @@ if( !array_key_exists( 'development_mode', $SETTINGS['general'] ) )
   $SETTINGS['general']['development_mode'] = false;
 
 if( !array_key_exists( 'COOKIE', $SETTINGS['path'] ) )
-  $SETTINGS['path']['COOKIE'] = dirname( $_SERVER['SCRIPT_FILENAME'] );
+  $SETTINGS['path']['COOKIE'] = substr( $_SERVER['SCRIPT_NAME'], 0, -9 );
 
 // the location of cenozo internal path
 if( !array_key_exists( 'CENOZO', $SETTINGS['path'] ) )

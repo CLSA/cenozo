@@ -138,12 +138,15 @@ class util
     {
       $cenozo_class_name =
         'cenozo\\'.substr( $class_name, $pos + strlen( APPNAME.'\\' ) );
-      $cenozo_file_path = self::get_full_class_path( $cenozo_class_name, true );
-      if( !is_null( $cenozo_file_path ) )
+      if( !class_exists( $cenozo_class_name, false ) )
       {
-        require $cenozo_file_path;
-        if( !class_exists( $cenozo_class_name, false ) )
-          throw self::create( 'exception\runtime', 'Unable to load class: '.$cenozo_class_name, __METHOD__ );
+        $cenozo_file_path = self::get_full_class_path( $cenozo_class_name, true );
+        if( !is_null( $cenozo_file_path ) )
+        {
+          require $cenozo_file_path;
+          if( !class_exists( $cenozo_class_name, false ) )
+            throw self::create( 'exception\runtime', 'Unable to load class: '.$cenozo_class_name, __METHOD__ );
+        }
       }
     }
 

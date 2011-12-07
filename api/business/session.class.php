@@ -72,7 +72,7 @@ class session extends \cenozo\singleton
 
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
-    
+
     $user_class_name = util::get_class_name( 'database\user' );
     $operation_class_name = util::get_class_name( 'database\operation' );
     $this->set_user( $user_class_name::get_unique_record( 'name', $user_name ) );

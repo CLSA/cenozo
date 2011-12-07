@@ -73,7 +73,7 @@ class base_add_access extends base_add_list
   {
     $role_class_name = util::get_class_name( 'database\role' );
     if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
-    $modifier->where( 'tier', '<=', self::create( 'business\session' )->get_role()->tier );
+    $modifier->where( 'tier', '<=', util::create( 'business\session' )->get_role()->tier );
     return $role_class_name::count( $modifier );
   }
 
@@ -89,7 +89,7 @@ class base_add_access extends base_add_list
   {
     $role_class_name = util::get_class_name( 'database\role' );
     if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
-    $modifier->where( 'tier', '<=', self::create( 'business\session' )->get_role()->tier );
+    $modifier->where( 'tier', '<=', util::create( 'business\session' )->get_role()->tier );
     return $role_class_name::select( $modifier );
   }
 
