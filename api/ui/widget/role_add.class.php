@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget role add

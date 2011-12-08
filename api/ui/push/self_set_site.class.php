@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: self set_site
@@ -40,36 +40,36 @@ class self_set_site extends \cenozo\ui\push
   {
     try
     {
-      $db_site = util::create( 'database\site', $this->get_argument( 'id' ) );
+      $db_site = lib::create( 'database\site', $this->get_argument( 'id' ) );
     }
     catch( exc\runtime $e )
     {
-      throw util::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
+      throw lib::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
     }
     
-    $session = util::create( 'business\session' );
+    $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
     $db_role = NULL;
 
-    $role_mod = util::create( 'database\modifier' );
+    $role_mod = lib::create( 'database\modifier' );
     $role_mod->where( 'site_id', '=', $db_site->id );
     $role_list = $db_user->get_role_list( $role_mod );
     if( 0 == count( $role_list ) )
-      throw util::create( 'exception\runtime',
+      throw lib::create( 'exception\runtime',
         'User does not have access to the given site.',  __METHOD__ );
   
     // try loading the same role as the last time this site was accessed
-    $activity_mod = util::create( 'database\modifier' );
+    $activity_mod = lib::create( 'database\modifier' );
     $activity_mod->where( 'user_id', '=', $db_user->id );
     $activity_mod->where( 'site_id', '=', $db_site->id );
     $activity_mod->order_desc( 'datetime' );
     $activity_mod->limit( 1 );
-    $activity_class_name = util::get_class_name( 'database\activity' );
+    $activity_class_name = lib::get_class_name( 'database\activity' );
     $db_activity = current( $activity_class_name::select( $activity_mod ) );
     if( $db_activity )
     {
       // make sure the user still has access to the site/role
-      $role_mod = util::create( 'database\modifier' );
+      $role_mod = lib::create( 'database\modifier' );
       $role_mod->where( 'site_id', '=', $db_activity->site_id );
       $role_mod->where( 'role_id', '=', $db_activity->role_id );
       $db_role = current( $db_user->get_role_list( $role_mod ) );

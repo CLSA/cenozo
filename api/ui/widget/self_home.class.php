@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget self home
@@ -41,8 +41,10 @@ class self_home extends \cenozo\ui\widget
   {
     parent::finish();
 
-    $session = util::create( 'business\session' );
-    $setting_manager = util::create( 'business\setting_manager' );
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $session = lib::create( 'business\session' );
+    $setting_manager = lib::create( 'business\setting_manager' );
     $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -59,16 +61,16 @@ class self_home extends \cenozo\ui\widget
     $this->set_variable( 'site_name', $db_site->name );
     if( $db_activity )
     {
-      $this->set_variable( 'last_day', util::get_formatted_date( $db_activity->datetime ) );
-      $this->set_variable( 'last_time', util::get_formatted_time( $db_activity->datetime ) );
+      $this->set_variable( 'last_day', $util_class_name::get_formatted_date( $db_activity->datetime ) );
+      $this->set_variable( 'last_time', $util_class_name::get_formatted_time( $db_activity->datetime ) );
     }
 
     // add any messages that apply to this user
     $message_list = array();
-    $system_message_class_name = util::get_class_name( 'database\system_message' );
+    $system_message_class_name = lib::get_class_name( 'database\system_message' );
 
     // global messages go first
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', NULL );
     $modifier->where( 'role_id', '=', NULL );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
@@ -78,7 +80,7 @@ class self_home extends \cenozo\ui\widget
     }
     
     // then all-site messages
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', NULL );
     $modifier->where( 'role_id', '=', $db_role->id );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
@@ -88,7 +90,7 @@ class self_home extends \cenozo\ui\widget
     }
 
     // then all-role site-specific messages
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'role_id', '=', NULL );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
@@ -98,7 +100,7 @@ class self_home extends \cenozo\ui\widget
     }
 
     // then role-specific site-specific messages
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'role_id', '=', $db_role->id );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )

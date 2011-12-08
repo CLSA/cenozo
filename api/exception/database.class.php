@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\exception;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * database: database/sql exceptions

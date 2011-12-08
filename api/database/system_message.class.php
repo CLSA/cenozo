@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * system_message: record

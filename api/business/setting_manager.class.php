@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\business;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Manages software settings
@@ -42,7 +42,7 @@ class setting_manager extends \cenozo\singleton
       // make sure the category exists
       if( !array_key_exists( $category, $static_settings ) )
       {
-        throw util::create(
+        throw lib::create(
           'exception\argument', 'static_settings['.$category.']', NULL, __METHOD__ );
       }
       $this->static_settings[ $category ] = $static_settings[ $category ];
@@ -74,12 +74,12 @@ class setting_manager extends \cenozo\singleton
     }
     else // check if the setting exists in the database
     {
-      $setting_class_name = util::get_class_name( 'database\setting' );
+      $setting_class_name = lib::get_class_name( 'database\setting' );
       $db_setting = $setting_class_name::get_setting( $category, $name );
       if( !is_null( $db_setting ) )
       {
-        $modifier = util::create( 'database\modifier' );
-        $modifier->where( 'site_id', '=', util::create( 'business\session' )->get_site()->id );
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
         $setting_value_list = $db_setting->get_setting_value_list( $modifier );
         
         $string_value = count( $setting_value_list )
@@ -122,12 +122,12 @@ class setting_manager extends \cenozo\singleton
    * @var array( mixed )
    * @access private
    */
-  private $static_settings = array();
+  protected $static_settings = array();
 
   /**
    * An array which holds dynamic (database) settings
    * @var array( mixed )
    * @access private
    */
-  private $dynamic_settings = array();
+  protected $dynamic_settings = array();
 }

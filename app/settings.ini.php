@@ -12,150 +12,116 @@
 
 global $SETTINGS;
 
-// create all setting categories if they don't already exist
-if( !isset( $SETTINGS ) && !is_array( $SETTINGS ) ) $SETTINGS = array();
-if( !array_key_exists( 'general', $SETTINGS ) ) $SETTINGS['general'] = array();
-if( !array_key_exists( 'url', $SETTINGS ) ) $SETTINGS['url'] = array();
-if( !array_key_exists( 'path', $SETTINGS ) ) $SETTINGS['path'] = array();
-if( !array_key_exists( 'version', $SETTINGS ) ) $SETTINGS['version'] = array();
-if( !array_key_exists( 'db', $SETTINGS ) ) $SETTINGS['db'] = array();
-if( !array_key_exists( 'ldap', $SETTINGS ) ) $SETTINGS['ldap'] = array();
-if( !array_key_exists( 'interface', $SETTINGS ) ) $SETTINGS['interface'] = array();
-
 // Framework software version (is never overridded by the application's ini file)
-$SETTINGS['general']['cenozo_version'] = '0.1.0';
+$fwk_settings['general']['cenozo_version'] = '0.1.0';
 
 // always leave as false when running as production server
-if( !array_key_exists( 'development_mode', $SETTINGS['general'] ) )
-  $SETTINGS['general']['development_mode'] = false;
+$fwk_settings['general']['development_mode'] = false;
 
-if( !array_key_exists( 'COOKIE', $SETTINGS['path'] ) )
-  $SETTINGS['path']['COOKIE'] = substr( $_SERVER['SCRIPT_NAME'], 0, -9 );
+$fwk_settings['path']['COOKIE'] = substr( $_SERVER['SCRIPT_NAME'], 0, -9 );
 
 // the location of cenozo internal path
-if( !array_key_exists( 'CENOZO', $SETTINGS['path'] ) )
-  $SETTINGS['path']['CENOZO'] = '/usr/local/lib/cenozo';
+$fwk_settings['path']['CENOZO'] = '/usr/local/lib/cenozo';
 
 // the location of libraries
-if( !array_key_exists( 'ADODB', $SETTINGS['path'] ) )
-  $SETTINGS['path']['ADODB'] = '/usr/local/lib/adodb';
+$fwk_settings['path']['ADODB'] = '/usr/local/lib/adodb';
 
 // javascript and css paths
-if( !array_key_exists( 'JS', $SETTINGS['path'] ) )
-  $SETTINGS['url']['JS'] = $SETTINGS['url']['CENOZO'].'/js';
-if( !array_key_exists( 'CSS', $SETTINGS['path'] ) )
-  $SETTINGS['url']['CSS'] = $SETTINGS['url']['CENOZO'].'/css';
+$fwk_settings['url']['JS'] = $SETTINGS['url']['CENOZO'].'/js';
+$fwk_settings['url']['CSS'] = $SETTINGS['url']['CENOZO'].'/css';
 
 // javascript libraries
-if( !array_key_exists( 'JQUERY', $SETTINGS['version'] ) )
-  $SETTINGS['version']['JQUERY'] = '1.4.4';
-if( !array_key_exists( 'JQUERY_UI', $SETTINGS['version'] ) )
-  $SETTINGS['version']['JQUERY_UI'] = '1.8.9';
+$fwk_settings['version']['JQUERY'] = '1.4.4';
+$fwk_settings['version']['JQUERY_UI'] = '1.8.9';
 
-if( !array_key_exists( 'JQUERY', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY'] = '/jquery';
-if( !array_key_exists( 'JQUERY_UI', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_UI'] = $SETTINGS['url']['JQUERY'].'/ui';
-if( !array_key_exists( 'JQUERY_PLUGINS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_PLUGINS'] = $SETTINGS['url']['JQUERY'].'/plugins';
-if( !array_key_exists( 'JQUERY_UI_THEMES', $SETTINGS['path'] ) )
-  $SETTINGS['path']['JQUERY_UI_THEMES'] = '/var/www/jquery/ui/css';
+$fwk_settings['url']['JQUERY'] = '/jquery';
+$fwk_settings['url']['JQUERY_UI'] = $fwk_settings['url']['JQUERY'].'/ui';
+$fwk_settings['url']['JQUERY_PLUGINS'] = $fwk_settings['url']['JQUERY'].'/plugins';
+$fwk_settings['path']['JQUERY_UI_THEMES'] = '/var/www/jquery/ui/css';
 
-if( !array_key_exists( 'JQUERY_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_JS'] = 
-    $SETTINGS['url']['JQUERY'].'/jquery-'.$SETTINGS['version']['JQUERY'].'.min.js';
-if( !array_key_exists( 'JQUERY_UI_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_UI_JS'] =
-    $SETTINGS['url']['JQUERY_UI'].'/js/jquery-ui-'.
-    $SETTINGS['version']['JQUERY_UI'].'.custom.min.js';
+$fwk_settings['url']['JQUERY_JS'] = 
+  $fwk_settings['url']['JQUERY'].'/jquery-'.$fwk_settings['version']['JQUERY'].'.min.js';
+$fwk_settings['url']['JQUERY_UI_JS'] =
+  $fwk_settings['url']['JQUERY_UI'].'/js/jquery-ui-'.
+  $fwk_settings['version']['JQUERY_UI'].'.custom.min.js';
 
-if( !array_key_exists( 'JQUERY_LAYOUT_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_LAYOUT_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/layout.js';
-if( !array_key_exists( 'JQUERY_COOKIE_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_COOKIE_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/cookie.js';
-if( !array_key_exists( 'JQUERY_HOVERINTENT_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_HOVERINTENT_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/hoverIntent.js';
-if( !array_key_exists( 'JQUERY_METADATA_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_METADATA_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/metadata.js';
-if( !array_key_exists( 'JQUERY_FLIPTEXT_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_FLIPTEXT_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/flipText.js';
-if( !array_key_exists( 'JQUERY_EXTRUDER_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_EXTRUDER_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/extruder.js';
-if( !array_key_exists( 'JQUERY_LOADING_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_LOADING_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/loading.js';
-if( !array_key_exists( 'JQUERY_LOADING_OVERFLOW_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_LOADING_OVERFLOW_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/loading.overflow.js';
-if( !array_key_exists( 'JQUERY_JEDITABLE_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_JEDITABLE_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/jeditable.js';
-if( !array_key_exists( 'JQUERY_TIMEPICKER_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_TIMEPICKER_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/timepicker.js';
-if( !array_key_exists( 'JQUERY_RIGHTCLICK_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_RIGHTCLICK_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/rightClick.js';
-if( !array_key_exists( 'JQUERY_TOOLTIP_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_TOOLTIP_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/tooltip.js';
-if( !array_key_exists( 'JQUERY_FULLCALENDAR_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_FULLCALENDAR_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/fullcalendar.js';
-if( !array_key_exists( 'JQUERY_FONTSCALE_JS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_FONTSCALE_JS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/fontscale.js';
+$fwk_settings['url']['JQUERY_LAYOUT_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/layout.js';
+$fwk_settings['url']['JQUERY_COOKIE_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/cookie.js';
+$fwk_settings['url']['JQUERY_HOVERINTENT_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/hoverIntent.js';
+$fwk_settings['url']['JQUERY_METADATA_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/metadata.js';
+$fwk_settings['url']['JQUERY_FLIPTEXT_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/flipText.js';
+$fwk_settings['url']['JQUERY_EXTRUDER_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/extruder.js';
+$fwk_settings['url']['JQUERY_LOADING_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/loading.js';
+$fwk_settings['url']['JQUERY_LOADING_OVERFLOW_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/loading.overflow.js';
+$fwk_settings['url']['JQUERY_JEDITABLE_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/jeditable.js';
+$fwk_settings['url']['JQUERY_TIMEPICKER_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/timepicker.js';
+$fwk_settings['url']['JQUERY_RIGHTCLICK_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/rightClick.js';
+$fwk_settings['url']['JQUERY_TOOLTIP_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/tooltip.js';
+$fwk_settings['url']['JQUERY_FULLCALENDAR_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/fullcalendar.js';
+$fwk_settings['url']['JQUERY_FONTSCALE_JS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/fontscale.js';
 
 // css files
-if( !array_key_exists( 'JQUERY_UI', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_UI_THEMES'] = $SETTINGS['url']['JQUERY_UI'].'/css';
-if( !array_key_exists( 'JQUERY_FULLCALENDAR_CSS', $SETTINGS['url'] ) )
-  $SETTINGS['url']['JQUERY_FULLCALENDAR_CSS'] =
-    $SETTINGS['url']['JQUERY_PLUGINS'].'/fullcalendar.css';
+$fwk_settings['url']['JQUERY_UI_THEMES'] = $fwk_settings['url']['JQUERY_UI'].'/css';
+$fwk_settings['url']['JQUERY_FULLCALENDAR_CSS'] =
+  $fwk_settings['url']['JQUERY_PLUGINS'].'/fullcalendar.css';
 
 // the location of log files
-if( !array_key_exists( 'LOG_FILE', $SETTINGS['path'] ) )
-  $SETTINGS['path']['LOG_FILE'] = '/var/local/cenozo/log';
+$fwk_settings['path']['LOG_FILE'] = '/var/local/cenozo/log';
 
 // the location of the compiled template cache
-if( !array_key_exists( 'TEMPLATE_CACHE', $SETTINGS['path'] ) )
-  $SETTINGS['path']['TEMPLATE_CACHE'] = '/tmp/cenozo'.$SETTINGS['path']['APPLICATION'];
+$fwk_settings['path']['TEMPLATE_CACHE'] = '/tmp/cenozo'.$SETTINGS['path']['APPLICATION'];
 
 // database settings
-if( !array_key_exists( 'driver', $SETTINGS['db'] ) )
-  $SETTINGS['db']['driver'] = 'mysql';
-if( !array_key_exists( 'server', $SETTINGS['db'] ) )
-  $SETTINGS['db']['server'] = 'localhost';
-if( !array_key_exists( 'username', $SETTINGS['db'] ) )
-  $SETTINGS['db']['username'] = 'cenozo';
-if( !array_key_exists( 'password', $SETTINGS['db'] ) )
-  $SETTINGS['db']['password'] = '';
-if( !array_key_exists( 'database', $SETTINGS['db'] ) )
-  $SETTINGS['db']['database'] = 'cenozo';
-if( !array_key_exists( 'prefix', $SETTINGS['db'] ) )
-  $SETTINGS['db']['prefix'] = '';
+$fwk_settings['db']['driver'] = 'mysql';
+$fwk_settings['db']['server'] = 'localhost';
+$fwk_settings['db']['username'] = 'cenozo';
+$fwk_settings['db']['password'] = '';
+$fwk_settings['db']['database'] = 'cenozo';
+$fwk_settings['db']['prefix'] = '';
 
 // ldap settings
-if( !array_key_exists( 'server', $SETTINGS['ldap'] ) )
-  $SETTINGS['ldap']['server'] = 'localhost';
-if( !array_key_exists( 'port', $SETTINGS['ldap'] ) )
-  $SETTINGS['ldap']['port'] = 389;
-if( !array_key_exists( 'base', $SETTINGS['ldap'] ) )
-  $SETTINGS['ldap']['base'] = '';
-if( !array_key_exists( 'username', $SETTINGS['ldap'] ) )
-  $SETTINGS['ldap']['username'] = '';
-if( !array_key_exists( 'password', $SETTINGS['ldap'] ) )
-  $SETTINGS['ldap']['password'] = '';
-if( !array_key_exists( 'active_directory', $SETTINGS['ldap'] ) )
-  $SETTINGS['ldap']['active_directory'] = true;
+$fwk_settings['ldap']['server'] = 'localhost';
+$fwk_settings['ldap']['port'] = 389;
+$fwk_settings['ldap']['base'] = '';
+$fwk_settings['ldap']['username'] = '';
+$fwk_settings['ldap']['password'] = '';
+$fwk_settings['ldap']['active_directory'] = true;
 
 // themes
-if( !array_key_exists( 'default_theme', $SETTINGS['interface'] ) )
-  $SETTINGS['interface']['default_theme'] = 'smoothness';
+$fwk_settings['interface']['default_theme'] = 'smoothness';
+
+// now put these settings in the global settings variable
+
+// temporarily put all existing settings aside
+if( isset( $SETTINGS ) && is_array( $SETTINGS ) )
+{
+  $app_settings = $SETTINGS;
+}
+
+// create all setting categories
+$SETTINGS = array();
+
+// put in all cenozo settings, then the application settings
+foreach( array_merge( array_keys( $fwk_settings ), array_keys( $app_settings ) ) as $category )
+{
+  $SETTINGS[$category] = array();
+  if( array_key_exists( $category, $fwk_settings ) )
+    $SETTINGS[$category] = array_merge( $SETTINGS[$category], $fwk_settings[$category] );
+  if( array_key_exists( $category, $app_settings ) )
+    $SETTINGS[$category] = array_merge( $SETTINGS[$category], $app_settings[$category] );
+}
 ?>

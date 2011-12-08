@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\exception;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * base_exception: base exception class
@@ -90,7 +90,10 @@ class base_exception extends \Exception
    * @access public
    */
   public function get_code()
-  { return util::convert_number_to_code( $this->get_number() ); }
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    return $util_class_name::convert_number_to_code( $this->get_number() );
+  }
 
   /**
    * Get the exception message.

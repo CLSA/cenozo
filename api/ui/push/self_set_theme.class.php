@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: self set_theme
@@ -38,7 +38,7 @@ class self_set_theme extends \cenozo\ui\push
    */
   public function finish()
   {
-    $session = util::create( 'business\session' );
+    $session = lib::create( 'business\session' );
     $session->get_user()->theme = $this->theme_name;
     $session->get_user()->save();
   }

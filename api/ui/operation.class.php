@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all operation.
@@ -37,14 +37,14 @@ abstract class operation extends \cenozo\base_object
   {
     // type must either be a pull, push or widget
     if( 'push' != $type && 'pull' != $type && 'widget' != $type )
-      throw util::create( 'exception\argument', 'type', $type, __METHOD__ );
+      throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
     
-    $operation_class_name = util::get_class_name( 'database\operation' );
+    $operation_class_name = lib::get_class_name( 'database\operation' );
     $this->operation_record =
       $operation_class_name::get_operation( $type, $subject, $name );
     
     if( is_null( $this->operation_record ) )
-      throw util::create( 'exception\runtime',
+      throw lib::create( 'exception\runtime',
         sprintf( 'Unable to create operation record for %s: %s_%s',
                  $type, $subject, $name ),
         __METHOD__ );
@@ -52,8 +52,8 @@ abstract class operation extends \cenozo\base_object
     if( is_array( $args ) ) $this->arguments = $args;
     
     // throw a permission exception if the user is not allowed to perform this operation
-    if( !util::create( 'business\session' )->is_allowed( $this->operation_record ) )
-      throw util::create( 'exception\permission', $this->operation_record, __METHOD__ );
+    if( !lib::create( 'business\session' )->is_allowed( $this->operation_record ) )
+      throw lib::create( 'exception\permission', $this->operation_record, __METHOD__ );
 
     $this->set_heading( $this->get_subject().' '.$this->get_name() );  
   }
@@ -128,7 +128,7 @@ abstract class operation extends \cenozo\base_object
     if( !array_key_exists( $name, $this->arguments ) )
     {
       if( 1 == func_num_args() )
-        throw util::create( 'exception\argument', $name, NULL, __METHOD__ );
+        throw lib::create( 'exception\argument', $name, NULL, __METHOD__ );
       $argument = $default;
     }
     else

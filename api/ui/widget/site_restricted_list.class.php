@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all list widgets which may be restricted by site.
@@ -34,12 +34,12 @@ abstract class site_restricted_list extends base_list
     {
       $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
       $this->db_restrict_site = $restrict_site_id
-                              ? util::create( 'database\site', $restrict_site_id )
+                              ? lib::create( 'database\site', $restrict_site_id )
                               : NULL;
     }
     else // anyone else is restricted to their own site
     {
-      $this->db_restrict_site = util::create( 'business\session' )->get_site();
+      $this->db_restrict_site = lib::create( 'business\session' )->get_site();
     }
     
     // if restricted, show the site's name in the heading
@@ -64,7 +64,7 @@ abstract class site_restricted_list extends base_list
       // (for lists with no parent only!)
       if( is_null( $this->parent ) )
       {
-        $site_class_name = util::get_class_name( 'database\site' );
+        $site_class_name = lib::get_class_name( 'database\site' );
         $sites = array();
         foreach( $site_class_name::select() as $db_site )
           $sites[$db_site->id] = $db_site->name;
@@ -98,7 +98,7 @@ abstract class site_restricted_list extends base_list
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 
@@ -117,7 +117,7 @@ abstract class site_restricted_list extends base_list
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 
@@ -134,7 +134,7 @@ abstract class site_restricted_list extends base_list
    */
   public static function may_restrict()
   {
-    return 3 == util::create( 'business\session' )->get_role()->tier;
+    return 3 == lib::create( 'business\session' )->get_role()->tier;
   }
 
   /**

@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget user add
@@ -35,7 +35,7 @@ class user_add extends base_view
     $this->add_item( 'last_name', 'string', 'Last name' );
     $this->add_item( 'active', 'boolean', 'Active' );
 
-    $type = 3 == util::create( 'business\session' )->get_role()->tier
+    $type = 3 == lib::create( 'business\session' )->get_role()->tier
           ? 'enum'
           : 'hidden';
     $this->add_item( 'site_id', $type, 'Site' );
@@ -52,13 +52,13 @@ class user_add extends base_view
   {
     parent::finish();
     
-    $role_class_name = util::get_class_name( 'database\role' );
-    $site_class_name = util::get_class_name( 'database\site' );
-    $session = util::create( 'business\session' );
+    $role_class_name = lib::get_class_name( 'database\role' );
+    $site_class_name = lib::get_class_name( 'database\site' );
+    $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'tier', '<=', $session->get_role()->tier );
     $roles = array();
     foreach( $role_class_name::select( $modifier ) as $db_role )

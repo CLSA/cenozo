@@ -8,7 +8,7 @@
  */
 
 namespace cenozo;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * This class is responsible for handling all types of web-service requests to the application.
@@ -132,20 +132,20 @@ final class service
       define( $path_name.'_URL', $path_value );
 
     // include the autoloader and error code files (search for app_path::util first)
-    require_once CENOZO_API_PATH.'/util.class.php';
+    require_once CENOZO_API_PATH.'/lib.class.php';
     require_once CENOZO_API_PATH.'/exception/error_codes.inc.php';
     if( file_exists( API_PATH.'/exception/error_codes.inc.php' ) )
       require_once API_PATH.'/exception/error_codes.inc.php';
 
     // registers an autoloader so classes don't have to be included manually
-    util::register(
-      APPNAME,
+    lib::register(
       $this->operation_type,
       $this->settings['general']['development_mode'] );
 
     // set up the logger and session
-    util::create( 'log' );
-    $session = util::create( 'business\session', $this->settings );
+    $util_class_name = lib::get_class_name( 'util' );
+    lib::create( 'log' );
+    $session = lib::create( 'business\session', $this->settings );
     $session->initialize();
 
     // now determine and execute the operation
@@ -176,7 +176,7 @@ final class service
       else if( 'Twig_Error_Loader' == $class_name ) $code = 3;
       else $code = 0;
     
-      $code = util::convert_number_to_code( TEMPLATE_CENOZO_BASE_ERRNO + $code );
+      $code = $util_class_name::convert_number_to_code( TEMPLATE_CENOZO_BASE_ERRNO + $code );
       $result_array['success'] = false;
       $result_array['error_type'] = 'Template';
       $result_array['error_code'] = $code;
@@ -187,7 +187,7 @@ final class service
     catch( \Exception $e )
     {
       $code = class_exists( 'cenozo\util' )
-            ? util::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
+            ? $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
             : 0;
       $result_array['success'] = false;
       $result_array['error_type'] = 'System';
@@ -198,7 +198,7 @@ final class service
     }
     
     // make sure to fail any active transaction
-    if( util::use_transaction() )
+    if( $util_class_name::use_transaction() )
     {
       if( false == $result_array['success'] ) $session->get_database()->fail_transaction();
       $session->get_database()->complete_transaction();
@@ -253,7 +253,7 @@ final class service
           'push' == $this->operation_type ||
           'pull' == $this->operation_type && ( !isset( $data_type ) || 'json' == $data_type ) )
       {
-        util::send_http_error( json_encode( $result_array ) );
+        $util_class_name::send_http_error( json_encode( $result_array ) );
       }
       else
       {
@@ -287,6 +287,7 @@ final class service
   // setup Twig
   private function render_template( $template, $variables )
   {
+    $util_class_name = lib::get_class_name( 'util' );
     require_once 'Twig/Autoloader.php';
     \Twig_Autoloader::register();
   
@@ -295,17 +296,17 @@ final class service
     if( file_exists( TPL_PATH ) ) $template_paths[] = TPL_PATH;
     $template_paths[] = CENOZO_TPL_PATH;
   
-    $theme = util::create( 'business\session' )->get_theme();
+    $theme = lib::create( 'business\session' )->get_theme();
     $loader = new \Twig_Loader_Filesystem( $template_paths );
     $this->twig = new \Twig_Environment( $loader,
-      array( 'debug' => util::in_development_mode(),
-             'strict_variables' => util::in_development_mode(),
+      array( 'debug' => lib::in_development_mode(),
+             'strict_variables' => lib::in_development_mode(),
              'cache' => TEMPLATE_CACHE_PATH ) );
     $this->twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
     $this->twig->addFilter( 'nl2br', new \Twig_Filter_Function( 'nl2br' ) );
     $this->twig->addFilter( 'ucwords', new \Twig_Filter_Function( 'ucwords' ) );
-    $this->twig->addGlobal( 'FOREGROUND_COLOR', util::get_foreground_color( $theme ) );
-    $this->twig->addGlobal( 'BACKGROUND_COLOR', util::get_background_color( $theme ) );
+    $this->twig->addGlobal( 'FOREGROUND_COLOR', $util_class_name::get_foreground_color( $theme ) );
+    $this->twig->addGlobal( 'BACKGROUND_COLOR', $util_class_name::get_background_color( $theme ) );
 
     $twig_template = $this->twig->loadTemplate( $template.'.twig' );
     return $twig_template->render( $variables );
@@ -320,23 +321,25 @@ final class service
    */
   private function create_operation()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     if( is_null( $this->operation_name ) )
-      throw util::create( 'exception\runtime', 'Unable to determine operation name.', __METHOD__ );
+      throw lib::create( 'exception\runtime', 'Unable to determine operation name.', __METHOD__ );
       
     $class_name = sprintf( 'ui\%s\%s', $this->operation_type, $this->operation_name );
-    $operation = util::create( $class_name, $this->arguments );
+    $operation = lib::create( $class_name, $this->arguments );
     if( !is_subclass_of( $operation, 'cenozo\ui\\'.$this->operation_type ) )
-      throw util::create( 'exception\runtime',
+      throw lib::create( 'exception\runtime',
         'Invoked operation "'.$class_name.'" is invalid.', __METHOD__ );
 
     // Only register the operation if the operation is not a widget doing
     // anything other than loading
     if( !( 'widget' == $this->operation_type && 'load' != $this->url_tokens[2] ) )
-      util::create( 'business\session' )->set_operation( $operation, $this->arguments );
+      lib::create( 'business\session' )->set_operation( $operation, $this->arguments );
 
     // if requested to, start a transaction
-    if( util::use_transaction() )
-      util::create( 'business\session' )->get_database()->start_transaction();
+    if( $util_class_name::use_transaction() )
+      lib::create( 'business\session' )->get_database()->start_transaction();
 
     return $operation;
   }      
@@ -349,7 +352,7 @@ final class service
    */
   private function main()
   {
-    $class_name = util::get_class_name( 'ui\main' );
+    $class_name = lib::get_class_name( 'ui\main' );
     return array(
       'type' => 'html',
       'data' => $this->render_template( 'main', $class_name::get_variables() ) );
@@ -392,7 +395,7 @@ final class service
    */
   private function widget()
   {
-    $session = util::create( 'business\session' );
+    $session = lib::create( 'business\session' );
     $slot_name = $this->url_tokens[1];
     $slot_action = $this->url_tokens[2];
 

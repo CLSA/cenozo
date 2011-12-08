@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * site: record
@@ -36,13 +36,13 @@ class site extends base_access
 
     // make sure the user id list argument is a non-empty array of ids
     if( !is_array( $user_id_list ) || 0 == count( $user_id_list ) )
-      throw util::create( 'exception\argument', 'user_id_list', $user_id_list, __METHOD__ );
+      throw lib::create( 'exception\argument', 'user_id_list', $user_id_list, __METHOD__ );
     
     // make sure the role id argument is valid
     if( 0 >= $role_id )
-      throw util::create( 'exception\argument', 'role_id', $role_id, __METHOD__ );
+      throw lib::create( 'exception\argument', 'role_id', $role_id, __METHOD__ );
 
-    $database_class_name = util::get_class_name( 'database\database' );
+    $database_class_name = lib::get_class_name( 'database\database' );
 
     $values = '';
     $first = true;
@@ -76,7 +76,7 @@ class site extends base_access
       return;
     }
 
-    $db_access = util::create( 'database\access', $access_id );
+    $db_access = lib::create( 'database\access', $access_id );
     $db_access->delete();
   }
 }

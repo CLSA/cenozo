@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * base widget for all calendars

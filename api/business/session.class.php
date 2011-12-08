@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\business;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * session: handles all session-based information
@@ -33,14 +33,14 @@ class session extends \cenozo\singleton
     // don't use the log class in this method!
 
     // the first argument is the settings array from an .ini file
-    $setting_manager = util::create( 'business\setting_manager', $arguments[0] );
+    $setting_manager = lib::create( 'business\setting_manager', $arguments[0] );
     
     // set error reporting
     error_reporting(
       $setting_manager->get_setting( 'general', 'development_mode' ) ? E_ALL | E_STRICT : E_ALL );
     
     // make sure pull actions don't time out
-    if( 'pull' == util::get_operation_type() ) set_time_limit( 0 );
+    if( 'pull' == lib::get_operation_type() ) set_time_limit( 0 );
 
     // setup the session variables
     if( !isset( $_SESSION['slot'] ) ) $_SESSION['slot'] = array();
@@ -59,10 +59,10 @@ class session extends \cenozo\singleton
     // don't initialize more than once
     if( $this->initialized ) return;
 
-    $setting_manager = util::create( 'business\setting_manager' );
+    $setting_manager = lib::create( 'business\setting_manager' );
 
     // create the databases
-    $this->database = util::create( 'database\database',
+    $this->database = lib::create( 'database\database',
       $setting_manager->get_setting( 'db', 'driver' ),
       $setting_manager->get_setting( 'db', 'server' ),
       $setting_manager->get_setting( 'db', 'username' ),
@@ -73,11 +73,11 @@ class session extends \cenozo\singleton
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
 
-    $user_class_name = util::get_class_name( 'database\user' );
-    $operation_class_name = util::get_class_name( 'database\operation' );
+    $user_class_name = lib::get_class_name( 'database\user' );
+    $operation_class_name = lib::get_class_name( 'database\operation' );
     $this->set_user( $user_class_name::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
-      throw util::create( 'exception\permission',
+      throw lib::create( 'exception\permission',
         $operation_class_name::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
 
     $this->initialized = true;
@@ -162,8 +162,8 @@ class session extends \cenozo\singleton
       }
       else
       {
-        $operation_class_name = util::get_class_name( 'database\operation' );
-        throw util::create( 'exception\permission',
+        $operation_class_name = lib::get_class_name( 'database\operation' );
+        throw lib::create( 'exception\permission',
           $operation_class_name::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
       }
     }
@@ -188,7 +188,7 @@ class session extends \cenozo\singleton
     }
     else if( !$this->user->active )
     {
-      throw util::create( 'exception\notice',
+      throw lib::create( 'exception\notice',
         'Your account has been deactivated.<br>'.
         'Please contact a superior to regain access to the system.', __METHOD__ );
     }
@@ -201,8 +201,8 @@ class session extends \cenozo\singleton
       // see if we already have the current site stored in the php session
       if( isset( $_SESSION['current_site_id'] ) && isset( $_SESSION['current_role_id'] ) )
       {
-        $this->set_site_and_role( util::create( 'database\site', $_SESSION['current_site_id'] ),
-                                  util::create( 'database\role', $_SESSION['current_role_id'] ) );
+        $this->set_site_and_role( lib::create( 'database\site', $_SESSION['current_site_id'] ),
+                                  lib::create( 'database\role', $_SESSION['current_role_id'] ) );
       }
       
       // we still don't have a site and role, we need to pick them
@@ -213,34 +213,34 @@ class session extends \cenozo\singleton
 
         $site_list = $this->user->get_site_list();
         if( 0 == count( $site_list ) )
-          throw util::create( 'exception\notice',
+          throw lib::create( 'exception\notice',
             'Your account does not have access to any site.<br>'.
             'Please contact a superior to be granted access to a site.', __METHOD__ );
         
         // if the user has logged in before, use whatever site/role they last used
-        $activity_mod = util::create( 'database\modifier' );
+        $activity_mod = lib::create( 'database\modifier' );
         $activity_mod->where( 'user_id', '=', $this->user->id );
         $activity_mod->order_desc( 'datetime' );
         $activity_mod->limit( 1 );
-        $activity_class_name = util::get_class_name( 'database\activity' );
+        $activity_class_name = lib::get_class_name( 'database\activity' );
         $db_activity = current( $activity_class_name::select( $activity_mod ) );
         if( $db_activity )
         {
           // make sure the user still has access to the site/role
-          $role_mod = util::create( 'database\modifier' );
+          $role_mod = lib::create( 'database\modifier' );
           $role_mod->where( 'site_id', '=', $db_activity->site_id );
           $role_mod->where( 'role_id', '=', $db_activity->role_id );
           $db_role = current( $this->user->get_role_list( $role_mod ) );
           
           // only bother setting the site if the access exists
-          if( $db_role ) $db_site = util::create( 'database\site', $db_activity->site_id );
+          if( $db_role ) $db_site = lib::create( 'database\site', $db_activity->site_id );
         }
 
         // if we still don't have a site/role then load the first one we can find
         if( !$db_role || !$db_site ) 
         {
           $db_site = current( $site_list );
-          $role_mod = util::create( 'database\modifier' );
+          $role_mod = lib::create( 'database\modifier' );
           $role_mod->where( 'site_id', '=', $db_site->id );
           $db_role = current( $this->user->get_role_list( $role_mod ) );
         }
@@ -273,7 +273,7 @@ class session extends \cenozo\singleton
    */
   public function get_theme()
   {
-    $theme = util::create(
+    $theme = lib::create(
       'business\setting_manager' )->get_setting( 'interface', 'default_theme' );
 
     if( !is_null( $this->user ) )
@@ -294,20 +294,22 @@ class session extends \cenozo\singleton
    */
   public function set_operation( $operation, $arguments )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // make sure we have an activity
     if( is_null( $this->activity ) )
     {
-      $this->activity = util::create( 'database\activity' );
+      $this->activity = lib::create( 'database\activity' );
       $this->activity->user_id = $this->user->id;
       $this->activity->site_id = $this->site->id;
       $this->activity->role_id = $this->role->id;
-      $this->activity->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $this->activity->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
     }
 
     // add the operation to the activity and save it
     $this->activity->operation_id = $operation->get_id();
     $this->activity->query = serialize( $arguments );
-    $this->activity->elapsed = util::get_elapsed_time();
+    $this->activity->elapsed = $util_class_name::get_elapsed_time();
     $this->activity->save();
   }
 
@@ -320,12 +322,14 @@ class session extends \cenozo\singleton
    */
   public function set_error_code( $error_code )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // make sure we have an activity
     if( !is_null( $this->activity ) )
     {
       // add the operation to the activity and save it
       $this->activity->error_code = $error_code;
-      $this->activity->elapsed = util::get_elapsed_time();
+      $this->activity->elapsed = $util_class_name::get_elapsed_time();
       $this->activity->save();
     }
   }

@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget self status
@@ -41,10 +41,12 @@ class self_status extends \cenozo\ui\widget
   {
     parent::finish();
 
-    $datetime_obj = util::get_datetime_object();
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $datetime_obj = $util_class_name::get_datetime_object();
     $this->set_variable( 'timezone_name', $datetime_obj->format( 'T' ) );
     $this->set_variable( 'timezone_offset',
-      util::get_timezone_object()->getOffset( $datetime_obj ) );
+      $util_class_name::get_timezone_object()->getOffset( $datetime_obj ) );
   }
 }
 ?>

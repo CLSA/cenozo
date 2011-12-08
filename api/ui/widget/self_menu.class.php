@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget self menu
@@ -41,12 +41,14 @@ class self_menu extends \cenozo\ui\widget
   {
     parent::finish();
 
-    $db_role = util::create( 'business\session' )->get_role();
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $db_role = lib::create( 'business\session' )->get_role();
 
     // get all calendar widgets that the user has access to
     $calendars = array();
 
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'calendar' );
     $widgets = $db_role->get_operation_list( $modifier );
@@ -61,7 +63,7 @@ class self_menu extends \cenozo\ui\widget
     // get all list widgets that the user has access to
     $lists = array();
 
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'list' );
     $widgets = $db_role->get_operation_list( $modifier );
@@ -70,7 +72,7 @@ class self_menu extends \cenozo\ui\widget
     {
       if( !in_array( $db_widget->subject, $this->exclude_widget_list ) )
         $lists[] = array(
-          'heading' => util::pluralize( str_replace( '_', ' ', $db_widget->subject ) ),
+          'heading' => $util_class_name::pluralize( str_replace( '_', ' ', $db_widget->subject ) ),
           'subject' => $db_widget->subject,
           'name' => $db_widget->name );
     }
@@ -78,7 +80,7 @@ class self_menu extends \cenozo\ui\widget
     // get all report widgets that the user has access to
     $reports = array();
 
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'report' );
     $widgets = $db_role->get_operation_list( $modifier );

@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\pull;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Class for user list pull operations.
@@ -38,8 +38,8 @@ class user_list extends base_list
    */
   public function finish()
   {
-    $site_class_name = util::get_class_name( 'database\site' );
-    $role_class_name = util::get_class_name( 'database\role' );
+    $site_class_name = lib::get_class_name( 'database\site' );
+    $role_class_name = lib::get_class_name( 'database\role' );
     $site_mod = NULL;
     $role_mod = NULL;
     $new_restrictions = array();
@@ -51,12 +51,12 @@ class user_list extends base_list
       $col_name = substr( strstr( $restriction['column'], '.' ), 1 );
       if( 'site' == $table )
       {
-        if( is_null( $site_mod ) ) $site_mod = util::create( 'database\modifier' );
+        if( is_null( $site_mod ) ) $site_mod = lib::create( 'database\modifier' );
         $site_mod->where( $col_name, $restriction['operator'], $restriction['value'] );
       }
       else if( 'role' == $table )
       {
-        if( is_null( $role_mod ) ) $role_mod = util::create( 'database\modifier' );
+        if( is_null( $role_mod ) ) $role_mod = lib::create( 'database\modifier' );
         $role_mod->where( $col_name, $restriction['operator'], $restriction['value'] );
       }
       else $new_restrictions[] = $restriction;

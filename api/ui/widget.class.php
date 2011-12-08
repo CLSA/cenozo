@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * The base class of all widgets.
@@ -44,10 +44,12 @@ abstract class widget extends operation
    */
   public function finish()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     $widget_variable = array(
       'subject' => $this->get_subject(),
       'subject_name' => str_replace( '_', ' ', $this->get_subject() ),
-      'subject_names' => util::pluralize( str_replace( '_', ' ', $this->get_subject() ) ),
+      'subject_names' => $util_class_name::pluralize( str_replace( '_', ' ', $this->get_subject() ) ),
       'name' => $this->get_name(),
       'full' => $this->get_full_name(),
       'compound' => $this->get_full_name() );
@@ -62,7 +64,7 @@ abstract class widget extends operation
           'subject' => $this->parent->get_subject(),
           'subject_name' => str_replace( '_', ' ', $this->parent->get_subject() ),
           'subject_names' =>
-            util::pluralize( str_replace( '_', ' ', $this->parent->get_subject() ) ),
+            $util_class_name::pluralize( str_replace( '_', ' ', $this->parent->get_subject() ) ),
           'name' => $this->parent->get_name(),
           'full' => $this->parent->get_full_name() ) );
     }
@@ -106,7 +108,7 @@ abstract class widget extends operation
     { // the argument is missing
       if( 1 == func_num_args() )
       { // if only one argument was passed to this method then the argument is required
-        throw util::create( 'exception\argument', $name, NULL, __METHOD__ );
+        throw lib::create( 'exception\argument', $name, NULL, __METHOD__ );
       }
 
       // if the argument was not required, then use the default instead

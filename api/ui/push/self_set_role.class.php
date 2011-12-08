@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: self set_role
@@ -40,14 +40,14 @@ class self_set_role extends \cenozo\ui\push
   {
     try
     {
-      $db_role = util::create( 'database\role', $this->get_argument( 'id' ) );
+      $db_role = lib::create( 'database\role', $this->get_argument( 'id' ) );
     } 
     catch( exc\runtime $e )
     {
-      throw util::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
+      throw lib::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
     }
     
-    $session = util::create( 'business\session' );
+    $session = lib::create( 'business\session' );
     $session->set_site_and_role( $session->get_site(), $db_role );
   }
 }

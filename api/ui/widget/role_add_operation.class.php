@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget role add_operation
@@ -41,7 +41,7 @@ class role_add_operation extends base_add_list
    */
   public function determine_operation_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'restricted', '=', true );
     return $this->get_record()->get_operation_count_inverted( $modifier );
   }
@@ -56,7 +56,7 @@ class role_add_operation extends base_add_list
    */
   public function determine_operation_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'restricted', '=', true );
     return $this->get_record()->get_operation_list_inverted( $modifier );
   }

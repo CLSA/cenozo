@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all report widgets
@@ -56,7 +56,7 @@ abstract class base_report extends \cenozo\ui\widget
   protected function add_restriction( $restriction_type )
   {
     if( !array_key_exists( $restriction_type, $this->restrictions ) )
-      throw util::create( 'exception\argument', 'restriction_type', $restriction_type, __METHOD__ );
+      throw lib::create( 'exception\argument', 'restriction_type', $restriction_type, __METHOD__ );
 
     if( 'site' == $restriction_type )
     {
@@ -71,7 +71,7 @@ abstract class base_report extends \cenozo\ui\widget
         $this->add_parameter( 'restrict_site_id', 'hidden' );
 
         // if restricted, show the site's name in the heading
-        $predicate = util::create( 'business\session' )->get_site()->name;
+        $predicate = lib::create( 'business\session' )->get_site()->name;
         $this->set_heading( $this->get_heading().' for '.$predicate );
       }
     }
@@ -110,13 +110,15 @@ abstract class base_report extends \cenozo\ui\widget
    */
   public function add_parameter( $param_id, $type, $heading = NULL, $note = NULL )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // add timezone info to the note if the parameter is a time or datetime
     if( 'time' == $type || 'datetime' == $type )
     {
       // build time time zone help text
-      $date_obj = util::get_datetime_object();
+      $date_obj = $util_class_name::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            util::create( 'business\session' )->get_site()->name,
+                            lib::create( 'business\session' )->get_site()->name,
                             $date_obj->format( 'T' ) );
       $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }
@@ -138,9 +140,11 @@ abstract class base_report extends \cenozo\ui\widget
    */
   public function set_parameter( $param_id, $value, $required = false, $data = NULL )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // make sure the parameter exists
     if( !array_key_exists( $param_id, $this->parameters ) )
-      throw util::create( 'exception\argument', 'param_id', $param_id, __METHOD__ );
+      throw lib::create( 'exception\argument', 'param_id', $param_id, __METHOD__ );
 
     // process the value so that it displays correctly
     if( 'boolean' == $this->parameters[$param_id]['type'] )
@@ -152,7 +156,7 @@ abstract class base_report extends \cenozo\ui\widget
     {
       if( strlen( $value ) )
       {
-        $date_obj = util::get_datetime_object( $value );
+        $date_obj = $util_class_name::get_datetime_object( $value );
         $value = $date_obj->format( 'Y-m-d' );
       }
       else $value = '';
@@ -161,7 +165,7 @@ abstract class base_report extends \cenozo\ui\widget
     {
       if( strlen( $value ) )
       {
-        $date_obj = util::get_datetime_object( $value );
+        $date_obj = $util_class_name::get_datetime_object( $value );
         $value = $date_obj->format( 'H:i' );
       }
       else $value = '12:00';
@@ -186,7 +190,7 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $enum = $data;
       if( is_null( $enum ) )
-        throw util::create( 'exception\runtime',
+        throw lib::create( 'exception\runtime',
           'Trying to set enum parameter without enum values.', __METHOD__ );
 
       // add a null entry (to the front of the array) if the parameter is not required
@@ -232,8 +236,8 @@ abstract class base_report extends \cenozo\ui\widget
    */
   public function finish()
   {
-    $site_class_name = util::get_class_name( 'database\site' );
-    $region_class_name = util::get_class_name( 'database\region' );
+    $site_class_name = lib::get_class_name( 'database\site' );
+    $region_class_name = lib::get_class_name( 'database\region' );
 
     if( $this->restrictions[ 'site' ] )
     {
@@ -249,13 +253,13 @@ abstract class base_report extends \cenozo\ui\widget
       else
       {
         $this->set_parameter(
-          'restrict_site_id', util::create( 'business\session' )->get_site()->id );
+          'restrict_site_id', lib::create( 'business\session' )->get_site()->id );
       }
     }
     
     if( $this->restrictions[ 'province' ] )
     {
-      $region_mod = util::create( 'database\modifier' );
+      $region_mod = lib::create( 'database\modifier' );
       $region_mod->order( 'abbreviation' );
       $region_mod->where( 'country', '=', 'Canada' );
       $region_types = array( 'All provinces' );
@@ -299,7 +303,7 @@ abstract class base_report extends \cenozo\ui\widget
    */
   public static function may_restrict_by_site()
   {
-    return 3 == util::create( 'business\session' )->get_role()->tier;
+    return 3 == lib::create( 'business\session' )->get_role()->tier;
   }
 
   /**

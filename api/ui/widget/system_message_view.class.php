@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget system_message view
@@ -31,7 +31,7 @@ class system_message_view extends base_view
 
     // define all columns defining this record
 
-    $type = 3 == util::create( 'business\session' )->get_role()->tier ? 'enum' : 'hidden';
+    $type = 3 == lib::create( 'business\session' )->get_role()->tier ? 'enum' : 'hidden';
     $this->add_item( 'site_id', $type, 'Site',
       'Leaving the site blank will show the message across all sites.' );
     $this->add_item( 'role_id', 'enum', 'Role',
@@ -50,9 +50,9 @@ class system_message_view extends base_view
   {
     parent::finish();
 
-    $site_class_name = util::get_class_name( 'database\site' );
-    $role_class_name = util::get_class_name( 'database\role' );
-    $session = util::create( 'business\session' );
+    $site_class_name = lib::get_class_name( 'database\site' );
+    $role_class_name = lib::get_class_name( 'database\role' );
+    $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays
@@ -63,7 +63,7 @@ class system_message_view extends base_view
     }
 
     $roles = array();
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'tier', '<=', $session->get_role()->tier );
     foreach( $role_class_name::select( $modifier ) as $db_role )
       $roles[$db_role->id] = $db_role->name;

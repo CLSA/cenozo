@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: access delete

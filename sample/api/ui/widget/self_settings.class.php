@@ -8,7 +8,7 @@
  */
 
 namespace myapp\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget self settings

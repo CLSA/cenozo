@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget site add_access
@@ -32,7 +32,7 @@ class site_add_access extends base_add_access
     
     // This widget is special.  We need a list of users and roles, not an access list, so we
     // override the construction of the list_widget performed by base_add_list's constructor.
-    $this->list_widget = util::create( 'ui\widget\user_list', $args );
+    $this->list_widget = lib::create( 'ui\widget\user_list', $args );
     $this->list_widget->set_parent( $this, 'edit' );
     $this->list_widget->set_heading( 'Choose users to grant access to the site' );
   }
@@ -48,7 +48,7 @@ class site_add_access extends base_add_access
   public function determine_user_count( $modifier = NULL )
   {
     // we want to display all users
-    $user_class_name = util::get_class_name( 'database\user' );
+    $user_class_name = lib::get_class_name( 'database\user' );
     return $user_class_name::count( $modifier );
   }
 
@@ -63,7 +63,7 @@ class site_add_access extends base_add_access
   public function determine_user_list( $modifier = NULL )
   {
     // we want to display all users
-    $user_class_name = util::get_class_name( 'database\user' );
+    $user_class_name = lib::get_class_name( 'database\user' );
     return $user_class_name::select( $modifier );
   }
 }

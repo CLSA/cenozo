@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: note delete
@@ -39,7 +39,7 @@ class note_delete extends \cenozo\ui\push
   {
     // make sure there is a valid note category
     $category = $this->get_argument( 'category' );
-    $class_name = util::get_class_name( 'database\\'.$category );
+    $class_name = lib::get_class_name( 'database\\'.$category );
     $db_note = $class_name::get_note( $this->get_argument( 'id' ) );
     $db_note->delete();
   }

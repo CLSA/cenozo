@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all listing widgets.
@@ -43,8 +43,8 @@ abstract class base_list extends \cenozo\ui\widget
     $this->restrictions = $this->get_argument( 'restrictions', $this->restrictions );
     
     // determine properties based on the current user's permissions
-    $operation_class_name = util::get_class_name( 'database\operation' );
-    $session = util::create( 'business\session' );
+    $operation_class_name = lib::get_class_name( 'database\operation' );
+    $session = lib::create( 'business\session' );
     $this->viewable = $session->is_allowed(
       $operation_class_name::get_operation( 'widget', $this->get_subject(), 'view' ) );
     $this->addable = $session->is_allowed(
@@ -65,7 +65,7 @@ abstract class base_list extends \cenozo\ui\widget
   {
     parent::finish();
     
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
 
     // apply column restrictions
     if( is_array( $this->restrictions ) ) foreach( $this->restrictions as $column => $restrict )
@@ -213,8 +213,8 @@ abstract class base_list extends \cenozo\ui\widget
     else // 'view' == $mode
     {
       // add/remove operations are relative to the parent
-      $operation_class_name = util::get_class_name( 'database\operation' );
-      $session = util::create( 'business\session' );
+      $operation_class_name = lib::get_class_name( 'database\operation' );
+      $session = lib::create( 'business\session' );
       $this->addable = $session->is_allowed( 
         $operation_class_name::get_operation(
           'widget', $this->parent->get_subject(), 'add_'.$this->get_subject() ) );
@@ -246,7 +246,7 @@ abstract class base_list extends \cenozo\ui\widget
     }
     else
     {
-      $class_name = util::get_class_name( 'database\\'.$this->get_subject() );
+      $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
       return $class_name::count( $modifier );
     }
   }
@@ -273,7 +273,7 @@ abstract class base_list extends \cenozo\ui\widget
     }
     else
     {
-      $class_name = util::get_class_name( 'database\\'.$this->get_subject() );
+      $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
       return $class_name::select( $modifier );
     }
   }
@@ -359,6 +359,8 @@ abstract class base_list extends \cenozo\ui\widget
   public function add_column( $column_id, $type, $heading,
                               $sortable = false, $restrictable = true, $align = '' )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // if there is no "table." before the column name, add this widget's subject
     if( false === strpos( $column_id, '.' ) ) $column_id = $this->get_subject().'.'.$column_id;
     
@@ -366,7 +368,7 @@ abstract class base_list extends \cenozo\ui\widget
     if( 'datetime' == $type )
     {
       $heading .=
-        sprintf( ' (%s)', util::get_datetime_object()->format( 'T' ) );
+        sprintf( ' (%s)', $util_class_name::get_datetime_object()->format( 'T' ) );
       $restrictable = false;
     }
     if( 'date' == $type ) $restrictable = false;
@@ -403,6 +405,8 @@ abstract class base_list extends \cenozo\ui\widget
    */
   public function add_row( $row_id, $columns )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     foreach( array_keys( $columns ) as $column_id )
     {
       // if there is no "table." before the column name, add this widget's subject
@@ -421,15 +425,15 @@ abstract class base_list extends \cenozo\ui\widget
         {
           $columns[$column_id] =
             is_null( $columns[$column_id] ) ?
-            'none' : util::get_formatted_time( $columns[$column_id], false );
+            'none' : $util_class_name::get_formatted_time( $columns[$column_id], false );
         }
         else if( 'date' == $this->columns[$column_id]['type'] )
         {
-          $columns[$column_id] = util::get_formatted_date( $columns[$column_id] );
+          $columns[$column_id] = $util_class_name::get_formatted_date( $columns[$column_id] );
         }
         else if( 'fuzzy' == $this->columns[$column_id]['type'] )
         {
-          $columns[$column_id] = util::get_fuzzy_period_ago( $columns[$column_id] );
+          $columns[$column_id] = $util_class_name::get_fuzzy_period_ago( $columns[$column_id] );
         }
         else if( 'boolean' == $this->columns[$column_id]['type'] )
         {

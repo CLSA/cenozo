@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\exception;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * runtime: runtime exceptions

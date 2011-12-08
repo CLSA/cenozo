@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * record: abstract database table object
@@ -32,11 +32,13 @@ abstract class record extends \cenozo\base_object
    */
   public function __construct( $id = NULL )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // determine the columns for this table
     $columns = $this->get_column_names();
 
     if( !is_array( $columns ) || 0 == count( $columns ) )
-      throw util::create( 'exception\runtime',
+      throw lib::create( 'exception\runtime',
         "No column names returned for table ".static::get_table_name(), __METHOD__ );
     
     // set the default value for all columns
@@ -50,7 +52,7 @@ abstract class record extends \cenozo\base_object
       if( 'start_datetime' == $name ||
           ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) )
       {
-        $date_obj = util::get_datetime_object();
+        $date_obj = $util_class_name::get_datetime_object();
         $this->column_values[$name] = $date_obj->format( 'Y-m-d H:i:s' );
       }
       else
@@ -66,7 +68,7 @@ abstract class record extends \cenozo\base_object
       if( 1 != count( $primary_key_names ) ||
           static::get_primary_key_name() != $primary_key_names[0] )
       {
-        throw util::create( 'exception\runtime',
+        throw lib::create( 'exception\runtime',
           'Unable to create record, single-column primary key "'.
           static::get_primary_key_name().'" does not exist.', __METHOD__ );
       }
@@ -105,6 +107,8 @@ abstract class record extends \cenozo\base_object
    */
   public function load()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     if( isset( $this->column_values[static::get_primary_key_name()] ) )
     {
       // not using a modifier here is ok since we're forcing id to be an integer
@@ -116,14 +120,14 @@ abstract class record extends \cenozo\base_object
       $row = static::db()->get_row( $sql );
 
       if( 0 == count( $row ) )
-        throw util::create( 'exception\runtime',
+        throw lib::create( 'exception\runtime',
           sprintf( 'Load failed to find record for %s with %s = %d.',
                    static::get_table_name(),
                    static::get_primary_key_name(),
                    $this->column_values[static::get_primary_key_name()] ),
           __METHOD__ );
 
-      $database_class_name = util::get_class_name( 'database\database' );
+      $database_class_name = lib::get_class_name( 'database\database' );
 
       // convert any date, time or datetime columns
       foreach( $row as $key => $val )
@@ -131,9 +135,9 @@ abstract class record extends \cenozo\base_object
         if( array_key_exists( $key, $this->column_values ) )
         {
           if( $database_class_name::is_time_column( $key ) )
-            $this->column_values[$key] = util::from_server_datetime( $val, 'H:i:s' );
+            $this->column_values[$key] = $util_class_name::from_server_datetime( $val, 'H:i:s' );
           else if( $database_class_name::is_datetime_column( $key ) )
-            $this->column_values[$key] = util::from_server_datetime( $val );
+            $this->column_values[$key] = $util_class_name::from_server_datetime( $val );
           else $this->column_values[$key] = $val;
         }
       }
@@ -157,6 +161,8 @@ abstract class record extends \cenozo\base_object
       log::warning( 'Tried to save read-only record.' );
       return;
     }
+
+    $util_class_name = lib::get_class_name( 'util' );
     
     // if we have start and end time or datetime columns (which can't be null), make sure the end
     // time comes after start time
@@ -164,13 +170,13 @@ abstract class record extends \cenozo\base_object
         static::column_exists( 'end_time' ) &&
         !is_null( static::db()->get_column_default( static::get_table_name(), 'end_time' ) ) )
     {
-      $start_obj = util::get_datetime_object( $this->start_time );
-      $end_obj = util::get_datetime_object( $this->end_time );
+      $start_obj = $util_class_name::get_datetime_object( $this->start_time );
+      $end_obj = $util_class_name::get_datetime_object( $this->end_time );
       $interval = $start_obj->diff( $end_obj );
       if( 0 != $interval->invert ||
         ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
       {
-        throw util::create( 'exception\runtime',
+        throw lib::create( 'exception\runtime',
           'Tried to set end time which is not after the start time.', __METHOD__ );
       }
     }
@@ -179,13 +185,13 @@ abstract class record extends \cenozo\base_object
       static::column_exists( 'end_datetime' ) &&
       !is_null( static::db()->get_column_default( static::get_table_name(), 'end_datetime' ) ) )
     {
-      $start_obj = util::get_datetime_object( $this->start_datetime );
-      $end_obj = util::get_datetime_object( $this->end_datetime );
+      $start_obj = $util_class_name::get_datetime_object( $this->start_datetime );
+      $end_obj = $util_class_name::get_datetime_object( $this->end_datetime );
       $interval = $start_obj->diff( $end_obj );
       if( 0 != $interval->invert ||
         ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
       {
-        throw util::create( 'exception\runtime',
+        throw lib::create( 'exception\runtime',
           'Tried to set end datetime which is not after the start datetime.', __METHOD__ );
       }
     }
@@ -207,15 +213,15 @@ abstract class record extends \cenozo\base_object
     // now add the rest of the columns
     foreach( $this->column_values as $key => $val )
     {
-      $database_class_name = util::get_class_name( 'database\database' );
+      $database_class_name = lib::get_class_name( 'database\database' );
 
       if( static::get_primary_key_name() != $key )
       {
         // convert any time or datetime columns
         if( $database_class_name::is_time_column( $key ) )
-          $val = util::to_server_datetime( $val, 'H:i:s' );
+          $val = $util_class_name::to_server_datetime( $val, 'H:i:s' );
         else if( $database_class_name::is_datetime_column( $key ) )
-          $val = util::to_server_datetime( $val );
+          $val = $util_class_name::to_server_datetime( $val );
         
         $sets .= sprintf( '%s %s = %s',
                           $first ? '' : ',',
@@ -286,7 +292,7 @@ abstract class record extends \cenozo\base_object
   {
     // make sure the column exists
     if( !static::column_exists( $column_name ) )
-      throw util::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
+      throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
     
     return isset( $this->column_values[ $column_name ] ) ?
       $this->column_values[ $column_name ] : NULL;
@@ -307,7 +313,7 @@ abstract class record extends \cenozo\base_object
   {
     // make sure the column exists
     if( !static::column_exists( $column_name ) )
-      throw util::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
+      throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
     
     $this->column_values[ $column_name ] = $value;
   }
@@ -349,7 +355,7 @@ abstract class record extends \cenozo\base_object
   public function __call( $name, $args )
   {
     // create an exception which will be thrown if anything bad happens
-    $exception = util::create( 'exception\runtime',
+    $exception = lib::create( 'exception\runtime',
       sprintf( 'Call to undefined function: %s::%s().',
                get_called_class(),
                $name ), __METHOD__ );
@@ -374,7 +380,7 @@ abstract class record extends \cenozo\base_object
     { // calling: add_<record>( $ids )
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || !is_array( $args[0] ) || 0 == count( $args[0] ) )
-        throw util::create( 'exception\argument', 'args', $args, __METHOD__ );
+        throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $ids = $args[0];
       $this->add_records( $subject, $ids );
@@ -384,7 +390,7 @@ abstract class record extends \cenozo\base_object
     { // calling: remove_<record>( $ids )
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || 0 >= $args[0] )
-        throw util::create( 'exception\argument', 'args', $args, __METHOD__ );
+        throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $id = $args[0];
       $this->remove_record( $subject, $id );
@@ -413,7 +419,7 @@ abstract class record extends \cenozo\base_object
             !is_null( $args[0] ) &&
             is_object( $args[0] ) &&
             'cenozo\database\modifier' != get_class( $args[0] ) )
-          throw util::create( 'exception\argument', 'args', $args, __METHOD );
+          throw lib::create( 'exception\argument', 'args', $args, __METHOD );
         
         // determine the sub action and whether to invert the result
         $inverted = false;
@@ -477,7 +483,7 @@ abstract class record extends \cenozo\base_object
     $record = NULL;
     if( !is_null( $this->column_values[$foreign_key_name] ) )
     {
-      $record = util::create( 'database\\'.$record_type, $this->column_values[$foreign_key_name] );
+      $record = lib::create( 'database\\'.$record_type, $this->column_values[$foreign_key_name] );
     }
 
     return $record;
@@ -500,7 +506,7 @@ abstract class record extends \cenozo\base_object
   {
     $table_name = static::get_table_name();
     $primary_key_name = $table_name.'.'.static::get_primary_key_name();
-    $foreign_class_name = util::get_class_name( 'database\\'.$record_type );
+    $foreign_class_name = lib::get_class_name( 'database\\'.$record_type );
 
     // check the primary key value
     $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
@@ -511,7 +517,7 @@ abstract class record extends \cenozo\base_object
     }
       
     // this method varies depending on the relationship type
-    $relationship_class_name = util::get_class_name( 'database\relationship' );
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $relationship = static::get_relationship( $record_type );
     if( $relationship_class_name::NONE == $relationship )
     {
@@ -532,7 +538,7 @@ abstract class record extends \cenozo\base_object
     }
     else if( $relationship_class_name::ONE_TO_MANY == $relationship )
     {
-      if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       if( $inverted )
       {
         $modifier->where( $table_name.'_id', '=', NULL );
@@ -550,12 +556,12 @@ abstract class record extends \cenozo\base_object
       $foreign_key_name = $record_type.'.'.$foreign_class_name::get_primary_key_name();
       $joining_primary_key_name = $joining_table_name.'.'.$table_name.'_id';
       $joining_foreign_key_name = $joining_table_name.'.'.$record_type.'_id';
-      if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
   
       if( $inverted )
       { // we need to invert the list
         // first create SQL to match all records in the joining table
-        $sub_modifier = util::create( 'database\modifier' );
+        $sub_modifier = lib::create( 'database\modifier' );
         $sub_modifier->where( $foreign_key_name, '=', $joining_foreign_key_name, false );
         $sub_modifier->where( $joining_primary_key_name, '=', $primary_key_name, false );
         $sub_modifier->where( $primary_key_name, '=', $primary_key_value );
@@ -599,7 +605,7 @@ abstract class record extends \cenozo\base_object
       {
         $ids = static::db()->get_col( $sql );
         $records = array();
-        foreach( $ids as $id ) $records[] = util::create( 'database\\'.$record_type, $id );
+        foreach( $ids as $id ) $records[] = lib::create( 'database\\'.$record_type, $id );
         return $records;
       }
     }
@@ -647,6 +653,8 @@ abstract class record extends \cenozo\base_object
         'Tried to add '.$record_type.' records to read-only record.' );
       return;
     }
+
+    $util_class_name = lib::get_class_name( 'util' );
     
     // check the primary key value
     $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
@@ -657,18 +665,18 @@ abstract class record extends \cenozo\base_object
     }
 
     // this method only supports many-to-many relationships.
-    $relationship_class_name = util::get_class_name( 'database\relationship' );
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $relationship = static::get_relationship( $record_type );
     if( $relationship_class_name::MANY_TO_MANY != $relationship )
     {
       log::err(
         sprintf( 'Tried to add %s to a %s without a many-to-many relationship between the two.',
-                 util::prulalize( $record_type ),
+                 $util_class_name::prulalize( $record_type ),
                  static::get_table_name() ) );
       return;
     }
     
-    $database_class_name = util::get_class_name( 'database\database' );
+    $database_class_name = lib::get_class_name( 'database\database' );
     $joining_table_name = static::get_joining_table_name( $record_type );
     
     // if ids is not an array then create a single-element array with it
@@ -725,7 +733,7 @@ abstract class record extends \cenozo\base_object
     }
 
     // this method varies depending on the relationship type
-    $relationship_class_name = util::get_class_name( 'database\relationship' );
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $relationship = static::get_relationship( $record_type );
     if( $relationship_class_name::NONE == $relationship )
     {
@@ -744,14 +752,14 @@ abstract class record extends \cenozo\base_object
     }
     else if( $relationship_class_name::ONE_TO_MANY == $relationship )
     {
-      $record = util::create( 'database\\'.$record_type, $id );
+      $record = lib::create( 'database\\'.$record_type, $id );
       $record->delete();
     }
     else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
       $joining_table_name = static::get_joining_table_name( $record_type );
   
-      $modifier = util::create( 'database\modifier' );
+      $modifier = lib::create( 'database\modifier' );
       $modifier->where( static::get_table_name().'_id', '=', $primary_key_value );
       $modifier->where( $record_type.'_id', '=', $id );
   
@@ -809,9 +817,9 @@ abstract class record extends \cenozo\base_object
    */
   public static function get_relationship( $record_type )
   {
-    $relationship_class_name = util::get_class_name( 'database\relationship' );
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $type = $relationship_class_name::NONE;
-    $class_name = util::get_class_name( 'database\\'.$record_type );
+    $class_name = lib::get_class_name( 'database\\'.$record_type );
     if( $class_name::column_exists( static::get_table_name().'_id' ) )
     { // the record_type has a foreign key for this record
       $type = static::column_exists( $record_type.'_id' )
@@ -865,7 +873,7 @@ abstract class record extends \cenozo\base_object
           $foreign_key_name = $table.'_id';
           if( static::column_exists( $foreign_key_name ) )
           {
-            $class_name = util::get_class_name( 'database\\'.$table );
+            $class_name = lib::get_class_name( 'database\\'.$table );
             // add the table to the list to select and join it in the modifier
             $table_list[] = $table;
             $modifier->where(
@@ -984,7 +992,7 @@ abstract class record extends \cenozo\base_object
     }
     else
     {
-      $modifier = util::create( 'database\modifier' );
+      $modifier = lib::create( 'database\modifier' );
       foreach( $columns as $col => $val ) $modifier->where( $col, '=', $val );
 
       // this returns null if no records are found
@@ -1079,7 +1087,7 @@ abstract class record extends \cenozo\base_object
    */
   public static function db()
   {
-    return util::create( 'business\session' )->get_database();
+    return lib::create( 'business\session' )->get_database();
   }
 
   /**

@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: system_message new
@@ -41,10 +41,10 @@ class system_message_new extends base_new
 
     // make sure the title and note are not blank
     if( !array_key_exists( 'title', $columns ) || 0 == strlen( $columns['title'] ) )
-      throw util::create(
+      throw lib::create(
         'exception\notice', 'The message\'s title cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'note', $columns ) || 0 == strlen( $columns['note'] ) )
-      throw util::create(
+      throw lib::create(
         'exception\notice', 'The message\'s note cannot be left blank.', __METHOD__ );
 
     parent::finish();

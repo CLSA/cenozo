@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: self set_password
@@ -38,28 +38,28 @@ class self_set_password extends \cenozo\ui\push
    */
   public function finish()
   {
-    $db_user = util::create( 'business\session' )->get_user();
+    $db_user = lib::create( 'business\session' )->get_user();
     $old = $this->get_argument( 'old', 'password' );
     $new = $this->get_argument( 'new' );
     $confirm = $this->get_argument( 'confirm' );
     
     // make sure the old password is correct
-    $ldap_manager = util::create( 'business\ldap_manager' );
+    $ldap_manager = lib::create( 'business\ldap_manager' );
     if( !$ldap_manager->validate_user( $db_user->name, $old ) )
-      throw util::create(
+      throw lib::create(
         'exception\notice', 'The password you have provided is incorrect.', __METHOD__ );
     
     // make sure the new password isn't blank, at least 6 characters long and not "password"
     if( 6 > strlen( $new ) )
-      throw util::create(
+      throw lib::create(
         'exception\notice', 'Passwords must be at least 6 characters long.', __METHOD__ );
     else if( 'password' == $new )
-      throw util::create(
+      throw lib::create(
         'exception\notice', 'You cannot choose "password" as your password.', __METHOD__ );
     
     // and that the user confirmed their new password correctly
     if( $new != $confirm )
-      throw util::create( 'exception\notice',
+      throw lib::create( 'exception\notice',
         'The confirmed password does not match your new password.', __METHOD__ );
 
     $ldap_manager->set_user_password( $db_user->name, $new );

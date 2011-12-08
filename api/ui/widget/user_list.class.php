@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget user list
@@ -49,7 +49,7 @@ class user_list extends site_restricted_list
     foreach( $this->get_record_list() as $record )
     {
       // determine the role
-      $modifier = util::create( 'database\modifier' );
+      $modifier = lib::create( 'database\modifier' );
       if( !is_null( $this->db_restrict_site ) )
         $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
 
@@ -91,7 +91,7 @@ class user_list extends site_restricted_list
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 
@@ -110,7 +110,7 @@ class user_list extends site_restricted_list
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 

@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all "add list" to record widgets
@@ -33,16 +33,18 @@ abstract class base_add_list extends base_record
   {
     parent::__construct( $subject, 'add_'.$child, $args );
     
+    $util_class_name = lib::get_class_name( 'util' );
+
     // make sure we have an id (we don't actually need to use it since the parent does)
     $this->get_argument( 'id' );
 
     // build the list widget
-    $this->list_widget = util::create( 'ui\widget\\'.$child.'_list', $args );
+    $this->list_widget = lib::create( 'ui\widget\\'.$child.'_list', $args );
     $this->list_widget->set_parent( $this, 'edit' );
 
     $this->list_widget->set_heading(
       sprintf( 'Choose %s to add to the %s',
-               util::pluralize( $child ),
+               $util_class_name::pluralize( $child ),
                $subject ) );
   }
   
@@ -56,10 +58,12 @@ abstract class base_add_list extends base_record
   {
     parent::finish();
 
+    $util_class_name = lib::get_class_name( 'util' );
+
     // define all template variables for this widget
     $this->set_variable( 'list_subject', $this->list_widget->get_subject() );
     $this->set_variable( 'list_subjects',
-                         util::pluralize( $this->list_widget->get_subject() ) );
+                         $util_class_name::pluralize( $this->list_widget->get_subject() ) );
     $this->set_variable( 'list_widget_name', $this->list_widget->get_class_name() );
 
     $this->list_widget->finish();

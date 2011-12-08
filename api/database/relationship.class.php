@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * This is an enum class which defines all types of database table relationships.

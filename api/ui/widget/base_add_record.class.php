@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all "add record" to record widgets
@@ -38,7 +38,7 @@ abstract class base_add_record extends base_record
     $this->get_argument( 'id' );
 
     // build the child add widget
-    $this->add_widget = util::create( 'ui\widget\\'.$child.'_add', $args );
+    $this->add_widget = lib::create( 'ui\widget\\'.$child.'_add', $args );
     $this->add_widget->set_parent( $this, 'edit' );
 
     $this->add_widget->set_heading(
@@ -57,10 +57,12 @@ abstract class base_add_record extends base_record
   {
     parent::finish();
 
+    $util_class_name = lib::get_class_name( 'util' );
+
     // define all template variables for this widget
     $this->set_variable( 'record_subject', $this->add_widget->get_subject() );
     $this->set_variable( 'record_subjects',
-                         util::pluralize( $this->add_widget->get_subject() ) );
+                         $util_class_name::pluralize( $this->add_widget->get_subject() ) );
     $this->set_variable( 'add_widget_name', $this->add_widget->get_class_name() );
 
     $this->add_widget->finish();

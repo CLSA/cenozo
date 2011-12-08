@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: note new
@@ -41,13 +41,13 @@ class note_new extends \cenozo\ui\push
     $category = $this->get_argument( 'category' );
     $category_id = $this->get_argument( 'category_id' );
     $note = $this->get_argument( 'note' );
-    $db_record = util::create( 'database\\'.$category, $category_id );
-    if( !is_a( $db_record, util::get_class_name( 'database\has_note' ) ) )
-      throw util::create( 'exception\runtime',
+    $db_record = lib::create( 'database\\'.$category, $category_id );
+    if( !is_a( $db_record, lib::get_class_name( 'database\has_note' ) ) )
+      throw lib::create( 'exception\runtime',
         sprintf( 'Tried to create new note to %s which cannot have notes.', $category ),
         __METHOD__ );
 
-    $db_record->add_note( util::create( 'business\session' )->get_user(), $note );
+    $db_record->add_note( lib::create( 'business\session' )->get_user(), $note );
   }
 }
 ?>

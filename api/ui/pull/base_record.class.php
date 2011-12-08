@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\pull;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all pull operations pertaining to a single record.
@@ -32,7 +32,7 @@ abstract class base_record
     parent::__construct( $subject, $name, $args );
 
     $this->set_record(
-      util::create( 'database\\'.$this->get_subject(), $this->get_argument( 'id', NULL ) ) );
+      lib::create( 'database\\'.$this->get_subject(), $this->get_argument( 'id', NULL ) ) );
   }
   
   /**

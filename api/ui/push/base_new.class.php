@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all push operations which create a new record.
@@ -44,7 +44,7 @@ abstract class base_new extends base_record
     { 
       if( strtotime( $columns['start_time'] ) >= strtotime( $columns['end_time'] ) )
       { 
-        throw util::create( 'exception\notice',
+        throw lib::create( 'exception\notice',
           sprintf( 'Start and end times (%s to %s) are not valid.',
                    $columns['start_time'],
                    $columns['end_time'] ),
@@ -56,7 +56,7 @@ abstract class base_new extends base_record
     { 
       if( strtotime( $columns['start_datetime'] ) >= strtotime( $columns['end_datetime'] ) )
       { 
-        throw util::create( 'exception\notice',
+        throw lib::create( 'exception\notice',
           sprintf( 'Start and end date-times (%s to %s) are not valid.',
                    $columns['start_datetime'],
                    $columns['end_datetime'] ),
@@ -68,7 +68,7 @@ abstract class base_new extends base_record
     { 
       if( strtotime( $columns['start_date'] ) >= strtotime( $columns['end_date'] ) )
       { 
-        throw util::create( 'exception\notice',
+        throw lib::create( 'exception\notice',
           sprintf( 'Start and end dates (%s to %s) are not valid.',
                    $columns['start_date'],
                    $columns['end_date'] ),
@@ -87,7 +87,7 @@ abstract class base_new extends base_record
     { // help describe exceptions to the user
       if( $e->is_duplicate_entry() )
       {
-        throw util::create( 'exception\notice',
+        throw lib::create( 'exception\notice',
           'Unable to create the new '.$this->get_subject().' because it is not unique.',
           __METHOD__, $e );
       }
@@ -110,7 +110,7 @@ abstract class base_new extends base_record
             $this->get_subect() );
         }
 
-        throw util::create( 'exception\notice', $message, __METHOD__, $e );
+        throw lib::create( 'exception\notice', $message, __METHOD__, $e );
       }
 
       throw $e;

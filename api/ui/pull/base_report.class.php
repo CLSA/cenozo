@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\pull;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all reports.
@@ -32,7 +32,7 @@ abstract class base_report extends \cenozo\ui\pull
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'report', $args );
-    $this->report = util::create( 'business\report' );
+    $this->report = lib::create( 'business\report' );
   }
 
   /**
@@ -72,6 +72,8 @@ abstract class base_report extends \cenozo\ui\pull
    */
   public function finish()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // determine the widest table size
     $max = 1;
     foreach( $this->report_tables as $table )
@@ -96,7 +98,7 @@ abstract class base_report extends \cenozo\ui\pull
       $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
       if( $restrict_site_id )
       {
-        $db_site = util::create( 'database\site', $restrict_site_id );
+        $db_site = lib::create( 'database\site', $restrict_site_id );
         $main_title = $main_title.' for '.$db_site->name;
       }
       else
@@ -113,7 +115,7 @@ abstract class base_report extends \cenozo\ui\pull
 
     $row++;
 
-    $now_datetime_obj = util::get_datetime_object();
+    $now_datetime_obj = $util_class_name::get_datetime_object();
     $time_title = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
                    ' at '.$now_datetime_obj->format( 'H:i' );
     $this->report->set_size( 14 );
@@ -127,10 +129,10 @@ abstract class base_report extends \cenozo\ui\pull
     {
       $restrict_start_date = $this->get_argument( 'restrict_start_date' );
       $restrict_end_date = $this->get_argument( 'restrict_end_date' );
-      $now_datetime_obj = util::get_datetime_object();
+      $now_datetime_obj = $util_class_name::get_datetime_object();
       if( $restrict_start_date )
       {
-        $start_datetime_obj = util::get_datetime_object( $restrict_start_date );
+        $start_datetime_obj = $util_class_name::get_datetime_object( $restrict_start_date );
         if( $start_datetime_obj > $now_datetime_obj )
         {
           $start_datetime_obj = clone $now_datetime_obj;
@@ -138,7 +140,7 @@ abstract class base_report extends \cenozo\ui\pull
       }
       if( $restrict_end_date )
       {
-        $end_datetime_obj = util::get_datetime_object( $restrict_end_date );
+        $end_datetime_obj = $util_class_name::get_datetime_object( $restrict_end_date );
         if( $end_datetime_obj > $now_datetime_obj )
         {
           $end_datetime_obj = clone $now_datetime_obj;
@@ -150,8 +152,8 @@ abstract class base_report extends \cenozo\ui\pull
       {
         if( $end_datetime_obj < $start_datetime_obj )
         {
-          $start_datetime_obj = util::get_datetime_object( $restrict_end_date );
-          $end_datetime_obj = util::get_datetime_object( $restrict_start_date );
+          $start_datetime_obj = $util_class_name::get_datetime_object( $restrict_end_date );
+          $end_datetime_obj = $util_class_name::get_datetime_object( $restrict_start_date );
         }
         if( $start_datetime_obj == $end_datetime_obj ) 
         {

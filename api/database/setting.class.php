@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * setting: record
@@ -28,7 +28,7 @@ class setting extends record
    */
   public static function get_setting( $category, $name )
   {
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'category', '=', $category );
     $modifier->where( 'name', '=', $name );
 

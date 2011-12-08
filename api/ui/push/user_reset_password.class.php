@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Resets a user's password.
@@ -38,7 +38,7 @@ class user_reset_password extends base_record
   public function finish()
   {
     $db_user = $this->get_record();
-    $ldap_manager = util::create( 'business\ldap_manager' );
+    $ldap_manager = lib::create( 'business\ldap_manager' );
     $ldap_manager->set_user_password( $db_user->name, 'password' );
   }
 }

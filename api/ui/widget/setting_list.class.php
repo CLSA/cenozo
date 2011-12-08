@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget setting list
@@ -29,7 +29,7 @@ class setting_list extends base_list
   {
     parent::__construct( 'setting', $args );
     
-    $is_mid_tier = 2 == util::create( 'business\session' )->get_role()->tier;
+    $is_mid_tier = 2 == lib::create( 'business\session' )->get_role()->tier;
 
     $this->add_column( 'category', 'string', 'Category', true );
     $this->add_column( 'name', 'string', 'Name', true );
@@ -48,14 +48,14 @@ class setting_list extends base_list
   {
     parent::finish();
     
-    $session = util::create( 'business\session' );
+    $session = lib::create( 'business\session' );
     $is_mid_tier = 2 == $session->get_role()->tier;
 
     foreach( $this->get_record_list() as $record )
     {
       if( $is_mid_tier )
       { // include the site's value
-        $modifier = util::create( 'database\modifier' );
+        $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'site_id', '=', $session->get_site()->id );
         $setting_value_list = $record->get_setting_value_list( $modifier );
         $value = 1 == count( $setting_value_list ) ? $setting_value_list[0]->value : '';

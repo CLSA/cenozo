@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Class that manages variables in main user interface template.
@@ -25,9 +25,9 @@ class main extends \cenozo\base_object
    */
   public static function get_variables()
   {
-    $session = util::create( 'business\session' );
-    $ldap_manager = util::create( 'business\ldap_manager' );
-    $setting_manager = util::create( 'business\setting_manager' );
+    $session = lib::create( 'business\session' );
+    $ldap_manager = lib::create( 'business\ldap_manager' );
+    $setting_manager = lib::create( 'business\setting_manager' );
 
     $variables = array();
     $variables['jquery_ui_css_path'] =

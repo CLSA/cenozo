@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget role view
@@ -36,7 +36,7 @@ class role_view extends base_view
     try
     {
       // create the operation sub-list widget
-      $this->operation_list = util::create( 'ui\widget\operation_list', $args );
+      $this->operation_list = lib::create( 'ui\widget\operation_list', $args );
       $this->operation_list->set_parent( $this );
       $this->operation_list->remove_column( 'restricted' );
       $this->operation_list->set_heading( 'Operations belonging to this role' );

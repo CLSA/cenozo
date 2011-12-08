@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for adding access to sites and users.
@@ -34,7 +34,7 @@ class base_add_access extends base_add_list
     try
     {
       // build the role list widget
-      $this->role_list = util::create( 'ui\widget\role_list', $args );
+      $this->role_list = lib::create( 'ui\widget\role_list', $args );
       $this->role_list->set_parent( $this, 'edit' );
       $this->role_list->set_heading( 'Select roles to grant' );
     }
@@ -71,9 +71,9 @@ class base_add_access extends base_add_list
    */
   public function determine_role_count( $modifier = NULL )
   {
-    $role_class_name = util::get_class_name( 'database\role' );
-    if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
-    $modifier->where( 'tier', '<=', util::create( 'business\session' )->get_role()->tier );
+    $role_class_name = lib::get_class_name( 'database\role' );
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'tier', '<=', lib::create( 'business\session' )->get_role()->tier );
     return $role_class_name::count( $modifier );
   }
 
@@ -87,9 +87,9 @@ class base_add_access extends base_add_list
    */
   public function determine_role_list( $modifier = NULL )
   {
-    $role_class_name = util::get_class_name( 'database\role' );
-    if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
-    $modifier->where( 'tier', '<=', util::create( 'business\session' )->get_role()->tier );
+    $role_class_name = lib::get_class_name( 'database\role' );
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'tier', '<=', lib::create( 'business\session' )->get_role()->tier );
     return $role_class_name::select( $modifier );
   }
 

@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * The base class of all push operations
@@ -31,8 +31,10 @@ abstract class push extends operation
   {
     parent::__construct( 'push', $subject, $name, $args );
 
+    $util_class_name = lib::get_class_name( 'util' );
+
     // by default use transactions when performing pull operations
-    util::set_use_transaction( true );
+    $util_class_name::set_use_transaction( true );
   }
 }
 ?>

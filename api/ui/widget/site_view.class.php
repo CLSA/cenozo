@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget site view
@@ -38,7 +38,7 @@ class site_view extends base_view
     try
     {
       // create the access sub-list widget
-      $this->access_list = util::create( 'ui\widget\access_list', $args );
+      $this->access_list = lib::create( 'ui\widget\access_list', $args );
       $this->access_list->set_parent( $this );
       $this->access_list->set_heading( 'Site access list' );
     }
@@ -50,7 +50,7 @@ class site_view extends base_view
     try
     {
       // create the activity sub-list widget
-      $this->activity_list = util::create( 'ui\widget\activity_list', $args );
+      $this->activity_list = lib::create( 'ui\widget\activity_list', $args );
       $this->activity_list->set_parent( $this );
       $this->activity_list->set_heading( 'Site activity' );
     }
@@ -70,8 +70,10 @@ class site_view extends base_view
   {
     parent::finish();
     
+    $util_class_name = lib::get_class_name( 'util' );
+
     // create enum arrays
-    $site_class_name = util::get_class_name( 'database\site' );
+    $site_class_name = lib::get_class_name( 'database\site' );
     $timezones = $site_class_name::get_enum_values( 'timezone' );
     $timezones = array_combine( $timezones, $timezones );
 
@@ -81,7 +83,7 @@ class site_view extends base_view
     $this->set_item( 'users', $this->get_record()->get_user_count() );
 
     $db_activity = $this->get_record()->get_last_activity();
-    $last = util::get_fuzzy_period_ago(
+    $last = $util_class_name::get_fuzzy_period_ago(
               is_null( $db_activity ) ? null : $db_activity->datetime );
     $this->set_item( 'last_activity', $last );
 
@@ -111,8 +113,8 @@ class site_view extends base_view
    */
   public function determine_access_count( $modifier = NULL )
   {
-    $access_class_name = util::get_class_name( 'database\access' );
-    if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+    $access_class_name = lib::get_class_name( 'database\access' );
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $this->get_record()->id );
     return $access_class_name::count( $modifier );
   }
@@ -127,8 +129,8 @@ class site_view extends base_view
    */
   public function determine_access_list( $modifier = NULL )
   {
-    $access_class_name = util::get_class_name( 'database\access' );
-    if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+    $access_class_name = lib::get_class_name( 'database\access' );
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $this->get_record()->id );
     return $access_class_name::select( $modifier );
   }

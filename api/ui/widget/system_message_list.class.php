@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget system_message list
@@ -71,14 +71,14 @@ class system_message_list extends site_restricted_list
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
       $modifier->or_where( 'site_id', '=', NULL );
     }
     
     // skip the parent method
     // php doesn't allow parent::parent::method() so we have to do the less safe code below
-    $base_list_class_name = util::get_class_name( 'ui\widget\base_list' );
+    $base_list_class_name = lib::get_class_name( 'ui\widget\base_list' );
     return $base_list_class_name::determine_record_count( $modifier );
   }
 
@@ -94,14 +94,14 @@ class system_message_list extends site_restricted_list
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = util::create( 'database\modifier' );
+      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
       $modifier->or_where( 'site_id', '=', NULL );
     }
     
     // skip the parent method
     // php doesn't allow parent::parent::method() so we have to do the less safe code below
-    $base_list_class_name = util::get_class_name( 'ui\widget\base_list' );
+    $base_list_class_name = lib::get_class_name( 'ui\widget\base_list' );
     return $base_list_class_name::determine_record_list( $modifier );
   }
 }

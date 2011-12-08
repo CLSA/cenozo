@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\business;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Manages communication with other cenozo services.
@@ -58,7 +58,7 @@ class cenozo_manager extends \cenozo\factory
   {
     if( !$this->enabled || $this->logged_in ) return;
 
-    $session = util::create( 'business\session' );
+    $session = lib::create( 'business\session' );
 
     // log in using the current user/role/site
     $this->set_site( $session->get_site() );
@@ -122,7 +122,7 @@ class cenozo_manager extends \cenozo\factory
     if( !is_null( $arguments ) )
     {
       if( !is_array( $arguments ) )
-        throw util::create( 'exception\arguments', $arguments, __METHOD__ );
+        throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
       $request->setQueryData( $arguments );
     }
     
@@ -151,7 +151,7 @@ class cenozo_manager extends \cenozo\factory
     if( !is_null( $arguments ) )
     {
       if( !is_array( $arguments ) )
-        throw util::create( 'exception\arguments', $arguments, __METHOD__ );
+        throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
       $request->setPostFields( $arguments );
     }
 
@@ -174,12 +174,12 @@ class cenozo_manager extends \cenozo\factory
     if( 400 == $code )
     { // duplicate cenozo exception
       $body = json_decode( $message->body );
-      throw util::create(
+      throw lib::create(
         'exception\cenozo_service', $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
     { // A non-cenozo error has happened
-      throw util::create( 'exception\runtime', sprintf(
+      throw lib::create( 'exception\runtime', sprintf(
         'Unable to connect to Cenozo service at %s (code: %s)',
         '',
         $code ), __METHOD__ );

@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget note list
@@ -41,12 +41,14 @@ class note_list extends \cenozo\ui\widget
   {
     parent::finish();
     
+    $util_class_name = lib::get_class_name( 'util' );
+
     // make sure there is a valid note category
     $category = $this->get_argument( 'category' );
     $category_id = $this->get_argument( 'category_id' );
-    $db_record = util::create( 'database\\'.$category, $category_id );
-    if( !is_a( $db_record, util::get_class_name( 'database\has_note' ) ) )
-      throw util::create( 'exception\runtime',
+    $db_record = lib::create( 'database\\'.$category, $category_id );
+    if( !is_a( $db_record, lib::get_class_name( 'database\has_note' ) ) )
+      throw lib::create( 'exception\runtime',
         sprintf( 'Tried to list notes for %s which cannot have notes.', $category ),
         __METHOD__ );
     
@@ -54,9 +56,9 @@ class note_list extends \cenozo\ui\widget
     $note_list = array();
     foreach( $db_record->get_note_list() as $db_note )
     {
-      $datetime = 7 > util::get_interval( $db_note->datetime )->days
-                ? util::get_fuzzy_period_ago( $db_note->datetime )
-                : util::get_formatted_date( $db_note->datetime );
+      $datetime = 7 > $util_class_name::get_interval( $db_note->datetime )->days
+                ? $util_class_name::get_fuzzy_period_ago( $db_note->datetime )
+                : $util_class_name::get_formatted_date( $db_note->datetime );
       $note_list[] = array( 'id' => $db_note->id,
                             'sticky' => $db_note->sticky,
                             'user' => $db_note->get_user()->name,
@@ -69,7 +71,7 @@ class note_list extends \cenozo\ui\widget
     $this->set_variable( 'note_list', $note_list );
 
     // allow upper tier roles to modify notes
-    if( 1 < util::create( 'business\session' )->get_role()->tier )
+    if( 1 < lib::create( 'business\session' )->get_role()->tier )
     {
       $this->set_variable( 'stickable', true );
       $this->set_variable( 'removable', true );

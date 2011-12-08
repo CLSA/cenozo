@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all "delete_record" push operations.
@@ -38,7 +38,7 @@ abstract class base_delete_record extends base_record
    */
   public function finish()
   {
-    $operation = util::create(
+    $operation = lib::create(
       sprintf( 'ui\push\%s_delete', $this->child_subject ),
       array( 'id' => $this->get_argument( 'remove_id' ) ) );
     $operation->finish();

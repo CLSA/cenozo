@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * operation: record
@@ -29,7 +29,7 @@ class operation extends record
    */
   public static function get_operation( $type, $subject, $name )
   {
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'type', '=', $type );
     $modifier->where( 'subject', '=', $subject );
     $modifier->where( 'name', '=', $name );

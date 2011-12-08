@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\exception;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * argument: bad or missing argument exception
@@ -30,10 +30,11 @@ class argument extends base_exception
    */
   public function __construct( $argument_name, $value, $context, $previous = NULL )
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $this->argument_name = $argument_name;
     $message = sprintf( 'Invalid argument "%s" with value "%s".',
                         $this->argument_name,
-                        util::var_dump( $value ) );
+                        $util_class_name::var_dump( $value ) );
     parent::__construct( $message, $context, $previous );
   }
   

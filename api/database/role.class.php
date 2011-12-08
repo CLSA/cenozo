@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * role: record
@@ -32,7 +32,7 @@ class role extends base_access
       return false;
     }
 
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation_id', '=', $db_operation->id );
     return 0 < $this->get_operation_count( $modifier );
   }

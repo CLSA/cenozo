@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * widget site add
@@ -45,7 +45,7 @@ class site_add extends base_view
     parent::finish();
     
     // create enum arrays
-    $site_class_name = util::get_class_name( 'database\site' );
+    $site_class_name = lib::get_class_name( 'database\site' );
     $timezones = $site_class_name::get_enum_values( 'timezone' );
     $timezones = array_combine( $timezones, $timezones );
 

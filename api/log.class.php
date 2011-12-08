@@ -200,9 +200,9 @@ final class log extends singleton
   private function send( $message, $type )
   {
     // make sure we have a session
-    $class_name = util::get_class_name( 'business\session' );
+    $class_name = lib::get_class_name( 'business\session' );
     if( !class_exists( $class_name ) || !$class_name::exists() ) return;
-    $session = util::create( 'business\session' );
+    $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -218,7 +218,7 @@ final class log extends singleton
     
     // add the backtrace
     if( ( PEAR_LOG_NOTICE != $type && PEAR_LOG_DEBUG != $type ) ||
-        ( !util::in_development_mode() && PEAR_LOG_INFO ) )
+        ( !lib::in_development_mode() && PEAR_LOG_INFO ) )
     {
       if( !preg_match( '/{main}$/', $message ) )
       {
@@ -230,7 +230,7 @@ final class log extends singleton
     }
 
     // if in devel mode log everything to firephp
-    if( util::in_development_mode() )
+    if( lib::in_development_mode() )
     {
       $type_string = self::log_level_to_string( $type );
       $firephp = \FirePHP::getInstance( true );
@@ -321,7 +321,7 @@ final class log extends singleton
     }
     else
     {
-      throw util::create( 'exception\runtime',
+      throw lib::create( 'exception\runtime',
         'Unable to create invalid logger type "'.$type.'"', __METHOD__ );
     }
   }
@@ -359,10 +359,12 @@ final class log extends singleton
    */
   public static function error_handler( $level, $message, $file, $line )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // ignore ldap errors
     if( 0 < preg_match( '/^ldap_[a-z_0-9]()/', $message ) ) return;
 
-    $e = util::create( 'exception\system', $message, $level );
+    $e = lib::create( 'exception\system', $message, $level );
     $message = sprintf( '(%s) : %s in %s on line %d',
                         $e->get_number(),
                         $message,
@@ -385,13 +387,13 @@ final class log extends singleton
         'error_message' => '' );
 
       // try and set the current operations error code, if possible
-      $class_name = util::get_class_name( 'business\session' );
+      $class_name = lib::get_class_name( 'business\session' );
       if( class_exists( $class_name ) && $class_name::exists() )
       {
-        $session = util::create( 'business\session' );
+        $session = lib::create( 'business\session' );
 
         // we need to complete the transaction if there is one in progress
-        if( util::use_transaction() )
+        if( $util_class_name::use_transaction() )
         {
           $session->get_database()->fail_transaction();
           $session->get_database()->complete_transaction();
@@ -399,9 +401,9 @@ final class log extends singleton
         $session->set_error_code( $e->get_code() );
       }
 
-      if( 'main' != util::get_operation_type() )
+      if( 'main' != lib::get_operation_type() )
       { // send the error in json format in an http error header
-        util::send_http_error( json_encode( $result_array ) );
+        $util_class_name::send_http_error( json_encode( $result_array ) );
       }
       else
       { // output the error using the basic php template

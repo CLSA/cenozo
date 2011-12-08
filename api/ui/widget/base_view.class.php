@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\widget;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for widgets which view current or new records.
@@ -39,8 +39,8 @@ abstract class base_view extends base_record
       $this->get_argument( 'id' );
 
       // determine properties based on the current user's permissions
-      $operation_class_name = util::get_class_name( 'database\operation' );
-      $session = util::create( 'business\session' );
+      $operation_class_name = lib::get_class_name( 'database\operation' );
+      $session = lib::create( 'business\session' );
       $this->editable = $session->is_allowed(
         $operation_class_name::get_operation( 'push', $subject, 'edit' ) );
       $this->removable = $session->is_allowed( 
@@ -89,13 +89,15 @@ abstract class base_view extends base_record
    */
   public function add_item( $item_id, $type, $heading = NULL, $note = NULL )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // add timezone info to the note if the item is a time or datetime
     if( 'time' == $type || 'datetime' == $type )
     {
       // build time time zone help text
-      $date_obj = util::get_datetime_object();
+      $date_obj = $util_class_name::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            util::create( 'business\session' )->get_site()->name,
+                            lib::create( 'business\session' )->get_site()->name,
                             $date_obj->format( 'T' ) );
       $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }
@@ -122,8 +124,9 @@ abstract class base_view extends base_record
   {
     // make sure the item exists
     if( !array_key_exists( $item_id, $this->items ) )
-      throw util::create( 'exception\argument', 'item_id', $item_id, __METHOD__ );
+      throw lib::create( 'exception\argument', 'item_id', $item_id, __METHOD__ );
     
+    $util_class_name = lib::get_class_name( 'util' );
     $type = $this->items[$item_id]['type'];
     
     // process the value so that it displays correctly
@@ -136,7 +139,7 @@ abstract class base_view extends base_record
     {
       if( strlen( $value ) )
       {
-        $date_obj = util::get_datetime_object( $value );
+        $date_obj = $util_class_name::get_datetime_object( $value );
         $value = $date_obj->format( 'Y-m-d' );
       }
       else $value = '';
@@ -145,7 +148,7 @@ abstract class base_view extends base_record
     {
       if( strlen( $value ) )
       {
-        $date_obj = util::get_datetime_object( $value );
+        $date_obj = $util_class_name::get_datetime_object( $value );
         $value = $date_obj->format( 'H:i' );
       }
       else $value = '12:00';
@@ -174,7 +177,7 @@ abstract class base_view extends base_record
     {
       $enum = $data;
       if( is_null( $enum ) )
-        throw util::create( 'exception\runtime',
+        throw lib::create( 'exception\runtime',
           'Trying to set enum item without enum values.', __METHOD__ );
       
       // add a null entry (to the front of the array) if the item is not required

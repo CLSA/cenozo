@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * A base class for all classes joined together by the access table.
@@ -105,8 +105,8 @@ abstract class base_access extends record
       return NULL;
     }
     
-    $activity_class_name = util::get_class_name( 'database\activity' );
-    $modifier = util::create( 'database\modifier' );
+    $activity_class_name = lib::get_class_name( 'database\activity' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_name.'_id', '=', $this->id );
     $modifier->order_desc( 'datetime' );
     $modifier->limit( 1 );
@@ -132,8 +132,8 @@ abstract class base_access extends record
       return 0;
     }
     
-    $activity_class_name = util::get_class_name( 'database\activity' );
-    if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
+    $activity_class_name = lib::get_class_name( 'database\activity' );
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_name.'_id', '=', $this->id );
     return $activity_class_name::count( $modifier );
   }
@@ -156,8 +156,8 @@ abstract class base_access extends record
       return $activity_list;
     }
     
-    $activity_class_name = util::get_class_name( 'database\activity' );
-    if( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
+    $activity_class_name = lib::get_class_name( 'database\activity' );
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_name.'_id', '=', $this->id );
     return $activity_class_name::select( $modifier );
   }
@@ -209,11 +209,11 @@ abstract class base_access extends record
     $modifier = 1 == count( $args ) &&
                 false !== strpos( get_class( $args[0] ), 'database\modifier' )
               ? $args[0]
-              : util::create( 'database\modifier' );
+              : lib::create( 'database\modifier' );
 
     $modifier->where( $subject_name.'_id', '=', $this->id );
     
-    $class_name = util::get_class_name( 'database\\'.$related_name );
+    $class_name = lib::get_class_name( 'database\\'.$related_name );
     return 'list' == $action
            ? $class_name::select( $modifier )
            : $class_name::count( $modifier );

@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * A base class for all records which have a unique, ordered rank.
@@ -37,7 +37,7 @@ abstract class has_rank extends record
     $rank_parent_key = is_null( static::$rank_parent ) ? false : static::$rank_parent.'_id';
 
     // see if there is already another record at the new rank
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'id', '!=', $this->id );
     if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
     $modifier->where( 'rank', '=', $this->rank );
@@ -48,7 +48,7 @@ abstract class has_rank extends record
     if( 0 < count( $result ) )
     {
       // check to see if this record is being moved or added to the list
-      $modifier = util::create( 'database\modifier' );
+      $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'id', '=', $this->id );
       $current_rank = static::db()->get_one(
         sprintf( 'SELECT rank FROM %s %s',
@@ -61,7 +61,7 @@ abstract class has_rank extends record
         $forward = $current_rank < $this->rank;
 
         // get all records which are between the record's current and new rank
-        $modifier = util::create( 'database\modifier' );
+        $modifier = lib::create( 'database\modifier' );
         if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
         $modifier->where( 'rank', $forward ? '>'  : '<' , $current_rank );
         $modifier->where( 'rank', $forward ? '<=' : '>=', $this->rank );
@@ -84,7 +84,7 @@ abstract class has_rank extends record
       else
       { // adding the record, make room
         // get all records at this rank and afterwards
-        $modifier = util::create( 'database\modifier' );
+        $modifier = lib::create( 'database\modifier' );
         if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
         $modifier->where( 'rank', '>=', $this->rank );
         $modifier->order_desc( 'rank' );
@@ -126,7 +126,7 @@ abstract class has_rank extends record
     $rank_parent_key = is_null( static::$rank_parent ) ? false : static::$rank_parent.'_id';
 
     // now get a list of all records that come after this one
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
     $modifier->where( 'rank', '>=', $this->rank );
     $modifier->order( 'rank' );

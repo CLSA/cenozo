@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: user new
@@ -51,17 +51,17 @@ class user_new extends base_new
     
     // make sure the name, first name and last name are not blank
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
-      throw util::create(
+      throw lib::create(
         'exception\notice', 'The user\'s user name cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'first_name', $columns ) || 0 == strlen( $columns['first_name'] ) )
-      throw util::create(
+      throw lib::create(
         'exception\notice', 'The user\'s first name cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'last_name', $columns ) || 0 == strlen( $columns['last_name'] ) )
-      throw util::create(
+      throw lib::create(
         'exception\notice', 'The user\'s last name cannot be left blank.', __METHOD__ );
 
     // add the user to ldap
-    $ldap_manager = util::create( 'business\ldap_manager' );
+    $ldap_manager = lib::create( 'business\ldap_manager' );
     try
     {
       $ldap_manager->new_user(
@@ -77,9 +77,9 @@ class user_new extends base_new
 
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user
-      $user_class_name = util::get_class_name( 'database\user' );
+      $user_class_name = lib::get_class_name( 'database\user' );
       $db_user = $user_class_name::get_unique_record( 'name', $columns['name'] );
-      $db_access = util::create( 'database\access' );
+      $db_access = lib::create( 'database\access' );
       $db_access->user_id = $db_user->id;
       $db_access->site_id = $this->site_id;
       $db_access->role_id = $this->role_id;

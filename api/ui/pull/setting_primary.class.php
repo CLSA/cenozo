@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\pull;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * pull: setting primary

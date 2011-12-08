@@ -1,12 +1,12 @@
 AuthType basic
 AuthBasicProvider ldap
 
-AuthLDAPURL "ldap://localhost/ou=Users,dc=clsadev,dc=rhpcs,dc=McMaster,dc=CA"
+AuthLDAPURL "ldap://localhost/ou=Users,dc=domain,dc=COM"
 
 Require valid-user
 
 AuthzLDAPAuthoritative off
-AuthName "clsadev"
+AuthName "auth_name"
 SSLRequireSSL
 
 <IfModule mod_rewrite.c>

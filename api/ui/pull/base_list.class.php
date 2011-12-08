@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\pull;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all list pull operations.
@@ -39,11 +39,11 @@ abstract class base_list extends \cenozo\ui\pull
    */
   public function finish()
   {
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     foreach( $this->restrictions as $restrict )
       $modifier->where( $restrict['column'], $restrict['operator'], $restrict['value'] );
 
-    $class_name = util::get_class_name( 'database\\'.$this->get_subject() );
+    $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
     $list = array();
     foreach( $class_name::select( $modifier ) as $record )
     {
@@ -65,7 +65,7 @@ abstract class base_list extends \cenozo\ui\pull
     $this->restrictions = array();
     $restrictions = $this->get_argument( 'restrictions', array() );
     
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     if( is_array( $restrictions ) ) foreach( $restrictions as $column => $restrict )
     {
       $operator = NULL;

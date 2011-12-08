@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all record "delete" push operations.
@@ -48,7 +48,7 @@ abstract class base_delete extends base_record
     { // help describe exceptions to the user
       if( $e->is_constrained() )
       {
-        throw util::create( 'exception\notice',
+        throw lib::create( 'exception\notice',
           'Unable to delete the '.$this->get_subject().
           ' because it is being referenced by the database.', __METHOD__, $e );
       }

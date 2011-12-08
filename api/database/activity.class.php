@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * activity: record
@@ -28,6 +28,7 @@ class activity extends record
    */
   public static function get_min_datetime( $modifier = NULL )
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $sql = sprintf( 'SELECT MIN( datetime ) FROM %s '.
                     'LEFT JOIN operation ON operation_id = operation.id %s',
                     static::get_table_name(),
@@ -36,7 +37,7 @@ class activity extends record
     
     return is_null( $datetime )
       ? NULL
-      : util::get_datetime_object( util::from_server_datetime( $datetime ) );
+      : $util_class_name::get_datetime_object( $util_class_name::from_server_datetime( $datetime ) );
   }
 
   /**
@@ -50,6 +51,7 @@ class activity extends record
    */
   public static function get_max_datetime( $modifier = NULL )
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $sql = sprintf( 'SELECT MAX( datetime ) FROM %s '.
                     'LEFT JOIN operation ON operation_id = operation.id %s',
                     static::get_table_name(),
@@ -59,7 +61,7 @@ class activity extends record
 
     return is_null( $datetime )
       ? NULL
-      : util::get_datetime_object( util::from_server_datetime( $datetime ) );
+      : $util_class_name::get_datetime_object( $util_class_name::from_server_datetime( $datetime ) );
   }
 
   /**
@@ -75,12 +77,13 @@ class activity extends record
    */
   public static function get_elapsed_time( $db_user, $db_site, $db_role, $date )
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $time = 0;
     $total_time = 0;
     $start_datetime_obj = NULL;
     $end_datetime_obj = NULL;
 
-    $modifier = util::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $db_user->id );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'operation.subject', '!=', 'self' );
@@ -93,13 +96,13 @@ class activity extends record
       {
         if( is_null( $start_datetime_obj ) )
         {
-          $start_datetime_obj = util::get_datetime_object( $db_activity->datetime );
+          $start_datetime_obj = $util_class_name::get_datetime_object( $db_activity->datetime );
           $time = 0;
         }
         else
         {
-          $end_datetime_obj = util::get_datetime_object( $db_activity->datetime );
-          $interval_obj = util::get_interval( $end_datetime_obj, $start_datetime_obj );
+          $end_datetime_obj = $util_class_name::get_datetime_object( $db_activity->datetime );
+          $interval_obj = $util_class_name::get_interval( $end_datetime_obj, $start_datetime_obj );
           $time = $interval_obj->h + $interval_obj->i / 60 + $interval_obj->s / 3600;
         }
       }

@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\database;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * A base class for all records which have notes.
@@ -28,9 +28,9 @@ abstract class has_note extends record
   {
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $note_class_name = util::get_class_name( 'database\\'.$table_name.'_note' );
+    $note_class_name = lib::get_class_name( 'database\\'.$table_name.'_note' );
 
-    if ( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
+    if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_key_name, '=', $this->id );
     return $note_class_name::count( $modifier );
   }
@@ -46,9 +46,9 @@ abstract class has_note extends record
   {
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $note_class_name = util::get_class_name( 'database\\'.$table_name.'_note' );
+    $note_class_name = lib::get_class_name( 'database\\'.$table_name.'_note' );
 
-    if ( is_null( $modifier ) ) $modifier = util::create( 'database\modifier' );
+    if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_key_name, '=', $this->id );
     $modifier->order( 'sticky', true );
     $modifier->order( 'datetime' );
@@ -64,10 +64,11 @@ abstract class has_note extends record
    */
   public function add_note( $user, $note )
   {
-    $date_obj = util::get_datetime_object();
+    $util_class_name = lib::get_class_name( 'util' );
+    $date_obj = $util_class_name::get_datetime_object();
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $db_note = util::create( 'database\\'.$table_name.'_note' );
+    $db_note = lib::create( 'database\\'.$table_name.'_note' );
     $db_note->user_id = $user->id;
     $db_note->$subject_key_name = $this->id;
     $db_note->datetime = $date_obj->format( 'Y-m-d H:i:s' );
@@ -85,7 +86,7 @@ abstract class has_note extends record
    */
   public static function get_note( $id = NULL )
   {
-    return util::create( 'database\\'.static::get_table_name().'_note', $id );
+    return lib::create( 'database\\'.static::get_table_name().'_note', $id );
   }
 }
 ?>

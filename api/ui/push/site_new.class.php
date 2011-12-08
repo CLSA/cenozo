@@ -8,7 +8,7 @@
  */
 
 namespace cenozo\ui\push;
-use cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log;
 
 /**
  * push: site new
@@ -39,7 +39,7 @@ class site_new extends base_new
     // make sure the name column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
-      throw util::create( 'exception\notice', 'The site name cannot be left blank.', __METHOD__ );
+      throw lib::create( 'exception\notice', 'The site name cannot be left blank.', __METHOD__ );
 
     parent::finish();
   }
