@@ -535,9 +535,9 @@ class session extends \cenozo\singleton
    * Makes sure that a stack exists for the given slot.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @access private
+   * @access protected
    */
-  private function validate_slot( $slot )
+  protected function validate_slot( $slot )
   {
     if( !isset( $_SESSION['slot'][$slot] ) ) $this->slot_reset( $slot );
   }
@@ -546,9 +546,9 @@ class session extends \cenozo\singleton
    * Writes all slot stack information as cookies.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @access private
+   * @access protected
    */
-  private function update_slot_cookies()
+  protected function update_slot_cookies()
   {
     foreach( array_keys( $_SESSION['slot'] ) as $slot )
     {

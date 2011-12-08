@@ -406,36 +406,36 @@ class modifier extends \cenozo\base_object
   /**
    * Holds all where clauses in an array of associative arrays
    * @var array
-   * @access private
+   * @access protected
    */
-  private $where_list = array();
+  protected $where_list = array();
   
   /**
    * Holds all group clauses.
    * @var array( string )
-   * @access private
+   * @access protected
    */
-  private $group_list = array();
+  protected $group_list = array();
   
   /**
    * Holds all order clauses.
    * @var array( column => desc )
-   * @access private
+   * @access protected
    */
-  private $order_list = array();
+  protected $order_list = array();
   
   /**
    * The row limit value.
    * @var int
-   * @access private
+   * @access protected
    */
-  private $limit_count = 0;
+  protected $limit_count = 0;
   
   /**
    * The limit offset value.
    * @var array( column => value )
-   * @access private
+   * @access protected
    */
-  private $limit_offset = 0;
+  protected $limit_offset = 0;
 }
 ?>

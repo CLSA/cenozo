@@ -52,9 +52,9 @@ class ldap_manager extends \cenozo\singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\ldap
-   * @access public
+   * @access protected
    */
-  private function connect()
+  protected function connect()
   {
     if( is_resource( $this->resource ) ) return;
 
@@ -201,50 +201,50 @@ class ldap_manager extends \cenozo\singleton
   /**
    * The PHP LDAP resource.
    * @var resource
-   * @access private
+   * @access protected
    */
-  private $resource = NULL;
+  protected $resource = NULL;
   
   /**
    * The LDAP server to connect to.
    * @var string
-   * @access private
+   * @access protected
    */
-  private $server = 'localhost';
+  protected $server = 'localhost';
   
   /**
    * The LDAP port to connect to.
    * @var integer
-   * @access private
+   * @access protected
    */
-  private $port = 389;
+  protected $port = 389;
   
   /**
    * The base dn to use when searching
    * @var string
-   * @access private
+   * @access protected
    */
-  private $base = '';
+  protected $base = '';
   
   /**
    * Which username to use when connecting to the manager
    * @var string
-   * @access private
+   * @access protected
    */
-  private $username = '';
+  protected $username = '';
   
   /**
    * Which password to use when connecting to the manager
    * @var string
-   * @access private
+   * @access protected
    */
-  private $password = '';
+  protected $password = '';
   
   /**
    * Whether the server is in active directory mode.
    * @var bool
-   * @access private
+   * @access protected
    */
-  private $active_directory = false;
+  protected $active_directory = false;
 }
 ?>

@@ -586,31 +586,31 @@ class database extends \cenozo\base_object
   /**
    * Holds all table column types in an associate array where table => ( column => type )
    * @var array
-   * @access private
+   * @access protected
    */
-  private $columns = array();
+  protected $columns = array();
 
   /**
    * Holds all table information including unique key constraints.
    * @var array
-   * @access private
+   * @access protected
    */
-  private $tables = array();
+  protected $tables = array();
 
   /**
    * A reference to the ADODB resource.
    * @var resource
-   * @access private
+   * @access protected
    */
-  private $connection;
+  protected $connection;
 
   /**
    * Tracks which database was connected to last.
    * @var string
    * @static
-   * @access private
+   * @access protected
    */
-  private static $current_database = '';
+  protected static $current_database = '';
 
   /**
    * The database driver (see ADODB for possible values)

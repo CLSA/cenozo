@@ -53,9 +53,9 @@ class ldap extends base_exception
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return integer
-   * @access private
+   * @access protected
    */
-  private function convert_context( $number )
+  protected function convert_context( $number )
   {
     return 0 > $number ? 99000 + abs( $number ) : $number;
   }

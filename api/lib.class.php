@@ -69,7 +69,8 @@ final class lib
     // determine the full class name
     $class_name = self::get_class_name( $class_name );
 
-    if( is_subclass_of( $class_name, 'cenozo\singleton' ) )
+    if( is_subclass_of( $class_name, 'cenozo\singleton' ) ||
+        is_subclass_of( $class_name, 'cenozo\factory' ) )
     {
       if( 0 == $count ) return $class_name::self();
       if( 1 == $count ) return $class_name::self( $a[0] );
