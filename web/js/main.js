@@ -130,6 +130,7 @@ function ajax_push( subject, name, args ) {
 function ajax_slot( slot, action, subject, name, args ) {
   $.loading( {
     onAjax: true,
+    img: window.loading_icon_url,
     mask: true,
     delay: 300, // ms
     align: "center"
