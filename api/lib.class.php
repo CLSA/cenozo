@@ -60,7 +60,6 @@ final class lib
    */
   public static function create( $class_name )
   {
-    $debug = 'business\session' == $class_name;
     // remove the class name from the arguments
     $a = func_get_args();
     $class_name = array_shift( $a );
