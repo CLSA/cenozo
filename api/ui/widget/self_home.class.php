@@ -54,15 +54,17 @@ class self_home extends \cenozo\ui\widget
 
     $this->set_variable( 'title',
       sprintf( 'Welcome to %s version %s',
-               APPNAME,
+               ucwords( APPNAME ),
                $setting_manager->get_setting( 'general', 'version' ) ) );
     $this->set_variable( 'user_name', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'role_name', $db_role->name );
     $this->set_variable( 'site_name', $db_site->name );
     if( $db_activity )
     {
-      $this->set_variable( 'last_day', $util_class_name::get_formatted_date( $db_activity->datetime ) );
-      $this->set_variable( 'last_time', $util_class_name::get_formatted_time( $db_activity->datetime ) );
+      $this->set_variable(
+        'last_day', $util_class_name::get_formatted_date( $db_activity->datetime ) );
+      $this->set_variable(
+        'last_time', $util_class_name::get_formatted_time( $db_activity->datetime ) );
     }
 
     // add any messages that apply to this user

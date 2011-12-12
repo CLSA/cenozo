@@ -49,7 +49,8 @@ abstract class widget extends operation
     $widget_variable = array(
       'subject' => $this->get_subject(),
       'subject_name' => str_replace( '_', ' ', $this->get_subject() ),
-      'subject_names' => $util_class_name::pluralize( str_replace( '_', ' ', $this->get_subject() ) ),
+      'subject_names' => $util_class_name::pluralize(
+        str_replace( '_', ' ', $this->get_subject() ) ),
       'name' => $this->get_name(),
       'full' => $this->get_full_name(),
       'compound' => $this->get_full_name() );

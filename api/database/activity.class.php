@@ -37,7 +37,8 @@ class activity extends record
     
     return is_null( $datetime )
       ? NULL
-      : $util_class_name::get_datetime_object( $util_class_name::from_server_datetime( $datetime ) );
+      : $util_class_name::get_datetime_object(
+          $util_class_name::from_server_datetime( $datetime ) );
   }
 
   /**
@@ -61,7 +62,8 @@ class activity extends record
 
     return is_null( $datetime )
       ? NULL
-      : $util_class_name::get_datetime_object( $util_class_name::from_server_datetime( $datetime ) );
+      : $util_class_name::get_datetime_object(
+          $util_class_name::from_server_datetime( $datetime ) );
   }
 
   /**
