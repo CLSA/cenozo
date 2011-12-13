@@ -48,15 +48,15 @@ abstract class has_rank extends record
     if( 0 < count( $result ) )
     {
       // check to see if this record is being moved or added to the list
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'id', '=', $this->id );
-      $current_rank = static::db()->get_one(
-        sprintf( 'SELECT rank FROM %s %s',
-                 static::get_table_name(),
-                 $modifier->get_sql() ) );
-      
-      if( !is_null( $current_rank ) )
+      if( !is_null( $this->id ) )
       { // moving the record, make room
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'id', '=', $this->id );
+        $current_rank = static::db()->get_one(
+          sprintf( 'SELECT rank FROM %s %s',
+                   static::get_table_name(),
+                   $modifier->get_sql() ) );
+
         // determine if we are moving the rank forward or backward
         $forward = $current_rank < $this->rank;
 
