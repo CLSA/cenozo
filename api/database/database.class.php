@@ -129,7 +129,10 @@ class database extends \cenozo\base_object
   {
     // only start a transaction for the main database (this is an ADOdb limitation)
     if( lib::create( 'business\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
+    {
+      if( self::$debug ) log::debug( '(DB) starting transaction' );
       $this->connection->StartTrans();
+    }
   }
   
   /**
@@ -145,7 +148,10 @@ class database extends \cenozo\base_object
     if( class_exists( 'cenozo\business\setting_manager' ) &&
         $class_name::exists() &&
         lib::create( 'business\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
+    {
+      if( self::$debug ) log::debug( '(DB) completing transaction' );
       $this->connection->CompleteTrans();
+    }
   }
 
   /**
@@ -160,6 +166,7 @@ class database extends \cenozo\base_object
    */
   public function fail_transaction()
   {
+    if( self::$debug ) log::debug( '(DB) failing transaction' );
     $this->connection->FailTrans();
   }
 
@@ -355,6 +362,7 @@ class database extends \cenozo\base_object
   public function execute( $sql )
   {
     $this->connect();
+    if( self::$debug ) log::debug( '(DB) executing "'.$sql.'"' );
     $result = $this->connection->Execute( $sql );
     if( false === $result )
     {
@@ -380,6 +388,7 @@ class database extends \cenozo\base_object
   public function get_one( $sql )
   {
     $this->connect();
+    if( self::$debug ) log::debug( '(DB) getting one "'.$sql.'"' );
     $result = $this->connection->GetOne( $sql );
     if( false === $result )
     {
@@ -388,6 +397,7 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
+    if( self::$debug ) log::debug( '(DB) result "'.$result.'"' );
     return $result;
   }
   
@@ -405,6 +415,7 @@ class database extends \cenozo\base_object
   public function get_row( $sql )
   {
     $this->connect();
+    if( self::$debug ) log::debug( '(DB) getting row "'.$sql.'"' );
     $result = $this->connection->GetRow( $sql );
     if( false === $result )
     {
@@ -413,6 +424,7 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
+    if( self::$debug ) log::debug( '(DB) returned '.( count( $result ) ? 1 : 0 ).' row' );
     return $result;
   }
   
@@ -430,6 +442,7 @@ class database extends \cenozo\base_object
   public function get_all( $sql )
   {
     $this->connect();
+    if( self::$debug ) log::debug( '(DB) getting all "'.$sql.'"' );
     $result = $this->connection->GetAll( $sql );
     if( false === $result )
     {
@@ -438,6 +451,7 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
+    if( self::$debug ) log::debug( '(DB) returned '.count( $result ).' rows' );
     return $result;
   }
   
@@ -456,6 +470,7 @@ class database extends \cenozo\base_object
   public function get_col( $sql, $trim = false )
   {
     $this->connect();
+    if( self::$debug ) log::debug( '(DB) getting col "'.$sql.'"' );
     $result = $this->connection->GetCol( $sql, $trim );
     if( false === $result )
     {
@@ -464,6 +479,7 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
+    if( self::$debug ) log::debug( '(DB) returned '.count( $result ).' rows' );
     return $result;
   }
   
@@ -479,7 +495,9 @@ class database extends \cenozo\base_object
   public function insert_id()
   {
     $this->connect();
-    return $this->connection->Insert_ID();
+    $id = $this->connection->Insert_ID();
+    if( self::$debug ) log::debug( '(DB) insert ID = '.$id );
+    return $id;
   }
   
   /**
@@ -494,7 +512,9 @@ class database extends \cenozo\base_object
   public function affected_rows()
   {
     $this->connect();
-    return $this->connection->Affected_Rows();
+    $num = $this->connection->Affected_Rows();
+    if( self::$debug ) log::debug( '(DB) affected rows = '.$num );
+    return $num;
   }
   
   /**
@@ -582,6 +602,14 @@ class database extends \cenozo\base_object
       static::$current_database = $this->name;
     }
   }
+
+  /**
+   * When set to true all queries will be sent to the debug log
+   * @var boolean
+   * @static
+   * @access public
+   */
+  public static $debug = false;
 
   /**
    * Holds all table column types in an associate array where table => ( column => type )
