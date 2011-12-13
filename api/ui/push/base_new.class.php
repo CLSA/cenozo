@@ -83,7 +83,7 @@ abstract class base_new extends base_record
     {
       $this->get_record()->save();
     }
-    catch( exc\database $e )
+    catch( \cenozo\exception\database $e )
     { // help describe exceptions to the user
       if( $e->is_duplicate_entry() )
       {

@@ -38,7 +38,7 @@ class base_add_access extends base_add_list
       $this->role_list->set_parent( $this, 'edit' );
       $this->role_list->set_heading( 'Select roles to grant' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->role_list = NULL;
     }

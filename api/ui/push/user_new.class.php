@@ -67,7 +67,7 @@ class user_new extends base_new
       $ldap_manager->new_user(
         $columns['name'], $columns['first_name'], $columns['last_name'], 'password' );
     }
-    catch( exc\ldap $e )
+    catch( \cenozo\exception\ldap $e )
     {
       // catch already exists exceptions, no need to report them
       if( !$e->is_already_exists() ) throw $e;

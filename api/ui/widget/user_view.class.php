@@ -43,7 +43,7 @@ class user_view extends base_view
       $this->access_list->set_parent( $this );
       $this->access_list->set_heading( 'User\'s site access list' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->access_list = NULL;
     }
@@ -55,7 +55,7 @@ class user_view extends base_view
       $this->activity_list->set_parent( $this );
       $this->activity_list->set_heading( 'User activity' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->activity_list = NULL;
     }

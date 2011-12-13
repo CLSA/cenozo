@@ -42,7 +42,7 @@ class self_set_role extends \cenozo\ui\push
     {
       $db_role = lib::create( 'database\role', $this->get_argument( 'id' ) );
     } 
-    catch( exc\runtime $e )
+    catch( \cenozo\exception\runtime $e )
     {
       throw lib::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
     }

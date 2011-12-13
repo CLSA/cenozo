@@ -41,7 +41,7 @@ class role_view extends base_view
       $this->operation_list->remove_column( 'restricted' );
       $this->operation_list->set_heading( 'Operations belonging to this role' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->operation_list = NULL;
     }
