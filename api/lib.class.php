@@ -123,44 +123,37 @@ final class lib
   public static function autoload( $class_name )
   {
     // only work on classes in the cenozo or application namespace
-    if( false === strpos( $class_name, 'cenozo\\' ) &&
-        false === strpos( $class_name, APPNAME.'\\' ) ) return;
+    $is_framework_class = false !== strpos( $class_name, 'cenozo\\' );
+    $is_application_class = false !== strpos( $class_name, APPNAME.'\\' );
 
-    // If we are loading a class from the application namespace then we must also include
-    // the same class from the framework, if one exists.
-    // This is the only way to allow an application class to extend a framework class by
-    // the same name and namespace.
-    $pos = strpos( $class_name, APPNAME.'\\' );
-    if( false !== $pos )
+    if( !$is_framework_class && !$is_application_class ) return;
+
+    $framework_path = self::get_framework_class_path( $class_name );
+    $framework_name = $is_framework_class
+                    ? $class_name
+                    : 'cenozo'.substr( $class_name, strlen( APPNAME ) );
+    $application_path = self::get_application_class_path( $class_name );
+    $application_name = $is_application_class
+                    ? $class_name
+                    : APPNAME.substr( $class_name, strlen( 'cenozo' ) );
+
+    // always include the framework's class if it exists
+    if( !is_null( $framework_path ) )
     {
-      $cenozo_class_name =
-        'cenozo\\'.substr( $class_name, $pos + strlen( APPNAME.'\\' ) );
-      if( !class_exists( $cenozo_class_name, false ) )
-      {
-        $cenozo_file_path = self::get_full_class_path( $cenozo_class_name, true );
-        if( !is_null( $cenozo_file_path ) )
-        {
-          require $cenozo_file_path;
-          if( !class_exists( $cenozo_class_name, false ) )
-            throw self::create(
-              'exception\runtime', 'Unable to load class: '.$cenozo_class_name, __METHOD__ );
-        }
-      }
+      require_once $framework_path;
+      if( !class_exists( $framework_name, false ) && !interface_exists( $framework_name, false ) )
+        throw self::create(
+          'exception\runtime', 'Unable to load class: '.$framework_name, __METHOD__ );
     }
 
-    // now go ahead and include the requested class file
-    $file_path = self::get_full_class_path( $class_name );
-    if( !is_null( $file_path ) )
+    // now load the application's class if it exists
+    if( !is_null( $application_path ) )
     {
-      require $file_path;
-      if( !class_exists( $class_name, false ) && !interface_exists( $class_name, false ) )
-        throw self::create( 'exception\runtime', 'Unable to load class: '.$class_name, __METHOD__ );
-
-      return;
+      require_once $application_path;
+      if( !class_exists( $application_name, false ) && !interface_exists( $application_name, false ) )
+        throw self::create(
+          'exception\runtime', 'Unable to load class: '.$application_name, __METHOD__ );
     }
-
-    // if we get here then the file is missing
-    throw self::create( 'exception\runtime', 'Missing class: '.$class_name, __METHOD__ );
   }
 
   /**
@@ -229,10 +222,10 @@ final class lib
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
-   * @access protected
+   * @access private
    * @static
    */
-  protected static function get_application_class_path( $class_name )
+  private static function get_application_class_path( $class_name )
   {
     // replace back-slashes with forward-slashes
     $class_name = str_replace( '\\', '/', $class_name );
@@ -264,10 +257,10 @@ final class lib
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
-   * @access protected
+   * @access private
    * @static
    */
-  protected static function get_framework_class_path( $class_name )
+  private static function get_framework_class_path( $class_name )
   {
     // replace back-slashes with forward-slashes
     $class_name = str_replace( '\\', '/', $class_name );
@@ -319,25 +312,25 @@ final class lib
   /**
    * The type of operation being performed.
    * @var string
-   * @access protected
+   * @access private
    * @static
    */
-  protected static $operation_type = NULL;
+  private static $operation_type = NULL;
 
   /**
    * Whether the application is in development mode
    * @var boolean
-   * @access protected
+   * @access private
    * @static
    */
-  protected static $development_mode = NULL;
+  private static $development_mode = NULL;
 
   /**
    * Used to track whether the util class has been registered.
    * @var boolean
-   * @access protected
+   * @access private
    * @static
    */
-  protected static $registered = false;
+  private static $registered = false;
 }
 ?>
