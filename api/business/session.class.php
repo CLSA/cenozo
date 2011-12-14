@@ -123,6 +123,26 @@ class session extends \cenozo\singleton
   public function get_user() { return $this->user; }
 
   /**
+   * Get the current access.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\access
+   * @access public
+   */
+  public function get_access()
+  {
+    if( is_null( $this->access ) )
+    {
+      $access_class_name = lib::get_class_name( 'database\access' );
+      $this->access = $access_class_name::get_unique_record(
+        array( 'user_id', 'site_id', 'role_id' ),
+        array( $this->user->id, $this->site->id, $this->role->id ) );
+    }
+
+    return $this->access;
+  }
+
+  /**
    * Set the current site and role.
    * 
    * If the user does not have the proper access then nothing is changed.  
@@ -611,6 +631,13 @@ class session extends \cenozo\singleton
    * @access private
    */
   private $site = NULL;
+
+  /**
+   * The record of the current access (determined the first time get_access() is called)
+   * @var database\access
+   * @access private
+   */
+  private $access = NULL;
 
   /**
    * The activity associated with the current operation.
