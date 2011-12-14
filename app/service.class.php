@@ -302,7 +302,6 @@ final class service
       array( 'debug' => lib::in_development_mode(),
              'strict_variables' => lib::in_development_mode(),
              'cache' => TEMPLATE_CACHE_PATH ) );
-    $this->twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
     $this->twig->addFilter( 'nl2br', new \Twig_Filter_Function( 'nl2br' ) );
     $this->twig->addFilter( 'ucwords', new \Twig_Filter_Function( 'ucwords' ) );
     $this->twig->addGlobal( 'FOREGROUND_COLOR', $util_class_name::get_foreground_color( $theme ) );
