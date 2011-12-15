@@ -150,7 +150,8 @@ final class lib
     if( !is_null( $application_path ) )
     {
       require_once $application_path;
-      if( !class_exists( $application_name, false ) && !interface_exists( $application_name, false ) )
+      if( !class_exists( $application_name, false ) &&
+          !interface_exists( $application_name, false ) )
         throw self::create(
           'exception\runtime', 'Unable to load class: '.$application_name, __METHOD__ );
     }

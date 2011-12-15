@@ -296,8 +296,10 @@ class modifier extends \cenozo\base_object
             {
               if( $where['format'] )
               {
-                if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-                else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
+                if( $convert_time )
+                  $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
+                else if( $convert_datetime )
+                  $value = $util_class_name::to_server_datetime( $value );
                 $value = $database_class_name::format_string( $value );
               }
 
