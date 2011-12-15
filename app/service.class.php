@@ -273,7 +273,10 @@ final class service
   {
     if( array_key_exists( 'logout', $_COOKIE ) && $_COOKIE['logout'] )
     {
-      setcookie( 'logout', false, time() - 100 * 3600 * 24 );
+      $_SESSION = array();
+      session_destroy();
+      session_write_close();
+      setcookie( 'logout' );
 
       // force the user to log out by sending a header with invalid HTTP auth credentials
       header( sprintf( 'Location: %s://none:none@%s%s',
