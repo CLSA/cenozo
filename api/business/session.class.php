@@ -293,8 +293,7 @@ class session extends \cenozo\singleton
    */
   public function get_theme()
   {
-    $theme = lib::create(
-      'business\setting_manager' )->get_setting( 'interface', 'default_theme' );
+    $theme = lib::create( 'business\setting_manager' )->get_setting( 'interface', 'default_theme' );
 
     if( !is_null( $this->user ) )
     {

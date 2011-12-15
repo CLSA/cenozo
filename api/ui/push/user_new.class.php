@@ -51,14 +51,14 @@ class user_new extends base_new
     
     // make sure the name, first name and last name are not blank
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
-      throw lib::create(
-        'exception\notice', 'The user\'s user name cannot be left blank.', __METHOD__ );
+      throw lib::create( 'exception\notice',
+        'The user\'s user name cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'first_name', $columns ) || 0 == strlen( $columns['first_name'] ) )
-      throw lib::create(
-        'exception\notice', 'The user\'s first name cannot be left blank.', __METHOD__ );
+      throw lib::create( 'exception\notice',
+        'The user\'s first name cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'last_name', $columns ) || 0 == strlen( $columns['last_name'] ) )
-      throw lib::create(
-        'exception\notice', 'The user\'s last name cannot be left blank.', __METHOD__ );
+      throw lib::create( 'exception\notice',
+        'The user\'s last name cannot be left blank.', __METHOD__ );
 
     // add the user to ldap
     $ldap_manager = lib::create( 'business\ldap_manager' );

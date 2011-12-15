@@ -42,8 +42,8 @@ class setting_manager extends \cenozo\singleton
       // make sure the category exists
       if( !array_key_exists( $category, $static_settings ) )
       {
-        throw lib::create(
-          'exception\argument', 'static_settings['.$category.']', NULL, __METHOD__ );
+        throw lib::create( 'exception\argument',
+          'static_settings['.$category.']', NULL, __METHOD__ );
       }
       $this->static_settings[ $category ] = $static_settings[ $category ];
     }

@@ -174,8 +174,8 @@ class cenozo_manager extends \cenozo\factory
     if( 400 == $code )
     { // duplicate cenozo exception
       $body = json_decode( $message->body );
-      throw lib::create(
-        'exception\cenozo_service', $body->error_type, $body->error_code, $body->error_message );
+      throw lib::create( 'exception\cenozo_service',
+        $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
     { // A non-cenozo error has happened
