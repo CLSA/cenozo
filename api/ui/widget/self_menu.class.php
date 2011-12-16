@@ -77,6 +77,9 @@ class self_menu extends \cenozo\ui\widget
           'name' => $db_widget->name );
     }
 
+    // get all utility widgets that the user has access to
+    $utilities = array();
+
     // get all report widgets that the user has access to
     $reports = array();
 
@@ -94,6 +97,7 @@ class self_menu extends \cenozo\ui\widget
 
     $this->set_variable( 'calendars', $calendars );
     $this->set_variable( 'lists', $lists );
+    $this->set_variable( 'utilities', $utilities );
     $this->set_variable( 'reports', $reports );
   }
 

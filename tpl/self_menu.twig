@@ -11,6 +11,10 @@
  #                    'heading' => the name to show to the user
  #                    'subject' => the list operation's subject
  #                    'name' => the list operation's name
+ # @param array utilities An array of utility operations with each element having:
+ #                       'heading' => the name to show to the user
+ #                       'subject' => the utility operation's subject
+ #                       'name' => the utility operation's name
  # @param array reports An array of report operations with each element having:
  #                    'heading' => the name to show to the user
  #                    'subject' => the report operation's subject
@@ -32,6 +36,12 @@
         $( "#{{ widget.full }}__{{ list.subject }}_{{ list.name }}" ).button().click( function() {
           $( "#left_extruder" ).closeMbExtruder();
           slot_load( "main", "{{ list.subject }}", "{{ list.name }}" );
+        } );
+      {% endfor %}
+      {% for utility in utilities %}
+        $( "#{{ widget.full }}__{{ utility.subject }}_{{ utility.name }}" ).button().click( function() {
+          $( "#left_extruder" ).closeMbExtruder();
+          slot_load( "main", "{{ utility.subject }}", "{{ utility.name }}" );
         } );
       {% endfor %}
       {% for report in reports %}
@@ -65,6 +75,17 @@
         <div style="padding: 2px;">
           <button id="{{ widget.full }}__{{ list.subject }}_{{ list.name }}"
                   style="width: 100%;">{{ list.heading|ucwords }}</button>
+        </div>
+      {% endfor %}
+      <div class="spacer" />
+    {% endif %}
+
+    {% if utilities|length %}
+      <div class="title" style="text-align: center">Utilities</div>
+      {% for utility in utilities %}
+        <div style="padding: 2px;">
+          <button id="{{ widget.full }}__{{ utility.subject }}_{{ utility.name }}"
+                  style="width: 100%;">{{ utility.heading|ucwords }}</button>
         </div>
       {% endfor %}
       <div class="spacer" />
