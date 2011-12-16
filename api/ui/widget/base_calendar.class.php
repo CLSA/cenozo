@@ -30,5 +30,35 @@ abstract class base_calendar extends \cenozo\ui\widget
   {
     parent::__construct( $subject, 'calendar', $args );
   }
+
+  /**
+   * Finish setting the variables in a widget.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    parent::finish();
+    $this->set_variable( 'editable', $this->editable );
+  }
+
+  /**
+   * Set whether events can be edited.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_editable( $enable )
+  {
+    $this->editable = $enable;
+  }
+
+  /**
+   * Determines whether calendar events are editable.
+   * @var boolean
+   * @access protected
+   */
+  protected $editable = false;
 }
 ?>
