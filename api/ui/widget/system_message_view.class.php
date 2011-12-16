@@ -35,7 +35,7 @@ class system_message_view extends base_view
     $this->add_item( 'site_id', $type, 'Site',
       'Leaving the site blank will show the message across all sites.' );
     $this->add_item( 'role_id', 'enum', 'Role',
-      'Leaving the site blank will show the message to all roles.' );
+      'Leaving the role blank will show the message to all roles.' );
     $this->add_item( 'title', 'string', 'Title' );
     $this->add_item( 'note', 'text', 'Note' );
   }

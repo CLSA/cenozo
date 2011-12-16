@@ -238,19 +238,19 @@ CREATE  TABLE IF NOT EXISTS `system_message` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `site_id` INT UNSIGNED NOT NULL ,
-  `role_id` INT UNSIGNED NOT NULL ,
+  `site_id` INT UNSIGNED NULL ,
+  `role_id` INT UNSIGNED NULL ,
   `title` VARCHAR(255) NOT NULL ,
   `note` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
-  INDEX `fk_site_id1` (`site_id` ASC) ,
-  INDEX `fk_role_id1` (`role_id` ASC) ,
-  CONSTRAINT `fk_site_id1`
+  INDEX `fk_site_id` (`site_id` ASC) ,
+  INDEX `fk_role_id` (`role_id` ASC) ,
+  CONSTRAINT `fk_system_message_site`
     FOREIGN KEY (`site_id` )
     REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_role_id1`
+  CONSTRAINT `fk_sysetm_message_role`
     FOREIGN KEY (`role_id` )
     REFERENCES `role` (`id` )
     ON DELETE NO ACTION
