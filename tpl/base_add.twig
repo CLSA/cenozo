@@ -64,7 +64,7 @@
             <td class="heading">
               <span class="title">{{ entry.heading }}:</span>
             </td>
-            <td class="content">
+            <td class="content" style="padding-top: 0.5em; padding-bottom: 0.5em">
   
             {% if 'boolean' == entry.type %}
           
@@ -186,6 +186,9 @@
             {% endif %}
             </td>
           </tr>
+          {% if not loop.last %}
+            <tr><td></td><td><hr class="ui-widget ui-widget-content"</td></tr>
+          {% endif %}
 
         {% endif %}
       {% endif %}

@@ -123,7 +123,7 @@
           <td class="heading">
             <span class="title">{{ entry.heading }}:</span>
           </td>
-          <td class="content">
+          <td class="content" style="padding-top: 0.5em; padding-bottom: 0.5em">
     
             {% if 'constant' == entry.type or not editable %}
           
@@ -176,7 +176,6 @@
                 } );
               </script>
         
-              <hr class="ui-widget ui-widget-content">
               <div id="{{ widget.full }}_dialog_{{ id|default(0) }}__{{ item_id }}">
                 <textarea id="{{ widget.full }}__{{ item_id }}">{{ entry_value|e }}</textarea>
               </div>
@@ -371,6 +370,9 @@
             {% endif %}
           </td>
         </tr>
+        {% if not loop.last %}
+          <tr><td></td><td><hr class="ui-widget ui-widget-content"</td></tr>
+        {% endif %}
       {% endif %}
     {% endfor %}
   </table>
