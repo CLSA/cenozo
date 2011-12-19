@@ -236,10 +236,11 @@ final class service
           header( 'Content-Type: application/force-download' );
           header( 'Content-Type: application/octet-stream' );
           header( 'Content-Type: application/ms-excel' );
-          header( 'Content-Disposition: attachment; filename='.$pull_name.'.'.$data_type );
+          header( 'Content-Disposition: attachment; filename='.
+                  $this->operation_name.'.'.$output['data_type'] );
           header( 'Content-Transfer-Encoding: binary ' );
-          header( 'Content-Length: '.strlen( $data ) );
-          print $data;
+          header( 'Content-Length: '.strlen( $output['data'] ) );
+          print $output['data'];
         }
       }
       else // 'main', 'widget'
