@@ -548,6 +548,8 @@ class session extends \cenozo\singleton
       $_SESSION['slot'][$slot]['stack']['index'] = -1;
       $_SESSION['slot'][$slot]['stack']['widgets'] = array();
     }
+
+    $this->update_slot_cookies();
   }
 
   /**
