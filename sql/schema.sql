@@ -250,7 +250,7 @@ CREATE  TABLE IF NOT EXISTS `system_message` (
     REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_sysetm_message_role`
+  CONSTRAINT `fk_system_message_role`
     FOREIGN KEY (`role_id` )
     REFERENCES `role` (`id` )
     ON DELETE NO ACTION
