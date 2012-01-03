@@ -322,13 +322,13 @@ class session extends \cenozo\singleton
       $this->activity->user_id = $this->user->id;
       $this->activity->site_id = $this->site->id;
       $this->activity->role_id = $this->role->id;
-      $this->activity->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
     }
 
     // add the operation to the activity and save it
     $this->activity->operation_id = $operation->get_id();
     $this->activity->query = serialize( $arguments );
     $this->activity->elapsed = $util_class_name::get_elapsed_time();
+    $this->activity->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
     $this->activity->save();
   }
 
@@ -349,6 +349,7 @@ class session extends \cenozo\singleton
       // add the operation to the activity and save it
       $this->activity->error_code = $error_code;
       $this->activity->elapsed = $util_class_name::get_elapsed_time();
+      $this->activity->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
       $this->activity->save();
     }
   }
