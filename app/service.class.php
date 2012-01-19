@@ -116,6 +116,11 @@ final class service
         !array_key_exists( 'application_name', $this->settings['general'] ) )
       die( 'Error, application name not set!' );
 
+    // make sure all paths are valid
+    foreach( $SETTINGS['path'] as $key => $path )
+      if( 'COOKIE' != $key && !( is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
+        die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
+
     define( 'APPNAME', $this->settings['general']['application_name'] );
     $this->settings['path']['CENOZO_API'] = $this->settings['path']['CENOZO'].'/api';
     $this->settings['path']['CENOZO_TPL'] = $this->settings['path']['CENOZO'].'/tpl';
