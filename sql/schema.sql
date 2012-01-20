@@ -134,8 +134,8 @@ CREATE  TABLE IF NOT EXISTS `setting` (
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_category_name` (`category` ASC, `name` ASC) ,
-  INDEX `category` (`category` ASC) ,
-  INDEX `name` (`name` ASC) )
+  INDEX `dk_category` (`category` ASC) ,
+  INDEX `dk_name` (`name` ASC) )
 ENGINE = InnoDB;
 
 
