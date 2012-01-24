@@ -120,7 +120,7 @@ final class service
     foreach( $SETTINGS['path'] as $key => $path )
       if( 'COOKIE' != $key &&
           'TEMPLATE_CACHE' != $key &&
-          !( is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
+          !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
         die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
 
     define( 'APPNAME', $this->settings['general']['application_name'] );
