@@ -264,7 +264,7 @@ abstract class base_report extends \cenozo\ui\widget
       foreach( $region_class_name::select( $region_mod ) as $db_region )
         $region_types[ $db_region->id ] = $db_region->name;
 
-      $this->set_parameter( 'restrict_province_id', current( $region_types ), true, $region_types );
+      $this->set_parameter( 'restrict_province_id', key( $region_types ), true, $region_types );
     }
 
     if( $this->restrictions[ 'site_or_province' ] )
@@ -273,7 +273,7 @@ abstract class base_report extends \cenozo\ui\widget
       $site_or_prov = array_combine( $site_or_prov, $site_or_prov );
 
       $this->set_parameter( 'restrict_site_or_province', 
-        current( $site_or_prov ), true, $site_or_prov );
+        key( $site_or_prov ), true, $site_or_prov );
     }
 
     if( $this->restrictions[ 'dates' ] )
