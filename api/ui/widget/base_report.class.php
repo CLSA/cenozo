@@ -79,14 +79,12 @@ abstract class base_report extends \cenozo\ui\widget
     else if( 'province' == $restriction_type )
     {
       $this->restrictions[ 'province' ] = true;
-
       $this->add_parameter( 'restrict_province_id', 'enum', 'Province' );
     }
     else if( 'site_or_province' == $restriction_type )
     {
       $this->restrictions[ 'site_or_province' ] = true;
-
-      $this->add_parameter( 'restrict_site_or_province_id', 'enum', 'Site or Province' );
+      $this->add_parameter( 'restrict_site_or_province', 'enum', 'Site or Province' );
     }
   }
 
@@ -274,7 +272,7 @@ abstract class base_report extends \cenozo\ui\widget
       $site_or_prov = array( 'Site', 'Province' );
       $site_or_prov = array_combine( $site_or_prov, $site_or_prov );
 
-      $this->set_parameter( 'restrict_site_or_province_id', 
+      $this->set_parameter( 'restrict_site_or_province', 
         current( $site_or_prov ), true, $site_or_prov );
     }
 
