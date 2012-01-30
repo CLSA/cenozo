@@ -244,7 +244,7 @@ final class service
           header( 'Content-Type: application/octet-stream' );
           header( 'Content-Type: application/ms-excel' );
           header( 'Content-Disposition: attachment; filename='.
-                  $this->operation_name.'.'.$output['data_type'] );
+                  $this->operation_name.'.'.$output['type'] );
           header( 'Content-Transfer-Encoding: binary ' );
           header( 'Content-Length: '.strlen( $output['data'] ) );
           print $output['data'];
@@ -259,7 +259,7 @@ final class service
     {
       if( 'widget' == $this->operation_type ||
           'push' == $this->operation_type ||
-          'pull' == $this->operation_type && ( !isset( $data_type ) || 'json' == $data_type ) )
+          'pull' == $this->operation_type && ( !isset( $output['type'] ) || 'json' == $output['type'] ) )
       {
         $util_class_name::send_http_error( json_encode( $result_array ) );
       }
