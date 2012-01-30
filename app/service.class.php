@@ -157,7 +157,7 @@ final class service
 
     // now determine and execute the operation
     $result_array = array( 'success' => true );
-    $output = array( 'type' => NULL, 'data' => NULL );
+    $output = array( 'name' => NULL, 'type' => NULL, 'data' => NULL );
     try
     {
       // execute service type-specific operations
@@ -244,7 +244,7 @@ final class service
           header( 'Content-Type: application/octet-stream' );
           header( 'Content-Type: application/ms-excel' );
           header( 'Content-Disposition: attachment; filename='.
-                  $this->operation_name.'.'.$output['type'] );
+                  $output['name'].'.'.$output['type'] );
           header( 'Content-Transfer-Encoding: binary ' );
           header( 'Content-Length: '.strlen( $output['data'] ) );
           print $output['data'];
@@ -364,6 +364,7 @@ final class service
   {
     $class_name = lib::get_class_name( 'ui\main' );
     return array(
+      'name' => NULL,
       'type' => 'html',
       'data' => $this->render_template( 'main', $class_name::get_variables() ) );
   }
@@ -378,6 +379,7 @@ final class service
   {
     $operation = $this->create_operation();
     return array(
+      'name' => $operation->get_file_name(),
       'type' => $operation->get_data_type(),
       'data' => $operation->finish() );
   }
@@ -393,6 +395,7 @@ final class service
     $operation = $this->create_operation();
     $operation->finish();
     return array(
+      'name' => NULL,
       'type' => NULL,
       'data' => NULL );
   }
@@ -458,6 +461,7 @@ final class service
       $session->slot_push( $slot_name, $this->operation_name, $this->arguments );
 
     return array(
+      'name' => NULL,
       'type' => 'html',
       'data' => $data );
   }
