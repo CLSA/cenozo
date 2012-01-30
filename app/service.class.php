@@ -116,6 +116,13 @@ final class service
         !array_key_exists( 'application_name', $this->settings['general'] ) )
       die( 'Error, application name not set!' );
 
+    // make sure all paths are valid
+    foreach( $SETTINGS['path'] as $key => $path )
+      if( 'COOKIE' != $key &&
+          'TEMPLATE_CACHE' != $key &&
+          !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
+        die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
+
     define( 'APPNAME', $this->settings['general']['application_name'] );
     $this->settings['path']['CENOZO_API'] = $this->settings['path']['CENOZO'].'/api';
     $this->settings['path']['CENOZO_TPL'] = $this->settings['path']['CENOZO'].'/tpl';
@@ -237,7 +244,7 @@ final class service
           header( 'Content-Type: application/octet-stream' );
           header( 'Content-Type: application/ms-excel' );
           header( 'Content-Disposition: attachment; filename='.
-                  $this->operation_name.'.'.$output['data_type'] );
+                  $this->operation_name.'.'.$output['type'] );
           header( 'Content-Transfer-Encoding: binary ' );
           header( 'Content-Length: '.strlen( $output['data'] ) );
           print $output['data'];
@@ -252,7 +259,7 @@ final class service
     {
       if( 'widget' == $this->operation_type ||
           'push' == $this->operation_type ||
-          'pull' == $this->operation_type && ( !isset( $data_type ) || 'json' == $data_type ) )
+          'pull' == $this->operation_type && ( !isset( $output['type'] ) || 'json' == $output['type'] ) )
       {
         $util_class_name::send_http_error( json_encode( $result_array ) );
       }
