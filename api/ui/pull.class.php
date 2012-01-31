@@ -32,6 +32,19 @@ abstract class pull extends operation
   }
 
   /**
+   * This method always returns NULL.  It is meant to return a non-null value when the pull
+   * operation is referencing a file which is to be named.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @abstract
+   * @access public
+   */
+  public function get_file_name()
+  {
+    return NULL;
+  }
+
+  /**
    * Returns the type of data provided by this pull operation.
    * Should either be json or a standard file type (xls, xlsx, html, pdf, csv, and so on)
    * 
