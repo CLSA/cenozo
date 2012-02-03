@@ -51,6 +51,7 @@ class self_menu extends \cenozo\ui\widget
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'calendar' );
+    $modifier->order( 'operation.subject' );
     $widgets = $db_role->get_operation_list( $modifier );
     
     foreach( $widgets as $db_widget )
@@ -66,6 +67,7 @@ class self_menu extends \cenozo\ui\widget
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'list' );
+    $modifier->order( 'operation.subject' );
     $widgets = $db_role->get_operation_list( $modifier );
     
     foreach( $widgets as $db_widget )
@@ -86,6 +88,7 @@ class self_menu extends \cenozo\ui\widget
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'report' );
+    $modifier->order( 'operation.subject' );
     $widgets = $db_role->get_operation_list( $modifier );
     
     foreach( $widgets as $db_widget )

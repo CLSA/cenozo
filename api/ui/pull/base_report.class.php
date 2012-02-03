@@ -36,6 +36,18 @@ abstract class base_report extends \cenozo\ui\pull
   }
 
   /**
+   * Returns the report's name (always the same as the report's full name)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_file_name()
+  {
+    return $this->get_full_name();
+  }
+  
+  /**
    * Returns the report type (xls, xlsx, html, pdf or csv)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -47,11 +59,29 @@ abstract class base_report extends \cenozo\ui\pull
     return $this->get_argument( 'format' );
   }
   
+  /**
+   * Adds a title to the report.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $title
+   * @access public
+   */
   protected function add_title( $title )
   {
     array_push( $this->report_titles, $title );
   }
 
+  /**
+   * Adds a table to the report.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $title The title of the report.
+   * @param array $header The header row naming each column.
+   * @param array $contents The contents of the table.
+   * @param array $footer The footer of the table (for each column).
+   * @param array $blanks Which rows to skip, leaving them blank
+   * @access public
+   */
   protected function add_table(
     $title = NULL, $header = array(), $contents = array(), $footer = array(), $blanks = array() )
   {

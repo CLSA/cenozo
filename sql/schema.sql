@@ -18,7 +18,8 @@ CREATE  TABLE IF NOT EXISTS `user` (
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `theme` VARCHAR(45) NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) )
+  UNIQUE INDEX `uq_name` (`name` ASC) ,
+  INDEX `dk_active` (`active` ASC) )
 ENGINE = InnoDB;
 
 
@@ -184,7 +185,10 @@ CREATE  TABLE IF NOT EXISTS `operation` (
   `restricted` TINYINT(1)  NOT NULL DEFAULT true ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_type_subject_name` (`type` ASC, `subject` ASC, `name` ASC) )
+  UNIQUE INDEX `uq_type_subject_name` (`type` ASC, `subject` ASC, `name` ASC) ,
+  INDEX `dk_type` (`type` ASC) ,
+  INDEX `dk_subject` (`subject` ASC) ,
+  INDEX `dk_name` (`name` ASC) )
 ENGINE = InnoDB;
 
 
@@ -210,6 +214,7 @@ CREATE  TABLE IF NOT EXISTS `activity` (
   INDEX `fk_role_id` (`role_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
   INDEX `fk_operation_id` (`operation_id` ASC) ,
+  INDEX `dk_datetime` (`datetime` ASC) ,
   CONSTRAINT `fk_activity_user_id`
     FOREIGN KEY (`user_id` )
     REFERENCES `user` (`id` )
