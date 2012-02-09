@@ -98,8 +98,6 @@ final class service
    */
   public function execute()
   {
-    if( 'main' == $this->operation_type ) $this->process_logout();
-
     session_name( dirname( $_SERVER['SCRIPT_FILENAME'] ) );
     session_start();
     $_SESSION['time']['script_start_time'] = microtime( true );
@@ -137,6 +135,8 @@ final class service
       define( $path_name.'_PATH', $path_value );
     foreach( $this->settings['url'] as $path_name => $path_value )
       define( $path_name.'_URL', $path_value );
+
+    if( 'main' == $this->operation_type ) $this->process_logout();
 
     // include the autoloader and error code files (search for app_path::util first)
     require_once CENOZO_API_PATH.'/lib.class.php';
@@ -282,6 +282,9 @@ final class service
     if( array_key_exists( 'logout', $_COOKIE ) && $_COOKIE['logout'] )
     {
       $_SESSION = array();
+      setcookie( 'slot__main__widget', NULL, time() - 3600, COOKIE_PATH );
+      setcookie( 'slot__main__prev', NULL, time() - 3600, COOKIE_PATH );
+      setcookie( 'slot__main__next', NULL, time() - 3600, COOKIE_PATH );
       session_destroy();
       session_write_close();
       setcookie( 'logout' );
