@@ -277,7 +277,7 @@ abstract class base_report extends \cenozo\ui\pull
       $first_content_row = $row;
 
       // put in the table contents
-      unset( $contents_are_numeric );
+      $contents_are_numeric = array();
       if( count( $table['contents'] ) )
       {
         $content_row = 0;
