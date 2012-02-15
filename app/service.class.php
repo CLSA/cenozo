@@ -205,7 +205,7 @@ final class service
     }
     
     // make sure to fail any active transaction
-    if( $util_class_name::use_transaction() )
+    if( $session->use_transaction() )
     {
       if( false == $result_array['success'] ) $session->get_database()->fail_transaction();
       $session->get_database()->complete_transaction();
@@ -345,14 +345,15 @@ final class service
       throw lib::create( 'exception\runtime',
         'Invoked operation "'.$class_name.'" is invalid.', __METHOD__ );
 
+    $session = lib::create( 'business\session' );
+
     // Only register the operation if the operation is not a widget doing
     // anything other than loading
     if( !( 'widget' == $this->operation_type && 'load' != $this->url_tokens[2] ) )
-      lib::create( 'business\session' )->set_operation( $operation, $this->arguments );
+      $session->set_operation( $operation, $this->arguments );
 
     // if requested to, start a transaction
-    if( $util_class_name::use_transaction() )
-      lib::create( 'business\session' )->get_database()->start_transaction();
+    if( $session->use_transaction() ) $session->get_database()->start_transaction();
 
     return $operation;
   }      
