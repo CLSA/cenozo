@@ -33,7 +33,7 @@ final class service
     // determine the arguments
     if( 'GET' == $_SERVER['REQUEST_METHOD'] && isset( $_GET ) ) $this->arguments = $_GET;
     else if( 'POST' == $_SERVER['REQUEST_METHOD'] && isset( $_POST ) ) $this->arguments = $_POST;
-    
+
     // determine the service type
     if( array_key_exists( 'REDIRECT_URL', $_SERVER ) )
     {
@@ -153,7 +153,18 @@ final class service
     $util_class_name = lib::get_class_name( 'util' );
     lib::create( 'log' );
     $session = lib::create( 'business\session', $this->settings );
-    $session->initialize();
+
+    // There are two special arguments which may request a specific site and role
+    // If they exist, remove them from the arguments array and pass them to the session
+    if( array_key_exists( 'request_site.name', $this->arguments ) &&
+        array_key_exists( 'request_role.name', $this->arguments ) )
+    {
+      $session->initialize( $this->arguments['request_site.name'],
+                            $this->arguments['request_role.name'] );
+      unset( $this->arguments['request_site.name'] );
+      unset( $this->arguments['request_role.name'] );
+    }
+    else $session->initialize();
 
     // now determine and execute the operation
     $result_array = array( 'success' => true );

@@ -50,54 +50,16 @@ class cenozo_manager extends \cenozo\factory
   }
   
   /**
-   * Logs into Cenozo via HTTP POST
+   * Adds the current site and role to the arguments
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array& $arguments
    * @access protected
    */
-  protected function login()
+  protected function set_site_and_role( &$arguments )
   {
-    if( !$this->enabled || $this->logged_in ) return;
-
     $session = lib::create( 'business\session' );
-
-    // log in using the current user/role/site
-    $this->set_site( $session->get_site() );
-    $this->set_role( $session->get_role() );
-      
-    $this->logged_in = true;
-  }
-  
-  /**
-   * Set the current user's site at the remote application.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function set_site( $db_site )
-  {
-    $request = new \HttpRequest();
-    $request->enableCookies();
-    $request->setUrl( $this->base_url.'self/set_site' );
-    $request->setMethod( \HttpRequest::METH_POST );
-    $request->setPostFields(
-      array( 'noid' => array( 'site.name' => $db_site->name ) ) );
-    static::send( $request );
-
-  }
-
-  /**
-   * Set the current user's role at the remote application.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function set_role( $db_role )
-  {
-    $request = new \HttpRequest();
-    $request->enableCookies();
-    $request->setUrl( $this->base_url.'self/set_role' );
-    $request->setMethod( \HttpRequest::METH_POST );
-    $request->setPostFields(
-      array( 'noid' => array( 'role.name' => $db_role->name ) ) );
-    static::send( $request );
+    $arguments['request_site.name'] = $session->get_site()->name;
+    $arguments['request_site.role'] = $session->get_role()->name;
   }
 
   /**
@@ -113,18 +75,19 @@ class cenozo_manager extends \cenozo\factory
   public function pull( $subject, $name, $arguments = NULL )
   {
     if( !$this->enabled ) return NULL;
-    $this->login();
     
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
-    if( !is_null( $arguments ) )
-    {
-      if( !is_array( $arguments ) )
-        throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
-      $request->setQueryData( $arguments );
-    }
+    
+    if( is_null( $arguments ) ) $arguments = array();
+    if( !is_array( $arguments ) )
+      throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
+
+    // request the current site and role
+    $this->set_site_and_role( $arguments );
+    $request->setQueryData( $arguments );
     
     $message = static::send( $request );
     return json_decode( $message->body );
@@ -142,19 +105,22 @@ class cenozo_manager extends \cenozo\factory
   public function push( $subject, $name, $arguments = NULL )
   {
     if( !$this->enabled ) return;
-    $this->login();
 
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
-    if( !is_null( $arguments ) )
-    {
-      if( !is_array( $arguments ) )
-        throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
-      $request->setPostFields( $arguments );
-    }
 
+    if( is_null( $arguments ) ) $arguments = array();
+    if( !is_array( $arguments ) )
+      throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
+
+    // request the current site and role
+    $session = lib::create( 'business\session' );
+    $arguments['request_site.name'] = $session->get_site()->name;
+    $arguments['request_site.role'] = $session->get_role()->name;
+    $request->setPostFields( $arguments );
+    
     static::send( $request );
   }
 
