@@ -89,8 +89,8 @@ class activity extends record
     $modifier->where( 'user_id', '=', $db_user->id );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'operation.subject', '!=', 'self' );
-    $modifier->where( 'datetime', '>=', $date.' 0:00:00' );
-    $modifier->where( 'datetime', '<=', $date.' 23:59:59' );
+    $modifier->where( 'datetime', '>=', $db_site->to_site_datetime( $date.' 0:00:00' ) );
+    $modifier->where( 'datetime', '<=', $db_site->to_site_datetime( $date.' 23:59:59' ) );
 
     foreach( static::select( $modifier ) as $db_activity )
     {

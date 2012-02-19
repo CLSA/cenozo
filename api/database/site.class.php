@@ -79,5 +79,25 @@ class site extends base_access
     $db_access = lib::create( 'database\access', $access_id );
     $db_access->delete();
   }
+
+  /**
+   * Converts a datetime string to the site's local time.
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $datetime A date string in any valid PHP date time format
+   * @param string $format The format to return the date/time in (default 'Y-m-d H:i:s')
+   * @param boolean $server Whether to convert to the server's instead of the user's timezone
+   * @return string
+   * @access public
+   */
+  public function to_site_datetime( $datetime, $format = 'Y-m-d H:i:s', $server = false )
+  {
+    if( is_null( $datetime ) || !is_string( $datetime ) ) return $datetime;
+
+    $util_class_name = lib::get_class_name( 'util' );
+    $datetime_obj = new \DateTime( $datetime, new \DateTimeZone( $this->timezone ) );
+    $datetime_obj->setTimeZone( $util_class_name::get_timezone_object( $server ) );
+    return $datetime_obj->format( $format );
+  }
 }
 ?>
