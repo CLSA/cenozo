@@ -156,13 +156,13 @@ final class service
 
     // There are two special arguments which may request a specific site and role
     // If they exist, remove them from the arguments array and pass them to the session
-    if( array_key_exists( 'request_site.name', $this->arguments ) &&
-        array_key_exists( 'request_role.name', $this->arguments ) )
+    if( array_key_exists( 'request_site_name', $this->arguments ) &&
+        array_key_exists( 'request_role_name', $this->arguments ) )
     {
-      $session->initialize( $this->arguments['request_site.name'],
-                            $this->arguments['request_role.name'] );
-      unset( $this->arguments['request_site.name'] );
-      unset( $this->arguments['request_role.name'] );
+      $session->initialize( $this->arguments['request_site_name'],
+                            $this->arguments['request_role_name'] );
+      unset( $this->arguments['request_site_name'] );
+      unset( $this->arguments['request_role_name'] );
     }
     else $session->initialize();
 
