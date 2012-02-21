@@ -106,16 +106,10 @@ class session extends \cenozo\singleton
     if( !is_null( $site_name ) && !is_null( $role_name ) )
     {
       $site_class_name = lib::get_class_name( 'database\site' );
-      $db_site = $site_class_name::get_unique_record( 'name', $site_name );
+      $this->requested_site = $site_class_name::get_unique_record( 'name', $site_name );
 
       $role_class_name = lib::get_class_name( 'database\role' );
-      $db_role = $role_class_name::get_unique_record( 'name', $role_name );
-
-      if( !is_null( $db_site ) && !is_null( $db_role ) )
-      {
-        $_SESSION['current_site_id'] = $db_site->id;
-        $_SESSION['current_role_id'] = $db_role->id;
-      }
+      $this->requested_role = $role_class_name::get_unique_record( 'name', $role_name );
     }
   }
   
@@ -185,17 +179,21 @@ class session extends \cenozo\singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\site $db_site
    * @param database\role $db_role
+   * @param boolean $session Whether to store the site/role in the session.
    * @throws exception\permission
    * @access public
    */
-  public function set_site_and_role( $db_site, $db_role )
+  public function set_site_and_role( $db_site, $db_role, $session = true )
   {
     if( is_null( $db_site ) || is_null( $db_role ) )
     {
       $this->site = NULL;
       $this->role = NULL;
-      unset( $_SESSION['current_site_id'] );
-      unset( $_SESSION['current_role_id'] );
+      if( $session )
+      {
+        unset( $_SESSION['current_site_id'] );
+        unset( $_SESSION['current_role_id'] );
+      }
     }
     else
     {
@@ -212,8 +210,12 @@ class session extends \cenozo\singleton
         {
           // clean out the slot stacks
           foreach( array_keys( $_SESSION['slot'] ) as $slot ) $this->slot_reset( $slot );
-          $_SESSION['current_site_id'] = $this->site->id;
-          $_SESSION['current_role_id'] = $this->role->id;
+
+          if( $session )
+          {
+            $_SESSION['current_site_id'] = $this->site->id;
+            $_SESSION['current_role_id'] = $this->role->id;
+          }
         }
       }
       else
@@ -254,8 +256,13 @@ class session extends \cenozo\singleton
       $this->site = NULL;
       $this->role = NULL;
 
+      // see if there is a request for a specific site and role
+      if( !is_null( $this->requested_site ) && !is_null( $this->requested_role ) )
+      {
+        $this->set_site_and_role( $this->requested_site, $this->requested_role, false );
+      }
       // see if we already have the current site stored in the php session
-      if( isset( $_SESSION['current_site_id'] ) && isset( $_SESSION['current_role_id'] ) )
+      else if( isset( $_SESSION['current_site_id'] ) && isset( $_SESSION['current_role_id'] ) )
       {
         try
         {
@@ -264,7 +271,15 @@ class session extends \cenozo\singleton
             lib::create( 'database\role', $_SESSION['current_role_id'] ) );
         }
         // ignore permission errors and try the code below to find access for this user
-        catch( \cenozo\exception\permission $e ) {}
+        catch( \cenozo\exception\permission $e )
+        {
+          log::error( sprintf(
+            'User %s tried to access site/role ids %d/%d but do not have permission, '.
+            'trying alternative sites/roles instead.',
+            $this->user->name,
+            $_SESSION['current_site_id'],
+            $_SESSION['current_role_id'] ) );
+        }
       }
       
       // we still don't have a site and role, we need to pick them
@@ -699,6 +714,20 @@ class session extends \cenozo\singleton
    * @access private
    */
   private $site = NULL;
+
+  /**
+   * The record of the requested role.
+   * @var database\role
+   * @access private
+   */
+  protected $requested_role = NULL;
+
+  /**
+   * The record of the requested site.
+   * @var database\site
+   * @access private
+   */
+  protected $requested_site = NULL;
 
   /**
    * The record of the current access (determined the first time get_access() is called)
