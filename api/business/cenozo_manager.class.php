@@ -116,7 +116,6 @@ class cenozo_manager extends \cenozo\factory
       throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
 
     // request the current site and role
-    $session = lib::create( 'business\session' );
     $this->set_site_and_role( $arguments );
     $request->setPostFields( $arguments );
     
