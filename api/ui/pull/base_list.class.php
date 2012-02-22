@@ -86,7 +86,7 @@ abstract class base_list extends \cenozo\ui\pull
           $value = '%'.$value.'%';
           $operator = 'NOT LIKE';
         }
-        else log::error( 'Invalid comparison in list restriction.' );
+        else log::err( 'Invalid comparison in list restriction.' );
       }
 
       if( !is_null( $operator ) && !is_null( $value ) )
