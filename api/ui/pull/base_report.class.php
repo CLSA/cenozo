@@ -220,18 +220,6 @@ abstract class base_report extends \cenozo\ui\pull
       $row++;
     }
 
-    if( 'true' == $this->get_argument( 'has_restrict_source' ) )
-    {
-      $restrict_source_id = $this->get_argument( 'restrict_source_id', 0 );
-      if( $restrict_source_id )
-      {
-        $db_source = lib::create( 'database\source', $restrict_source_id );
-        if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-        $this->report->set_cell( 'A'.$row, 'Including '.$db_source->name.' participants only' );
-        $row++;
-      }
-    }
-
     $this->report->set_size( 14 );
     $this->report->set_bold( false );
 
