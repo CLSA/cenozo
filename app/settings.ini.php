@@ -57,10 +57,6 @@ $fwk_settings['url']['JQUERY_FLIPTEXT_JS'] =
   $fwk_settings['url']['JQUERY_PLUGINS'].'/flipText.js';
 $fwk_settings['url']['JQUERY_EXTRUDER_JS'] =
   $fwk_settings['url']['JQUERY_PLUGINS'].'/extruder.js';
-$fwk_settings['url']['JQUERY_LOADING_JS'] =
-  $fwk_settings['url']['JQUERY_PLUGINS'].'/loading.js';
-$fwk_settings['url']['JQUERY_LOADING_OVERFLOW_JS'] =
-  $fwk_settings['url']['JQUERY_PLUGINS'].'/loading.overflow.js';
 $fwk_settings['url']['JQUERY_JEDITABLE_JS'] =
   $fwk_settings['url']['JQUERY_PLUGINS'].'/jeditable.js';
 $fwk_settings['url']['JQUERY_TIMEPICKER_JS'] =

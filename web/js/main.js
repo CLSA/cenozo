@@ -128,14 +128,6 @@ function ajax_push( subject, name, args ) {
  * @param object args The arguments to pass along with the push.
  */
 function ajax_slot( slot, action, subject, name, args ) {
-  $.loading( {
-    onAjax: true,
-    img: window.loading_icon_url,
-    mask: true,
-    delay: 300, // ms
-    align: "center"
-  } );
-  
   var url = "slot/" + slot + "/" + action;
   if( subject && name ) url += "/" + subject + "/" + name;
   if( undefined != args ) url += "?" + jQuery.param( args );
