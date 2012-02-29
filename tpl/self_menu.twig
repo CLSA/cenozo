@@ -34,8 +34,8 @@
           {% elseif 'pull' == item.type %}
             ajax_pull( "{{ item.subject }}", "{{ item.name }}" );
           {% elseif 'push' == item.type %}
-            ajax_push( "{{ item.subject }}", "{{ item.name }}" );
-            window.location.reload();
+            if( ajax_push( "{{ item.subject }}", "{{ item.name }}" ) )
+              window.location.reload();
           {% endif %}
         } );
       {% endfor %}
@@ -47,8 +47,8 @@
           {% elseif 'pull' == item.type %}
             ajax_pull( "{{ item.subject }}", "{{ item.name }}" );
           {% elseif 'push' == item.type %}
-            ajax_push( "{{ item.subject }}", "{{ item.name }}" );
-            window.location.reload();
+            if( ajax_push( "{{ item.subject }}", "{{ item.name }}" ) )
+              window.location.reload();
           {% endif %}
         } );
       {% endfor %}
@@ -60,8 +60,8 @@
           {% elseif 'pull' == item.type %}
             ajax_pull( "{{ item.subject }}", "{{ item.name }}" );
           {% elseif 'push' == item.type %}
-            ajax_push( "{{ item.subject }}", "{{ item.name }}" );
-            window.location.reload();
+            if( ajax_push( "{{ item.subject }}", "{{ item.name }}" ) )
+              window.location.reload();
           {% endif %}
         } );
       {% endfor %}
@@ -73,8 +73,8 @@
           {% elseif 'pull' == item.type %}
             ajax_pull( "{{ item.subject }}", "{{ item.name }}" );
           {% elseif 'push' == item.type %}
-            ajax_push( "{{ item.subject }}", "{{ item.name }}" );
-            window.location.reload();
+            if( ajax_push( "{{ item.subject }}", "{{ item.name }}" ) )
+              window.location.reload();
           {% endif %}
         } );
       {% endfor %}
