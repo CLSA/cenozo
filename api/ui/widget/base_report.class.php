@@ -71,10 +71,12 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->restrictions[ 'dates' ] = true;
 
-      $this->add_parameter( 'restrict_start_date', 'date', 'Start Date', 
-        'Leave blank for an overall report (warning, an overall repost my be a VERY large file).' );
-      $this->add_parameter( 'restrict_end_date', 'date', 'End Date', 
-        'Leave blank for an overall report (warning, an overall repost my be a VERY large file).' );
+      $this->add_parameter(
+        'restrict_start_date', 'date', 'Start Date',
+        'Leaving this blank will not restrict the report to a start date.' );
+      $this->add_parameter(
+        'restrict_end_date', 'date', 'End Date',
+        'Leaving this blank will not restrict the report to an end date.' );
     }
     else if( 'province' == $restriction_type )
     {

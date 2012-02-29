@@ -31,10 +31,8 @@ abstract class push extends operation
   {
     parent::__construct( 'push', $subject, $name, $args );
 
-    $util_class_name = lib::get_class_name( 'util' );
-
-    // by default use transactions when performing pull operations
-    $util_class_name::set_use_transaction( true );
+    // by default all push operations use transactions
+    lib::create( 'business\session' )->set_use_transaction( true );
   }
 }
 ?>

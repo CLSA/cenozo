@@ -94,7 +94,16 @@ class user_new extends base_new
       $db_access->user_id = $db_user->id;
       $db_access->site_id = $this->site_id;
       $db_access->role_id = $this->role_id;
-      $db_access->save();
+
+      try
+      {
+        $db_access->save();
+      }
+      catch( \cenozo\exception\database $e )
+      { // ignore unique error if "ignore_existing" argument is true
+        if( !$e->is_duplicate_entry() ||
+            !$this->get_argument( 'ignore_existing', false ) ) throw $e;
+      }
     }
   }
 

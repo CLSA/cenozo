@@ -33,7 +33,7 @@ final class service
     // determine the arguments
     if( 'GET' == $_SERVER['REQUEST_METHOD'] && isset( $_GET ) ) $this->arguments = $_GET;
     else if( 'POST' == $_SERVER['REQUEST_METHOD'] && isset( $_POST ) ) $this->arguments = $_POST;
-    
+
     // determine the service type
     if( array_key_exists( 'REDIRECT_URL', $_SERVER ) )
     {
@@ -98,8 +98,6 @@ final class service
    */
   public function execute()
   {
-    if( 'main' == $this->operation_type ) $this->process_logout();
-
     session_name( dirname( $_SERVER['SCRIPT_FILENAME'] ) );
     session_start();
     $_SESSION['time']['script_start_time'] = microtime( true );
@@ -138,6 +136,8 @@ final class service
     foreach( $this->settings['url'] as $path_name => $path_value )
       define( $path_name.'_URL', $path_value );
 
+    if( 'main' == $this->operation_type ) $this->process_logout();
+
     // include the autoloader and error code files (search for app_path::util first)
     require_once CENOZO_API_PATH.'/lib.class.php';
     require_once CENOZO_API_PATH.'/exception/error_codes.inc.php';
@@ -153,7 +153,18 @@ final class service
     $util_class_name = lib::get_class_name( 'util' );
     lib::create( 'log' );
     $session = lib::create( 'business\session', $this->settings );
-    $session->initialize();
+
+    // There are two special arguments which may request a specific site and role
+    // If they exist, remove them from the arguments array and pass them to the session
+    if( array_key_exists( 'request_site_name', $this->arguments ) &&
+        array_key_exists( 'request_role_name', $this->arguments ) )
+    {
+      $session->initialize( $this->arguments['request_site_name'],
+                            $this->arguments['request_role_name'] );
+      unset( $this->arguments['request_site_name'] );
+      unset( $this->arguments['request_role_name'] );
+    }
+    else $session->initialize();
 
     // now determine and execute the operation
     $result_array = array( 'success' => true );
@@ -205,7 +216,7 @@ final class service
     }
     
     // make sure to fail any active transaction
-    if( $util_class_name::use_transaction() )
+    if( $session->use_transaction() )
     {
       if( false == $result_array['success'] ) $session->get_database()->fail_transaction();
       $session->get_database()->complete_transaction();
@@ -282,6 +293,9 @@ final class service
     if( array_key_exists( 'logout', $_COOKIE ) && $_COOKIE['logout'] )
     {
       $_SESSION = array();
+      setcookie( 'slot__main__widget', NULL, time() - 3600, COOKIE_PATH );
+      setcookie( 'slot__main__prev', NULL, time() - 3600, COOKIE_PATH );
+      setcookie( 'slot__main__next', NULL, time() - 3600, COOKIE_PATH );
       session_destroy();
       session_write_close();
       setcookie( 'logout' );
@@ -342,14 +356,15 @@ final class service
       throw lib::create( 'exception\runtime',
         'Invoked operation "'.$class_name.'" is invalid.', __METHOD__ );
 
+    $session = lib::create( 'business\session' );
+
     // Only register the operation if the operation is not a widget doing
     // anything other than loading
     if( !( 'widget' == $this->operation_type && 'load' != $this->url_tokens[2] ) )
-      lib::create( 'business\session' )->set_operation( $operation, $this->arguments );
+      $session->set_operation( $operation, $this->arguments );
 
     // if requested to, start a transaction
-    if( $util_class_name::use_transaction() )
-      lib::create( 'business\session' )->get_database()->start_transaction();
+    if( $session->use_transaction() ) $session->get_database()->start_transaction();
 
     return $operation;
   }      
