@@ -53,6 +53,12 @@ class database extends \cenozo\base_object
 
     $column_mod = lib::create( 'database\modifier' );
     $column_mod->where( 'TABLE_SCHEMA', '=', $this->name );
+    $column_mod->where( 'COLUMN_NAME', '!=', 'update_timestamp' ); // ignore timestamp columns
+    $column_mod->where( 'COLUMN_NAME', '!=', 'create_timestamp' );
+    $column_mod->where( 'COLUMN_TYPE', '!=', 'mediumtext' ); // ignore really big data types
+    $column_mod->where( 'COLUMN_TYPE', '!=', 'longtext' );
+    $column_mod->where( 'COLUMN_TYPE', '!=', 'mediumblob' );
+    $column_mod->where( 'COLUMN_TYPE', '!=', 'longblob' );
     $column_mod->order( 'TABLE_NAME' );
     $column_mod->order( 'COLUMN_NAME' );
 
@@ -63,25 +69,22 @@ class database extends \cenozo\base_object
                       'DATA_TYPE AS data_type, '.
                       'COLUMN_KEY AS column_key, '.
                       'COLUMN_DEFAULT AS column_default '.
-               'FROM information_schema.COLUMNS %s',
+               'FROM information_schema.COLUMNS %s ',
                $column_mod->get_sql() ) );
     
     // record the tables, columns and types
     foreach( $rows as $row )
     {
       extract( $row ); // defines $table_name, $column_name and $column_type
-      if( 'update_timestamp' != $column_name && // ignore timestamp columns
-          'create_timestamp' != $column_name )
-      {
-        if( !array_key_exists( $table_name, $this->columns ) )
-          $this->columns[$table_name] = array();
 
-        $this->columns[$table_name][$column_name] =
-          array( 'data_type' => $data_type,
-                 'type' => $column_type,
-                 'default' => $column_default,
-                 'key' => $column_key );
-      }
+      if( !array_key_exists( $table_name, $this->columns ) )
+        $this->columns[$table_name] = array();
+
+      $this->columns[$table_name][$column_name] =
+        array( 'data_type' => $data_type,
+               'type' => $column_type,
+               'default' => $column_default,
+               'key' => $column_key );
     }
 
     $constraint_mod = lib::create( 'database\modifier' );
