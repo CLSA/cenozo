@@ -64,7 +64,9 @@
           columns[column_name] = 'NULL' == new_value ? '' : new_value;
         else columns[column_name] = new_value;
         args.columns = columns;
-      
+
+        {% block pre_edit %}{% endblock pre_edit %}
+
         // push the changed data, updating the hidden "old" input upon success
         if( ajax_push( widget_subject, "edit", args ) ) {
           // if we are setting start_time, then update end_time
@@ -75,6 +77,9 @@
       
           if( 'boolean' != type && 'enum' != type )
             $( "#old_" + element.attr( 'id' ) ).val( new_value );
+
+          {% block post_edit %}{% endblock post_edit %}
+
           return new_value;
         } else {
           // put the old value back
@@ -362,7 +367,7 @@
             {% endif %}
         
             {% if entry.note is defined %}
-              <div class="help_note">
+              <div class="help_note {{ entry.note_is_error ? "ui-state-error" : "" }}">
                 {% autoescape false %}
                   {{ entry.note }}
                 {% endautoescape %}
