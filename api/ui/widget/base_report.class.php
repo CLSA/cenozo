@@ -71,22 +71,22 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->restrictions[ 'dates' ] = true;
 
-      $this->add_parameter( 'restrict_start_date', 'date', 'Start Date', 
-        'Leave blank for an overall report (warning, an overall repost my be a VERY large file).' );
-      $this->add_parameter( 'restrict_end_date', 'date', 'End Date', 
-        'Leave blank for an overall report (warning, an overall repost my be a VERY large file).' );
+      $this->add_parameter(
+        'restrict_start_date', 'date', 'Start Date',
+        'Leaving this blank will not restrict the report to a start date.' );
+      $this->add_parameter(
+        'restrict_end_date', 'date', 'End Date',
+        'Leaving this blank will not restrict the report to an end date.' );
     }
     else if( 'province' == $restriction_type )
     {
       $this->restrictions[ 'province' ] = true;
-
       $this->add_parameter( 'restrict_province_id', 'enum', 'Province' );
     }
     else if( 'site_or_province' == $restriction_type )
     {
       $this->restrictions[ 'site_or_province' ] = true;
-
-      $this->add_parameter( 'restrict_site_or_province_id', 'enum', 'Site or Province' );
+      $this->add_parameter( 'restrict_site_or_province', 'enum', 'Site or Province' );
     }
   }
 
@@ -266,7 +266,7 @@ abstract class base_report extends \cenozo\ui\widget
       foreach( $region_class_name::select( $region_mod ) as $db_region )
         $region_types[ $db_region->id ] = $db_region->name;
 
-      $this->set_parameter( 'restrict_province_id', current( $region_types ), true, $region_types );
+      $this->set_parameter( 'restrict_province_id', key( $region_types ), true, $region_types );
     }
 
     if( $this->restrictions[ 'site_or_province' ] )
@@ -274,8 +274,8 @@ abstract class base_report extends \cenozo\ui\widget
       $site_or_prov = array( 'Site', 'Province' );
       $site_or_prov = array_combine( $site_or_prov, $site_or_prov );
 
-      $this->set_parameter( 'restrict_site_or_province_id', 
-        current( $site_or_prov ), true, $site_or_prov );
+      $this->set_parameter( 'restrict_site_or_province', 
+        key( $site_or_prov ), true, $site_or_prov );
     }
 
     if( $this->restrictions[ 'dates' ] )

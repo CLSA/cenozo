@@ -21,7 +21,8 @@ class user_new extends base_new
   /**
    * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args Push arguments
+   * @param array $args Push arguments.  This may include "ignore_existing" which will ignore any
+   *                    errors caused by existing user conflicts.
    * @access public
    */
   public function __construct( $args )
@@ -73,7 +74,17 @@ class user_new extends base_new
       if( !$e->is_already_exists() ) throw $e;
     }
 
-    parent::finish();
+    try
+    {
+      parent::finish();
+    }
+    catch( \cenozo\exception\notice $e )
+    { // ignore unique error if "ignore_existing" argument is true
+      $previous = $e->get_previous();
+      if( is_null( $previous ) ||
+          !$previous->is_duplicate_entry() ||
+          !$this->get_argument( 'ignore_existing', false ) ) throw $e;
+    }
 
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user
@@ -83,7 +94,16 @@ class user_new extends base_new
       $db_access->user_id = $db_user->id;
       $db_access->site_id = $this->site_id;
       $db_access->role_id = $this->role_id;
-      $db_access->save();
+
+      try
+      {
+        $db_access->save();
+      }
+      catch( \cenozo\exception\database $e )
+      { // ignore unique error if "ignore_existing" argument is true
+        if( !$e->is_duplicate_entry() ||
+            !$this->get_argument( 'ignore_existing', false ) ) throw $e;
+      }
     }
   }
 

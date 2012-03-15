@@ -51,13 +51,15 @@ class self_menu extends \cenozo\ui\widget
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'calendar' );
-    $widgets = $db_role->get_operation_list( $modifier );
+    $modifier->order( 'operation.subject' );
+    $operation_list = $db_role->get_operation_list( $modifier );
     
-    foreach( $widgets as $db_widget )
+    foreach( $operation_list as $db_operation )
     {
-      $calendars[] = array( 'heading' => str_replace( '_', ' ', $db_widget->subject ),
-                            'subject' => $db_widget->subject,
-                            'name' => $db_widget->name );
+      $calendars[] = array( 'heading' => str_replace( '_', ' ', $db_operation->subject ),
+                            'type' => $db_operation->type,
+                            'subject' => $db_operation->subject,
+                            'name' => $db_operation->name );
     }
 
     // get all list widgets that the user has access to
@@ -66,15 +68,18 @@ class self_menu extends \cenozo\ui\widget
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'list' );
-    $widgets = $db_role->get_operation_list( $modifier );
+    $modifier->order( 'operation.subject' );
+    $operation_list = $db_role->get_operation_list( $modifier );
     
-    foreach( $widgets as $db_widget )
+    foreach( $operation_list as $db_operation )
     {
-      if( !in_array( $db_widget->subject, $this->exclude_widget_list ) )
+      if( !in_array( $db_operation->subject, $this->exclude_widget_list ) )
         $lists[] = array(
-          'heading' => $util_class_name::pluralize( str_replace( '_', ' ', $db_widget->subject ) ),
-          'subject' => $db_widget->subject,
-          'name' => $db_widget->name );
+          'heading' =>
+            $util_class_name::pluralize( str_replace( '_', ' ', $db_operation->subject ) ),
+          'type' => $db_operation->type,
+          'subject' => $db_operation->subject,
+          'name' => $db_operation->name );
     }
 
     // get all utility widgets that the user has access to
@@ -86,13 +91,15 @@ class self_menu extends \cenozo\ui\widget
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'report' );
-    $widgets = $db_role->get_operation_list( $modifier );
+    $modifier->order( 'operation.subject' );
+    $operation_list = $db_role->get_operation_list( $modifier );
     
-    foreach( $widgets as $db_widget )
+    foreach( $operation_list as $db_operation )
     {
-      $reports[] = array( 'heading' => str_replace( '_', ' ', $db_widget->subject ),
-                          'subject' => $db_widget->subject,
-                          'name' => $db_widget->name );
+      $reports[] = array( 'heading' => str_replace( '_', ' ', $db_operation->subject ),
+                          'type' => $db_operation->type,
+                          'subject' => $db_operation->subject,
+                          'name' => $db_operation->name );
     }
 
     $this->set_variable( 'calendars', $calendars );

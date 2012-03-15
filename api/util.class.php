@@ -30,32 +30,6 @@ class util
   private final function __construct() {}
 
   /**
-   * Returns whether to use a database transaction.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @static
-   * @return boolean
-   * @access public
-   */
-  public static function use_transaction()
-  {
-    return self::$transaction;
-  }
-
-  /**
-   * Set whether to use a database transaction.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $transaction
-   * @static
-   * @access public
-   */
-  public static function set_use_transaction( $transaction )
-  {
-    self::$transaction = $transaction;
-  }
-
-  /**
    * Returns the elapsed time in seconds since the script began.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -547,13 +521,5 @@ class util
 
     return bin2hex( $crypt );
   }
-
-  /**
-   * Whether a database transaction needs to be performed.
-   * @var boolean
-   * @access protected
-   * @static
-   */
-  protected static $transaction = false;
 }
 ?>

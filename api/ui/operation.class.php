@@ -164,7 +164,6 @@ abstract class operation extends \cenozo\base_object
    */
   private $heading = '';
 
-
   /**
    * The database record for this operation
    * @var database\record

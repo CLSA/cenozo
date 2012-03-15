@@ -39,7 +39,7 @@ class activity_list extends site_restricted_list
     $this->add_column( 'operation.type', 'string', 'Type', true );
     $this->add_column( 'operation.subject', 'string', 'Subject', true );
     $this->add_column( 'operation.name', 'string', 'Name', true );
-    $this->add_column( 'elapsed', 'string', 'Time', true );
+    $this->add_column( 'elapsed', 'string', 'Time', true, false ); // not restrictable
     $this->add_column( 'error_code', 'string', 'Error', true );
     $this->add_column( 'datetime', 'datetime', 'Date', true );
   }

@@ -33,7 +33,7 @@ final class service
     // determine the arguments
     if( 'GET' == $_SERVER['REQUEST_METHOD'] && isset( $_GET ) ) $this->arguments = $_GET;
     else if( 'POST' == $_SERVER['REQUEST_METHOD'] && isset( $_POST ) ) $this->arguments = $_POST;
-    
+
     // determine the service type
     if( array_key_exists( 'REDIRECT_URL', $_SERVER ) )
     {
@@ -98,8 +98,6 @@ final class service
    */
   public function execute()
   {
-    if( 'main' == $this->operation_type ) $this->process_logout();
-
     session_name( dirname( $_SERVER['SCRIPT_FILENAME'] ) );
     session_start();
     $_SESSION['time']['script_start_time'] = microtime( true );
@@ -116,6 +114,13 @@ final class service
         !array_key_exists( 'application_name', $this->settings['general'] ) )
       die( 'Error, application name not set!' );
 
+    // make sure all paths are valid
+    foreach( $SETTINGS['path'] as $key => $path )
+      if( 'COOKIE' != $key &&
+          'TEMPLATE_CACHE' != $key &&
+          !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
+        die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
+
     define( 'APPNAME', $this->settings['general']['application_name'] );
     $this->settings['path']['CENOZO_API'] = $this->settings['path']['CENOZO'].'/api';
     $this->settings['path']['CENOZO_TPL'] = $this->settings['path']['CENOZO'].'/tpl';
@@ -130,6 +135,8 @@ final class service
       define( $path_name.'_PATH', $path_value );
     foreach( $this->settings['url'] as $path_name => $path_value )
       define( $path_name.'_URL', $path_value );
+
+    if( 'main' == $this->operation_type ) $this->process_logout();
 
     // include the autoloader and error code files (search for app_path::util first)
     require_once CENOZO_API_PATH.'/lib.class.php';
@@ -146,11 +153,22 @@ final class service
     $util_class_name = lib::get_class_name( 'util' );
     lib::create( 'log' );
     $session = lib::create( 'business\session', $this->settings );
-    $session->initialize();
+
+    // There are two special arguments which may request a specific site and role
+    // If they exist, remove them from the arguments array and pass them to the session
+    if( array_key_exists( 'request_site_name', $this->arguments ) &&
+        array_key_exists( 'request_role_name', $this->arguments ) )
+    {
+      $session->initialize( $this->arguments['request_site_name'],
+                            $this->arguments['request_role_name'] );
+      unset( $this->arguments['request_site_name'] );
+      unset( $this->arguments['request_role_name'] );
+    }
+    else $session->initialize();
 
     // now determine and execute the operation
     $result_array = array( 'success' => true );
-    $output = array( 'type' => NULL, 'data' => NULL );
+    $output = array( 'name' => NULL, 'type' => NULL, 'data' => NULL );
     try
     {
       // execute service type-specific operations
@@ -198,7 +216,7 @@ final class service
     }
     
     // make sure to fail any active transaction
-    if( $util_class_name::use_transaction() )
+    if( $session->use_transaction() )
     {
       if( false == $result_array['success'] ) $session->get_database()->fail_transaction();
       $session->get_database()->complete_transaction();
@@ -237,7 +255,7 @@ final class service
           header( 'Content-Type: application/octet-stream' );
           header( 'Content-Type: application/ms-excel' );
           header( 'Content-Disposition: attachment; filename='.
-                  $this->operation_name.'.'.$output['data_type'] );
+                  $output['name'].'.'.$output['type'] );
           header( 'Content-Transfer-Encoding: binary ' );
           header( 'Content-Length: '.strlen( $output['data'] ) );
           print $output['data'];
@@ -252,7 +270,7 @@ final class service
     {
       if( 'widget' == $this->operation_type ||
           'push' == $this->operation_type ||
-          'pull' == $this->operation_type && ( !isset( $data_type ) || 'json' == $data_type ) )
+          'pull' == $this->operation_type && ( !isset( $output['type'] ) || 'json' == $output['type'] ) )
       {
         $util_class_name::send_http_error( json_encode( $result_array ) );
       }
@@ -275,6 +293,9 @@ final class service
     if( array_key_exists( 'logout', $_COOKIE ) && $_COOKIE['logout'] )
     {
       $_SESSION = array();
+      setcookie( 'slot__main__widget', NULL, time() - 3600, COOKIE_PATH );
+      setcookie( 'slot__main__prev', NULL, time() - 3600, COOKIE_PATH );
+      setcookie( 'slot__main__next', NULL, time() - 3600, COOKIE_PATH );
       session_destroy();
       session_write_close();
       setcookie( 'logout' );
@@ -335,14 +356,15 @@ final class service
       throw lib::create( 'exception\runtime',
         'Invoked operation "'.$class_name.'" is invalid.', __METHOD__ );
 
+    $session = lib::create( 'business\session' );
+
     // Only register the operation if the operation is not a widget doing
     // anything other than loading
     if( !( 'widget' == $this->operation_type && 'load' != $this->url_tokens[2] ) )
-      lib::create( 'business\session' )->set_operation( $operation, $this->arguments );
+      $session->set_operation( $operation, $this->arguments );
 
     // if requested to, start a transaction
-    if( $util_class_name::use_transaction() )
-      lib::create( 'business\session' )->get_database()->start_transaction();
+    if( $session->use_transaction() ) $session->get_database()->start_transaction();
 
     return $operation;
   }      
@@ -357,6 +379,7 @@ final class service
   {
     $class_name = lib::get_class_name( 'ui\main' );
     return array(
+      'name' => NULL,
       'type' => 'html',
       'data' => $this->render_template( 'main', $class_name::get_variables() ) );
   }
@@ -371,6 +394,7 @@ final class service
   {
     $operation = $this->create_operation();
     return array(
+      'name' => $operation->get_file_name(),
       'type' => $operation->get_data_type(),
       'data' => $operation->finish() );
   }
@@ -386,6 +410,7 @@ final class service
     $operation = $this->create_operation();
     $operation->finish();
     return array(
+      'name' => NULL,
       'type' => NULL,
       'data' => NULL );
   }
@@ -451,6 +476,7 @@ final class service
       $session->slot_push( $slot_name, $this->operation_name, $this->arguments );
 
     return array(
+      'name' => NULL,
       'type' => 'html',
       'data' => $data );
   }
