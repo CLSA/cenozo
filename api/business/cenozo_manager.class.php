@@ -28,14 +28,7 @@ class cenozo_manager extends \cenozo\factory
     // determine whether connecting to cenozo service is enabled
     $url = $arguments[0];
     $this->enabled = !is_null( $url );
-
-    if( $this->enabled )
-    {
-      $base_url = $url.'/';
-      $base_url = preg_replace(
-        '#://#', '://'.$_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'].'@', $base_url );
-      $this->base_url = $base_url;
-    }
+    if( $this->enabled ) $this->base_url = $url.'/';
   }
   
   /**
@@ -80,6 +73,8 @@ class cenozo_manager extends \cenozo\factory
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
+    $request->setOptions(
+      array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] ) );
     
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
@@ -89,7 +84,16 @@ class cenozo_manager extends \cenozo\factory
     $this->set_site_and_role( $arguments );
     $request->setQueryData( $arguments );
     
-    $message = static::send( $request );
+    try
+    {
+      $message = static::send( $request );
+    }
+    catch( \Exception $e )
+    {
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Unable to send request to pull/%s/%s', $subject, $name ), __METHOD__, $e );
+    }
+
     return json_decode( $message->body );
   }
 
@@ -110,6 +114,8 @@ class cenozo_manager extends \cenozo\factory
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
+    $request->setOptions(
+      array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] ) );
 
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
@@ -119,7 +125,15 @@ class cenozo_manager extends \cenozo\factory
     $this->set_site_and_role( $arguments );
     $request->setPostFields( $arguments );
     
-    static::send( $request );
+    try
+    {
+      static::send( $request );
+    }
+    catch( \Exception $e )
+    {
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Unable to send request to push/%s/%s', $subject, $name ), __METHOD__, $e );
+    }
   }
 
   /**
