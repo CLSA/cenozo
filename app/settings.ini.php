@@ -15,6 +15,9 @@ global $SETTINGS;
 // Framework software version (is never overridded by the application's ini file)
 $fwk_settings['general']['cenozo_version'] = '0.1.1';
 
+// When set to true all operations are disabled
+$fwk_settings['general']['maintenance_mode'] = false;
+
 // always leave as false when running as production server
 $fwk_settings['general']['development_mode'] = false;
 

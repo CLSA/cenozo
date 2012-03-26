@@ -36,7 +36,7 @@ if( preg_match( '#/aux$#', getcwd() ) ) chdir( '..' );
 // grep for all method declarations and new exceptions in the api/ directory
 $return_status = -1;
 $grep_line_list = array();
-exec( sprintf( 'grep -Hrn "\(%s\)\|\(%s\)" api/*',
+exec( sprintf( 'grep -Hrn "\(%s\)\|\(%s\)" api/* app/service.class.php',
                '^ *\(public\|private\|protected\)\( static\| final\)* function',
                "::create( 'exception" ),
       $grep_line_list,
