@@ -233,7 +233,10 @@ final class service
     {
       if( 'push' == $this->operation_type )
       {
-        print json_encode( $result_array );
+        $json_output = json_encode( $result_array );
+        header( 'Content-Type: application/json' );
+        header( 'Content-Length: '.strlen( $json_output ) );
+        print $json_output;
       }
       else if( 'pull' == $this->operation_type )
       {
