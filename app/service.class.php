@@ -154,23 +154,29 @@ final class service
     lib::create( 'log' );
     $session = lib::create( 'business\session', $this->settings );
 
-    // There are two special arguments which may request a specific site and role
-    // If they exist, remove them from the arguments array and pass them to the session
-    if( array_key_exists( 'request_site_name', $this->arguments ) &&
-        array_key_exists( 'request_role_name', $this->arguments ) )
-    {
-      $session->initialize( $this->arguments['request_site_name'],
-                            $this->arguments['request_role_name'] );
-      unset( $this->arguments['request_site_name'] );
-      unset( $this->arguments['request_role_name'] );
-    }
-    else $session->initialize();
-
-    // now determine and execute the operation
+    // now initialize the session then determine and execute the operation
     $result_array = array( 'success' => true );
     $output = array( 'name' => NULL, 'type' => NULL, 'data' => NULL );
     try
     {
+      // if we are maintenance mode then go no further
+      if( $this->settings['general']['maintenance_mode'] )
+        throw lib::create( 'exception\notice',
+          'Sorry, the system is currently offline for maintenance. '.
+          'Please check with an administrator or try again at a later time.', __METHOD__ );
+
+      // There are two special arguments which may request a specific site and role
+      // If they exist, remove them from the arguments array and pass them to the session
+      if( array_key_exists( 'request_site_name', $this->arguments ) &&
+          array_key_exists( 'request_role_name', $this->arguments ) )
+      {
+        $session->initialize( $this->arguments['request_site_name'],
+                              $this->arguments['request_role_name'] );
+        unset( $this->arguments['request_site_name'] );
+        unset( $this->arguments['request_role_name'] );
+      }
+      else $session->initialize();
+
       // execute service type-specific operations
       $method_name = $this->operation_type;
       $output = $this->$method_name();
@@ -233,7 +239,10 @@ final class service
     {
       if( 'push' == $this->operation_type )
       {
-        print json_encode( $result_array );
+        $json_output = json_encode( $result_array );
+        header( 'Content-Type: application/json' );
+        header( 'Content-Length: '.strlen( $json_output ) );
+        print $json_output;
       }
       else if( 'pull' == $this->operation_type )
       {
