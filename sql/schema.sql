@@ -264,6 +264,51 @@ CREATE  TABLE IF NOT EXISTS `role_has_operation` (
 ENGINE = InnoDB;
 
 
+-- -----------------------------------------------------
+-- Table `region`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `region` ;
+
+CREATE  TABLE IF NOT EXISTS `region` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `abbreviation` VARCHAR(5) NOT NULL ,
+  `country` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `dk_name` (`name` ASC) ,
+  INDEX `dk_abbreviation` (`abbreviation` ASC) ,
+  INDEX `dk_country` (`country` ASC) ,
+  UNIQUE INDEX `uq_name_country` (`name` ASC, `country` ASC) ,
+  UNIQUE INDEX `uq_abbreviation_country` (`abbreviation` ASC, `country` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `postcode`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `postcode` ;
+
+CREATE  TABLE IF NOT EXISTS `postcode` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(10) NOT NULL COMMENT 'Postcodes with the same province, tz and dst are grouped.' ,
+  `region_id` INT UNSIGNED NOT NULL ,
+  `timezone_offset` FLOAT NOT NULL ,
+  `daylight_savings` TINYINT(1)  NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_region_id` (`region_id` ASC) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) ,
+  CONSTRAINT `fk_postcode_region_id`
+    FOREIGN KEY (`region_id` )
+    REFERENCES `region` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
