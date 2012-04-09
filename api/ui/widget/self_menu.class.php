@@ -113,6 +113,6 @@ class self_menu extends \cenozo\ui\widget
    * @var array
    * @access protected
    */
-  protected $exclude_widget_list = array( 'operation' );
+  protected $exclude_widget_list = array( 'access', 'operation' );
 }
 ?>
