@@ -10,6 +10,44 @@
 
   {{ parent() }}
   <script type="text/javascript">
+    $( function () {
+      {% if actions|length %}
+        // action buttons
+        {% for action_id, action in actions %}
+          {% if action.type and action.subject and action.name %}
+            $( "#{{ widget.full }}__{{ action_id }}" ).click( function() {
+              var args = Object();
+              args.id = {{ id|default(0) }};
+              {% if 'widget' == action.type %}
+                slot_load( {{ slot }}, "{{ action.subject }}", "{{ action.name }}", args );
+              {% else %}
+                ajax_{{ action.type }}( "{{ action.subject }}", "{{ action.name }}", args );
+              {% endif %}
+            } );
+          {% endif %}
+
+        {% endfor %}
+      {% endif %}
+
+      {% if removable %}
+        $( "#{{ widget.full }}__remove" ).click( function() {
+          confirm_dialog(
+            "Delete {{ widget.subject_name }}?",
+            "Are you sure you want to remove this {{ widget.subject_name }}?",
+            function() {
+              var args = Object();
+              args.id = {{ id|default(0) }};
+              if( ajax_push( "{{ widget.subject }}", "delete", args ) ) {
+                $slot = $( "#" + {{ slot }} + "_slot" );
+                if( "#main_slot" == $slot.selector ) slot_prev( {{ slot }} );
+                else $slot.dialog( "close" ); // assume we're in a popup dialog
+              }
+            }
+          );
+        } );
+      {% endif %}
+    } );
+
     {# Only add the following javascript once #}
     {% if 1 >= base_view_count %}
       $( function () {
@@ -22,42 +60,6 @@
           $(this).removeClass( "ui-widget-content" );
           $(this).addClass( "padded" );
         } )
-
-        {% if actions|length %}
-          // action buttons
-          {% for action_id, action in actions %}
-            {% if action.type and action.subject and action.name %}
-              $( "#{{ widget.full }}__{{ action_id }}" ).click( function() {
-                var args = Object();
-                args.id = {{ id|default(0) }};
-                {% if 'widget' == action.type %}
-                  slot_load( {{ slot }}, "{{ action.subject }}", "{{ action.name }}", args );
-                {% else %}
-                  ajax_{{ action.type }}( "{{ action.subject }}", "{{ action.name }}", args );
-                {% endif %}
-              } );
-            {% endif %}
-
-          {% endfor %}
-        {% endif %}
-
-        {% if removable %}
-          $( "#{{ widget.full }}__remove" ).click( function() {
-            confirm_dialog(
-              "Delete {{ widget.subject_name }}?",
-              "Are you sure you want to remove this {{ widget.subject_name }}?",
-              function() {
-                var args = Object();
-                args.id = {{ id|default(0) }};
-                if( ajax_push( "{{ widget.subject }}", "delete", args ) ) {
-                  $slot = $( "#" + {{ slot }} + "_slot" );
-                  if( "#main_slot" == $slot.selector ) slot_prev( {{ slot }} );
-                  else $slot.dialog( "close" ); // assume we're in a popup dialog
-                }
-              }
-            );
-          } );
-        {% endif %}
       } );
       
       /**

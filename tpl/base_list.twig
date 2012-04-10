@@ -364,12 +364,46 @@
         // create a button set
         $( "#{{ widget.full }}_page_next" ).button().parent().buttonset();
       {% endif %}
+        
+      {% if actions|length %}
+        // action buttons
+        {% for action_id, action in actions %}
+          {% if action.type and action.subject and action.name %}
+            $( "#{{ widget.full }}__{{ action_id }}" ).click( function() {
+              var args = Object();
+              args.id = {{ id|default(0) }};
+              {% if 'widget' == action.type %}
+                slot_load( {{ slot }}, "{{ action.subject }}", "{{ action.name }}", args );
+              {% else %}
+                ajax_{{ action.type }}( "{{ action.subject }}", "{{ action.name }}", args );
+              {% endif %}
+            } );
+          {% endif %}
+
+        {% endfor %}
+      {% endif %}
     } );
   </script>
 
 {% endblock javascript %}
 
 {% block widget %}
+  
+  <div id="{{ widget.compound }}__prelist">
+  {% block prelist %}
+
+    {% if actions|length %}
+      {% for action_id, action in actions %}
+        <button style="margin-top:4px;margin-bottom:4px;"
+                {% if action.description|default(false) %}
+                  title="{{ action.description }}"
+                {% endif %}
+                id="{{ widget.full }}__{{ action_id }}">{{ action.heading }}</button>
+      {% endfor %}
+    {% endif %}
+
+  {% endblock prelist %}
+  </div>
 
   <div id="{{ widget.compound }}__restrict_dialog" style="display:none;">
     <form action="">
