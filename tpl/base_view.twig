@@ -27,11 +27,11 @@
           // action buttons
           {% for action_id, action in actions %}
             {% if action.type and action.subject and action.name %}
-              $( "button.{{ widget.full }}__{{ action_id }}" ).click( function() {
+              $( "#{{ widget.full }}__{{ action_id }}" ).click( function() {
                 var args = Object();
                 args.id = {{ id|default(0) }};
                 {% if 'widget' == action.type %}
-                  slot_load( {{ slot }}, action.subject, action.name, args );
+                  slot_load( {{ slot }}, "{{ action.subject }}", "{{ action.name }}", args );
                 {% else %}
                   ajax_{{ action.type }}( "{{ action.subject }}", "{{ action.name }}", args );
                 {% endif %}
@@ -130,6 +130,7 @@
 
 {% block record_items %}
   <table>
+    {% block record_extra_pre_items %}{% endblock record_extra_pre_items %}
     {% for item_id, entry in item %}
     
       {% if 'hidden' != entry.type %}
@@ -396,6 +397,7 @@
         {% endif %}
       {% endif %}
     {% endfor %}
+    {% block record_extra_post_items %}{% endblock record_extra_post_items %}
     {% if actions|length %}
       <tr><td colspan="22"><hr class="ui-widget ui-widget-content"></td></tr>
       <tr>

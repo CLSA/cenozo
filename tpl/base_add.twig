@@ -43,6 +43,7 @@
 {% block record_items %}
 
   <table>
+    {% block record_extra_pre_items %}{% endblock record_extra_pre_items %}
     {% for item_id, entry in item %}
       {% if 'hidden' != entry.type %}
         {# make null entries an empty string #}
@@ -193,6 +194,7 @@
         {% endif %}
       {% endif %}
     {% endfor %}
+    {% block record_extra_post_items %}{% endblock record_extra_post_items %}
   </table>
 
 {% endblock record_items %}
