@@ -436,6 +436,17 @@ class modifier extends \cenozo\base_object
     return $sql;
   }
 
+  // TODO: document
+  public function merge( $modifier )
+  {
+    if( !is_null( $modifier ) )
+    {
+      foreach( $modifier->where_list as $item ) $this->where_list[] = $item;
+      foreach( $modifier->group_list as $item ) $this->group_list[] = $item;
+      foreach( $modifier->order_list as $item ) $this->order_list[] = $item;
+    }
+  }
+
   /**
    * Holds all where clauses in an array of associative arrays
    * @var array
