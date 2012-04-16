@@ -505,7 +505,7 @@ abstract class record extends \cenozo\base_object
     $record_type, $modifier = NULL, $inverted = false, $count = false )
   {
     $table_name = static::get_table_name();
-    $primary_key_name = $table_name.'.'.static::get_primary_key_name();
+    $primary_key_name = sprintf( '%s.%s', $table_name, static::get_primary_key_name() );
     $foreign_class_name = lib::get_class_name( 'database\\'.$record_type );
 
     // check the primary key value
@@ -538,13 +538,14 @@ abstract class record extends \cenozo\base_object
     }
     else if( $relationship_class_name::ONE_TO_MANY == $relationship )
     {
+      $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       if( $inverted )
       {
-        $modifier->where( $table_name.'_id', '=', NULL );
-        $modifier->or_where( $table_name.'_id', '!=', $primary_key_value );
+        $modifier->where( $column_name, '=', NULL );
+        $modifier->or_where( $column_name, '!=', $primary_key_value );
       }
-      else $modifier->where( $table_name.'_id', '=', $primary_key_value );
+      else $modifier->where( $column_name, '=', $primary_key_value );
 
       return $count
         ? $foreign_class_name::count( $modifier )
@@ -553,9 +554,10 @@ abstract class record extends \cenozo\base_object
     else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
       $joining_table_name = static::get_joining_table_name( $record_type );
-      $foreign_key_name = $record_type.'.'.$foreign_class_name::get_primary_key_name();
-      $joining_primary_key_name = $joining_table_name.'.'.$table_name.'_id';
-      $joining_foreign_key_name = $joining_table_name.'.'.$record_type.'_id';
+      $foreign_key_name =
+        sprintf( '%s.%s', $record_type, $foreign_class_name::get_primary_key_name() );
+      $joining_primary_key_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
+      $joining_foreign_key_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
   
       if( $inverted )
@@ -760,8 +762,10 @@ abstract class record extends \cenozo\base_object
       $joining_table_name = static::get_joining_table_name( $record_type );
   
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( static::get_table_name().'_id', '=', $primary_key_value );
-      $modifier->where( $record_type.'_id', '=', $id );
+      $column_name = sprintf( '%s.%s_id', $joining_table_name, static::get_table_name() );
+      $modifier->where( $column_name, '=', $primary_key_value );
+      $column_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
+      $modifier->where( $column_name, '=', $id );
   
       static::db()->execute(
         sprintf( 'DELETE FROM %s %s',
@@ -892,9 +896,10 @@ abstract class record extends \cenozo\base_object
               // add the table to the list to select and join it in the modifier
               $table_list[] = $table;
               $modifier->where(
-                $this_table.'.'.$foreign_key_name,
+                sprintf( '%s.%s', $this_table, $foreign_key_name ),
                 '=',
-                $table.'.'.$class_name::get_primary_key_name(), false );
+                sprintf( '%s.%s', $table, $class_name::get_primary_key_name() ),
+                false );
             }
             // check to see if the foreign table has this table as a foreign key
             else if( static::db()->column_exists( $table, $this_table.'_id' ) )
@@ -902,9 +907,10 @@ abstract class record extends \cenozo\base_object
               // add the table to the list to select and join it in the modifier
               $table_list[] = $table;
               $modifier->where(
-                $table.'.'.$this_table.'_id',
+                sprintf( '%s.%s_id', $table, $this_table ),
                 '=',
-                $this_table.'.'.static::get_primary_key_name(), false );
+                sprintf( '%s.%s', $this_table, static::get_primary_key_name() ),
+                false );
             }
           }
         }
