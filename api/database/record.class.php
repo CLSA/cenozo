@@ -961,8 +961,20 @@ abstract class record extends \cenozo\base_object
     return static::select( $modifier, true );
   }
 
-  // TODO: document
-  public static function customize_join( $table, $modifier, $override = false )
+  /**
+   * Add a customized join definition between this and another table.
+   * 
+   * Joins are automatically created when tables have direct 1-to-1, 1-to-N or N-to-N
+   * relationships.  Use this method to define extra joins such as those that span multiple
+   * tables.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table The name of the table to join to.
+   * @param database\modifier $modifier The modifier necessary to join the table.
+   * @param boolean $override Whether to replace an existing join to the table.
+   * @access protected
+   */
+  protected static function customize_join( $table, $modifier, $override = false )
   {
     if( !array_key_exists( get_called_class(), self::$custom_join_list ) )
       self::$custom_join_list[get_called_class()] = array();
@@ -1162,7 +1174,12 @@ abstract class record extends \cenozo\base_object
    */
   protected $include_timestamps = true;
 
-  // TODO: document
+  /**
+   * An associative array containing all of the custom joins.  The key is the name of the table
+   * being joined and the value a modifier object which defines the join.
+   * @var array( database\modifier )
+   * @access private
+   */
   private static $custom_join_list = array();
 }
 ?>

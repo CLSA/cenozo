@@ -436,7 +436,13 @@ class modifier extends \cenozo\base_object
     return $sql;
   }
 
-  // TODO: document
+  /**
+   * Merges another modifier with this one.  Merging only includes where, group and order items.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier
+   * @access public
+   */
   public function merge( $modifier )
   {
     if( !is_null( $modifier ) )
