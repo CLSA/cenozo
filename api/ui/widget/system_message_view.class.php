@@ -59,7 +59,10 @@ class system_message_view extends base_view
     if( $is_top_tier )
     {
       $sites = array();
-      foreach( $site_class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+      $site_mod = lib::create( 'database\modifier' );
+      $site_mod->order( 'name' );
+      foreach( $site_class_name::select( $site_mod ) as $db_site )
+        $sites[$db_site->id] = $db_site->name;
     }
 
     $roles = array();
