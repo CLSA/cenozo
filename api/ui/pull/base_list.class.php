@@ -43,16 +43,31 @@ abstract class base_list extends \cenozo\ui\pull
     foreach( $this->restrictions as $restrict )
       $modifier->where( $restrict['column'], $restrict['operator'], $restrict['value'] );
 
+    $limit = $this->get_argument( 'limit', NULL );
+    $offset = $this->get_argument( 'offset', 0 );
+    if( !is_null( $limit ) ) $modifier->limit( $limit, $offset );
+
     $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
     $list = array();
+
     foreach( $class_name::select( $modifier ) as $record )
-    {
-      $item = array();
-      foreach( $record->get_column_names() as $column ) $item[$column] = $record->$column;
-      $list[] = $item;
-    }
+      $list[] = $this->process_record( $record );
 
     return $list;
+  }
+
+  /**
+   * This method is called for each record in the list.  It is meant to be extended in order
+   * to add extra details which this base class may not provide.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\record $record
+   * @access protected
+   */
+  protected function process_record( $record )
+  {
+    $item = array();
+    foreach( $record->get_column_names() as $column ) $item[$column] = $record->$column;
+    return $item;
   }
 
   /**
@@ -65,7 +80,6 @@ abstract class base_list extends \cenozo\ui\pull
     $this->restrictions = array();
     $restrictions = $this->get_argument( 'restrictions', array() );
     
-    $modifier = lib::create( 'database\modifier' );
     if( is_array( $restrictions ) ) foreach( $restrictions as $column => $restrict )
     {
       $operator = NULL;
@@ -74,8 +88,14 @@ abstract class base_list extends \cenozo\ui\pull
       if( array_key_exists( 'value', $restrict ) && array_key_exists( 'compare', $restrict ) )
       {
         $value = $restrict['value'];
-        if( 'is' == $restrict['compare'] ) $operator = '=';
-        else if( 'is not' == $restrict['compare'] ) $operator = '!=';
+        if( 'is' == $restrict['compare'] )
+        {
+          $operator = '=';
+        }
+        else if( 'is not' == $restrict['compare'] )
+        {
+          $operator = '!=';
+        }
         else if( 'like' == $restrict['compare'] )
         {
           $value = '%'.$value.'%';
@@ -86,6 +106,11 @@ abstract class base_list extends \cenozo\ui\pull
           $value = '%'.$value.'%';
           $operator = 'NOT LIKE';
         }
+        else if( 'in' == $restrict['compare'] )
+        {
+          if( !is_array( $value ) ) $value = explode( ',', $value );
+          $operator = 'IN';
+        }
         else log::err( 'Invalid comparison in list restriction.' );
       }
 
@@ -94,7 +119,7 @@ abstract class base_list extends \cenozo\ui\pull
         $this->restrictions[] = array(
           'column' => $column,
           'operator' => $operator,
-          'value' => $value );
+          'value' => 'NULL' == $value ? NULL : $value );
       }
     }
   }
