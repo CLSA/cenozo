@@ -45,7 +45,7 @@ class setting_manager extends \cenozo\singleton
         throw lib::create( 'exception\argument',
           'static_settings['.$category.']', NULL, __METHOD__ );
       }
-      $this->static_settings[ $category ] = $static_settings[ $category ];
+      $this->static_settings[$category] = $static_settings[$category];
     }
   }
 
@@ -55,22 +55,26 @@ class setting_manager extends \cenozo\singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $category The category the setting belongs to.
    * @param string $name The name of the setting.
+   * @param database\site $db_site Force a site other than the user's current site.
    * @access public
    */
-  public function get_setting( $category, $name )
+  public function get_setting( $category, $name, $db_site = NULL )
   {
     // first check for the setting in static settings
     if( array_key_exists( $category, $this->static_settings ) &&
-        array_key_exists( $name, $this->static_settings[ $category ] ) )
+        array_key_exists( $name, $this->static_settings[$category] ) )
     {
-      return $this->static_settings[ $category ][ $name ];
+      return $this->static_settings[$category][$name];
     }
+
+    if( is_null( $db_site ) ) $db_site = lib::create( 'business\session' )->get_site();
 
     // now check in dynamic settings 
     if( array_key_exists( $category, $this->dynamic_settings ) &&
-        array_key_exists( $name, $this->dynamic_settings[ $category ] ) )
+        array_key_exists( $name, $this->dynamic_settings[$category] ) &&
+        array_key_exists( $db_site->id, $this->dynamic_settings[$category][$name] ) )
     {
-      return $this->dynamic_settings[ $category ][ $name ];
+      return $this->dynamic_settings[$category][$name][$db_site->id];
     }
     else // check if the setting exists in the database
     {
@@ -79,7 +83,7 @@ class setting_manager extends \cenozo\singleton
       if( !is_null( $db_setting ) )
       {
         $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+        $modifier->where( 'site_id', '=', $db_site->id );
         $setting_value_list = $db_setting->get_setting_value_list( $modifier );
         
         $string_value = count( $setting_value_list )
@@ -91,7 +95,7 @@ class setting_manager extends \cenozo\singleton
         else $value = $string_value;
 
         // store the value in case we need it again
-        $this->dynamic_settings[ $category ][ $name ] = $value;
+        $this->dynamic_settings[$category][$name][$db_site->id] = $value;
         return $value;
       }
     }
@@ -113,7 +117,7 @@ class setting_manager extends \cenozo\singleton
   public function get_setting_category( $category )
   {
     return array_key_exists( $category, $this->static_settings )
-         ? $this->static_settings[ $category ]
+         ? $this->static_settings[$category]
          : array();
   }
 
