@@ -11,7 +11,7 @@ The following software must be installed prior to installing cenozo:
 - jQuery 1.4.4+
 - jQuery-ui 1.8.8+
 - jQuery plugins:
-    cookie, hoverIntent, layout, extruder, flipText, metadata, loading, loading.overflow,
+    cookie, hoverIntent, layout, extruder, flipText, metadata,
     jeditable, timepicker, rightClick and tooltip
 
 The client-side software was developed to be used by firefox version 3.6.13+.  HTML user

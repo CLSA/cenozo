@@ -10,7 +10,8 @@ if( !isset( $result_array ) || !is_array( $result_array ) )
 }
 
 // set template variables
-$type = $result_array['error_type'];
+$title = 0 == strcasecmp( 'notice', $result_array['error_type'] )
+       ? 'Please Note:' : $result_array['error_type'].' Error!';
 $notice = 'Notice' == $result_array['error_type'] && 0 < strlen( $result_array['error_message'] )
         ? $result_array['error_message']
         : 'There was an error while trying to communicate with the server.<br>'.
@@ -41,7 +42,7 @@ $code = substr( $result_array['error_type'], 0, 1 ).'.'.$result_array['error_cod
 <body>
 
 <div class="error">
-  <h2><?php echo $type; ?> Error!</h2>
+  <h2><?php echo $title; ?></h2>
   <div>
     <p><?php echo $notice; ?></p>
     <p class="error_code">Error code: I.<?php echo $code; ?></p>

@@ -521,5 +521,19 @@ class util
 
     return bin2hex( $crypt );
   }
+
+  /**
+   * Validates whether a date is in YYYY-MM-DD format.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $date
+   * @return boolean
+   * @access public
+   */
+  public static function validate_date( $date )
+  {
+    return preg_match(
+      '/^(19|20)\d\d-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/',
+      $date );
+  }
 }
 ?>

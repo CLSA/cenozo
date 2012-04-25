@@ -64,7 +64,9 @@
           columns[column_name] = 'NULL' == new_value ? '' : new_value;
         else columns[column_name] = new_value;
         args.columns = columns;
-      
+
+        {% block pre_edit %}{% endblock pre_edit %}
+
         // push the changed data, updating the hidden "old" input upon success
         if( ajax_push( widget_subject, "edit", args ) ) {
           // if we are setting start_time, then update end_time
@@ -75,6 +77,9 @@
       
           if( 'boolean' != type && 'enum' != type )
             $( "#old_" + element.attr( 'id' ) ).val( new_value );
+
+          {% block post_edit %}{% endblock post_edit %}
+
           return new_value;
         } else {
           // put the old value back
@@ -169,9 +174,8 @@
                   } );
                 
                   // open the dialog when the text is clicked
-                  $( "div.editable_text" ).click( function () {
-                    $( "#{{ widget.full }}_dialog_{{ id|default(0) }}__{{ item_id }}" )
-                      .dialog( "open" );
+                  $( "#{{ widget.full }}__{{ item_id }}" ).click( function () {
+                    $( "#{{ widget.full }}_dialog_{{ id|default(0) }}__{{ item_id }}" ).dialog( "open" );
                   } );
                 } );
               </script>
@@ -362,7 +366,7 @@
             {% endif %}
         
             {% if entry.note is defined %}
-              <div class="help_note">
+              <div class="help_note {{ entry.note_is_error ? "ui-state-error" : "" }}">
                 {% autoescape false %}
                   {{ entry.note }}
                 {% endautoescape %}
@@ -371,7 +375,7 @@
           </td>
         </tr>
         {% if not loop.last %}
-          <tr><td></td><td><hr class="ui-widget ui-widget-content"</td></tr>
+          <tr><td></td><td><hr class="ui-widget ui-widget-content" /></td></tr>
         {% endif %}
       {% endif %}
     {% endfor %}

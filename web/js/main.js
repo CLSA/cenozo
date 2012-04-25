@@ -83,8 +83,8 @@ function ajax_pull( subject, name, args ) {
   if( undefined == args ) args = new Object();
   var request = jQuery.ajax( {
     url: subject + "/" + name,
-    async: false,
     type: "GET",
+    async: false,
     data: jQuery.param( args ),
     complete: function( request, result ) { ajax_complete( request, 'R' ) },
     dataType: "json"
@@ -99,21 +99,40 @@ function ajax_pull( subject, name, args ) {
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string subject The subject of the push.
  * @param string name The name of the push.
- * @param object args The arguments to pass along with the push.
+ * @param object args The arguments to pass along with the push (may be a file)
  * @return bool Whether or not the push completed successfully
  */
-function ajax_push( subject, name, args ) {
+function ajax_push( subject, name, args, post_send_function ) {
   if( undefined == args ) args = new Object();
-  var request = jQuery.ajax( {
-    url: subject + "/" + name,
-    async: false,
-    type: "POST",
-    data: jQuery.param( args ),
-    complete: function( request, result ) { ajax_complete( request, 'W' ) },
-    dataType: "json"
-  } );
+  var type = "POST";
+  var url = subject + "/" + name;
+  if( args instanceof File ) {
+    var request = new window.XMLHttpRequest();
+    request.open( type, url, true );
+    request.setRequestHeader( "X_FILENAME", args.name );
+    request.onreadystatechange = function() {
+      if( 4 == request.readyState ) {
+        ajax_complete( request, 'F' );
+        if( undefined != post_send_function ) post_send_function( request );
+      }
+    }
+    request.send( args );
+  } else {
+    var request = jQuery.ajax( {
+      url: url,
+      type: type,
+      async: false,
+      data: jQuery.param( args ),
+      complete: function( request, result ) {
+        ajax_complete( request, 'W' )
+        if( undefined != post_send_function ) post_send_function( request );
+      },
+      dataType: "json"
+    } );
+  }
+
   var response = jQuery.parseJSON( request.responseText );
-  return response.success;
+  if( null != response ) return response.success;
 }
 
 /**
@@ -128,14 +147,6 @@ function ajax_push( subject, name, args ) {
  * @param object args The arguments to pass along with the push.
  */
 function ajax_slot( slot, action, subject, name, args ) {
-  $.loading( {
-    onAjax: true,
-    img: window.loading_icon_url,
-    mask: true,
-    delay: 300, // ms
-    align: "center"
-  } );
-  
   var url = "slot/" + slot + "/" + action;
   if( subject && name ) url += "/" + subject + "/" + name;
   if( undefined != args ) url += "?" + jQuery.param( args );
@@ -159,15 +170,11 @@ function ajax_slot( slot, action, subject, name, args ) {
 function slot_load( slot, subject, name, args, no_namespace ) {
   // build the url (args is an associative array)
   var namespace_args = new Object();
-  if( undefined !== args )
-  {
-    if( undefined === no_namespace || false == no_namespace )
-    {
+  if( undefined !== args ) {
+    if( undefined === no_namespace || false == no_namespace ) {
       var namespace = subject + "_" + name;
       namespace_args[namespace] = args;
-    }
-    else
-    {
+    } else {
       namespace_args = args;
     }
   }

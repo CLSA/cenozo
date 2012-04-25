@@ -371,8 +371,8 @@
 
 {% block widget %}
 
-  <div id="{{ widget.compound }}__restrict_dialog">
-    <form>
+  <div id="{{ widget.compound }}__restrict_dialog" style="display:none;">
+    <form action="">
       <input type="hidden" id="{{ widget.compound }}__restrict_dialog_id" value="" />
       <table>
         <tr>
@@ -398,7 +398,7 @@
   
   <table class="{{ widget.full }}_table">
     <thead class="ui-widget-header">
-      <tr id="#{{ widget.full }}_header_row">
+      <tr id="{{ widget.full }}_header_row">
         {% if checkable %}
           <th align="center"><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
         {% endif %}
@@ -443,6 +443,46 @@
         {% endif %}
       </tr>
     </thead>
+    <tfoot class="ui-widget-header">
+      <tr>
+        <th id="{{ widget.full }}_footer_cell" colspan="0">
+          {% if checkable %}
+            <span>
+              Check boxes:
+              <button style="width:80px" id="{{ widget.full }}_check_all">all</button>
+              <button style="width:80px" id="{{ widget.full }}_check_none">none</button>
+              <button style="width:80px" id="{{ widget.full }}_check_invert">invert</button>
+              <button style="width:80px" id="{{ widget.full }}_check_clear">clear</button>
+            </span>
+            <span style="margin-left:20px"></span>
+          {% endif %}
+
+          {% if rows|length %}
+            {% set item_from = ( page - 1 ) * items_per_page + 1 %}
+            {% set item_to = item_from + rows|length - 1 %}
+            Viewing: {{ item_from }} to {{ item_to }} of {{ number_of_items }}
+          {% endif %}
+
+          {% if items_per_page < number_of_items %}
+            <span style="margin-left:20px"></span>
+            <span>
+              Page:
+              <button style="width:80px"
+                      id="{{ widget.full }}_page_prev"
+                      {{ 1 == page ? 'disabled' : '' }}>prev</button>
+              <button style="width:80px"
+                      id="{{ widget.full }}_page_next"
+                      {{ max_page == page ? 'disabled' : '' }}>next</button>
+            </span>
+          {% endif %}
+        </th>
+        {% if addable %}
+          <th><button id="{{ widget.full }}_add">
+            add {{ widget.subject_name }}{% if parent.exists %} to {{ parent.subject }}{% endif %}
+          </button></th>
+        {% endif %}
+      </tr>
+    </tfoot>
     {% if rows|length %}
       <tbody>
         {% for row in rows %}
@@ -484,49 +524,9 @@
           </tr>
         {% endfor %}
       </tbody>
+    {% else %}
+      <tbody><tr><td colspan="0">No {{ widget.subject_names }} found.</td></tr></tbody>
     {% endif %}
-    <tfoot class="ui-widget-header">
-      <tr>
-        <th id="{{ widget.full }}_footer_cell" colspan="0">
-          {% if checkable %}
-            <span>
-              Check boxes:
-              <button style="width:80px" id="{{ widget.full }}_check_all">all</button>
-              <button style="width:80px" id="{{ widget.full }}_check_none">none</button>
-              <button style="width:80px" id="{{ widget.full }}_check_invert">invert</button>
-              <button style="width:80px" id="{{ widget.full }}_check_clear">clear</button>
-            </span>
-            <span style="margin-left:20px"></span>
-          {% endif %}
-
-          {% if rows|length %}
-            {% set item_from = ( page - 1 ) * items_per_page + 1 %}
-            {% set item_to = item_from + rows|length - 1 %}
-            Viewing: {{ item_from }} to {{ item_to }} of {{ number_of_items }}
-          {% else %}
-            No {{ widget.subject_names }} found.
-          {% endif %}
-
-          {% if items_per_page < number_of_items %}
-            <span style="margin-left:20px"></span>
-            <span>
-              Page:
-              <button style="width:80px"
-                      id="{{ widget.full }}_page_prev"
-                      {{ 1 == page ? 'disabled' : '' }}>prev</button>
-              <button style="width:80px"
-                      id="{{ widget.full }}_page_next"
-                      {{ max_page == page ? 'disabled' : '' }}>next</button>
-            </span>
-          {% endif %}
-        </th>
-        {% if addable %}
-          <th><button id="{{ widget.full }}_add">
-            add {{ widget.subject_name }}{% if parent.exists %} to {{ parent.subject }}{% endif %}
-          </button></th>
-        {% endif %}
-      </tr>
-    </tfoot>
   </table>
 
 {% endblock widget %}

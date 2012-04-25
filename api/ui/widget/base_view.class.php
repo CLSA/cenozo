@@ -85,9 +85,11 @@ abstract class base_view extends base_record
                    "text", "enum" or "constant"
    * @param string $heading The item's heading as it will appear in the view
    * @param string $note A note to add below the item.
+   * @param string $note_is_error Whether the note is error text.
    * @access public
    */
-  public function add_item( $item_id, $type, $heading = NULL, $note = NULL )
+  public function add_item(
+    $item_id, $type, $heading = NULL, $note = NULL, $note_is_error = false )
   {
     $util_class_name = lib::get_class_name( 'util' );
 
@@ -104,7 +106,29 @@ abstract class base_view extends base_record
 
     $this->items[$item_id] = array( 'type' => $type );
     if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
-    if( !is_null( $note ) ) $this->items[$item_id]['note'] = $note;
+    if( !is_null( $note ) )
+    {
+      $this->items[$item_id]['note'] = $note;
+      $this->items[$item_id]['note_is_error'] = $note_is_error;
+    }
+  }
+
+  public function set_note( $item_id, $note = NULL, $note_is_error = false )
+  {
+    // make sure the item exists
+    if( !array_key_exists( $item_id, $this->items ) )
+      throw lib::create( 'exception\argument', 'item_id', $item_id, __METHOD__ );
+
+    if( !is_null( $note ) )
+    {
+      $this->items[$item_id]['note'] = $note;
+      $this->items[$item_id]['note_is_error'] = $note_is_error;
+    }
+    else
+    {
+      unset( $this->items[$item_id]['note'] );
+      unset( $this->items[$item_id]['note_is_error'] );
+    }
   }
 
   /**
