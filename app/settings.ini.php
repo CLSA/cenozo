@@ -16,7 +16,7 @@ global $SETTINGS;
 $fwk_settings['general']['cenozo_version'] = '0.1.3';
 
 // When set to true all operations are disabled
-$fwk_settings['general']['maintenance_mode'] = true;
+$fwk_settings['general']['maintenance_mode'] = false;
 
 // always leave as false when running as production server
 $fwk_settings['general']['development_mode'] = false;
