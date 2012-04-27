@@ -105,6 +105,8 @@ abstract class base_edit extends base_record
 
       throw $e;
     }
+
+    parent::finish();
   }
 }
 ?>

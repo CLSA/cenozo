@@ -331,7 +331,9 @@ class database extends \cenozo\base_object
         __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
-    return $this->tables[$table_name]['constraints'];
+    return array_key_exists( $table_name, $this->tables )
+         ? $this->tables[$table_name]['constraints']
+         : array();
   }
   
   /**
