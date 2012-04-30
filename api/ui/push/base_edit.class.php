@@ -82,6 +82,9 @@ abstract class base_edit extends base_record
       }   
     } 
     
+    // finishing may involve sending a machine request
+    parent::finish();
+
     // set record column values
     foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
     
@@ -105,8 +108,6 @@ abstract class base_edit extends base_record
 
       throw $e;
     }
-
-    parent::finish();
   }
 }
 ?>

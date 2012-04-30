@@ -40,6 +40,9 @@ abstract class base_delete extends base_record
    */
   public function finish()
   {
+    // finshing may invlove sending a machine request
+    parent::finish();
+
     try
     {
       $this->get_record()->delete();
