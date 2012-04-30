@@ -989,7 +989,7 @@ abstract class record extends \cenozo\base_object
       {
         $subject = substr( $column, 0, -3 );
         $class_name = lib::get_class_name( 'database\\'.$subject );
-        $modifier->where( $column, '=', $class_name::get_primary_from_unique_key( $key ) );
+        $modifier->where( $column, '=', $class_name::get_primary_from_unique_key( $key[$column] ) );
       }
       else // otherwise just add the value to the modifier
       {
@@ -1206,9 +1206,9 @@ abstract class record extends \cenozo\base_object
    * @param string $table The name of the table to join to.
    * @param database\modifier $modifier The modifier necessary to join the table.
    * @param boolean $override Whether to replace an existing join to the table.
-   * @access protected
+   * @access public
    */
-  protected static function customize_join( $table, $modifier, $override = false )
+  public static function customize_join( $table, $modifier, $override = false )
   {
     if( !array_key_exists( get_called_class(), self::$custom_join_list ) )
       self::$custom_join_list[get_called_class()] = array();
@@ -1218,7 +1218,7 @@ abstract class record extends \cenozo\base_object
   }
 
   // TODO: document
-  protected static function set_primary_unique_key( $name )
+  public static function set_primary_unique_key( $name )
   {
     if( !array_key_exists( get_called_class(), self::$primary_unique_key_list ) )
       self::$primary_unique_key_list[get_called_class()] = $name;
