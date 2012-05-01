@@ -76,6 +76,9 @@ abstract class base_new extends base_record
       }
     } 
     
+    // finshing may invlove sending a machine request
+    parent::finish();
+
     // set record column values
     foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
 
