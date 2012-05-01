@@ -945,7 +945,16 @@ abstract class record extends \cenozo\base_object
     return static::select( $modifier, true );
   }
 
-  // TODO: document
+  /**
+   * Returns a unique key in the form of an array given a primary key value.
+   * The returned array will have a value for every column which is included in the unique key.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $key A primary key value for the table.
+   * @return associative array
+   * @static
+   * @access public
+   */
   public static function get_unique_from_primary_key( $key )
   {
     $key = intval( $key );
@@ -971,7 +980,15 @@ abstract class record extends \cenozo\base_object
     return $unique_key_array;
   }
 
-  // TODO: document
+  /**
+   * Returns a primary key value given a unique key array.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param associative array
+   * @return int
+   * @static
+   * @access public
+   */
   public static function get_primary_from_unique_key( $key )
   {
     if( !is_array( $key ) ) return NULL;
@@ -1010,8 +1027,17 @@ abstract class record extends \cenozo\base_object
     return $id;
   }
   
-  // TODO: document
-  private static function get_unique_key_columns()
+  /**
+   * Returns an array of columns which define this table's unique key.  If the table has more than
+   * one unique key then primary unique key is used, or the first if no primary unique key has
+   * been set.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array( string )
+   * @static
+   * @access public
+   */
+  public static function get_unique_key_columns()
   {
     // determine the column list from the unique keys (possibly the primary one) or fall
     // back on the full column list if no unique key exists
@@ -1217,15 +1243,27 @@ abstract class record extends \cenozo\base_object
       self::$custom_join_list[get_called_class()][$table] = $modifier;
   }
 
-  // TODO: document
+  /**
+   * Defines which primary unique key to use when get_unique_key_columns() is called.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name The database name for the unique key.
+   * @static
+   * @access public
+   */
   public static function set_primary_unique_key( $name )
   {
     if( !array_key_exists( get_called_class(), self::$primary_unique_key_list ) )
       self::$primary_unique_key_list[get_called_class()] = $name;
   }
 
-  // TODO: document
-  protected static function get_primary_unique_key()
+  /**
+   * Returns the primary unique key to use when get_unique_key_columns() is called.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function get_primary_unique_key()
   {
     return array_key_exists( get_called_class(), self::$primary_unique_key_list )
          ?  self::$primary_unique_key_list[get_called_class()] : NULL;

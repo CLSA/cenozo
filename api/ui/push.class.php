@@ -37,7 +37,11 @@ abstract class push extends operation
     lib::create( 'business\session' )->set_use_transaction( true );
   }
 
-  // TODO: document
+  /**
+   * Override the parent method by sending a machine request, if necessary.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
   public function finish()
   {
     // if this operation was not received by machine then send a machine request
@@ -45,9 +49,20 @@ abstract class push extends operation
       $this->send_machine_request();
   }
 
-  // TODO: document
+  /**
+   * Converts primary keys to unique keys in operation arguments.
+   * All converted arguments will appear in the array under a 'noid' key.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args An argument list, usually those passed to the push operation.
+   * @return array
+   * @access protected
+   */
   protected function convert_to_noid( $args )
   {
+    // Even if no keys need conversion, we want to make sure the noid array exists so that
+    // the receiving service identifies the request as having come from a machine
+    $args['noid'] = array();
+
     foreach( $args as $arg_key => $arg_value )
     {
       if( 'columns' == $arg_key )
@@ -79,7 +94,14 @@ abstract class push extends operation
     return $args;
   }
 
-  // TODO: document
+  /**
+   * Converts unique keys to primary keys in operation arguments.
+   * All unique keys to be converted should be under a 'noid' key.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args An argument list, usually those passed to the push operation.
+   * @return array
+   * @access protected
+   */
   protected function convert_from_noid( $args )
   {
     if( array_key_exists( 'noid', $args ) )
@@ -118,19 +140,33 @@ abstract class push extends operation
     return $args;
   }
       
-  // TODO: document
+  /**
+   * Defines whether or not to send a machine request along with performing the push locally.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enabled
+   * @access public
+   */
   public function set_machine_request_enabled( $enabled )
   {
     $this->machine_request_enabled = $enabled;
   }
 
-  // TODO: document
+  /**
+   * Defines the url to send machine requests to.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $url
+   * @access public
+   */
   public function set_machine_request_url( $url )
   {
     $this->machine_request_url = $url;
   }
 
-  // TODO: document
+  /**
+   * Sends a machine request.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function send_machine_request()
   {
     // make sure the url is set
@@ -156,13 +192,25 @@ abstract class push extends operation
     }
   }
 
-  // TODO: document
+  /**
+   * The url to send machine requests to.
+   * @var string
+   * @access private
+   */
   private $machine_request_url = NULL;
 
-  // TODO: document
+  /**
+   * Whether or not to send machine requests along with the local push operation.
+   * @var boolean
+   * @access private
+   */
   private $machine_request_enabled = false;
 
-  // TODO: document
+  /**
+   * Whether or not this operation was requested by a machine.
+   * @var boolean
+   * @access private
+   */
   private $machine_request_received = false;
 }
 ?>
