@@ -193,6 +193,17 @@ abstract class push extends operation
   }
 
   /**
+   * Whether the push operation was received by a machine.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_machine_request_received()
+  {
+    return $this->machine_request_received;
+  }
+
+  /**
    * The url to send machine requests to.
    * @var string
    * @access private
