@@ -99,13 +99,13 @@ class user_view extends base_view
     
     if( !is_null( $this->access_list ) )
     {
-      $this->access_list->finish();
+      $this->access_list->process();
       $this->set_variable( 'access_list', $this->access_list->get_variables() );
     }
 
     if( !is_null( $this->activity_list ) )
     {
-      $this->activity_list->finish();
+      $this->activity_list->process();
       $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
     }
   }

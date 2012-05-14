@@ -28,20 +28,33 @@ abstract class base_delete extends base_record
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'delete', $args );
-
-    // make sure we have an id (we don't actually need to use it since the parent does)
-    $this->get_argument( 'id' );
   }
   
-  /**
-   * Executes the push.
+  /** 
+   * Validate the operation.  If validation fails this method will throw a notice exception.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
-    // finshing may invlove sending a machine request
-    parent::finish();
+    parent::validate();
+
+    // make sure an id was provided
+    if( !array_key_exists( 'id', $this->arguments ) )
+      throw lib::create( 'exception\argument', 'id', NULL, __METHOD__ );
+  }
+
+  /**
+   * This method executes the operation's purpose.  All operations must implement this method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
 
     try
     {

@@ -66,7 +66,7 @@ abstract class base_add_list extends base_record
                          $util_class_name::pluralize( $this->list_widget->get_subject() ) );
     $this->set_variable( 'list_widget_name', $this->list_widget->get_class_name() );
 
-    $this->list_widget->finish();
+    $this->list_widget->process();
     $this->set_variable( 'list', $this->list_widget->get_variables() );
   }
   

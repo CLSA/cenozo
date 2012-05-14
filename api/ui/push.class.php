@@ -29,21 +29,40 @@ abstract class push extends operation
    */
   public function __construct( $subject, $name, $args )
   {
-    // don't pass the arguments to the parent since we need to convert noid parameters
-    parent::__construct( 'push', $subject, $name, NULL );
-    $this->arguments = $this->convert_from_noid( $args );
+    parent::__construct( 'push', $subject, $name, $args );
 
     // by default all push operations use transactions
     lib::create( 'business\session' )->set_use_transaction( true );
   }
 
   /**
-   * Override the parent method by sending a machine request, if necessary.
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @abstract
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
+    $this->arguments = $this->convert_from_noid( $this->arguments );
+    if( !$this->machine_request_received && $this->machine_request_enabled )
+      $this->machine_arguments = $this->convert_to_noid( $this->arguments );
+  }
+
+  /**
+   * Finishes the operation with any post-execution instructions that may be necessary.
+   * TODO: convert to protected
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function finish()
   {
+    parent::finish();
+
     // if this operation was not received by machine then send a machine request
     if( !$this->machine_request_received && $this->machine_request_enabled )
       $this->send_machine_request();
@@ -59,10 +78,6 @@ abstract class push extends operation
    */
   protected function convert_to_noid( $args )
   {
-    // Even if no keys need conversion, we want to make sure the noid array exists so that
-    // the receiving service identifies the request as having come from a machine
-    $args['noid'] = array();
-
     foreach( $args as $arg_key => $arg_value )
     {
       if( 'columns' == $arg_key )
@@ -91,6 +106,10 @@ abstract class push extends operation
       }
     }
 
+    // If no keys need conversion we still want to make sure the noid array exists so that
+    // the receiving service identifies the request as having come from a machine
+    if( !array_key_exists( 'noid', $args ) ) $args['noid'] = array( NULL );
+
     return $args;
   }
 
@@ -116,23 +135,27 @@ abstract class push extends operation
 
       foreach( $noid as $noid_key => $noid_value )
       {
-        if( 'columns' == $noid_key )
-        { // foreign key found in columns array
-          foreach( $noid_value as $subject => $unique_key )
+        // ignore empty values
+        if( $noid_value )
+        {
+          if( 'columns' === $noid_key )
+          { // foreign key found in columns array
+            foreach( $noid_value as $subject => $unique_key )
+            {
+              $class_name = lib::get_class_name( 'database\\'.$subject );
+              $args['columns'][$subject.'_id'] = 
+                $class_name::get_primary_from_unique_key( $unique_key );
+            }
+          }
+          else // primary and foreign keys
           {
+            $subject = $noid_key;
+            $unique_key = $noid_value;
+            $arg_key = $this->get_subject() == $subject ? 'id' : $subject.'_id';
             $class_name = lib::get_class_name( 'database\\'.$subject );
-            $args['columns'][$subject.'_id'] = 
+            $args[$arg_key] = 
               $class_name::get_primary_from_unique_key( $unique_key );
           }
-        }
-        else // primary and foreign keys
-        {
-          $subject = $noid_key;
-          $unique_key = $noid_value;
-          $arg_key = $this->get_subject() == $subject ? 'id' : $subject.'_id';
-          $class_name = lib::get_class_name( 'database\\'.$subject );
-          $args[$arg_key] = 
-            $class_name::get_primary_from_unique_key( $unique_key );
         }
       }
     }
@@ -140,6 +163,18 @@ abstract class push extends operation
     return $args;
   }
       
+  /**
+   * Returns whether or not the operation is to send a machine request along with performing the
+   * push locally.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_machine_request_enabled()
+  {
+    return $this->machine_request_enabled;
+  }
+
   /**
    * Defines whether or not to send a machine request along with performing the push locally.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -149,6 +184,17 @@ abstract class push extends operation
   public function set_machine_request_enabled( $enabled )
   {
     $this->machine_request_enabled = $enabled;
+  }
+
+  /**
+   * Returns the url which the machine request is sent to.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_machine_request_url()
+  {
+    return $this->machine_request_url;
   }
 
   /**
@@ -165,31 +211,13 @@ abstract class push extends operation
   /**
    * Sends a machine request.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args An associative array of arguments to be sent.
    * @access protected
    */
   protected function send_machine_request()
   {
-    // make sure the url is set
-    if( is_null( $this->machine_request_url ) )
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Tried to send %s %s machine request without setting URL',
-          $this->get_subject(),
-          $this->get_name() ),
-        __METHOD__ );
-
-    // we'll need the arguments to send to Sabretooth/Beartooth
-    $args = $this->convert_to_noid( $this->arguments );
-
-    try
-    {
-      $cenozo_manager = lib::create( 'business\cenozo_manager', $this->machine_request_url );
-      $cenozo_manager->push( $this->get_subject(), $this->get_name(), $args );
-    }
-    catch( \cenozo\exception\base_exception $e )
-    {
-      // log the error, but otherwise ignore it
-      log::crit( $e->to_string() );
-    }
+    $cenozo_manager = lib::create( 'business\cenozo_manager', $this->machine_request_url );
+    $cenozo_manager->push( $this->get_subject(), $this->get_name(), $this->machine_arguments );
   }
 
   /**
@@ -201,6 +229,21 @@ abstract class push extends operation
   public function get_machine_request_received()
   {
     return $this->machine_request_received;
+  }
+
+  /**
+   * Returns the name of the application which sent the machine request.
+   * This value is NULL if a machine request was not made and an empty string
+   * if the application did not identify itself.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_machine_application_name()
+  {
+    $name = array_key_exists( 'HTTP_APPLICATION_NAME', $_SERVER )
+          ? $_SERVER['HTTP_APPLICATION_NAME'] : '';
+    return $this->machine_request_received ? $name : NULL;
   }
 
   /**
@@ -223,5 +266,12 @@ abstract class push extends operation
    * @access private
    */
   private $machine_request_received = false;
+
+  /**
+   * The arguments to send with a machine request.
+   * @var array( array )
+   * @access protected
+   */
+  protected $machine_arguments = array();
 }
 ?>

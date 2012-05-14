@@ -28,18 +28,13 @@ abstract class base_edit extends base_record
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'edit', $args );
-
-    // make sure we have an id (we don't actually need to use it since the parent does)
-    $this->get_argument( 'id' );
   }
   
-  /**
-   * Executes the push.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
+  // TODO: document
+  protected function validate()
   {
+    parent::validate();
+
     $columns = $this->get_argument( 'columns', array() );
     
     // check for time range validity, if necessary
@@ -80,11 +75,18 @@ abstract class base_edit extends base_record
                    $end_value ),
           __METHOD__ );
       }   
-    } 
-    
-    // finishing may involve sending a machine request
-    parent::finish();
+    }
+  }
 
+  /**
+   * TODO: document
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $columns = $this->get_argument( 'columns', array() );
+    
     // set record column values
     foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
     

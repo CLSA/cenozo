@@ -44,6 +44,8 @@ abstract class widget extends operation
    */
   public function finish()
   {
+    parent::finish();
+
     $util_class_name = lib::get_class_name( 'util' );
 
     $widget_variable = array(

@@ -29,13 +29,11 @@ abstract class base_new extends base_record
     parent::__construct( $subject, 'new', $args );
   }
   
-  /**
-   * Executes the push.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
+  // TODO: document
+  protected function validate()
   {
+    parent::validate();
+
     $columns = $this->get_argument( 'columns', array() );
 
     // check for time range validity, if necessary
@@ -75,9 +73,15 @@ abstract class base_new extends base_record
           __METHOD__ );
       }
     } 
+  }
+
+  // TODO: document
+  protected function execute()
+  {
+    // finishing may invlove sending a machine request
+    parent::execute();
     
-    // finshing may invlove sending a machine request
-    parent::finish();
+    $columns = $this->get_argument( 'columns', array() );
 
     // set record column values
     foreach( $columns as $column => $value ) $this->get_record()->$column = $value;

@@ -46,12 +46,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "role", "view", true, "View a role's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "role", "list", true, "List roles in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "role", "add_operation", true, "View operations to add to a role." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "new_operation", true, "Adds new operations to a role." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "delete_operation", true, "Remove operations from a role." );
 
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )

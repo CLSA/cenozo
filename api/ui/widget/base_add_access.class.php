@@ -56,7 +56,7 @@ class base_add_access extends base_add_list
 
     if( !is_null( $this->role_list ) )
     {
-      $this->role_list->finish();
+      $this->role_list->process();
       $this->set_variable( 'role_list', $this->role_list->get_variables() );
     }
   }

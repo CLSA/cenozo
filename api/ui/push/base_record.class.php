@@ -19,17 +19,11 @@ abstract class base_record
   extends \cenozo\ui\push
   implements \cenozo\ui\contains_record
 {
-  /**
-   * Constructor.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $subject The widget's subject.
-   * @param string $name The widget's name.
-   * @param array $args Push arguments
-   * @access public
-   */
-  public function __construct( $subject, $name, $args )
+  // TODO: document
+  protected function prepare()
   {
-    parent::__construct( $subject, $name, $args );
+    parent::prepare();
+
     $this->set_record(
       lib::create( 'database\\'.$this->get_subject(), $this->get_argument( 'id', NULL ) ) );
   }

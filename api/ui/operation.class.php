@@ -14,7 +14,15 @@ use cenozo\lib, cenozo\log;
  * Base class for all operation.
  *
  * All operation classes extend this base operation class.  All classes that extend this class are
- * used to fulfill some purpose executed by the user-interface.
+ * used to fulfill some purpose executed by the user or machine interfaces.
+ * 
+ * Operations happen in the following stages:
+ * 1. prepare:  processes arguments, preparing them for the operation
+ * 2. validate: checks to make sure the arguments are valid, the user has access, etc
+ * 3. setup:    a pre-execution phase that sets up the operation
+ * 4. execute:  execution of the operation, completing the task
+ * 5. finish:   a post-execution phase that finishes extra tasks after execution
+ * 
  * @package cenozo\ui
  */
 abstract class operation extends \cenozo\base_object
@@ -39,6 +47,7 @@ abstract class operation extends \cenozo\base_object
     if( 'push' != $type && 'pull' != $type && 'widget' != $type )
       throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
     
+    // build the operation record
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $this->operation_record =
       $operation_class_name::get_operation( $type, $subject, $name );
@@ -49,25 +58,72 @@ abstract class operation extends \cenozo\base_object
                  $type, $subject, $name ),
         __METHOD__ );
 
+    // store the arguments
     if( is_array( $args ) ) $this->arguments = $args;
-    
-    // throw a permission exception if the user is not allowed to perform this operation
-    if( !lib::create( 'business\session' )->is_allowed( $this->operation_record ) )
-      throw lib::create( 'exception\permission', $this->operation_record, __METHOD__ );
-
-    $this->set_heading( $this->get_subject().' '.$this->get_name() );  
   }
   
   /**
-   * Finish processing the operation.
+   * TODO: document
+   * TODO: make finish not return data, but those methods instead set this->$data
+   */
+  public function process()
+  {
+    $this->prepare();
+    $this->validate();
+    $this->setup();
+    $this->execute();
+    $this->data = $this->finish();
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
    * 
-   * Every operation must complete whatever processing it is responsible for in this
-   * method.  This method may or may not return a mixed result.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @abstract
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare() {}
+
+  /**
+   * Validate the operation.  If validation fails this method will throw a notice exception.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function validate()
+  {
+    // throw a permission exception if the user is not allowed to perform this operation
+    if( !lib::create( 'business\session' )->is_allowed( $this->operation_record ) )
+      throw lib::create( 'exception\permission', $this->operation_record, __METHOD__ );
+  }
+
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    $this->set_heading( $this->get_subject().' '.$this->get_name() );
+  }
+
+  /**
+   * This method executes the operation's purpose.  All operations must implement this method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute() {}
+
+  /**
+   * Finishes the operation with any post-execution instructions that may be necessary.
+   * TODO: convert to protected
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  abstract public function finish();
+  public function finish() {}
 
   /**
    * Get the database id of the operation.
@@ -157,6 +213,9 @@ abstract class operation extends \cenozo\base_object
     $this->heading = ucwords( str_replace( '_', ' ', $heading ) );
   }
 
+  // TODO: document
+  public function get_data() { return $this->data; }
+
   /**
    * The operation's heading.
    * @var string
@@ -177,5 +236,10 @@ abstract class operation extends \cenozo\base_object
    * @access protected
    */
   protected $arguments = array();
+
+  /**
+   * TODO: document
+   */
+  private $data;
 }
 ?>

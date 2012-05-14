@@ -66,7 +66,7 @@ class role_view extends base_view
     // finish the child widgets
     if( !is_null( $this->operation_list ) )
     {
-      $this->operation_list->finish();
+      $this->operation_list->process();
       $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
     }
   }

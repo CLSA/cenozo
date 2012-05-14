@@ -65,7 +65,7 @@ abstract class base_add_record extends base_record
                          $util_class_name::pluralize( $this->add_widget->get_subject() ) );
     $this->set_variable( 'add_widget_name', $this->add_widget->get_class_name() );
 
-    $this->add_widget->finish();
+    $this->add_widget->process();
     $this->set_variable( 'record', $this->add_widget->get_variables() );
   }
 
