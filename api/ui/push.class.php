@@ -48,6 +48,20 @@ abstract class push extends operation
     parent::prepare();
 
     $this->arguments = $this->convert_from_noid( $this->arguments );
+  }
+
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @abstract
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
     if( !$this->machine_request_received && $this->machine_request_enabled )
       $this->machine_arguments = $this->convert_to_noid( $this->arguments );
   }
