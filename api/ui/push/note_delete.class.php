@@ -30,20 +30,19 @@ class note_delete extends \cenozo\ui\push
   }
   
   /**
-   * Executes the push.
+   * This method executes the operation's purpose.  All operations must implement this method.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     // make sure there is a valid note category
     $category = $this->get_argument( 'category' );
     $class_name = lib::get_class_name( 'database\\'.$category );
     $db_note = $class_name::get_note( $this->get_argument( 'id' ) );
-
-    // finishing may involve sending a machine request
-    parent::finish();
 
     $db_note->delete();
   }

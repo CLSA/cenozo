@@ -30,13 +30,15 @@ class note_new extends \cenozo\ui\push
   }
   
   /**
-   * Executes the push.
+   * This method executes the operation's purpose.  All operations must implement this method.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     // make sure there is a valid note category
     $category = $this->get_argument( 'category' );
     $category_id = $this->get_argument( 'category_id' );
@@ -46,9 +48,6 @@ class note_new extends \cenozo\ui\push
       throw lib::create( 'exception\runtime',
         sprintf( 'Tried to create new note to %s which cannot have notes.', $category ),
         __METHOD__ );
-
-    // finishing may involve sending a machine request
-    parent::finish();
 
     $db_record->add_note( lib::create( 'business\session' )->get_user(), $note );
   }
