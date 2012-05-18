@@ -32,30 +32,42 @@ abstract class base_add_record extends base_record
   public function __construct( $subject, $child, $args )
   {
     parent::__construct( $subject, 'add_'.$child, $args );
+    $this->child_subject = $child;
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->show_heading( false );
     
-    // make sure we have an id (we don't actually need to use it since the parent does)
-    $this->get_argument( 'id' );
-
     // build the child add widget
-    $this->add_widget = lib::create( 'ui\widget\\'.$child.'_add', $args );
+    $this->add_widget =
+      lib::create( 'ui\widget\\'.$this->child_subject.'_add', $this->arguments );
     $this->add_widget->set_parent( $this, 'edit' );
 
     $this->add_widget->set_heading(
       sprintf( 'Add a new %s to the %s',
-               $child,
-               $subject ) );
+               $this->child_subject,
+               $this->get_subject() ) );
   }
   
   /**
-   * Finish setting the variables in a widget.
+   * Sets necessary widget variables.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $util_class_name = lib::get_class_name( 'util' );
 
@@ -75,5 +87,12 @@ abstract class base_add_record extends base_record
    * @access protected
    */
   protected $add_widget = NULL;
+
+  /**
+   * The child subject that is being added
+   * @var string
+   * @access protected
+   */
+  protected $child_subject;
 }
 ?>

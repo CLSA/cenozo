@@ -32,18 +32,27 @@ abstract class base_view extends base_record implements actionable
   public function __construct( $subject, $name, $args )
   {
     parent::__construct( $subject, $name, $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     if( 'view' == $this->get_name() )
     {
-      // make sure we have an id (we don't actually need to use it since the parent does)
-      $this->get_argument( 'id' );
-
       // determine properties based on the current user's permissions
       $operation_class_name = lib::get_class_name( 'database\operation' );
       $session = lib::create( 'business\session' );
       $this->editable = $session->is_allowed(
-        $operation_class_name::get_operation( 'push', $subject, 'edit' ) );
-      $db_operation = $operation_class_name::get_operation( 'push', $subject, 'delete' );
+        $operation_class_name::get_operation( 'push', $this->get_subject(), 'edit' ) );
+      $db_operation = $operation_class_name::get_operation( 'push', $this->get_subject(), 'delete' );
       $this->removable = $session->is_allowed( $db_operation ); 
       if( $this->removable ) $this->add_action( 'remove', 'Remove', NULL,
         sprintf( 'Removes the %s, but only if it is not being used by the system',
@@ -61,25 +70,39 @@ abstract class base_view extends base_record implements actionable
   }
   
   /**
-   * Finish setting the variables in a widget.
+   * Sets up the operation with any pre-execution instructions that may be necessary.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // define all template variables for this widget
     $this->set_variable( 'editable', $this->editable );
     $this->set_variable( 'removable', $this->removable );
     $this->set_variable( 'addable', $this->addable );
 
-    // keep track of now many of these widgets have been finished
+    // keep track of now many of these widgets have been set up
     self::$base_view_count++;
     $this->set_variable( 'base_view_count', self::$base_view_count );
   }
   
+  /**
+   * Completes setting variables needed by the widget.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $this->set_variable( 'item', $this->items );
+    $this->set_variable( 'actions', $this->actions );
+  }
+
   /**
    * Add an item to the view.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -263,17 +286,6 @@ abstract class base_view extends base_record implements actionable
   }
 
   /**
-   * Must be called after all items have been set.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish_setting_items()
-  {
-    $this->set_variable( 'item', $this->items );
-    $this->set_variable( 'actions', $this->actions );
-  }
-
-  /**
    * Set whether a new record can be added.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
@@ -360,7 +372,7 @@ abstract class base_view extends base_record implements actionable
   private $actions = array();
   
   /**
-   * Keeps track of how many base_view widgets have been finished
+   * Keeps track of how many base_view widgets have been set up
    * @var integer
    * @access private
    */

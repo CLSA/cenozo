@@ -211,23 +211,15 @@ abstract class base_report extends \cenozo\ui\widget
   }
 
   /**
-   * Must be called after all parameters have been set.
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish_setting_parameters()
+  protected function setup()
   {
-    $this->set_variable( 'parameters', $this->parameters );
-  }
+    parent::setup();
 
-  /**
-   * Child classes should implement and call parent's finish and then call 
-   * finish_setting_parameters
-   * @author Dean Inglis <inglisd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
     $site_class_name = lib::get_class_name( 'database\site' );
     $region_class_name = lib::get_class_name( 'database\region' );
 
@@ -291,8 +283,19 @@ abstract class base_report extends \cenozo\ui\widget
       $restriction_type = 'has_restrict_'.$key;
       $this->set_parameter( $restriction_type,  $value );
     }
+  }
 
-    parent::finish();
+  /**
+   * This method executes the operation's purpose.  All operations must implement this method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $this->set_variable( 'parameters', $this->parameters );
   }
 
   /**

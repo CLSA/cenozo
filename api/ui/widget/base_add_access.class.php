@@ -29,12 +29,25 @@ class base_add_access extends base_add_list
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'access', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+    
     $this->show_heading( false );
     
     try
     {
       // build the role list widget
-      $this->role_list = lib::create( 'ui\widget\role_list', $args );
+      $this->role_list = lib::create( 'ui\widget\role_list', $this->arguments );
       $this->role_list->set_parent( $this, 'edit' );
       $this->role_list->set_heading( 'Select roles to grant' );
     }
@@ -45,14 +58,14 @@ class base_add_access extends base_add_list
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Sets up the role list variable.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     if( !is_null( $this->role_list ) )
     {

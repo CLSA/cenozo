@@ -28,6 +28,18 @@ class user_view extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'user', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     // create an associative array with everything we want to display about the user
     $this->add_item( 'name', 'constant', 'Username' );
@@ -39,7 +51,7 @@ class user_view extends base_view
     try
     {
       // create the access sub-list widget
-      $this->access_list = lib::create( 'ui\widget\access_list', $args );
+      $this->access_list = lib::create( 'ui\widget\access_list', $this->arguments );
       $this->access_list->set_parent( $this );
       $this->access_list->set_heading( 'User\'s site access list' );
     }
@@ -51,7 +63,7 @@ class user_view extends base_view
     try
     {
       // create the activity sub-list widget
-      $this->activity_list = lib::create( 'ui\widget\activity_list', $args );
+      $this->activity_list = lib::create( 'ui\widget\activity_list', $this->arguments );
       $this->activity_list->set_parent( $this );
       $this->activity_list->set_heading( 'User activity' );
     }
@@ -62,14 +74,14 @@ class user_view extends base_view
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $util_class_name = lib::get_class_name( 'util' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
@@ -94,8 +106,6 @@ class user_view extends base_view
         'next time they log in' );
       $this->set_variable( 'reset_password', true );
     }
-
-    $this->finish_setting_items();
     
     if( !is_null( $this->access_list ) )
     {

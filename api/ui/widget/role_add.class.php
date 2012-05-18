@@ -28,25 +28,35 @@ class role_add extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'role', 'add', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     // define all columns defining this record
     $this->add_item( 'name', 'string', 'Name' );
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     // set the view's items
     $this->set_item( 'name', '', true );
-
-    $this->finish_setting_items();
   }
 }
 ?>

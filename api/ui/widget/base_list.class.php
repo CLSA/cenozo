@@ -35,8 +35,19 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'list', $args );
-    
-    // make sure to validate the arguments ($args could be anything)
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->page = $this->get_argument( 'page', $this->page );
     $this->sort_column = $this->get_argument( 'sort_column', $this->sort_column );
     $this->sort_desc = 0 != $this->get_argument( 'sort_desc', $this->sort_desc );
@@ -54,16 +65,14 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   }
   
   /**
-   * Finish setting the variables in a widget.
+   * Defines all variables needed by the list.
    * 
-   * All child classes must extend this method, and within populate the list's rows by calling
-   * {@link add_row} (once for every row) and {@link finish_setting_rows} once finished.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $modifier = lib::create( 'database\modifier' );
 
@@ -180,10 +189,24 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   }
   
   /**
+   * This method executes the operation's purpose.  All operations must implement this method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $this->set_variable( 'rows', $this->rows );
+    $this->set_variable( 'actions', $this->actions );
+  }
+
+  /**
    * Set the widget's parent.
    * 
    * Embed this widget into a parent widget, or unparent the widget by setting the parent to NULL.
-   * This should be done before the widget is finished (before {@link finish} is called).
+   * This should be done in the prepare method.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param widget $parent
    * @param string $mode Whether the parent is viewing records or adding new records to itself,
@@ -476,17 +499,6 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   {
     if( array_key_exists( $action_id, $this->actions ) )
       unset( $this->actions[$action_id] );
-  }
-
-  /**
-   * Must be called after all rows have been added to the list.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish_setting_rows()
-  {
-    $this->set_variable( 'rows', $this->rows );
-    $this->set_variable( 'actions', $this->actions );
   }
 
   /**

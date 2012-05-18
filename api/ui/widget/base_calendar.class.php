@@ -32,14 +32,15 @@ abstract class base_calendar extends \cenozo\ui\widget
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Sets necessary widget variables.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
+
     $this->set_variable( 'editable', $this->editable );
   }
 

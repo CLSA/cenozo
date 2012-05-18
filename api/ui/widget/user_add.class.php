@@ -28,7 +28,19 @@ class user_add extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'user', 'add', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     // define all columns defining this record
     $this->add_item( 'name', 'string', 'Username' );
     $this->add_item( 'first_name', 'string', 'First name' );
@@ -43,14 +55,14 @@ class user_add extends base_view
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $role_class_name = lib::get_class_name( 'database\role' );
     $site_class_name = lib::get_class_name( 'database\site' );
@@ -81,8 +93,6 @@ class user_add extends base_view
     $value = $is_top_tier ? current( $sites ) : $session->get_site()->id;
     $this->set_item( 'site_id', $value, true, $is_top_tier ? $sites : NULL );
     $this->set_item( 'role_id', current( $roles ), true, $roles );
-
-    $this->finish_setting_items();
   }
 }
 ?>
