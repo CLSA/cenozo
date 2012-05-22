@@ -99,7 +99,7 @@ class site_view extends base_view
               is_null( $db_activity ) ? null : $db_activity->datetime );
     $this->set_item( 'last_activity', $last );
 
-    // setup the child widgets
+    // process the child widgets
     if( !is_null( $this->access_list ) )
     {
       $this->access_list->process();

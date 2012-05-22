@@ -40,11 +40,11 @@ abstract class widget extends operation
    * Define generic widget variables for use by all templates.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $util_class_name = lib::get_class_name( 'util' );
 
@@ -83,10 +83,16 @@ abstract class widget extends operation
     }
 
     $this->set_variable( 'widget', $widget_variable );
+  }
+
+  // TODO: document
+  protected function execute()
+  {
+    parent::execute();
+
     $this->set_variable( 'widget_heading', $this->get_heading() );
     $this->set_variable( 'show_heading', $this->show_heading );
   }
-
   /**
    * Get a query argument passed to the widget.
    * 

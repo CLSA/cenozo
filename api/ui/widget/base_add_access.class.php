@@ -48,7 +48,8 @@ class base_add_access extends base_add_list
     {
       // build the role list widget
       $this->role_list = lib::create( 'ui\widget\role_list', $this->arguments );
-      $this->role_list->set_parent( $this, 'edit' );
+      $this->role_list->set_parent( $this );
+      $this->role_list->set_checkable( true );
       $this->role_list->set_heading( 'Select roles to grant' );
     }
     catch( \cenozo\exception\permission $e )

@@ -56,12 +56,27 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     // determine properties based on the current user's permissions
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $session = lib::create( 'business\session' );
-    $this->viewable = $session->is_allowed(
-      $operation_class_name::get_operation( 'widget', $this->get_subject(), 'view' ) );
-    $this->addable = $session->is_allowed(
-      $operation_class_name::get_operation( 'widget', $this->get_subject(), 'add' ) );
-    $this->removable = $session->is_allowed(
-      $operation_class_name::get_operation( 'push', $this->get_subject(), 'delete' ) );
+
+    // if the viewable, addable or removable properties have been requested then make sure
+    // the appropriate operations are available
+    if( $this->viewable ) $this->viewable =
+      $operation_class_name::get_operation( 'widget', $this->get_subject(), 'view' );
+
+    if( $this->addable )
+    {
+      $subject = !is_null( $this->parent ) ? $this->parent->get_subject() : $this->get_subject();
+      $name = !is_null( $this->parent ) ? 'add_'.$this->get_subject() : 'add';
+      $this->addable = $session->is_allowed(
+        $operation_class_name::get_operation( 'widget', $subject, $name ) );
+    }
+
+    if( $this->removable )
+    {
+      $subject = !is_null( $this->parent ) ? $this->parent->get_subject() : $this->get_subject();
+      $name = !is_null( $this->parent ) ? 'delete_'.$this->get_subject() : 'delete';
+      $this->removable = $session->is_allowed(
+        $operation_class_name::get_operation( 'push', $subject, $name ) );
+    }
   }
   
   /**
@@ -73,6 +88,16 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   protected function setup()
   {
     parent::setup();
+
+    if( !is_null( $this->parent ) )
+    {
+      // remove any columns which belong to the parent's record
+      foreach( $this->columns as $column_id => $column )
+      {
+        $subject = strstr( $column_id, '.', true );
+        if( $subject == $this->parent->get_subject() ) $this->remove_column( $column_id );
+      }
+    }
     
     $modifier = lib::create( 'database\modifier' );
 
@@ -163,6 +188,46 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     if( 1 > $this->page ) $this->page = 1; // lower limit
     if( $this->page > $max_page ) $this->page = $max_page; // upper limit
     
+    // if there is a rank, datetime, date or time column set it as the default sort column
+    if( !$this->sort_column )
+    {
+      $rank_column = NULL;
+      $datetime_column = NULL;
+      $date_column = NULL;
+      $time_column = NULL;
+      foreach( $this->columns as $name => $column )
+      {
+        if( !array_key_exists( 'sortable', $column ) || $column['sortable'] )
+        {
+          if( preg_match( '/rank/', $name ) ) $rank_column = $name;
+          else if( preg_match( '/datetime/', $name ) ) $datetime_column = $name;
+          else if( preg_match( '/date/', $name ) ) $date_column = $name;
+          else if( preg_match( '/time/', $name ) ) $time_column = $name;
+        }
+      }
+
+      if( !is_null( $rank_column ) )
+      {
+        $this->sort_column = $rank_column;
+        $this->sort_desc = false;
+      }
+      if( !is_null( $datetime_column ) )
+      {
+        $this->sort_column = $datetime_column;
+        $this->sort_desc = false;
+      }
+      if( !is_null( $date_column ) )
+      {
+        $this->sort_column = $date_column;
+        $this->sort_desc = false;
+      }
+      if( !is_null( $time_column ) )
+      {
+        $this->sort_column = $time_column;
+        $this->sort_desc = false;
+      }
+    }
+
     // apply ordering and paging to sql query
     if( strlen( $this->sort_column ) ) $modifier->order( $this->sort_column, $this->sort_desc );
     $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
@@ -202,51 +267,6 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     $this->set_variable( 'actions', $this->actions );
   }
 
-  /**
-   * Set the widget's parent.
-   * 
-   * Embed this widget into a parent widget, or unparent the widget by setting the parent to NULL.
-   * This should be done in the prepare method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param widget $parent
-   * @param string $mode Whether the parent is viewing records or adding new records to itself,
-                         which is defined by setting this parameter to 'view' or 'edit',
-                         respectively.
-   * @access public
-   */
-  public function set_parent( $parent = NULL, $mode = 'view' )
-  {
-    parent::set_parent( $parent );
-
-    // remove any columns which belong to the parent's record
-    foreach( $this->columns as $column_id => $column )
-    {
-      $subject = strstr( $column_id, '.', true );
-      if( $subject == $this->parent->get_subject() ) $this->remove_column( $column_id );
-    }
-    
-    if( 'edit' == $mode )
-    {
-      // If we're adding/remove items of this list to another record we want to dissable
-      // the removing and adding of widgets, and enable checking
-      $this->removable = false;
-      $this->addable = false;
-      $this->checkable = true;
-    }
-    else // 'view' == $mode
-    {
-      // add/remove operations are relative to the parent
-      $operation_class_name = lib::get_class_name( 'database\operation' );
-      $session = lib::create( 'business\session' );
-      $this->addable = $session->is_allowed( 
-        $operation_class_name::get_operation(
-          'widget', $this->parent->get_subject(), 'add_'.$this->get_subject() ) );
-      $this->removable = $session->is_allowed(
-        $operation_class_name::get_operation(
-          'push', $this->parent->get_subject(), 'delete_'.$this->get_subject() ) );
-    }
-  }
-  
   /**
    * Returns the total number of items in the list.
    * 
@@ -321,6 +341,9 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   public function set_checkable( $enable )
   {
     $this->checkable = $enable;
+    $this->viewable = !$enable;
+    $this->addable = !$enable;
+    $this->removable = !$enable;
   }
 
   /**
@@ -511,17 +534,17 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   /**
    * Which column to sort by, or none if set to an empty string.
    * @var string
-   * @access protected
+   * @access private
    */
-  protected $sort_column = '';
+  private $sort_column = '';
   
   /**
    * Whether to sort in descending order.
    * Starts as true so that when initial sorting is selected it will be ascending
    * @var boolean
-   * @access protected
+   * @access private
    */
-  protected $sort_desc = true;
+  private $sort_desc = true;
   
   /**
    * An associative array of restrictions to apply to the list.
@@ -540,30 +563,30 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   /**
    * Whether items in the list can be checked/selected.
    * @var boolean
-   * @access protected
+   * @access private
    */
-  protected $checkable = false;
+  private $checkable = false;
   
   /**
    * Whether items in the list can be viewed.
    * @var boolean
-   * @access protected
+   * @access private
    */
-  protected $viewable = false;
+  private $viewable = true;
   
   /**
    * Whether new items can be added to the list.
    * @var boolean
-   * @access protected
+   * @access private
    */
-  protected $addable = false;
+  private $addable = true;
   
   /**
    * Whether items in the list can be removed.
    * @var boolean
-   * @access protected
+   * @access private
    */
-  protected $removable = false;
+  private $removable = true;
   
   /**
    * An array of columns.

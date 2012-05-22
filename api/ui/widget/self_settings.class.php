@@ -54,7 +54,6 @@ class self_settings extends \cenozo\ui\widget
 
     $session = lib::create( 'business\session' );
 
-    // create and setup the widget
     $db_user = $session->get_user();
     $db_current_site = $session->get_site();
     $db_current_role = $session->get_role();

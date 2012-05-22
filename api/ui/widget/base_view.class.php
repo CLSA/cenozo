@@ -297,6 +297,16 @@ abstract class base_view extends base_record implements actionable
   }
 
   /**
+   * Determines whether the record can be edited.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function get_editable()
+  {
+    return $this->editable;
+  }
+
+  /**
    * Set whether the record can be edited.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
@@ -329,23 +339,23 @@ abstract class base_view extends base_record implements actionable
   /**
    * When in view mode, determines whether an edit button should be available.
    * @var boolean
-   * @access protected
+   * @access private
    */
-  protected $editable = false;
+  private $editable = false;
 
   /**
    * When in view mode, determines whether a remove button should be available.
    * @var boolean
-   * @access protected
+   * @access private
    */
-   protected $removable = false;
+   private $removable = false;
 
   /**
    * Used by the add mode to display add/cancel buttons.
    * @var boolean
-   * @access protected
+   * @access private
    */
-   protected $addable = false;
+   private $addable = false;
 
   /**
    * An associative array where the key is a unique identifier (usually a column name) and the

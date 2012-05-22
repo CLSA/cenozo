@@ -35,6 +35,94 @@ abstract class base_report extends \cenozo\ui\widget
   }
 
   /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $site_class_name = lib::get_class_name( 'database\site' );
+    $region_class_name = lib::get_class_name( 'database\region' );
+
+    // allow pull reports to ask whether a restriction has been added
+    // e.g.,  'true' == $this->get_argument( 'has_restrict_dates' )
+    foreach( $this->restrictions as $key => $value )
+    {
+      $restriction_type = 'has_restrict_'.$key;
+      $this->add_parameter( $restriction_type, 'hidden' );
+    }
+
+    if( $this->restrictions[ 'site' ] )
+    {
+      if( static::may_restrict_by_site() )
+      {
+        // if allowed, give them a list of sites to choose from
+        $sites = array( 0 => 'All sites' );
+        $site_mod = lib::create( 'database\modifier' );
+        $site_mod->order( 'name' );
+        foreach( $site_class_name::select( $site_mod ) as $db_site )
+          $sites[$db_site->id] = $db_site->name;
+  
+        $this->set_parameter( 'restrict_site_id', key( $sites ), true, $sites );
+      }
+      else
+      {
+        $this->set_parameter(
+          'restrict_site_id', lib::create( 'business\session' )->get_site()->id );
+      }
+    }
+    
+    if( $this->restrictions[ 'province' ] )
+    {
+      $region_mod = lib::create( 'database\modifier' );
+      $region_mod->order( 'abbreviation' );
+      $region_mod->where( 'country', '=', 'Canada' );
+      $region_types = array( 'All provinces' );
+      foreach( $region_class_name::select( $region_mod ) as $db_region )
+        $region_types[ $db_region->id ] = $db_region->name;
+
+      $this->set_parameter( 'restrict_province_id', key( $region_types ), true, $region_types );
+    }
+
+    if( $this->restrictions[ 'site_or_province' ] )
+    {
+      $site_or_prov = array( 'Site', 'Province' );
+      $site_or_prov = array_combine( $site_or_prov, $site_or_prov );
+
+      $this->set_parameter( 'restrict_site_or_province', 
+        key( $site_or_prov ), true, $site_or_prov );
+    }
+
+    if( $this->restrictions[ 'dates' ] )
+    {
+      $this->set_parameter( 'restrict_start_date', '', false );
+      $this->set_parameter( 'restrict_end_date', '', false );
+    }
+  }
+
+  /**
+   * This method executes the operation's purpose.  All operations must implement this method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    foreach( $this->restrictions as $key => $value )
+    {
+      $restriction_type = 'has_restrict_'.$key;
+      $this->set_parameter( $restriction_type,  $value );
+    }
+
+    $this->set_variable( 'parameters', $this->parameters );
+  }
+
+  /**
    * Adds a restriction to the report, for example, restrict by site.  To add a new
    * type, edit the class array ivar 'restrictions' and perform an add_parameter as
    * required so that pull classes can act accordingly. Child classes need only call
@@ -208,94 +296,6 @@ abstract class base_report extends \cenozo\ui\widget
     }
 
     $this->parameters[$param_id]['required'] = $required;
-  }
-
-  /**
-   * Sets up the operation with any pre-execution instructions that may be necessary.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function setup()
-  {
-    parent::setup();
-
-    $site_class_name = lib::get_class_name( 'database\site' );
-    $region_class_name = lib::get_class_name( 'database\region' );
-
-    // allow pull reports to ask whether a restriction has been added
-    // e.g.,  'true' == $this->get_argument( 'has_restrict_dates' )
-    foreach( $this->restrictions as $key => $value )
-    {
-      $restriction_type = 'has_restrict_'.$key;
-      $this->add_parameter( $restriction_type, 'hidden' );
-    }
-
-    if( $this->restrictions[ 'site' ] )
-    {
-      if( static::may_restrict_by_site() )
-      {
-        // if allowed, give them a list of sites to choose from
-        $sites = array( 0 => 'All sites' );
-        $site_mod = lib::create( 'database\modifier' );
-        $site_mod->order( 'name' );
-        foreach( $site_class_name::select( $site_mod ) as $db_site )
-          $sites[$db_site->id] = $db_site->name;
-  
-        $this->set_parameter( 'restrict_site_id', key( $sites ), true, $sites );
-      }
-      else
-      {
-        $this->set_parameter(
-          'restrict_site_id', lib::create( 'business\session' )->get_site()->id );
-      }
-    }
-    
-    if( $this->restrictions[ 'province' ] )
-    {
-      $region_mod = lib::create( 'database\modifier' );
-      $region_mod->order( 'abbreviation' );
-      $region_mod->where( 'country', '=', 'Canada' );
-      $region_types = array( 'All provinces' );
-      foreach( $region_class_name::select( $region_mod ) as $db_region )
-        $region_types[ $db_region->id ] = $db_region->name;
-
-      $this->set_parameter( 'restrict_province_id', key( $region_types ), true, $region_types );
-    }
-
-    if( $this->restrictions[ 'site_or_province' ] )
-    {
-      $site_or_prov = array( 'Site', 'Province' );
-      $site_or_prov = array_combine( $site_or_prov, $site_or_prov );
-
-      $this->set_parameter( 'restrict_site_or_province', 
-        key( $site_or_prov ), true, $site_or_prov );
-    }
-
-    if( $this->restrictions[ 'dates' ] )
-    {
-      $this->set_parameter( 'restrict_start_date', '', false );
-      $this->set_parameter( 'restrict_end_date', '', false );
-    }
-
-    foreach( $this->restrictions as $key => $value )
-    {
-      $restriction_type = 'has_restrict_'.$key;
-      $this->set_parameter( $restriction_type,  $value );
-    }
-  }
-
-  /**
-   * This method executes the operation's purpose.  All operations must implement this method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function execute()
-  {
-    parent::execute();
-
-    $this->set_variable( 'parameters', $this->parameters );
   }
 
   /**

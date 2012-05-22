@@ -51,7 +51,8 @@ abstract class base_add_list extends base_record
     // build the list widget
     $this->list_widget =
       lib::create( 'ui\widget\\'.$this->child_subject.'_list', $this->arguments );
-    $this->list_widget->set_parent( $this, 'edit' );
+    $this->list_widget->set_parent( $this );
+    $this->list_widget->set_checkable( true );
 
     $this->list_widget->set_heading(
       sprintf( 'Choose %s to add to the %s',

@@ -58,8 +58,8 @@ abstract class base_calendar extends \cenozo\ui\widget
   /**
    * Determines whether calendar events are editable.
    * @var boolean
-   * @access protected
+   * @access private
    */
-  protected $editable = false;
+  private $editable = false;
 }
 ?>

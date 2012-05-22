@@ -73,7 +73,7 @@ class role_view extends base_view
     $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'users', $this->get_record()->get_user_count() );
 
-    // setup the child widgets
+    // process the child widgets
     if( !is_null( $this->operation_list ) )
     {
       $this->operation_list->process();

@@ -39,10 +39,6 @@ class activity_list extends site_restricted_list
    */
   protected function prepare()
   {
-    // by default sort the datetime column descending
-    $this->sort_column = 'activity.datetime';
-    $this->sort_desc = true;
-
     parent::prepare();
 
     $this->add_column( 'user.name', 'string', 'User', true );
