@@ -29,7 +29,12 @@ class user_new extends base_new
     parent::__construct( 'user', $args );
   }
 
-  // TODO: document
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function prepare()
   {
     parent::prepare();
@@ -50,7 +55,13 @@ class user_new extends base_new
     }
   }
 
-  // TODO: document
+  /**
+   * Validate the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
   protected function validate()
   {
     parent::validate();
@@ -69,6 +80,12 @@ class user_new extends base_new
         'The user\'s last name cannot be left blank.', __METHOD__ );
   }
 
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function execute()
   {
     parent::execute();

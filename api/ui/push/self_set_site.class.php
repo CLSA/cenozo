@@ -34,9 +34,9 @@ class self_set_site extends \cenozo\ui\push
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\runtime
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function finish()
   {
     try
     {

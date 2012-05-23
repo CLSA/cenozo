@@ -31,13 +31,15 @@ class user_list extends base_list
   }
 
   /**
-   * Overrides the base list by allowing restrictions to refer to site and role tables
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access public
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
+    parent::setup();
+
     $site_class_name = lib::get_class_name( 'database\site' );
     $role_class_name = lib::get_class_name( 'database\role' );
     $site_mod = NULL;
@@ -101,9 +103,6 @@ class user_list extends base_list
     // only bother to update the restrictions if at least one of the mods has been created
     if( !is_null( $site_mod ) || !is_null( $role_mod ) )
       $this->restrictions = $new_restrictions;
-
-    // now finish as usual
-    return parent::finish();
   }
 }
 ?>

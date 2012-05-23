@@ -27,31 +27,43 @@ abstract class base_list_record extends base_record
    */
   public function __construct( $subject, $child, $args )
   {
+    parent::__construct( $subject, 'list_'.$child, $args );
     $this->child = $child;
-    parent::__construct( $subject, 'list_'.$this->child, $args );
-    $this->set_record( lib::create( 'database\\'.$this->get_subject(), $this->get_argument( 'id', NULL ) ) );
   }
 
   /**
-   * Returns the data provided by this pull operation.
+   * Processes arguments, preparing them for the operation.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return associative array
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    $data = array();
+    parent::prepare();
+
+    $this->set_record(
+      lib::create( 'database\\'.$this->get_subject(), $this->get_argument( 'id', NULL ) ) );
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $this->data = array();
     
     $child_list_method = 'get_'.$this->child.'_list';
     foreach( $this->get_record()->$child_list_method() as $db_record )
     {
       $item = array();
       foreach( $db_record->get_column_names() as $column ) $item[ $column ] = $db_record->$column;
-      $data[] = $item;
+      $this->data[] = $item;
     }
-
-    return $data;
   }
 
   /**

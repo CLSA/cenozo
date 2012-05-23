@@ -71,9 +71,9 @@ abstract class push extends operation
    * TODO: convert to protected
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function finish()
   {
     parent::finish();
 

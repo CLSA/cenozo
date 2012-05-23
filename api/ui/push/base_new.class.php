@@ -29,7 +29,13 @@ abstract class base_new extends base_record
     parent::__construct( $subject, 'new', $args );
   }
   
-  // TODO: document
+  /**
+   * Validate the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
   protected function validate()
   {
     parent::validate();
@@ -75,10 +81,14 @@ abstract class base_new extends base_record
     } 
   }
 
-  // TODO: document
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function execute()
   {
-    // finishing may invlove sending a machine request
     parent::execute();
     
     $columns = $this->get_argument( 'columns', array() );

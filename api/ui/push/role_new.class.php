@@ -32,9 +32,9 @@ class role_new extends base_new
   /**
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function finish()
   {
     // make sure the name column isn't blank
     $columns = $this->get_argument( 'columns' );

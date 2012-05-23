@@ -30,7 +30,7 @@ abstract class base_delete extends base_record
     parent::__construct( $subject, 'delete', $args );
   }
   
-  /** 
+  /**
    * Validate the operation.  If validation fails this method will throw a notice exception.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

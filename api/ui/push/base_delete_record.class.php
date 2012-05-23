@@ -31,8 +31,13 @@ abstract class base_delete_record extends base_record
     $this->child_subject = $child;
   }
   
-  // TODO: document
-  public function execute()
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
   {
     parent::execute();
 

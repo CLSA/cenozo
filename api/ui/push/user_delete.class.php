@@ -28,7 +28,13 @@ class user_delete extends base_delete
     parent::__construct( 'user', $args );
   }
 
-  // TODO: document
+  /**
+   * Validate the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
   protected function validate()
   {
     parent::validate();

@@ -29,7 +29,13 @@ abstract class base_new_access extends base_record
     parent::__construct( $subject, 'new_access', $args );
   }
   
-  // TODO: document
+  /**
+   * Validate the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
   protected function validate()
   {
     parent::validate();
@@ -41,7 +47,10 @@ abstract class base_new_access extends base_record
   }
 
   /**
-   * TODO: document
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function execute()
   {
@@ -55,7 +64,7 @@ abstract class base_new_access extends base_record
       $this->get_record()->add_access( $id_list, $role_id );
   }
 
-  /** 
+  /**
    * Override parent method to handle id lists
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An argument list, usually those passed to the push operation.
@@ -96,7 +105,7 @@ abstract class base_new_access extends base_record
     return $args;
   }
 
-  /** 
+  /**
    * Override parent method to handle id lists
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An argument list, usually those passed to the push operation.

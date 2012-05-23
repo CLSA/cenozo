@@ -85,7 +85,12 @@ abstract class widget extends operation
     $this->set_variable( 'widget', $widget_variable );
   }
 
-  // TODO: document
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function execute()
   {
     parent::execute();
@@ -93,6 +98,7 @@ abstract class widget extends operation
     $this->set_variable( 'widget_heading', $this->get_heading() );
     $this->set_variable( 'show_heading', $this->show_heading );
   }
+
   /**
    * Get a query argument passed to the widget.
    * 

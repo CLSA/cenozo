@@ -19,7 +19,12 @@ abstract class base_record
   extends \cenozo\ui\push
   implements \cenozo\ui\contains_record
 {
-  // TODO: document
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function prepare()
   {
     parent::prepare();

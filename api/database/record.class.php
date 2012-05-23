@@ -991,6 +991,9 @@ abstract class record extends \cenozo\base_object
    */
   public static function get_primary_from_unique_key( $key )
   {
+    // we may have a stdObject, so convert to an array if we do
+    if( is_object( $key ) ) $key = (array) $key;
+
     if( !is_array( $key ) ) return NULL;
 
     // build the modifier for record selection
@@ -1002,7 +1005,7 @@ abstract class record extends \cenozo\base_object
           sprintf( 'Missing column %s from unique key.', $column ),
           __METHOD__ );
 
-      if( is_array( $key[$column] ) )
+      if( is_array( $key[$column] ) || is_object( $key[$column] ) )
       {
         $subject = substr( $column, 0, -3 );
         $class_name = lib::get_class_name( 'database\\'.$subject );
