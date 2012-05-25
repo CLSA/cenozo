@@ -105,7 +105,8 @@ abstract class operation extends \cenozo\base_object
    */
   protected function setup()
   {
-    $this->set_heading( $this->get_subject().' '.$this->get_name() );
+    if( is_null( $this->get_heading() ) )
+      $this->set_heading( $this->get_subject().' '.$this->get_name() );
   }
 
   /**
@@ -225,7 +226,7 @@ abstract class operation extends \cenozo\base_object
    * @var string
    * @access protected
    */
-  private $heading = '';
+  private $heading = NULL;
 
   /**
    * The database record for this operation

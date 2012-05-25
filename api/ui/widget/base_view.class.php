@@ -50,22 +50,33 @@ abstract class base_view extends base_record implements actionable
       // determine properties based on the current user's permissions
       $operation_class_name = lib::get_class_name( 'database\operation' );
       $session = lib::create( 'business\session' );
-      $this->editable = $session->is_allowed(
-        $operation_class_name::get_operation( 'push', $this->get_subject(), 'edit' ) );
-      $db_operation = $operation_class_name::get_operation( 'push', $this->get_subject(), 'delete' );
-      $this->removable = $session->is_allowed( $db_operation ); 
+      
+      if( $this->editable )
+      {
+        $this->editable = $session->is_allowed(
+          $operation_class_name::get_operation( 'push', $this->get_subject(), 'edit' ) );
+      }
+
+      if( $this->removable )
+      {
+        $this->removable = $session->is_allowed(
+          $operation_class_name::get_operation( 'push', $this->get_subject(), 'delete' ) );
+      }
+
       if( $this->removable ) $this->add_action( 'remove', 'Remove', NULL,
         sprintf( 'Removes the %s, but only if it is not being used by the system',
                  str_replace( '_', ' ', $this->get_subject() ) ) );
 
-      $this->set_heading( 'Viewing '.$this->get_subject().' details' );
+      if( is_null( $this->get_heading() ) )
+        $this->set_heading( 'Viewing '.$this->get_subject().' details' );
     }
     else // 'add' == $this->get_name()
     {
       $this->addable = true;
       $this->editable = false;
       $this->removable = false;
-      $this->set_heading( 'Creating a new '.$this->get_subject() );
+      if( is_null( $this->get_heading() ) )
+        $this->set_heading( 'Creating a new '.$this->get_subject() );
     }
   }
   
@@ -341,14 +352,14 @@ abstract class base_view extends base_record implements actionable
    * @var boolean
    * @access private
    */
-  private $editable = false;
+  private $editable = true;
 
   /**
    * When in view mode, determines whether a remove button should be available.
    * @var boolean
    * @access private
    */
-   private $removable = false;
+   private $removable = true;
 
   /**
    * Used by the add mode to display add/cancel buttons.
