@@ -28,55 +28,18 @@ abstract class base_list extends \cenozo\ui\pull
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'list', $args );
-    $this->process_restriction();
   }
 
   /**
-   * Returns a list of all records in the list.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access public
-   */
-  public function finish()
-  {
-    $modifier = lib::create( 'database\modifier' );
-    foreach( $this->restrictions as $restrict )
-      $modifier->where( $restrict['column'], $restrict['operator'], $restrict['value'] );
-
-    $limit = $this->get_argument( 'limit', NULL );
-    $offset = $this->get_argument( 'offset', 0 );
-    if( !is_null( $limit ) ) $modifier->limit( $limit, $offset );
-
-    $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
-    $list = array();
-
-    foreach( $class_name::select( $modifier ) as $record )
-      $list[] = $this->process_record( $record );
-
-    return $list;
-  }
-
-  /**
-   * This method is called for each record in the list.  It is meant to be extended in order
-   * to add extra details which this base class may not provide.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\record $record
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
    * @access protected
    */
-  protected function process_record( $record )
+  protected function prepare()
   {
-    $item = array();
-    foreach( $record->get_column_names() as $column ) $item[$column] = $record->$column;
-    return $item;
-  }
+    parent::prepare();
 
-  /**
-   * Processes the restrictions argument, preparing restrictions for a database modifier
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function process_restriction()
-  {
     $this->restrictions = array();
     $restrictions = $this->get_argument( 'restrictions', array() );
     
@@ -124,6 +87,46 @@ abstract class base_list extends \cenozo\ui\pull
     }
   }
   
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $modifier = lib::create( 'database\modifier' );
+    foreach( $this->restrictions as $restrict )
+      $modifier->where( $restrict['column'], $restrict['operator'], $restrict['value'] );
+
+    $limit = $this->get_argument( 'limit', NULL );
+    $offset = $this->get_argument( 'offset', 0 );
+    if( !is_null( $limit ) ) $modifier->limit( $limit, $offset );
+
+    $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
+    $this->data = array();
+
+    foreach( $class_name::select( $modifier ) as $record )
+      $this->data[] = $this->process_record( $record );
+  }
+
+  /**
+   * This method is called for each record in the list.  It is meant to be extended in order
+   * to add extra details which this base class may not provide.
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @param database\record $record
+   * @return array
+   * @access protected
+   */
+  protected function process_record( $record )
+  {
+    $item = array();
+    foreach( $record->get_column_names() as $column ) $item[$column] = $record->$column;
+    return $item;
+  }
+
   /**
    * Lists are always returned in JSON format.
    * 

@@ -28,16 +28,11 @@ class self_settings extends \cenozo\ui\widget\self_settings
     parent::__construct( $args );
   }
 
-  /**
-   * Finish setting the variables in a widget.
-   * 
-   * Defines all variables which need to be set for the associated template.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
+  // TODO: document
+  protected function prepare()
   {
-    parent::finish();
+    parent::prepare();
+
     $this->set_variable( 'version', '[special]' );
   }
 }

@@ -33,9 +33,9 @@ class system_message_edit extends base_edit
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function finish()
   {
     // make sure that only top tier roles can edit system messages not belonging to the current site
     $session = lib::create( 'business\session' );

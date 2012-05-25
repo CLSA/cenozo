@@ -73,6 +73,7 @@ class cenozo_manager extends \cenozo\factory
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
+    $request->addHeaders( array( 'application_name' => APPNAME ) );
     $request->setOptions(
       array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] ) );
     
@@ -114,6 +115,7 @@ class cenozo_manager extends \cenozo\factory
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
+    $request->addHeaders( array( 'application_name' => APPNAME ) );
     $request->setOptions(
       array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] ) );
 
@@ -124,16 +126,8 @@ class cenozo_manager extends \cenozo\factory
     // request the current site and role
     $this->set_site_and_role( $arguments );
     $request->setPostFields( $arguments );
-    
-    try
-    {
-      static::send( $request );
-    }
-    catch( \Exception $e )
-    {
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Unable to send request to push/%s/%s', $subject, $name ), __METHOD__, $e );
-    }
+
+    static::send( $request );
   }
 
   /**
@@ -150,16 +144,21 @@ class cenozo_manager extends \cenozo\factory
     $code = $message->getResponseCode();
 
     if( 400 == $code )
-    { // duplicate cenozo exception
+    { // pass on the exception which was thrown by the service
       $body = json_decode( $message->body );
-      throw lib::create( 'exception\cenozo_service',
-        $body->error_type, $body->error_code, $body->error_message );
+      
+      $number = preg_replace( '/[^0-9]/', '', $body->error_code );
+
+      throw 'Notice' == $body->error_type
+         ? lib::create( 'exception\notice', $body->error_message, $number - 400000 )
+         : lib::create( 'exception\cenozo_service',
+             $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
     { // A non-cenozo error has happened
       throw lib::create( 'exception\runtime', sprintf(
         'Unable to connect to Cenozo service at %s (code: %s)',
-        '',
+        $base_url,
         $code ), __METHOD__ );
     }
 

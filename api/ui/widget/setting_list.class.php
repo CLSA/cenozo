@@ -28,7 +28,19 @@ class setting_list extends base_list
   public function __construct( $args )
   {
     parent::__construct( 'setting', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $is_mid_tier = 2 == lib::create( 'business\session' )->get_role()->tier;
 
     $this->add_column( 'category', 'string', 'Category', true );
@@ -39,14 +51,14 @@ class setting_list extends base_list
   }
 
   /**
-   * Set the rows array needed by the template.
+   * Defines all rows in the list.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $session = lib::create( 'business\session' );
     $is_mid_tier = 2 == $session->get_role()->tier;
@@ -76,8 +88,6 @@ class setting_list extends base_list
                  'description' => $record->description ) );
       }
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>

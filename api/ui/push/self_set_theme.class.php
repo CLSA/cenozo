@@ -34,9 +34,9 @@ class self_set_theme extends \cenozo\ui\push
   /**
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function finish()
   {
     $session = lib::create( 'business\session' );
     $session->get_user()->theme = $this->theme_name;

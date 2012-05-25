@@ -29,24 +29,21 @@ abstract class base_primary extends base_record
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'primary', $args );
-    
-    // make sure we have an id (we don't actually need to use it since the parent does)
-    $this->get_argument( 'id' );
   }
 
   /**
-   * Returns the data provided by this pull operation.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return associative array
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
-    $data = array();
+    parent::execute();
+
+    $this->data = array();
     foreach( $this->get_record()->get_column_names() as $column )
-      $data[ $column ] = $this->get_record()->$column;
-    return $data;
+      $this->data[ $column ] = $this->get_record()->$column;
   }
 
   /**

@@ -28,18 +28,31 @@ class self_menu extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'menu', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->show_heading( false );
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $util_class_name = lib::get_class_name( 'util' );
 

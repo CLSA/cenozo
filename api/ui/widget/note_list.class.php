@@ -31,15 +31,14 @@ class note_list extends \cenozo\ui\widget
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all rows in the list.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $util_class_name = lib::get_class_name( 'util' );
 

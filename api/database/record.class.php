@@ -40,7 +40,7 @@ abstract class record extends \cenozo\base_object
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw lib::create( 'exception\runtime',
         "No column names returned for table ".static::get_table_name(), __METHOD__ );
-    
+
     // set the default value for all columns
     foreach( $columns as $name )
     {
@@ -60,7 +60,7 @@ abstract class record extends \cenozo\base_object
         $this->column_values[$name] = $default;
       }
     }
-    
+
     if( NULL != $id )
     {
       // make sure this table has an id column as the primary key
@@ -74,28 +74,12 @@ abstract class record extends \cenozo\base_object
       }
       $this->column_values[static::get_primary_key_name()] = intval( $id );
     }
-    
+
     // now load the data from the database
     // (this gets skipped if a primary key has not been set)
     $this->load();
   }
-  
-  /**
-   * Destructor
-   * 
-   * The destructor will save the record to the database if auto-saving is on and the record
-   * already exists in the database (new records must explicitely be saved to be added to the
-   * database).
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function __destruct()
-  {
-    // save to the database if auto-saving is on
-    if( self::$auto_save && isset( $this->column_values[static::get_primary_key_name()] ) )
-      $this->save();
-  }
-  
+
   /**
    * Loads the record from the database.
    * 
@@ -143,7 +127,7 @@ abstract class record extends \cenozo\base_object
       }
     }
   }
-  
+
   /**
    * Saves the record to the database.
    * 
@@ -962,25 +946,131 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * Add a customized join definition between this and another table.
-   * 
-   * Joins are automatically created when tables have direct 1-to-1, 1-to-N or N-to-N
-   * relationships.  Use this method to define extra joins such as those that span multiple
-   * tables.
+   * Returns a unique key in the form of an array given a primary key value.
+   * The returned array will have a value for every column which is included in the unique key.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $table The name of the table to join to.
-   * @param database\modifier $modifier The modifier necessary to join the table.
-   * @param boolean $override Whether to replace an existing join to the table.
-   * @access protected
+   * @param int $key A primary key value for the table.
+   * @return associative array
+   * @static
+   * @access public
    */
-  protected static function customize_join( $table, $modifier, $override = false )
+  public static function get_unique_from_primary_key( $key )
   {
-    if( !array_key_exists( get_called_class(), self::$custom_join_list ) )
-      self::$custom_join_list[get_called_class()] = array();
+    $key = intval( $key );
+    if( 0 == $key ) return NULL;
 
-    if( !array_key_exists( $table, self::$custom_join_list[get_called_class()] ) || $override )
-      self::$custom_join_list[get_called_class()][$table] = $modifier;
+    $record = new static( $key );
+    $unique_key_array = array();
+    foreach( static::get_unique_key_columns() as $column )
+    {
+      // if the column is a foreign key, then get the unique key from the corresponding record
+      if( substr( $column, -3 ) == '_id' )
+      {
+        $subject = substr( $column, 0, -3 );
+        $class_name = lib::get_class_name( 'database\\'.$subject );
+        $unique_key_array[$column] =
+          $class_name::get_unique_from_primary_key( $record->$column );
+      }
+      else // otherwise just set the value of the column
+      {
+        $unique_key_array[$column] = $record->$column;
+      }
+    }
+    return $unique_key_array;
+  }
+
+  /**
+   * Returns a primary key value given a unique key array.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param associative array
+   * @return int
+   * @static
+   * @access public
+   */
+  public static function get_primary_from_unique_key( $key )
+  {
+    // we may have a stdObject, so convert to an array if we do
+    if( is_object( $key ) ) $key = (array) $key;
+
+    if( !is_array( $key ) ) return NULL;
+
+    // build the modifier for record selection
+    $modifier = lib::create( 'database\modifier' );
+    foreach( static::get_unique_key_columns() as $column )
+    {
+      if( !array_key_exists( $column, $key ) )
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Missing column %s from unique key.', $column ),
+          __METHOD__ );
+
+      if( is_array( $key[$column] ) || is_object( $key[$column] ) )
+      {
+        $subject = substr( $column, 0, -3 );
+        $class_name = lib::get_class_name( 'database\\'.$subject );
+        $modifier->where( $column, '=', $class_name::get_primary_from_unique_key( $key[$column] ) );
+      }
+      else // otherwise just add the value to the modifier
+      {
+        $modifier->where( $column, '=', $key[$column] );
+      }
+    }
+
+    $sql = sprintf( 'SELECT id FROM %s %s', static::get_table_name(), $modifier->get_sql() );
+    $id = static::db()->get_one( $sql );
+
+    if( is_null( $id ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Load failed to find record for %s using columns "%s".',
+                 static::get_table_name(),
+                 implode( static::get_unique_key_columns(), ', ' ) ),
+        __METHOD__ );
+
+    return $id;
+  }
+  
+  /**
+   * Returns an array of columns which define this table's unique key.  If the table has more than
+   * one unique key then primary unique key is used, or the first if no primary unique key has
+   * been set.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array( string )
+   * @static
+   * @access public
+   */
+  public static function get_unique_key_columns()
+  {
+    // determine the column list from the unique keys (possibly the primary one) or fall
+    // back on the full column list if no unique key exists
+    $column_list = array();
+    $unique_keys = static::db()->get_unique_keys( static::get_table_name() );
+    if( count( $unique_keys ) )
+    {
+      $primary_unique_key = static::get_primary_unique_key();
+      if( !is_null( $primary_unique_key ) )
+      {
+        // make sure the primary unique key exists
+        if( !array_key_exists( $primary_unique_key, $unique_keys ) )
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Primary unique key %s does not exist', $primary_unique_key_list ),
+            __METHOD__ );
+
+        $column_list = $unique_keys[$primary_unique_key];
+      }
+      else // no primary unique key, just grab the first one
+      {
+        $column_list = current( $unique_keys );
+      }
+    }
+    else
+    {
+      $column_list = static::db()->get_column_names( static::get_table_name() );
+      $column_list = array_diff( $column_list, array( 'id' ) );
+    }
+
+    return $column_list;
   }
 
   /**
@@ -1135,18 +1225,59 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * Add a customized join definition between this and another table.
+   * 
+   * Joins are automatically created when tables have direct 1-to-1, 1-to-N or N-to-N
+   * relationships.  Use this method to define extra joins such as those that span multiple
+   * tables.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table The name of the table to join to.
+   * @param database\modifier $modifier The modifier necessary to join the table.
+   * @param boolean $override Whether to replace an existing join to the table.
+   * @access public
+   */
+  public static function customize_join( $table, $modifier, $override = false )
+  {
+    if( !array_key_exists( get_called_class(), self::$custom_join_list ) )
+      self::$custom_join_list[get_called_class()] = array();
+
+    if( !array_key_exists( $table, self::$custom_join_list[get_called_class()] ) || $override )
+      self::$custom_join_list[get_called_class()][$table] = $modifier;
+  }
+
+  /**
+   * Defines which primary unique key to use when get_unique_key_columns() is called.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name The database name for the unique key.
+   * @static
+   * @access public
+   */
+  public static function set_primary_unique_key( $name )
+  {
+    if( !array_key_exists( get_called_class(), self::$primary_unique_key_list ) )
+      self::$primary_unique_key_list[get_called_class()] = $name;
+  }
+
+  /**
+   * Returns the primary unique key to use when get_unique_key_columns() is called.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function get_primary_unique_key()
+  {
+    return array_key_exists( get_called_class(), self::$primary_unique_key_list )
+         ?  self::$primary_unique_key_list[get_called_class()] : NULL;
+  }
+
+  /**
    * Determines whether the record is read only (no modifying the database).
    * @var boolean
    * @access protected
    */
   protected $read_only = false;
-
-  /**
-   * The name of the table's primary key column.
-   * @var string
-   * @access protected
-   */
-  protected static $primary_key_name = 'id';
 
   /**
    * Holds all table column values in an associate array where key=>value is
@@ -1157,15 +1288,6 @@ abstract class record extends \cenozo\base_object
   private $column_values = array();
 
   /**
-   * Determines whether or not to write changes to the database on deletion.
-   * This value affects ALL records.
-   * @var boolean
-   * @static
-   * @access public
-   */
-  public static $auto_save = false;
-
-  /**
    * Determines whether or not to include create_timestamp and update_timestamp when writing
    * records to the database.
    * @var boolean
@@ -1173,6 +1295,21 @@ abstract class record extends \cenozo\base_object
    * @access protected
    */
   protected $include_timestamps = true;
+
+  /**
+   * The name of the table's primary key column.
+   * @var string
+   * @access protected
+   */
+  protected static $primary_key_name = 'id';
+
+  /**
+   * Defines which unique key to use when asking to convert primary and unique keys.
+   * @var array( string )
+   * @static
+   * @access private
+   */
+  private static $primary_unique_key_list = array();
 
   /**
    * An associative array containing all of the custom joins.  The key is the name of the table

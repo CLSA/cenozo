@@ -15,7 +15,7 @@ use cenozo\lib, cenozo\log;
  * 
  * @package cenozo\ui
  */
-class user_new_access extends base_new_record
+class user_new_access extends base_new_access
 {
   /**
    * Constructor.
@@ -25,7 +25,7 @@ class user_new_access extends base_new_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'user', 'access', $args );
+    parent::__construct( 'user', $args );
   }
 }
 ?>

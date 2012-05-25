@@ -220,6 +220,9 @@ final class log extends singleton
     if( ( PEAR_LOG_NOTICE != $type && PEAR_LOG_DEBUG != $type ) ||
         ( !lib::in_development_mode() && PEAR_LOG_INFO ) )
     {
+      // convert non-strings to a string
+      if( !is_string( $message ) ) $message = print_r( $message, true );
+
       if( !preg_match( '/{main}$/', $message ) )
       {
         $backtrace = $this->backtrace();

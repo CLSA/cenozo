@@ -32,9 +32,9 @@ class system_message_delete extends base_delete
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function finish()
   {
     // make sure that only top tier roles can remove system messages not belonging to the
     // current site

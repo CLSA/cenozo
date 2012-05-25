@@ -28,7 +28,19 @@ class setting_view extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'setting', 'view', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $is_mid_tier = 2 == lib::create( 'business\session' )->get_role()->tier;
 
     // create an associative array with everything we want to display about the setting
@@ -49,14 +61,14 @@ class setting_view extends base_view
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $session = lib::create( 'business\session' );
     $is_mid_tier = 2 == $session->get_role()->tier;
@@ -76,8 +88,6 @@ class setting_view extends base_view
     }
     $this->set_item( 'value', $this->get_record()->value, true );
     $this->set_item( 'description', $this->get_record()->description, false );
-
-    $this->finish_setting_items();
   }
 }
 ?>

@@ -33,9 +33,9 @@ class setting_edit extends base_edit
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\runtime
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function finish()
   {
     // check to see if site_value is in the column list
     $columns = $this->get_argument( 'columns', array() );

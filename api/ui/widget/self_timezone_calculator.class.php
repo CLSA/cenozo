@@ -28,18 +28,31 @@ class self_timezone_calculator extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'timezone_calculator', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->show_heading( false );
   }
 
   /**
-   * Define which timezones should be included in the tool
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $util_class_name = lib::get_class_name( 'util' );
 

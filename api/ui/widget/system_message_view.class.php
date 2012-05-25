@@ -28,6 +28,18 @@ class system_message_view extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'system_message', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     // define all columns defining this record
 
@@ -41,14 +53,14 @@ class system_message_view extends base_view
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $site_class_name = lib::get_class_name( 'database\site' );
     $role_class_name = lib::get_class_name( 'database\role' );
@@ -77,8 +89,6 @@ class system_message_view extends base_view
     $this->set_item( 'role_id', $this->get_record()->role_id, false, $roles );
     $this->set_item( 'title', $this->get_record()->title, true );
     $this->set_item( 'note', $this->get_record()->note, true );
-
-    $this->finish_setting_items();
   }
 }
 ?>

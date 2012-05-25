@@ -33,9 +33,9 @@ class user_reset_password extends base_record
   /**
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function finish()
   {
     $db_user = $this->get_record();
     $ldap_manager = lib::create( 'business\ldap_manager' );

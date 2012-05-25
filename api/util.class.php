@@ -536,5 +536,19 @@ class util
       '/^(19|20)\d\d-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/',
       $date );
   }
+
+  /**
+   * Validates a north-american phone number in XXX-XXX-XXXX format.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $number
+   * @return boolean
+   * @access public
+   */
+  public static function validate_phone_number( $number )
+  {
+    return preg_match(
+      '/[2-9](1[02-9]|[02-8]1|[02-8][02-9])-[2-9](1[02-9]|[02-9]1|[02-9]{2})-[0-9]{4}/',
+      $number );
+  }
 }
 ?>

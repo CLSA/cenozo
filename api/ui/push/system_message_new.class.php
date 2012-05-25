@@ -33,9 +33,9 @@ class system_message_new extends base_new
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function finish()
   {
     $columns = $this->get_argument( 'columns' );
 

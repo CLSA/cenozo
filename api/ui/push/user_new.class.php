@@ -21,35 +21,53 @@ class user_new extends base_new
   /**
    * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args Push arguments.  This may include "ignore_existing" which will ignore any
-   *                    errors caused by existing user conflicts.
+   * @param array $args Push arguments.
    * @access public
    */
   public function __construct( $args )
   {
-    // remove the role id from the columns and use it to create the user's initial role
-    if( isset( $args['columns'] ) &&
-        isset( $args['columns']['role_id'] ) && isset( $args['columns']['site_id'] ) )
-    {
-      $this->role_id = $args['columns']['role_id'];
-      $this->site_id = $args['columns']['site_id'];
-      unset( $args['columns']['role_id'] );
-      unset( $args['columns']['site_id'] );
-    }
-
     parent::__construct( 'user', $args );
   }
 
   /**
-   * Executes the push.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   * @throws exception\notice
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
+    parent::prepare();
+
     $columns = $this->get_argument( 'columns' );
+
+    // remove the role and site ids from the columns and store them as ivars
+    if( array_key_exists( 'role_id', $columns ) )
+    {
+      $this->role_id = $columns['role_id'];
+      unset( $this->arguments['columns']['role_id'] );
+    }
     
+    if( array_key_exists( 'site_id', $columns ) )
+    {
+      $this->site_id = $columns['site_id'];
+      unset( $this->arguments['columns']['site_id'] );
+    }
+  }
+
+  /**
+   * Validate the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function validate()
+  {
+    parent::validate();
+
+    $columns = $this->get_argument( 'columns' );
+
     // make sure the name, first name and last name are not blank
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
       throw lib::create( 'exception\notice',
@@ -60,6 +78,19 @@ class user_new extends base_new
     if( !array_key_exists( 'last_name', $columns ) || 0 == strlen( $columns['last_name'] ) )
       throw lib::create( 'exception\notice',
         'The user\'s last name cannot be left blank.', __METHOD__ );
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $columns = $this->get_argument( 'columns' );
 
     // add the user to ldap
     $ldap_manager = lib::create( 'business\ldap_manager' );
@@ -74,17 +105,8 @@ class user_new extends base_new
       if( !$e->is_already_exists() ) throw $e;
     }
 
-    try
-    {
-      parent::finish();
-    }
-    catch( \cenozo\exception\notice $e )
-    { // ignore unique error if "ignore_existing" argument is true
-      $previous = $e->get_previous();
-      if( is_null( $previous ) ||
-          !$previous->is_duplicate_entry() ||
-          !$this->get_argument( 'ignore_existing', false ) ) throw $e;
-    }
+    // create the database record
+    parent::execute();
 
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user
@@ -100,9 +122,9 @@ class user_new extends base_new
         $db_access->save();
       }
       catch( \cenozo\exception\database $e )
-      { // ignore unique error if "ignore_existing" argument is true
+      { // ignore unique error if this was a machine request
         if( !$e->is_duplicate_entry() ||
-            !$this->get_argument( 'ignore_existing', false ) ) throw $e;
+            !$this->get_machine_request_received() ) throw $e;
       }
     }
   }

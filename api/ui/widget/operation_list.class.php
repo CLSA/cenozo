@@ -28,7 +28,19 @@ class operation_list extends base_list
   public function __construct( $args )
   {
     parent::__construct( 'operation', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->add_column( 'type', 'string', 'type', true );
     $this->add_column( 'subject', 'string', 'subject', true );
     $this->add_column( 'name', 'string', 'name', true );
@@ -37,14 +49,14 @@ class operation_list extends base_list
   }
 
   /**
-   * Set the rows array needed by the template.
+   * Defines all rows in the list.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     foreach( $this->get_record_list() as $record )
     {
@@ -55,8 +67,6 @@ class operation_list extends base_list
                'restricted' => $record->restricted,
                'description' => $record->description ) );
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>
