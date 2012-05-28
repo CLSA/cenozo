@@ -48,29 +48,15 @@ class user_view extends base_view
     $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
     
-    try
-    {
-      // create the access sub-list widget
-      $this->access_list = lib::create( 'ui\widget\access_list', $this->arguments );
-      $this->access_list->set_parent( $this );
-      $this->access_list->set_heading( 'User\'s site access list' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->access_list = NULL;
-    }
+    // create the access sub-list widget
+    $this->access_list = lib::create( 'ui\widget\access_list', $this->arguments );
+    $this->access_list->set_parent( $this );
+    $this->access_list->set_heading( 'User\'s site access list' );
 
-    try
-    {
-      // create the activity sub-list widget
-      $this->activity_list = lib::create( 'ui\widget\activity_list', $this->arguments );
-      $this->activity_list->set_parent( $this );
-      $this->activity_list->set_heading( 'User activity' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->activity_list = NULL;
-    }
+    // create the activity sub-list widget
+    $this->activity_list = lib::create( 'ui\widget\activity_list', $this->arguments );
+    $this->activity_list->set_parent( $this );
+    $this->activity_list->set_heading( 'User activity' );
   }
 
   /**
@@ -107,17 +93,19 @@ class user_view extends base_view
       $this->set_variable( 'reset_password', true );
     }
     
-    if( !is_null( $this->access_list ) )
+    try
     {
       $this->access_list->process();
       $this->set_variable( 'access_list', $this->access_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
 
-    if( !is_null( $this->activity_list ) )
+    try
     {
       $this->activity_list->process();
       $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
   
   /**

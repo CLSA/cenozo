@@ -44,18 +44,11 @@ class base_add_access extends base_add_list
     
     $this->show_heading( false );
     
-    try
-    {
-      // build the role list widget
-      $this->role_list = lib::create( 'ui\widget\role_list', $this->arguments );
-      $this->role_list->set_parent( $this );
-      $this->role_list->set_checkable( true );
-      $this->role_list->set_heading( 'Select roles to grant' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->role_list = NULL;
-    }
+    // build the role list widget
+    $this->role_list = lib::create( 'ui\widget\role_list', $this->arguments );
+    $this->role_list->set_parent( $this );
+    $this->role_list->set_checkable( true );
+    $this->role_list->set_heading( 'Select roles to grant' );
   }
 
   /**
@@ -68,11 +61,12 @@ class base_add_access extends base_add_list
   {
     parent::setup();
 
-    if( !is_null( $this->role_list ) )
+    try
     {
       $this->role_list->process();
       $this->set_variable( 'role_list', $this->role_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
   
   /**
