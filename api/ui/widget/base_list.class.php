@@ -183,10 +183,10 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
                         : $this->determine_record_count( $modifier );
 
     // make sure the page is valid, then set the rows array based on the page
-    $max_page = ceil( $this->record_count / $this->items_per_page );
-    if( 1 > $max_page ) $max_page = 1; // lower limit
+    $this->max_page = ceil( $this->record_count / $this->items_per_page );
+    if( 1 > $this->max_page ) $this->max_page = 1; // lower limit
     if( 1 > $this->page ) $this->page = 1; // lower limit
-    if( $this->page > $max_page ) $this->page = $max_page; // upper limit
+    if( $this->page > $this->max_page ) $this->page = $this->max_page; // upper limit
     
     // if there is a rank, datetime, date or time column set it as the default sort column
     if( !$this->sort_column )
@@ -197,7 +197,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
       $time_column = NULL;
       foreach( $this->columns as $name => $column )
       {
-        if( !array_key_exists( 'sortable', $column ) || $column['sortable'] )
+        if( array_key_exists( 'sortable', $column ) && $column['sortable'] )
         {
           if( preg_match( '/rank/', $name ) ) $rank_column = $name;
           else if( preg_match( '/datetime/', $name ) ) $datetime_column = $name;
@@ -237,6 +237,17 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
       $this->parent && method_exists( $this->parent, $method_name )
       ? $this->parent->$method_name( $modifier )
       : $this->determine_record_list( $modifier );
+  }
+  
+  /**
+   * This method executes the operation's purpose.  All operations must implement this method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
 
     // define all template variables for this widget
     $this->set_variable( 'checkable', $this->checkable );
@@ -250,19 +261,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     $this->set_variable( 'sort_column', $this->sort_column );
     $this->set_variable( 'sort_desc', $this->sort_desc );
     $this->set_variable( 'restrictions', $this->restrictions );
-    $this->set_variable( 'max_page', $max_page );
-  }
-  
-  /**
-   * This method executes the operation's purpose.  All operations must implement this method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function execute()
-  {
-    parent::execute();
-
+    $this->set_variable( 'max_page', $this->max_page );
     $this->set_variable( 'rows', $this->rows );
     $this->set_variable( 'actions', $this->actions );
   }
@@ -530,6 +529,13 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    * @access private
    */
   private $page = 1;
+  
+  /**
+   * The maximum number of pages required to display all records.
+   * @var int
+   * @access private
+   */
+  private $max_page = 0;
   
   /**
    * Which column to sort by, or none if set to an empty string.

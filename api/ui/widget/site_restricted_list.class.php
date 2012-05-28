@@ -55,8 +55,14 @@ abstract class site_restricted_list extends base_list
     }
     
     // if restricted, show the site's name in the heading
-    $predicate = is_null( $this->db_restrict_site ) ? 'all sites' : $this->db_restrict_site->name;
-    $this->set_heading( $this->get_heading().' for '.$predicate );
+    if( is_null( $this->get_heading() ) )
+    {
+      $this->set_heading(
+        sprintf( '%s list for %s',
+                 $this->get_subject(),
+                 is_null( $this->db_restrict_site ) ?
+                   'all sites' : $this->db_restrict_site->name ) );
+    }
   }
   
   /**
