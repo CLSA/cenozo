@@ -112,8 +112,8 @@
             $( "#" + widget_full + "__end_time" ).val( columns.end_time );
           }
       
-          if( 'boolean' != type && 'enum' != type )
-            $( "#old_" + element.attr( 'id' ) ).val( new_value );
+          // update the old value
+          $( "#old_" + element.attr( 'id' ) ).val( new_value );
 
           {% block post_edit %}{% endblock post_edit %}
 
