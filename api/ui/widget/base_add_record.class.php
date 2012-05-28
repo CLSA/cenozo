@@ -52,7 +52,6 @@ abstract class base_add_record extends base_record
     $this->add_widget =
       lib::create( 'ui\widget\\'.$this->child_subject.'_add', $this->arguments );
     $this->add_widget->set_parent( $this );
-    $this->list_widget->set_checkable( true );
 
     $this->add_widget->set_heading(
       sprintf( 'Add a new %s to the %s',
