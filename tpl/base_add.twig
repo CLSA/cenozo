@@ -157,8 +157,8 @@
                       style="width: 100%"
                       class="ui-state-default">
                 {% for value_id, value in entry.enum %}
-                <option{{ entry_value == value_id ? ' selected' : '' }}
-                        value="{{ 'NULL' == value_id ? '' : value_id }}">{{ value }}</option>
+                  <option{{ entry_value == value_id ? ' selected' : '' }}
+                          value="{{ 'NULL' == value_id ? '' : value_id }}">{{ value }}</option>
                 {% endfor %}
               </select>
       
