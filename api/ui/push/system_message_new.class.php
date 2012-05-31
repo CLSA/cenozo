@@ -30,24 +30,25 @@ class system_message_new extends base_new
   }
 
   /**
-   * Executes the push.
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\notice
    * @access protected
    */
-  protected function finish()
+  protected function validate()
   {
+    parent::validate();
+
     $columns = $this->get_argument( 'columns' );
 
     // make sure the title and note are not blank
     if( !array_key_exists( 'title', $columns ) || 0 == strlen( $columns['title'] ) )
       throw lib::create( 'exception\notice',
         'The message\'s title cannot be left blank.', __METHOD__ );
+
     if( !array_key_exists( 'note', $columns ) || 0 == strlen( $columns['note'] ) )
       throw lib::create( 'exception\notice',
         'The message\'s note cannot be left blank.', __METHOD__ );
-
-    parent::finish();
   }
 }
 ?>

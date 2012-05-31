@@ -31,25 +31,17 @@ class self_set_site extends \cenozo\ui\push
   }
   
   /**
-   * Executes the push.
+   * Validate the operation.  If validation fails this method will throw a notice exception.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
    * @access protected
    */
-  protected function finish()
+  protected function validate()
   {
-    try
-    {
-      $db_site = lib::create( 'database\site', $this->get_argument( 'id' ) );
-    }
-    catch( \cenozo\exception\runtime $e )
-    {
-      throw lib::create( 'exception\argument', 'id', $this->get_argument( 'id' ), __METHOD__, $e );
-    }
-    
-    $session = lib::create( 'business\session' );
-    $db_user = $session->get_user();
-    $db_role = NULL;
+    parent::validate();
+
+    $db_site = lib::create( 'database\site', $this->get_argument( 'id' ) );
+    $db_user = lib::create( 'business\session' )->get_user();
 
     $role_mod = lib::create( 'database\modifier' );
     $role_mod->where( 'site_id', '=', $db_site->id );
@@ -57,7 +49,23 @@ class self_set_site extends \cenozo\ui\push
     if( 0 == count( $role_list ) )
       throw lib::create( 'exception\runtime',
         'User does not have access to the given site.',  __METHOD__ );
-  
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $session = lib::create( 'business\session' );
+    $db_site = lib::create( 'database\site', $this->get_argument( 'id' ) );
+    $db_user = $session->get_user();
+    $db_role = NULL;
+
     // try loading the same role as the last time this site was accessed
     $activity_mod = lib::create( 'database\modifier' );
     $activity_mod->where( 'user_id', '=', $db_user->id );

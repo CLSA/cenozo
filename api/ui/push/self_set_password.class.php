@@ -31,20 +31,23 @@ class self_set_password extends \cenozo\ui\push
   }
   
   /**
-   * Executes the push.
+   * Validate the operation.  If validation fails this method will throw a notice exception.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
    * @access protected
    */
-  protected function finish()
+  protected function validate()
   {
+    parent::validate();
+
+    $ldap_manager = lib::create( 'business\ldap_manager' );
     $db_user = lib::create( 'business\session' )->get_user();
+
     $old = $this->get_argument( 'old', 'password' );
     $new = $this->get_argument( 'new' );
     $confirm = $this->get_argument( 'confirm' );
     
     // make sure the old password is correct
-    $ldap_manager = lib::create( 'business\ldap_manager' );
     if( !$ldap_manager->validate_user( $db_user->name, $old ) )
       throw lib::create( 'exception\notice',
         'The password you have provided is incorrect.', __METHOD__ );
@@ -61,6 +64,21 @@ class self_set_password extends \cenozo\ui\push
     if( $new != $confirm )
       throw lib::create( 'exception\notice',
         'The confirmed password does not match your new password.', __METHOD__ );
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+  
+    $ldap_manager = lib::create( 'business\ldap_manager' );
+    $db_user = lib::create( 'business\session' )->get_user();
+    $new = $this->get_argument( 'new' );
 
     $ldap_manager->set_user_password( $db_user->name, $new );
   }
