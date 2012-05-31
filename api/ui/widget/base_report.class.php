@@ -34,6 +34,20 @@ abstract class base_report extends \cenozo\ui\widget
     parent::__construct( $subject, 'report', $args );
   }
 
+  /** 
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
+    $this->set_heading( $this->get_subject().' '.$this->get_name() );
+  }
+
   /**
    * Sets up the operation with any pre-execution instructions that may be necessary.
    * 

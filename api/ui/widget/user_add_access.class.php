@@ -46,7 +46,7 @@ class user_add_access extends base_add_access
     if( 3 == $session->get_role()->tier )
     {
       // This widget is special.  We need a list of sites and roles, not an access list, so we
-      // override the construction of the list_widget performed by base_add_list's constructor.
+      // override the construction of the list_widget performed by the parent method
       $this->list_widget = lib::create( 'ui\widget\site_list', $this->arguments );
       $this->list_widget->set_parent( $this );
       $this->list_widget->set_checkable( true );

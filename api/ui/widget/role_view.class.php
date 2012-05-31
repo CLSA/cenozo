@@ -48,7 +48,6 @@ class role_view extends base_view
     // create the operation sub-list widget
     $this->operation_list = lib::create( 'ui\widget\operation_list', $this->arguments );
     $this->operation_list->set_parent( $this );
-    $this->operation_list->remove_column( 'restricted' );
     $this->operation_list->set_heading( 'Operations belonging to this role' );
   }
 
@@ -70,6 +69,8 @@ class role_view extends base_view
     try
     {
       $this->operation_list->process();
+      $this->operation_list->remove_column( 'restricted' );
+      $this->operation_list->execute();
       $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}

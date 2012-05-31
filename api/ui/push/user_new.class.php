@@ -30,14 +30,14 @@ class user_new extends base_new
   }
 
   /**
-   * Processes arguments, preparing them for the operation.
+   * Sets up the operation with any pre-execution instructions that may be necessary.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
-  protected function prepare()
+  protected function setup()
   {
-    parent::prepare();
+    parent::setup();
 
     $columns = $this->get_argument( 'columns' );
 
