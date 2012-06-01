@@ -31,7 +31,6 @@ abstract class operation extends \cenozo\base_object
    * @param string $subject The subject of the operation.
    * @param string $name The name of the operation.
    * @param array $args An associative array of arguments to be processed by the widgel
-   * @throws excpetion\argument, exception\permission
    * @access public
    */
   public function __construct( $type, $subject, $name, $args )
@@ -88,13 +87,17 @@ abstract class operation extends \cenozo\base_object
    * Validate the operation.  If validation fails this method will throw a notice exception.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws excpetion\argument, exception\permission
    * @access protected
    */
   protected function validate()
   {
-    // throw a permission exception if the user is not allowed to perform this operation
-    if( !lib::create( 'business\session' )->is_allowed( $this->operation_record ) )
-      throw lib::create( 'exception\permission', $this->operation_record, __METHOD__ );
+    if( $this->validate_access )
+    {
+      // throw a permission exception if the user is not allowed to perform this operation
+      if( !lib::create( 'business\session' )->is_allowed( $this->operation_record ) )
+        throw lib::create( 'exception\permission', $this->operation_record, __METHOD__ );
+    }
   }
 
   /**
@@ -222,6 +225,28 @@ abstract class operation extends \cenozo\base_object
   public function get_data() { return $this->data; }
 
   /**
+   * Gets whether to check if the user has access to the operation
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access protected
+   */
+  protected function get_validate_access()
+  {
+    return $this->validate_access;
+  }
+
+  /**
+   * Sets whether to check if the user has access to the operation
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $access
+   * @access protected
+   */
+  protected function set_validate_access( $access )
+  {
+    $this->validate_access = $access;
+  }
+
+  /**
    * The operation's heading.
    * @var string
    * @access protected
@@ -248,5 +273,12 @@ abstract class operation extends \cenozo\base_object
    * @access protected
    */
   protected $data = NULL;
+
+  /**
+   * Whether to check if the user's access has permission to perform this operation
+   * @var boolean
+   * @access private
+   */
+  private $validate_access = true;
 }
 ?>
