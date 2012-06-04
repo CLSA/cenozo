@@ -59,8 +59,11 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
 
     // if the viewable, addable or removable properties have been requested then make sure
     // the appropriate operations are available
-    if( $this->viewable ) $this->viewable =
-      $operation_class_name::get_operation( 'widget', $this->get_subject(), 'view' );
+    if( $this->viewable )
+    {
+      $this->viewable = $session->is_allowed(
+        $operation_class_name::get_operation( 'widget', $this->get_subject(), 'view' ) );
+    }
 
     if( $this->addable )
     {

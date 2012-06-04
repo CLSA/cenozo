@@ -168,7 +168,7 @@ class self_menu extends \cenozo\ui\widget
    */
   private $exclude_operations = array(
     'calendar' => array(),
-    'list' => array( 'access', 'operation' ),
+    'list' => array( 'access', 'operation', 'role' ),
     'report' => array() );
 }
 ?>
