@@ -511,9 +511,7 @@
           {% endif %}
         </th>
         {% if addable %}
-          <th><button id="{{ widget.full }}_add">
-            add {{ widget.subject_name }}{% if parent.exists %} to {{ parent.subject }}{% endif %}
-          </button></th>
+          <th><button id="{{ widget.full }}_add">add {{ widget.subject_name }}{% if parent.exists %} to {{ parent.subject }}{% endif %}</button></th>
         {% endif %}
       </tr>
     </tfoot>
@@ -550,9 +548,7 @@
             {% if removable %}
               <td>
                 <button class="{{ widget.full }}_remove"
-                        id="{{ widget.full }}_remove_{{ row.id }}">
-                  remove{% if parent.exists %} from {{ parent.subject }}{% endif %}
-                </button>
+                        id="{{ widget.full }}_remove_{{ row.id }}">remove {% if parent.exists %} from {{ parent.subject }}{% endif %}</button>
               </td>
             {% endif %}
           </tr>
