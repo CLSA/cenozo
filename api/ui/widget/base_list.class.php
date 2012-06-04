@@ -332,6 +332,17 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   }
 
   /**
+   * Get whether items in the list can be checked/selected.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_checkable()
+  {
+    return $this->checkable;
+  }
+
+  /**
    * Set whether items in the list can be checked/selected.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
@@ -346,6 +357,17 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   }
 
   /**
+   * Get whether items in the list can be viewed.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_viewable()
+  {
+    return $this->viewable;
+  }
+
+  /**
    * Set whether items in the list can be viewed.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
@@ -357,6 +379,17 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   }
 
   /**
+   * Get whether items in the list can be added.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_addable()
+  {
+    return $this->addable;
+  }
+
+  /**
    * Set whether items in the list can be added.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
@@ -365,6 +398,17 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   public function set_addable( $enable )
   {
     $this->addable = $enable;
+  }
+
+  /**
+   * Get whether items in the list can be removed.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_removable()
+  {
+    return $this->removable;
   }
 
   /**
