@@ -541,14 +541,21 @@ class util
    * Validates a north-american phone number in XXX-XXX-XXXX format.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $number
+   * @param boolean $numeric_only Whether to ignore all non-numeric characters during check
    * @return boolean
    * @access public
    */
-  public static function validate_phone_number( $number )
+  public static function validate_phone_number( $number, $numeric_only = false )
   {
-    return preg_match(
-      '/[2-9](1[02-9]|[02-8]1|[02-8][02-9])-[2-9](1[02-9]|[02-9]1|[02-9]{2})-[0-9]{4}/',
-      $number );
+    $regex = $numeric_only
+           ? '/[2-9](1[02-9]|[02-8]1|[02-8][02-9])[2-9](1[02-9]|[02-9]1|[02-9]{2})[0-9]{4}/'
+           : '/[2-9](1[02-9]|[02-8]1|[02-8][02-9])-[2-9](1[02-9]|[02-9]1|[02-9]{2})-[0-9]{4}/';
+
+    $check_number = $numeric_only
+                  ? preg_replace( '/[^0-9]/', '', $number )
+                  : $number;
+
+    return preg_match( $regex, $check_number );
   }
 }
 ?>
