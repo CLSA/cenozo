@@ -26,10 +26,17 @@
         defaultEventMinutes: 60,
         firstHour: 8,
         header: {
-          left: "month,agendaWeek,agendaDay",
-          center: "title",
-          right: "prev,next today"
+          {% if controls|default(true) %}
+            left: "month,basicWeek,basicDay",
+            center: "title",
+            right: "prev,next today"
+          {% else %}
+            left: "",
+            center: "",
+            right: ""
+          {% endif %}
         },
+        columnFormat: { week: 'ddd' },
         {% block callbacks %}{% endblock callbacks %}
       } );
       
