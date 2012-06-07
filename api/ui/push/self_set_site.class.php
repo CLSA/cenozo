@@ -84,6 +84,9 @@ class self_set_site extends \cenozo\ui\push
     }
     
     // if we don't have a role then get the first role associated with the site
+    $role_mod = lib::create( 'database\modifier' );
+    $role_mod->where( 'site_id', '=', $db_site->id );
+    $role_list = $db_user->get_role_list( $role_mod );
     if( !$db_role ) $db_role = current( $role_list );
 
     $session->set_site_and_role( $db_site, $db_role );
