@@ -536,5 +536,59 @@ class util
       '/^(19|20)\d\d-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/',
       $date );
   }
+
+  // TODO: document
+  public static function json_encode( $arg )
+  {
+    return json_encode( self::utf8_encode( $arg ) );
+  }
+
+  // TODO: document
+  public static function utf8_encode( $arg )
+  {
+    // make a copy (clone if this is an object
+    $encoded_arg = is_object( $arg ) ? clone $arg : $arg;
+
+    if( is_object( $arg ) ) 
+      foreach( get_object_vars( $arg ) as $key => $val )
+        $encoded_arg->$key = self::utf8_encode( $val );
+    else if( is_array( $arg ) ) 
+      foreach( $arg as $key => $val )
+        $encoded_arg[$key] = self::utf8_encode( $val );
+    else if( is_string( $arg ) ) $encoded_arg = utf8_encode( $arg );
+    else $encoded_arg = $arg;
+
+    return $encoded_arg;
+  }
+
+  // TODO: document
+  public static function json_decode( $arg )
+  {
+    return json_decode( self::utf8_decode( $arg ) );
+  }
+
+  // TODO: document
+  public static function utf8_decode( $arg )
+  {
+    // make a copy (clone if this is an object
+    $decoded_arg = is_object( $arg ) ? clone $arg : $arg;
+
+    if( is_object( $arg ) ) 
+      foreach( get_object_vars( $arg ) as $key => $val )
+        $decoded_arg->$key = self::utf8_decode( $val );
+    else if( is_array( $arg ) ) 
+      foreach( $arg as $key => $val )
+        $decoded_arg[$key] = self::utf8_decode( $val );
+    else if( is_string( $arg ) )
+    {
+      // convert to utf8 and remove byte-order-marks (BOM) if present
+      $decoded_arg = mb_convert_encoding( $arg, 'UTF-8', 'ASCII,UTF-8,ISO-8859-1' );
+      if( pack( 'CCC', 0xEF, 0xBB, 0xBF ) == substr( $decoded_arg, 0, 3 ) )
+        $decoded_arg = substr( $decoded_arg, 3 );
+    }
+    else $decoded_arg = $arg;
+
+    return $decoded_arg;
+  }
 }
 ?>
