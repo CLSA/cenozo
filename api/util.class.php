@@ -528,6 +528,7 @@ class util
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $date
    * @return boolean
+   * @static
    * @access public
    */
   public static function validate_date( $date )
@@ -537,38 +538,41 @@ class util
       $date );
   }
 
-  // TODO: document
+  /**
+   * Encodes any variable/object/array into a json string
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $arg
+   * @return string
+   * @static
+   * @access public
+   */
   public static function json_encode( $arg )
   {
-    return json_encode( self::utf8_encode( $arg ) );
+    return json_encode( $arg );
   }
 
-  // TODO: document
-  public static function utf8_encode( $arg )
-  {
-    // make a copy (clone if this is an object
-    $encoded_arg = is_object( $arg ) ? clone $arg : $arg;
-
-    if( is_object( $arg ) ) 
-      foreach( get_object_vars( $arg ) as $key => $val )
-        $encoded_arg->$key = self::utf8_encode( $val );
-    else if( is_array( $arg ) ) 
-      foreach( $arg as $key => $val )
-        $encoded_arg[$key] = self::utf8_encode( $val );
-    else if( is_string( $arg ) ) $encoded_arg = utf8_encode( $arg );
-    else $encoded_arg = $arg;
-
-    return $encoded_arg;
-  }
-
-  // TODO: document
+  /**
+   * Decodes a json string and converts it into the corresponding variable/object/array
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $arg
+   * @return mixed
+   * @static
+   * @access public
+   */
   public static function json_decode( $arg )
   {
-    return json_decode( self::utf8_decode( $arg ) );
+    return json_decode( self::utf8_encode( $arg ) );
   }
 
-  // TODO: document
-  public static function utf8_decode( $arg )
+  /**
+   * Encodes all strings in a variable, object or array to utf8 and removes all byte-order-marks.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $arg
+   * @return mixed
+   * @static
+   * @access public
+   */
+  public static function utf8_encode( $arg )
   {
     // make a copy (clone if this is an object
     $decoded_arg = is_object( $arg ) ? clone $arg : $arg;
