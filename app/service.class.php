@@ -126,6 +126,7 @@ final class service
     $this->settings['path']['CENOZO_TPL'] = $this->settings['path']['CENOZO'].'/tpl';
 
     $this->settings['path']['API'] = $this->settings['path']['APPLICATION'].'/api';
+    $this->settings['path']['DOC'] = $this->settings['path']['APPLICATION'].'/doc';
     $this->settings['path']['TPL'] = $this->settings['path']['APPLICATION'].'/tpl';
 
     // the web directory cannot be extended

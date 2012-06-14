@@ -26,9 +26,18 @@ class report extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function __construct()
+  public function __construct( $filename = NULL)
   {
-    $this->php_excel = new \PHPExcel();
+    if( !is_null( $filename ) )
+    {
+      $reader = new \PHPExcel_Reader_Excel5();
+      $this->php_excel = $reader->load( $filename );
+      $this->php_excel->setActiveSheetIndex( 0 );
+    }
+    else
+    {
+      $this->php_excel = new \PHPExcel();
+    }
     $this->php_excel->getActiveSheet()->getPageSetup()->setHorizontalCentered( true );
   }
   
@@ -87,10 +96,11 @@ class report extends \cenozo\base_object
    * @param string $value The value of the cell.  This can either be a string, number, date or time
    *               (which will be displayed as is) or an equation which should always start with =
    *               (ie: =A1+A2)
+   * @param boolean $autosize Whether to autoset the cell's column or not.
    * @return PHPExcel Cell object
    * @access public
    */
-  public function set_cell( $coordinate, $value )
+  public function set_cell( $coordinate, $value, $autosize = true )
   {
     $column = preg_replace( '/[^A-Za-z]/', '', $coordinate );
     $row = preg_replace( '/[^0-9]/', '', $coordinate );
@@ -120,8 +130,8 @@ class report extends \cenozo\base_object
       if( !is_null( $this->current_format['vertical_alignment'] ) )
         $style_obj->getAlignment()->setVertical( $this->current_format['vertical_alignment'] );
 
-      // always automatically size the cell
-      $this->php_excel->getActiveSheet()->getColumnDimension( $column )->setAutoSize( true );
+      // set the auto size property
+      $this->php_excel->getActiveSheet()->getColumnDimension( $column )->setAutoSize( $autosize );
     }
     catch( \Exception $e )
     {
