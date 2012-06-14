@@ -576,24 +576,24 @@ class util
   public static function utf8_encode( $arg )
   {
     // make a copy (clone if this is an object
-    $decoded_arg = is_object( $arg ) ? clone $arg : $arg;
+    $encoded_arg = is_object( $arg ) ? clone $arg : $arg;
 
     if( is_object( $arg ) ) 
       foreach( get_object_vars( $arg ) as $key => $val )
-        $decoded_arg->$key = self::utf8_encode( $val );
+        $encoded_arg->$key = self::utf8_encode( $val );
     else if( is_array( $arg ) ) 
       foreach( $arg as $key => $val )
-        $decoded_arg[$key] = self::utf8_encode( $val );
+        $encoded_arg[$key] = self::utf8_encode( $val );
     else if( is_string( $arg ) )
     {
       // convert to utf8 and remove byte-order-marks (BOM) if present
-      $decoded_arg = mb_convert_encoding( $arg, 'UTF-8', 'ASCII,UTF-8,ISO-8859-1' );
-      if( pack( 'CCC', 0xEF, 0xBB, 0xBF ) == substr( $decoded_arg, 0, 3 ) )
-        $decoded_arg = substr( $decoded_arg, 3 );
+      $encoded_arg = mb_convert_encoding( $arg, 'UTF-8', 'ASCII,UTF-8,ISO-8859-1' );
+      if( pack( 'CCC', 0xEF, 0xBB, 0xBF ) == substr( $encoded_arg, 0, 3 ) )
+        $encoded_arg = substr( $encoded_arg, 3 );
     }
-    else $decoded_arg = $arg;
+    else $encoded_arg = $arg;
 
-    return $decoded_arg;
+    return $encoded_arg;
   }
 }
 ?>
