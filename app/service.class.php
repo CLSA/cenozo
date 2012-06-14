@@ -79,9 +79,10 @@ final class service
         'error_message' => $e->getMessage() );
 
       // send the error in json format in an http error header
+      $util_class_name = lib::get_class_name( 'util' );
       \HttpResponse::status( 400 );
       \HttpResponse::setContentType( 'application/json' );
-      \HttpResponse::setData( json_encode( $result_array ) );
+      \HttpResponse::setData( $util_class_name::json_encode( $result_array ) );
       \HttpResponse::send();
       die;
     }
@@ -240,7 +241,7 @@ final class service
     {
       if( 'push' == $this->operation_type )
       {
-        $json_output = json_encode( $result_array );
+        $json_output = $util_class_name::json_encode( $result_array );
         header( 'Content-Type: application/json' );
         header( 'Content-Length: '.strlen( $json_output ) );
         print $json_output;
@@ -250,7 +251,7 @@ final class service
         if( 'json' == $output['type'] )
         {
           $result_array['data'] = $output['data'];
-          $json_output = json_encode( $result_array );
+          $json_output = $util_class_name::json_encode( $result_array );
           header( 'Content-Type: application/json' );
           header( 'Content-Length: '.strlen( $json_output ) );
           print $json_output;
@@ -282,7 +283,7 @@ final class service
           'push' == $this->operation_type ||
           'pull' == $this->operation_type && ( !isset( $output['type'] ) || 'json' == $output['type'] ) )
       {
-        $util_class_name::send_http_error( json_encode( $result_array ) );
+        $util_class_name::send_http_error( $util_class_name::json_encode( $result_array ) );
       }
       else
       {

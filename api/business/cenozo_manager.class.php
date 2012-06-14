@@ -68,6 +68,8 @@ class cenozo_manager extends \cenozo\factory
   public function pull( $subject, $name, $arguments = NULL )
   {
     if( !$this->enabled ) return NULL;
+
+    $util_class_name = lib::get_class_name( 'util' );
     
     $request = new \HttpRequest();
     $request->enableCookies();
@@ -95,7 +97,7 @@ class cenozo_manager extends \cenozo\factory
         sprintf( 'Unable to send request to pull/%s/%s', $subject, $name ), __METHOD__, $e );
     }
 
-    return json_decode( $message->body );
+    return $util_class_name::json_decode( $message->body );
   }
 
   /**
@@ -143,9 +145,11 @@ class cenozo_manager extends \cenozo\factory
     $message = $request->send();
     $code = $message->getResponseCode();
 
+    $util_class_name = lib::get_class_name( 'util' );
+    
     if( 400 == $code )
     { // pass on the exception which was thrown by the service
-      $body = json_decode( $message->body );
+      $body = $util_class_name::json_decode( $message->body );
       
       $number = preg_replace( '/[^0-9]/', '', $body->error_code );
 
