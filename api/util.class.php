@@ -548,6 +548,7 @@ class util
    */
   public static function json_encode( $arg )
   {
+    log::debug( mb_detect_encoding( json_encode( $arg ) ) );
     return json_encode( $arg );
   }
 
@@ -579,10 +580,10 @@ class util
 
     if( is_object( $arg ) ) 
       foreach( get_object_vars( $arg ) as $key => $val )
-        $decoded_arg->$key = self::utf8_decode( $val );
+        $decoded_arg->$key = self::utf8_encode( $val );
     else if( is_array( $arg ) ) 
       foreach( $arg as $key => $val )
-        $decoded_arg[$key] = self::utf8_decode( $val );
+        $decoded_arg[$key] = self::utf8_encode( $val );
     else if( is_string( $arg ) )
     {
       // convert to utf8 and remove byte-order-marks (BOM) if present
