@@ -548,7 +548,6 @@ class util
    */
   public static function json_encode( $arg )
   {
-    log::debug( mb_detect_encoding( json_encode( $arg ) ) );
     return json_encode( $arg );
   }
 
