@@ -35,7 +35,7 @@ class postcode extends record
     $database_class_name = lib::get_class_name( 'database\database' );
     $postcode = $database_class_name::format_string( $postcode );
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( sprintf( '"%s"', $postcode ), 'LIKE', 'CONCAT( name, "%" )', false );
+    $modifier->where( $postcode, 'LIKE', 'CONCAT( name, "%" )', false );
     $modifier->order_desc( 'CHAR_LENGTH( name )' );
     $modifier->limit( 1 );
     $postcode_list = static::select( $modifier );
