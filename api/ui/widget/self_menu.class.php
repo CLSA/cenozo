@@ -56,10 +56,11 @@ class self_menu extends \cenozo\ui\widget
     
     foreach( $operation_list as $db_operation )
     {
-      $calendars[] = array( 'heading' => str_replace( '_', ' ', $db_operation->subject ),
-                            'type' => $db_operation->type,
-                            'subject' => $db_operation->subject,
-                            'name' => $db_operation->name );
+      if( !in_array( $db_operation->subject, $this->exclude_operations['calendar'] ) )
+        $calendars[] = array( 'heading' => str_replace( '_', ' ', $db_operation->subject ),
+                              'type' => $db_operation->type,
+                              'subject' => $db_operation->subject,
+                              'name' => $db_operation->name );
     }
 
     // get all list widgets that the user has access to
@@ -73,7 +74,7 @@ class self_menu extends \cenozo\ui\widget
     
     foreach( $operation_list as $db_operation )
     {
-      if( !in_array( $db_operation->subject, $this->exclude_widget_list ) )
+      if( !in_array( $db_operation->subject, $this->exclude_operations['list'] ) )
         $lists[] = array(
           'heading' =>
             $util_class_name::pluralize( str_replace( '_', ' ', $db_operation->subject ) ),
@@ -82,7 +83,7 @@ class self_menu extends \cenozo\ui\widget
           'name' => $db_operation->name );
     }
 
-    // get all utility widgets that the user has access to
+    // there are no pre-defined utilities, so this is an empty array
     $utilities = array();
 
     // get all report widgets that the user has access to
@@ -96,10 +97,11 @@ class self_menu extends \cenozo\ui\widget
     
     foreach( $operation_list as $db_operation )
     {
-      $reports[] = array( 'heading' => str_replace( '_', ' ', $db_operation->subject ),
-                          'type' => $db_operation->type,
-                          'subject' => $db_operation->subject,
-                          'name' => $db_operation->name );
+      if( !in_array( $db_operation->subject, $this->exclude_operations['report'] ) )
+        $reports[] = array( 'heading' => str_replace( '_', ' ', $db_operation->subject ),
+                            'type' => $db_operation->type,
+                            'subject' => $db_operation->subject,
+                            'name' => $db_operation->name );
     }
 
     $this->set_variable( 'calendars', $calendars );
@@ -109,10 +111,51 @@ class self_menu extends \cenozo\ui\widget
   }
 
   /**
+   * Exclude a subject from the calendar operations
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param $subject string|array
+   * @access public
+   */
+  public function exclude_calendar( $subject )
+  {
+    if( is_array( $subject ) ) array_merge( $this->exclude_operations['calendar'], $subject );
+    else $this->exclude_operations['calendar'][] = $subject;
+  }
+
+  /**
+   * Exclude a subject from the list operations
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param $subject string|array
+   * @access public
+   */
+  public function exclude_list( $subject )
+  {
+    if( is_array( $subject ) )
+      $this->exclude_operations['list'] =
+        array_merge( $this->exclude_operations['list'], $subject );
+    else $this->exclude_operations['list'][] = $subject;
+  }
+
+  /**
+   * Exclude a subject from the report operations
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param $subject string|array
+   * @access public
+   */
+  public function exclude_report( $subject )
+  {
+    if( is_array( $subject ) ) array_merge( $this->exclude_operations['report'], $subject );
+    else $this->exclude_operations['report'][] = $subject;
+  }
+
+  /**
    * An array of all widgets which are not to be included in the menu
    * @var array
-   * @access protected
+   * @access private
    */
-  protected $exclude_widget_list = array( 'operation' );
+  private $exclude_operations = array(
+    'calendar' => array(),
+    'list' => array( 'access', 'operation' ),
+    'report' => array() );
 }
 ?>

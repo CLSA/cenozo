@@ -437,6 +437,23 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Merges another modifier with this one.  Merging only includes where, group and order items.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier
+   * @access public
+   */
+  public function merge( $modifier )
+  {
+    if( !is_null( $modifier ) )
+    {
+      foreach( $modifier->where_list as $item ) $this->where_list[] = $item;
+      foreach( $modifier->group_list as $item ) $this->group_list[] = $item;
+      foreach( $modifier->order_list as $item ) $this->order_list[] = $item;
+    }
+  }
+
+  /**
    * Holds all where clauses in an array of associative arrays
    * @var array
    * @access protected

@@ -92,13 +92,14 @@ class util
    * Returns a DateTimeZone object for the user's current site's timezone
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $server Whether to return the application's or server's timezone
+   * @param boolean $server Whether to return the session's or server's timezone
+   * @param database\site $db_site Override the session's site with another.
    * @return DateTimeZone
    * @access public
    */
-  public static function get_timezone_object( $server = false )
+  public static function get_timezone_object( $server = false, $db_site = NULL )
   {
-    $db_site = lib::create( 'business\session' )->get_site();
+    if( is_null( $db_site ) ) $db_site = lib::create( 'business\session' )->get_site();
     return new \DateTimeZone( $server || !$db_site ? 'UTC' : $db_site->timezone );
   }
 
@@ -107,7 +108,7 @@ class util
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $datetime A date string in any valid PHP date time format.
-   * @param boolean $server Whether to return the datetimein the application's or server's timezone
+   * @param boolean $server Whether to return the datetime in the session's or server's timezone
    * @return DateTime
    * @access public
    */
@@ -527,6 +528,7 @@ class util
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $date
    * @return boolean
+   * @static
    * @access public
    */
   public static function validate_date( $date )
@@ -534,6 +536,63 @@ class util
     return preg_match(
       '/^(19|20)\d\d-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/',
       $date );
+  }
+
+  /**
+   * Encodes any variable/object/array into a json string
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $arg
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function json_encode( $arg )
+  {
+    return json_encode( $arg );
+  }
+
+  /**
+   * Decodes a json string and converts it into the corresponding variable/object/array
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $arg
+   * @return mixed
+   * @static
+   * @access public
+   */
+  public static function json_decode( $arg )
+  {
+    return json_decode( self::utf8_encode( $arg ) );
+  }
+
+  /**
+   * Encodes all strings in a variable, object or array to utf8 and removes all byte-order-marks.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $arg
+   * @return mixed
+   * @static
+   * @access public
+   */
+  public static function utf8_encode( $arg )
+  {
+    // make a copy (clone if this is an object
+    $encoded_arg = is_object( $arg ) ? clone $arg : $arg;
+
+    if( is_object( $arg ) ) 
+      foreach( get_object_vars( $arg ) as $key => $val )
+        $encoded_arg->$key = self::utf8_encode( $val );
+    else if( is_array( $arg ) ) 
+      foreach( $arg as $key => $val )
+        $encoded_arg[$key] = self::utf8_encode( $val );
+    else if( is_string( $arg ) )
+    {
+      // convert to utf8 and remove byte-order-marks (BOM) if present
+      $encoded_arg = mb_convert_encoding( $arg, 'UTF-8', 'ASCII,UTF-8,ISO-8859-1' );
+      if( pack( 'CCC', 0xEF, 0xBB, 0xBF ) == substr( $encoded_arg, 0, 3 ) )
+        $encoded_arg = substr( $encoded_arg, 3 );
+    }
+    else $encoded_arg = $arg;
+
+    return $encoded_arg;
   }
 }
 ?>

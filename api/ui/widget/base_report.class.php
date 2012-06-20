@@ -245,7 +245,9 @@ abstract class base_report extends \cenozo\ui\widget
       {
         // if allowed, give them a list of sites to choose from
         $sites = array( 0 => 'All sites' );
-        foreach( $site_class_name::select() as $db_site )
+        $site_mod = lib::create( 'database\modifier' );
+        $site_mod->order( 'name' );
+        foreach( $site_class_name::select( $site_mod ) as $db_site )
           $sites[$db_site->id] = $db_site->name;
   
         $this->set_parameter( 'restrict_site_id', key( $sites ), true, $sites );

@@ -16,7 +16,7 @@ use cenozo\lib, cenozo\log;
  * @abstract
  * @package cenozo\ui
  */
-abstract class base_view extends base_record
+abstract class base_view extends base_record implements actionable
 {
   /**
    * Constructor
@@ -43,8 +43,11 @@ abstract class base_view extends base_record
       $session = lib::create( 'business\session' );
       $this->editable = $session->is_allowed(
         $operation_class_name::get_operation( 'push', $subject, 'edit' ) );
-      $this->removable = $session->is_allowed( 
-        $operation_class_name::get_operation( 'push', $subject, 'delete' ) );
+      $db_operation = $operation_class_name::get_operation( 'push', $subject, 'delete' );
+      $this->removable = $session->is_allowed( $db_operation ); 
+      if( $this->removable ) $this->add_action( 'remove', 'Remove', NULL,
+        sprintf( 'Removes the %s, but only if it is not being used by the system',
+                 str_replace( '_', ' ', $this->get_subject() ) ) );
 
       $this->set_heading( 'Viewing '.$this->get_subject().' details' );
     }
@@ -227,6 +230,39 @@ abstract class base_view extends base_record
   }
 
   /**
+   * Adds a new action to the widget.
+   * 
+   * @param string $action_id The action's id (must be a valid HTML id name).
+   * @param string $heading The action's heading as it will appear in the widget.
+   * @param database\operation $db_operation The operation to perform.  If NULL then the button
+   *        will appear in the interface without any action and the extending template is
+   *        expected to implement the actions operation in the action_script block.
+   * @param string $description Pop-up text to show when hovering over the action's button.
+   * @access public
+   */
+  public function add_action( $action_id, $heading, $db_operation = NULL, $description = NULL )
+  {
+    $this->actions[$action_id] =
+      array( 'heading' => $heading,
+             'type' => is_null( $db_operation ) ? false : $db_operation->type,
+             'subject' => is_null( $db_operation ) ? false : $db_operation->subject,
+             'name' => is_null( $db_operation ) ? false : $db_operation->name,
+             'description' => $description );
+  }
+  
+  /**
+   * Removes an action from the widget.
+   * 
+   * @param string $action_id The action's id (must be a valid HTML id name).
+   * @access public
+   */
+  public function remove_action( $action_id )
+  {
+    if( array_key_exists( $action_id, $this->actions ) )
+      unset( $this->actions[$action_id] );
+  }
+
+  /**
    * Must be called after all items have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
@@ -234,6 +270,7 @@ abstract class base_view extends base_record
   public function finish_setting_items()
   {
     $this->set_variable( 'item', $this->items );
+    $this->set_variable( 'actions', $this->actions );
   }
 
   /**
@@ -310,6 +347,17 @@ abstract class base_view extends base_record
    * @access private
    */
   private $items = array();
+  
+  /**
+   * An associative array where the key is a unique identifier and the value is an associative
+   * array which includes:
+   * "heading" => the label to display
+   * "name" => the name of the operation to perform on the record
+   * "description" => the popup help text
+   * @var array
+   * @access private
+   */
+  private $actions = array();
   
   /**
    * Keeps track of how many base_view widgets have been finished

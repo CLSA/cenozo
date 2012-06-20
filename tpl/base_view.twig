@@ -10,9 +10,46 @@
 
   {{ parent() }}
   <script type="text/javascript">
+    $( function () {
+      {% if actions|length %}
+        // action buttons
+        {% for action_id, action in actions %}
+          {% if action.type and action.subject and action.name %}
+            $( "#{{ widget.full }}__{{ action_id }}" ).click( function() {
+              var args = Object();
+              args.id = {{ id|default(0) }};
+              {% if 'widget' == action.type %}
+                slot_load( {{ slot }}, "{{ action.subject }}", "{{ action.name }}", args );
+              {% else %}
+                ajax_{{ action.type }}( "{{ action.subject }}", "{{ action.name }}", args );
+              {% endif %}
+            } );
+          {% endif %}
+
+        {% endfor %}
+      {% endif %}
+
+      {% if removable %}
+        $( "#{{ widget.full }}__remove" ).click( function() {
+          confirm_dialog(
+            "Delete {{ widget.subject_name }}?",
+            "Are you sure you want to remove this {{ widget.subject_name }}?",
+            function() {
+              var args = Object();
+              args.id = {{ id|default(0) }};
+              if( ajax_push( "{{ widget.subject }}", "delete", args ) ) {
+                $slot = $( "#" + {{ slot }} + "_slot" );
+                if( "#main_slot" == $slot.selector ) slot_prev( {{ slot }} );
+                else $slot.dialog( "close" ); // assume we're in a popup dialog
+              }
+            }
+          );
+        } );
+      {% endif %}
+    } );
+
     {# Only add the following javascript once #}
     {% if 1 >= base_view_count %}
-      // make mutable elements
       $( function () {
         // identify a mutable element by changing classes on mouse over/out
         $( "div.mutable" ).mouseover( function() {
@@ -89,30 +126,13 @@
         return old_value;
       }
     {% endif %}
-    
-    {% if removable %}
-      // delete button
-      $( function () {
-        $( "button.{{ widget.full }}_remove" ).click( function() {
-        confirm_dialog(
-          "Delete {{ widget.subject_name }}?",
-          "Are you sure you want to remove this {{ widget.subject_name }}?",
-          function() {
-            if( ajax_push( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) ) {
-              $slot = $( "#" + {{ slot }} + "_slot" );
-              if( "#main_slot" == $slot.selector ) slot_prev( {{ slot }} );
-              else $slot.dialog( "close" ); // assume we're in a popup dialog
-            }
-          } );
-        } );
-      } );
-    {% endif %}
   </script>
 
 {% endblock javascript %}
 
 {% block record_items %}
   <table>
+    {% block record_extra_pre_items %}{% endblock record_extra_pre_items %}
     {% for item_id, entry in item %}
     
       {% if 'hidden' != entry.type %}
@@ -379,11 +399,20 @@
         {% endif %}
       {% endif %}
     {% endfor %}
+    {% block record_extra_post_items %}{% endblock record_extra_post_items %}
+    {% if actions|length %}
+      <tr><td colspan="22"><hr class="ui-widget ui-widget-content"></td></tr>
+      <tr>
+        <td class="heading"><span class="title">Actions:</span></td>
+        <td class="content">
+          {% for action_id, action in actions %}
+            <button {% if action.description|default(false) %}
+                      title="{{ action.description }}"
+                    {% endif %}
+                    id="{{ widget.full }}__{{ action_id }}">{{ action.heading }}</button>
+          {% endfor %}
+        </td>
+    {% endif %}
+
   </table>
-
-  {% if removable %}
-    <button class="{{ widget.full }}_remove"
-            style="position: absolute; top: 0.2em; right: 0.1em;">remove</button>
-  {% endif %}
-
 {% endblock record_items %}

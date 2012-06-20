@@ -72,6 +72,7 @@ class user_view extends base_view
     parent::finish();
 
     $util_class_name = lib::get_class_name( 'util' );
+    $operation_class_name = lib::get_class_name( 'database\operation' );
 
     // set the view's items
     $this->set_item( 'name', $this->get_record()->name, true );
@@ -84,19 +85,18 @@ class user_view extends base_view
               is_null( $db_activity ) ? null : $db_activity->datetime );
     $this->set_item( 'last_activity', $last );
 
+    // add the reset password action
+    $db_operation = $operation_class_name::get_operation( 'push', 'user', 'reset_password' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    {
+      $this->add_action( 'reset_password', 'Reset Password', $db_operation,
+        'The user\'s new password will be "password", which they will be promted to change the '.
+        'next time they log in' );
+      $this->set_variable( 'reset_password', true );
+    }
+
     $this->finish_setting_items();
     
-    // only show reset and/or set password buttons if current user is allowed
-    $operation_class_name = lib::get_class_name( 'database\operation' );
-    $this->set_variable( 'reset_password',
-      $this->reset_password &&
-      lib::create( 'business\session' )->is_allowed(
-        $operation_class_name::get_operation( 'push', 'user', 'reset_password' ) ) );
-    $this->set_variable( 'set_password',
-      $this->set_password &&
-      lib::create( 'business\session' )->is_allowed(
-        $operation_class_name::get_operation( 'push', 'user', 'set_password' ) ) );
-
     if( !is_null( $this->access_list ) )
     {
       $this->access_list->finish();
@@ -188,28 +188,6 @@ class user_view extends base_view
   }
 
   /**
-   * Sets whether to include the reset-password button (if the user has permission)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $enable
-   * @access public
-   */
-  public function allow_reset_password( $enable )
-  {
-    $this->reset_password = $enable;
-  }
-
-  /**
-   * Sets whether to include the set-password button (if the user has permission)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $enable
-   * @access public
-   */
-  public function allow_set_password( $enable )
-  {
-    $this->set_password = $enable;
-  }
-
-  /**
    * The access list widget.
    * @var access_list
    * @access protected
@@ -222,19 +200,5 @@ class user_view extends base_view
    * @access protected
    */
   protected $activity_list = NULL;
-
-  /**
-   * Whether to include functionality to reset the user's password
-   * @var boolean
-   * @access protected
-   */
-  protected $reset_password = true;
-
-  /**
-   * Whether to include functionality to set the user's password
-   * @var boolean
-   * @access protected
-   */
-  protected $set_password = false;
 }
 ?>
