@@ -123,7 +123,6 @@ class cenozo_manager extends \cenozo\factory
     if( !$this->enabled ) return;
 
     $auth = array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] );
-    log::info( $auth );
     
     if( $this->machine_credentials )
     { // replace credentials if needed
@@ -131,7 +130,6 @@ class cenozo_manager extends \cenozo\factory
       $user = $setting_manager->get_setting( 'general', 'machine_user' );
       $pass = $setting_manager->get_setting( 'general', 'machine_password' );
       $auth['httpauth'] = $user.':'.$pass;
-    log::info( $auth );
     }
 
     $request = new \HttpRequest();
