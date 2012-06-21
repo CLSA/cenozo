@@ -31,7 +31,7 @@ class database extends base_exception
   public function __construct( $message, $sql = NULL, $context, $previous = NULL )
   {
     $this->sql = $sql;
-    $message .= is_null( $this->sql ) ? '' : ' for query "'.$sql.'"';
+    $message .= is_null( $this->sql ) ? '' : ' for query'."\n".trim( $sql );
     parent::__construct( $message, $context, $previous );
   }
   
