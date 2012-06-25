@@ -71,13 +71,22 @@ class cenozo_manager extends \cenozo\factory
 
     $util_class_name = lib::get_class_name( 'util' );
     
+    $auth = array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] );
+    
+    if( $this->machine_credentials )
+    { // replace credentials if needed
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $user = $setting_manager->get_setting( 'general', 'machine_user' );
+      $pass = $setting_manager->get_setting( 'general', 'machine_password' );
+      $auth['httpauth'] = $user.':'.$pass;
+    }
+
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
-    $request->setOptions(
-      array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] ) );
+    $request->setOptions( $auth );
     
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
@@ -113,13 +122,22 @@ class cenozo_manager extends \cenozo\factory
   {
     if( !$this->enabled ) return;
 
+    $auth = array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] );
+    
+    if( $this->machine_credentials )
+    { // replace credentials if needed
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $user = $setting_manager->get_setting( 'general', 'machine_user' );
+      $pass = $setting_manager->get_setting( 'general', 'machine_password' );
+      $auth['httpauth'] = $user.':'.$pass;
+    }
+
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
-    $request->setOptions(
-      array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] ) );
+    $request->setOptions( $auth );
 
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
@@ -195,6 +213,17 @@ class cenozo_manager extends \cenozo\factory
   }
 
   /**
+   * Whether to replace the user with machine credentials when sending requests.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $use
+   * @access public
+   */
+  public function use_machine_credentials( $use )
+  {
+    $this->machine_credentials = (bool) $use;
+  }
+
+  /**
    * Whether or not Cenozo is enabled
    * @var boolean
    * @access protected
@@ -214,4 +243,11 @@ class cenozo_manager extends \cenozo\factory
    * @access protected
    */
   protected $logged_in = false;
+
+  /**
+   * Whether to use the machine's credentials when sending a request
+   * @var boolean
+   * @access private
+   */
+  private $machine_credentials = false;
 }
