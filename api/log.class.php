@@ -215,9 +215,10 @@ final class log extends singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
+   * @static
    * @access private
    */
-  private function backtrace()
+  private static function backtrace()
   {
     $backtrace = "";
     $first = true;
@@ -305,7 +306,7 @@ final class log extends singleton
       if( $this->policy_list[$type]['label'] ) $message = static::label_message( $message );
 
       // add the backtrace
-      if( $this->policy_list[$type]['backtrace'] ) $message = static::label_message( $message );
+      if( $this->policy_list[$type]['backtrace'] ) $message = static::backtrace_message( $message );
 
       // log major stuff to an error log
       $this->initialize_logger( 'file' );
@@ -364,9 +365,9 @@ final class log extends singleton
 
     if( !preg_match( '/{main}$/', $message ) )
     {
-      $backtrace = $this->backtrace();
+      $backtrace = self::backtrace();
       $message .= strlen( $backtrace )
-                ? "\nStack trace:\n".$this->backtrace()
+                ? "\nStack trace:\n".$backtrace
                 : "\nNo stack trace available.";
     }
 
