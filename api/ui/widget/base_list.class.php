@@ -284,7 +284,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    if( $this->parent )
+    if( $this->parent && method_exists( $this->parent, 'get_record' ) )
     {
       $method_name = 'get_'.$this->get_subject().'_count';
       return $this->parent->get_record()->$method_name( $modifier );
@@ -311,7 +311,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    if( $this->parent )
+    if( $this->parent && method_exists( $this->parent, 'get_record' ) )
     {
       $method_name = 'get_'.$this->get_subject().'_list';
       return $this->parent->get_record()->$method_name( $modifier );
