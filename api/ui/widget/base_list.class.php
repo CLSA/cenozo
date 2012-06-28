@@ -282,7 +282,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    * @return int
    * @access protected
    */
-  protected function determine_record_count( $modifier = NULL )
+  public function determine_record_count( $modifier = NULL )
   {
     if( $this->parent && method_exists( $this->parent, 'get_record' ) )
     {
@@ -309,7 +309,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    * @return array( record )
    * @access protected
    */
-  protected function determine_record_list( $modifier = NULL )
+  public function determine_record_list( $modifier = NULL )
   {
     if( $this->parent && method_exists( $this->parent, 'get_record' ) )
     {
