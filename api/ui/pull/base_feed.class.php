@@ -28,6 +28,17 @@ abstract class base_feed extends \cenozo\ui\pull
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'feed', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     // set the start and end datetimes
     $this->start_datetime = $this->get_argument( 'start' );

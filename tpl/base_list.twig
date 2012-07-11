@@ -71,15 +71,15 @@
         } );
       
         // set the correct colspan in the table's footer
-        var colspan = $( ".{{ widget.full }}_table > thead > tr > th" ).length;
-        $( "#{{ widget.full }}_footer_cell" ).attr( "colspan", colspan - 1 );
+        var colspan = $( ".{{ widget.compound }}_table > thead > tr > th" ).length;
+        $( "#{{ widget.compound }}_footer_cell" ).attr( "colspan", colspan - 1 );
       {% endif %}
 
       // highlight the row the mouse is over
-      $(".{{ widget.full }}_table tbody tr").mouseover( function() {
+      $(".{{ widget.compound }}_table tbody tr").mouseover( function() {
         $(this).addClass( "ui-widget-header" );
       } );
-      $(".{{ widget.full }}_table tbody tr").mouseout( function() {
+      $(".{{ widget.compound }}_table tbody tr").mouseout( function() {
         $(this).removeClass( "ui-widget-header" );
       } );
     
@@ -430,7 +430,7 @@
     </form>
   </div>
   
-  <table class="{{ widget.full }}_table">
+  <table class="{{ widget.compound }}_table">
     <thead class="ui-widget-header">
       <tr id="{{ widget.full }}_header_row">
         {% if checkable %}
@@ -479,7 +479,7 @@
     </thead>
     <tfoot class="ui-widget-header">
       <tr>
-        <th id="{{ widget.full }}_footer_cell" colspan="0">
+        <th id="{{ widget.compound }}_footer_cell" colspan="0">
           {% if checkable %}
             <span>
               Check boxes:
@@ -511,9 +511,7 @@
           {% endif %}
         </th>
         {% if addable %}
-          <th><button id="{{ widget.full }}_add">
-            add {{ widget.subject_name }}{% if parent.exists %} to {{ parent.subject }}{% endif %}
-          </button></th>
+          <th><button id="{{ widget.full }}_add">add {{ widget.subject_name }}{% if parent.exists %} to {{ parent.subject }}{% endif %}</button></th>
         {% endif %}
       </tr>
     </tfoot>
@@ -550,9 +548,7 @@
             {% if removable %}
               <td>
                 <button class="{{ widget.full }}_remove"
-                        id="{{ widget.full }}_remove_{{ row.id }}">
-                  remove{% if parent.exists %} from {{ parent.subject }}{% endif %}
-                </button>
+                        id="{{ widget.full }}_remove_{{ row.id }}">remove {% if parent.exists %} from {{ parent.subject }}{% endif %}</button>
               </td>
             {% endif %}
           </tr>

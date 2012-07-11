@@ -28,21 +28,33 @@ class site_add extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'site', 'add', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     // define all columns defining this record
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'timezone', 'enum', 'Time Zone' );
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     // create enum arrays
     $site_class_name = lib::get_class_name( 'database\site' );
@@ -52,8 +64,6 @@ class site_add extends base_view
     // set the view's items
     $this->set_item( 'name', '', true );
     $this->set_item( 'timezone', key( $timezones ), true, $timezones );
-
-    $this->finish_setting_items();
   }
 }
 ?>

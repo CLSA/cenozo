@@ -6,7 +6,7 @@
  #}
 {% extends "widget.twig" %}
 
-{% set namespace = [ category, widget.full ]|join("_") %}
+{% set namespace = [ category, widget.compound ]|join("_") %}
 
 {% block javascript %}
 
@@ -152,7 +152,7 @@
     <div class="ui-widget ui-widget-content app-widget-content">
       <textarea id="{{ namespace }}_text"></textarea>
       {% from 'macros.twig' import confirm_buttons %}
-      {{ confirm_buttons( slot, [category, widget.full]|join('_'), [ 'post' ], false, 'right' ) }}
+      {{ confirm_buttons( slot, [category, widget.compound]|join('_'), [ 'post' ], false, 'right' ) }}
     </div>
   </div>
 

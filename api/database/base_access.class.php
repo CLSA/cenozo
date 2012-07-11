@@ -91,6 +91,8 @@ abstract class base_access extends record
 
   /**
    * Returns the most recent activity performed by this access-based record.
+   * NOTE: this method gets the last activity based on the activity table's primary
+   *       ID instead of datetime since it appears to be significatly faster.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\activity
@@ -108,7 +110,7 @@ abstract class base_access extends record
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_name.'_id', '=', $this->id );
-    $modifier->order_desc( 'datetime' );
+    $modifier->order_desc( 'id' ); // use id instead of datetime since it's MUCH faster
     $modifier->limit( 1 );
     $activity_list = $activity_class_name::select( $modifier );
     

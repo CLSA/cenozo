@@ -27,12 +27,20 @@ class activity_list extends site_restricted_list
    */
   public function __construct( $args )
   {
-    // by default sort the datetime column descending
-    $this->sort_column = 'activity.datetime';
-    $this->sort_desc = true;
-
     parent::__construct( 'activity', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->add_column( 'user.name', 'string', 'User', true );
     $this->add_column( 'site.name', 'string', 'Site', true );
     $this->add_column( 'role.name', 'string', 'Role', true );
@@ -45,14 +53,14 @@ class activity_list extends site_restricted_list
   }
 
   /**
-   * Set the rows array needed by the template.
+   * Defines all rows in the list.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     foreach( $this->get_record_list() as $record )
     {
@@ -68,8 +76,6 @@ class activity_list extends site_restricted_list
                'error_code' => is_null( $record->error_code ) ? '' : $record->error_code,
                'datetime' => $record->datetime ) );
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>

@@ -34,6 +34,19 @@ abstract class base_download extends \cenozo\ui\pull
   }
 
   /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $this->data = file_get_contents( $this->file_name );
+  }
+
+  /**
    * Returns the download file name (same as the local file pointed to)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -68,7 +81,7 @@ abstract class base_download extends \cenozo\ui\pull
    * Returns the download file type (based on the local file pointed to)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
+   * @param string $file_name
    * @access public
    */
   public function set_file_name( $file_name )
@@ -82,18 +95,6 @@ abstract class base_download extends \cenozo\ui\pull
     $this->file_name = $file_name;
   }
   
-  /**
-   * Reads and returns the file to download.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function finish()
-  {
-    return file_get_contents( $this->file_name );
-  }
-
   /**
    * The file name to be uploaded to the user.
    * @var string $file_name

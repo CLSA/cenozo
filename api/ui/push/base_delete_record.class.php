@@ -32,16 +32,19 @@ abstract class base_delete_record extends base_record
   }
   
   /**
-   * Executes the push.
+   * This method executes the operation's purpose.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     $operation = lib::create(
       sprintf( 'ui\push\%s_delete', $this->child_subject ),
       array( 'id' => $this->get_argument( 'remove_id' ) ) );
-    $operation->finish();
+    $operation->process();
   }
 
   /**
@@ -49,6 +52,6 @@ abstract class base_delete_record extends base_record
    * @var string
    * @access protected
    */
-  protected $child_subject = '';
+  protected $child_subject;
 }
 ?>

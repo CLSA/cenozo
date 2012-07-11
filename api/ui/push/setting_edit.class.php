@@ -30,31 +30,53 @@ class setting_edit extends base_edit
   }
 
   /**
-   * Executes the push.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    // check to see if site_value is in the column list
+    parent::prepare();
+
     $columns = $this->get_argument( 'columns', array() );
+
+    // check to see if site_value is in the column list
     if( array_key_exists( 'site_value', $columns ) )
     {
-      $value = $columns['site_value'];
+      $this->site_value = $columns['site_value'];
+      unset( $this->arguments['columns']['site_value'] );
+    }
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $columns = $this->get_argument( 'columns', array() );
+
+    if( !is_null( $this->site_value ) )
+    {
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
       $setting_value_list = $this->get_record()->get_setting_value_list( $modifier );
 
       if( 1 == count( $setting_value_list ) )
       {
-        if( 0 == strlen( $value ) )
+        if( 0 == strlen( $this->site_value ) )
         {
           $setting_value_list[0]->delete();
         }
         else
         {
-          $setting_value_list[0]->value = $value;
+          $setting_value_list[0]->value = $this->site_value;
           $setting_value_list[0]->save();
         }
       }
@@ -63,11 +85,17 @@ class setting_edit extends base_edit
         $db_setting_value = lib::create( 'database\setting_value' );
         $db_setting_value->setting_id = $this->get_argument( 'id' );
         $db_setting_value->site_id = lib::create( 'business\session' )->get_site()->id;
-        $db_setting_value->value = $value;
+        $db_setting_value->value = $this->site_value;
         $db_setting_value->save();
       }
     }
-    else parent::finish();
   }
+
+  /**
+   * If a site-specific value is being set this member holds its new value.
+   * @var string $site_value
+   * @access protected
+   */
+  protected $site_value = NULL;
 }
 ?>

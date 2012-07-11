@@ -127,6 +127,7 @@ final class service
     $this->settings['path']['CENOZO_TPL'] = $this->settings['path']['CENOZO'].'/tpl';
 
     $this->settings['path']['API'] = $this->settings['path']['APPLICATION'].'/api';
+    $this->settings['path']['DOC'] = $this->settings['path']['APPLICATION'].'/doc';
     $this->settings['path']['TPL'] = $this->settings['path']['APPLICATION'].'/tpl';
 
     // the web directory cannot be extended
@@ -403,10 +404,11 @@ final class service
   private function pull()
   {
     $operation = $this->create_operation();
+    $operation->process();
     return array(
       'name' => $operation->get_file_name(),
       'type' => $operation->get_data_type(),
-      'data' => $operation->finish() );
+      'data' => $operation->get_data() );
   }
 
   /**
@@ -418,7 +420,7 @@ final class service
   private function push()
   {
     $operation = $this->create_operation();
-    $operation->finish();
+    $operation->process();
     return array(
       'name' => NULL,
       'type' => NULL,
@@ -476,7 +478,7 @@ final class service
     }
 
     $operation = $this->create_operation();
-    $operation->finish();
+    $operation->process();
     
     // render the widget and report to the session
     $data = $this->render_template( $this->operation_name, $operation->get_variables() );

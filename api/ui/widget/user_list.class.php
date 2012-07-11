@@ -28,7 +28,19 @@ class user_list extends site_restricted_list
   public function __construct( $args )
   {
     parent::__construct( 'user', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->add_column( 'name', 'string', 'Username', true );
     $this->add_column( 'active', 'boolean', 'Active', true );
     $this->add_column( 'site.name', 'string', 'Site', false );
@@ -37,14 +49,14 @@ class user_list extends site_restricted_list
   }
 
   /**
-   * Set the rows array needed by the template.
+   * Defines all rows in the list.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     foreach( $this->get_record_list() as $record )
     {
@@ -75,8 +87,6 @@ class user_list extends site_restricted_list
                'role.name' => $role,
                'last_activity' => $last ) );
     }
-
-    $this->finish_setting_rows();
   }
   
   /**

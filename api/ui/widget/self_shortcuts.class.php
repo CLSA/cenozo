@@ -28,18 +28,31 @@ class self_shortcuts extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'shortcuts', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->show_heading( false );
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $this->set_variable( 'calculator', false );
     $this->set_variable( 'timezone_calculator', false );

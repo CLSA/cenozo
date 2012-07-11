@@ -29,6 +29,18 @@ abstract class site_restricted_list extends base_list
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     if( static::may_restrict() )
     {
@@ -43,18 +55,26 @@ abstract class site_restricted_list extends base_list
     }
     
     // if restricted, show the site's name in the heading
-    $predicate = is_null( $this->db_restrict_site ) ? 'all sites' : $this->db_restrict_site->name;
-    $this->set_heading( $this->get_heading().' for '.$predicate );
+    if( is_null( $this->get_heading() ) )
+    {
+      $this->set_heading(
+        sprintf( '%s list for %s',
+                 $this->get_subject(),
+                 is_null( $this->db_restrict_site ) ?
+                   'all sites' : $this->db_restrict_site->name ) );
+    }
   }
   
   /**
-   * Set the rows array needed by the template.
+   * Sets up necessary site-based variables.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
+    parent::setup();
+
     // if this list has a parent don't allow restricting (the parent already does)
     if( !is_null( $this->parent ) ) $this->db_restrict_site = NULL;
 
@@ -83,9 +103,6 @@ abstract class site_restricted_list extends base_list
       $this->remove_column( 'site.name' );
       $this->set_variable( 'restrict_site_id', $this->db_restrict_site->id );
     }
-    
-    // this has to be done AFTER the remove_column() call above
-    parent::finish();
   }
 
   /**

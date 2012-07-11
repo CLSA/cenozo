@@ -34,20 +34,32 @@ abstract class base_record
   public function __construct( $subject, $name, $args )
   {
     parent::__construct( $subject, $name, $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->set_record(
       lib::create( 'database\\'.$this->get_subject(), $this->get_argument( 'id', NULL ) ) );
   }
   
   /**
-   * Finish setting the variables in a widget.
+   * Sets necessary widget variables.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // define all template variables for this widget
     $this->set_variable( 'id', $this->get_record()->id );

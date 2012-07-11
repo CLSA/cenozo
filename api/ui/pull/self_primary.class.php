@@ -30,18 +30,18 @@ class self_primary extends \cenozo\ui\pull
   }
 
   /**
-   * Returns the data provided by this pull operation.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return associative array
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     $db_user = lib::create( 'business\session' )->get_user();
-    $data = array();
-    foreach( $db_user->get_column_names() as $column ) $data[ $column ] = $db_user->$column;
-    return $data;
+    $this->data = array();
+    foreach( $db_user->get_column_names() as $column ) $this->data[ $column ] = $db_user->$column;
   }
 
   /**

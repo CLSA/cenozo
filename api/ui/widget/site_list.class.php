@@ -28,21 +28,33 @@ class site_list extends base_list
   public function __construct( $args )
   {
     parent::__construct( 'site', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->add_column( 'name', 'string', 'Name', true );
     $this->add_column( 'users', 'number', 'Users', false );
     $this->add_column( 'last', 'fuzzy', 'Last activity', false );
   }
 
   /**
-   * Set the rows array needed by the template.
+   * Defines all rows in the list.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     // get all sites
     foreach( $this->get_record_list() as $record )
@@ -56,8 +68,6 @@ class site_list extends base_list
                'users' => $record->get_user_count(),
                'last' => $last ) );
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>

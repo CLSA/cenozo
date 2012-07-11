@@ -14,7 +14,7 @@ use cenozo\lib, cenozo\log;
  * Base class for all reports.
  * 
  * Reports are built by gathering all data for the report in the constructor and building
- * the report from that data in the {@link finish} method.
+ * the report from that data in the {@link execute} method.
  * 
  * @abstract
  * @package cenozo\ui
@@ -32,76 +32,34 @@ abstract class base_report extends \cenozo\ui\pull
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'report', $args );
-    $this->report = lib::create( 'business\report' );
   }
 
   /**
-   * Returns the report's name (always the same as the report's full name)
+   * Processes arguments, preparing them for the operation.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function get_file_name()
+  protected function prepare()
   {
-    return $this->get_full_name();
-  }
-  
-  /**
-   * Returns the report type (xls, xlsx, html, pdf or csv)
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_data_type()
-  {
-    return $this->get_argument( 'format' );
-  }
-  
-  /**
-   * Adds a title to the report.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $title
-   * @access public
-   */
-  protected function add_title( $title )
-  {
-    array_push( $this->report_titles, $title );
+    parent::prepare();
+
+    // check to see if a template exists for this report
+    $filename = sprintf( '%s/report/%s.xls', DOC_PATH, $this->get_full_name() );
+    $this->report = lib::create( 'business\report', file_exists( $filename ) ? $filename : NULL );
   }
 
   /**
-   * Adds a table to the report.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $title The title of the report.
-   * @param array $header The header row naming each column.
-   * @param array $contents The contents of the table.
-   * @param array $footer The footer of the table (for each column).
-   * @param array $blanks Which rows to skip, leaving them blank
-   * @access public
+   * @access protected
    */
-  protected function add_table(
-    $title = NULL, $header = array(), $contents = array(), $footer = array(), $blanks = array() )
+  protected function execute()
   {
-    array_push( $this->report_tables,
-      array( 'title' => $title,
-             'header' => $header,
-             'contents' => $contents,
-             'footer' => $footer,
-             'blanks' => $blanks ) );
-  }
+    parent::execute();
 
-  /**
-   * Builds the report based on the tables built by child classes.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return associative array
-   * @access public
-   */
-  public function finish()
-  {
     $util_class_name = lib::get_class_name( 'util' );
 
     // determine the widest table size
@@ -336,7 +294,65 @@ abstract class base_report extends \cenozo\ui\pull
       }
     }
 
-    return $this->report->get_file( $this->get_argument( 'format' ) );
+    $this->data = $this->report->get_file( $this->get_argument( 'format' ) );
+  }
+
+  /**
+   * Returns the report's name (always the same as the report's full name)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_file_name()
+  {
+    return $this->get_full_name();
+  }
+  
+  /**
+   * Returns the report type (xls, xlsx, html, pdf or csv)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_data_type()
+  {
+    return $this->get_argument( 'format' );
+  }
+  
+  /**
+   * Adds a title to the report.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $title
+   * @access public
+   */
+  protected function add_title( $title )
+  {
+    array_push( $this->report_titles, $title );
+  }
+
+  /**
+   * Adds a table to the report.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $title The title of the report.
+   * @param array $header The header row naming each column.
+   * @param array $contents The contents of the table.
+   * @param array $footer The footer of the table (for each column).
+   * @param array $blanks Which rows to skip, leaving them blank
+   * @access public
+   */
+  protected function add_table(
+    $title = NULL, $header = array(), $contents = array(), $footer = array(), $blanks = array() )
+  {
+    array_push( $this->report_tables,
+      array( 'title' => $title,
+             'header' => $header,
+             'contents' => $contents,
+             'footer' => $footer,
+             'blanks' => $blanks ) );
   }
 
   /**

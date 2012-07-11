@@ -28,6 +28,19 @@ class self_calculator extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'calculator', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->show_heading( false );
   }
 }

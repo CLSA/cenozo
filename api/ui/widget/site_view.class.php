@@ -28,47 +28,45 @@ class site_view extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'site', 'view', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     // create an associative array with everything we want to display about the site
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'timezone', 'enum', 'Time Zone' );
     $this->add_item( 'users', 'constant', 'Number of users' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
 
-    try
-    {
-      // create the access sub-list widget
-      $this->access_list = lib::create( 'ui\widget\access_list', $args );
-      $this->access_list->set_parent( $this );
-      $this->access_list->set_heading( 'Site access list' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->access_list = NULL;
-    }
+    // create the access sub-list widget
+    $this->access_list = lib::create( 'ui\widget\access_list', $this->arguments );
+    $this->access_list->set_parent( $this );
+    $this->access_list->set_heading( 'Site access list' );
 
-    try
-    {
-      // create the activity sub-list widget
-      $this->activity_list = lib::create( 'ui\widget\activity_list', $args );
-      $this->activity_list->set_parent( $this );
-      $this->activity_list->set_heading( 'Site activity' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->activity_list = NULL;
-    }
+    // create the activity sub-list widget
+    $this->activity_list = lib::create( 'ui\widget\activity_list', $this->arguments );
+    $this->activity_list->set_parent( $this );
+    $this->activity_list->set_heading( 'Site activity' );
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $util_class_name = lib::get_class_name( 'util' );
 
@@ -87,20 +85,20 @@ class site_view extends base_view
               is_null( $db_activity ) ? null : $db_activity->datetime );
     $this->set_item( 'last_activity', $last );
 
-    $this->finish_setting_items();
-
-    // finish the child widgets
-    if( !is_null( $this->access_list ) )
+    // process the child widgets
+    try
     {
-      $this->access_list->finish();
+      $this->access_list->process();
       $this->set_variable( 'access_list', $this->access_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
 
-    if( !is_null( $this->activity_list ) )
+    try
     {
-      $this->activity_list->finish();
+      $this->activity_list->process();
       $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**

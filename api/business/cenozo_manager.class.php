@@ -71,12 +71,22 @@ class cenozo_manager extends \cenozo\factory
 
     $util_class_name = lib::get_class_name( 'util' );
     
+    $auth = array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] );
+    
+    if( $this->machine_credentials )
+    { // replace credentials if needed
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $user = $setting_manager->get_setting( 'general', 'machine_user' );
+      $pass = $setting_manager->get_setting( 'general', 'machine_password' );
+      $auth['httpauth'] = $user.':'.$pass;
+    }
+
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
-    $request->setOptions(
-      array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] ) );
+    $request->addHeaders( array( 'application_name' => APPNAME ) );
+    $request->setOptions( $auth );
     
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
@@ -112,12 +122,22 @@ class cenozo_manager extends \cenozo\factory
   {
     if( !$this->enabled ) return;
 
+    $auth = array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] );
+    
+    if( $this->machine_credentials )
+    { // replace credentials if needed
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $user = $setting_manager->get_setting( 'general', 'machine_user' );
+      $pass = $setting_manager->get_setting( 'general', 'machine_password' );
+      $auth['httpauth'] = $user.':'.$pass;
+    }
+
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
-    $request->setOptions(
-      array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] ) );
+    $request->addHeaders( array( 'application_name' => APPNAME ) );
+    $request->setOptions( $auth );
 
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
@@ -126,16 +146,8 @@ class cenozo_manager extends \cenozo\factory
     // request the current site and role
     $this->set_site_and_role( $arguments );
     $request->setPostFields( $arguments );
-    
-    try
-    {
-      static::send( $request );
-    }
-    catch( \Exception $e )
-    {
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Unable to send request to push/%s/%s', $subject, $name ), __METHOD__, $e );
-    }
+
+    static::send( $request );
   }
 
   /**
@@ -154,20 +166,36 @@ class cenozo_manager extends \cenozo\factory
     $util_class_name = lib::get_class_name( 'util' );
     
     if( 400 == $code )
-    { // duplicate cenozo exception
+    { // pass on the exception which was thrown by the service
       $body = $util_class_name::json_decode( $message->body );
-      throw lib::create( 'exception\cenozo_service',
-        $body->error_type, $body->error_code, $body->error_message );
+      
+      $number = preg_replace( '/[^0-9]/', '', $body->error_code );
+
+      throw 'Notice' == $body->error_type
+         ? lib::create( 'exception\notice', $body->error_message, $number - 400000 )
+         : lib::create( 'exception\cenozo_service',
+             $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
     { // A non-cenozo error has happened
       throw lib::create( 'exception\runtime', sprintf(
         'Unable to connect to Cenozo service at %s (code: %s)',
-        '',
+        $base_url,
         $code ), __METHOD__ );
     }
 
     return $message;
+  }
+
+  /**
+   * Whether to replace the user with machine credentials when sending requests.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $use
+   * @access public
+   */
+  public function use_machine_credentials( $use )
+  {
+    $this->machine_credentials = (bool) $use;
   }
 
   /**
@@ -190,4 +218,11 @@ class cenozo_manager extends \cenozo\factory
    * @access protected
    */
   protected $logged_in = false;
+
+  /**
+   * Whether to use the machine's credentials when sending a request
+   * @var boolean
+   * @access private
+   */
+  private $machine_credentials = false;
 }

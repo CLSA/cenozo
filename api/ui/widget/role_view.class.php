@@ -28,47 +28,52 @@ class role_view extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'role', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     // create an associative array with everything we want to display about the role
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'users', 'constant', 'Number of users' );
 
-    try
-    {
-      // create the operation sub-list widget
-      $this->operation_list = lib::create( 'ui\widget\operation_list', $args );
-      $this->operation_list->set_parent( $this );
-      $this->operation_list->remove_column( 'restricted' );
-      $this->operation_list->set_heading( 'Operations belonging to this role' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->operation_list = NULL;
-    }
+    // create the operation sub-list widget
+    $this->operation_list = lib::create( 'ui\widget\operation_list', $this->arguments );
+    $this->operation_list->set_parent( $this );
+    $this->operation_list->set_heading( 'Operations belonging to this role' );
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // set the view's items
     $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'users', $this->get_record()->get_user_count() );
 
-    $this->finish_setting_items();
-
-    // finish the child widgets
-    if( !is_null( $this->operation_list ) )
+    // process the child widgets
+    try
     {
-      $this->operation_list->finish();
+      $this->operation_list->process();
+      $this->operation_list->remove_column( 'restricted' );
+      $this->operation_list->execute();
       $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**

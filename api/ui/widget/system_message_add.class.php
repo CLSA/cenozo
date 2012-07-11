@@ -28,7 +28,19 @@ class system_message_add extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'system_message', 'add', $args );
-    
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     // define all columns defining this record
 
     $type = 3 == lib::create( 'business\session' )->get_role()->tier ? 'enum' : 'hidden';
@@ -41,14 +53,15 @@ class system_message_add extends base_view
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Defines all items in the view.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
+
     $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
     $site_class_name = lib::get_class_name( 'database\site' );
@@ -76,8 +89,6 @@ class system_message_add extends base_view
     $this->set_item( 'role_id', null, false, $roles );
     $this->set_item( 'title', null, true );
     $this->set_item( 'note', null, true );
-
-    $this->finish_setting_items();
   }
 }
 ?>

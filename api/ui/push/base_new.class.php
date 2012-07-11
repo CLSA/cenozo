@@ -30,12 +30,16 @@ abstract class base_new extends base_record
   }
   
   /**
-   * Executes the push.
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
+    parent::validate();
+
     $columns = $this->get_argument( 'columns', array() );
 
     // check for time range validity, if necessary
@@ -75,7 +79,20 @@ abstract class base_new extends base_record
           __METHOD__ );
       }
     } 
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
     
+    $columns = $this->get_argument( 'columns', array() );
+
     // set record column values
     foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
 

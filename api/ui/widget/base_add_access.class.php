@@ -29,36 +29,44 @@ class base_add_access extends base_add_list
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'access', $args );
-    $this->show_heading( false );
-    
-    try
-    {
-      // build the role list widget
-      $this->role_list = lib::create( 'ui\widget\role_list', $args );
-      $this->role_list->set_parent( $this, 'edit' );
-      $this->role_list->set_heading( 'Select roles to grant' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->role_list = NULL;
-    }
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Processes arguments, preparing them for the operation.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    parent::finish();
+    parent::prepare();
+    
+    $this->show_heading( false );
+    
+    // build the role list widget
+    $this->role_list = lib::create( 'ui\widget\role_list', $this->arguments );
+    $this->role_list->set_parent( $this );
+    $this->role_list->set_checkable( true );
+    $this->role_list->set_heading( 'Select roles to grant' );
+  }
 
-    if( !is_null( $this->role_list ) )
+  /**
+   * Sets up the role list variable.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    try
     {
-      $this->role_list->finish();
+      $this->role_list->process();
       $this->set_variable( 'role_list', $this->role_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
   
   /**
