@@ -70,7 +70,7 @@ abstract class base_report extends \cenozo\ui\pull
       {
         $width = max(
           count( $table['header'] ),
-          is_array( $table['contents'] ) ? count( $table['contents'][0] ) : 0,
+          0 < count( $table['contents'] ) ? count( $table['contents'][0] ) : 0,
           count( $table['footer'] ) );
         if( $max < $width ) $max = $width;
       }
