@@ -42,6 +42,57 @@ final class log extends singleton
     $this->loggers['display'] = NULL;
     $this->loggers['file'] = NULL;
     $this->loggers['firebug'] = NULL;
+
+    $this->policy_list = array(
+      PEAR_LOG_EMERG => array(
+        'log' => true,
+        'convert' => false,
+        'label' => true,
+        'backtrace' => true
+      ),
+      PEAR_LOG_ALERT => array(
+        'log' => true,
+        'convert' => false,
+        'label' => true,
+        'backtrace' => true
+      ),
+      PEAR_LOG_CRIT => array(
+        'log' => true,
+        'convert' => false,
+        'label' => true,
+        'backtrace' => true
+      ),
+      PEAR_LOG_ERR => array(
+        'log' => true,
+        'convert' => false,
+        'label' => true,
+        'backtrace' => true
+      ),
+      PEAR_LOG_WARNING => array(
+        'log' => true,
+        'convert' => false,
+        'label' => true,
+        'backtrace' => true
+      ),
+      PEAR_LOG_NOTICE => array(
+        'log' => true,
+        'convert' => false,
+        'label' => true,
+        'backtrace' => false
+      ),
+      PEAR_LOG_DEBUG => array(
+        'log' => true,
+        'convert' => true,
+        'label' => false,
+        'backtrace' => false
+      ),
+      PEAR_LOG_INFO => array(
+        'log' => true,
+        'convert' => true,
+        'label' => false,
+        'backtrace' => false
+      ),
+    );
   }
 
   /**
@@ -131,6 +182,18 @@ final class log extends singleton
   /**
    * Logging method
    * 
+   * This type of log is special.  It is used to track activity performed by the application so
+   * it can be audited at a later date.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $message The message to log.
+   * @static
+   * @access public
+   */
+  public static function info( $message ) { self::self()->send( $message, PEAR_LOG_INFO ); }
+
+  /**
+   * Logging method
+   * 
    * This is a special convenience method that sends the results of a print_r call on the provided
    * variable as a debug log.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -148,25 +211,14 @@ final class log extends singleton
   }
   
   /**
-   * Logging method
-   * 
-   * This type of log is special.  It is used to track activity performed by the application so
-   * it can be audited at a later date.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $message The message to log.
-   * @static
-   * @access public
-   */
-  public static function info( $message ) { self::self()->send( $message, PEAR_LOG_INFO ); }
-
-  /**
    * Returns the backtrace as a log-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
+   * @static
    * @access private
    */
-  private function backtrace()
+  private static function backtrace()
   {
     $backtrace = "";
     $first = true;
@@ -202,46 +254,35 @@ final class log extends singleton
     // make sure we have a session
     $class_name = lib::get_class_name( 'business\session' );
     if( !class_exists( $class_name ) || !$class_name::exists() ) return;
-    $session = lib::create( 'business\session' );
-    $db_user = $session->get_user();
-    $db_role = $session->get_role();
-    $db_site = $session->get_site();
-    $user_and_role = is_null( $db_user ) || is_null( $db_role )
-                   ? 'unknown'
-                   : $db_user->name.':'.$db_role->name;
-    $site = is_null( $db_site ) ? 'unknown' : $db_site->name;
 
-    if( PEAR_LOG_INFO != $type &&
-        PEAR_LOG_NOTICE != $type &&
-        PEAR_LOG_DEBUG != $type )
-      $message = sprintf( '<%s@%s> %s', $user_and_role, $site, $message );
-    
-    // add the backtrace
-    if( ( PEAR_LOG_NOTICE != $type && PEAR_LOG_DEBUG != $type ) ||
-        ( !lib::in_development_mode() && PEAR_LOG_INFO ) )
+    // replace cenozo and application path strings with something smaller
+    if( is_string( $message ) )
     {
-      // convert non-strings to a string
-      if( !is_string( $message ) ) $message = print_r( $message, true );
-
-      if( !preg_match( '/{main}$/', $message ) )
-      {
-        $backtrace = $this->backtrace();
-        $message .= strlen( $backtrace )
-                  ? "\nStack trace:\n".$this->backtrace()
-                  : "\nNo stack trace available.";
-      }
+      $message = str_replace(
+        array( CENOZO_PATH, APPLICATION_PATH ),
+        array( 'cenozo', APPNAME ),
+        $message );
     }
 
-    // if in devel mode log everything to firephp
+    // if in devel mode log to firephp
     if( lib::in_development_mode() )
     {
+      $firephp_message = $message;
+
+      // break the message lines into an array for easier viewing
+      if( is_string( $firephp_message ) )
+      {
+        $firephp_message = preg_split( '/\'?\n\'?/', $firephp_message );
+        if( 1 == count( $firephp_message ) ) $firephp_message = current( $firephp_message );
+      }
+
       $type_string = self::log_level_to_string( $type );
       $firephp = \FirePHP::getInstance( true );
       if( PEAR_LOG_INFO == $type ||
           PEAR_LOG_NOTICE == $type ||
           PEAR_LOG_DEBUG == $type )
       {
-        $firephp->info( $message, $type_string );
+        $firephp->info( $firephp_message, $type_string );
       }
       else
       {
@@ -251,26 +292,86 @@ final class log extends singleton
                        PEAR_LOG_ERR == $type
                      ? 'error' : 'warn';
 
-        $firephp->$method_name( $message, $type_string );
+        $firephp->$method_name( $firephp_message, $type_string );
       }
     }
-    else // we are in production mode
+    
+    // log to file
+    if( $this->policy_list[$type]['log'] )
     {
-      if( PEAR_LOG_EMERG == $type ||
-          PEAR_LOG_ALERT == $type ||
-          PEAR_LOG_CRIT == $type ||
-          PEAR_LOG_ERR == $type ||
-          PEAR_LOG_INFO == $type )
-      {
-        // log major stuff to an error log
-        $this->initialize_logger( 'file' );
-        $this->loggers[ 'file' ]->log( $message."\n", $type );
-      }
-      else // PEAR_LOG_WARNING, PEAR_LOG_NOTICE, PEAR_LOG_DEBUG
-      {
-        // ignore warnings, notices and debug logs
-      }
+      // convert the message
+      if( $this->policy_list[$type]['convert'] ) $message = static::convert_message( $message );
+      
+      // add a label
+      if( $this->policy_list[$type]['label'] ) $message = static::label_message( $message );
+
+      // add the backtrace
+      if( $this->policy_list[$type]['backtrace'] ) $message = static::backtrace_message( $message );
+
+      // log major stuff to an error log
+      $this->initialize_logger( 'file' );
+      $this->loggers[ 'file' ]->log( preg_replace( '/\'?\n\'?/', "\n", $message )."\n", $type );
     }
+  }
+
+  /**
+   * Converts a non-string message into a string.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $message
+   * @return string
+   * @static
+   * @access private
+   */
+  private static function convert_message( $message )
+  {
+    return !is_string( $message ) ? print_r( $message, true ) : $message;
+  }
+
+  /**
+   * Labels a message with the user, role and site, automatically converting a non string message
+   * to a string.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $message
+   * @return string
+   * @static
+   * @access private
+   */
+  private static function label_message( $message )
+  {
+    $message = static::convert_message( $message );
+
+    $session = lib::create( 'business\session' );
+    $db_user = $session->get_user();
+    $db_role = $session->get_role();
+    $db_site = $session->get_site();
+    $user_and_role = is_null( $db_user ) || is_null( $db_role )
+                   ? 'unknown'
+                   : $db_user->name.':'.$db_role->name;
+    $site = is_null( $db_site ) ? 'unknown' : $db_site->name;
+    return sprintf( '<%s@%s> %s', $user_and_role, $site, $message );
+  }
+
+  /**
+   * Adds a backtrace to a message, automatically converting a non string message to a string.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $message
+   * @return string
+   * @static
+   * @access private
+   */
+  private static function backtrace_message( $message )
+  {
+    $message = static::convert_message( $message );
+
+    if( !preg_match( '/{main}$/', $message ) )
+    {
+      $backtrace = self::backtrace();
+      $message .= strlen( $backtrace )
+                ? "\nStack trace:\n".$backtrace
+                : "\nNo stack trace available.";
+    }
+
+    return $message;
   }
 
   /**
@@ -458,6 +559,13 @@ final class log extends singleton
    * @access private
    */
   private $loggers;
+
+  /**
+   * An array containing the logging policy for all message types.
+   * @var array
+   * @access private
+   */
+  private $policy_list = array();
 }
 
 // define a custom error handlers

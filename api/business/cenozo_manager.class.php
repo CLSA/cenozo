@@ -94,7 +94,7 @@ class cenozo_manager extends \cenozo\factory
 
     // request the current site and role
     $this->set_site_and_role( $arguments );
-    $request->setQueryData( $arguments );
+    $request->setQueryData( static::prepare_arguments( $arguments ) );
     
     try
     {
@@ -145,7 +145,7 @@ class cenozo_manager extends \cenozo\factory
 
     // request the current site and role
     $this->set_site_and_role( $arguments );
-    $request->setPostFields( $arguments );
+    $request->setPostFields( static::prepare_arguments( $arguments ) );
 
     static::send( $request );
   }
@@ -185,6 +185,31 @@ class cenozo_manager extends \cenozo\factory
     }
 
     return $message;
+  }
+
+  /**
+   * Prepares arguments by converting all objects into serialized strings.
+   * Note that just because an object gets serialized before being sent doesn't mean it will
+   * automatically be unseralized by the receiving application.  For security reasons it is up
+   * to the receiving to pre-define objects that it expects and explicitely unserialized them
+   * itself.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $args
+   * @return mixed
+   * @static
+   * @access protected
+   */
+  protected static function prepare_arguments( $args )
+  {
+    // serialize the argument if it is an object
+    $prepared_args = is_object( $args ) ? serialize( $args ) : $args;
+
+    // if the argument is an array make sure to prepare each element
+    if( is_array( $args ) )
+      foreach( $args as $key => $value )
+        $prepared_args[$key] = static::prepare_arguments( $value );
+
+    return $prepared_args;
   }
 
   /**

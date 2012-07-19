@@ -53,7 +53,7 @@ class base_exception extends \Exception
     }
     
     $this->error_number_constant_name = $constant_name;
-    parent::__construct( sprintf( '%s (%s) : %s',
+    parent::__construct( sprintf( "\n%s (%s):\n%s\n",
                                   $constant_name,
                                   $code,
                                   $this->raw_message ), $code, $previous );

@@ -28,7 +28,12 @@ class self_settings extends \cenozo\ui\widget\self_settings
     parent::__construct( $args );
   }
 
-  // TODO: document
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function prepare()
   {
     parent::prepare();
