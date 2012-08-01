@@ -70,7 +70,6 @@ abstract class base_report extends \cenozo\ui\pull
       {
         $width = max(
           count( $table['header'] ),
-          0 < count( $table['contents'] ) ? count( $table['contents'][0] ) : 0,
           count( $table['footer'] ) );
         if( $max < $width ) $max = $width;
       }
@@ -196,7 +195,6 @@ abstract class base_report extends \cenozo\ui\pull
       print '<h1>'.$table['title'].'</h1><br>';
       $width = max(
         count( $table['header'] ),
-        count( $table['contents'] ),
         count( $table['footer'] ) );
       $max_col = 1 < $max ? chr( 64 + $width ) : false;
 
