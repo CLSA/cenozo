@@ -1,0 +1,21 @@
+====================================================================================================
+0.1.5
+====================================================================================================
+
+* Adding a get_version utility which prints the current version
+
+* Added backtrace to warnings
+
+* Various bug fixes
+
+====================================================================================================
+0.1.4
+====================================================================================================
+
+* Improved how widget parenting works
+  - The parent no longer needs to have a get_record() method
+
+* Changed access to some methods and added in missing API documentation
+  - all determine_record_count() and determine_record_list() methods are now public
+
+* Various bug fixes
