@@ -3,7 +3,6 @@
  * postcode.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -15,8 +14,6 @@ use cenozo\lib, cenozo\log;
  * Note, these records do not represent postal or zip codes, rather they represent groups of
  * postcodes which have the same region, timezone and daylight savings.  To get the record
  * which matches a particular postal or zip code use the get_match() static method.
- * 
- * @package cenozo\database
  */
 class postcode extends record
 {

@@ -3,7 +3,6 @@
  * util.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo
  * @filesource
  */
 
@@ -16,7 +15,6 @@ use cenozo\lib, cenozo\log;
  * This class is where all utility functions belong.  The class cannot be instantiated, but it
  * may be extended.  All methods within the class must be static.
  * NOTE: only functions which do not logically belong in any class should be included here.
- * @package cenozo
  */
 class util
 {

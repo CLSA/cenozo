@@ -3,7 +3,6 @@
  * base_add_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * Base class for all "add list" to record widgets
  * 
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_add_list extends base_record
 {

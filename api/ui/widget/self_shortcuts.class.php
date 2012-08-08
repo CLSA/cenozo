@@ -3,7 +3,6 @@
  * self_shortcuts.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget self shortcuts
- * 
- * @package cenozo\ui
  */
 class self_shortcuts extends \cenozo\ui\widget
 {

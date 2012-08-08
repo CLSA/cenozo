@@ -3,7 +3,6 @@
  * base_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -19,7 +18,6 @@ use cenozo\lib, cenozo\log;
  * methods: determine_<subject>_list() and determine_<subject>_count(), where <subject> is
  * the record type being listed, to override the basic functionality performed by this class.
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_list extends \cenozo\ui\widget implements actionable
 {

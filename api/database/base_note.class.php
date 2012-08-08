@@ -3,7 +3,6 @@
  * note.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * A base class for all note records.
- *
- * @package cenozo\database
  */
 abstract class base_note extends record
 {

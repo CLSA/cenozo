@@ -3,7 +3,6 @@
  * singleton.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo
  * @filesource
  */
 
@@ -15,7 +14,6 @@ namespace cenozo;
  * This is an object factory that creates singletons.  Any class that extends this base class can
  * be instantiated by calling the {@link self} method.  That method will return one and only
  * one instance per class.
- * @package cenozo
  */
 abstract class singleton
 {

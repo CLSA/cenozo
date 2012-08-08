@@ -3,7 +3,6 @@
  * user_add_access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget user add_access
- * 
- * @package cenozo\ui
  */
 class user_add_access extends base_add_access
 {

@@ -3,7 +3,6 @@
  * base_object.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo
  * @filesource
  */
 
@@ -13,7 +12,6 @@ namespace cenozo;
  * base_object: master base object
  *
  * The base_object class from which all other cenozo classes extend
- * @package cenozo
  */
 abstract class base_object
 {

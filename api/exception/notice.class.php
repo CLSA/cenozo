@@ -3,7 +3,6 @@
  * notice.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\exception
  * @filesource
  */
 
@@ -16,7 +15,6 @@ use cenozo\lib, cenozo\log;
  * This is a special exception that is used to directly report to the user.
  * The unaltered error message will be noticeed to the user.  If there is a previous exception
  * its error code will also be noticeed.
- * @package cenozo\exception
  */
 class notice extends base_exception
 {

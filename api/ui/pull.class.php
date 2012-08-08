@@ -3,7 +3,6 @@
  * pull.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * The base class of all pull operationst.
- * 
- * @package cenozo\ui
  */
 abstract class pull extends operation
 {

@@ -3,7 +3,6 @@
  * setting_primary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * pull: setting primary
- * 
- * @package cenozo\ui
  */
 class setting_primary extends base_primary
 {

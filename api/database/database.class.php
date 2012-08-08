@@ -4,7 +4,6 @@
  * For now see {@link connect} for the current hack/solution.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -18,7 +17,6 @@ require_once ADODB_PATH.'/adodb.inc.php';
 
 /**
  * The database class represents a database connection and information.
- * @package cenozo\database
  */
 class database extends \cenozo\base_object
 {

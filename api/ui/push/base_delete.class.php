@@ -3,7 +3,6 @@
  * base_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all record "delete" push operations.
- * 
- * @package cenozo\ui
  */
 abstract class base_delete extends base_record
 {

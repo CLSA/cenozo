@@ -3,7 +3,6 @@
  * user_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget user add
- * 
- * @package cenozo\ui
  */
 class user_add extends base_view
 {

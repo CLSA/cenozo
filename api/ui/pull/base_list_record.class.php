@@ -3,7 +3,6 @@
  * base_list_record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * Base class for all pull operations which 'list records' pertaining to a single record.
  * 
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_list_record extends base_record
 {

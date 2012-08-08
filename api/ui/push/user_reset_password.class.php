@@ -3,7 +3,6 @@
  * user_reset_password.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Resets a user's password.
- * 
- * @package cenozo\ui
  */
 class user_reset_password extends base_record
 {

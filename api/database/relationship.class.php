@@ -3,7 +3,6 @@
  * relationship.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * This is an enum class which defines all types of database table relationships.
- * 
- * @package cenozo\database
  */
 class relationship
 {

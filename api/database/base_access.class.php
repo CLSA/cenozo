@@ -3,7 +3,6 @@
  * base_access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * A base class for all classes joined together by the access table.
- * 
- * @package cenozo\database
  */
 abstract class base_access extends record
 {

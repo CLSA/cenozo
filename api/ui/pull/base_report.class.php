@@ -3,7 +3,6 @@
  * base_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -17,7 +16,6 @@ use cenozo\lib, cenozo\log;
  * the report from that data in the {@link execute} method.
  * 
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_report extends \cenozo\ui\pull
 {

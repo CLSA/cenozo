@@ -3,7 +3,6 @@
  * activity.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * activity: record
- *
- * @package cenozo\database
  */
 class activity extends record
 {

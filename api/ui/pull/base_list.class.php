@@ -3,7 +3,6 @@
  * base_list.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * Base class for all list pull operations.
  * 
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_list extends \cenozo\ui\pull
 {

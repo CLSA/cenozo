@@ -3,7 +3,6 @@
  * push.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * The base class of all push operations
- * 
- * @package cenozo\ui
  */
 abstract class push extends operation
 {

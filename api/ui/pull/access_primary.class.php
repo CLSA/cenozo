@@ -3,7 +3,6 @@
  * access_primary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * pull: access primary
- * 
- * @package cenozo\ui
  */
 class access_primary extends base_primary
 {

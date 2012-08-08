@@ -3,7 +3,6 @@
  * ldap.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\exception
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * ldap: ldap file exception
  * 
  * This exception is thrown when trying to include a file that doesn't exist
- * @package cenozo\exception
  */
 class ldap extends base_exception
 {

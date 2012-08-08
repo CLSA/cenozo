@@ -3,7 +3,6 @@
  * system_message_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * push: system_message edit
  *
  * Edit a system_message.
- * @package cenozo\ui
  */
 class system_message_edit extends base_edit
 {

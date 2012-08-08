@@ -3,7 +3,6 @@
  * actionable.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui\widget
  * @filesource
  */
 
@@ -11,7 +10,6 @@ namespace cenozo\ui\widget;
 
 /**
  * Interface that specifies that a widget may contain a list of actions.
- * @package cenozo\ui\widget
  */
 interface actionable
 {

@@ -3,7 +3,6 @@
  * base_feed.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * Base class for all feed pull operations.
  * 
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_feed extends \cenozo\ui\pull
 {
