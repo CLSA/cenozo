@@ -3,7 +3,6 @@
  * role.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * role: record
- *
- * @package cenozo\database
  */
 class role extends base_access
 {

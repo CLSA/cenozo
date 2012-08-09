@@ -3,7 +3,6 @@
  * operation.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -15,8 +14,6 @@ use cenozo\lib, cenozo\log;
  *
  * All operation classes extend this base operation class.  All classes that extend this class are
  * used to fulfill some purpose executed by the user or machine interfaces.
- * 
- * @package cenozo\ui
  */
 abstract class operation extends \cenozo\base_object
 {

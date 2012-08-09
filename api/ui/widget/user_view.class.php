@@ -3,7 +3,6 @@
  * user_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget user view
- * 
- * @package cenozo\ui
  */
 class user_view extends base_view
 {

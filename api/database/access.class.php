@@ -3,7 +3,6 @@
  * access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * access: record
- *
- * @package cenozo\database
  */
 class access extends record
 {

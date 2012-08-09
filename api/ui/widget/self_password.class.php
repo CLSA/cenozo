@@ -3,7 +3,6 @@
  * self_password.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget self password
- * 
- * @package cenozo\ui
  */
 class self_password extends \cenozo\ui\widget
 {

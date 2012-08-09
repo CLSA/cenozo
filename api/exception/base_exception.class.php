@@ -3,7 +3,6 @@
  * base_exception.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\exception
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * base_exception: base exception class
  *
  * The base_exception class from which all other cenozo exceptions extend
- * @package cenozo\exception
  */
 class base_exception extends \Exception
 {

@@ -3,7 +3,6 @@
  * argument.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\exception
  * @filesource
  */
 
@@ -15,7 +14,6 @@ use cenozo\lib, cenozo\log;
  *
  * This exception is thrown anytime a function or method is expecting an argument which are invalid
  * or missing.
- * @package cenozo\exception
  */
 class argument extends base_exception
 {

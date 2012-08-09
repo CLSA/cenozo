@@ -3,7 +3,6 @@
  * record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -15,7 +14,6 @@ use cenozo\lib, cenozo\log;
  *
  * The record class represents tables in the database.  Each table has its own class which
  * extends this class.  Furthermore, each table must have a single 'id' column as its primary key.
- * @package cenozo\database
  */
 abstract class record extends \cenozo\base_object
 {

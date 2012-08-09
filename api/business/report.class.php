@@ -3,7 +3,6 @@
  * report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\business
  * @filesource
  */
 
@@ -15,8 +14,6 @@ include 'PHPExcel/PHPExcel/Writer/Excel2007.php';
 
 /**
  * Creates a report.
- * 
- * @package cenozo\business
  */
 class report extends \cenozo\base_object
 {

@@ -3,7 +3,6 @@
  * self_primary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * pull: self primary
- * 
- * @package cenozo\ui
  */
 class self_primary extends \cenozo\ui\pull
 {

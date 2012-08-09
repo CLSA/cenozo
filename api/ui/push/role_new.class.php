@@ -3,7 +3,6 @@
  * role_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * push: role new
  *
  * Create a new role.
- * @package cenozo\ui
  */
 class role_new extends base_new
 {

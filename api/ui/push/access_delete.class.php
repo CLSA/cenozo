@@ -3,7 +3,6 @@
  * access_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * push: access delete
- * 
- * @package cenozo\ui
  */
 class access_delete extends base_delete
 {

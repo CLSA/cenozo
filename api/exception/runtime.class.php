@@ -3,7 +3,6 @@
  * runtime.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\exception
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * runtime: runtime exceptions
  * 
  * All generic exceptions which only occur at runtime use this class to throw exceptions.
- * @package cenozo\exception
  */
 class runtime extends base_exception
 {

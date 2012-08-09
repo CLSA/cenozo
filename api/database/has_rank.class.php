@@ -3,7 +3,6 @@
  * has_rank.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * A base class for all records which have a unique, ordered rank.
- *
- * @package cenozo\database
  */
 abstract class has_rank extends record
 {

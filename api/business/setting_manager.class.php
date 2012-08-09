@@ -3,7 +3,6 @@
  * setting_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\business
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Manages software settings
- * 
- * @package cenozo\business
  */
 class setting_manager extends \cenozo\singleton
 {

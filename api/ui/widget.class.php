@@ -3,7 +3,6 @@
  * widget.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -17,7 +16,6 @@ use cenozo\lib, cenozo\log;
  * the variables needed by the template in order to be rendered.
  * The constructor of every class which extends widget must define the names of the variables needed
  * by in the template by calling {@link add_variable_names}
- * @package cenozo\ui
  */
 abstract class widget extends operation
 {

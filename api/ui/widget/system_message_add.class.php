@@ -3,7 +3,6 @@
  * system_message_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget system_message add
- * 
- * @package cenozo\ui
  */
 class system_message_add extends base_view
 {

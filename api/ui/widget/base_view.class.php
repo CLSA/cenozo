@@ -3,7 +3,6 @@
  * base_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * Base class for widgets which view current or new records.
  * 
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_view extends base_record implements actionable
 {

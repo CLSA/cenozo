@@ -3,7 +3,6 @@
  * role_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * push: role edit
  *
  * Edit a role.
- * @package cenozo\ui
  */
 class role_edit extends base_edit
 {

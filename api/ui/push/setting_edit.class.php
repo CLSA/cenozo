@@ -3,7 +3,6 @@
  * setting_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * push: setting edit
  *
  * Edit a setting.
- * @package cenozo\ui
  */
 class setting_edit extends base_edit
 {

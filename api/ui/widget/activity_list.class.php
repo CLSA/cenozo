@@ -3,7 +3,6 @@
  * activity_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget activity list
- * 
- * @package cenozo\ui
  */
 class activity_list extends site_restricted_list
 {

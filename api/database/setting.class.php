@@ -3,7 +3,6 @@
  * setting.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * setting: record
- *
- * @package cenozo\database
  */
 class setting extends record
 {

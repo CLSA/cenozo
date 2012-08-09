@@ -3,7 +3,6 @@
  * lib.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo
  * @filesource
  */
 
@@ -11,8 +10,6 @@ namespace cenozo;
 
 /**
  * lib: dynamic class loading functionality
- *
- * @package cenozo
  */
 final class lib
 {

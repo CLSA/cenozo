@@ -3,7 +3,6 @@
  * self_menu.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget self menu
- * 
- * @package cenozo\ui
  */
 class self_menu extends \cenozo\ui\widget
 {

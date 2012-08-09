@@ -3,7 +3,6 @@
  * main.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Class that manages variables in main user interface template.
- * 
- * @package cenozo\ui
  */
 class main extends \cenozo\base_object
 {

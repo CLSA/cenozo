@@ -3,7 +3,6 @@
  * self_home.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget self home
- * 
- * @package cenozo\ui
  */
 class self_home extends \cenozo\ui\widget
 {

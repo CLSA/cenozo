@@ -3,7 +3,6 @@
  * cenozo_service.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\exception
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * cenozo_service: cenozo service exceptions
  * 
  * This exception is used to duplicate an exception received from another cenozo application.
- * @package cenozo\exception
  */
 class cenozo_service extends base_exception
 {

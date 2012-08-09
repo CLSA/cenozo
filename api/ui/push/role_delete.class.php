@@ -3,7 +3,6 @@
  * role_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * push: role delete
- * 
- * @package cenozo\ui
  */
 class role_delete extends base_delete
 {

@@ -3,7 +3,6 @@
  * base_add_access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Base class for adding access to sites and users.
- * 
- * @package cenozo\ui
  */
 class base_add_access extends base_add_list
 {
