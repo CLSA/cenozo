@@ -870,13 +870,15 @@ abstract class record extends \cenozo\base_object
           }
           else
           {
-            // check to see if we have a foreign key for this table
+            // add the table name to the list
+            $table_list[] = $table;
+
+            // check to see if we have a foreign key for this table and join if we do
             $foreign_key_name = $table.'_id';
             if( static::column_exists( $foreign_key_name ) )
             {
               $class_name = lib::get_class_name( 'database\\'.$table );
               // add the table to the list to select and join it in the modifier
-              $table_list[] = $table;
               $modifier->where(
                 sprintf( '%s.%s', $this_table, $foreign_key_name ),
                 '=',
@@ -887,7 +889,6 @@ abstract class record extends \cenozo\base_object
             else if( static::db()->column_exists( $table, $this_table.'_id' ) )
             {
               // add the table to the list to select and join it in the modifier
-              $table_list[] = $table;
               $modifier->where(
                 sprintf( '%s.%s_id', $table, $this_table ),
                 '=',

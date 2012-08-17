@@ -160,6 +160,30 @@ class report extends \cenozo\base_object
   }
 
   /**
+   * Removes one or more columns.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to remove.
+   * @param integer $number The number of columns to remove.
+   */
+  public function remove_column( $column, $number = 1 )
+  {
+    $this->php_excel->getActiveSheet()->removeColumn( $column, $number );
+  }
+
+  /**
+   * Removes one or more rows.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $row The row to remove.
+   * @param integer $number The number of rows to remove.
+   */
+  public function remove_row( $row, $number = 1 )
+  {
+    $this->php_excel->getActiveSheet()->removeRow( $row, $number );
+  }
+
+  /**
    * Renders the report in the given format.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
