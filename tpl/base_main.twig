@@ -118,7 +118,21 @@
         $( "div.content" ).addClass( "ui-widget-content" );
         $( ".flap" ).addClass( "ui-widget-header" );
         $( ".tooltop" ).addClass( "ui-widget ui-widget-content ui-state-default ui-corner-all" );
-    
+
+        var header_ui_offset_top = $( "#header_ui" ).offset().top;
+        var sticky_header = function() {
+          // Change the position if the current vertical position from the top is greater than
+          // the header's position
+          $( "#header_ui" ).css(
+            $( window ).scrollTop() > header_ui_offset_top ?
+            { "position": "fixed", "top":0, "left":0 } : { "position": "relative" } );
+        };
+
+        // run our function on load
+        sticky_header();
+
+        // and run it again every time you scroll
+        $(window).scroll(function() { sticky_header(); });
       } );
     </script>
   {% endblock javascript %}
@@ -151,7 +165,7 @@
 
   {% block app %}
     <div class="ui-widget-content" id="app_ui">
-      <table>
+      <table id="header_ui">
         <tr>
           <td>{% if show_status %}<div id="status_slot"></div>{% endif %}</td>
           <td>{% if show_shortcuts %}<div id="shortcuts_slot"></div>{% endif %}</td>

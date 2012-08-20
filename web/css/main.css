@@ -98,6 +98,10 @@ ins.no_icon {
   min-height: 100%;
 }
 
+#header_ui {
+  z-index: 2;
+}
+
 #status_slot {
   text-align: left;
   margin-top: 4px;
