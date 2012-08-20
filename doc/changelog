@@ -1,5 +1,5 @@
 ====================================================================================================
-0.1.7
+0.1.6
 ====================================================================================================
 
 * Changing warning dialogs to look less like error dialogs
@@ -12,10 +12,6 @@
 
 * Changing the table list behaviour in record::select()
   - if no foreign key is found to a table in the modifier it is still added to the table list
-
-====================================================================================================
-0.1.6
-====================================================================================================
 
 * Changing API documentation to apigen (apigen.org)
 
