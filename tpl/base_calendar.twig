@@ -48,7 +48,6 @@
           width: 800,
           height: 600,
           close: function( event, ui ) {
-            console.log( 'close event' );
             $( "#{{ widget.full }}_calendar" ).fullCalendar( 'refetchEvents' );
             $( "#{{ widget.full }}_calendar" ).fullCalendar( 'rerenderEvents' );
           }

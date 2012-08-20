@@ -2,6 +2,17 @@
 0.1.6
 ====================================================================================================
 
+* Changing warning dialogs to look less like error dialogs
+
+* Orphan tables now added to select queries
+  - record::select() now adds any tables included in the modifier argument to the table list
+
+* Adding remove_row() and remove_column() methods to business\report class
+  - this is now used by the quota report
+
+* Changing the table list behaviour in record::select()
+  - if no foreign key is found to a table in the modifier it is still added to the table list
+
 * Changing API documentation to apigen (apigen.org)
 
 * Adding new "disable_sorting" option to the base_list widget
