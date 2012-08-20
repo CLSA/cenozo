@@ -15,6 +15,14 @@
 
 * Changing API documentation to apigen (apigen.org)
 
+* Adding new "disable_sorting" option to the base_list widget
+  - by default this is set to false
+  - if enabled sortable columns will still appear sortable (ie: still appear as buttons) but when
+    clicked a message will appear to the user indicating that sorting has been disabled
+
+* Making status and shortcut items "float"
+  - when scrolling the clock, voip status indicators and buttons will always appear "on top"
+
 * Various bug fixes
 
 ====================================================================================================
