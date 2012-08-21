@@ -128,8 +128,8 @@ abstract class base_view extends base_record implements actionable
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    // add timezone info to the note if the item is a time or datetime
-    if( 'time' == $type || 'datetime' == $type )
+    // add timezone info to the note if the item is a time, datetime or datetimesec
+    if( 'time' == $type || 'timesec' == $type || 'datetime' == $type || 'datetimesec' == $type )
     {
       // build time time zone help text
       $date_obj = $util_class_name::get_datetime_object();
@@ -148,6 +148,14 @@ abstract class base_view extends base_record implements actionable
     }
   }
 
+  /**
+   * Set the note for an item.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $item_id The item's id, can be one of the record's column names.
+   * @param string $note A note to add below the item.
+   * @param string $note_is_error Whether the note is error text.
+   * @access public
+   */
   public function set_note( $item_id, $note = NULL, $note_is_error = false )
   {
     // make sure the item exists
@@ -173,8 +181,8 @@ abstract class base_view extends base_record implements actionable
    * @param mixed $value The item's value.
    * @param boolean $required Whether the item can be left blank.
    * @param mixed $data For enum item types, an array of all possible values, for date types an
-   *              associative array of min_date and/or max_date and for datetime types an
-   *              associative array of min_datetime and/or max_datetime
+   *              associative array of min_date and/or max_date and for datetime/datetimesec types
+   *              an associative array of min_datetime and/or max_datetime
    * @param boolean $force Whether to show enums even if there is only one possible value.
    * @throws exception\argument
    * @access public
@@ -194,23 +202,20 @@ abstract class base_view extends base_record implements actionable
       if( is_null( $value ) ) $value = '';
       else $value = $value ? 'Yes' : 'No';
     }
-    else if( 'date' == $type )
+    else if( 'date' == $type || 'time' == $type || 'timesec' == $type ||
+             'datetime' == $type || 'datetimesec' == $type )
     {
       if( strlen( $value ) )
       {
         $date_obj = $util_class_name::get_datetime_object( $value );
-        $value = $date_obj->format( 'Y-m-d' );
+        if( 'date' == $type ) $format = 'Y-m-d';
+        else if( 'time' == $type ) $format = 'H:i';
+        else if( 'timesec' == $type ) $format = 'H:i:s';
+        else if( 'datetime' == $type ) $format = 'Y-m-d H:i';
+        else if( 'datetimesec' == $type ) $format = 'Y-m-d H:i:s';
+        $value = $date_obj->format( $format );
       }
       else $value = '';
-    }
-    else if( 'time' == $type )
-    {
-      if( strlen( $value ) )
-      {
-        $date_obj = $util_class_name::get_datetime_object( $value );
-        $value = $date_obj->format( 'H:i' );
-      }
-      else $value = '12:00';
     }
     else if( 'hidden' == $type )
     {
@@ -248,7 +253,7 @@ abstract class base_view extends base_record implements actionable
       }
       $this->items[$item_id]['enum'] = $enum;
     }
-    else if( 'date' == $type || 'datetime' == $type )
+    else if( 'date' == $type || 'datetime' == $type || 'datetimesec' == $type )
     {
       if( is_array( $data ) )
       {
