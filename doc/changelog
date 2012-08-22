@@ -6,6 +6,12 @@
   - timesec is the same as time but seconds can be edited and minutes are not rounded
   - datetimesec is the same as datetime but seconds can be edited and minutes are not rounded
 
+* Adding report caching
+  - reports can now be set to cache
+  - any cacheble report is cached every time the report is run, or when no cache exists for the
+    current day
+  - reports can be force-updated
+
 ====================================================================================================
 0.1.6
 ====================================================================================================

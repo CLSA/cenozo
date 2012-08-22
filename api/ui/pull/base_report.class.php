@@ -44,8 +44,39 @@ abstract class base_report extends \cenozo\ui\pull
     parent::prepare();
 
     // check to see if a template exists for this report
-    $filename = sprintf( '%s/report/%s.xls', DOC_PATH, $this->get_full_name() );
+    $filename = sprintf( '%s/report/template/%s.xls', DOC_PATH, $this->get_full_name() );
     $this->report = lib::create( 'business\report', file_exists( $filename ) ? $filename : NULL );
+  }
+
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $refresh_cache = $this->get_argument( 'refresh_cache', NULL );
+
+    // only work with the cache system if a refresh_cache argument is present
+    if( is_null( $refresh_cache ) )
+    {
+      $this->build();
+    }
+    else
+    {
+      $cache_filename = $this->get_cache_filename();
+  
+      // is there a cached version of the report created today?
+      $cached = false;
+      if( file_exists( $cache_filename ) )
+        $cached = date( 'Y-m-d' ) == date( 'Y-m-d', filemtime( $cache_filename ) );
+  
+      // only build if we are explicitely refreshing the cache or it doesn't exist
+      if( $refresh_cache || !$cached ) $this->build();
+    }
   }
 
   /**
@@ -58,6 +89,81 @@ abstract class base_report extends \cenozo\ui\pull
   {
     parent::execute();
 
+    $refresh_cache = $this->get_argument( 'refresh_cache', NULL );
+
+    // only work with the cache system if a refresh_cache argument is present
+    if( is_null( $refresh_cache ) )
+    {
+      $this->generate();
+    }
+    else
+    {
+      $cache_filename = $this->get_cache_filename();
+
+      // is there a cached version of the report created today?
+      $cached = false;
+      if( file_exists( $cache_filename ) )
+        $cached = date( 'Y-m-d' ) == date( 'Y-m-d', filemtime( $cache_filename ) );
+
+      // only generate if we are explicitely refreshing the cache or it doesn't exist
+      if( $refresh_cache || !$cached )
+      { // generate the file and write it to the cache
+        $this->generate();
+        
+        try
+        {
+          // create directory if necessary
+          $directory = substr( $cache_filename, 0, strrpos( $cache_filename, '/' ) );
+          if( !is_dir( $directory ) )
+            if( false === mkdir( $directory, 0777, true ) )
+              throw sprintf( 'Unable to create directory for %s report cache file "%s"',
+                             $this->get_subject(),
+                             $cache_filename );
+          
+          // open the file, write the contents (replacing the existing contents) and close
+          $file = fopen( $cache_filename, 'w' );
+          if( false === $file )
+            throw sprintf( 'Unable to open %s report cache file "%s"',
+                           $this->get_subject(),
+                           $cache_filename );
+          if( false === fwrite( $file, $this->data ) )
+            throw sprintf( 'Unable to write to %s report cahce file "%s"',
+                           $this->get_subject(),
+                           $cache_filename );
+          if( false === fclose( $file ) )
+            throw sprintf( 'Unable to close %s report cache file "%s"',
+                           $this->get_subject(),
+                           $cache_filename );
+        }
+        catch( string $error )
+        {
+          log::warning( $error );
+        }
+      }
+      else
+      {
+        // read the cache and store it in the data array
+        $this->data = file_get_contents( $cache_filename );
+      }
+    }
+  }
+
+  /**
+   * This method is used to build the report (see add_table(), set_title(), etc)
+   * Must be implemented by all reports.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   * @abstract
+   */
+  abstract protected function build();
+
+  /**
+   * This method creates the report based on work done in the build() method.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function generate()
+  {
     $util_class_name = lib::get_class_name( 'util' );
 
     // determine the widest table size
@@ -349,6 +455,29 @@ abstract class base_report extends \cenozo\ui\pull
              'contents' => $contents,
              'footer' => $footer,
              'blanks' => $blanks ) );
+  }
+
+  /**
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  private function get_cache_filename()
+  {
+    // md5 the operation and arguments
+    $md5 = md5( serialize( array( $this->operation_record, $this->arguments ) ) );
+    
+    // make first two pairs of letters directories to avoid having too many files in one directory
+    $path = sprintf( '%s/%s/%s',
+                     substr( $md5, 0, 2 ),
+                     substr( $md5, 2, 2 ),
+                     substr( $md5, 4 ) );
+
+    // add the base url and file type
+    $format = $this->get_argument( 'format' );
+    $path = sprintf( '%s/%s.%s', REPORT_CACHE_PATH, $path, $format );
+
+    return $path;
   }
 
   /**

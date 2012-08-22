@@ -113,6 +113,8 @@ abstract class base_report extends \cenozo\ui\widget
       $this->set_parameter( 'restrict_start_date', '', false );
       $this->set_parameter( 'restrict_end_date', '', false );
     }
+
+    $this->set_variable( 'use_cache', $this->use_cache );
   }
 
   /**
@@ -347,5 +349,12 @@ abstract class base_report extends \cenozo\ui\widget
     'dates' => false,
     'province' => false,
     'site_or_province' => false );
+
+  /**
+   * Defines whether or not the report should use the caching system.
+   * @var boolean
+   * @access protected
+   */
+  protected $use_cache = false;
 }
 ?>
