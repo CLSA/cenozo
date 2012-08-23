@@ -59,14 +59,6 @@ abstract class base_report extends \cenozo\ui\widget
     $site_class_name = lib::get_class_name( 'database\site' );
     $region_class_name = lib::get_class_name( 'database\region' );
 
-    // allow pull reports to ask whether a restriction has been added
-    // e.g.,  'true' == $this->get_argument( 'has_restrict_dates' )
-    foreach( $this->restrictions as $key => $value )
-    {
-      $restriction_type = 'has_restrict_'.$key;
-      $this->add_parameter( $restriction_type, 'hidden' );
-    }
-
     if( $this->restrictions[ 'site' ] )
     {
       if( static::may_restrict_by_site() )
@@ -117,12 +109,6 @@ abstract class base_report extends \cenozo\ui\widget
   protected function execute()
   {
     parent::execute();
-
-    foreach( $this->restrictions as $key => $value )
-    {
-      $restriction_type = 'has_restrict_'.$key;
-      $this->set_parameter( $restriction_type,  $value );
-    }
 
     $this->set_variable( 'parameters', $this->parameters );
   }
