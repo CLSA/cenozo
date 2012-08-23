@@ -280,7 +280,7 @@
           var column = $(this).parent( "th" ).attr( "id" );
           restrictions["{{ id }}"] = {
             compare: "{{ id }}" == column ? "" : "{{ restrict.compare }}",
-            value: "{{ id }}" == column ? "" : "{{ restrict.value }}"
+            value: "{{ id }}" == column ? "" : "{{ restrict.value|e('js') }}"
           };
         {% endfor %}
         
@@ -311,7 +311,7 @@
             {% for id, restrict in restrictions %}
               restrictions["{{ id }}"] = {
                 compare: "{{ restrict.compare }}",
-                value: "{{ restrict.value }}"
+                value: "{{ restrict.value|e('js') }}"
               };
             {% endfor %}
             restrictions[$( "#{{ widget.compound }}__restrict_dialog_id" ).val()] = {
