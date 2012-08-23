@@ -99,15 +99,6 @@ abstract class base_report extends \cenozo\ui\widget
       $this->set_parameter( 'restrict_province_id', key( $region_types ), true, $region_types );
     }
 
-    if( $this->restrictions[ 'site_or_province' ] )
-    {
-      $site_or_prov = array( 'Site', 'Province' );
-      $site_or_prov = array_combine( $site_or_prov, $site_or_prov );
-
-      $this->set_parameter( 'restrict_site_or_province', 
-        key( $site_or_prov ), true, $site_or_prov );
-    }
-
     if( $this->restrictions[ 'dates' ] )
     {
       $this->set_parameter( 'restrict_start_date', '', false );
@@ -184,11 +175,6 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->restrictions[ 'province' ] = true;
       $this->add_parameter( 'restrict_province_id', 'enum', 'Province' );
-    }
-    else if( 'site_or_province' == $restriction_type )
-    {
-      $this->restrictions[ 'site_or_province' ] = true;
-      $this->add_parameter( 'restrict_site_or_province', 'enum', 'Site or Province' );
     }
   }
 
@@ -347,8 +333,7 @@ abstract class base_report extends \cenozo\ui\widget
   protected $restrictions = array( 
     'site' => false,
     'dates' => false,
-    'province' => false,
-    'site_or_province' => false );
+    'province' => false );
 
   /**
    * Defines whether or not the report should use the caching system.
