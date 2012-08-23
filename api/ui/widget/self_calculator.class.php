@@ -3,7 +3,6 @@
  * self_calculator.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget self calculator
- * 
- * @package cenozo\ui
  */
 class self_calculator extends \cenozo\ui\widget
 {

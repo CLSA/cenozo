@@ -3,7 +3,6 @@
  * setting_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget setting view
- * 
- * @package cenozo\ui
  */
 class setting_view extends base_view
 {

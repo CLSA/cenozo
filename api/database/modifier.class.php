@@ -3,7 +3,6 @@
  * modifier.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -15,7 +14,6 @@ use cenozo\lib, cenozo\log;
  * 
  * To use this class create an instance, set whichever modifiers are needed then pass it to
  * select-like methods to limit/group/order/etc the query.
- * @package cenozo\database
  */
 class modifier extends \cenozo\base_object
 {

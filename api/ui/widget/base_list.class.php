@@ -3,7 +3,6 @@
  * base_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -19,7 +18,6 @@ use cenozo\lib, cenozo\log;
  * methods: determine_<subject>_list() and determine_<subject>_count(), where <subject> is
  * the record type being listed, to override the basic functionality performed by this class.
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_list extends \cenozo\ui\widget implements actionable
 {
@@ -257,6 +255,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     $this->set_variable( 'viewable', $this->viewable );
     $this->set_variable( 'addable', $this->addable );
     $this->set_variable( 'removable', $this->removable );
+    $this->set_variable( 'disable_sorting', $this->disable_sorting );
     $this->set_variable( 'items_per_page', $this->items_per_page );
     $this->set_variable( 'number_of_items', $this->record_count );
     $this->set_variable( 'columns', $this->columns );
@@ -423,6 +422,28 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   public function set_removable( $enable )
   {
     $this->removable = $enable;
+  }
+  
+  /**
+   * Gets whether sorting has been disabled for this list
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_disable_sorting()
+  {
+    return $this->disable_sorting;
+  }
+
+  /**
+   * Set whether sorting is disabled for this list
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_disable_sorting( $enable )
+  {
+    $this->disable_sorting = $enable;
   }
   
   /**
@@ -640,6 +661,13 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    * @access private
    */
   private $removable = true;
+  
+  /**
+   * Whether to deny sorting of any columns
+   * @var boolean
+   * @access private
+   */
+  private $disable_sorting = false;
   
   /**
    * An array of columns.

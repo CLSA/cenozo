@@ -3,7 +3,6 @@
  * site_restricted_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all list widgets which may be restricted by site.
- * 
- * @package cenozo\ui
  */
 abstract class site_restricted_list extends base_list
 {

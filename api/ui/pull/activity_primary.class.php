@@ -3,7 +3,6 @@
  * activity_primary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * pull: activity primary
- * 
- * @package cenozo\ui
  */
 class activity_primary extends base_primary
 {

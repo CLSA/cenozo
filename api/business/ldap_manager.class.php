@@ -3,7 +3,6 @@
  * ldap_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\business
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Manages LDAP entries
- * 
- * @package cenozo\business
  */
 class ldap_manager extends \cenozo\singleton
 {

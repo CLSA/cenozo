@@ -3,7 +3,6 @@
  * base_record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all push operations pertaining to a single record.
- * 
- * @package cenozo\ui
  */
 abstract class base_record
   extends \cenozo\ui\push

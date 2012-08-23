@@ -47,7 +47,10 @@
           modal: false,
           width: 800,
           height: 600,
-          close: function( event, ui ) { slot_refresh( {{ slot }} ); }
+          close: function( event, ui ) {
+            $( "#{{ widget.full }}_calendar" ).fullCalendar( 'refetchEvents' );
+            $( "#{{ widget.full }}_calendar" ).fullCalendar( 'rerenderEvents' );
+          }
         } );
       {% endif %}
     });

@@ -3,7 +3,6 @@
  * user_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * push: user edit
  *
  * Edit a user.
- * @package cenozo\ui
  */
 class user_edit extends base_edit
 {

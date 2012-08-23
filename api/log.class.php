@@ -3,7 +3,6 @@
  * log.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo
  * @filesource
  */
 
@@ -25,7 +24,6 @@ require_once 'FirePHPCore/FirePHP.class.php';
  * log::err( "There is an error here." );
  * log::emerg( "The server is on fire!!" );
  * </code>
- * @package cenozo
  */
 final class log extends singleton
 {

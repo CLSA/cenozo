@@ -3,7 +3,6 @@
  * base_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all record "edit" push operations.
- * 
- * @package cenozo\ui
  */
 abstract class base_edit extends base_record
 {

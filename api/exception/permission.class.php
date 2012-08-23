@@ -3,7 +3,6 @@
  * permission.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\exception
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * permission: permission exceptions
  * 
  * All exceptions which are due to denied permissions, use this class to throw exceptions.
- * @package cenozo\exception
  */
 class permission extends base_exception
 {

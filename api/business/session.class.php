@@ -3,7 +3,6 @@
  * session.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\business
  * @filesource
  */
 
@@ -15,7 +14,6 @@ use cenozo\lib, cenozo\log;
  *
  * The session class is used to track all information from the time a user logs into the system
  * until they log out.
- * @package cenozo\business
  */
 class session extends \cenozo\singleton
 {

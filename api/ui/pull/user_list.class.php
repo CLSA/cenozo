@@ -3,7 +3,6 @@
  * user_list.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * Class for user list pull operations.
  * 
  * @abstract
- * @package cenozo\ui
  */
 class user_list extends base_list
 {

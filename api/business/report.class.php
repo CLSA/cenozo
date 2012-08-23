@@ -3,7 +3,6 @@
  * report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\business
  * @filesource
  */
 
@@ -15,8 +14,6 @@ include 'PHPExcel/PHPExcel/Writer/Excel2007.php';
 
 /**
  * Creates a report.
- * 
- * @package cenozo\business
  */
 class report extends \cenozo\base_object
 {
@@ -160,6 +157,30 @@ class report extends \cenozo\base_object
       throw lib::create( 'exception\runtime',
         'Error while merging cells in report.', __METHOD__, $e );
     }
+  }
+
+  /**
+   * Removes one or more columns.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to remove.
+   * @param integer $number The number of columns to remove.
+   */
+  public function remove_column( $column, $number = 1 )
+  {
+    $this->php_excel->getActiveSheet()->removeColumn( $column, $number );
+  }
+
+  /**
+   * Removes one or more rows.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $row The row to remove.
+   * @param integer $number The number of rows to remove.
+   */
+  public function remove_row( $row, $number = 1 )
+  {
+    $this->php_excel->getActiveSheet()->removeRow( $row, $number );
   }
 
   /**

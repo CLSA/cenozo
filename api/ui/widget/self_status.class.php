@@ -3,7 +3,6 @@
  * self_status.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget self status
- * 
- * @package cenozo\ui
  */
 class self_status extends \cenozo\ui\widget
 {

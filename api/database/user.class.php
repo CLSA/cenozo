@@ -3,7 +3,6 @@
  * user.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * user: record
- *
- * @package cenozo\database
  */
 class user extends base_access
 {

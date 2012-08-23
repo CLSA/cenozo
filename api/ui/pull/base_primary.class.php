@@ -3,7 +3,6 @@
  * base_primary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * Base class for pull operations which provide a record's primary information.
  * 
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_primary extends base_record
 {

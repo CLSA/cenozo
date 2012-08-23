@@ -3,7 +3,6 @@
  * note_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * push: note new
  * 
  * Add a new note to the provided category.
- * @package cenozo\ui
  */
 class note_new extends \cenozo\ui\push
 {

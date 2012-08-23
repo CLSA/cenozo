@@ -3,7 +3,6 @@
  * base_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * Base class for all push operations which create a new record.
- * 
- * @package cenozo\ui
  */
 abstract class base_new extends base_record
 {

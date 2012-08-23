@@ -3,7 +3,6 @@
  * site_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * push: site new
  *
  * Create a new site.
- * @package cenozo\ui
  */
 class site_new extends base_new
 {

@@ -3,7 +3,6 @@
  * site.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * site: record
- *
- * @package cenozo\database
  */
 class site extends base_access
 {

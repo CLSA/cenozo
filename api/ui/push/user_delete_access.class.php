@@ -3,7 +3,6 @@
  * user_delete_access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * push: user delete_access
- * 
- * @package cenozo\ui
  */
 class user_delete_access extends base_delete_record
 {

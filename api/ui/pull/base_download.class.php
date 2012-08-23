@@ -3,7 +3,6 @@
  * base_download.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -16,7 +15,6 @@ use cenozo\lib, cenozo\log;
  * This is the base operation for all downloading.
  * 
  * @abstract
- * @package cenozo\ui
  */
 abstract class base_download extends \cenozo\ui\pull
 {

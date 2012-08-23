@@ -3,7 +3,6 @@
  * user_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget user list
- * 
- * @package cenozo\ui
  */
 class user_list extends site_restricted_list
 {

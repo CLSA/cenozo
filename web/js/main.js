@@ -54,17 +54,17 @@ function confirm_dialog( title, message, on_confirm, cancel_button ) {
  * @param string title The title of the dialog
  * @param string message The message to put in the dialog
  */
-function error_dialog( title, message ) {
+function error_dialog( title, message, warning ) {
   $( "#error_slot" ).html( message );
   $( "#error_slot" ).dialog( {
     title: title,
     modal: true,
-    dialogClass: "error",
+    dialogClass: undefined == warning ? "error" : "alert",
     width: 450,
     open: function () {
       $(this).parents( ".ui-dialog:first" )
              .find( ".ui-dialog-titlebar" )
-             .addClass( "ui-state-error" );
+             .addClass( undefined == warning ? "ui-state-error" : "ui-state-highlight" );
     },
     buttons: { Ok: function() { $(this).dialog( "close" ); } }
   } );
@@ -233,13 +233,15 @@ function ajax_complete( request, code ) {
       error_dialog(
         'Access Denied',
         '<p>You do not have permission to perform the selected operation.</p>' +
-        '<p class="error_code">Error code: ' + error_code + '</p>' );
+        '<p class="error_code">Error code: ' + error_code + '</p>',
+        true );
     }
     else if( 'Notice' == response.error_type ) {
       error_dialog(
         'Notice',
         '<p>' + response.error_message + '</p>' +
-        '<p class="error_code">Error code: ' + error_code + '</p>' );
+        '<p class="error_code">Error code: ' + error_code + '</p>',
+        true );
     }
     else { // any other error...
       error_dialog(

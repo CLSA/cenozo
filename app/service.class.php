@@ -359,7 +359,9 @@ final class service
     $util_class_name = lib::get_class_name( 'util' );
 
     if( is_null( $this->operation_name ) )
-      throw lib::create( 'exception\runtime', 'Unable to determine operation name.', __METHOD__ );
+      throw lib::create( 'exception\notice',
+        'The system did not recognize your request, please refresh or restart your browser.',
+        __METHOD__ );
       
     $class_name = sprintf( 'ui\%s\%s', $this->operation_type, $this->operation_name );
     $operation = lib::create( $class_name, $this->arguments );

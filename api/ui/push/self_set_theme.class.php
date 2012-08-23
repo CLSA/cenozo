@@ -3,7 +3,6 @@
  * self_set_theme.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -15,7 +14,6 @@ use cenozo\lib, cenozo\log;
  *
  * Changes the current user's theme.
  * Arguments must include 'theme'.
- * @package cenozo\ui
  */
 class self_set_theme extends \cenozo\ui\push
 {

@@ -3,7 +3,6 @@
  * factory.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo
  * @filesource
  */
 
@@ -16,7 +15,6 @@ namespace cenozo;
  * This is an object factory that creates multiple singletons.  Any class that extends this base
  * class can be instantiated by calling the {@link self} method.  That method will return one and
  * only one instance per class based on the first argument sent to {@link self}.
- * @package cenozo
  */
 abstract class factory
 {

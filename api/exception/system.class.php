@@ -3,7 +3,6 @@
  * system.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\exception
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log;
  * system: system exceptions
  * 
  * All system errors
- * @package cenozo\exception
  */
 class system extends base_exception
 {

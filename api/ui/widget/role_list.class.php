@@ -3,7 +3,6 @@
  * role_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * widget role list
- * 
- * @package cenozo\ui
  */
 class role_list extends base_list
 {

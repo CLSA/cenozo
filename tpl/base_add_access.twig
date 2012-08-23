@@ -46,7 +46,8 @@
             "Error: No {{ access_child }}s selected",
             "<p>You must select at least one {{ access_child }}.<br>" +
             "Please select {{ access_child }}s to add to the {{ access_parent }}, " +
-            "or click cancel.</p>" );
+            "or click cancel.</p>",
+            true );
         } else if( 0 == role_ids.length ) {
           error_dialog(
             "Error: No roles selected",
@@ -57,7 +58,8 @@
             {% else %}
               "to the {{ access_parent }}s"
             {% endif %} +
-            ", or click cancel.</p>"
+            ", or click cancel.</p>",
+            true
           );
         } else {
           var args = new Object();
