@@ -100,7 +100,7 @@ abstract class push extends operation
             $subject = substr( $column_name, 0, -3 );
             $class_name = lib::get_class_name( 'database\\'.$subject );
             $args['noid']['columns'][$subject] =
-              $class_name::get_unique_from_primary_key( $column_value );
+              $column_value ? $class_name::get_unique_from_primary_key( $column_value ) : NULL;
             unset( $args['columns'][$column_name] );
           }
         }
@@ -112,7 +112,7 @@ abstract class push extends operation
         $subject = 'id' == $column_name ? $this->get_subject() : substr( $column_name, 0, -3 );
         $class_name = lib::get_class_name( 'database\\'.$subject );
         $args['noid'][$subject] =
-          $class_name::get_unique_from_primary_key( $column_value );
+          $column_value ? $class_name::get_unique_from_primary_key( $column_value ) : NULL;
         unset( $args[$column_name] );
       }
     }
