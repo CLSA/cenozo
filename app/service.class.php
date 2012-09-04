@@ -118,6 +118,7 @@ final class service
     // make sure all paths are valid
     foreach( $SETTINGS['path'] as $key => $path )
       if( 'COOKIE' != $key &&
+          'TEMP' != $key &&
           'TEMPLATE_CACHE' != $key &&
           'REPORT_CACHE' != $key &&
           !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
