@@ -193,6 +193,18 @@
     </table>
     <hr class="ui-widget ui-widget-content">
     <table>
+      {% if use_cache %}
+        <tr>
+          <td class="heading">Refresh Cache:</td>
+          <td class="content">
+            <select id="{{ widget.full }}__refresh_cache"
+                    style="width: 100%" class="ui-state-default">
+              <option value="1">Yes</option>
+              <option value="0" selected>No</option>
+            </select>
+          </td>
+        </tr>
+      {% endif %}
       <tr>
         <td class="heading">Format:</td>
         <td class="content">
