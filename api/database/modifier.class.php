@@ -238,6 +238,50 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Changes the column name of all where statements of a given name
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $old The name of the column to change
+   * @param string $new The name to change the column to
+   * @access public
+   */
+  public function change_where_column( $old, $new )
+  {
+    foreach( $this->where_list as $index => $where )
+      if( array_key_exists( 'column', $where ) && $old == $where['column'] )
+         $this->where_list[$index]['column'] = $new;
+  }
+
+  /**
+   * Changes the column name of all group statements of a given name
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $old The name of the column to change
+   * @param string $new The name to change the column to
+   * @access public
+   */
+  public function change_group_column( $old, $new )
+  {
+    foreach( $this->group_list as $index => $group )
+      if( $old == $group ) $this->group_list[$index] = $new;
+  }
+
+  /**
+   * Changes the column name of all order statements of a given name
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $old The name of the column to change
+   * @param string $new The name to change the column to
+   * @access public
+   */
+  public function change_order_column( $old, $new )
+  {
+    $keys = array_keys( $this->order_list );
+    foreach( $keys as $index => $key ) if( $old == $key ) $keys[$index] = $new;
+    $this->order_list = array_combine( $keys, array_values( $this->order_list ) );
+  }
+
+  /**
    * Returns the modifier as an SQL statement (same as calling each individual get_*() method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
