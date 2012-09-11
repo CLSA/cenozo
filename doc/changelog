@@ -14,6 +14,11 @@
 
 * Removing defunct "site or province" option from reports
 
+* Adding new change column methods to modifier
+  - change_where_column() allows where column names to be changed
+  - change_group_column() allows group column names to be changed
+  - change_order_column() allows order column names to be changed
+
 ====================================================================================================
 0.1.6
 ====================================================================================================
