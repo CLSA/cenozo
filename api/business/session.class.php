@@ -271,12 +271,7 @@ class session extends \cenozo\singleton
         // ignore permission errors and try the code below to find access for this user
         catch( \cenozo\exception\permission $e )
         {
-          log::err( sprintf(
-            'User %s tried to access site/role ids %d/%d but do not have permission, '.
-            'trying alternative sites/roles instead.',
-            $this->user->name,
-            $_SESSION['current_site_id'],
-            $_SESSION['current_role_id'] ) );
+          // no need to log this interaction
         }
       }
       
