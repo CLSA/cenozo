@@ -178,10 +178,11 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     }
 
     // determine the record count and list
+    $count_mod = clone $modifier;
     $method_name = 'determine_'.$this->get_subject().'_count';
     $this->record_count = $this->parent && method_exists( $this->parent, $method_name )
-                        ? $this->parent->$method_name( $modifier )
-                        : $this->determine_record_count( $modifier );
+                        ? $this->parent->$method_name( $count_mod )
+                        : $this->determine_record_count( $count_mod );
 
     // make sure the page is valid, then set the rows array based on the page
     $this->max_page = ceil( $this->record_count / $this->items_per_page );
