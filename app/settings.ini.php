@@ -13,7 +13,7 @@
 global $SETTINGS;
 
 // Framework software version (is never overridded by the application's ini file)
-$fwk_settings['general']['cenozo_version'] = '0.1.6';
+$fwk_settings['general']['cenozo_version'] = '0.1.7';
 
 // When set to true all operations are disabled
 $fwk_settings['general']['maintenance_mode'] = false;
@@ -81,8 +81,10 @@ $fwk_settings['url']['JQUERY_FULLCALENDAR_CSS'] =
 // the location of log files
 $fwk_settings['path']['LOG_FILE'] = '/var/local/cenozo/log';
 
-// the location of the compiled template cache
-$fwk_settings['path']['TEMPLATE_CACHE'] = '/tmp/cenozo'.$SETTINGS['path']['APPLICATION'];
+// the location of the template and report caches
+$fwk_settings['path']['TEMP'] = '/tmp/cenozo'.$SETTINGS['path']['APPLICATION'];
+$fwk_settings['path']['TEMPLATE_CACHE'] = $fwk_settings['path']['TEMP'].'/template';
+$fwk_settings['path']['REPORT_CACHE'] = $fwk_settings['path']['TEMP'].'/report';
 
 // database settings
 $fwk_settings['db']['driver'] = 'mysql';

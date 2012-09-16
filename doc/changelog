@@ -1,4 +1,25 @@
 ====================================================================================================
+0.1.7
+====================================================================================================
+
+* Adding timesec and datetimesec types to base_view
+  - timesec is the same as time but seconds can be edited and minutes are not rounded
+  - datetimesec is the same as datetime but seconds can be edited and minutes are not rounded
+
+* Adding report caching
+  - reports can now be set to cache
+  - any cacheble report is cached every time the report is run, or when no cache exists for the
+    current day
+  - reports can be force-updated
+
+* Removing defunct "site or province" option from reports
+
+* Adding new change column methods to modifier
+  - change_where_column() allows where column names to be changed
+  - change_group_column() allows group column names to be changed
+  - change_order_column() allows order column names to be changed
+
+====================================================================================================
 0.1.6
 ====================================================================================================
 
