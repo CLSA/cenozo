@@ -44,7 +44,7 @@ abstract class base_report extends \cenozo\ui\pull
     parent::prepare();
 
     // check to see if a template exists for this report
-    $filename = sprintf( '%s/report/template/%s.xls', DOC_PATH, $this->get_full_name() );
+    $filename = sprintf( '%s/report/%s.xls', DOC_PATH, $this->get_full_name() );
     $this->report = lib::create( 'business\report', file_exists( $filename ) ? $filename : NULL );
   }
 
