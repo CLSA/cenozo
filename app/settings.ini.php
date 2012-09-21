@@ -95,6 +95,7 @@ $fwk_settings['db']['database'] = 'cenozo';
 $fwk_settings['db']['prefix'] = '';
 
 // ldap settings
+$fwk_settings['ldap']['enabled'] = true;
 $fwk_settings['ldap']['server'] = 'localhost';
 $fwk_settings['ldap']['port'] = 389;
 $fwk_settings['ldap']['base'] = '';

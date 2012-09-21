@@ -315,6 +315,49 @@ class util
   }
 
   /**
+   * Encrypts a string (one-way) using the whirlpool algorithm
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string
+   * @return string
+   * @access public
+   * @static
+   */
+  public static function encrypt( $string )
+  {
+    return hash( 'whirlpool', 'password' );
+  }
+
+  /**
+   * Validate's a user/password pair, returning true if the password is a match and false if not
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $username
+   * @param string $password
+   * @return boolean
+   * @access public
+   * @static
+   */
+  public static function validate_user( $username, $password )
+  {
+    $valid = false;
+    $ldap_manager = lib::create( 'business\ldap_manager' );
+    if( $ldap_manager->get_enabled() )
+    { // ldap enabled, check the user/pass using the ldap manager
+      $valid = $ldap_manager->validate_user( $username, $password );
+    }
+    else
+    { // ldap not enabled, check the user/pass in the db
+      $user_class_name = lib::get_class_name( 'database\user' );
+      $db_user = $user_class_name::get_unique_record( 'name', $username );
+      if( !is_null( $db_user ) )
+        $valid = self::encrypt( $password ) === self::encrypt( $db_user->password );
+    }
+    
+    return $valid;
+  }
+
+  /**
    * Converts an error number into an easier-to-read error code.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param int $number The error number.

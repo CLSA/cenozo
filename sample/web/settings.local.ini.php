@@ -30,8 +30,10 @@ $SETTINGS['db']['password'] = 'put your database password here';
 $SETTINGS['db']['prefix'] = 'put your table name prefix here';
 
 // The LDAP base dn, username, password and whether LDAP is in active directory mode
-$SETTINGS['ldap']['base'] = 'put the ldap base here';
-$SETTINGS['ldap']['username'] = 'put the ldap username here';
-$SETTINGS['ldap']['password'] = 'put the ldap password here';
-$SETTINGS['ldap']['active_directory'] = true;
+// Uncomment the following to enable LDAP-based user authentication
+//$SETTINGS['ldap']['enabled'] = true;
+//$SETTINGS['ldap']['base'] = 'put the ldap base here';
+//$SETTINGS['ldap']['username'] = 'put the ldap username here';
+//$SETTINGS['ldap']['password'] = 'put the ldap password here';
+//$SETTINGS['ldap']['active_directory'] = true;
 ?>
