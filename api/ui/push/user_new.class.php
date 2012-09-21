@@ -86,8 +86,6 @@ class user_new extends base_new
    */
   protected function execute()
   {
-    parent::execute();
-
     $columns = $this->get_argument( 'columns' );
 
     // add the user to ldap

@@ -44,7 +44,7 @@ abstract class base_report extends \cenozo\ui\pull
     parent::prepare();
 
     // check to see if a template exists for this report
-    $filename = sprintf( '%s/report/template/%s.xls', DOC_PATH, $this->get_full_name() );
+    $filename = sprintf( '%s/report/%s.xls', DOC_PATH, $this->get_full_name() );
     $this->report = lib::create( 'business\report', file_exists( $filename ) ? $filename : NULL );
   }
 
@@ -465,8 +465,10 @@ abstract class base_report extends \cenozo\ui\pull
    */
   private function get_cache_filename()
   {
-    // md5 the operation and arguments
-    $md5 = md5( serialize( array( $this->operation_record, $this->arguments ) ) );
+    // md5 the operation and arguments (without the refresh_cache argument)
+    $args = $this->arguments;
+    if( array_key_exists( 'refresh_cache', $args ) ) unset( $args['refresh_cache'] );
+    $md5 = md5( serialize( array( $this->operation_record, $args ) ) );
     
     // make first two pairs of letters directories to avoid having too many files in one directory
     $path = sprintf( '%s/%s/%s',
