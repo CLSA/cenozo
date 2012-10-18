@@ -223,6 +223,25 @@ class report extends \cenozo\base_object
   }
   
   /**
+   * Sets the orientation of the report
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @var string $orientation One of portrait, landscape or default
+   * @access public
+   */
+  public function set_orientation( $orientation )
+  {
+    $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_DEFAULT;
+
+    if( 'portrait' == $orientation )
+      $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE;
+    else if( 'landscape' == $orientation )
+      $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE;
+
+    $this->php_excel->getActiveSheet()->getPageSetup()->setOrientation( $type );
+  }
+
+  /**
    * An array of cell default formatting
    * @var array
    * @access protected
