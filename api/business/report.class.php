@@ -115,7 +115,11 @@ class report extends \cenozo\base_object
       if( !is_null( $this->current_format['size'] ) )
         $style_obj->getFont()->setSize( $this->current_format['size'] );
       if( !is_null( $this->current_format['foreground_color'] ) )
-        $style_obj->getFont()->setColor( $this->current_format['foreground_color'] );
+      {
+        $color = new \PHPExcel_Style_Color;
+        $color->setRGB( $this->current_format['foreground_color'] );
+        $style_obj->getFont()->setColor( $color );
+      }
       if( !is_null( $this->current_format['background_color'] ) )
       {
         $style_obj->getFill()->setFillType( \PHPExcel_Style_Fill::FILL_SOLID );
