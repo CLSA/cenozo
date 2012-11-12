@@ -115,7 +115,11 @@ class report extends \cenozo\base_object
       if( !is_null( $this->current_format['size'] ) )
         $style_obj->getFont()->setSize( $this->current_format['size'] );
       if( !is_null( $this->current_format['foreground_color'] ) )
-        $style_obj->getFont()->setColor( $this->current_format['foreground_color'] );
+      {
+        $color = new \PHPExcel_Style_Color;
+        $color->setRGB( $this->current_format['foreground_color'] );
+        $style_obj->getFont()->setColor( $color );
+      }
       if( !is_null( $this->current_format['background_color'] ) )
       {
         $style_obj->getFill()->setFillType( \PHPExcel_Style_Fill::FILL_SOLID );
@@ -222,6 +226,25 @@ class report extends \cenozo\base_object
     return $data;
   }
   
+  /**
+   * Sets the orientation of the report
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @var string $orientation One of portrait, landscape or default
+   * @access public
+   */
+  public function set_orientation( $orientation )
+  {
+    $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_DEFAULT;
+
+    if( 'portrait' == $orientation )
+      $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE;
+    else if( 'landscape' == $orientation )
+      $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE;
+
+    $this->php_excel->getActiveSheet()->getPageSetup()->setOrientation( $type );
+  }
+
   /**
    * An array of cell default formatting
    * @var array

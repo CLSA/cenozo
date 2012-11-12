@@ -297,7 +297,6 @@ abstract class base_report extends \cenozo\ui\pull
     // add in each table
     foreach( $this->report_tables as $table )
     {
-      print '<h1>'.$table['title'].'</h1><br>';
       $width = max(
         count( $table['header'] ),
         count( $table['footer'] ) );
@@ -313,6 +312,8 @@ abstract class base_report extends \cenozo\ui\pull
       if( !is_null( $table['title'] ) )
       {
         if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+        $this->report->set_background_color( '000000' );
+        $this->report->set_foreground_color( 'FFFFFF' );
         $this->report->set_cell( 'A'.$row, $table['title'] );
         $row++;
       }
@@ -324,8 +325,9 @@ abstract class base_report extends \cenozo\ui\pull
         $col = 'A';
         foreach( $table['header'] as $header )
         {
+          $autosize = !in_array( $col, $table['fixed'] );
           $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-          $this->report->set_cell( $col.$row, $header );
+          $this->report->set_cell( $col.$row, $header, $autosize );
           $col++;
         }
         $row++;
@@ -347,8 +349,9 @@ abstract class base_report extends \cenozo\ui\pull
           $col = 'A';
           foreach( $contents as $content )
           {
+            $autosize = !in_array( $col, $table['fixed'] );
             $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-            $this->report->set_cell( $col.$row, $content );
+            $this->report->set_cell( $col.$row, $content, $autosize );
             if( !array_key_exists( $col, $contents_are_numeric ) )
               $contents_are_numeric[$col] = false;
             $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
@@ -448,14 +451,16 @@ abstract class base_report extends \cenozo\ui\pull
    * @access public
    */
   protected function add_table(
-    $title = NULL, $header = array(), $contents = array(), $footer = array(), $blanks = array() )
+    $title = NULL, $header = array(), $contents = array(),
+    $footer = array(), $blanks = array(), $fixed = array() )
   {
     array_push( $this->report_tables,
       array( 'title' => $title,
              'header' => $header,
              'contents' => $contents,
              'footer' => $footer,
-             'blanks' => $blanks ) );
+             'blanks' => $blanks,
+             'fixed' => $fixed ) );
   }
 
   /**
