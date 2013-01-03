@@ -18,6 +18,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "activity", "list", true, "List system activity." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "activity", "primary", true, "Retrieves base activity information." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "activity", "chart", true, "Displays a chart describing system activity." );
 
 -- notes
 INSERT INTO operation( type, subject, name, restricted, description )

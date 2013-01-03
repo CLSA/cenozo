@@ -114,10 +114,30 @@ class self_menu extends \cenozo\ui\widget
                             'name' => $db_operation->name );
     }
 
+    // get all chart widgets that the user has access to
+    $charts = array();
+
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'operation.type', '=', 'widget' );
+    $modifier->where( 'operation.name', '=', 'chart' );
+    $modifier->order( 'operation.subject' );
+    $operation_chart = $db_role->get_operation_list( $modifier );
+    
+    foreach( $operation_chart as $db_operation )
+    {
+      if( !in_array( $db_operation->subject, $this->exclude_operations['chart'] ) )
+        $charts[] = array(
+          'heading' =>
+            $util_class_name::pluralize( str_replace( '_', ' ', $db_operation->subject ) ),
+          'subject' => $db_operation->subject,
+          'name' => $db_operation->name );
+    }
+
     $this->set_variable( 'calendars', $calendars );
     $this->set_variable( 'lists', $lists );
     $this->set_variable( 'utilities', $utilities );
     $this->set_variable( 'reports', $reports );
+    $this->set_variable( 'charts', $charts );
   }
 
   /**
@@ -159,6 +179,18 @@ class self_menu extends \cenozo\ui\widget
   }
 
   /**
+   * Exclude a subject from the chart operations
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param $subject string|array
+   * @access public
+   */
+  public function exclude_chart( $subject )
+  {
+    if( is_array( $subject ) ) array_merge( $this->exclude_operations['chart'], $subject );
+    else $this->exclude_operations['chart'][] = $subject;
+  }
+
+  /**
    * An array of all widgets which are not to be included in the menu
    * @var array
    * @access private
@@ -166,6 +198,7 @@ class self_menu extends \cenozo\ui\widget
   private $exclude_operations = array(
     'calendar' => array(),
     'list' => array( 'access', 'operation', 'role' ),
-    'report' => array() );
+    'report' => array(),
+    'chart' => array() );
 }
 ?>
