@@ -39,6 +39,8 @@ class activity_chart extends \cenozo\ui\widget
 
     $site_class_name = lib::get_class_name( 'database\site' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
+    $user_class_name = lib::get_class_name( 'database\user' );
+    $setting_manager = lib::create( 'business\setting_manager' );
 
     $month_data = array();
     $month_columns = array(
@@ -46,6 +48,9 @@ class activity_chart extends \cenozo\ui\widget
       array( 'type' => 'number', 'name' => 'Overall' )
     );
 
+    // don't include activity performed by the machine user
+    $db_user = $user_class_name::get_unique_record(
+      'name', $setting_manager->get_setting( 'general', 'machine_user' ) );
     $site_mod = lib::create( 'database\modifier' );
     $site_mod->order( 'name' );
 
@@ -53,6 +58,7 @@ class activity_chart extends \cenozo\ui\widget
     // this will include all weeks which had any activity
     $activity_mod = lib::create( 'database\modifier' );
     $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 31 );
+    if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
     $overall_usage = $activity_class_name::get_usage( $activity_mod );
     foreach( $overall_usage as $date => $time ) $month_data[$date] = array( $time/60 );
 
@@ -60,6 +66,7 @@ class activity_chart extends \cenozo\ui\widget
     {
       // get the usage for this site only
       $activity_mod = lib::create( 'database\modifier' );
+      if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
       $activity_mod->where( 'site_id', '=', $db_site->id );
       $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 31 );
 
@@ -84,6 +91,7 @@ class activity_chart extends \cenozo\ui\widget
     // this will include all weeks which had any activity
     $activity_mod = lib::create( 'database\modifier' );
     $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 365 );
+    if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
     $overall_usage = $activity_class_name::get_usage( $activity_mod, true );
     foreach( $overall_usage as $date => $time ) $year_data[$date] = array( $time/60/60 );
 
@@ -91,6 +99,7 @@ class activity_chart extends \cenozo\ui\widget
     {
       // get the usage for this site only
       $activity_mod = lib::create( 'database\modifier' );
+      if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
       $activity_mod->where( 'site_id', '=', $db_site->id );
       $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 365 );
 
