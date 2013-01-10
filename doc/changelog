@@ -1,4 +1,15 @@
 ====================================================================================================
+0.1.8
+====================================================================================================
+
+* Making use of an LDAP server optional
+  - if LDAP is not enabled passwords are stored in the database using whirlpool hash encryption
+
+* Adding charts as an operation type
+  - charts are included in their own category in the menu
+  - added new "activity" chart which displays server usage measured in processing time
+
+====================================================================================================
 0.1.7
 ====================================================================================================
 

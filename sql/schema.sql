@@ -13,9 +13,10 @@ CREATE  TABLE IF NOT EXISTS `user` (
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
+  `password` VARCHAR(255) NULL ,
   `first_name` VARCHAR(255) NOT NULL ,
   `last_name` VARCHAR(255) NOT NULL ,
-  `active` TINYINT(1)  NOT NULL DEFAULT true ,
+  `active` TINYINT(1) NOT NULL DEFAULT true ,
   `theme` VARCHAR(45) NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,
@@ -167,7 +168,7 @@ CREATE  TABLE IF NOT EXISTS `setting_value` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Site-specific setting overriding the default.' ;
+COMMENT = 'Site-specific setting overriding the default.';
 
 
 -- -----------------------------------------------------
@@ -182,7 +183,7 @@ CREATE  TABLE IF NOT EXISTS `operation` (
   `type` ENUM('pull','push','widget') NOT NULL ,
   `subject` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
-  `restricted` TINYINT(1)  NOT NULL DEFAULT true ,
+  `restricted` TINYINT(1) NOT NULL DEFAULT true ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_type_subject_name` (`type` ASC, `subject` ASC, `name` ASC) ,
@@ -297,7 +298,7 @@ CREATE  TABLE IF NOT EXISTS `postcode` (
   `name` VARCHAR(10) NOT NULL COMMENT 'Postcodes with the same province, tz and dst are grouped.' ,
   `region_id` INT UNSIGNED NOT NULL ,
   `timezone_offset` FLOAT NOT NULL ,
-  `daylight_savings` TINYINT(1)  NOT NULL ,
+  `daylight_savings` TINYINT(1) NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_region_id` (`region_id` ASC) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,
