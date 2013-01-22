@@ -38,6 +38,7 @@ class self_set_password extends \cenozo\ui\push
   {
     parent::validate();
 
+    $util_class_name = lib::get_class_name( 'util' );
     $ldap_manager = lib::create( 'business\ldap_manager' );
     $db_user = lib::create( 'business\session' )->get_user();
 
@@ -46,7 +47,7 @@ class self_set_password extends \cenozo\ui\push
     $confirm = $this->get_argument( 'confirm' );
     
     // make sure the old password is correct
-    if( !$ldap_manager->validate_user( $db_user->name, $old ) )
+    if( !$util_class_name::validate_user( $db_user->name, $old ) )
       throw lib::create( 'exception\notice',
         'The password you have provided is incorrect.', __METHOD__ );
     
@@ -73,12 +74,20 @@ class self_set_password extends \cenozo\ui\push
   protected function execute()
   {
     parent::execute();
+
+    $util_class_name = lib::get_class_name( 'util' );
+    $user_class_name = lib::get_class_name( 'database\user' );
   
     $ldap_manager = lib::create( 'business\ldap_manager' );
     $db_user = lib::create( 'business\session' )->get_user();
     $new = $this->get_argument( 'new' );
 
     $ldap_manager->set_user_password( $db_user->name, $new );
+    if( $user_class_name::column_exists( 'password' ) )
+    {
+      $db_user->password = $util_class_name::encrypt( $new );
+      $db_user->save();
+    }
   }
 }
 ?>

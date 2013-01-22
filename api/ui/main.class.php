@@ -22,6 +22,7 @@ class main extends \cenozo\base_object
    */
   public static function get_variables()
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
     $ldap_manager = lib::create( 'business\ldap_manager' );
     $setting_manager = lib::create( 'business\setting_manager' );
@@ -32,7 +33,7 @@ class main extends \cenozo\base_object
                $session->get_theme(),
                $setting_manager->get_setting( 'version', 'JQUERY_UI' ) );
     $variables['reset_password'] =
-      $ldap_manager->validate_user( $session->get_user()->name, 'password' );
+      $util_class_name::validate_user( $session->get_user()->name, 'password' );
     $variables['show_status'] = true;
     $variables['show_shortcuts'] = true;
     $variables['show_settings'] = true;

@@ -2016,4 +2016,4 @@ INSERT INTO postcode ( name, region_id, timezone_offset, daylight_savings ) VALU
 ( "99666", ( SELECT id FROM region WHERE abbreviation = "AK" ), -9, 1 ),
 ( "99667", ( SELECT id FROM region WHERE abbreviation = "AK" ), -9, 1 ),
 ( "99668", ( SELECT id FROM region WHERE abbreviation = "AK" ), -9, 1 ),
-( "99669", ( SELECT id FROM region WHERE abbreviation = "AK" ), -9, 1 ) );
+( "99669", ( SELECT id FROM region WHERE abbreviation = "AK" ), -9, 1 );

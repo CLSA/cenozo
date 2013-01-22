@@ -117,5 +117,32 @@ class activity extends record
 
     return $total_time;
   }
+
+  /**
+   * Returns the activity count by week.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier A modifier to apply to the query
+   * @param $weekly boolean Totals are groupd by week if true, by day if false
+   * @return associative array
+   * @static
+   * @access public
+   */
+  public static function get_usage( $modifier = NULL, $weekly = false )
+  {
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->group( $weekly ? 'YEARWEEK( datetime )' : 'DATE( datetime )' );
+
+    // need custom sql
+    $rows = static::db()->get_all( sprintf(
+      'SELECT DATE( datetime ) %s AS date, SUM( elapsed ) AS time '.
+      'FROM activity %s',
+      $weekly ? '- INTERVAL( DAYOFWEEK( datetime ) - 4 ) DAY' : '',
+      $modifier->get_sql() ) );
+
+    $usage = array();
+    foreach( $rows as $row ) $usage[$row['date']] = $row['time'];
+    return $usage;
+  }
 }
 ?>

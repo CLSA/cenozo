@@ -78,6 +78,14 @@
           {% endif %}
         } );
       {% endfor %}
+      {% for item in charts %}
+        $( "#{{ widget.full }}__{{ item.subject }}_{{ item.name }}" ).button().click( function() {
+          $( "#left_extruder" ).closeMbExtruder();
+          window.open(
+            "slot/chart/load/{{ item.subject }}/{{ item.name }}",
+            document.URL + "{{ item.subject }}_{{ item.name }}" );
+        } );
+      {% endfor %}
     } );
   </script>
 
@@ -127,6 +135,18 @@
                   style="width: 100%;">{{ report.heading|ucwords }}</button>
         </div>
       {% endfor %}
+      <div class="spacer" />
+    {% endif %}
+
+    {% if charts|length %}
+      <div class="title" style="text-align: center">Charts</div>
+      {% for chart in charts %}
+        <div style="padding: 2px;">
+          <button id="{{ widget.full }}__{{ chart.subject }}_{{ chart.name }}"
+                  style="width: 100%;">{{ chart.heading|ucwords }}</button>
+        </div>
+      {% endfor %}
+      <div class="spacer" />
     {% endif %}
   </div>
 
