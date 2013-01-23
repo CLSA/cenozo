@@ -92,29 +92,42 @@ abstract class base_edit extends base_record
     parent::execute();
 
     $columns = $this->get_argument( 'columns', array() );
+    $record = $this->get_record();
+    $record_class_name = lib::get_class_name( 'database\\'.$record->get_table_name() );
     
-    // set record column values
-    foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
-    
-    try
+    // set record column values if column exists in record
+    $edit = false;
+    foreach( $columns as $column => $value )
     {
-      $this->get_record()->save();
-    }
-    catch( \cenozo\exception\database $e )
-    { // help describe exceptions to the user
-      if( $e->is_duplicate_entry() )
+      if( $record_class_name::column_exists( $column ) )
       {
-        reset( $columns );
-        throw lib::create( 'exception\notice',
-          1 == count( $columns )
-          ? sprintf( 'Unable to set %s to "%s" because that value is already being used.',
-                     key( $columns ),
-                     current( $columns ) )
-          : 'Unable to modify the '.$this->get_subject().' because it is no longer unique.',
-          __METHOD__, $e );
+        $record->$column = $value;
+        $edit = true;
       }
+    }
+    
+    if( $edit )
+    { // only bother to save the record if at least one column has been edited
+      try
+      {
+        $record->save();
+      }
+      catch( \cenozo\exception\database $e )
+      { // help describe exceptions to the user
+        if( $e->is_duplicate_entry() )
+        {
+          reset( $columns );
+          throw lib::create( 'exception\notice',
+            1 == count( $columns )
+            ? sprintf( 'Unable to set %s to "%s" because that value is already being used.',
+                       key( $columns ),
+                       current( $columns ) )
+            : 'Unable to modify the '.$this->get_subject().' because it is no longer unique.',
+            __METHOD__, $e );
+        }
 
-      throw $e;
+        throw $e;
+      }
     }
   }
 }

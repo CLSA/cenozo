@@ -89,45 +89,57 @@ abstract class base_new extends base_record
     parent::execute();
     
     $columns = $this->get_argument( 'columns', array() );
+    $record = $this->get_record();
 
-    // set record column values
-    foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
-
-    try
+    // set record column values if column exists in record
+    $edit = false;
+    foreach( $columns as $column => $value )
     {
-      $this->get_record()->save();
+      if( $record_class_name::column_exists( $column ) )
+      {
+        $record->$column = $value;
+        $edit = true;
+      }
     }
-    catch( \cenozo\exception\database $e )
-    { // help describe exceptions to the user
-      if( $e->is_duplicate_entry() )
+    
+    if( $edit )
+    { // only bother to save the record if at least one column has been edited
+      try
       {
-        throw lib::create( 'exception\notice',
-          'Unable to create the new '.$this->get_subject().' because it is not unique.',
-          __METHOD__, $e );
+        $record->save();
       }
-      else if( $e->is_missing_data() )
-      {
-        $matches = array();
-        $found = preg_match( "/Column '[^']+'/", $e->get_raw_message(), $matches );
-
-        if( $found )
+      catch( \cenozo\exception\database $e )
+      { // help describe exceptions to the user
+        if( $e->is_duplicate_entry() )
         {
-          $message = sprintf(
-            'You must specify "%s" in order to create a new %s.',
-            substr( $matches[0], 8, -1 ),
-            $this->get_subject() );
+          throw lib::create( 'exception\notice',
+            'Unable to create the new '.$this->get_subject().' because it is not unique.',
+            __METHOD__, $e );
         }
-        else
+        else if( $e->is_missing_data() )
         {
-          $message = sprintf(
-            'Unable to create the new %s, not all mandatory fields have been filled out.',
-            $this->get_subect() );
+          $matches = array();
+          $found = preg_match( "/Column '[^']+'/", $e->get_raw_message(), $matches );
+
+          if( $found )
+          {
+            $message = sprintf(
+              'You must specify "%s" in order to create a new %s.',
+              substr( $matches[0], 8, -1 ),
+              $this->get_subject() );
+          }
+          else
+          {
+            $message = sprintf(
+              'Unable to create the new %s, not all mandatory fields have been filled out.',
+              $this->get_subect() );
+          }
+
+          throw lib::create( 'exception\notice', $message, __METHOD__, $e );
         }
 
-        throw lib::create( 'exception\notice', $message, __METHOD__, $e );
+        throw $e;
       }
-
-      throw $e;
     }
   }
 }
