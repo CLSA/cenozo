@@ -90,6 +90,7 @@ abstract class base_new extends base_record
     
     $columns = $this->get_argument( 'columns', array() );
     $record = $this->get_record();
+    $record_class_name = lib::get_class_name( 'database\\'.$record->get_table_name() );
 
     // set record column values if column exists in record
     $edit = false;
