@@ -118,11 +118,14 @@ abstract class base_edit extends base_record
         {
           reset( $columns );
           throw lib::create( 'exception\notice',
-            1 == count( $columns )
+            1 == count( $columns ) &&
+            '_id' != substr( key( $columns ), -3 )
             ? sprintf( 'Unable to set %s to "%s" because that value is already being used.',
                        key( $columns ),
                        current( $columns ) )
-            : 'Unable to modify the '.$this->get_subject().' because it is no longer unique.',
+            : sprintf( 'Unable to modify the %s because it conflicts with another pre-existing %s.',
+                       $this->get_subject(),
+                       $this->get_subject() ),
             __METHOD__, $e );
         }
 
