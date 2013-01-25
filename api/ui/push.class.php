@@ -65,7 +65,6 @@ abstract class push extends operation
 
   /**
    * Finishes the operation with any post-execution instructions that may be necessary.
-   * TODO: convert to protected
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
