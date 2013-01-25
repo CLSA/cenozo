@@ -1,4 +1,15 @@
 ====================================================================================================
+0.1.9
+====================================================================================================
+
+* Various improvements
+  - Testing for table.column existance before writing in base_edit
+  - Improving notice message when database duplicates are detected
+  - Detecting a machine request using HTTP_APPLICATION_NAME instead of noid arguments
+  - Making booleans print nicer in log
+  - Adding new censored_operation_list so that passwords aren't logged
+
+====================================================================================================
 0.1.8
 ====================================================================================================
 
