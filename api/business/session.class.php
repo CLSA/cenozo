@@ -376,7 +376,9 @@ class session extends \cenozo\singleton
 
     // add the operation to the activity and save it
     $this->activity->operation_id = $operation->get_id();
-    $this->activity->query = serialize( $arguments );
+    $this->activity->query = in_array( $operation->get_full_name(), $this->censored_operation_list )
+                           ? '(censored)'
+                           : serialize( $arguments );
     $this->activity->elapsed = $util_class_name::get_elapsed_time();
     $this->activity->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
     $this->activity->save();
@@ -672,6 +674,13 @@ class session extends \cenozo\singleton
   {
     return $this->initialized;
   }
+
+  /**
+   * A list of all operations who's query values are to be censored when writing to the activity log
+   * @var array
+   * @access protected
+   */
+  protected $censored_operation_list = array( 'self_set_password', 'user_set_password' );
 
   /**
    * Whether the session has been initialized
