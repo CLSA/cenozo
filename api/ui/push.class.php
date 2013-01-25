@@ -59,7 +59,7 @@ abstract class push extends operation
   {
     parent::setup();
 
-    if( !$this->machine_request_received && $this->machine_request_enabled )
+    if( !$this->get_machine_request_received() && $this->machine_request_enabled )
       $this->machine_arguments = $this->convert_to_noid( $this->arguments );
   }
 
@@ -75,7 +75,7 @@ abstract class push extends operation
     parent::finish();
 
     // if this operation was not received by machine then send a machine request
-    if( !$this->machine_request_received && $this->machine_request_enabled )
+    if( !$this->get_machine_request_received() && $this->machine_request_enabled )
       $this->send_machine_request();
   }
 
@@ -136,8 +136,6 @@ abstract class push extends operation
   {
     if( array_key_exists( 'noid', $args ) )
     {
-      $this->machine_request_received = true;
-      
       // remove the noid argument
       $noid = $args['noid'];
       unset( $args['noid'] );
@@ -240,7 +238,7 @@ abstract class push extends operation
    */
   public function get_machine_request_received()
   {
-    return $this->machine_request_received;
+    return array_key_exists( 'HTTP_APPLICATION_NAME', $_SERVER );
   }
 
   /**
@@ -255,7 +253,7 @@ abstract class push extends operation
   {
     $name = array_key_exists( 'HTTP_APPLICATION_NAME', $_SERVER )
           ? $_SERVER['HTTP_APPLICATION_NAME'] : '';
-    return $this->machine_request_received ? $name : NULL;
+    return $this->get_machine_request_received() ? $name : NULL;
   }
 
   /**
@@ -282,13 +280,6 @@ abstract class push extends operation
    * @access private
    */
   private $machine_request_enabled = false;
-
-  /**
-   * Whether or not this operation was requested by a machine.
-   * @var boolean
-   * @access private
-   */
-  private $machine_request_received = false;
 
   /**
    * The arguments to send with a machine request.
