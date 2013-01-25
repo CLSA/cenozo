@@ -253,13 +253,16 @@ final class log extends singleton
     $class_name = lib::get_class_name( 'business\session' );
     if( !class_exists( $class_name ) || !$class_name::exists() ) return;
 
-    // replace cenozo and application path strings with something smaller
     if( is_string( $message ) )
-    {
+    { // replace cenozo and application path strings with something smaller
       $message = str_replace(
         array( CENOZO_PATH, APPLICATION_PATH ),
         array( 'cenozo', APPNAME ),
         $message );
+    }
+    else if( is_bool( $message ) )
+    { // convert booleans to a string so that they display properly
+      $message = $message ? 'true' : 'false';
     }
 
     // if in devel mode log to firephp
