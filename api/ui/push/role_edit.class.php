@@ -27,4 +27,3 @@ class role_edit extends base_edit
     parent::__construct( 'role', $args );
   }
 }
-?>

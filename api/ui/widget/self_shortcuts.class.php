@@ -58,4 +58,3 @@ class self_shortcuts extends \cenozo\ui\widget
     $this->set_variable( 'home', false );
   }
 }
-?>

@@ -331,4 +331,3 @@ final class lib
    */
   private static $registered = false;
 }
-?>

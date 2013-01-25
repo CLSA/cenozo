@@ -58,4 +58,3 @@ class self_password extends \cenozo\ui\widget
         lib::create( 'business\session' )->get_user()->name, 'password' ) );
   }
 }
-?>

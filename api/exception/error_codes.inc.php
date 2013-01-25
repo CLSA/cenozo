@@ -226,4 +226,3 @@ define( 'RUNTIME__CENOZO_UI_WIDGET_NOTE_LIST__SETUP__ERRNO',
  * Since template errors already have codes this list is likely to stay empty.
  */
 
-?>

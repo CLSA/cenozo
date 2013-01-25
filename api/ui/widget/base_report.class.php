@@ -328,4 +328,3 @@ abstract class base_report extends \cenozo\ui\widget
    */
   protected $use_cache = false;
 }
-?>

@@ -106,4 +106,3 @@ class role_view extends base_view
    */
   protected $operation_list = NULL;
 }
-?>

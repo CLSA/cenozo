@@ -46,4 +46,3 @@ class system_message_edit extends base_edit
         'You do not have access to edit this system message.', __METHOD__ );
   }
 }
-?>

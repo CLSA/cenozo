@@ -67,4 +67,3 @@ class site_list extends base_list
     }
   }
 }
-?>

@@ -294,4 +294,3 @@ abstract class push extends operation
    */
   private $machine_credentials = false;
 }
-?>

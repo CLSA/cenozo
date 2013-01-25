@@ -14,4 +14,3 @@ $SETTINGS['general']['version'] = '1.0.0';
 
 // Whether or not to run the application in development mode
 $SETTINGS['general']['development_mode'] = false;
-?>

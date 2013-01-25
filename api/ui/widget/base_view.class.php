@@ -402,4 +402,3 @@ abstract class base_view extends base_record implements actionable
    */
   private static $base_view_count = 0;
 }
-?>

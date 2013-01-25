@@ -76,4 +76,3 @@ abstract class pull extends operation
    */
   protected $modifier = NULL;
 }
-?>

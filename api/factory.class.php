@@ -80,4 +80,3 @@ abstract class factory
    */
   private static $instance_list = array();
 }
-?>

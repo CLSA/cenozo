@@ -93,4 +93,3 @@ class access extends record
     parent::delete();
   }
 }
-?>

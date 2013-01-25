@@ -33,5 +33,3 @@ $SETTINGS['ldap']['base'] = '';
 $SETTINGS['ldap']['username'] = '';
 $SETTINGS['ldap']['password'] = '';
 $SETTINGS['ldap']['active_directory'] = true;
-
-?>

@@ -13,4 +13,3 @@ use cenozo\lib, cenozo\log;
  * setting_value: record
  */
 class setting_value extends record {}
-?>

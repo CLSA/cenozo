@@ -145,4 +145,3 @@ class activity extends record
     return $usage;
   }
 }
-?>

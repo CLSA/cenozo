@@ -144,4 +144,3 @@ abstract class base_new extends base_record
     }
   }
 }
-?>

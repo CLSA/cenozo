@@ -134,4 +134,3 @@ abstract class base_edit extends base_record
     }
   }
 }
-?>

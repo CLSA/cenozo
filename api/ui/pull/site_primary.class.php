@@ -26,4 +26,3 @@ class site_primary extends base_primary
     parent::__construct( 'site', $args );
   }
 }
-?>

@@ -26,4 +26,3 @@ class user_primary extends base_primary
     parent::__construct( 'user', $args );
   }
 }
-?>

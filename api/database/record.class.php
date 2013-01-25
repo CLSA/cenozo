@@ -1318,4 +1318,3 @@ abstract class record extends \cenozo\base_object
    */
   private static $custom_join_list = array();
 }
-?>

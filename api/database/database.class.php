@@ -685,4 +685,3 @@ class database extends \cenozo\base_object
    */
   private $prefix;
 }
-?>

@@ -218,4 +218,3 @@ abstract class base_access extends record
            : $class_name::count( $modifier );
   }
 }
-?>

@@ -36,4 +36,3 @@ $SETTINGS['db']['prefix'] = 'put your table name prefix here';
 //$SETTINGS['ldap']['username'] = 'put the ldap username here';
 //$SETTINGS['ldap']['password'] = 'put the ldap password here';
 //$SETTINGS['ldap']['active_directory'] = true;
-?>

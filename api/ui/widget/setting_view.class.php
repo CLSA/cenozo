@@ -87,4 +87,3 @@ class setting_view extends base_view
     $this->set_item( 'description', $this->get_record()->description, false );
   }
 }
-?>

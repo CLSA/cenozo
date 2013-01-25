@@ -80,4 +80,3 @@ abstract class base_list_record extends base_record
    */
   protected $child = NULL;
 }
-?>

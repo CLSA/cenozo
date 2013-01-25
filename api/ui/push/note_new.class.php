@@ -86,4 +86,3 @@ class note_new extends \cenozo\ui\push
     return $args;
   }
 }
-?>

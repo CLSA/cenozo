@@ -77,4 +77,3 @@ class site_add_access extends base_add_access
     return $user_class_name::select( $modifier );
   }
 }
-?>

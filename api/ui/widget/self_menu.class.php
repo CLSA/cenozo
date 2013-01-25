@@ -201,4 +201,3 @@ class self_menu extends \cenozo\ui\widget
     'report' => array(),
     'chart' => array() );
 }
-?>

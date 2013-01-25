@@ -66,4 +66,3 @@ class operation_list extends base_list
     }
   }
 }
-?>

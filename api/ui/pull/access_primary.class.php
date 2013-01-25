@@ -26,4 +26,3 @@ class access_primary extends base_primary
     parent::__construct( 'access', $args );
   }
 }
-?>

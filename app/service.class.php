@@ -546,4 +546,3 @@ final class service
    */
   private $twig;
 }
-?>

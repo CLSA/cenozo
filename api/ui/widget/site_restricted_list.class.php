@@ -160,4 +160,3 @@ abstract class site_restricted_list extends base_list
    */
   protected $db_restrict_site = NULL;
 }
-?>

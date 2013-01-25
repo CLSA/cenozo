@@ -48,4 +48,3 @@ class main extends \cenozo\base_object
     return $variables;
   }
 }
-?>

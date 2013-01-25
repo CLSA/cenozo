@@ -169,4 +169,3 @@ class site_view extends base_view
    */
   protected $activity_list = NULL;
 }
-?>

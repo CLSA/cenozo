@@ -25,4 +25,3 @@ class user_new_access extends base_new_access
     parent::__construct( 'user', $args );
   }
 }
-?>

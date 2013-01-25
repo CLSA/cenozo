@@ -42,4 +42,3 @@ class site_new extends base_new
       throw lib::create( 'exception\notice', 'The site name cannot be left blank.', __METHOD__ );
   }
 }
-?>

@@ -26,4 +26,3 @@ class system_message_primary extends base_primary
     parent::__construct( 'system_message', $args );
   }
 }
-?>

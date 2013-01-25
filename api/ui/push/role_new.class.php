@@ -43,4 +43,3 @@ class role_new extends base_new
       throw lib::create( 'exception\notice', 'The role name cannot be left blank.', __METHOD__ );
   }
 }
-?>

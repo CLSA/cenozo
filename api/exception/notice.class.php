@@ -45,4 +45,3 @@ class notice extends base_exception
    */
   public function get_notice() { return $this->get_raw_message(); }
 }
-?>

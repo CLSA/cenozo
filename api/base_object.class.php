@@ -27,4 +27,3 @@ abstract class base_object
     return substr( strrchr( get_called_class(), '\\' ), 1 );
   }
 }
-?>

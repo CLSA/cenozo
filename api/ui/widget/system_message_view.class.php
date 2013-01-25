@@ -88,4 +88,3 @@ class system_message_view extends base_view
     $this->set_item( 'note', $this->get_record()->note, true );
   }
 }
-?>

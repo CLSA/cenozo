@@ -196,4 +196,3 @@ class user_view extends base_view
    */
   protected $activity_list = NULL;
 }
-?>

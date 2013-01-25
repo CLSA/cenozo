@@ -26,4 +26,3 @@ class activity_primary extends base_primary
     parent::__construct( 'activity', $args );
   }
 }
-?>

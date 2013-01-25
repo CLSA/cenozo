@@ -27,4 +27,3 @@ class site_edit extends base_edit
     parent::__construct( 'site', $args );
   }
 }
-?>

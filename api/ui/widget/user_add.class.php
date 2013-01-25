@@ -92,4 +92,3 @@ class user_add extends base_view
     $this->set_item( 'role_id', current( $roles ), true, $roles );
   }
 }
-?>

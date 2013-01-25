@@ -87,4 +87,3 @@ class setting_list extends base_list
     }
   }
 }
-?>

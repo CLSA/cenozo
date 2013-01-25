@@ -96,4 +96,3 @@ class setting_edit extends base_edit
    */
   protected $site_value = NULL;
 }
-?>

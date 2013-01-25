@@ -657,4 +657,3 @@ class util
     return $encoded_arg;
   }
 }
-?>

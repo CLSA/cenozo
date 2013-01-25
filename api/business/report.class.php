@@ -265,4 +265,3 @@ class report extends \cenozo\base_object
    */
   protected $php_excel = NULL;
 }
-?>

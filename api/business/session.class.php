@@ -743,4 +743,3 @@ class session extends \cenozo\singleton
    */
   private $transaction = false;
 }
-?>

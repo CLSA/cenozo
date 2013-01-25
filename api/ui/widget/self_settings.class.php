@@ -85,4 +85,3 @@ class self_settings extends \cenozo\ui\widget
     $this->set_variable( 'logo', false );
   }
 }
-?>

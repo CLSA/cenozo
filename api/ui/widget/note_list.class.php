@@ -81,4 +81,3 @@ class note_list extends \cenozo\ui\widget
     }
   }
 }
-?>

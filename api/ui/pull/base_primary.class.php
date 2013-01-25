@@ -53,4 +53,3 @@ abstract class base_primary extends base_record
    */
   public function get_data_type() { return "json"; }
 }
-?>

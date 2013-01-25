@@ -26,4 +26,3 @@ class setting_primary extends base_primary
     parent::__construct( 'setting', $args );
   }
 }
-?>

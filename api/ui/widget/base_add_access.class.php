@@ -105,4 +105,3 @@ class base_add_access extends base_add_list
    */
   protected $role_list = NULL;
 }
-?>

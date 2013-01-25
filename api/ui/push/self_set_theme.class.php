@@ -41,4 +41,3 @@ class self_set_theme extends \cenozo\ui\push
     $db_user->save();
   }
 }
-?>

@@ -56,4 +56,3 @@ abstract class singleton
    */
   private static $instance_list = array();
 }
-?>

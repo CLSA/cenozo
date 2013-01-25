@@ -92,4 +92,3 @@ class user extends base_access
     $db_access->delete();
   }
 }
-?>

@@ -97,4 +97,3 @@ class site extends base_access
     return $datetime_obj->format( $format );
   }
 }
-?>

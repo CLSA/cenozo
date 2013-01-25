@@ -509,4 +509,3 @@ abstract class base_report extends \cenozo\ui\pull
    */
   protected $report;
 }
-?>

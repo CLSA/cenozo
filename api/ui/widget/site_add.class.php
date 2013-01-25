@@ -63,4 +63,3 @@ class site_add extends base_view
     $this->set_item( 'timezone', key( $timezones ), true, $timezones );
   }
 }
-?>

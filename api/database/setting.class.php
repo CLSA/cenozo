@@ -37,4 +37,3 @@ class setting extends record
     return is_null( $id ) ? NULL : new static( $id );
   }
 }
-?>

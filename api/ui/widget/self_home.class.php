@@ -125,4 +125,3 @@ class self_home extends \cenozo\ui\widget
 
   }
 }
-?>

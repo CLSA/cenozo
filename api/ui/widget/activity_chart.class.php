@@ -122,4 +122,3 @@ class activity_chart extends \cenozo\ui\widget
     $this->set_variable( 'year_data', $year_data );
   }
 }
-?>

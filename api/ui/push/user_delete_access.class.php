@@ -25,4 +25,3 @@ class user_delete_access extends base_delete_record
     parent::__construct( 'user', 'access', $args );
   }
 }
-?>

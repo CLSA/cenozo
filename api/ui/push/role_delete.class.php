@@ -25,4 +25,3 @@ class role_delete extends base_delete
     parent::__construct( 'role', $args );
   }
 }
-?>

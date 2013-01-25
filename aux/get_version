@@ -38,4 +38,3 @@ if( !isset( $fwk_settings ) ||
 }
 
 print $fwk_settings['general']['cenozo_version']."\n";
-?>

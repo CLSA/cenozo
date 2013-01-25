@@ -572,4 +572,3 @@ final class log extends singleton
 // define a custom error handlers
 set_error_handler( array( '\cenozo\log', 'error_handler' ) );
 register_shutdown_function( array( '\cenozo\log', 'fatal_error_handler' ) );
-?>

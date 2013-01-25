@@ -126,4 +126,3 @@ foreach( array_merge( array_keys( $fwk_settings ), array_keys( $app_settings ) )
   if( array_key_exists( $category, $app_settings ) )
     $SETTINGS[$category] = array_merge( $SETTINGS[$category], $app_settings[$category] );
 }
-?>

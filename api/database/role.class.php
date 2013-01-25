@@ -34,4 +34,3 @@ class role extends base_access
     return 0 < $this->get_operation_count( $modifier );
   }
 }
-?>
