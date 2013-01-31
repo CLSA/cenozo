@@ -19,11 +19,13 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`user` (
   `password` VARCHAR(255) NULL DEFAULT NULL ,
   `first_name` VARCHAR(255) NOT NULL ,
   `last_name` VARCHAR(255) NOT NULL ,
-  `active` TINYINT(1) NOT NULL DEFAULT true ,
+  `active` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `language` ENUM('any','en','fr') NOT NULL DEFAULT 'en' ,
   `theme` VARCHAR(45) NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,
-  INDEX `dk_active` (`active` ASC) )
+  INDEX `dk_active` (`active` ASC) ,
+  INDEX `dk_language` (`language` ASC) )
 ENGINE = InnoDB;
 
 
@@ -44,42 +46,18 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `cenozo`.`cohort`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`cohort` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`cohort` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  `name` VARCHAR(45) NOT NULL ,
-  `grouping` ENUM('region','jurisdiction') NOT NULL DEFAULT 'region' ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) )
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
 -- Table `cenozo`.`service`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`service` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`service` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
-  `cohort_id` INT(10) UNSIGNED NOT NULL ,
+  `version` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) ,
-  UNIQUE INDEX `uq_cohort_id` (`cohort_id` ASC) ,
-  INDEX `fk_cohort_id` (`cohort_id` ASC) ,
-  CONSTRAINT `fk_service_cohort_id`
-    FOREIGN KEY (`cohort_id` )
-    REFERENCES `cenozo`.`cohort` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+  UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
@@ -90,18 +68,31 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`site` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`site` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
-  `service_id` INT(10) UNSIGNED NOT NULL ,
+  `service_id` INT UNSIGNED NOT NULL ,
   `timezone` ENUM('Canada/Pacific','Canada/Mountain','Canada/Central','Canada/Eastern','Canada/Atlantic','Canada/Newfoundland') NOT NULL ,
+  `title` VARCHAR(45) NULL ,
+  `phone_number` VARCHAR(45) NULL ,
+  `address1` VARCHAR(512) NULL ,
+  `address2` VARCHAR(512) NULL ,
+  `city` VARCHAR(100) NULL ,
+  `region_id` INT UNSIGNED NULL ,
+  `postcode` VARCHAR(10) NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name_service_id` (`name` ASC, `service_id` ASC) ,
   INDEX `fk_service_id` (`service_id` ASC) ,
+  INDEX `fk_site_region_id` (`region_id` ASC) ,
   CONSTRAINT `fk_site_service_id`
     FOREIGN KEY (`service_id` )
     REFERENCES `cenozo`.`service` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_site_region_id`
+    FOREIGN KEY (`region_id` )
+    REFERENCES `cenozo`.`region` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -114,13 +105,13 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`region` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`region` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `abbreviation` VARCHAR(5) NOT NULL ,
   `country` VARCHAR(45) NOT NULL ,
-  `site_id` INT(10) UNSIGNED NULL DEFAULT NULL COMMENT 'Which site manages participants.' ,
+  `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which site manages participants.' ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,
   UNIQUE INDEX `uq_abbreviation` (`abbreviation` ASC) ,
@@ -130,6 +121,23 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`region` (
     REFERENCES `cenozo`.`site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
+
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`cohort`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`cohort` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`cohort` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `grouping` ENUM('region','jurisdiction') NOT NULL DEFAULT 'region' ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
@@ -178,6 +186,7 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`system_message` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
+  `service_id` INT UNSIGNED NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL ,
   `role_id` INT UNSIGNED NULL DEFAULT NULL ,
   `title` VARCHAR(255) NOT NULL ,
@@ -185,6 +194,7 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`system_message` (
   PRIMARY KEY (`id`) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
+  INDEX `fk_service_id` (`service_id` ASC) ,
   CONSTRAINT `fk_system_message_site_id`
     FOREIGN KEY (`site_id` )
     REFERENCES `cenozo`.`site` (`id` )
@@ -194,150 +204,10 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`system_message` (
     FOREIGN KEY (`role_id` )
     REFERENCES `cenozo`.`role` (`id` )
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`setting`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`setting` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`setting` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  `category` VARCHAR(45) NOT NULL ,
-  `name` VARCHAR(45) NOT NULL ,
-  `type` ENUM('boolean', 'integer', 'float', 'string') NOT NULL ,
-  `value` VARCHAR(45) NOT NULL ,
-  `description` TEXT NULL DEFAULT NULL ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_category_name` (`category` ASC, `name` ASC) ,
-  INDEX `dk_category` (`category` ASC) ,
-  INDEX `dk_name` (`name` ASC) )
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`setting_value`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`setting_value` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`setting_value` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  `setting_id` INT UNSIGNED NOT NULL ,
-  `site_id` INT UNSIGNED NOT NULL ,
-  `value` VARCHAR(45) NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `fk_setting_id` (`setting_id` ASC) ,
-  INDEX `fk_site_id` (`site_id` ASC) ,
-  UNIQUE INDEX `uq_setting_id_site_id` (`setting_id` ASC, `site_id` ASC) ,
-  CONSTRAINT `fk_setting_value_setting_id`
-    FOREIGN KEY (`setting_id` )
-    REFERENCES `cenozo`.`setting` (`id` )
-    ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_setting_value_site_id`
-    FOREIGN KEY (`site_id` )
-    REFERENCES `cenozo`.`site` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Site-specific setting overriding the default.';
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`operation`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`operation` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`operation` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  `type` ENUM('pull','push','widget') NOT NULL ,
-  `subject` VARCHAR(45) NOT NULL ,
-  `name` VARCHAR(45) NOT NULL ,
-  `restricted` TINYINT(1) NOT NULL DEFAULT true ,
-  `description` TEXT NULL DEFAULT NULL ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_type_subject_name` (`type` ASC, `subject` ASC, `name` ASC) ,
-  INDEX `dk_type` (`type` ASC) ,
-  INDEX `dk_subject` (`subject` ASC) ,
-  INDEX `dk_name` (`name` ASC) )
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`activity`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`activity` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`activity` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  `user_id` INT UNSIGNED NOT NULL ,
-  `role_id` INT UNSIGNED NOT NULL ,
-  `site_id` INT UNSIGNED NOT NULL ,
-  `operation_id` INT UNSIGNED NOT NULL ,
-  `query` VARCHAR(511) NOT NULL ,
-  `elapsed` FLOAT NOT NULL DEFAULT 0 COMMENT 'The total time to perform the operation in seconds.' ,
-  `error_code` VARCHAR(20) NULL DEFAULT '(incomplete)' COMMENT 'NULL if no error occurred.' ,
-  `datetime` DATETIME NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `fk_user_id` (`user_id` ASC) ,
-  INDEX `fk_role_id` (`role_id` ASC) ,
-  INDEX `fk_site_id` (`site_id` ASC) ,
-  INDEX `fk_operation_id` (`operation_id` ASC) ,
-  INDEX `dk_datetime` (`datetime` ASC) ,
-  CONSTRAINT `fk_activity_user_id`
-    FOREIGN KEY (`user_id` )
-    REFERENCES `cenozo`.`user` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_activity_role_id`
-    FOREIGN KEY (`role_id` )
-    REFERENCES `cenozo`.`role` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_activity_site_id`
-    FOREIGN KEY (`site_id` )
-    REFERENCES `cenozo`.`site` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_activity_operation_id`
-    FOREIGN KEY (`operation_id` )
-    REFERENCES `cenozo`.`operation` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`role_has_operation`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`role_has_operation` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`role_has_operation` (
-  `role_id` INT UNSIGNED NOT NULL ,
-  `operation_id` INT UNSIGNED NOT NULL ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  PRIMARY KEY (`role_id`, `operation_id`) ,
-  INDEX `fk_operation_id` (`operation_id` ASC) ,
-  INDEX `fk_role_id` (`role_id` ASC) ,
-  CONSTRAINT `fk_role_has_operation_role_id`
-    FOREIGN KEY (`role_id` )
-    REFERENCES `cenozo`.`role` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_role_has_operation_operation_id`
-    FOREIGN KEY (`operation_id` )
-    REFERENCES `cenozo`.`operation` (`id` )
+  CONSTRAINT `fk_system_message_service_id`
+    FOREIGN KEY (`service_id` )
+    REFERENCES `cenozo`.`service` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -352,8 +222,8 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`postcode` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `name` VARCHAR(10) NOT NULL COMMENT 'Postcodes with the same province, tz and dst are grouped.' ,
-  `region_id` INT(10) UNSIGNED NOT NULL ,
+  `name` VARCHAR(7) NOT NULL COMMENT 'Postcodes with the same province, tz and dst are grouped.' ,
+  `region_id` INT UNSIGNED NOT NULL ,
   `timezone_offset` FLOAT NOT NULL ,
   `daylight_savings` TINYINT(1) NOT NULL ,
   PRIMARY KEY (`id`) ,
@@ -373,7 +243,7 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `cenozo`.`person` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`person` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   PRIMARY KEY (`id`) )
@@ -387,31 +257,31 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`address` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`address` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `person_id` INT(10) UNSIGNED NOT NULL ,
-  `active` TINYINT(1) NOT NULL DEFAULT true ,
-  `rank` INT(11) NOT NULL ,
+  `person_id` INT UNSIGNED NOT NULL ,
+  `active` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `rank` INT NOT NULL ,
   `address1` VARCHAR(512) NOT NULL ,
   `address2` VARCHAR(512) NULL DEFAULT NULL ,
   `city` VARCHAR(100) NOT NULL ,
-  `region_id` INT(10) UNSIGNED NOT NULL ,
+  `region_id` INT UNSIGNED NOT NULL ,
   `postcode` VARCHAR(10) NOT NULL ,
   `timezone_offset` FLOAT NOT NULL ,
   `daylight_savings` TINYINT(1) NOT NULL ,
-  `january` TINYINT(1) NOT NULL DEFAULT true ,
-  `february` TINYINT(1) NOT NULL DEFAULT true ,
-  `march` TINYINT(1) NOT NULL DEFAULT true ,
-  `april` TINYINT(1) NOT NULL DEFAULT true ,
-  `may` TINYINT(1) NOT NULL DEFAULT true ,
-  `june` TINYINT(1) NOT NULL DEFAULT true ,
-  `july` TINYINT(1) NOT NULL DEFAULT true ,
-  `august` TINYINT(1) NOT NULL DEFAULT true ,
-  `september` TINYINT(1) NOT NULL DEFAULT true ,
-  `october` TINYINT(1) NOT NULL DEFAULT true ,
-  `november` TINYINT(1) NOT NULL DEFAULT true ,
-  `december` TINYINT(1) NOT NULL DEFAULT true ,
+  `january` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `february` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `march` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `april` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `may` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `june` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `july` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `august` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `september` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `october` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `november` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `december` TINYINT(1) NOT NULL DEFAULT 1 ,
   `note` TEXT NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_person_id_rank` (`person_id` ASC, `rank` ASC) ,
@@ -439,11 +309,11 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`age_group` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`age_group` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `lower` INT(11) NOT NULL ,
-  `upper` INT(11) NOT NULL ,
+  `lower` INT NOT NULL ,
+  `upper` INT NOT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_lower` (`lower` ASC) ,
   UNIQUE INDEX `uq_upper` (`upper` ASC) )
@@ -452,40 +322,53 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
+-- Table `cenozo`.`source`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`source` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`source` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `cenozo`.`participant`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`participant` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`participant` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `person_id` INT(10) UNSIGNED NOT NULL ,
-  `active` TINYINT(1) NOT NULL DEFAULT true ,
+  `person_id` INT UNSIGNED NOT NULL ,
+  `active` TINYINT(1) NOT NULL DEFAULT 1 ,
   `uid` VARCHAR(45) NOT NULL COMMENT 'External unique ID' ,
-  `source_id` INT(10) UNSIGNED NULL DEFAULT NULL ,
-  `cohort_id` INT(10) UNSIGNED NOT NULL ,
+  `source_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `cohort_id` INT UNSIGNED NOT NULL ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
   `gender` ENUM('male','female') NOT NULL ,
   `date_of_birth` DATE NULL DEFAULT NULL ,
-  `age_group_id` INT(10) UNSIGNED NULL DEFAULT NULL ,
+  `age_group_id` INT UNSIGNED NULL DEFAULT NULL ,
   `status` ENUM('deceased','deaf','mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','sourcing required','unreachable','other') NULL DEFAULT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `use_informant` TINYINT(1) NULL DEFAULT NULL ,
-  `prior_contact_date` DATE NULL DEFAULT NULL ,
   `email` VARCHAR(255) NULL DEFAULT NULL ,
-  `sync_datetime` DATETIME NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_uid` (`uid` ASC) ,
   UNIQUE INDEX `uq_person_id` (`person_id` ASC) ,
   INDEX `dk_active` (`active` ASC) ,
   INDEX `dk_status` (`status` ASC) ,
-  INDEX `dk_prior_contact_date` (`prior_contact_date` ASC) ,
   INDEX `dk_uid` (`uid` ASC) ,
   INDEX `fk_person_id` (`person_id` ASC) ,
   INDEX `fk_age_group_id` (`age_group_id` ASC) ,
   INDEX `fk_cohort_id` (`cohort_id` ASC) ,
+  INDEX `fk_source_id` (`source_id` ASC) ,
   CONSTRAINT `fk_participant_person_id`
     FOREIGN KEY (`person_id` )
     REFERENCES `cenozo`.`person` (`id` )
@@ -500,6 +383,11 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`participant` (
     FOREIGN KEY (`cohort_id` )
     REFERENCES `cenozo`.`cohort` (`id` )
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_participant_source_id`
+    FOREIGN KEY (`source_id` )
+    REFERENCES `cenozo`.`source` (`id` )
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
@@ -511,11 +399,11 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`alternate` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`alternate` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP ,
-  `create_timestamp` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' ,
-  `person_id` INT(10) UNSIGNED NOT NULL ,
-  `participant_id` INT(10) UNSIGNED NOT NULL ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `person_id` INT UNSIGNED NOT NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
   `alternate` TINYINT(1) NOT NULL ,
   `informant` TINYINT(1) NOT NULL ,
   `proxy` TINYINT(1) NOT NULL ,
@@ -546,17 +434,17 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`availability` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`availability` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `participant_id` INT(10) UNSIGNED NOT NULL ,
-  `monday` TINYINT(1) NOT NULL DEFAULT true ,
-  `tuesday` TINYINT(1) NOT NULL DEFAULT true ,
-  `wednesday` TINYINT(1) NOT NULL DEFAULT true ,
-  `thursday` TINYINT(1) NOT NULL DEFAULT true ,
-  `friday` TINYINT(1) NOT NULL DEFAULT true ,
-  `saturday` TINYINT(1) NOT NULL DEFAULT true ,
-  `sunday` TINYINT(1) NOT NULL DEFAULT true ,
+  `participant_id` INT UNSIGNED NOT NULL ,
+  `monday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `tuesday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `wednesday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `thursday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `friday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `saturday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `sunday` TINYINT(1) NOT NULL DEFAULT 0 ,
   `start_time` TIME NOT NULL ,
   `end_time` TIME NOT NULL ,
   PRIMARY KEY (`id`) ,
@@ -578,10 +466,10 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`consent` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`consent` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `participant_id` INT(10) UNSIGNED NOT NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
   `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','withdraw') NOT NULL ,
   `date` DATE NOT NULL ,
   `note` TEXT NULL DEFAULT NULL ,
@@ -604,7 +492,7 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`jurisdiction` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`jurisdiction` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `postcode` VARCHAR(7) NOT NULL ,
@@ -630,13 +518,13 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`phone` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`phone` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `person_id` INT(10) UNSIGNED NOT NULL ,
-  `address_id` INT(10) UNSIGNED NULL DEFAULT NULL ,
-  `active` TINYINT(1) NOT NULL DEFAULT true ,
-  `rank` INT(11) NOT NULL ,
+  `person_id` INT UNSIGNED NOT NULL ,
+  `address_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `active` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `rank` INT NOT NULL ,
   `type` ENUM('home','home2','work','work2','mobile','mobile2','other','other2') NOT NULL ,
   `number` VARCHAR(45) NOT NULL ,
   `note` TEXT NULL DEFAULT NULL ,
@@ -664,14 +552,15 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`quota` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`quota` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `region_id` INT(10) UNSIGNED NOT NULL ,
-  `site_id` INT(10) UNSIGNED NOT NULL ,
+  `region_id` INT UNSIGNED NOT NULL ,
+  `site_id` INT UNSIGNED NOT NULL ,
   `gender` ENUM('male','female') NOT NULL ,
-  `age_group_id` INT(10) UNSIGNED NOT NULL ,
-  `population` INT(11) NOT NULL ,
+  `age_group_id` INT UNSIGNED NOT NULL ,
+  `population` INT NOT NULL ,
+  `disabled` TINYINT(1) NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_region_id_site_id_gender_age_group_id` (`region_id` ASC, `site_id` ASC, `gender` ASC, `age_group_id` ASC) ,
   INDEX `fk_region_id` (`region_id` ASC) ,
@@ -702,12 +591,12 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`person_note` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`person_note` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT ,
+  `id` INT NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `person_id` INT(10) UNSIGNED NOT NULL ,
-  `user_id` INT(10) UNSIGNED NOT NULL ,
-  `sticky` TINYINT(1) NOT NULL DEFAULT false ,
+  `person_id` INT UNSIGNED NOT NULL ,
+  `user_id` INT UNSIGNED NOT NULL ,
+  `sticky` TINYINT(1) NOT NULL DEFAULT 0 ,
   `datetime` DATETIME NOT NULL ,
   `note` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
@@ -729,43 +618,16 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
--- Table `cenozo`.`service_has_cohort`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`service_has_cohort` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`service_has_cohort` (
-  `service_id` INT(10) UNSIGNED NOT NULL ,
-  `cohort_id` INT(10) UNSIGNED NOT NULL ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  PRIMARY KEY (`service_id`, `cohort_id`) ,
-  INDEX `fk_cohort_id` (`cohort_id` ASC) ,
-  INDEX `fk_service_id` (`service_id` ASC) ,
-  CONSTRAINT `fk_service_has_cohort_service_id`
-    FOREIGN KEY (`service_id` )
-    REFERENCES `cenozo`.`service` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_service_has_cohort_cohort_id`
-    FOREIGN KEY (`cohort_id` )
-    REFERENCES `cenozo`.`cohort` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
 -- Table `cenozo`.`service_has_participant`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`service_has_participant` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`service_has_participant` (
-  `service_id` INT(10) UNSIGNED NOT NULL ,
-  `participant_id` INT(10) UNSIGNED NOT NULL ,
+  `service_id` INT UNSIGNED NOT NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `preferred_site_id` INT(10) UNSIGNED NULL DEFAULT NULL ,
+  `preferred_site_id` INT UNSIGNED NULL DEFAULT NULL ,
   `datetime` DATETIME NULL DEFAULT NULL ,
   PRIMARY KEY (`service_id`, `participant_id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
@@ -791,24 +653,44 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
--- Table `cenozo`.`status`
+-- Table `cenozo`.`event`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`status` ;
+DROP TABLE IF EXISTS `cenozo`.`event` ;
 
-CREATE  TABLE IF NOT EXISTS `cenozo`.`status` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP ,
-  `create_timestamp` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' ,
-  `participant_id` INT(10) UNSIGNED NOT NULL ,
+CREATE  TABLE IF NOT EXISTS `cenozo`.`event` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` VARCHAR(45) NOT NULL ,
+  `create_timestamp` VARCHAR(45) NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`participant_event`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`participant_event` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`participant_event` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
+  `event_id` INT UNSIGNED NOT NULL ,
   `datetime` DATETIME NOT NULL ,
-  `event` ENUM('consent to contact received','consent for proxy received','package mailed','imported by rdd') NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
-  INDEX `dk_event` (`event` ASC) ,
   INDEX `dk_datetime` (`datetime` ASC) ,
-  CONSTRAINT `fk_status_participant_id`
+  INDEX `fk_event_id` (`event_id` ASC) ,
+  CONSTRAINT `fk_participant_event_participant_id`
     FOREIGN KEY (`participant_id` )
     REFERENCES `cenozo`.`participant` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_participant_event_event_id`
+    FOREIGN KEY (`event_id` )
+    REFERENCES `cenozo`.`event` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -821,12 +703,39 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`unique_identifier_pool` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`unique_identifier_pool` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP ,
-  `create_timestamp` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `uid` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uid_UNIQUE` (`uid` ASC) )
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
+
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`service_has_cohort`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`service_has_cohort` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`service_has_cohort` (
+  `service_id` INT UNSIGNED NOT NULL ,
+  `cohort_id` INT UNSIGNED NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  PRIMARY KEY (`service_id`, `cohort_id`) ,
+  INDEX `fk_cohort_id` (`cohort_id` ASC) ,
+  INDEX `fk_service_id` (`service_id` ASC) ,
+  CONSTRAINT `fk_service_has_cohort_service_id`
+    FOREIGN KEY (`service_id` )
+    REFERENCES `cenozo`.`service` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_service_has_cohort_cohort_id`
+    FOREIGN KEY (`cohort_id` )
+    REFERENCES `cenozo`.`cohort` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
@@ -854,7 +763,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant_primary_address` (`participant_
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_last_consent`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_consent` (`participant_id` INT, `consent_id` INT);
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_consent` (`participant_id` INT, `consent_id` INT, `event` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_last_written_consent`
@@ -864,7 +773,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_written_consent` (`partici
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_site`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`participant_site` (`participant_id` INT, `site_id` INT);
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_site` (`id` INT, `participant_id` INT, `site_id` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`alternate_first_address`
@@ -953,13 +862,16 @@ DROP VIEW IF EXISTS `cenozo`.`participant_last_consent` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_last_consent`;
 USE `cenozo`;
 CREATE  OR REPLACE VIEW `cenozo`.`participant_last_consent` AS
-SELECT participant_id, id AS consent_id
-FROM consent AS t1
-WHERE t1.date = (
+SELECT participant.id AS participant_id, t1.id AS consent_id, t1.event AS event
+FROM participant
+LEFT JOIN consent t1
+ON participant.id = t1.participant_id
+AND t1.date = (
   SELECT MAX( t2.date )
-  FROM consent AS t2
+  FROM consent t2
   WHERE t1.participant_id = t2.participant_id
-  GROUP BY t2.participant_id );
+)
+GROUP BY participant.id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`participant_last_written_consent`
@@ -984,7 +896,8 @@ DROP VIEW IF EXISTS `cenozo`.`participant_site` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_site`;
 USE `cenozo`;
 CREATE  OR REPLACE VIEW `cenozo`.`participant_site` AS
-SELECT participant.id AS participant_id,
+SELECT service.id,
+       participant.id AS participant_id,
        IF(
          ISNULL( service_has_participant.preferred_site_id ),
          IF(
@@ -994,22 +907,15 @@ SELECT participant.id AS participant_id,
          ),
          service_has_participant.preferred_site_id
        ) AS site_id
-FROM participant
-JOIN cohort
-ON participant.cohort_id = cohort.id
-JOIN service
-ON cohort.id = service.cohort_id
-JOIN service_has_participant
-ON service.id = service_has_participant.service_id
+FROM service
+CROSS JOIN participant
+LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
 AND participant.id = service_has_participant.participant_id
-LEFT JOIN participant_primary_address
-ON participant.id = participant_primary_address.participant_id
-LEFT JOIN address
-ON participant_primary_address.address_id = address.id
-LEFT JOIN jurisdiction
-ON address.postcode = jurisdiction.postcode
-LEFT JOIN region
-ON address.region_id = region.id;
+JOIN cohort ON participant.cohort_id = cohort.id
+LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
+LEFT JOIN address ON participant_primary_address.address_id = address.id
+LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
+LEFT JOIN region ON address.region_id = region.id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`alternate_first_address`
@@ -1039,6 +945,8 @@ DELIMITER $$
 USE `cenozo`$$
 DROP TRIGGER IF EXISTS `cenozo`.`remove_uid_from_pool` $$
 USE `cenozo`$$
+
+
 CREATE TRIGGER remove_uid_from_pool BEFORE
 INSERT ON participant
 FOR EACH ROW BEGIN
