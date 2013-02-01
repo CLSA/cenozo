@@ -109,14 +109,27 @@ final class service
 
     // include the framework's initialization settings
     require_once( dirname( __FILE__ ).'/settings.ini.php' );
-    $this->settings = $SETTINGS;
+    require_once( dirname( __FILE__ ).'/settings.local.ini.php' );
+
+    // write all framework settings, then overwrite with application settings
+    $this->settings = array();
+    foreach( array_merge( array_keys( $fwk_settings ), array_keys( $SETTINGS ) ) as $category )
+    {
+      $this->settings[$category] = array();
+      if( array_key_exists( $category, $fwk_settings ) )
+        $this->settings[$category] =
+          array_merge( $this->settings[$category], $fwk_settings[$category] );
+      if( array_key_exists( $category, $SETTINGS ) )
+        $this->settings[$category] =
+          array_merge( $this->settings[$category], $SETTINGS[$category] );
+    }
 
     if( !array_key_exists( 'general', $this->settings ) ||
         !array_key_exists( 'application_name', $this->settings['general'] ) )
       die( 'Error, application name not set!' );
 
     // make sure all paths are valid
-    foreach( $SETTINGS['path'] as $key => $path )
+    foreach( $this->settings['path'] as $key => $path )
       if( 'COOKIE' != $key &&
           'TEMP' != $key &&
           'TEMPLATE_CACHE' != $key &&
