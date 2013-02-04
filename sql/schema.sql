@@ -708,7 +708,7 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`unique_identifier_pool` (
   `create_timestamp` TIMESTAMP NOT NULL ,
   `uid` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uid_UNIQUE` (`uid` ASC) )
+  UNIQUE INDEX `uq_uid` (`uid` ASC) )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
