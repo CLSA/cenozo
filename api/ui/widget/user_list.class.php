@@ -64,7 +64,7 @@ class user_list extends site_restricted_list
 
       $site = 'none';
       $db_sites = $record->get_site_list();
-      if( 1 == count( $db_sites ) ) $site = $db_sites[0]->name; // only one site?
+      if( 1 == count( $db_sites ) ) $site = $db_sites[0]->get_site_name(); // only one site?
       else if( 1 < count( $db_sites ) ) $site = 'multiple'; // multiple sites?
       
       $role = 'none';

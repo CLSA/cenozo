@@ -68,7 +68,7 @@ class self_home extends \cenozo\ui\widget
                $setting_manager->get_setting( 'general', 'version' ) ) );
     $this->set_variable( 'user_name', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'role_name', $db_role->name );
-    $this->set_variable( 'site_name', $db_site->name );
+    $this->set_variable( 'site_name', $db_site->get_full_name() );
     if( $db_activity )
     {
       $this->set_variable(

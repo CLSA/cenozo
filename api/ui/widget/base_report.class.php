@@ -66,9 +66,10 @@ abstract class base_report extends \cenozo\ui\widget
         // if allowed, give them a list of sites to choose from
         $sites = array( 0 => 'All sites' );
         $site_mod = lib::create( 'database\modifier' );
+        $site_mod->order( 'service_id' );
         $site_mod->order( 'name' );
         foreach( $site_class_name::select( $site_mod ) as $db_site )
-          $sites[$db_site->id] = $db_site->name;
+          $sites[$db_site->id] = $db_site->get_full_name();
   
         $this->set_parameter( 'restrict_site_id', key( $sites ), true, $sites );
       }
@@ -142,7 +143,7 @@ abstract class base_report extends \cenozo\ui\widget
         $this->add_parameter( 'restrict_site_id', 'hidden' );
 
         // if restricted, show the site's name in the heading
-        $predicate = lib::create( 'business\session' )->get_site()->name;
+        $predicate = lib::create( 'business\session' )->get_site()->get_full_name();
         $this->set_heading( $this->get_heading().' for '.$predicate );
       }
     }
@@ -184,7 +185,7 @@ abstract class base_report extends \cenozo\ui\widget
       // build time time zone help text
       $date_obj = $util_class_name::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            lib::create( 'business\session' )->get_site()->name,
+                            lib::create( 'business\session' )->get_site()->get_full_name(),
                             $date_obj->format( 'T' ) );
       $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }

@@ -1,6 +1,6 @@
 <?php
 /**
- * access_list.class.php
+ * cohort_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,21 +10,21 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget access list
+ * widget cohort add
  */
-class access_list extends site_restricted_list
+class cohort_add extends base_view
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the access list.
+   * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'access', $args );
+    parent::__construct( 'cohort', 'add', $args );
   }
 
   /**
@@ -38,13 +38,13 @@ class access_list extends site_restricted_list
   {
     parent::prepare();
     
-    $this->add_column( 'user.name', 'string', 'User', true );
-    $this->add_column( 'role.name', 'string', 'Role', true );
-    $this->add_column( 'site.name', 'string', 'Site', true );
+    // define all columns defining this record
+    $this->add_item( 'name', 'string', 'Name' );
+    $this->add_item( 'grouping', 'enum', 'Grouping' );
   }
 
   /**
-   * Defines all rows in the list.
+   * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
@@ -53,12 +53,14 @@ class access_list extends site_restricted_list
   {
     parent::setup();
     
-    foreach( $this->get_record_list() as $record )
-    {
-      $this->add_row( $record->id,
-        array( 'user.name' => $record->get_user()->name,
-               'role.name' => $record->get_role()->name,
-               'site.name' => $record->get_site()->get_full_name() ) );
-    }
+    $cohort_class_name = lib::get_class_name( 'database\cohort' );
+
+    // create enum arrays
+    $groupings = $cohort_class_name::get_enum_values( 'grouping' );
+    $groupings = array_combine( $groupings, $groupings );
+
+    // set the view's items
+    $this->set_item( 'name', '' );
+    $this->set_item( 'grouping', key( $groupings ), true, $groupings );
   }
 }

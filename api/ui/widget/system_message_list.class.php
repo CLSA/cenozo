@@ -60,7 +60,7 @@ class system_message_list extends site_restricted_list
 
       // assemble the row for this record
       $this->add_row( $record->id,
-        array( 'site.name' => $db_site ? $db_site->name : 'all',
+        array( 'site.name' => $db_site ? $db_site->get_full_name() : 'all',
                'role.name' => $db_role ? $db_role->name : 'all',
                'title' => $record->title ) );
     }

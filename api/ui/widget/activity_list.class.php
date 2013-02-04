@@ -64,7 +64,7 @@ class activity_list extends site_restricted_list
       $db_operation = $record->get_operation();
       $this->add_row( $record->id,
         array( 'user.name' => $record->get_user()->name,
-               'site.name' => $record->get_site()->name,
+               'site.name' => $record->get_site()->get_full_name(),
                'role.name' => $record->get_role()->name,
                'operation.type' => is_null( $db_operation ) ? 'n/a' : $db_operation->type,
                'operation.subject' => is_null( $db_operation ) ? 'n/a' : $db_operation->subject,

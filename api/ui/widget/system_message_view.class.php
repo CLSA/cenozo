@@ -69,9 +69,10 @@ class system_message_view extends base_view
     {
       $sites = array();
       $site_mod = lib::create( 'database\modifier' );
+      $site_mod->order( 'service_id' );
       $site_mod->order( 'name' );
       foreach( $site_class_name::select( $site_mod ) as $db_site )
-        $sites[$db_site->id] = $db_site->name;
+        $sites[$db_site->id] = $db_site->get_full_name();
     }
 
     $roles = array();

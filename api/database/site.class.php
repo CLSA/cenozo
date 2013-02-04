@@ -15,6 +15,18 @@ use cenozo\lib, cenozo\log;
 class site extends base_access
 {
   /**
+   * Gives a complete name for the site in the form of "name (service)"
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @access public
+   */
+  public function get_full_name()
+  {
+    $db_service = $this->get_service();
+    return sprintf( '%s (%s)', $this->name, is_null( $db_service ) ? 'none' : $this->get_service()->name );
+  }
+
+  /**
    * Adds a list of users to the site with the given role.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>

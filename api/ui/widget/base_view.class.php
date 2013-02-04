@@ -134,7 +134,7 @@ abstract class base_view extends base_record implements actionable
       // build time time zone help text
       $date_obj = $util_class_name::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            lib::create( 'business\session' )->get_site()->name,
+                            lib::create( 'business\session' )->get_site()->get_full_name(),
                             $date_obj->format( 'T' ) );
       $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }

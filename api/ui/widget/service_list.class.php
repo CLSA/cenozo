@@ -1,6 +1,6 @@
 <?php
 /**
- * access_list.class.php
+ * service_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,21 +10,21 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget access list
+ * widget service list
  */
-class access_list extends site_restricted_list
+class service_list extends base_list
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the access list.
+   * Defines all variables required by the service list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'access', $args );
+    parent::__construct( 'service', $args );
   }
 
   /**
@@ -38,13 +38,13 @@ class access_list extends site_restricted_list
   {
     parent::prepare();
     
-    $this->add_column( 'user.name', 'string', 'User', true );
-    $this->add_column( 'role.name', 'string', 'Role', true );
-    $this->add_column( 'site.name', 'string', 'Site', true );
+    $this->add_column( 'name', 'string', 'Name', true );
+    $this->add_column( 'cohort.name', 'string', 'Cohort', true );
+    $this->add_column( 'sites', 'number', 'Sites', false );
   }
-
+  
   /**
-   * Defines all rows in the list.
+   * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
@@ -55,10 +55,11 @@ class access_list extends site_restricted_list
     
     foreach( $this->get_record_list() as $record )
     {
+      // assemble the row for this record
       $this->add_row( $record->id,
-        array( 'user.name' => $record->get_user()->name,
-               'role.name' => $record->get_role()->name,
-               'site.name' => $record->get_site()->get_full_name() ) );
+        array( 'name' => $record->name,
+               'cohort.name' => $record->get_cohort()->name,
+               'sites' => $record->get_site_count() ) );
     }
   }
 }

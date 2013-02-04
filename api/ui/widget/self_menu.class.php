@@ -25,6 +25,13 @@ class self_menu extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'menu', $args );
+
+    $this->exclude_list( array(
+      'address',
+      'alternate',
+      'availability',
+      'consent',
+      'phone' ) );
   }
 
   /**
@@ -93,8 +100,23 @@ class self_menu extends \cenozo\ui\widget
           'name' => $db_operation->name );
     }
 
-    // there are no pre-defined utilities, so this is an empty array
+    // insert participant site reassign and multinote into the utilities
     $utilities = array();
+
+    $db_operation =
+      $operation_class_name::get_operation( 'widget', 'participant', 'site_reassign' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $utilities[] = array( 'heading' => 'Participant Reassign',
+                            'type' => 'widget',
+                            'subject' => 'participant',
+                            'name' => 'site_reassign' );
+    $db_operation =         
+      $operation_class_name::get_operation( 'widget', 'participant', 'multinote' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $utilities[] = array( 'heading' => 'Participant Multinote',
+                            'type' => 'widget',
+                            'subject' => 'participant',
+                            'name' => 'multinote' );
 
     // get all report widgets that the user has access to
     $reports = array();

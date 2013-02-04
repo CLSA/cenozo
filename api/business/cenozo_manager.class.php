@@ -48,7 +48,7 @@ class cenozo_manager extends \cenozo\factory
   protected function set_site_and_role( &$arguments )
   {
     $session = lib::create( 'business\session' );
-    $arguments['request_site_name'] = $session->get_site()->name;
+    $arguments['request_site_name'] = $session->get_site()->get_full_name();
     $arguments['request_role_name'] = $session->get_role()->name;
   }
 
