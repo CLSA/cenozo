@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * widget participant site_reassign
  */
-class participant_site_reassign extends widget
+class participant_site_reassign extends \cenozo\ui\widget
 {
   /**
    * Constructor

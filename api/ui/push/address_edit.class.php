@@ -1,6 +1,6 @@
 <?php
 /**
- * site_edit.class.php
+ * address_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,11 +10,11 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: site edit
+ * push: address edit
  *
- * Edit a site.
+ * Edit a address.
  */
-class site_edit extends base_edit
+class address_edit extends base_edit
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class site_edit extends base_edit
    */
   public function __construct( $args )
   {
-    parent::__construct( 'site', $args );
+    parent::__construct( 'address', $args );
   }
 
   /**
@@ -47,10 +47,10 @@ class site_edit extends base_edit
           !preg_match( '/^[0-9]{5}$/', $columns['postcode'] ) )
         throw lib::create( 'exception\notice',
           'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.', __METHOD__ );
-
+    
       $postcode_class_name = lib::get_class_name( 'database\postcode' );
       $db_postcode = $postcode_class_name::get_match( $columns['postcode'] );
-      if( is_null( $db_postcode ) )
+      if( is_null( $db_postcode ) ) 
         throw lib::create( 'exception\notice',
           'The postcode is invalid and cannot be used.', __METHOD__ );
     }
@@ -70,11 +70,7 @@ class site_edit extends base_edit
 
     if( array_key_exists( 'postcode', $columns ) )
     {
-      // source the postcode to determine the region
-      $db_address = lib::create( 'database\address' );
-      $db_address->postcode = $columns['postcode'];
-      $db_address->source_postcode();
-      $this->get_record()->region_id = $db_address->region_id;
+      $this->get_record()->source_postcode();
       $this->get_record()->save();
     }
   }

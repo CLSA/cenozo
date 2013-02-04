@@ -14,7 +14,7 @@ use cenozo\lib, cenozo\log;
  * 
  * @abstract
  */
-class quota_chart extends widget
+class quota_chart extends \cenozo\ui\widget
 {
   /**
    * Constructor

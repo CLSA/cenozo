@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * widget participant multinote
  */
-class participant_multinote extends widget
+class participant_multinote extends \cenozo\ui\widget
 {
   /**
    * Constructor
