@@ -99,7 +99,7 @@ abstract class base_edit extends base_record
     $edit = false;
     foreach( $columns as $column => $value )
     {
-      if( $record_class_name::column_exists( $column ) )
+      if( $record_class_name::column_exists( $column, true ) )
       {
         $record->$column = $value;
         $edit = true;

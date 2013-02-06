@@ -39,9 +39,10 @@ class main extends \cenozo\base_object
     $variables['show_settings'] = true;
     $variables['show_menu'] = true;
 
-    $jquery_libraries = array();
+    // create a list of jquery libraries making sure jquery itself is first
+    $jquery_libraries = array( $setting_manager->get_setting( 'url', 'JQUERY_JS' ) );
     foreach( $setting_manager->get_setting_category( 'url' ) as $library_name => $library_path )
-      if( preg_match( '/^JQUERY(_[A-Z_]+)?_JS/', $library_name ) )
+      if( preg_match( '/^JQUERY(_[A-Z_]+)?_JS/', $library_name ) && 'JQUERY_JS' != $library_name )
         $jquery_libraries[] = $library_path;
     $variables['jquery_libraries'] = $jquery_libraries;
 

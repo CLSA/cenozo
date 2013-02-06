@@ -32,37 +32,42 @@ abstract class record extends \cenozo\base_object
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    // determine the columns for this table
-    $columns = $this->get_column_names();
-
-    if( !is_array( $columns ) || 0 == count( $columns ) )
-      throw lib::create( 'exception\runtime',
-        "No column names returned for table ".static::get_table_name(), __METHOD__ );
-
-    // set the default value for all columns
-    foreach( $columns as $name )
+    // now loop through all tables and fill in the default values
+    foreach( $this->get_working_table_list() as $table )
     {
-      // If the default is CURRENT_TIMESTAMP, or if there is a DATETIME column by the name
-      // 'start_datetime' then make the default the current date and time.
-      // Because of mysql does not allow setting the default value for a DATETIME column to be
-      // NOW() we need to set the default here manually
-      $default = static::db()->get_column_default( static::get_table_name(), $name );
-      if( 'start_datetime' == $name ||
-          ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) )
+      // determine the columns for this table
+      $columns = static::db()->get_column_names( $table['name'] );
+
+      if( !is_array( $columns ) || 0 == count( $columns ) )
+        throw lib::create( 'exception\runtime', sprintf(
+          'No column names returned for table "%s"', $table['name'] ),
+          __METHOD__ );
+
+      // set the default value for all columns
+      foreach( $columns as $name )
       {
-        $date_obj = $util_class_name::get_datetime_object();
-        $this->column_values[$name] = $date_obj->format( 'Y-m-d H:i:s' );
-      }
-      else
-      {
-        $this->column_values[$name] = $default;
+        // If the default is CURRENT_TIMESTAMP, or if there is a DATETIME column by the name
+        // 'start_datetime' then make the default the current date and time.
+        // Because mysql does not allow setting the default value for a DATETIME column to be
+        // NOW() we need to set the default here manually
+        $default = static::db()->get_column_default( $table['name'], $name );
+        if( 'start_datetime' == $name ||
+            ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) )
+        {
+          $date_obj = $util_class_name::get_datetime_object();
+          $table['columns'][$name] = $date_obj->format( 'Y-m-d H:i:s' );
+        }
+        else
+        {
+          $table['columns'][$name] = $default;
+        }
       }
     }
 
     if( NULL != $id )
     {
       // make sure this table has an id column as the primary key
-      $primary_key_names = static::db()->meta_primary_keys( static::get_table_name() );
+      $primary_key_names = static::db()->get_primary_key( static::get_table_name() );
       if( 1 != count( $primary_key_names ) ||
           static::get_primary_key_name() != $primary_key_names[0] )
       {
@@ -90,37 +95,41 @@ abstract class record extends \cenozo\base_object
   public function load()
   {
     $util_class_name = lib::get_class_name( 'util' );
+    $database_class_name = lib::get_class_name( 'database\database' );
 
     if( isset( $this->column_values[static::get_primary_key_name()] ) )
     {
-      // not using a modifier here is ok since we're forcing id to be an integer
-      $sql = sprintf( 'SELECT * FROM %s WHERE %s = %d',
-                      static::get_table_name(),
-                      static::get_primary_key_name(),
-                      $this->column_values[static::get_primary_key_name()] );
+      $primary_key_value = $this->column_values[static::get_primary_key_name()];
 
-      $row = static::db()->get_row( $sql );
-
-      if( 0 == count( $row ) )
-        throw lib::create( 'exception\runtime',
-          sprintf( 'Load failed to find record for %s with %s = %d.',
-                   static::get_table_name(),
-                   static::get_primary_key_name(),
-                   $this->column_values[static::get_primary_key_name()] ),
-          __METHOD__ );
-
-      $database_class_name = lib::get_class_name( 'database\database' );
-
-      // convert any date, time or datetime columns
-      foreach( $row as $key => $val )
+      foreach( $this->get_working_table_list() as $table )
       {
-        if( array_key_exists( $key, $this->column_values ) )
+        // not using a modifier here is ok since we're forcing id to be an integer
+        $sql = sprintf( 'SELECT * FROM %s WHERE %s = %d',
+                        $table['name'],
+                        $table['key'],
+                        $primary_key_value );
+
+        $row = static::db()->get_row( $sql );
+
+        if( 0 == count( $row ) )
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Load failed to find record for %s with %s = %d.',
+                     $table['name'],
+                     $table['key'],
+                     $primary_key_value ),
+            __METHOD__ );
+
+        // convert any date, time or datetime columns
+        foreach( $row as $key => $val )
         {
-          if( $database_class_name::is_time_column( $key ) )
-            $this->column_values[$key] = $util_class_name::from_server_datetime( $val, 'H:i:s' );
-          else if( $database_class_name::is_datetime_column( $key ) )
-            $this->column_values[$key] = $util_class_name::from_server_datetime( $val );
-          else $this->column_values[$key] = $val;
+          if( array_key_exists( $key, $table['columns'] ) )
+          {
+            if( $database_class_name::is_time_column( $key ) )
+              $table['columns'][$key] = $util_class_name::from_server_datetime( $val, 'H:i:s' );
+            else if( $database_class_name::is_datetime_column( $key ) )
+              $table['columns'][$key] = $util_class_name::from_server_datetime( $val );
+            else $table['columns'][$key] = $val;
+          }
         }
       }
     }
@@ -145,89 +154,96 @@ abstract class record extends \cenozo\base_object
     }
 
     $util_class_name = lib::get_class_name( 'util' );
+    $database_class_name = lib::get_class_name( 'database\database' );
     
-    // if we have start and end time or datetime columns (which can't be null), make sure the end
-    // time comes after start time
-    if( static::column_exists( 'start_time' ) &&
-        static::column_exists( 'end_time' ) &&
-        !is_null( static::db()->get_column_default( static::get_table_name(), 'end_time' ) ) )
+    $primary_key_value = $this->column_values[static::get_primary_key_name()];
+
+    foreach( $this->get_working_table_list() as $table )
     {
-      $start_obj = $util_class_name::get_datetime_object( $this->start_time );
-      $end_obj = $util_class_name::get_datetime_object( $this->end_time );
-      $interval = $start_obj->diff( $end_obj );
-      if( 0 != $interval->invert ||
-        ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
+      // if we have start and end time or datetime columns (which can't be null), make sure the end
+      // time comes after start time
+      if( static::db()->column_exists( $table['name'], 'start_time' ) &&
+          static::db()->column_exists( $table['name'], 'end_time' ) &&
+          !is_null( static::db()->get_column_default( $table['name'], 'end_time' ) ) )
       {
-        throw lib::create( 'exception\runtime',
-          'Tried to set end time which is not after the start time.', __METHOD__ );
+        $start_obj = $util_class_name::get_datetime_object( $table['columns']['start_time'] );
+        $end_obj = $util_class_name::get_datetime_object( $table['columns']['end_time'] );
+        $interval = $start_obj->diff( $end_obj );
+        if( 0 != $interval->invert ||
+          ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
+        {
+          throw lib::create( 'exception\runtime',
+            'Tried to set end time which is not after the start time.', __METHOD__ );
+        }
+      }
+      else if(
+        static::db()->column_exists( $table['name'], 'start_datetime' ) &&
+        static::db()->column_exists( $table['name'], 'end_datetime' ) &&
+        !is_null( static::db()->get_column_default( $table['name'], 'end_datetime' ) ) )
+      {
+        $start_obj = $util_class_name::get_datetime_object( $table['columns']['start_datetime'] );
+        $end_obj = $util_class_name::get_datetime_object( $table['columns']['end_datetime'] );
+        $interval = $start_obj->diff( $end_obj );
+        if( 0 != $interval->invert ||
+          ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
+        {
+          throw lib::create( 'exception\runtime',
+            'Tried to set end datetime which is not after the start datetime.', __METHOD__ );
+        }
+      }
+
+      // building the SET list since it is identical for inserts and updates
+      $sets = '';
+      $first = true;
+      
+      if( $this->include_timestamps && $table['name'] == static::get_table_name() )
+      {
+        // add the create_timestamp column if this is a new record
+        if( is_null( $table['columns'][$table['key']] ) )
+        {
+          $sets .= 'create_timestamp = NULL';
+          $first = false;
+        }
+      }
+
+      // now add the rest of the columns
+      foreach( $table['columns'] as $key => $val )
+      {
+        if( $table['key'] != $key )
+        {
+          // convert any time or datetime columns
+          if( $database_class_name::is_time_column( $key ) )
+            $val = $util_class_name::to_server_datetime( $val, 'H:i:s' );
+          else if( $database_class_name::is_datetime_column( $key ) )
+            $val = $util_class_name::to_server_datetime( $val );
+          
+          $sets .= sprintf( '%s %s = %s',
+                            $first ? '' : ',',
+                            $key,
+                            $database_class_name::format_string( $val ) );
+
+          $first = false;
+        }
+      }
+      
+      // either insert or update the row based on whether the primary key is set
+      $sql = sprintf(
+        is_null( $primary_key_value ) ? 'INSERT INTO %s SET %s' : 'UPDATE %s SET %s WHERE %s = %d',
+        $table['name'],
+        $sets,
+        $table['key'],
+        $primary_key_value );
+
+      static::db()->execute( $sql );
+      
+      // get the new primary key
+      if( $table['name'] == static::get_table_name() &&
+          is_null( $table['columns'][$table['key']] ) )
+      {
+        $primary_key_value = static::db()->insert_id();
+        $table['columns'][$table['key']] = $primary_key_value;
       }
     }
-    else if(
-      static::column_exists( 'start_datetime' ) &&
-      static::column_exists( 'end_datetime' ) &&
-      !is_null( static::db()->get_column_default( static::get_table_name(), 'end_datetime' ) ) )
-    {
-      $start_obj = $util_class_name::get_datetime_object( $this->start_datetime );
-      $end_obj = $util_class_name::get_datetime_object( $this->end_datetime );
-      $interval = $start_obj->diff( $end_obj );
-      if( 0 != $interval->invert ||
-        ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
-      {
-        throw lib::create( 'exception\runtime',
-          'Tried to set end datetime which is not after the start datetime.', __METHOD__ );
-      }
-    }
-
-    // building the SET list since it is identical for inserts and updates
-    $sets = '';
-    $first = true;
-    
-    if( $this->include_timestamps )
-    {
-      // add the create_timestamp column if this is a new record
-      if( is_null( $this->column_values[static::get_primary_key_name()] ) )
-      {
-        $sets .= 'create_timestamp = NULL';
-        $first = false;
-      }
-    }
-
-    // now add the rest of the columns
-    foreach( $this->column_values as $key => $val )
-    {
-      $database_class_name = lib::get_class_name( 'database\database' );
-
-      if( static::get_primary_key_name() != $key )
-      {
-        // convert any time or datetime columns
-        if( $database_class_name::is_time_column( $key ) )
-          $val = $util_class_name::to_server_datetime( $val, 'H:i:s' );
-        else if( $database_class_name::is_datetime_column( $key ) )
-          $val = $util_class_name::to_server_datetime( $val );
-        
-        $sets .= sprintf( '%s %s = %s',
-                          $first ? '' : ',',
-                          $key,
-                          $database_class_name::format_string( $val ) );
-
-        $first = false;
-      }
-    }
-    
-    // either insert or update the row based on whether the primary key is set
-    $sql = sprintf( is_null( $this->column_values[static::get_primary_key_name()] )
-                    ? 'INSERT INTO %s SET %s'
-                    : 'UPDATE %s SET %s WHERE %s = %d',
-                    static::get_table_name(),
-                    $sets,
-                    static::get_primary_key_name(),
-                    $this->column_values[static::get_primary_key_name()] );
-
-    static::db()->execute( $sql );
-    
-    // get the new primary key
-    if( is_null( $this->column_values[static::get_primary_key_name()] ) )
-      $this->column_values[static::get_primary_key_name()] = static::db()->insert_id();
   }
   
   /**
@@ -252,18 +268,25 @@ abstract class record extends \cenozo\base_object
       return;
     }
     
-    // not using a modifier here is ok since we're forcing id to be an integer
-    $sql = sprintf( 'DELETE FROM %s WHERE %s = %d',
-                    static::get_table_name(),
-                    static::get_primary_key_name(),
-                    $this->column_values[static::get_primary_key_name()] );
-    static::db()->execute( $sql );
+    $primary_key_value = $this->column_values[static::get_primary_key_name()];
+
+    // loop through the working tables in reverse order (to avoid reference problems)
+    foreach( array_reverse( $this->get_working_table_list() ) as $table )
+    {
+      // not using a modifier here is ok since we're forcing id to be an integer
+      $sql = sprintf( 'DELETE FROM %s WHERE %s = %d',
+                      $table['name'],
+                      $table['key'],
+                      $primary_key_value );
+      static::db()->execute( $sql );
+    }
   }
 
   /**
    * Magic get method.
    *
-   * Magic get method which returns the column value from the record's table
+   * Magic get method which returns the column value from the record's table or any extending
+   * tables.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column or table being fetched from the database
    * @return mixed
@@ -272,18 +295,32 @@ abstract class record extends \cenozo\base_object
    */
   public function __get( $column_name )
   {
-    // make sure the column exists
+    // see if the column name starts with an extending table's name
+    foreach( self::get_extending_table_list() as $table )
+    {
+      $len = strlen( $table ) + 1;
+      $extending_prefix = substr( $column_name, 0, $len );
+      $extending_column = substr( $column_name, $len );
+      if( $table.'_' == $extending_prefix &&
+          array_key_exists( $extending_column, $this->extending_column_values[$table] ) )
+      {
+        return isset( $this->extending_column_values[$table][$extending_column] ) ?
+          $this->extending_column_values[$table][$extending_column] : NULL;
+      }
+    }
+
+    // not an column from the extending table list, make sure the column exists in the main table
     if( !static::column_exists( $column_name ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
     
-    return isset( $this->column_values[ $column_name ] ) ?
-      $this->column_values[ $column_name ] : NULL;
+    return isset( $this->column_values[$column_name] ) ?
+      $this->column_values[$column_name] : NULL;
   }
 
   /**
    * Magic set method.
    *
-   * Magic set method which sets the column value to a record's table.
+   * Magic set method which sets the column value to a record's table or any extending tables.
    * For this change to be writen to the database see the {@link save} method
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
@@ -293,11 +330,26 @@ abstract class record extends \cenozo\base_object
    */
   public function __set( $column_name, $value )
   {
+    // see if the column name starts with an extending table's name
+    foreach( self::get_extending_table_list() as $table )
+    {
+      $len = strlen( $table ) + 1;
+      $extending_prefix = substr( $column_name, 0, $len );
+      $extending_column = substr( $column_name, $len );
+      if( $table.'_' == $extending_prefix &&
+          array_key_exists( $extending_column, $this->extending_column_values[$table] ) )
+      {
+        $this->extending_column_values[$table][$extending_column] = $value;
+        return;
+      }
+    }
+
+    // not an column from the extending table list, make sure the column exists in the main table
     // make sure the column exists
     if( !static::column_exists( $column_name ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
     
-    $this->column_values[ $column_name ] = $value;
+    $this->column_values[$column_name] = $value;
   }
   
   /**
@@ -446,7 +498,7 @@ abstract class record extends \cenozo\base_object
   protected function get_record( $record_type )
   {
     // check the primary key value
-    if( is_null( $this->column_values[ static::get_primary_key_name() ] ) )
+    if( is_null( $this->column_values[static::get_primary_key_name()] ) )
     { 
       log::warning( 'Tried to query record with no id.' );
       return NULL;
@@ -491,7 +543,7 @@ abstract class record extends \cenozo\base_object
     $foreign_class_name = lib::get_class_name( 'database\\'.$record_type );
 
     // check the primary key value
-    $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
+    $primary_key_value = $this->column_values[static::get_primary_key_name()];
     if( is_null( $primary_key_value ) )
     { 
       log::warning( 'Tried to query record with no id.' );
@@ -641,7 +693,7 @@ abstract class record extends \cenozo\base_object
     $util_class_name = lib::get_class_name( 'util' );
     
     // check the primary key value
-    $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
+    $primary_key_value = $this->column_values[static::get_primary_key_name()];
     if( is_null( $primary_key_value ) )
     { 
       log::warning( 'Tried to query record with no id.' );
@@ -709,7 +761,7 @@ abstract class record extends \cenozo\base_object
     }
 
     // check the primary key value
-    $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
+    $primary_key_value = $this->column_values[static::get_primary_key_name()];
     if( is_null( $primary_key_value ) )
     { 
       log::warning( 'Tried to query record with no id.' );
@@ -1202,13 +1254,32 @@ abstract class record extends \cenozo\base_object
    * Convenience method for database::column_exists(), but for this record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name A column name.
+   * @param boolean $include_extending_tables Whether to include the column search in the
+   *                extending tables
    * @return string
    * @static
    * @access public
    */
-  public static function column_exists( $column_name )
+  public static function column_exists( $column_name, $include_extending_tables = false )
   {
-    return static::db()->column_exists( static::get_table_name(), $column_name );
+    $found = static::db()->column_exists( static::get_table_name(), $column_name );
+
+    if( $include_extending_tables && !$found )
+    {
+      foreach( self::get_extending_table_list() as $extending_table )
+      {
+        $table_name = sprintf( '%s_%s', static::get_table_name(), $extending_table );
+        $len = strlen( $extending_table ) + 1;
+        $extending_column = substr( $column_name, $len );
+        if( static::db()->column_exists( $table_name, $extending_column ) )
+        {
+          $found = true;
+          break;
+        }
+      }
+    }
+
+    return $found;
   }
 
   /**
@@ -1246,6 +1317,39 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * A list of tables which extend this record's data.  This is to be used by extending classes
+   * of a record defined in the framework.  For instance, to add address details to the user
+   * record a new table, user_address, is created with a column "user_id" as a primary key which
+   * is also a foreign key to the user table.  Then, this method is called at the end of the user
+   * class declaration with the argument "address".  The record will then act as if the columns in
+   * user_address (not including the user_id column) are in the user table.
+   * NOTE: do not include update_timestamp or create_timestamp columns in the extending table.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @static
+   * @access public
+   */
+  public static function add_extending_table( $table )
+  {
+    if( !array_key_exists( get_called_class(), self::$extending_table_list ) )
+      self::$extending_table_list[get_called_class()] = array();
+
+    self::$extending_table_list[get_called_class()][] = $table;
+  }
+
+  /**
+   * Returns an array of all extending tables, or an empty array if there are no extending tables.
+   * Note, these names do not include the table_ prefix
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access protecteda
+   */
+  protected static function get_extending_table_list()
+  {
+    return array_key_exists( get_called_class(), self::$extending_table_list ) ?
+      self::$extending_table_list[get_called_class()] : array();
+  }
+
+  /**
    * Defines which primary unique key to use when get_unique_key_columns() is called.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name The database name for the unique key.
@@ -1272,6 +1376,40 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * Returns an array of table name, key and reference to column values for all tables associated
+   * with this record.  This includes the main table first, then all extending tables in the order
+   * they were added to the record using the add_extending_tables() method.
+   * This method is used internally by this class only.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access private
+   */
+  private function get_working_table_list()
+  {
+    // make an array containing this record's table name, key and a reference to its column values
+    // then add the same for any extending tables
+    $tables = array();
+    $tables[] = array( 'name' => static::get_table_name(),
+                       'key' => static::get_primary_key_name(),
+                       'columns' => & $this->column_values );
+    
+    foreach( self::get_extending_table_list() as $extending_table )
+    {
+      // make sure the extending column values array exists
+      if( !array_key_exists( $extending_table, $this->extending_column_values ) )
+        $this->extending_column_values[$extending_table] = array();
+
+      $table_name = sprintf( '%s_%s', static::get_table_name(), $extending_table );
+      $tables[] = array(
+        'name' => $table_name,
+        'key' => sprintf( '%s_%s', static::get_table_name(), static::get_primary_key_name() ),
+        'columns' => & $this->extending_column_values[$extending_table] );
+    }
+
+    return $tables;
+  }
+
+  /**
    * Determines whether the record is read only (no modifying the database).
    * @var boolean
    * @access protected
@@ -1279,7 +1417,7 @@ abstract class record extends \cenozo\base_object
   protected $read_only = false;
 
   /**
-   * Holds all table column values in an associate array where key=>value is
+   * Holds all table column values in an associative array where key=>value is
    * column_name=>column_value
    * @var array
    * @access private
@@ -1317,4 +1455,19 @@ abstract class record extends \cenozo\base_object
    * @access private
    */
   private static $custom_join_list = array();
+
+  /**
+   * A list of tables which extend this record's data.  See add_extending_table() for more details.
+   * @var array
+   * @access private
+   */
+  private static $extending_table_list = array();
+
+  /**
+   * Holds all extending column values in an associative array where key=>key=>value is
+   * extending_table=>column=>column_value
+   * @var array
+   * @access private
+   */
+  private $extending_column_values = array();
 }

@@ -92,6 +92,38 @@ final class service
   }
   
   /**
+   * Adds a list of key/value pairs to the settings
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $settings
+   * @param boolean $replace Whether to replace the existing settings array
+   * @access public
+   */
+  public function add_settings( $settings, $replace = false )
+  {
+    if( $replace )
+    {
+      $this->settings = $settings;
+    }
+    else
+    {
+      foreach( $settings as $category => $setting )
+      {
+        if( !array_key_exists( $category, $this->settings ) )
+        {
+          $this->settings[$category] = $setting;
+        }
+        else
+        {
+          foreach( $setting as $key => $value )
+            if( !array_key_exists( $key, $this->settings[$category] ) )
+              $this->settings[$category][$key] = $value;
+        }
+      }
+    }
+  }
+
+  /**
    * Executes the service.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -107,22 +139,16 @@ final class service
     ini_set( 'display_errors', '0' );
     error_reporting( E_ALL | E_STRICT );
 
-    // include the framework's initialization settings
-    require_once( dirname( __FILE__ ).'/settings.ini.php' );
-    require_once( dirname( __FILE__ ).'/settings.local.ini.php' );
+    // include the application's initialization settings
+    global $SETTINGS;
+    $this->add_settings( $SETTINGS, true );
+    unset( $SETTINGS );
 
-    // write all framework settings, then overwrite with application settings
-    $this->settings = array();
-    foreach( array_merge( array_keys( $fwk_settings ), array_keys( $SETTINGS ) ) as $category )
-    {
-      $this->settings[$category] = array();
-      if( array_key_exists( $category, $fwk_settings ) )
-        $this->settings[$category] =
-          array_merge( $this->settings[$category], $fwk_settings[$category] );
-      if( array_key_exists( $category, $SETTINGS ) )
-        $this->settings[$category] =
-          array_merge( $this->settings[$category], $SETTINGS[$category] );
-    }
+    // include the framework's initialization settings
+    require_once( dirname( __FILE__ ).'/settings.local.ini.php' );
+    $this->add_settings( $settings );
+    require_once( dirname( __FILE__ ).'/settings.ini.php' );
+    $this->add_settings( $settings );
 
     if( !array_key_exists( 'general', $this->settings ) ||
         !array_key_exists( 'application_name', $this->settings['general'] ) )
@@ -515,7 +541,7 @@ final class service
    * @var array
    * @access private
    */
-  private $settings;
+  private $settings = array();
 
   /**
    * The base url of the service request.

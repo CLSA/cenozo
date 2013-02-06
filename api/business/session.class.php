@@ -67,13 +67,13 @@ class session extends \cenozo\singleton
 
     $setting_manager = lib::create( 'business\setting_manager' );
 
-    // create the databases
+    // create the database object
     $this->database = lib::create( 'database\database',
       $setting_manager->get_setting( 'db', 'driver' ),
       $setting_manager->get_setting( 'db', 'server' ),
       $setting_manager->get_setting( 'db', 'username' ),
       $setting_manager->get_setting( 'db', 'password' ),
-      $setting_manager->get_setting( 'db', 'database' ),
+      sprintf( '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), APPNAME ),
       $setting_manager->get_setting( 'db', 'prefix' ) );
 
     // determine the user (setting the user will also set the site and role)
@@ -110,9 +110,9 @@ class session extends \cenozo\singleton
       $this->requested_role = $role_class_name::get_unique_record( 'name', $role_name );
     }
   }
-  
+
   /**
-   * Get the main database.
+   * Get the database object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database
@@ -690,7 +690,7 @@ class session extends \cenozo\singleton
   private $initialized = false;
 
   /**
-   * The main database object.
+   * The application's database object.
    * @var database
    * @access private
    */

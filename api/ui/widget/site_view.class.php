@@ -42,7 +42,7 @@ class site_view extends base_view
     $this->add_item( 'service_id', 'constant', 'Service' );
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'timezone', 'enum', 'Time Zone' );
-    $this->add_item( 'institution', 'string', 'Institution' );
+    $this->add_item( 'title', 'string', 'Institution' );
     $this->add_item( 'phone_number', 'string', 'Phone Number' );
     $this->add_item( 'address1', 'string', 'Address1' );
     $this->add_item( 'address2', 'string', 'Address2' );
@@ -91,7 +91,7 @@ class site_view extends base_view
     $this->set_item( 'service_id', $record->get_service()->name );
     $this->set_item( 'name', $record->name, true );
     $this->set_item( 'timezone', $record->timezone, true, $timezones );
-    $this->set_item( 'institution', $this->get_record()->institution );
+    $this->set_item( 'title', $this->get_record()->title );
     $this->set_item( 'phone_number', $this->get_record()->phone_number );
     $this->set_item( 'address1', $this->get_record()->address1 );
     $this->set_item( 'address2', $this->get_record()->address2 );

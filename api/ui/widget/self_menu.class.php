@@ -59,6 +59,7 @@ class self_menu extends \cenozo\ui\widget
     parent::setup();
 
     $util_class_name = lib::get_class_name( 'util' );
+    $operation_class_name = lib::get_class_name( 'database\operation' );
 
     $db_role = lib::create( 'business\session' )->get_role();
 
