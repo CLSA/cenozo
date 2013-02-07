@@ -264,7 +264,7 @@ class participant extends person
       'INSERT INTO participant_event ( participant_id, event_id, datetime ) VALUES ( %s, %s, %s )',
       $this->id,
       $db_event->id,
-      $datetime );
+      $datetime ) );
   }
 
   /**
