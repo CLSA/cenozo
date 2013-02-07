@@ -39,7 +39,6 @@ class quota_view extends base_view
     parent::prepare();
 
     // create an associative array with everything we want to display about the quota
-    $this->add_item( 'cohort', 'constant', 'Cohort' );
     $this->add_item( 'site_id', 'constant', 'Site' );
     $this->add_item( 'region_id', 'enum', 'Region' );
     $this->add_item( 'gender', 'enum', 'Gender' );
@@ -76,7 +75,6 @@ class quota_view extends base_view
         sprintf( '%d to %d', $db_age_group->lower, $db_age_group->upper );
 
     // set the view's items
-    $this->set_item( 'cohort', $this->get_record()->get_site()->get_service()->get_cohort()->name );
     $this->set_item( 'site_id', $this->get_record()->get_site()->name );
     $this->set_item( 'region_id', $this->get_record()->region_id, true, $regions );
     $this->set_item( 'gender', $this->get_record()->gender, true, $genders );

@@ -265,6 +265,18 @@ abstract class base_view extends base_record implements actionable
       }
     }
   }
+  
+  /**
+   * Removes an item from the view.
+   * Note: this should only be done after all items have been set in the setup() method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $item_id The item's id, can be one of the record's column names.
+   * @access public
+   */
+  public function remove_item( $item_id )
+  {
+    unset( $this->items[$item_id] );
+  }
 
   /**
    * Adds a new action to the widget.

@@ -39,7 +39,7 @@ class service_list extends base_list
     parent::prepare();
     
     $this->add_column( 'name', 'string', 'Name', true );
-    $this->add_column( 'cohort.name', 'string', 'Cohort', true );
+    $this->add_column( 'version', 'string', 'Version', true );
     $this->add_column( 'sites', 'number', 'Sites', false );
   }
   
@@ -58,7 +58,7 @@ class service_list extends base_list
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'name' => $record->name,
-               'cohort.name' => $record->get_cohort()->name,
+               'version' => $record->version,
                'sites' => $record->get_site_count() ) );
     }
   }

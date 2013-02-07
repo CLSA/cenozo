@@ -34,9 +34,9 @@ CREATE PROCEDURE convert_database()
 
     -- cohort --------------------------------------------------------------------------------------
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".cohort ( name, grouping ) VALUES ",
-      "( 'comprehensive', 'jurisdiction' ), ",
-      "( 'tracking', 'region' )" );
+      "INSERT INTO ", @cenozo, ".cohort ( name ) VALUES ",
+      "( 'comprehensive' ), ",
+      "( 'tracking' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -273,7 +273,8 @@ CREATE PROCEDURE convert_database()
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".service_has_cohort ",
       "SET service_id = ( SELECT id FROM service WHERE name = 'Beartooth' ), ",
-      "cohort_id = ( SELECT id FROM cohort WHERE name = 'comprehensive' )" );
+      "cohort_id = ( SELECT id FROM cohort WHERE name = 'comprehensive' ), ",
+      "grouping = 'jurisdiction'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -281,7 +282,8 @@ CREATE PROCEDURE convert_database()
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".service_has_cohort ",
       "SET service_id = ( SELECT id FROM service WHERE name = 'Sabretooth' ), ",
-      "cohort_id = ( SELECT id FROM cohort WHERE name = 'tracking' )" );
+      "cohort_id = ( SELECT id FROM cohort WHERE name = 'tracking' ), ",
+      "grouping = 'region'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;

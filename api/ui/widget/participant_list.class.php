@@ -73,7 +73,7 @@ class participant_list extends site_restricted_list
     {
       $db_source = $record->get_source();
       $source_name = is_null( $db_source ) ? '(none)' : $db_source->name;
-      $db_site = $record->get_primary_site();
+      $db_site = $record->get_effective_site();
       $site_name = is_null( $db_site ) ? 'none' : $db_site->get_full_name();
       $columns = array(
         'uid' => $record->uid ? $record->uid : '(none)',

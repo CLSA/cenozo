@@ -135,7 +135,6 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`cohort` (
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
-  `grouping` ENUM('region','jurisdiction') NOT NULL DEFAULT 'region' ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB
@@ -723,6 +722,7 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`service_has_cohort` (
   `cohort_id` INT UNSIGNED NOT NULL ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
+  `grouping` ENUM('region','jurisdiction') NOT NULL DEFAULT 'region' ,
   PRIMARY KEY (`service_id`, `cohort_id`) ,
   INDEX `fk_cohort_id` (`cohort_id` ASC) ,
   INDEX `fk_service_id` (`service_id` ASC) ,
@@ -901,7 +901,7 @@ SELECT service.id,
        IF(
          ISNULL( service_has_participant.preferred_site_id ),
          IF(
-           cohort.grouping = 'jurisdiction',
+           service_has_cohort.grouping = 'jurisdiction',
            jurisdiction.site_id,
            region.site_id
          ),
@@ -911,7 +911,8 @@ FROM service
 CROSS JOIN participant
 LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
 AND participant.id = service_has_participant.participant_id
-JOIN cohort ON participant.cohort_id = cohort.id
+JOIN service_has_cohort ON service.id = service_has_cohort.service_id
+AND service_has_cohort.cohort_id = participant.cohort_id
 LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
 LEFT JOIN address ON participant_primary_address.address_id = address.id
 LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode

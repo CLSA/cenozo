@@ -91,9 +91,10 @@ class participant extends person
   }
 
   /**
-   * Get the preferred site that the participant belongs to for their cohort.
+   * Get the preferred site that the participant belongs to for a given service.
+   * If the participant does not have a preferred site NULL is returned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the participant's cohort's service is used
+   * @param database\service $db_service If null then the application's service is used.
    * @return site
    * @access public
    */
@@ -102,13 +103,17 @@ class participant extends person
     // no primary key means no preferred siet
     if( is_null( $this->id ) ) return NULL;
 
-    if( is_null( $db_service ) ) $db_service = $this->get_cohort()->get_service();
+    $database_class_name = lib::get_class_name( 'database\database' );
 
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'participant_id', '=', $this->id );
-    $modifier->where( 'service_id', '=', $db_service->id );
-    $sql = 'SELECT site_id FROM participant_preferred_site '.$modifier->get_sql();
-    $site_id = static::db()->get_one( $sql );
+    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
+
+    $site_id = static::db()->get_one( sprintf( 
+      'SELECT site_id '.
+      'FROM participant_preferred_site '.
+      'WHERE service_id = %s '.
+      'AND participant_id = %s',
+      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
@@ -116,77 +121,102 @@ class participant extends person
   /**
    * Sets the preferred site for a particular service.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the participant's cohort's service is used
+   * @param database\service $db_service If null then the application's service is used.
+   * @param database\site $db_site
    * @access public
    */
-  public function set_preferred_site( $db_site, $db_service = NULL )
+  public function set_preferred_site( $db_service = NULL, $db_site = NULL )
   {
-    if( is_null( $db_service ) ) $db_service = $this->get_cohort()->get_service();
+    // no primary key means no preferred site
+    if( is_null( $this->id ) ) return NULL;
 
-    $sql = sprintf( !is_null( $db_site ) ?
-      'REPLACE INTO participant_preferred_site '.
-      '( participant_id, service_id, create_timestamp, site_id ) '.
-      'VALUES '.
-      '( %d, %d, NULL, %d )' :
-      'DELETE FROM participant_preferred_site '.
-      'WHERE participant_id = %d '.
-      'AND service_id = %d',
-      $this->id,
-      $db_service->id,
-      is_null( $db_site ) ? 0 : $db_site->id );
+    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
 
-    static::db()->execute( $sql );
+    // make sure this participant's cohort belongs to the service
+    if( !static::db()->get_one( sprintf(
+      'SELECT COUNT(*) '.
+      'FROM participant '.
+      'JOIN service_has_cohort ON service_has_cohort.cohort_id = participant.cohort_id '.
+      'WHERE service_has_cohort.service_id = %s '.
+      'AND participant.id = %s',
+      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $this->id ) ) ) )
+      throw lib::runtime( sprintf(
+        'Tried to set preferred %s site for participant %s, '.
+        'but %s does not have access to the %s cohort',
+        $db_service->name,
+        $this->uid,
+        $db_service->name,
+        $this->get_cohort()->name ),
+        __METHOD__ );
+
+    // we want to add the row (if none exists) or just update the preferred_site_id column
+    // if a row already exists
+    static::db()->execute( sprintf(
+      'INSERT INTO service_has_participant '.
+      'SET service_id = %s, participant_id = %s, preferred_site_id = %s '.
+      'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
+      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $this->id ),
+      is_null( $db_site ) ? 'NULL' : $database_class_name::format_string( $db_site->id ) ) );
   }
 
   /**
-   * Get the default site that the participant belongs to for their cohort.
-   * This depends on the type of grouping that the participant's cohort uses
+   * Get the default site that the participant belongs to for a given service.
+   * This depends on the type of grouping that the participant's cohort uses for each service
    * (region or jurisdition)
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the participant's cohort's service is used
+   * @param database\service $db_service If null then the application's service is used.
    * @return site
    * @access public
    */
   public function get_default_site( $db_service = NULL )
   {
-    $db_cohort = is_null( $db_service ) ? $this->get_cohort() : $db_service->get_cohort();
+    // no primary key means no default site
+    if( is_null( $this->id ) ) return NULL;
 
-    $db_site = NULL;
+    $database_class_name = lib::get_class_name( 'database\database' );
 
-    if( 'jurisdiction' == $db_cohort->grouping )
-    {
-      $db_address = $this->get_primary_address();
-      if( !is_null( $db_address ) )
-      {
-        $jurisdiction_class_name = lib::get_class_name( 'database\jurisdiction' );
-        $db_jurisdiction =
-          $jurisdiction_class_name::get_unique_record( 'postcode', $db_address->postcode );
-        if( !is_null( $db_jurisdiction ) ) $db_site = $db_jurisdiction->get_site();
-      }
-    }
-    else
-    {
-      $db_address = $this->get_primary_address();
-      if( !is_null( $db_address ) ) $db_site = $db_address->get_region()->get_site();
-    }
+    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
 
-    return $db_site;
+    $site_id = static::db()->get_one( sprintf( 
+      'SELECT site_id '.
+      'FROM participant_default_site '.
+      'WHERE service_id = %s '.
+      'AND participant_id = %s',
+      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $this->id ) ) );
+
+    return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
 
   /**
-   * Get the site that the participant belongs to for their cohort.
+   * Get the effective site that the participant belongs for a given service.
    * This method returns the participant's preferred site, or if they have no preferred site
    * then it returns their default site.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the participant's cohort's service is used
+   * @param database\service $db_service If null then the application's service is used.
    * @return site
    * @access public
    */
-  public function get_primary_site( $db_service = NULL )
+  public function get_effective_site( $db_service = NULL )
   {
-    $db_preferred_site = $this->get_preferred_site( $db_service );
-    return is_null( $db_preferred_site ) ?
-      $this->get_default_site( $db_service ) : $db_preferred_site;
+    // no primary key means no effective site
+    if( is_null( $this->id ) ) return NULL;
+
+    $database_class_name = lib::get_class_name( 'database\database' );
+
+    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
+
+    $site_id = static::db()->get_one( sprintf( 
+      'SELECT site_id '.
+      'FROM participant_site '.
+      'WHERE service_id = %s '.
+      'AND participant_id = %s',
+      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $this->id ) ) );
+
+    return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
   
   /**
@@ -332,6 +362,7 @@ $address_mod->where( 'participant_primary_address.address_id', '=', 'address.id'
 participant::customize_join( 'address', $address_mod );
 
 // define the join to the jurisdiction table
+/* TODO: not sure if this still applies
 $jurisdiction_mod = lib::create( 'database\modifier' );
 $jurisdiction_mod->where( 'participant.cohort_id', '=', 'cohort.id', false );
 $jurisdiction_mod->where( 'cohort.grouping', '=', 'jurisdiction' );
@@ -339,6 +370,7 @@ $jurisdiction_mod->where( 'participant.id', '=', 'participant_primary_address.pa
 $jurisdiction_mod->where( 'participant_primary_address.address_id', '=', 'address.id', false );
 $jurisdiction_mod->where( 'address.postcode', '=', 'jurisdiction.postcode', false );
 participant::customize_join( 'jurisdiction', $jurisdiction_mod );
+*/
 
 // define the uid as the primary unique key
 participant::set_primary_unique_key( 'uq_uid' );

@@ -586,7 +586,7 @@ class database extends \cenozo\base_object
              'PROCEDURE', 'INTO', 'FOR' );
 
     // split the sql based on the words above, then process each piece one at a time
-    $pieces = preg_split( sprintf( '/(%s)/i', implode( '|', $split_words ) ),
+    $pieces = preg_split( sprintf( '/\b(%s)\b/i', implode( '|', $split_words ) ),
                           $input,
                           -1,
                           PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
@@ -608,22 +608,22 @@ class database extends \cenozo\base_object
         if( 'UPDATE' == $piece_upper )
         {
           $in_update = true;
-          $output .= $piece_upper;
+          $output .= $piece;
         }
         else if( 'INTO' == $piece_upper )
         {
           $in_replace = true;
-          $output .= $piece_upper;
+          $output .= $piece;
         }
         else if( 'FROM' == $piece_upper )
         {
           $in_from = true;
-          $output .= $piece_upper;
+          $output .= $piece;
         }
         else if( 'JOIN' == $piece_upper )
         {
           $in_join = true;
-          $output .= $piece_upper;
+          $output .= $piece;
         }
         // not an opening boundary, so if we're not in a boundary so there's nothing to do
         else if( !( $in_update || $in_replace || $in_from || $in_join ) )
@@ -636,7 +636,7 @@ class database extends \cenozo\base_object
           $in_update = false;
           $in_insert = false;
           $in_replace = false;
-          $output .= $piece_upper;
+          $output .= $piece;
         }
         else if( 'VALUES' == $piece_upper ||
                  'VALUE' == $piece_upper ||
@@ -644,12 +644,12 @@ class database extends \cenozo\base_object
         {
           $in_insert = false;
           $in_replace = false;
-          $output .= $piece_upper;
+          $output .= $piece;
         }
         else if( 'ON' == $piece_upper )
         {
           $in_join = false;
-          $output .= $piece_upper;
+          $output .= $piece;
         }
         else if( 'WHERE' == $piece_upper ||
                  'GROUP' == $piece_upper ||
@@ -662,7 +662,7 @@ class database extends \cenozo\base_object
         {
           $in_from = false;
           $in_join = false;
-          $output .= $piece_upper;
+          $output .= $piece;
         }
         else // in a boundary, not closing it, so process the table names in the piece
         {

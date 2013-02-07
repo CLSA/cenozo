@@ -38,7 +38,6 @@ class quota_list extends base_list
   {
     parent::prepare();
     
-    $this->add_column( 'cohort.name', 'string', 'Cohort', false );
     $this->add_column( 'site.name', 'string', 'Site', true );
     $this->add_column( 'region.name', 'string', 'Region', true );
     $this->add_column( 'gender', 'string', 'Gender', true );
@@ -63,8 +62,7 @@ class quota_list extends base_list
       // assemble the row for this record
       $age_group = sprintf( '%s to %s', $db_age_group->lower, $db_age_group->upper );
       $this->add_row( $record->id,
-        array( 'cohort.name' => $record->get_site()->get_service()->get_cohort()->name,
-               'site.name' => $record->get_site()->get_full_name(),
+        array( 'site.name' => $record->get_site()->get_full_name(),
                'region.name' => $record->get_region()->name,
                'gender' => $record->gender,
                'age_group.lower' => $age_group,
