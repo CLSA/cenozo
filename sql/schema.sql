@@ -590,7 +590,7 @@ DEFAULT CHARACTER SET = latin1;
 DROP TABLE IF EXISTS `cenozo`.`person_note` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`person_note` (
-  `id` INT NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `person_id` INT UNSIGNED NOT NULL ,
