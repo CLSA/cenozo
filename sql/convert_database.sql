@@ -195,6 +195,17 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
+    -- fill in "complted pilot interview" event from old participant table -------------------------
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".participant_event( participant_id, event_id, datetime ) ",
+      "SELECT mp.id, event.id, mp.prior_contact_date ",
+      "FROM ", @mastodon, ".participant mp, ", @cenozo, ".event ",
+      "WHERE event.name = 'completed pilot interview' ",
+      "AND mp.prior_contact_date IS NOT NULL" )
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
     -- participant_event ---------------------------------------------------------------------------
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".participant_event ( update_timestamp, create_timestamp, participant_id, ",

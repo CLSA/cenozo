@@ -177,7 +177,6 @@ class participant_view extends base_view
     $this->set_item( 'gender', $record->gender, true, $genders );
     $this->set_item( 'date_of_birth', $record->date_of_birth );
     $this->set_item( 'age_group', $age_group );
-    $this->set_item( 'prior_contact_date', $record->prior_contact_date, false );
 
     // add a contact form download action
     $db_contact_form = $record->get_contact_form();
