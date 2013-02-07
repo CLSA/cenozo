@@ -658,8 +658,8 @@ DROP TABLE IF EXISTS `cenozo`.`event` ;
 
 CREATE  TABLE IF NOT EXISTS `cenozo`.`event` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` VARCHAR(45) NOT NULL ,
-  `create_timestamp` VARCHAR(45) NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
