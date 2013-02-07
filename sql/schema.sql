@@ -773,7 +773,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_written_consent` (`partici
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_site`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`participant_site` (`id` INT, `participant_id` INT, `site_id` INT);
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_site` (`service_id` INT, `participant_id` INT, `site_id` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`alternate_first_address`
@@ -786,12 +786,22 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`alternate_first_address` (`alternate_id` IN
 CREATE TABLE IF NOT EXISTS `cenozo`.`alternate_primary_address` (`alternate_id` INT, `address_id` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `cenozo`.`participant_default_site`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_default_site` (`service_id` INT, `participant_id` INT, `site_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `cenozo`.`participant_preferred_site`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_preferred_site` (`service_id` INT, `participant_id` INT, `site_id` INT);
+
+-- -----------------------------------------------------
 -- View `cenozo`.`person_first_address`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `cenozo`.`person_first_address` ;
 DROP TABLE IF EXISTS `cenozo`.`person_first_address`;
 USE `cenozo`;
-CREATE  OR REPLACE VIEW `cenozo`.`person_first_address` AS
+CREATE OR REPLACE VIEW `cenozo`.`person_first_address` AS
 SELECT person_id, id AS address_id
 FROM address AS t1
 WHERE t1.rank = (
@@ -821,7 +831,7 @@ WHERE t1.rank = (
 DROP VIEW IF EXISTS `cenozo`.`person_primary_address` ;
 DROP TABLE IF EXISTS `cenozo`.`person_primary_address`;
 USE `cenozo`;
-CREATE  OR REPLACE VIEW `cenozo`.`person_primary_address` AS
+CREATE OR REPLACE VIEW `cenozo`.`person_primary_address` AS
 SELECT person_id, id AS address_id
 FROM address AS t1
 WHERE t1.rank = (
@@ -839,7 +849,7 @@ WHERE t1.rank = (
 DROP VIEW IF EXISTS `cenozo`.`participant_first_address` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_first_address`;
 USE `cenozo`;
-CREATE  OR REPLACE VIEW `cenozo`.`participant_first_address` AS
+CREATE OR REPLACE VIEW `cenozo`.`participant_first_address` AS
 SELECT participant.id AS participant_id, address_id
 FROM person_first_address, participant
 WHERE person_first_address.person_id = participant.person_id;
@@ -850,7 +860,7 @@ WHERE person_first_address.person_id = participant.person_id;
 DROP VIEW IF EXISTS `cenozo`.`participant_primary_address` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_primary_address`;
 USE `cenozo`;
-CREATE  OR REPLACE VIEW `cenozo`.`participant_primary_address` AS
+CREATE OR REPLACE VIEW `cenozo`.`participant_primary_address` AS
 SELECT participant.id AS participant_id, address_id
 FROM person_primary_address, participant
 WHERE person_primary_address.person_id = participant.person_id;
@@ -861,7 +871,7 @@ WHERE person_primary_address.person_id = participant.person_id;
 DROP VIEW IF EXISTS `cenozo`.`participant_last_consent` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_last_consent`;
 USE `cenozo`;
-CREATE  OR REPLACE VIEW `cenozo`.`participant_last_consent` AS
+CREATE OR REPLACE VIEW `cenozo`.`participant_last_consent` AS
 SELECT participant.id AS participant_id, t1.id AS consent_id, t1.event AS event
 FROM participant
 LEFT JOIN consent t1
@@ -879,7 +889,7 @@ GROUP BY participant.id;
 DROP VIEW IF EXISTS `cenozo`.`participant_last_written_consent` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_last_written_consent`;
 USE `cenozo`;
-CREATE  OR REPLACE VIEW `cenozo`.`participant_last_written_consent` AS
+CREATE OR REPLACE VIEW `cenozo`.`participant_last_written_consent` AS
 SELECT participant_id, id AS consent_id
 FROM consent AS t1
 WHERE t1.date = (
@@ -895,8 +905,8 @@ WHERE t1.date = (
 DROP VIEW IF EXISTS `cenozo`.`participant_site` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_site`;
 USE `cenozo`;
-CREATE  OR REPLACE VIEW `cenozo`.`participant_site` AS
-SELECT service.id,
+CREATE OR REPLACE VIEW `cenozo`.`participant_site` AS
+SELECT service.id AS service_id,
        participant.id AS participant_id,
        IF(
          ISNULL( service_has_participant.preferred_site_id ),
@@ -909,14 +919,14 @@ SELECT service.id,
        ) AS site_id
 FROM service
 CROSS JOIN participant
-LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
-AND participant.id = service_has_participant.participant_id
 JOIN service_has_cohort ON service.id = service_has_cohort.service_id
 AND service_has_cohort.cohort_id = participant.cohort_id
 LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
 LEFT JOIN address ON participant_primary_address.address_id = address.id
 LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
-LEFT JOIN region ON address.region_id = region.id;
+LEFT JOIN region ON address.region_id = region.id
+LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
+AND service_has_participant.participant_id = participant.id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`alternate_first_address`
@@ -924,7 +934,7 @@ LEFT JOIN region ON address.region_id = region.id;
 DROP VIEW IF EXISTS `cenozo`.`alternate_first_address` ;
 DROP TABLE IF EXISTS `cenozo`.`alternate_first_address`;
 USE `cenozo`;
-CREATE  OR REPLACE VIEW `cenozo`.`alternate_first_address` AS
+CREATE OR REPLACE VIEW `cenozo`.`alternate_first_address` AS
 SELECT alternate.id AS alternate_id, address_id
 FROM person_first_address, alternate
 WHERE person_first_address.person_id = alternate.person_id;
@@ -935,10 +945,50 @@ WHERE person_first_address.person_id = alternate.person_id;
 DROP VIEW IF EXISTS `cenozo`.`alternate_primary_address` ;
 DROP TABLE IF EXISTS `cenozo`.`alternate_primary_address`;
 USE `cenozo`;
-CREATE  OR REPLACE VIEW `cenozo`.`alternate_primary_address` AS
+CREATE OR REPLACE VIEW `cenozo`.`alternate_primary_address` AS
 SELECT alternate.id AS alternate_id, address_id
 FROM person_primary_address, alternate
 WHERE person_primary_address.person_id = alternate.person_id;
+
+-- -----------------------------------------------------
+-- View `cenozo`.`participant_default_site`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `cenozo`.`participant_default_site` ;
+DROP TABLE IF EXISTS `cenozo`.`participant_default_site`;
+USE `cenozo`;
+CREATE OR REPLACE VIEW `cenozo`.`participant_default_site` AS
+SELECT service.id AS service_id,
+       participant.id AS participant_id,
+       IF(
+         service_has_cohort.grouping = 'jurisdiction',
+         jurisdiction.site_id,
+         region.site_id
+       ) AS site_id
+FROM service
+CROSS JOIN participant
+JOIN service_has_cohort ON service.id = service_has_cohort.service_id
+AND service_has_cohort.cohort_id = participant.cohort_id
+LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
+LEFT JOIN address ON participant_primary_address.address_id = address.id
+LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
+LEFT JOIN region ON address.region_id = region.id;
+
+-- -----------------------------------------------------
+-- View `cenozo`.`participant_preferred_site`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `cenozo`.`participant_preferred_site` ;
+DROP TABLE IF EXISTS `cenozo`.`participant_preferred_site`;
+USE `cenozo`;
+CREATE OR REPLACE VIEW `cenozo`.`participant_preferred_site` AS
+SELECT service.id AS service_id,
+       participant.id AS participant_id,
+       service_has_participant.preferred_site_id site_id
+FROM service
+CROSS JOIN participant
+JOIN service_has_cohort ON service.id = service_has_cohort.service_id
+AND service_has_cohort.cohort_id = participant.cohort_id
+LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
+AND service_has_participant.participant_id = participant.id;
 USE `cenozo`;
 
 DELIMITER $$
