@@ -39,7 +39,8 @@ class cohort_list extends base_list
     parent::prepare();
     
     $this->add_column( 'name', 'string', 'Name', true );
-    $this->add_column( 'grouping', 'string', 'Grouping', true );
+    if( !is_null( $this->parent ) && 'service' == $this->parent->get_subject() )
+      $this->add_column( 'service_has_cohort.grouping', 'string', 'Grouping', true );
     $this->add_column( 'participants', 'number', 'Participants', false );
   }
   
@@ -55,11 +56,12 @@ class cohort_list extends base_list
     
     foreach( $this->get_record_list() as $record )
     {
-      // assemble the row for this record
-      $this->add_row( $record->id,
-        array( 'name' => $record->name,
-               'grouping' => $record->grouping,
-               'participants' => $record->get_participant_count() ) );
+      $row = array( 'name' => $record->name,
+                    'participants' => $record->get_participant_count() );
+      if( !is_null( $this->parent ) && 'service' == $this->parent->get_subject() )
+        $row['service_has_cohort.grouping'] =
+          $this->parent->get_record()->get_cohort_grouping( $record );
+      $this->add_row( $record->id, $row );
     }
   }
 }

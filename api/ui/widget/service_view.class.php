@@ -40,13 +40,12 @@ class service_view extends base_view
 
     // create an associative array with everything we want to display about the service
     $this->add_item( 'name', 'string', 'Name' );
-    $this->add_item( 'cohort_id', 'enum', 'Cohort' );
+    $this->add_item( 'version', 'constant', 'Version' );
     $this->add_item( 'sites', 'constant', 'Sites' );
 
     // create the cohort sub-list widget
     $this->cohort_list = lib::create( 'ui\widget\cohort_list', $this->arguments );
     $this->cohort_list->set_parent( $this );
-    $this->cohort_list->set_heading( 'Additional Cohorts' );
   }
 
   /**
@@ -60,6 +59,7 @@ class service_view extends base_view
     parent::setup();
 
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $record = $this->get_record();
 
     // create enum arrays
     $cohorts = array();
@@ -69,9 +69,9 @@ class service_view extends base_view
       $cohorts[$db_cohort->id] = $db_cohort->name;
 
     // set the view's items
-    $this->set_item( 'name', $this->get_record()->name );
-    $this->set_item( 'cohort_id', $this->get_record()->cohort_id, true, $cohorts );
-    $this->set_item( 'sites', $this->get_record()->get_site_count() );
+    $this->set_item( 'name', $record->name );
+    $this->set_item( 'version', $record->version );
+    $this->set_item( 'sites', $record->get_site_count() );
 
     try
     {

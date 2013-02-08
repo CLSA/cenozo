@@ -40,7 +40,6 @@ class cohort_add extends base_view
     
     // define all columns defining this record
     $this->add_item( 'name', 'string', 'Name' );
-    $this->add_item( 'grouping', 'enum', 'Grouping' );
   }
 
   /**
@@ -55,12 +54,7 @@ class cohort_add extends base_view
     
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
 
-    // create enum arrays
-    $groupings = $cohort_class_name::get_enum_values( 'grouping' );
-    $groupings = array_combine( $groupings, $groupings );
-
     // set the view's items
     $this->set_item( 'name', '' );
-    $this->set_item( 'grouping', key( $groupings ), true, $groupings );
   }
 }
