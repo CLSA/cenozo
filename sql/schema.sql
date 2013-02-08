@@ -741,6 +741,33 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
+-- Table `cenozo`.`service_has_role`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`service_has_role` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`service_has_role` (
+  `service_id` INT UNSIGNED NOT NULL ,
+  `role_id` INT UNSIGNED NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  PRIMARY KEY (`service_id`, `role_id`) ,
+  INDEX `fk_role_id` (`role_id` ASC) ,
+  INDEX `fk_service_id` (`service_id` ASC) ,
+  CONSTRAINT `fk_service_has_role_service_id`
+    FOREIGN KEY (`service_id` )
+    REFERENCES `cenozo`.`service` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_service_has_role_role_id`
+    FOREIGN KEY (`role_id` )
+    REFERENCES `cenozo`.`role` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`person_first_address`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cenozo`.`person_first_address` (`person_id` INT, `address_id` INT);

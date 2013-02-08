@@ -51,6 +51,25 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
+    -- service_has_role ----------------------------------------------------------------------------
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".service_has_role( service_id, role_id ) ",
+      "SELECT service.id, role.id ",
+      "FROM ", @cenozo, ".service, ", @cenozo, ".role ",
+      "WHERE service.name = 'Mastodon' ",
+      "AND role.name IN ( 'administrator', 'typist' ) UNION ",
+      "SELECT service.id, role.id ",
+      "FROM ", @cenozo, ".service, ", @cenozo, ".role ",
+      "WHERE service.name = 'Beartooth' ",
+      "AND role.name IN ( 'administrator', 'operator', 'supervisor', 'opal' ) UNION ",
+      "SELECT service.id, role.id ",
+      "FROM ", @cenozo, ".service, ", @cenozo, ".role ",
+      "WHERE service.name = 'Sabretooth' ",
+      "AND role.name IN ( 'administrator', 'coordinator', 'interviewer', 'onyx' ) " );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
     -- site ----------------------------------------------------------------------------------------
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".site( id, update_timestamp, create_timestamp, name, timezone, service_id ) ",
