@@ -64,54 +64,29 @@ class participant_view extends base_view
     $this->add_item( 'age_group', 'constant', 'Age Group' );
 
     // create the address sub-list widget
-    try
-    {
-      $this->address_list = lib::create( 'ui\widget\address_list', $this->arguments );
-      $this->address_list->set_parent( $this );
-      $this->address_list->set_heading( 'Addresses' );
-    }
-    catch( \cenozo\exception\runtime $e ) {}
-
+    $this->address_list = lib::create( 'ui\widget\address_list', $this->arguments );
+    $this->address_list->set_parent( $this );
+    $this->address_list->set_heading( 'Addresses' );
 
     // create the phone sub-list widget
-    try
-    {
-      $this->phone_list = lib::create( 'ui\widget\phone_list', $this->arguments );
-      $this->phone_list->set_parent( $this );
-      $this->phone_list->set_heading( 'Phone numbers' );
-    }
-    catch( \cenozo\exception\runtime $e ) {}
+    $this->phone_list = lib::create( 'ui\widget\phone_list', $this->arguments );
+    $this->phone_list->set_parent( $this );
+    $this->phone_list->set_heading( 'Phone numbers' );
 
     // create the availability sub-list widget
-    try
-    {
-      $this->availability_list = lib::create( 'ui\widget\availability_list', $this->arguments );
-      $this->availability_list->set_parent( $this );
-      $this->availability_list->set_heading( 'Availability' );
-    }
-    catch( \cenozo\exception\runtime $e ) {}
+    $this->availability_list = lib::create( 'ui\widget\availability_list', $this->arguments );
+    $this->availability_list->set_parent( $this );
+    $this->availability_list->set_heading( 'Availability' );
 
     // create the consent sub-list widget
-    try
-    {
-      $this->consent_list = lib::create( 'ui\widget\consent_list', $this->arguments );
-      $this->consent_list->set_parent( $this );
-      $this->consent_list->set_heading( 'Consent information' );
-    }
-    catch( \cenozo\exception\runtime $e ) {}
+    $this->consent_list = lib::create( 'ui\widget\consent_list', $this->arguments );
+    $this->consent_list->set_parent( $this );
+    $this->consent_list->set_heading( 'Consent information' );
 
     // create the alternate sub-list widget
-    try
-    {
-      $this->alternate_list = lib::create( 'ui\widget\alternate_list', $this->arguments );
-      $this->alternate_list->set_parent( $this );
-      $this->alternate_list->set_heading( 'Alternate contacts' );
-    }
-    catch( \cenozo\exception\runtime $e )
-    {
-      if( RUNTIME__CENOZO_UI_OPERATION____CONSTRUCT__ERRNO != $e->get_number() )
-        throw $e;
-    }
+    $this->alternate_list = lib::create( 'ui\widget\alternate_list', $this->arguments );
+    $this->alternate_list->set_parent( $this );
+    $this->alternate_list->set_heading( 'Alternate contacts' );
   }
 
   /**
@@ -177,13 +152,6 @@ class participant_view extends base_view
     $this->set_item( 'gender', $record->gender, true, $genders );
     $this->set_item( 'date_of_birth', $record->date_of_birth );
     $this->set_item( 'age_group', $age_group );
-
-    // add a contact form download action
-    $db_contact_form = $record->get_contact_form();
-    if( !is_null( $db_contact_form ) )
-      $this->set_variable( 'contact_form_id', $db_contact_form->id );
-    $this->add_action( 'contact_form', 'Contact Form', NULL,
-      'Download this participant\'s contact form, if available' );
 
     try
     {

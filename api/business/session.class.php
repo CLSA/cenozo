@@ -303,7 +303,7 @@ class session extends \cenozo\singleton
         
         // if the user has logged in before, use whatever site/role they last used
         $activity_mod = lib::create( 'database\modifier' );
-        $activity_mod->where( 'user_id', '=', $this->user->id );
+        $activity_mod->where( 'activity.user_id', '=', $this->user->id );
         $activity_mod->order_desc( 'datetime' );
         $activity_mod->limit( 1 );
         $activity_class_name = lib::get_class_name( 'database\activity' );
@@ -312,8 +312,8 @@ class session extends \cenozo\singleton
         {
           // make sure the user still has access to the site/role
           $role_mod = lib::create( 'database\modifier' );
-          $role_mod->where( 'site_id', '=', $db_activity->site_id );
-          $role_mod->where( 'role_id', '=', $db_activity->role_id );
+          $role_mod->where( 'access.site_id', '=', $db_activity->site_id );
+          $role_mod->where( 'access.role_id', '=', $db_activity->role_id );
           $db_role = current( $this->user->get_role_list( $role_mod ) );
           
           // only bother setting the site if the access exists
@@ -325,7 +325,7 @@ class session extends \cenozo\singleton
         {
           $db_site = current( $site_list );
           $role_mod = lib::create( 'database\modifier' );
-          $role_mod->where( 'site_id', '=', $db_site->id );
+          $role_mod->where( 'access.site_id', '=', $db_site->id );
           $db_role = current( $this->user->get_role_list( $role_mod ) );
         }
 

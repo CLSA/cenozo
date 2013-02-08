@@ -58,7 +58,7 @@ class user_new_access extends base_new_access
         foreach( $service_id_list as $service_id )
         {
           $access_mod = lib::create( 'database\modifier' );
-          $access_mod->where( 'role_id', '=', $db_administrator_role->id );
+          $access_mod->where( 'access.role_id', '=', $db_administrator_role->id );
           $access_mod->where( 'site.service_id', '=', $service_id );
           if( 0 == lib::create( 'business\session' )->get_user()->get_access_count( $access_mod ) )
           {

@@ -133,7 +133,7 @@ class site_view extends base_view
   {
     $access_class_name = lib::get_class_name( 'database\access' );
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $this->get_record()->id );
+    $modifier->where( 'access.site_id', '=', $this->get_record()->id );
     return $access_class_name::count( $modifier );
   }
 
@@ -149,7 +149,7 @@ class site_view extends base_view
   {
     $access_class_name = lib::get_class_name( 'database\access' );
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $this->get_record()->id );
+    $modifier->where( 'access.site_id', '=', $this->get_record()->id );
     return $access_class_name::select( $modifier );
   }
 

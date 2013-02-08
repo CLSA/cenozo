@@ -129,7 +129,7 @@ class user_view extends base_view
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
     if( !$site_restricted_list_class_name::may_restrict() )
-      $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+      $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
     return $access_class_name::count( $modifier );
   }
 
@@ -148,7 +148,7 @@ class user_view extends base_view
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
     if( !$site_restricted_list_class_name::may_restrict() )
-      $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+      $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
     return $access_class_name::select( $modifier );
   }
 
@@ -165,7 +165,7 @@ class user_view extends base_view
     if( !$site_restricted_list_class_name::may_restrict() )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+      $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
     }
 
     return $this->get_record()->get_activity_count( $modifier );
@@ -185,7 +185,7 @@ class user_view extends base_view
     if( !$site_restricted_list_class_name::may_restrict() )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+      $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
     }
 
     return $this->get_record()->get_activity_list( $modifier );

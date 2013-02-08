@@ -60,11 +60,11 @@ class user_list extends site_restricted_list
       // determine the role
       $modifier = lib::create( 'database\modifier' );
       if( !is_null( $this->db_restrict_site ) )
-        $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+        $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
 
       $site = 'none';
       $db_sites = $record->get_site_list();
-      if( 1 == count( $db_sites ) ) $site = $db_sites[0]->get_site_name(); // only one site?
+      if( 1 == count( $db_sites ) ) $site = $db_sites[0]->get_full_name(); // only one site?
       else if( 1 < count( $db_sites ) ) $site = 'multiple'; // multiple sites?
       
       $role = 'none';
@@ -99,7 +99,7 @@ class user_list extends site_restricted_list
     if( !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+      $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
     }
 
     return parent::determine_record_count( $modifier );
@@ -118,7 +118,7 @@ class user_list extends site_restricted_list
     if( !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+      $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
     }
 
     return parent::determine_record_list( $modifier );

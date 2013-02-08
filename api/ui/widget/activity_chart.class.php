@@ -68,7 +68,7 @@ class activity_chart extends \cenozo\ui\widget
       // get the usage for this site only
       $activity_mod = lib::create( 'database\modifier' );
       if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
-      $activity_mod->where( 'site_id', '=', $db_site->id );
+      $activity_mod->where( 'activity.site_id', '=', $db_site->id );
       $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 31 );
 
       $month_columns[] = array(
@@ -101,7 +101,7 @@ class activity_chart extends \cenozo\ui\widget
       // get the usage for this site only
       $activity_mod = lib::create( 'database\modifier' );
       if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
-      $activity_mod->where( 'site_id', '=', $db_site->id );
+      $activity_mod->where( 'activity.site_id', '=', $db_site->id );
       $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 365 );
 
       $year_columns[] = array(

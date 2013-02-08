@@ -61,7 +61,7 @@ class self_settings extends \cenozo\ui\widget
 
     $roles = array();
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_current_site->id );
+    $modifier->where( 'access.site_id', '=', $db_current_site->id );
     foreach( $db_user->get_role_list( $modifier ) as $db_role )
       $roles[ $db_role->id ] = $db_role->name;
     
