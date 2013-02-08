@@ -581,9 +581,10 @@ class database extends \cenozo\base_object
   protected function add_database_names( $input )
   {
     $split_words =
-      array( 'UPDATE', 'INSERT', 'REPLACE', 'SELECT', 'DELETE', 'INTO', 'FROM', 'JOIN', 'LEFT',
-             'RIGHT', 'VALUES', 'VALUE', 'SET', 'WHERE', 'GROUP', 'HAVING', 'ORDER', 'LIMIT',
-             'PROCEDURE', 'INTO', 'FOR' );
+      array( 'DUPLICATE KEY UPDATE', 'UPDATE', 'INSERT', 'REPLACE', 'SELECT', 'DELETE', 'INTO',
+             'FROM', 'LEFT JOIN', 'RIGHT JOIN', 'STRAIGHT JOIN', 'CROSS JOIN', 'JOIN', 'VALUES',
+             'VALUE', 'SET', 'WHERE', 'GROUP', 'HAVING', 'ORDER', 'LIMIT', 'PROCEDURE', 'INTO',
+             'FOR' );
 
     // split the sql based on the words above, then process each piece one at a time
     $pieces = preg_split( sprintf( '/\b(%s)\b/i', implode( '|', $split_words ) ),
@@ -631,6 +632,11 @@ class database extends \cenozo\base_object
           $output .= $piece;
         }
         // not an opening boundary and we are in some boundary, see if we're closing a boundary
+        else if( 'DUPLICATE KEY UPDATE' == $piece_upper )
+        {
+          $in_insert = false;
+          $output .= $piece;
+        }
         else if( 'SET' == $piece_upper )
         {
           $in_update = false;
