@@ -274,6 +274,15 @@ final class service
     $session->set_error_code(
       array_key_exists( 'error_code', $result_array ) ? $result_array['error_code'] : NULL );
 
+    // show the profile if we are in development mode
+    if( lib::in_development_mode() && 'main' == $this->slot_name )
+    {
+      $profile = array();
+      foreach( $session->get_database()->get_all( 'SHOW PROFILE', false ) as $row )
+        $profile[$row['Status']] = $row['Duration'];
+      log::info( array( 'Database Profile' => $profile ) );
+    }
+
     // we can end output buffering now
     if( 'main' != $this->operation_type ) ob_end_clean();
 
@@ -479,11 +488,11 @@ final class service
   private function widget()
   {
     $session = lib::create( 'business\session' );
-    $slot_name = $this->url_tokens[1];
-    $slot_action = $this->url_tokens[2];
+    $this->slot_name = $this->url_tokens[1];
+    $this->slot_action = $this->url_tokens[2];
 
     // determine which widget to render based on the GET variables
-    $current_widget = $session->slot_current( $slot_name );
+    $current_widget = $session->slot_current( $this->slot_name );
 
     // if we are loading the same widget as last time then merge the arguments
     if( !is_null( $current_widget ) &&
@@ -502,19 +511,19 @@ final class service
     }
 
     // if the prev, next or refresh buttons were invoked, change the operation name appropriately
-    if( 'prev' == $slot_action )
+    if( 'prev' == $this->slot_action )
     {
-      $prev_widget = $session->slot_prev( $slot_name );
+      $prev_widget = $session->slot_prev( $this->slot_name );
       $this->operation_name = $prev_widget['name'];
       $this->arguments = $prev_widget['args'];
     }
-    else if( 'next' == $slot_action )
+    else if( 'next' == $this->slot_action )
     {
-      $next_widget = $session->slot_next( $slot_name );
+      $next_widget = $session->slot_next( $this->slot_name );
       $this->operation_name = $next_widget['name'];
       $this->arguments = $next_widget['args'];
     }
-    else if( 'refresh' == $slot_action && !is_null( $current_widget ) )
+    else if( 'refresh' == $this->slot_action && !is_null( $current_widget ) )
     {
       $this->operation_name = $current_widget['name'];
       $this->arguments = $current_widget['args'];
@@ -527,8 +536,8 @@ final class service
     $data = $this->render_template( $this->operation_name, $operation->get_variables() );
 
     // only push on load slot actions
-    if( 'load' == $slot_action )
-      $session->slot_push( $slot_name, $this->operation_name, $this->arguments );
+    if( 'load' == $this->slot_action )
+      $session->slot_push( $this->slot_name, $this->operation_name, $this->arguments );
 
     return array(
       'name' => NULL,
@@ -563,6 +572,20 @@ final class service
    * @access private
    */
   private $arguments = NULL;
+
+  /**
+   * The name of the slot involved in the operation, or NULL if the operation type is not "widget")
+   * @var string
+   * @access private
+   */
+  private $slot_name = NULL;
+
+  /**
+   * The action being performed on the slot, or NULL if the operation type is not "widget")
+   * @var string
+   * @access private
+   */
+  private $slot_action = NULL;
 
   /**
    * The type of the operation being performed

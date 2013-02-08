@@ -48,6 +48,7 @@ class database extends \cenozo\base_object
     $this->connection->SetFetchMode( ADODB_FETCH_ASSOC );
     
     $this->connect();
+    if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
 
     // determine the framework name from the database name
     $framework_name = str_replace( APPNAME, 'cenozo', $this->name );
