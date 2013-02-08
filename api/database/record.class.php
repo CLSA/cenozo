@@ -963,9 +963,11 @@ abstract class record extends \cenozo\base_object
       $first = false;
     }
 
-    $sql = sprintf( $count ? 'SELECT COUNT( %s.%s ) FROM %s %s' : 'SELECT %s.%s FROM %s %s',
+    $sql = sprintf( 'SELECT%s DISTINCT %s.%s %sFROM %s %s',
+                    $count ? ' COUNT(' : '',
                     $this_table,
                     static::get_primary_key_name(),
+                    $count ? ') ' : '',
                     $select_tables,
                     is_null( $modifier ) ? '' : $modifier->get_sql() );
 
