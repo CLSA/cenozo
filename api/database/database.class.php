@@ -585,7 +585,7 @@ class database extends \cenozo\base_object
       array( 'DUPLICATE KEY UPDATE', 'UPDATE', 'INSERT', 'REPLACE', 'SELECT', 'DELETE', 'INTO',
              'FROM', 'LEFT JOIN', 'RIGHT JOIN', 'STRAIGHT JOIN', 'CROSS JOIN', 'JOIN', 'VALUES',
              'VALUE', 'SET', 'WHERE', 'GROUP', 'HAVING', 'ORDER', 'LIMIT', 'PROCEDURE', 'INTO',
-             'FOR' );
+             'FOR', 'ON' );
 
     // split the sql based on the words above, then process each piece one at a time
     $pieces = preg_split( sprintf( '/\b(%s)\b/i', implode( '|', $split_words ) ),
@@ -622,7 +622,11 @@ class database extends \cenozo\base_object
           $in_from = true;
           $output .= $piece;
         }
-        else if( 'JOIN' == $piece_upper )
+        else if( 'LEFT JOIN' == $piece_upper ||
+                 'RIGHT JOIN' == $piece_upper ||
+                 'STRAIGHT JOIN' == $piece_upper ||
+                 'CROSS JOIN' == $piece_upper ||
+                 'JOIN' == $piece_upper )
         {
           $in_join = true;
           $output .= $piece;
