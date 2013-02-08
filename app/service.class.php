@@ -222,7 +222,14 @@ final class service
 
       // execute service type-specific operations
       $method_name = $this->operation_type;
+
+      if( lib::in_development_mode() )
+      {
+        $time = microtime( true );
+        $initialization_time = $time - $_SESSION['time']['script_start_time'];
+      }
       $output = $this->$method_name();
+      if( lib::in_development_mode() ) $operation_time = microtime( true ) - $time;
     }
     catch( exception\base_exception $e )
     {
@@ -275,12 +282,27 @@ final class service
       array_key_exists( 'error_code', $result_array ) ? $result_array['error_code'] : NULL );
 
     // show the profile if we are in development mode
-    if( lib::in_development_mode() && 'main' == $this->slot_name )
+    if( lib::in_development_mode() &&
+        ( 'main' == $this->slot_name ||
+          'pull' == $this->operation_type ||
+          'push' == $this->operation_type ) )
     {
       $profile = array();
+      $profile['Elapsed Time'] = sprintf( '%0.3f', $util_class_name::get_elapsed_time() );
+      if( isset( $initialization_time ) )
+        $profile['Initialization Time'] = sprintf( '%0.3f', $initialization_time );
+      if( isset( $operation_time ) )
+        $profile['Operation Time'] = sprintf( '%0.3f', $operation_time );
+
+      $profile['Database Profile Time'] = 0;
+      $profile['Database Profile Breakdown'] = array();
       foreach( $session->get_database()->get_all( 'SHOW PROFILE', false ) as $row )
-        $profile[$row['Status']] = $row['Duration'];
-      log::info( array( 'Database Profile' => $profile ) );
+      {
+        $profile['Database Profile'][$row['Status']] = $row['Duration'];
+        $profile['Database Profile Time'] += $row['Duration'];
+      }
+      $profile['Database Profile Time'] = sprintf( '%0.3f', $profile['Database Profile Time'] );
+      log::info( $profile );
     }
 
     // we can end output buffering now
