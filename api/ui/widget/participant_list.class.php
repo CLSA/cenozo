@@ -43,7 +43,8 @@ class participant_list extends site_restricted_list
     $this->add_column( 'last_name', 'string', 'Last', true );
     $this->add_column( 'active', 'boolean', 'Active', true );
     $this->add_column( 'source.name', 'string', 'Source', true );
-    $this->add_column( 'cohort.name', 'string', 'Cohort', true );
+    if( is_null( $this->db_restrict_site ) )
+      $this->add_column( 'cohort.name', 'string', 'Cohort', true );
     $this->add_column( 'site', 'string', 'Site', false );
 
     $this->extended_site_selection = true;

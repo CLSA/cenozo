@@ -130,6 +130,8 @@ class participant extends person
     // no primary key means no preferred site
     if( is_null( $this->id ) ) return NULL;
 
+    $database_class_name = lib::get_class_name( 'database\database' );
+    
     if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
 
     // make sure this participant's cohort belongs to the service
