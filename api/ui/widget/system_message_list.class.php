@@ -93,9 +93,8 @@ class system_message_list extends site_restricted_list
     }
     
     // skip the parent method
-    // php doesn't allow parent::parent::method() so we have to do the less safe code below
-    $base_list_class_name = lib::get_class_name( 'ui\widget\base_list' );
-    return $base_list_class_name::determine_record_count( $modifier );
+    $grand_parent = get_parent_class( get_parent_class( get_class() ) );
+    return $grand_parent::determine_record_count( $modifier );
   }
 
   /**
@@ -122,8 +121,7 @@ class system_message_list extends site_restricted_list
     }
     
     // skip the parent method
-    // php doesn't allow parent::parent::method() so we have to do the less safe code below
-    $base_list_class_name = lib::get_class_name( 'ui\widget\base_list' );
-    return $base_list_class_name::determine_record_list( $modifier );
+    $grand_parent = get_parent_class( get_parent_class( get_class() ) );
+    return $grand_parent::determine_record_list( $modifier );
   }
 }

@@ -102,7 +102,9 @@ class user_list extends site_restricted_list
       $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
     }
 
-    return parent::determine_record_count( $modifier );
+    // skip the parent method
+    $grand_parent = get_parent_class( get_parent_class( get_class() ) );
+    return $grand_parent::determine_record_count( $modifier );
   }
   
   /**
@@ -121,6 +123,8 @@ class user_list extends site_restricted_list
       $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
     }
 
-    return parent::determine_record_list( $modifier );
+    // skip the parent method
+    $grand_parent = get_parent_class( get_parent_class( get_class() ) );
+    return $grand_parent::determine_record_list( $modifier );
   }
 }
