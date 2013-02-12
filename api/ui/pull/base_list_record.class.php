@@ -51,7 +51,7 @@ abstract class base_list_record extends base_record
    */
   protected function execute()
   {
-    parent::execute();
+    // replace the parent class to get a specific record list
 
     $this->data = array();
     
