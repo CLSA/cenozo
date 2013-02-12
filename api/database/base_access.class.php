@@ -61,7 +61,7 @@ abstract class base_access extends record
     
     $activity_class_name = lib::get_class_name( 'database\activity' );
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'access.'.$subject_name.'_id', '=', $this->id );
+    $modifier->where( 'activity.'.$subject_name.'_id', '=', $this->id );
     return $activity_class_name::count( $modifier );
   }
 
@@ -85,7 +85,7 @@ abstract class base_access extends record
     
     $activity_class_name = lib::get_class_name( 'database\activity' );
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'access.'.$subject_name.'_id', '=', $this->id );
+    $modifier->where( 'activity.'.$subject_name.'_id', '=', $this->id );
     return $activity_class_name::select( $modifier );
   }
 
