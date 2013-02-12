@@ -44,6 +44,7 @@ class quota_view extends base_view
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'age_group_id', 'enum', 'Age Group' );
     $this->add_item( 'population', 'number', 'Population' );
+    $this->add_item( 'disabled', 'boolean', 'Disabled' );
   }
 
   /**
@@ -75,10 +76,11 @@ class quota_view extends base_view
         sprintf( '%d to %d', $db_age_group->lower, $db_age_group->upper );
 
     // set the view's items
-    $this->set_item( 'site_id', $this->get_record()->get_site()->name );
+    $this->set_item( 'site_id', $this->get_record()->get_site()->name, true );
     $this->set_item( 'region_id', $this->get_record()->region_id, true, $regions );
     $this->set_item( 'gender', $this->get_record()->gender, true, $genders );
     $this->set_item( 'age_group_id', $this->get_record()->age_group_id, true, $age_groups );
-    $this->set_item( 'population', $this->get_record()->population );
+    $this->set_item( 'population', $this->get_record()->population, true );
+    $this->set_item( 'disabled', $this->get_record()->disabled, true );
   }
 }
