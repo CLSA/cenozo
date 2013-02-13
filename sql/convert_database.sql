@@ -294,19 +294,14 @@ CREATE PROCEDURE convert_database()
 
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".quota ",
-      "SELECT mquota.*, bquota.disabled ",
+      "SELECT mquota.*, 0 ",
       "FROM ", @mastodon, ".quota mquota ",
       "JOIN ", @mastodon, ".region mregion ON mquota.region_id = mregion.id ",
       "JOIN ", @beartooth, ".region bregion ON mregion.name = bregion.name ",
       "JOIN ", @mastodon, ".site msite ON mquota.site_id = msite.id ",
       "JOIN ", @beartooth, ".site bsite ON msite.name = bsite.name AND msite.cohort = 'comprehensive' ",
       "JOIN ", @mastodon, ".age_group mage_group ON mquota.age_group_id = mage_group.id ",
-      "JOIN ", @beartooth, ".age_group bage_group ON mage_group.lower = bage_group.lower ",
-      "LEFT JOIN ", @beartooth, ".quota bquota ",
-      "ON bquota.region_id = bregion.id ",
-      "AND bquota.site_id = bsite.id ",
-      "AND bquota.gender = mquota.gender ",
-      "AND bquota.age_group_id = bage_group.id" );
+      "JOIN ", @beartooth, ".age_group bage_group ON mage_group.lower = bage_group.lower " );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
