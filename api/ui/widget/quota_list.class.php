@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * widget quota list
  */
-class quota_list extends base_list
+class quota_list extends site_restricted_list
 {
   /**
    * Constructor
