@@ -67,13 +67,6 @@ class alternate_view extends base_view
   {
     parent::setup();
 
-    // add a proxy form download action
-    $db_proxy_form = $this->get_record()->get_proxy_form();
-    if( !is_null( $db_proxy_form ) )
-      $this->set_variable( 'proxy_form_id', $db_proxy_form->id );
-    $this->add_action( 'proxy_form', 'Proxy Form', NULL,
-      'Download this alternate\'s consent for proxy form, if available' );
-
     // set the view's items
     $this->set_item( 'first_name', $this->get_record()->first_name, true );
     $this->set_item( 'last_name', $this->get_record()->last_name, true );
