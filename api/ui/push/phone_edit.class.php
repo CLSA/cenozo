@@ -38,6 +38,7 @@ class phone_edit extends base_edit
   {
     parent::validate();
 
+    $util_class_name = lib::get_class_name( 'util' );
     $columns = $this->get_argument( 'columns' );
 
     // if there is a phone number, validate it
@@ -52,7 +53,7 @@ class phone_edit extends base_edit
                                    substr( $number_only, 0, 3 ),
                                    substr( $number_only, 3, 3 ),
                                    substr( $number_only, 6 ) );
-      if( !util::validate_phone_number( $formatted_number ) )
+      if( !$util_class_name::validate_phone_number( $formatted_number ) )
         throw lib::create( 'exception\notice',
           sprintf( 'The provided number "%s" is not a valid North American phone number.',
                    $formatted_number ),
