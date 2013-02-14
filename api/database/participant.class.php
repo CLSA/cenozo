@@ -143,7 +143,7 @@ class participant extends person
       'AND participant.id = %s',
       $database_class_name::format_string( $db_service->id ),
       $database_class_name::format_string( $this->id ) ) ) )
-      throw lib::runtime( sprintf(
+      throw lib::create( 'exception\runtime', sprintf(
         'Tried to set preferred %s site for participant %s, '.
         'but %s does not have access to the %s cohort',
         $db_service->name,
