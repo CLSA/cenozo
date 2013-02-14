@@ -12,13 +12,45 @@
   {{ parent() }}
   <script type="text/javascript">
     $( function () {
+      
+      // service drop-down changed
+      $( "#{{ widget.full }}__service_id" ).change( function () {
+        populate_site_list( $( "#{{ widget.full }}__service_id" ).val() );
+      } );
+
+      // proceed button clicked
       $( "#{{ widget.full }}__proceed" ).click( function () {
         var args = new Object();
-        args.uid_list = $( "#{{ widget.full }}__uid_list" ).val();
+        args.service_id = $( "#{{ widget.full }}__service_id" ).val();
         args.site_id = $( "#{{ widget.full }}__site_id" ).val();
+        args.uid_list = $( "#{{ widget.full }}__uid_list" ).val();
         if( ajax_push( "participant", "site_reassign", args ) ) slot_prev( {{ slot }} );
       } );
+    
+      // populate the list on load
+      populate_site_list( $( "#{{ widget.full }}__service_id" ).val() );
     } );
+
+    // populate site drop-down with the selected service's sites
+    function populate_site_list( service_id ) {
+      var options = {
+        {% for service in services %}
+          "{{ service.id }}": {
+            "0": "None",
+            {% for site in service.sites %}
+              "{{ site.id }}": "{{ site.name }}",
+            {% endfor %}
+          },
+        {% endfor %}
+      };
+
+      // remove all options and replace them with the choosen service's sites
+      $site_select = $( "#{{ widget.full }}__site_id" );
+      $site_select.children().remove();
+      $.each( options[service_id], function( key, value ) {
+        $site_select.append( $('<option>', { value: key } ).text( value ) );
+      } );
+    }
   </script>
 
 {% endblock javascript %}
@@ -31,23 +63,34 @@
         UIDs must be separated by a comma or space and may be qualified by single
         or double quotes (ie: A123456 B123456 C123456).
       </p>
-      <p>
-        NOTE: participants which have been synched or which do not belong to the cohort
-        of the site provided will be ignored.
-      </p>
     </div>
     <table>
+      {% if 1 < services|length %}
+        <tr>
+          <td class="heading">
+            <span class="title">Service:</span>
+          </td>
+          <td class="content">
+             <select id="{{ widget.full }}__service_id" style="width: 100%" class="ui-state-default">
+              {% for service in services %}
+                <option value="{{ service.id }}">{{ service.name }}</option>
+              {% endfor %}
+             </select>
+          </td>
+        </tr>
+      {% else %}
+        {% for service in services %}
+          <input id="{{ widget.full }}__service_id" type="hidden" value="{{ service.id }}" />
+        {% endfor %}
+      {% endif %}
       <tr>
         <td class="heading">
           <span class="title">Preferred Site:</span>
         </td>
         <td class="content">
-           <select id="{{ widget.full }}__site_id" class="ui-state-default">
+          <select id="{{ widget.full }}__site_id" style="width: 100%" class="ui-state-default">
             <option value="0">None</option>
-            {% for site in sites %}
-              <option value="{{ site.id }}">{{ site.name }} ({{ site.service }})</option>
-            {% endfor %}
-           </select>
+          </select>
         </td>
       </tr>
       <tr>

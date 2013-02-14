@@ -39,9 +39,7 @@ class participant_site_reassign extends \cenozo\ui\push
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
-    $site_id = $this->get_argument( 'site_id' );
-    $db_site = 0 < $site_id ? lib::create( 'database\site', $site_id ) : NULL;
-    $db_service = 0 < $site_id ? $db_site->get_service() : NULL;
+    $db_service = lib::create( 'database\service', $this->get_argument( 'service_id' ) );
 
     $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
     $uid_list_string = trim( $uid_list_string );
@@ -52,16 +50,33 @@ class participant_site_reassign extends \cenozo\ui\push
       // determine the participant record and make sure it is valid
       $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
 
-      if( !is_null( $db_participant ) &&
-          ( is_null( $db_site ) || $db_participant->cohort_id == $db_service->cohort_id ) )
+      if( !is_null( $db_participant ) )
       {
-        $site_id = is_null( $db_site ) ? NULL : $db_site->id;
+        $column_name = $db_service->name.'_site_id';
         $args = array( 'id' => $db_participant->id,
-                       'columns' => array( 'site_id' => $site_id ) );
+                       'columns' => array( $column_name => $this->get_argument( 'site_id' ) ) );
         // this will work because the participant_edit operation overrides the default edit
         // behaviour when site_id is included in the columns argument
         $operation = lib::create( 'ui\push\participant_edit', $args );
-        $operation->process();
+
+        try
+        {
+          $operation->process();
+        }
+        catch( \cenozo\exception\runtime $e )
+        {
+          if( RUNTIME__CENOZO_DATABASE_PARTICIPANT__SET_PREFERRED_SITE__ERRNO == $e->get_number() )
+          {
+            $e = lib::create( 'exception\notice',
+              sprintf( 'UID list contained participant which %s does not have access to (%s), '.
+                       'operation aborted.',
+                       $db_service->name,
+                       $db_participant->uid ),
+              $e );
+          }
+
+          throw $e;
+        }
       }
     }
   }

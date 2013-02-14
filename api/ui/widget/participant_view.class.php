@@ -50,12 +50,18 @@ class participant_view extends base_view
 
     // add an item for default and preferred sites for all services the participant's cohort
     // belongs to
-    foreach( $this->get_record()->get_cohort()->get_service_list() as $db_service )
+    $service_list = $this->get_record()->get_cohort()->get_service_list();
+    foreach( $service_list as $db_service )
     {
+      $title_postfix = 1 < count( $service_list ) ? sprintf( ' (%s)', $db_service->name ) : '';
       $this->add_item(
-        sprintf( '%s_default_site', $db_service->name ), 'constant', 'Default Site' );
+        sprintf( '%s_default_site', $db_service->name ),
+        'constant',
+        'Default Site'.$title_postfix );
       $this->add_item(
-        sprintf( '%s_site_id', $db_service->name ), 'enum', 'Preferred Site' );
+        sprintf( '%s_site_id', $db_service->name ),
+        'enum',
+        'Preferred Site'.$title_postfix );
     }
 
     $this->add_item( 'email', 'string', 'Email' );

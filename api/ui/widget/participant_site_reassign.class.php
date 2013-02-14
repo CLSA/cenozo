@@ -37,15 +37,24 @@ class participant_site_reassign extends \cenozo\ui\widget
   {
     parent::setup();
 
-    $site_class_name = lib::get_class_name( 'database\site' );
-    $sites = array();
-    $site_mod = lib::create( 'database\modifier' );
-    $site_mod->order( 'service_id' );
-    $site_mod->order( 'name' );
-    foreach( $site_class_name::select( $site_mod ) as $db_site )
-      $sites[] = array( 'id' => $db_site->id,
-                        'name' => $db_site->get_full_name(),
-                        'service' => $db_site->get_service()->name );
-    $this->set_variable( 'sites', $sites );
+    $service_class_name = lib::get_class_name( 'database\service' );
+
+    // create a list of services with each of that service's sites
+    $services = array();
+    foreach( $service_class_name::select() as $db_service )
+    {
+      $service = array( 'id' => $db_service->id,
+                        'name' => $db_service->name,
+                        'sites' => array() );
+
+      $site_mod = lib::create( 'database\modifier' );
+      $site_mod->order( 'name' );
+      foreach( $db_service->get_site_list( $site_mod ) as $db_site )
+        $service['sites'][] = array( 'id' => $db_site->id, 'name' => $db_site->name );
+
+      if( count( $service['sites'] ) ) $services[] = $service;
+    }
+
+    $this->set_variable( 'services', $services );
   }
 }
