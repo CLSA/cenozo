@@ -29,7 +29,7 @@ class participant_list extends base_list
   }
 
   /**
-   * Overrides the parent method to add participant address, phone and consent details.
+   * Overrides the parent method to add extra details
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\record $record
    * @return array
