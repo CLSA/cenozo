@@ -469,14 +469,14 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`consent` (
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
-  `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','withdraw') NOT NULL ,
+  `accept` TINYINT(1) NOT NULL ,
+  `written` TINYINT(1) NOT NULL ,
   `date` DATE NOT NULL ,
   `note` TEXT NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
-  INDEX `dk_event` (`event` ASC) ,
   INDEX `dk_date` (`date` ASC) ,
-  CONSTRAINT `fk_consent_participant`
+  CONSTRAINT `fk_consent_participant_id`
     FOREIGN KEY (`participant_id` )
     REFERENCES `cenozo`.`participant` (`id` )
     ON DELETE NO ACTION
@@ -790,7 +790,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant_primary_address` (`participant_
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_last_consent`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_consent` (`participant_id` INT, `consent_id` INT, `event` INT);
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_consent` (`participant_id` INT, `consent_id` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_last_written_consent`
@@ -899,7 +899,7 @@ DROP VIEW IF EXISTS `cenozo`.`participant_last_consent` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_last_consent`;
 USE `cenozo`;
 CREATE OR REPLACE VIEW `cenozo`.`participant_last_consent` AS
-SELECT participant.id AS participant_id, t1.id AS consent_id, t1.event AS event
+SELECT participant.id AS participant_id, t1.id AS consent_id
 FROM participant
 LEFT JOIN consent t1
 ON participant.id = t1.participant_id
@@ -917,14 +917,17 @@ DROP VIEW IF EXISTS `cenozo`.`participant_last_written_consent` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_last_written_consent`;
 USE `cenozo`;
 CREATE OR REPLACE VIEW `cenozo`.`participant_last_written_consent` AS
-SELECT participant_id, id AS consent_id
-FROM consent AS t1
-WHERE t1.date = (
+SELECT participant.id AS participant_id, t1.id AS consent_id
+FROM participant
+LEFT JOIN consent t1
+ON participant.id = t1.participant_id
+AND t1.date = (
   SELECT MAX( t2.date )
-  FROM consent AS t2
+  FROM consent t2
   WHERE t1.participant_id = t2.participant_id
-  AND event LIKE 'written %'
-  GROUP BY t2.participant_id );
+  AND written = 1
+)
+GROUP BY participant.id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`participant_site`

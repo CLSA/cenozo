@@ -38,7 +38,8 @@ class consent_list extends base_list
   {
     parent::prepare();
     
-    $this->add_column( 'event', 'string', 'Event', true );
+    $this->add_column( 'accept', 'boolean', 'Event', true );
+    $this->add_column( 'written', 'boolean', 'Event', true );
     $this->add_column( 'date', 'datetime', 'Date', true );
   }
   
@@ -55,7 +56,8 @@ class consent_list extends base_list
     foreach( $this->get_record_list() as $record )
     {
       $this->add_row( $record->id,
-        array( 'event' => $record->event,
+        array( 'accept' => $record->accept,
+               'written' => $record->written,
                'date' => $record->date ) );
     }
   }

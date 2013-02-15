@@ -41,6 +41,32 @@ class participant extends person
   }
 
   /**
+   * Get the participant's last consent
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return consent
+   * @access public
+   */
+  public function get_last_written_consent()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    $database_class_name = lib::get_class_name( 'database\database' );
+
+    // need custom SQL
+    $consent_id = static::db()->get_one(
+      sprintf( 'SELECT consent_id '.
+               'FROM participant_last_written_consent '.
+               'WHERE participant_id = %s',
+               $database_class_name::format_string( $this->id ) ) );
+    return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
+  }
+
+  /**
    * Get the participant's "primary" address.  This is the highest ranking canadian address.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return address

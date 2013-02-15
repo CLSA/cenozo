@@ -39,7 +39,10 @@ class consent_view extends base_view
     parent::prepare();
     
     // add items to the view
-    $this->add_item( 'event', 'enum', 'Event' );
+    $this->add_item( 'accept', 'boolean', 'Accept',
+      'Whether the participant accepted (true) or denied (false) consent.' );
+    $this->add_item( 'written', 'boolean', 'Written',
+      'Whether the consent was written (true) or verbal (false).' );
     $this->add_item( 'date', 'date', 'Date' );
     $this->add_item( 'note', 'text', 'Note' );
   }
@@ -54,13 +57,9 @@ class consent_view extends base_view
   {
     parent::setup();
 
-    // create enum arrays
-    $consent_class_name = lib::get_class_name( 'database\consent' );
-    $events = $consent_class_name::get_enum_values( 'event' );
-    $events = array_combine( $events, $events );
-
     // set the view's items
-    $this->set_item( 'event', $this->get_record()->event, true, $events );
+    $this->set_item( 'accept', $this->get_record()->accept, true );
+    $this->set_item( 'written', $this->get_record()->written, true );
     $this->set_item( 'date', $this->get_record()->date, true );
     $this->set_item( 'note', $this->get_record()->note );
   }

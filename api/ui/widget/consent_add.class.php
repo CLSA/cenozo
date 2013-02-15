@@ -40,7 +40,10 @@ class consent_add extends base_view
     
     // add items to the view
     $this->add_item( 'participant_id', 'hidden' );
-    $this->add_item( 'event', 'enum', 'Event' );
+    $this->add_item( 'accept', 'boolean', 'Accept',
+      'Whether the participant accepted (true) or denied (false) consent.' );
+    $this->add_item( 'written', 'boolean', 'Written',
+      'Whether the consent was written (true) or verbal (false).' );
     $this->add_item( 'date', 'date', 'Date' );
     $this->add_item( 'note', 'text', 'Note' );
   }
@@ -59,15 +62,11 @@ class consent_add extends base_view
     if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
       throw lib::create( 'exception\runtime',
         'Consent widget must have a parent with participant as the subject.', __METHOD__ );
-    
-    // create enum arrays
-    $consent_class_name = lib::get_class_name( 'database\consent' );
-    $events = $consent_class_name::get_enum_values( 'event' );
-    $events = array_combine( $events, $events );
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
-    $this->set_item( 'event', key( $events ), true, $events );
+    $this->set_item( 'accept', false, true );
+    $this->set_item( 'written', false, true );
     $this->set_item( 'date', '', true );
     $this->set_item( 'note', '' );
   }

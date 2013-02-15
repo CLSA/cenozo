@@ -253,7 +253,12 @@ CREATE PROCEDURE convert_database()
 
     -- consent -------------------------------------------------------------------------------------
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".consent SELECT * FROM ", @mastodon, ".consent" );
+      "INSERT INTO ", @cenozo, ".consent( id, update_timestamp, create_timestamp, participant_id ,",
+                                         "accept, written, date, note ) ",
+      "SELECT mc.id, mc.update_timestamp, mc.create_timestamp, mc.participant_id, ",
+             "mc.event IN ( 'verbal accept', 'written accept' ), ",
+             "mc.event IN ( 'written accept', 'written deny' ), mc.date, mc.note ",
+      "FROM ", @mastodon, ".consent mc" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
