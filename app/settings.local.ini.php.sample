@@ -9,28 +9,30 @@
  * @package cenozo
  */
 
+$settings = array();
+
 // when set to true all operations are disabled
-$fwk_settings['general']['maintenance_mode'] = false;
+$settings['general']['maintenance_mode'] = false;
 
 // the web url of the cenozo framework
-$fwk_settings['url']['CENOZO'] = sprintf( 'http%s://%s/url/to/cenozo',
+$settings['url']['CENOZO'] = sprintf( 'http%s://%s/url/to/cenozo',
                                           'on' == $_SERVER["HTTPS"] ? 's' : '',
                                           $_SERVER["HTTP_HOST"] );
 
 // the location of libraries
-$fwk_settings['path']['ADODB'] = '/path/to/adodb';
+$settings['path']['ADODB'] = '/path/to/adodb';
 
 // database settings (username and password are set in the application's settings)
-$fwk_settings['db']['driver'] = 'mysql';
-$fwk_settings['db']['server'] = 'localhost';
-$fwk_settings['db']['database_prefix'] = '';
-$fwk_settings['db']['table_prefix'] = '';
+$settings['db']['driver'] = 'mysql';
+$settings['db']['server'] = 'localhost';
+$settings['db']['database_prefix'] = '';
+$settings['db']['table_prefix'] = '';
 
 // ldap settings
-$fwk_settings['ldap']['enabled'] = true;
-$fwk_settings['ldap']['server'] = 'localhost';
-$fwk_settings['ldap']['port'] = 389;
-$fwk_settings['ldap']['base'] = '';
-$fwk_settings['ldap']['username'] = '';
-$fwk_settings['ldap']['password'] = '';
-$fwk_settings['ldap']['active_directory'] = true;
+$settings['ldap']['enabled'] = true;
+$settings['ldap']['server'] = 'localhost';
+$settings['ldap']['port'] = 389;
+$settings['ldap']['base'] = '';
+$settings['ldap']['username'] = '';
+$settings['ldap']['password'] = '';
+$settings['ldap']['active_directory'] = true;
