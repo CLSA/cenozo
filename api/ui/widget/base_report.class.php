@@ -58,6 +58,8 @@ abstract class base_report extends \cenozo\ui\widget
 
     $site_class_name = lib::get_class_name( 'database\site' );
     $region_class_name = lib::get_class_name( 'database\region' );
+    $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $source_class_name = lib::get_class_name( 'database\source' );
 
     if( $this->restrictions[ 'site' ] )
     {
@@ -96,6 +98,26 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->set_parameter( 'restrict_start_date', '', false );
       $this->set_parameter( 'restrict_end_date', '', false );
+    }
+
+    if( $this->restrictions[ 'cohort' ] )
+    {
+      $session = lib::create( 'business\session' );
+
+      $cohort_list = array( 0 => 'all' );
+      foreach( $cohort_class_name::select() as $db_cohort )
+        $cohort_list[ $db_cohort->id ] = $db_cohort->name;
+
+      $this->set_parameter( 'restrict_cohort_id', key( $cohort_list ), true, $cohort_list );
+    }
+
+    if( $this->restrictions[ 'source' ] )
+    {
+      $source_list = array( 0 => 'all' );
+      foreach( $source_class_name::select() as $db_source )
+        $source_list[ $db_source->id ] = $db_source->name;
+      
+      $this->set_parameter( 'restrict_source_id', key( $source_list ), true, $source_list );
     }
 
     $this->set_variable( 'use_cache', $this->use_cache );
@@ -162,6 +184,16 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->restrictions[ 'province' ] = true;
       $this->add_parameter( 'restrict_province_id', 'enum', 'Province' );
+    }
+    else if( 'cohort' == $restriction_type )
+    {
+      $this->restrictions[ 'cohort' ] = true;
+      $this->add_parameter( 'restrict_cohort_id', 'enum', 'Cohort' );
+    }
+    else if( 'source' == $restriction_type )
+    {
+      $this->restrictions[ 'source' ] = true;
+      $this->add_parameter( 'restrict_source_id', 'enum', 'Source' );
     }
   }
 
@@ -320,7 +352,9 @@ abstract class base_report extends \cenozo\ui\widget
   protected $restrictions = array( 
     'site' => false,
     'dates' => false,
-    'province' => false );
+    'province' => false,
+    'cohort' => false,
+    'source' => false );
 
   /**
    * Defines whether or not the report should use the caching system.

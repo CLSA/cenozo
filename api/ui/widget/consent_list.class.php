@@ -38,8 +38,8 @@ class consent_list extends base_list
   {
     parent::prepare();
     
-    $this->add_column( 'accept', 'boolean', 'Event', true );
-    $this->add_column( 'written', 'boolean', 'Event', true );
+    $this->add_column( 'accept', 'boolean', 'Accept', true );
+    $this->add_column( 'written', 'boolean', 'Written', true );
     $this->add_column( 'date', 'datetime', 'Date', true );
   }
   
