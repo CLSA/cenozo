@@ -64,9 +64,7 @@ class quota_chart extends \cenozo\ui\widget
         foreach( $quota_class_name::select( $quota_mod ) as $db_quota )
         {
           $db_age_group = $db_quota->get_age_group();
-          $category = sprintf( '%d to %d',
-                               $db_age_group->lower,
-                               $db_age_group->upper );
+          $category = $db_age_group->to_string();
 
           if( !array_key_exists( $category, $value_list ) )
           {

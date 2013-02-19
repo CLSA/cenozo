@@ -61,12 +61,11 @@ class quota_list extends site_restricted_list
       $db_age_group = $record->get_age_group();
 
       // assemble the row for this record
-      $age_group = sprintf( '%s to %s', $db_age_group->lower, $db_age_group->upper );
       $this->add_row( $record->id,
         array( 'site.name' => $record->get_site()->get_full_name(),
                'region.name' => $record->get_region()->name,
                'gender' => $record->gender,
-               'age_group.lower' => $age_group,
+               'age_group.lower' => $db_age_group->to_string(),
                'population' => $record->population,
                'disabled' => $record->disabled ) );
     }

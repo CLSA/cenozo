@@ -75,10 +75,7 @@ class participant_primary extends base_primary
     unset( $this->data['cohort_id'] );
     $this->data['age_group_name'] = NULL;
     if( !is_null( $this->data['age_group_id'] ) )
-      $this->data['age_group_name'] = sprintf(
-        '%s to %s',
-        $db_participant->get_age_group()->lower,
-        $db_participant->get_age_group()->upper );
+      $this->data['age_group_name'] = $db_participant->get_age_group()->to_string();
     unset( $this->data['age_group_id'] );
 
     // add the primary address

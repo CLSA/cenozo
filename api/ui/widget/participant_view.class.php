@@ -108,6 +108,7 @@ class participant_view extends base_view
     // create enum arrays
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $record = $this->get_record();
+    $db_age_group = $record->get_age_group();
 
     $genders = $participant_class_name::get_enum_values( 'gender' );
     $genders = array_combine( $genders, $genders );
@@ -115,13 +116,6 @@ class participant_view extends base_view
     $languages = array_combine( $languages, $languages );
     $statuses = $participant_class_name::get_enum_values( 'status' );
     $statuses = array_combine( $statuses, $statuses );
-
-    $age_group = '';
-    if( !is_null( $record->age_group_id ) )
-    {
-      $db_age_group = lib::create( 'database\age_group', $record->age_group_id );
-      $age_group = sprintf( '%d to %d', $db_age_group->lower, $db_age_group->upper );
-    }
 
     // set the view's items
     $this->set_item( 'active', $record->active, true );
@@ -157,7 +151,7 @@ class participant_view extends base_view
     $this->set_item( 'email', $record->email, false );
     $this->set_item( 'gender', $record->gender, true, $genders );
     $this->set_item( 'date_of_birth', $record->date_of_birth );
-    $this->set_item( 'age_group', $age_group );
+    $this->set_item( 'age_group', is_null( $db_age_group ) ? '' : $db_age_group->to_string() );
 
     try
     {

@@ -79,8 +79,7 @@ class quota_add extends base_view
     $genders = array_combine( $genders, $genders );
     $age_groups = array();
     foreach( $age_group_class_name::select() as $db_age_group )
-      $age_groups[$db_age_group->id] =
-        sprintf( '%d to %d', $db_age_group->lower, $db_age_group->upper );
+      $age_groups[$db_age_group->id] = $db_age_group->to_string();
 
     // set the view's items
     $this->set_item( 'site_id', key( $sites ), true, $sites );
