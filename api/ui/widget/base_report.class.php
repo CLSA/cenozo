@@ -281,7 +281,9 @@ abstract class base_report extends \cenozo\ui\widget
     }
     else if( 'number' == $this->parameters[$param_id]['type'] )
     {
-      $value = floatval( $value );
+      $value = !$required && ( is_null( $value ) || 0 == strlen( $value ) )
+             ? ''
+             : floatval( $value );
     }
 
     $this->parameters[$param_id]['value'] = $value;

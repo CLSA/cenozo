@@ -207,6 +207,12 @@ VALUES( "pull", "quota", "primary", true, "Retrieves base quota information." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "quota", "chart", true, "Displays a chart describing the progress of participant quotas." );
 
+-- report
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "report", true, "Set up a participant report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "report", true, "Download a participant report." );
+
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "role", "delete", true, "Removes a role from the system." );

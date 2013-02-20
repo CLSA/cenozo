@@ -72,6 +72,9 @@
               <select id="{{ widget.full }}__{{ param_id }}"
                       style="width: 100%"
                       class="ui-state-default">
+                {% if not param.required %}
+                  <option{{ '' == param_value ? ' selected' : '' }} value=""></option>
+                {% endif %}
                 <option{{ 'Yes' == param_value ? ' selected' : '' }} value="1">Yes</option>
                 <option{{ 'No' == param_value ? ' selected' : '' }} value="0">No</option>
               </select>
@@ -162,15 +165,10 @@
                 {% endfor %}
               </select>
       
-            {% elseif 'string' == param.type %}
+            {% elseif 'string' == param.type or 'number' == param.type %}
           
               <input id="{{ widget.full }}__{{ param_id }}" type="text" style="width:99%"
                      value="{{ param_value }}" />
-          
-            {% elseif 'number' == param.type %}
-          
-              <input id="{{ widget.full }}__{{ param_id }}" type="text" style="width:99%"
-                     value="{{ param.value|default(0) }}" />
           
             {% elseif 'text' == param.type %}
           

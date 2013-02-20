@@ -1,4 +1,15 @@
 ====================================================================================================
+0.2.0
+====================================================================================================
+
+* Incorperating participant management into Cenozo
+  - Cenozo now includes participants, addresses, phone numbers, consent status, etc
+  - Applications now have cross-database access
+
+* Adding generic participant report
+  - Provides a list of participants given any number of arbritrary constraints
+
+====================================================================================================
 0.1.9
 ====================================================================================================
 
