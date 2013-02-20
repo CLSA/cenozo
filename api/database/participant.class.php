@@ -438,16 +438,5 @@ $address_mod->where( 'participant.id', '=', 'participant_primary_address.partici
 $address_mod->where( 'participant_primary_address.address_id', '=', 'address.id', false );
 participant::customize_join( 'address', $address_mod );
 
-// define the join to the jurisdiction table
-/* TODO: not sure if this still applies
-$jurisdiction_mod = lib::create( 'database\modifier' );
-$jurisdiction_mod->where( 'participant.cohort_id', '=', 'cohort.id', false );
-$jurisdiction_mod->where( 'cohort.grouping', '=', 'jurisdiction' );
-$jurisdiction_mod->where( 'participant.id', '=', 'participant_primary_address.participant_id', false );
-$jurisdiction_mod->where( 'participant_primary_address.address_id', '=', 'address.id', false );
-$jurisdiction_mod->where( 'address.postcode', '=', 'jurisdiction.postcode', false );
-participant::customize_join( 'jurisdiction', $jurisdiction_mod );
-*/
-
 // define the uid as the primary unique key
 participant::set_primary_unique_key( 'uq_uid' );
