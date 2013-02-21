@@ -44,7 +44,6 @@ class quota_add extends base_view
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'age_group_id', 'enum', 'Age Group' );
     $this->add_item( 'population', 'number', 'Population' );
-    $this->add_item( 'disabled', 'boolean', 'Disabled' );
   }
 
   /**
@@ -87,6 +86,5 @@ class quota_add extends base_view
     $this->set_item( 'gender', key( $genders ), true, $genders );
     $this->set_item( 'age_group_id', key( $age_groups ), true, $age_groups );
     $this->set_item( 'population', 0, true );
-    $this->set_item( 'disabled', false, true );
   }
 }

@@ -280,33 +280,8 @@ CREATE PROCEDURE convert_database()
     -- quota ---------------------------------------------------------------------------------------
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".quota ",
-      "SELECT mquota.*, squota.disabled ",
-      "FROM ", @mastodon, ".quota mquota ",
-      "JOIN ", @mastodon, ".region mregion ON mquota.region_id = mregion.id ",
-      "JOIN ", @sabretooth, ".region sregion ON mregion.name = sregion.name ",
-      "JOIN ", @mastodon, ".site msite ON mquota.site_id = msite.id ",
-      "JOIN ", @sabretooth, ".site ssite ON msite.name = ssite.name AND msite.cohort = 'tracking' ",
-      "JOIN ", @mastodon, ".age_group mage_group ON mquota.age_group_id = mage_group.id ",
-      "JOIN ", @sabretooth, ".age_group sage_group ON mage_group.lower = sage_group.lower ",
-      "LEFT JOIN ", @sabretooth, ".quota squota ",
-      "ON squota.region_id = sregion.id ",
-      "AND squota.site_id = ssite.id ",
-      "AND squota.gender = mquota.gender ",
-      "AND squota.age_group_id = sage_group.id" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".quota ",
-      "SELECT mquota.*, 0 ",
-      "FROM ", @mastodon, ".quota mquota ",
-      "JOIN ", @mastodon, ".region mregion ON mquota.region_id = mregion.id ",
-      "JOIN ", @beartooth, ".region bregion ON mregion.name = bregion.name ",
-      "JOIN ", @mastodon, ".site msite ON mquota.site_id = msite.id ",
-      "JOIN ", @beartooth, ".site bsite ON msite.name = bsite.name AND msite.cohort = 'comprehensive' ",
-      "JOIN ", @mastodon, ".age_group mage_group ON mquota.age_group_id = mage_group.id ",
-      "JOIN ", @beartooth, ".age_group bage_group ON mage_group.lower = bage_group.lower " );
+      "SELECT mquota.* ",
+      "FROM ", @mastodon, ".quota mquota " );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;

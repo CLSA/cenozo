@@ -559,7 +559,6 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`quota` (
   `gender` ENUM('male','female') NOT NULL ,
   `age_group_id` INT UNSIGNED NOT NULL ,
   `population` INT NOT NULL ,
-  `disabled` TINYINT(1) NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_region_id_site_id_gender_age_group_id` (`region_id` ASC, `site_id` ASC, `gender` ASC, `age_group_id` ASC) ,
   INDEX `fk_region_id` (`region_id` ASC) ,

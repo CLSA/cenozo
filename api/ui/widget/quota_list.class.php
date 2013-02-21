@@ -43,7 +43,6 @@ class quota_list extends site_restricted_list
     $this->add_column( 'gender', 'string', 'Gender', true );
     $this->add_column( 'age_group.lower', 'string', 'Age Group', true );
     $this->add_column( 'population', 'number', 'Population', true );
-    $this->add_column( 'disabled', 'boolean', 'Disabled', true );
   }
   
   /**
@@ -66,8 +65,7 @@ class quota_list extends site_restricted_list
                'region.name' => $record->get_region()->name,
                'gender' => $record->gender,
                'age_group.lower' => $db_age_group->to_string(),
-               'population' => $record->population,
-               'disabled' => $record->disabled ) );
+               'population' => $record->population ) );
     }
   }
 }
