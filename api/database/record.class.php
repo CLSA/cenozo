@@ -112,23 +112,35 @@ abstract class record extends \cenozo\base_object
         $row = static::db()->get_row( $sql );
 
         if( 0 == count( $row ) )
-          throw lib::create( 'exception\runtime',
-            sprintf( 'Load failed to find record for %s with %s = %d.',
-                     $table['name'],
-                     $table['key'],
-                     $primary_key_value ),
-            __METHOD__ );
-
-        // convert any date, time or datetime columns
-        foreach( $row as $key => $val )
         {
-          if( array_key_exists( $key, $table['columns'] ) )
+          if( static::get_table_name() == $table )
           {
-            if( $database_class_name::is_time_column( $key ) )
-              $table['columns'][$key] = $util_class_name::from_server_datetime( $val, 'H:i:s' );
-            else if( $database_class_name::is_datetime_column( $key ) )
-              $table['columns'][$key] = $util_class_name::from_server_datetime( $val );
-            else $table['columns'][$key] = $val;
+            throw lib::create( 'exception\runtime',
+              sprintf( 'Load failed to find record for %s with %s = %d.',
+                       $table['name'],
+                       $table['key'],
+                       $primary_key_value ),
+              __METHOD__ );
+          }
+          else // extending tables need their foreign key set if row is missing
+          {
+            $table['columns'][static::get_table_name().'_id'] =
+              $this->column_values[static::get_primary_key_name()];
+          }
+        }
+        else
+        {
+          // convert any date, time or datetime columns
+          foreach( $row as $key => $val )
+          {
+            if( array_key_exists( $key, $table['columns'] ) )
+            {
+              if( $database_class_name::is_time_column( $key ) )
+                $table['columns'][$key] = $util_class_name::from_server_datetime( $val, 'H:i:s' );
+              else if( $database_class_name::is_datetime_column( $key ) )
+                $table['columns'][$key] = $util_class_name::from_server_datetime( $val );
+              else $table['columns'][$key] = $val;
+            }
           }
         }
       }
@@ -196,7 +208,7 @@ abstract class record extends \cenozo\base_object
       $sets = '';
       $first = true;
       
-      if( $this->include_timestamps && $table['name'] == static::get_table_name() )
+      if( $this->include_timestamps && static::get_table_name() == $table['name'] )
       {
         // add the create_timestamp column if this is a new record
         if( is_null( $table['columns'][$table['key']] ) )
@@ -209,7 +221,7 @@ abstract class record extends \cenozo\base_object
       // now add the rest of the columns
       foreach( $table['columns'] as $key => $val )
       {
-        if( $table['key'] != $key )
+        if( static::get_table_name() != $table['name'] || $table['key'] != $key )
         {
           // convert any time or datetime columns
           if( $database_class_name::is_time_column( $key ) )
@@ -227,12 +239,24 @@ abstract class record extends \cenozo\base_object
       }
       
       // either insert or update the row based on whether the primary key is set
-      $sql = sprintf(
-        is_null( $primary_key_value ) ? 'INSERT INTO %s SET %s' : 'UPDATE %s SET %s WHERE %s = %d',
-        $table['name'],
-        $sets,
-        $table['key'],
-        $primary_key_value );
+      if( static::get_table_name() == $table['name'] )
+      {
+        $sql = sprintf(
+          is_null( $primary_key_value ) ?
+          'INSERT INTO %s SET %s' :
+          'UPDATE %s SET %s WHERE %s = %d',
+          $table['name'],
+          $sets,
+          $table['key'],
+          $primary_key_value );
+      }
+      else // extending table row may not exist yet
+      {
+        $sql = sprintf( 'INSERT INTO %s SET %s ON DUPLICATE KEY UPDATE %s',
+                        $table['name'],
+                        $sets,
+                        $sets );
+      }
 
       static::db()->execute( $sql );
       
