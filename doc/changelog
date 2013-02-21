@@ -9,6 +9,8 @@
 * Adding generic participant report
   - Provides a list of participants given any number of arbritrary constraints
 
+* Tables can now be "extended" by applications with additional columns
+
 ====================================================================================================
 0.1.9
 ====================================================================================================
