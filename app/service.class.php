@@ -392,7 +392,14 @@ final class service
     }
   }
   
-  // setup Twig
+  /**
+   * Sets up the twig template by providing it with variables.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $template
+   * @param array $variabes
+   * @access private
+   */
   private function render_template( $template, $variables )
   {
     $util_class_name = lib::get_class_name( 'util' );
