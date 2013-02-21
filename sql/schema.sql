@@ -21,7 +21,6 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`user` (
   `last_name` VARCHAR(255) NOT NULL ,
   `active` TINYINT(1) NOT NULL DEFAULT 1 ,
   `language` ENUM('any','en','fr') NOT NULL DEFAULT 'en' ,
-  `theme` VARCHAR(45) NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,
   INDEX `dk_active` (`active` ASC) ,
@@ -764,6 +763,31 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`service_has_role` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
+
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`user_has_service`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`user_has_service` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`user_has_service` (
+  `user_id` INT UNSIGNED NOT NULL ,
+  `service_id` INT UNSIGNED NOT NULL ,
+  `theme` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`user_id`, `service_id`) ,
+  INDEX `fk_service_id` (`service_id` ASC) ,
+  INDEX `fk_user_id` (`user_id` ASC) ,
+  CONSTRAINT `fk_user_has_service_user_id`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `cenozo`.`user` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_has_service_service_id`
+    FOREIGN KEY (`service_id` )
+    REFERENCES `cenozo`.`service` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------

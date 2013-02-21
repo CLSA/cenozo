@@ -361,11 +361,23 @@ class session extends \cenozo\singleton
 
     if( !is_null( $this->user ) )
     {
-      $user_theme = $this->user->theme;
+      $user_theme = $this->user->get_theme( $this->service );
       if( !is_null( $user_theme ) ) $theme = $user_theme;
     }
 
     return $theme;
+  }
+
+  /**
+   * Set the current jquery-ui theme.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $theme
+   * @access public
+   */
+  public function set_theme( $theme )
+  {
+    $this->user->set_theme( $this->service, $theme );
   }
   
   /**

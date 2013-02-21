@@ -85,7 +85,7 @@ final class log extends singleton
         'backtrace' => false
       ),
       PEAR_LOG_INFO => array(
-        'log' => true,
+        'log' => false,
         'convert' => true,
         'label' => false,
         'backtrace' => false

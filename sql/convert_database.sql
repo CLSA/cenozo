@@ -17,8 +17,9 @@ CREATE PROCEDURE convert_database()
     -- user ----------------------------------------------------------------------------------------
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".user( id, update_timestamp, create_timestamp, name, ",
-                               "first_name, last_name, active, theme, language ) ",
-      "SELECT muser.*, IFNULL( buser.language, 'en' ) ",
+                               "first_name, last_name, active, language ) ",
+      "SELECT muser.id, muser.update_timestamp, muser.create_timestamp, muser.name,
+              muser.first_name, muser.last_name, muser.active, IFNULL( buser.language, 'en' ) ",
       "FROM ", @mastodon, ".user muser ",
       "LEFT JOIN ", @beartooth, ".user buser ON muser.name = buser.name" );
     PREPARE statement FROM @sql;
@@ -47,6 +48,40 @@ CREATE PROCEDURE convert_database()
       "( 'Mastodon', '1.2.0' ), ",
       "( 'Beartooth', '1.1.0' ), ",
       "( 'Sabretooth', '1.2.0' )" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    -- user_has_service ----------------------------------------------------------------------------
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".user_has_service( user_id, service_id, theme ) ",
+      "SELECT user.id, service.id, muser.theme ",
+      "FROM ", @cenozo, ".service, ", @cenozo, ".user ",
+      "JOIN ", @mastodon, ".user muser ON user.name = muser.name ",
+      "WHERE service.name = 'Mastodon' ",
+      "AND muser.theme IS NOT NULL " );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".user_has_service( user_id, service_id, theme ) ",
+      "SELECT user.id, service.id, buser.theme ",
+      "FROM ", @cenozo, ".service, ", @cenozo, ".user ",
+      "JOIN ", @beartooth, ".user buser ON user.name = buser.name ",
+      "WHERE service.name = 'Beartooth' ",
+      "AND buser.theme IS NOT NULL " );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".user_has_service( user_id, service_id, theme ) ",
+      "SELECT user.id, service.id, suser.theme ",
+      "FROM ", @cenozo, ".service, ", @cenozo, ".user ",
+      "JOIN ", @sabretooth, ".user suser ON user.name = suser.name ",
+      "WHERE service.name = 'Sabretooth' ",
+      "AND suser.theme IS NOT NULL " );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
