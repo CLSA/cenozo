@@ -31,6 +31,7 @@ class self_menu extends \cenozo\ui\widget
       'alternate',
       'availability',
       'consent',
+      'event',
       'phone' ) );
   }
 

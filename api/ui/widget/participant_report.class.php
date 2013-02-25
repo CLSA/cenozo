@@ -62,7 +62,7 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->add_parameter( 'language', 'enum', 'Language' );
     $this->add_parameter( 'consent_accept', 'boolean', 'Consent Accepted' );
     $this->add_parameter( 'consent_written', 'boolean', 'Written Consent' );
-    $this->add_parameter( 'event_id', 'enum', 'Event' );
+    $this->add_parameter( 'event_type_id', 'enum', 'Event Type' );
     $this->add_parameter( 'event_start_date', 'date', 'Event Start Date' );
     $this->add_parameter( 'event_end_date', 'date', 'Event End Date' );
     $this->add_parameter( 'phone_count', 'number', 'Phone Count' );
@@ -86,7 +86,7 @@ class participant_report extends \cenozo\ui\widget\base_report
     $region_class_name = lib::get_class_name( 'database\region' );
     $age_group_class_name = lib::get_class_name( 'database\age_group' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
-    $event_class_name = lib::get_class_name( 'database\event' );
+    $event_type_class_name = lib::get_class_name( 'database\event_type' );
 
     // create the enum lists
     $region_mod = lib::create( 'database\modifier' );
@@ -112,11 +112,11 @@ class participant_report extends \cenozo\ui\widget\base_report
     $language_list = $participant_class_name::get_enum_values( 'language' );
     $language_list = array_combine( $language_list, $language_list );
 
-    $event_mod = lib::create( 'database\modifier' );
-    $event_mod->order( 'name' );
+    $event_type_mod = lib::create( 'database\modifier' );
+    $event_type_mod->order( 'name' );
     $event_list = array();
-    foreach( $event_class_name::select( $event_mod ) as $db_event )
-      $event_list[$db_event->id] = $db_event->name;
+    foreach( $event_type_class_name::select( $event_type_mod ) as $db_event_type )
+      $event_type_list[$db_event_type->id] = $db_event_type->name;
 
     $this->set_parameter( 'active', NULL, false );
     foreach( $service_class_name::select() as $db_service )
@@ -142,7 +142,7 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->set_parameter( 'language', NULL, false, $language_list );
     $this->set_parameter( 'consent_accept', NULL, false );
     $this->set_parameter( 'consent_written', NULL, false );
-    $this->set_parameter( 'event_id', NULL, false, $event_list );
+    $this->set_parameter( 'event_type_id', NULL, false, $event_type_list );
     $this->set_parameter( 'event_start_date', NULL, false );
     $this->set_parameter( 'event_end_date', NULL, false );
     $this->set_parameter( 'phone_count', NULL, false );

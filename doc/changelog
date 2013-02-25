@@ -11,6 +11,9 @@
 
 * Tables can now be "extended" by applications with additional columns
 
+* Adding events
+  - Any event can now be tracked for every participant
+
 ====================================================================================================
 0.1.9
 ====================================================================================================

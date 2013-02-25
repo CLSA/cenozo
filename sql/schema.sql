@@ -650,6 +650,22 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
+-- Table `cenozo`.`event_type`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`event_type` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`event_type` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `description` TEXT NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `cenozo`.`event`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`event` ;
@@ -658,36 +674,21 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`event` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
-  `name` VARCHAR(45) NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) )
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`participant_event`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`participant_event` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`participant_event` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
-  `event_id` INT UNSIGNED NOT NULL ,
+  `event_type_id` INT UNSIGNED NOT NULL ,
   `datetime` DATETIME NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `dk_datetime` (`datetime` ASC) ,
-  INDEX `fk_event_id` (`event_id` ASC) ,
-  CONSTRAINT `fk_participant_event_participant_id`
+  INDEX `fk_event_type_id` (`event_type_id` ASC) ,
+  CONSTRAINT `fk_event_participant_id`
     FOREIGN KEY (`participant_id` )
     REFERENCES `cenozo`.`participant` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_participant_event_event_id`
-    FOREIGN KEY (`event_id` )
-    REFERENCES `cenozo`.`event` (`id` )
+  CONSTRAINT `fk_event_event_type_id`
+    FOREIGN KEY (`event_type_id` )
+    REFERENCES `cenozo`.`event_type` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB

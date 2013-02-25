@@ -109,6 +109,30 @@ VALUES( "widget", "consent", "list", true, "Lists a participant's consent entrie
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "consent", "primary", true, "Retrieves base consent information." );
 
+-- event
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "event", "delete", true, "Removes a participant's event entry from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "event", "edit", true, "Edits the details of a participant's event entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "event", "new", true, "Creates new event entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "event", "add", true, "View a form for creating new event entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "event", "view", true, "View the details of a participant's particular event entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "event", "list", true, "Lists a participant's event entries." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "event", "primary", true, "Retrieves base event information." );
+
+-- event_type
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "event_type", "view", true, "View the details of an event type." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "event_type", "list", true, "Lists event types." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "event_type", "primary", true, "Retrieves base event type information." );
+
 -- notes
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "note", "delete", true, "Removes a note from the system." );
@@ -136,6 +160,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "view", true, "View a participant's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "list", true, "List participants in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "add_event", true, "A form to create a new event entry to add to a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "delete_event", true, "Remove a participant's event entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "add_availability", true, "A form to create a new availability entry to add to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )

@@ -93,6 +93,11 @@ class participant_view extends base_view
     $this->alternate_list = lib::create( 'ui\widget\alternate_list', $this->arguments );
     $this->alternate_list->set_parent( $this );
     $this->alternate_list->set_heading( 'Alternate contacts' );
+
+    // create the event sub-list widget
+    $this->event_list = lib::create( 'ui\widget\event_list', $this->arguments );
+    $this->event_list->set_parent( $this );
+    $this->event_list->set_heading( 'Events' );
   }
 
   /**
@@ -187,6 +192,13 @@ class participant_view extends base_view
       $this->set_variable( 'alternate_list', $this->alternate_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
+
+    try
+    {
+      $this->event_list->process();
+      $this->set_variable( 'event_list', $this->event_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**
@@ -223,4 +235,11 @@ class participant_view extends base_view
    * @access protected
    */
   protected $alternate_list = NULL;
+  
+  /**
+   * The event contact person list widget.
+   * @var event_list
+   * @access protected
+   */
+  protected $event_list = NULL;
 }

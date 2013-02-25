@@ -52,7 +52,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     $language = $this->get_argument( 'language' );
     $consent_accept = $this->get_argument( 'consent_accept' );
     $consent_written = $this->get_argument( 'consent_written' );
-    $event_id = $this->get_argument( 'event_id' );
+    $event_type_id = $this->get_argument( 'event_type_id' );
     $event_start_date = $this->get_argument( 'event_start_date' );
     $event_end_date = $this->get_argument( 'event_end_date' );
     $phone_count = $this->get_argument( 'phone_count' );
@@ -164,11 +164,12 @@ class participant_report extends \cenozo\ui\pull\base_report
       $participant_mod->where( 'consent.accept', '=', $consent_accept );
     if( '' !== $consent_written )
       $participant_mod->where( 'consent.written', '=', $consent_written );
-    if( '' !== $event_id ) $participant_mod->where( 'participant_event.event_id', '=', $event_id );
+    if( '' !== $event_type_id )
+      $participant_mod->where( 'event.event_type_id', '=', $event_type_id );
     if( '' !== $event_start_date )
-      $participant_mod->where( 'participant_event.datetime', '>=', $event_start_date );
+      $participant_mod->where( 'event.datetime', '>=', $event_start_date );
     if( '' !== $event_end_date )
-      $participant_mod->where( 'participant_event.datetime', '<=', $event_end_date );
+      $participant_mod->where( 'event.datetime', '<=', $event_end_date );
     if( '' !== $phone_count )
     {
       $sql = 'SELECT COUNT( DISTINCT phone.id ) '.

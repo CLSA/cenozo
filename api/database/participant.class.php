@@ -275,11 +275,11 @@ class participant extends person
   /**
    * Adds an event to the participant at the given datetime
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\event $db_event
+   * @param database\event_type $db_event_type
    * @param string $datetime
    * @access public
    */
-  public function add_event( $db_event, $datetime )
+  public function add_event( $db_event_type, $datetime )
   {
     // check the primary key value
     if( is_null( $this->id ) )
@@ -288,42 +288,46 @@ class participant extends person
       return;
     }
 
+    $database_class_name = lib::get_class_name( 'database\database' );
+
     static::db()->execute( sprintf(
-      'INSERT INTO participant_event ( participant_id, event_id, datetime ) VALUES ( %s, %s, %s )',
-      $this->id,
-      $db_event->id,
+      'INSERT INTO event ( participant_id, event_type_id, datetime ) VALUES ( %s, %s, %s )',
+      $database_class_name::format_string( $this->id ),
+      $database_class_name::format_string( $db_event_type->id ),
       $datetime ) );
   }
 
   /**
-   * Returns an array of all dates for this participant where a particular event occurred
+   * Returns an array of all dates for this participant where a particular event type occurred
    * (in ascending order).
-   * If the event has never occurred then an empty array is returned.
+   * If the event type has never occurred then an empty array is returned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\event $db_event
+   * @param database\event_type $db_event_type
    * @return array
    * @access public
    */
-  public function get_event_datetime_list( $db_event )
+  public function get_event_datetime_list( $db_event_type )
   {
     // no primary key means no event datetimes
     if( is_null( $this->id ) ) return array();
 
+    $database_class_name = lib::get_class_name( 'database\database' );
+
     return static::db()->get_col( sprintf(
       'SELECT datetime '.
-      'FROM participant_event '.
+      'FROM event '.
       'WHERE participant_id = %s '.
-      'AND event_id = %s '.
+      'AND event_type_id = %s '.
       'ORDER BY datetime',
-      $this->id,
-      $db_event->id ) );
+      $database_class_name::format_string( $this->id ),
+      $database_class_name::format_string( $db_event_type->id ) ) );
   }
 
   /**
    * Get a list of all participants who have or do not have a particular event.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( database\participant )
-   * @param database\event $db_event
+   * @param database\event_type $db_event_type
    * @param boolean $exists Set to true to return participants with the event, false for those
    *                without it.
    * @param modifier $modifier Modifications to the selection.
@@ -333,17 +337,17 @@ class participant extends person
    * @access public
    */
   public static function select_for_event(
-    $db_event, $exists = true, $modifier = NULL, $count = false )
+    $db_event_type, $exists = true, $modifier = NULL, $count = false )
   {
     $database_class_name = lib::get_class_name( 'database\database' );
 
     // we need to build custom sql for this query
     $sql = sprintf(
       'SELECT DISTINCT participant.id '.
-      'FROM participant, participant_event '.
-      'WHERE participant.id = participant_event.participant_id '.
-      'AND participant_event.event_id = %s',
-      $database_class_name::format_string( $db_event->id ) );
+      'FROM participant, event '.
+      'WHERE participant.id = event.participant_id '.
+      'AND event.event_type_id = %s',
+      $database_class_name::format_string( $db_event_type->id ) );
 
     if( $exists )
     {
@@ -381,7 +385,7 @@ class participant extends person
   /**
    * Count all participants who have or do not have a particular event.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\event $db_event
+   * @param database\event_type $db_event_type
    * @param boolean $exists Set to true to return participants with the event, false for those
    *                without it.
    * @param modifier $modifier Modifications to the selection.
@@ -390,9 +394,9 @@ class participant extends person
    * @static
    * @access public
    */
-  public static function count_for_event( $event, $exists = true, $modifier = NULL )
+  public static function count_for_event( $db_event_type, $exists = true, $modifier = NULL )
   {
-    return static::select_for_event( $event, $exists, $modifier, true );
+    return static::select_for_event( $db_event_type, $exists, $modifier, true );
   }
 
   /**

@@ -239,35 +239,42 @@ CREATE PROCEDURE convert_database()
 
     -- event ---------------------------------------------------------------------------------------
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".event( name ) VALUES ",
-      "( 'completed pilot interview' ), ",
-      "( 'imported by rdd' ), ",
-      "( 'consent to contact received' ), ",
-      "( 'consent for proxy received' ), ",
-      "( 'package mailed' )" );
+      "INSERT INTO ", @cenozo, ".event_type( name, description ) VALUES ",
+      "( 'completed pilot interview', 'Pilot interview completed (for StatsCan tracking participants only).' ), ",
+      "( 'imported by rdd', 'Imported by random digit dialing import (for RDD participants only).' ), ",
+      "( 'consent to contact received', 'Consent to contact form received (dated by the participant).' ), ",
+      "( 'consent for proxy received', 'Consent for proxy form received (dated by the participant).' ), ",
+      "( 'package mailed', 'Information package mailed to participant (dated by mailout report).' )",
+      "( 'contact (Baseline)', 'Contact attempted for the first time (for the baseline interview).' )",
+      "( 'reached (Baseline)', 'The participant was first reached (for the baseline interview).' )",
+      "( 'completed (Baseline)', 'Interview completed (for the baseline interview).' )",
+      "( 'contact (Baseline Home)', 'Contact attempted for the first time (for the baseline home interview).' )",
+      "( 'completed (Baseline Home)', 'Interview completed (for the baseline home interview).' )",
+      "( 'contact (Baseline Site)', 'Contact attempted for the first time (for the baseline site interview).' )",
+      "( 'completed (Baseline Site)', 'Interview completed (for the baseline site interview).' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
-    -- fill in "complted pilot interview" event from old participant table -------------------------
+    -- fill in "completed pilot interview" event from old participant table -------------------------
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".participant_event( participant_id, event_id, datetime ) ",
-      "SELECT mp.id, event.id, mp.prior_contact_date ",
-      "FROM ", @mastodon, ".participant mp, ", @cenozo, ".event ",
-      "WHERE event.name = 'completed pilot interview' ",
+      "INSERT INTO ", @cenozo, ".event( participant_id, event_type_id, datetime ) ",
+      "SELECT mp.id, event_type.id, mp.prior_contact_date ",
+      "FROM ", @mastodon, ".participant mp, ", @cenozo, ".event_type ",
+      "WHERE event_type.name = 'completed pilot interview' ",
       "AND mp.prior_contact_date IS NOT NULL" )
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
-    -- participant_event ---------------------------------------------------------------------------
+    -- event --------------------------------------------------------------------------------------
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".participant_event ( update_timestamp, create_timestamp, participant_id, ",
-                                             "event_id, datetime ) ",
+      "INSERT INTO ", @cenozo, ".event ( update_timestamp, create_timestamp, participant_id, ",
+                                        "event_type_id, datetime ) ",
       "SELECT mstatus.update_timestamp, mstatus.create_timestamp, mstatus.participant_id, ",
-             "event.id, mstatus.datetime ",
+             "event_type.id, mstatus.datetime ",
       "FROM ", @mastodon, ".status mstatus ",
-      "JOIN ", @cenozo, ".event ON mstatus.event = event.name" );
+      "JOIN ", @cenozo, ".event_type ON mstatus.event = event_type.name" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
