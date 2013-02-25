@@ -288,13 +288,15 @@ class participant extends person
       return;
     }
 
+    $util_class_name = lib::get_class_name( 'util' );
     $database_class_name = lib::get_class_name( 'database\database' );
 
     static::db()->execute( sprintf(
-      'INSERT INTO event ( participant_id, event_type_id, datetime ) VALUES ( %s, %s, %s )',
+      'INSERT INTO event ( create_timestamp, participant_id, event_type_id, datetime ) '.
+      'VALUES ( NULL, %s, %s, %s )',
       $database_class_name::format_string( $this->id ),
       $database_class_name::format_string( $db_event_type->id ),
-      $datetime ) );
+      $database_class_name::format_string( $util_class_name::to_server_datetime( $datetime ) ) ) );
   }
 
   /**

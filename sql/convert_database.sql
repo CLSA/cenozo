@@ -237,7 +237,7 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
-    -- event ---------------------------------------------------------------------------------------
+    -- event_type ----------------------------------------------------------------------------------
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".event_type( name, description ) VALUES ",
       "( 'completed pilot interview', 'Pilot interview completed (for StatsCan tracking participants only).' ), ",
@@ -275,6 +275,20 @@ CREATE PROCEDURE convert_database()
              "event_type.id, mstatus.datetime ",
       "FROM ", @mastodon, ".status mstatus ",
       "JOIN ", @cenozo, ".event_type ON mstatus.event = event_type.name" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT interview.participant_id, event_type.id, assignment.end_datetime ",
+      "FROM ", @cenozo, ".event_type, ", @sabretooth, ".interview ",
+      "JOIN ", @sabretooth, ".interview_last_assignment ",
+      "ON interview.id = interview_last_assignment.interview_id ",
+      "JOIN ", @sabretooth, ".assignment ",
+      "ON interview_last_assignment.assignment_id = assignment.id ",
+      "WHERE event_type.name = 'completed (Baseline)' ",
+      "AND interview.completed = true" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
