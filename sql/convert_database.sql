@@ -281,13 +281,34 @@ CREATE PROCEDURE convert_database()
 
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
-      "SELECT interview.participant_id, event_type.id, assignment.end_datetime ",
+      "SELECT participant.id, event_type.id, assignment.end_datetime ",
       "FROM ", @cenozo, ".event_type, ", @sabretooth, ".interview ",
+      "JOIN ", @sabretooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
+      "JOIN ", @sabretooth, ".participant sparticipant ON interview.participant_id = sparticipant.id ",
+      "JOIN ", @cenozo, ".participant ON sparticipant.uid = participant.uid ",
       "JOIN ", @sabretooth, ".interview_last_assignment ",
       "ON interview.id = interview_last_assignment.interview_id ",
       "JOIN ", @sabretooth, ".assignment ",
       "ON interview_last_assignment.assignment_id = assignment.id ",
-      "WHERE event_type.name = 'completed (Baseline)' ",
+      "WHERE event_type.name = CONCAT( 'completed (', qnaire.name, ')' ) ",
+      "AND interview.completed = true" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT participant.id, event_type.id, ",
+             "IFNULL( assignment.end_datetime, interview.update_timestamp + INTERVAL 5 HOUR ) ",
+      "FROM ", @cenozo, ".event_type, ", @beartooth, ".interview ",
+      "JOIN ", @beartooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
+      "JOIN ", @beartooth, ".participant bparticipant ON interview.participant_id = bparticipant.id ",
+      "JOIN ", @cenozo, ".participant ON bparticipant.uid = participant.uid ",
+      "LEFT JOIN ", @beartooth, ".interview_last_assignment ",
+      "ON interview.id = interview_last_assignment.interview_id ",
+      "LEFT JOIN ", @beartooth, ".assignment ",
+      "ON interview_last_assignment.assignment_id = assignment.id ",
+      "WHERE event_type.name = CONCAT( 'completed (', qnaire.name, ')' ) ",
       "AND interview.completed = true" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
