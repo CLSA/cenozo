@@ -244,13 +244,15 @@ CREATE PROCEDURE convert_database()
       "( 'imported by rdd', 'Imported by random digit dialing import (for RDD participants only).' ), ",
       "( 'consent to contact received', 'Consent to contact form received (dated by the participant).' ), ",
       "( 'consent for proxy received', 'Consent for proxy form received (dated by the participant).' ), ",
-      "( 'package mailed', 'Information package mailed to participant (dated by mailout report).' )",
-      "( 'contact (Baseline)', 'Contact attempted for the first time (for the baseline interview).' )",
-      "( 'reached (Baseline)', 'The participant was first reached (for the baseline interview).' )",
-      "( 'completed (Baseline)', 'Interview completed (for the baseline interview).' )",
-      "( 'contact (Baseline Home)', 'Contact attempted for the first time (for the baseline home interview).' )",
-      "( 'completed (Baseline Home)', 'Interview completed (for the baseline home interview).' )",
-      "( 'contact (Baseline Site)', 'Contact attempted for the first time (for the baseline site interview).' )",
+      "( 'package mailed', 'Information package mailed to participant (dated by mailout report).' ), ",
+      "( 'contact (Baseline)', 'Contact attempted for the first time (for the baseline interview).' ), ",
+      "( 'reached (Baseline)', 'The participant was first reached (for the baseline interview).' ), ",
+      "( 'completed (Baseline)', 'Interview completed (for the baseline interview).' ), ",
+      "( 'contact (Baseline Home)', 'Contact attempted for the first time (for the baseline home interview).' ), ",
+      "( 'reached (Baseline Home)', 'The participant was first reached (for the baseline home interview).' ), ",
+      "( 'completed (Baseline Home)', 'Interview completed (for the baseline home interview).' ), ",
+      "( 'contact (Baseline Site)', 'Contact attempted for the first time (for the baseline site interview).' ), ",
+      "( 'reached (Baseline Site)', 'The participant was first reached (for the baseline site interview).' ), ",
       "( 'completed (Baseline Site)', 'Interview completed (for the baseline site interview).' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
@@ -275,6 +277,92 @@ CREATE PROCEDURE convert_database()
              "event_type.id, mstatus.datetime ",
       "FROM ", @mastodon, ".status mstatus ",
       "JOIN ", @cenozo, ".event_type ON mstatus.event = event_type.name" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT participant.id, event_type.id, phone_call.start_datetime ",
+      "FROM ", @cenozo, ".event_type, ", @sabretooth, ".interview ",
+      "JOIN ", @sabretooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
+      "JOIN ", @sabretooth, ".participant sparticipant ON interview.participant_id = sparticipant.id ",
+      "JOIN ", @cenozo, ".participant ON sparticipant.uid = participant.uid ",
+      "JOIN assignment ON interview.id = assignment.interview_id ",
+      "JOIN phone_call ON assignment.id = phone_call.assignment_id ",
+      "AND phone_call.start_datetime = ( ",
+        "SELECT MIN( phone_call_2.start_datetime ) ",
+        "FROM phone_call phone_call_2 ",
+        "JOIN assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
+        "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
+        "WHERE interview.id = interview_2.id ",
+        "GROUP BY interview_2.id ) ",
+      "WHERE event_type.name = CONCAT( 'contact (', qnaire.name, ')' )" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT participant.id, event_type.id, phone_call.start_datetime ",
+      "FROM ", @cenozo, ".event_type, ", @beartooth, ".interview ",
+      "JOIN ", @beartooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
+      "JOIN ", @beartooth, ".participant sparticipant ON interview.participant_id = sparticipant.id ",
+      "JOIN ", @cenozo, ".participant ON sparticipant.uid = participant.uid ",
+      "JOIN assignment ON interview.id = assignment.interview_id ",
+      "JOIN phone_call ON assignment.id = phone_call.assignment_id ",
+      "AND phone_call.start_datetime = ( ",
+        "SELECT MIN( phone_call_2.start_datetime ) ",
+        "FROM phone_call phone_call_2 ",
+        "JOIN assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
+        "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
+        "WHERE interview.id = interview_2.id ",
+        "GROUP BY interview_2.id ) ",
+      "WHERE event_type.name = CONCAT( 'contact (', qnaire.name, ')' )" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT participant.id, event_type.id, phone_call.start_datetime ",
+      "FROM ", @cenozo, ".event_type, ", @sabretooth, ".interview ",
+      "JOIN ", @sabretooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
+      "JOIN ", @sabretooth, ".participant sparticipant ON interview.participant_id = sparticipant.id ",
+      "JOIN ", @cenozo, ".participant ON sparticipant.uid = participant.uid ",
+      "JOIN assignment ON interview.id = assignment.interview_id ",
+      "JOIN phone_call ON assignment.id = phone_call.assignment_id ",
+      "AND phone_call.start_datetime = ( ",
+        "SELECT MIN( phone_call_2.start_datetime ) ",
+        "FROM phone_call phone_call_2 ",
+        "JOIN assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
+        "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
+        "WHERE phone_call_2.status = "contacted" ",
+        "AND interview.id = interview_2.id ",
+        "GROUP BY interview_2.id ) ",
+      "WHERE event_type.name = CONCAT( 'reached (', qnaire.name, ')' )" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT participant.id, event_type.id, phone_call.start_datetime ",
+      "FROM ", @cenozo, ".event_type, ", @beartooth, ".interview ",
+      "JOIN ", @beartooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
+      "JOIN ", @beartooth, ".participant sparticipant ON interview.participant_id = sparticipant.id ",
+      "JOIN ", @cenozo, ".participant ON sparticipant.uid = participant.uid ",
+      "JOIN assignment ON interview.id = assignment.interview_id ",
+      "JOIN phone_call ON assignment.id = phone_call.assignment_id ",
+      "AND phone_call.start_datetime = ( ",
+        "SELECT MIN( phone_call_2.start_datetime ) ",
+        "FROM phone_call phone_call_2 ",
+        "JOIN assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
+        "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
+        "WHERE phone_call_2.status = "contacted" ",
+        "AND interview.id = interview_2.id ",
+        "GROUP BY interview_2.id ) ",
+      "WHERE event_type.name = CONCAT( 'reached (', qnaire.name, ')' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
