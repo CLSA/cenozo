@@ -245,13 +245,13 @@ CREATE PROCEDURE convert_database()
       "( 'consent to contact received', 'Consent to contact form received (dated by the participant).' ), ",
       "( 'consent for proxy received', 'Consent for proxy form received (dated by the participant).' ), ",
       "( 'package mailed', 'Information package mailed to participant (dated by mailout report).' ), ",
-      "( 'contact (Baseline)', 'Contact attempted for the first time (for the baseline interview).' ), ",
+      "( 'first attempt (Baseline)', 'First attempt to contact (for the baseline interview).' ), ",
       "( 'reached (Baseline)', 'The participant was first reached (for the baseline interview).' ), ",
       "( 'completed (Baseline)', 'Interview completed (for the baseline interview).' ), ",
-      "( 'contact (Baseline Home)', 'Contact attempted for the first time (for the baseline home interview).' ), ",
+      "( 'first attempt (Baseline Home)', 'First attempt to contact (for the baseline home interview).' ), ",
       "( 'reached (Baseline Home)', 'The participant was first reached (for the baseline home interview).' ), ",
       "( 'completed (Baseline Home)', 'Interview completed (for the baseline home interview).' ), ",
-      "( 'contact (Baseline Site)', 'Contact attempted for the first time (for the baseline site interview).' ), ",
+      "( 'first attempt (Baseline Site)', 'First attempt to contact (for the baseline site interview).' ), ",
       "( 'reached (Baseline Site)', 'The participant was first reached (for the baseline site interview).' ), ",
       "( 'completed (Baseline Site)', 'Interview completed (for the baseline site interview).' )" );
     PREPARE statement FROM @sql;
@@ -297,7 +297,7 @@ CREATE PROCEDURE convert_database()
         "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
         "WHERE interview.id = interview_2.id ",
         "GROUP BY interview_2.id ) ",
-      "WHERE event_type.name = CONCAT( 'contact (', qnaire.name, ')' )" );
+      "WHERE event_type.name = CONCAT( 'first attempt (', qnaire.name, ')' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -318,7 +318,7 @@ CREATE PROCEDURE convert_database()
         "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
         "WHERE interview.id = interview_2.id ",
         "GROUP BY interview_2.id ) ",
-      "WHERE event_type.name = CONCAT( 'contact (', qnaire.name, ')' )" );
+      "WHERE event_type.name = CONCAT( 'first attempt (', qnaire.name, ')' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
