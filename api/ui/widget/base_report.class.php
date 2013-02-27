@@ -175,10 +175,10 @@ abstract class base_report extends \cenozo\ui\widget
 
       $this->add_parameter(
         'restrict_start_date', 'date', 'Start Date',
-        'Leaving this blank will not restrict the report to a start date.' );
+        'Leaving this blank will leave the report unrestricted by start date.' );
       $this->add_parameter(
         'restrict_end_date', 'date', 'End Date',
-        'Leaving this blank will not restrict the report to an end date.' );
+        'Leaving this blank will leave the report unrestricted by end date.' );
     }
     else if( 'province' == $restriction_type )
     {
