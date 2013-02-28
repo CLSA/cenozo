@@ -55,6 +55,7 @@ class self_home extends \cenozo\ui\widget
 
     $session = lib::create( 'business\session' );
     $setting_manager = lib::create( 'business\setting_manager' );
+    $db_service = $session->get_service();
     $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -83,6 +84,10 @@ class self_home extends \cenozo\ui\widget
 
     // global messages go first
     $modifier = lib::create( 'database\modifier' );
+    $modifier->where_bracket( true );
+    $modifier->where( 'system_message.service_id', '=', NULL );
+    $modifier->or_where( 'system_message.service_id', '=', $db_service->id );
+    $modifier->where_bracket( false );
     $modifier->where( 'system_message.site_id', '=', NULL );
     $modifier->where( 'system_message.role_id', '=', NULL );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
