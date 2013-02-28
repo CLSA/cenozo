@@ -814,12 +814,12 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant_primary_address` (`participant_
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_last_consent`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_consent` (`participant_id` INT, `consent_id` INT);
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_consent` (`participant_id` INT, `consent_id` INT, `accept` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_last_written_consent`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_written_consent` (`participant_id` INT, `consent_id` INT);
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_written_consent` (`participant_id` INT, `consent_id` INT, `accept` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_site`
@@ -923,7 +923,7 @@ DROP VIEW IF EXISTS `cenozo`.`participant_last_consent` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_last_consent`;
 USE `cenozo`;
 CREATE OR REPLACE VIEW `cenozo`.`participant_last_consent` AS
-SELECT participant.id AS participant_id, t1.id AS consent_id
+SELECT participant.id AS participant_id, t1.id AS consent_id, t1.accept
 FROM participant
 LEFT JOIN consent t1
 ON participant.id = t1.participant_id
@@ -941,7 +941,7 @@ DROP VIEW IF EXISTS `cenozo`.`participant_last_written_consent` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_last_written_consent`;
 USE `cenozo`;
 CREATE OR REPLACE VIEW `cenozo`.`participant_last_written_consent` AS
-SELECT participant.id AS participant_id, t1.id AS consent_id
+SELECT participant.id AS participant_id, t1.id AS consent_id, t1.accept
 FROM participant
 LEFT JOIN consent t1
 ON participant.id = t1.participant_id
