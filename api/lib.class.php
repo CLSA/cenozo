@@ -185,33 +185,48 @@ final class lib
   }
   
   /**
-   * Returns the full name of the class including namespace.
+   * Given a class name without base application/framework namespace name this method determines
+   * where the class resides and returns the full namespace name (includeing application/framework)
+   * name.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $class_name The name of the class including the namespace but without the base
-   *               (application) namespace.
+   * @param string $class_name The name of the class including the namespace but without the
+   *               application/framework name.
+   * @param boolean $reverse If true then this method removes the application/framework name instead
+   *                of adding it.
    * @return string
    * @access public
    * @throws exception\runtime
    * @static
    */
-  public static function get_class_name( $class_name )
+  public static function get_class_name( $class_name, $reverse = false )
   {
-    $class_in_application = !is_null( self::get_application_class_path( $class_name ) );
-    $class_in_framework = !is_null( self::get_framework_class_path( $class_name ) );
+    $retval = '';
 
-    // make sure the class exists in either the application or the framework
-    if( !$class_in_application && !$class_in_framework )
+    if( $reverse )
     {
-      throw self::create( 'exception\runtime',
-        sprintf( 'Class name %s doesn\'t exist in either the application or framework.',
-                 $class_name ), __METHOD__ );
+      // find and remove the application or framework name at the beginning of the string
+      $retval = preg_replace( sprintf( '/\\\?(%s|cenozo)\\\/', APPNAME ), '', $class_name );
+    }
+    else
+    {
+      $class_in_application = !is_null( self::get_application_class_path( $class_name ) );
+      $class_in_framework = !is_null( self::get_framework_class_path( $class_name ) );
+
+      // make sure the class exists in either the application or the framework
+      if( !$class_in_application && !$class_in_framework )
+      {
+        throw self::create( 'exception\runtime',
+          sprintf( 'Class name %s doesn\'t exist in either the application or framework.',
+                   $class_name ), __METHOD__ );
+      }
+
+      $retval = sprintf( '\\%s\\%s',
+                         $class_in_application ? APPNAME : 'cenozo',
+                         $class_name );
     }
 
-    // if the path is null then return back the argument
-    return sprintf( '\\%s\\%s',
-                    $class_in_application ? APPNAME : 'cenozo',
-                    $class_name );
+    return $retval;
   }
 
   /**

@@ -881,8 +881,8 @@ abstract class record extends \cenozo\base_object
   {
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $type = $relationship_class_name::NONE;
-    $class_name = lib::get_class_name( 'database\\'.$record_type );
-    if( $class_name::column_exists( static::get_table_name().'_id' ) )
+    $table_class_name = lib::get_class_name( 'database\\'.$record_type );
+    if( $table_class_name::column_exists( static::get_table_name().'_id' ) )
     { // the record_type has a foreign key for this record
       $type = static::column_exists( $record_type.'_id' )
             ? $relationship_class_name::ONE_TO_ONE
@@ -914,6 +914,7 @@ abstract class record extends \cenozo\base_object
    */
   public static function select( $modifier = NULL, $count = false )
   {
+    $class_index = lib::get_class_name( get_called_class(), true );
     $this_table = static::get_table_name();
     
     // check to see if the modifier is sorting a value in a foreign table
@@ -932,11 +933,11 @@ abstract class record extends \cenozo\base_object
         if( $table && 0 < strlen( $table ) && $table != $this_table )
         {
           // check to see if we have a predefined join for this table
-          if( array_key_exists( get_called_class(), self::$custom_join_list ) &&
-              array_key_exists( $table, self::$custom_join_list[get_called_class()] ) )
+          if( array_key_exists( $class_index, self::$custom_join_list ) &&
+              array_key_exists( $table, self::$custom_join_list[$class_index] ) )
           {
             // add all tables in the defined join modifier
-            $join_modifier = self::$custom_join_list[get_called_class()][$table];
+            $join_modifier = self::$custom_join_list[$class_index][$table];
             $columns = $join_modifier->get_where_columns();
             foreach( $columns as $index => $column ) $table_list[] = strstr( $column, '.', true );
             $table_list[] = $table;
@@ -953,12 +954,12 @@ abstract class record extends \cenozo\base_object
             $foreign_key_name = $table.'_id';
             if( static::column_exists( $foreign_key_name ) )
             {
-              $class_name = lib::get_class_name( 'database\\'.$table );
+              $table_class_name = lib::get_class_name( 'database\\'.$table );
               // add the table to the list to select and join it in the modifier
               $modifier->where(
                 sprintf( '%s.%s', $this_table, $foreign_key_name ),
                 '=',
-                sprintf( '%s.%s', $table, $class_name::get_primary_key_name() ),
+                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
                 false );
             }
             // check to see if the foreign table has this table as a foreign key
@@ -1045,9 +1046,9 @@ abstract class record extends \cenozo\base_object
       if( substr( $column, -3 ) == '_id' )
       {
         $subject = substr( $column, 0, -3 );
-        $class_name = lib::get_class_name( 'database\\'.$subject );
+        $table_class_name = lib::get_class_name( 'database\\'.$subject );
         $unique_key_array[$column] =
-          $class_name::get_unique_from_primary_key( $record->$column );
+          $table_class_name::get_unique_from_primary_key( $record->$column );
       }
       else // otherwise just set the value of the column
       {
@@ -1085,8 +1086,8 @@ abstract class record extends \cenozo\base_object
       if( is_array( $key[$column] ) || is_object( $key[$column] ) )
       {
         $subject = substr( $column, 0, -3 );
-        $class_name = lib::get_class_name( 'database\\'.$subject );
-        $modifier->where( $column, '=', $class_name::get_primary_from_unique_key( $key[$column] ) );
+        $table_class_name = lib::get_class_name( 'database\\'.$subject );
+        $modifier->where( $column, '=', $table_class_name::get_primary_from_unique_key( $key[$column] ) );
       }
       else // otherwise just add the value to the modifier
       {
@@ -1335,11 +1336,12 @@ abstract class record extends \cenozo\base_object
    */
   public static function customize_join( $table, $modifier, $override = false )
   {
-    if( !array_key_exists( get_called_class(), self::$custom_join_list ) )
-      self::$custom_join_list[get_called_class()] = array();
+    $class_index = lib::get_class_name( get_called_class(), true );
+    if( !array_key_exists( $class_index, self::$custom_join_list ) )
+      self::$custom_join_list[$class_index] = array();
 
-    if( !array_key_exists( $table, self::$custom_join_list[get_called_class()] ) || $override )
-      self::$custom_join_list[get_called_class()][$table] = $modifier;
+    if( !array_key_exists( $table, self::$custom_join_list[$class_index] ) || $override )
+      self::$custom_join_list[$class_index][$table] = $modifier;
   }
 
   /**
@@ -1356,10 +1358,11 @@ abstract class record extends \cenozo\base_object
    */
   public static function add_extending_table( $table )
   {
-    if( !array_key_exists( get_called_class(), self::$extending_table_list ) )
-      self::$extending_table_list[get_called_class()] = array();
+    $class_index = lib::get_class_name( get_called_class(), true );
+    if( !array_key_exists( $class_index, self::$extending_table_list ) )
+      self::$extending_table_list[$class_index] = array();
 
-    self::$extending_table_list[get_called_class()][] = $table;
+    self::$extending_table_list[$class_index][] = $table;
   }
 
   /**
@@ -1371,8 +1374,9 @@ abstract class record extends \cenozo\base_object
    */
   protected static function get_extending_table_list()
   {
-    return array_key_exists( get_called_class(), self::$extending_table_list ) ?
-      self::$extending_table_list[get_called_class()] : array();
+    $class_index = lib::get_class_name( get_called_class(), true );
+    return array_key_exists( $class_index, self::$extending_table_list ) ?
+      self::$extending_table_list[$class_index] : array();
   }
 
   /**
@@ -1384,8 +1388,9 @@ abstract class record extends \cenozo\base_object
    */
   public static function set_primary_unique_key( $name )
   {
-    if( !array_key_exists( get_called_class(), self::$primary_unique_key_list ) )
-      self::$primary_unique_key_list[get_called_class()] = $name;
+    $class_index = lib::get_class_name( get_called_class(), true );
+    if( !array_key_exists( $class_index, self::$primary_unique_key_list ) )
+      self::$primary_unique_key_list[$class_index] = $name;
   }
 
   /**
@@ -1397,8 +1402,9 @@ abstract class record extends \cenozo\base_object
    */
   public static function get_primary_unique_key()
   {
-    return array_key_exists( get_called_class(), self::$primary_unique_key_list )
-         ?  self::$primary_unique_key_list[get_called_class()] : NULL;
+    $class_index = lib::get_class_name( get_called_class(), true );
+    return array_key_exists( $class_index, self::$primary_unique_key_list ) ?
+      self::$primary_unique_key_list[$class_index] : NULL;
   }
 
   /**

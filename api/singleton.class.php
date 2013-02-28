@@ -35,18 +35,21 @@ abstract class singleton
    */
   public static function self()
   {
+    $class_index = lib::get_class_name( get_called_class(), true );
+
     // if any arguments were passed to this method, pass them on to the contructor
     if( !self::exists() )
-      self::$instance_list[ get_called_class() ] = 0 < func_num_args() ?
-        self::$instance_list[ get_called_class() ] = new static( func_get_args() ) :
-        self::$instance_list[ get_called_class() ] = new static();
+      self::$instance_list[$class_index] = 0 < func_num_args() ?
+        self::$instance_list[$class_index] = new static( func_get_args() ) :
+        self::$instance_list[$class_index] = new static();
 
-    return self::$instance_list[ get_called_class() ];
+    return self::$instance_list[$class_index];
   }
   
   public static function exists()
   {
-    return isset( self::$instance_list[ get_called_class() ] );
+    $class_index = lib::get_class_name( get_called_class(), true );
+    return isset( self::$instance_list[$class_index] );
   }
 
   /**
