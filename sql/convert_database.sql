@@ -15,6 +15,7 @@ CREATE PROCEDURE convert_database()
     SET @beartooth = CONCAT( SUBSTRING( @cenozo, 1, LOCATE( 'cenozo', @cenozo ) - 1 ), 'beartooth' );
 
     -- user ----------------------------------------------------------------------------------------
+    SELECT "Processing user" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".user( id, update_timestamp, create_timestamp, name, ",
                                "first_name, last_name, active, language ) ",
@@ -27,6 +28,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- role ----------------------------------------------------------------------------------------
+    SELECT "Processing role" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".role SELECT * FROM ", @mastodon, ".role" );
     PREPARE statement FROM @sql;
@@ -34,6 +36,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- cohort --------------------------------------------------------------------------------------
+    SELECT "Processing cohort" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".cohort ( name ) VALUES ",
       "( 'comprehensive' ), ",
@@ -43,6 +46,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- service -------------------------------------------------------------------------------------
+    SELECT "Processing service" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".service( name, version ) VALUES ",
       "( 'Mastodon', '1.2.0' ), ",
@@ -53,6 +57,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- user_has_service ----------------------------------------------------------------------------
+    SELECT "Processing user_has_service" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".user_has_service( user_id, service_id, theme ) ",
       "SELECT user.id, service.id, muser.theme ",
@@ -87,6 +92,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- service_has_role ----------------------------------------------------------------------------
+    SELECT "Processing service_has_role" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".service_has_role( service_id, role_id ) ",
       "SELECT service.id, role.id ",
@@ -106,6 +112,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- site ----------------------------------------------------------------------------------------
+    SELECT "Processing site" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".site( id, update_timestamp, create_timestamp, name, timezone, service_id ) ",
       "SELECT id, update_timestamp, create_timestamp, name, timezone, IF( cohort = 'tracking', 3, 2 ) ",
@@ -115,6 +122,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- region --------------------------------------------------------------------------------------
+    SELECT "Processing region" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".region SELECT * FROM ", @mastodon, ".region" );
     PREPARE statement FROM @sql;
@@ -122,6 +130,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- finish populating site ----------------------------------------------------------------------
+    SELECT "Processing finish populating site" AS "";
     SET @sql = CONCAT(
       "UPDATE ", @cenozo, ".site, ", @beartooth, ".site bsite, ", @beartooth, ".region bregion, ", @cenozo, ".region ",
       "SET site.title = bsite.institution, ",
@@ -140,6 +149,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- access --------------------------------------------------------------------------------------
+    SELECT "Processing access" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".access SELECT * FROM ", @mastodon, ".access" );
     PREPARE statement FROM @sql;
@@ -147,6 +157,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- system_message ------------------------------------------------------------------------------
+    SELECT "Processing system_message" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".system_message( update_timestamp, create_timestamp, service_id, ",
                                          "site_id, role_id, title, note ) ",
@@ -189,6 +200,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- postcode ------------------------------------------------------------------------------------
+    SELECT "Processing postcode" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".postcode SELECT * FROM ", @mastodon, ".postcode" );
     PREPARE statement FROM @sql;
@@ -196,6 +208,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- person --------------------------------------------------------------------------------------
+    SELECT "Processing person" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".person SELECT * FROM ", @mastodon, ".person" );
     PREPARE statement FROM @sql;
@@ -203,6 +216,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- address -------------------------------------------------------------------------------------
+    SELECT "Processing address" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".address SELECT * FROM ", @mastodon, ".address" );
     PREPARE statement FROM @sql;
@@ -210,6 +224,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- age_group -----------------------------------------------------------------------------------
+    SELECT "Processing age_group" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".age_group SELECT * FROM ", @mastodon, ".age_group" );
     PREPARE statement FROM @sql;
@@ -217,6 +232,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- source --------------------------------------------------------------------------------------
+    SELECT "Processing source" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".source SELECT * FROM ", @mastodon, ".source" );
     PREPARE statement FROM @sql;
@@ -224,6 +240,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- participant ---------------------------------------------------------------------------------
+    SELECT "Processing participant" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".participant( id, update_timestamp, create_timestamp, person_id, active, uid, ",
                                       "source_id, cohort_id, first_name, last_name, gender, date_of_birth, ",
@@ -238,6 +255,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- event_type ----------------------------------------------------------------------------------
+    SELECT "Processing event_type" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".event_type( name, description ) VALUES ",
       "( 'completed pilot interview', 'Pilot interview completed (for StatsCan tracking participants only).' ), ",
@@ -259,17 +277,19 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- fill in "completed pilot interview" event from old participant table -------------------------
+    SELECT "Filling in 'completed pilot interview' event from old participant table" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".event( participant_id, event_type_id, datetime ) ",
       "SELECT mp.id, event_type.id, mp.prior_contact_date ",
       "FROM ", @mastodon, ".participant mp, ", @cenozo, ".event_type ",
       "WHERE event_type.name = 'completed pilot interview' ",
-      "AND mp.prior_contact_date IS NOT NULL" )
+      "AND mp.prior_contact_date IS NOT NULL" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
     -- event --------------------------------------------------------------------------------------
+    SELECT "Processing event" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".event ( update_timestamp, create_timestamp, participant_id, ",
                                         "event_type_id, datetime ) ",
@@ -288,13 +308,13 @@ CREATE PROCEDURE convert_database()
       "JOIN ", @sabretooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
       "JOIN ", @sabretooth, ".participant sparticipant ON interview.participant_id = sparticipant.id ",
       "JOIN ", @cenozo, ".participant ON sparticipant.uid = participant.uid ",
-      "JOIN assignment ON interview.id = assignment.interview_id ",
-      "JOIN phone_call ON assignment.id = phone_call.assignment_id ",
+      "JOIN ", @sabretooth, ".assignment ON interview.id = assignment.interview_id ",
+      "JOIN ", @sabretooth, ".phone_call ON assignment.id = phone_call.assignment_id ",
       "AND phone_call.start_datetime = ( ",
         "SELECT MIN( phone_call_2.start_datetime ) ",
-        "FROM phone_call phone_call_2 ",
-        "JOIN assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
-        "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
+        "FROM ", @sabretooth, ".phone_call phone_call_2 ",
+        "JOIN ", @sabretooth, ".assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
+        "JOIN ", @sabretooth, ".interview interview_2 ON interview_2.id = assignment_2.interview_id ",
         "WHERE interview.id = interview_2.id ",
         "GROUP BY interview_2.id ) ",
       "WHERE event_type.name = CONCAT( 'first attempt (', qnaire.name, ')' )" );
@@ -309,13 +329,13 @@ CREATE PROCEDURE convert_database()
       "JOIN ", @beartooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
       "JOIN ", @beartooth, ".participant sparticipant ON interview.participant_id = sparticipant.id ",
       "JOIN ", @cenozo, ".participant ON sparticipant.uid = participant.uid ",
-      "JOIN assignment ON interview.id = assignment.interview_id ",
-      "JOIN phone_call ON assignment.id = phone_call.assignment_id ",
+      "JOIN ", @beartooth, ".assignment ON interview.id = assignment.interview_id ",
+      "JOIN ", @beartooth, ".phone_call ON assignment.id = phone_call.assignment_id ",
       "AND phone_call.start_datetime = ( ",
         "SELECT MIN( phone_call_2.start_datetime ) ",
-        "FROM phone_call phone_call_2 ",
-        "JOIN assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
-        "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
+        "FROM ", @beartooth, ".phone_call phone_call_2 ",
+        "JOIN ", @beartooth, ".assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
+        "JOIN ", @beartooth, ".interview interview_2 ON interview_2.id = assignment_2.interview_id ",
         "WHERE interview.id = interview_2.id ",
         "GROUP BY interview_2.id ) ",
       "WHERE event_type.name = CONCAT( 'first attempt (', qnaire.name, ')' )" );
@@ -330,14 +350,14 @@ CREATE PROCEDURE convert_database()
       "JOIN ", @sabretooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
       "JOIN ", @sabretooth, ".participant sparticipant ON interview.participant_id = sparticipant.id ",
       "JOIN ", @cenozo, ".participant ON sparticipant.uid = participant.uid ",
-      "JOIN assignment ON interview.id = assignment.interview_id ",
-      "JOIN phone_call ON assignment.id = phone_call.assignment_id ",
+      "JOIN ", @sabretooth, ".assignment ON interview.id = assignment.interview_id ",
+      "JOIN ", @sabretooth, ".phone_call ON assignment.id = phone_call.assignment_id ",
       "AND phone_call.start_datetime = ( ",
         "SELECT MIN( phone_call_2.start_datetime ) ",
-        "FROM phone_call phone_call_2 ",
-        "JOIN assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
-        "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
-        "WHERE phone_call_2.status = "contacted" ",
+        "FROM ", @sabretooth, ".phone_call phone_call_2 ",
+        "JOIN ", @sabretooth, ".assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
+        "JOIN ", @sabretooth, ".interview interview_2 ON interview_2.id = assignment_2.interview_id ",
+        "WHERE phone_call_2.status = 'contacted' ",
         "AND interview.id = interview_2.id ",
         "GROUP BY interview_2.id ) ",
       "WHERE event_type.name = CONCAT( 'reached (', qnaire.name, ')' )" );
@@ -352,14 +372,14 @@ CREATE PROCEDURE convert_database()
       "JOIN ", @beartooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
       "JOIN ", @beartooth, ".participant sparticipant ON interview.participant_id = sparticipant.id ",
       "JOIN ", @cenozo, ".participant ON sparticipant.uid = participant.uid ",
-      "JOIN assignment ON interview.id = assignment.interview_id ",
-      "JOIN phone_call ON assignment.id = phone_call.assignment_id ",
+      "JOIN ", @beartooth, ".assignment ON interview.id = assignment.interview_id ",
+      "JOIN ", @beartooth, ".phone_call ON assignment.id = phone_call.assignment_id ",
       "AND phone_call.start_datetime = ( ",
         "SELECT MIN( phone_call_2.start_datetime ) ",
-        "FROM phone_call phone_call_2 ",
-        "JOIN assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
-        "JOIN interview interview_2 ON interview_2.id = assignment_2.interview_id ",
-        "WHERE phone_call_2.status = "contacted" ",
+        "FROM ", @beartooth, ".phone_call phone_call_2 ",
+        "JOIN ", @beartooth, ".assignment assignment_2 ON assignment_2.id = phone_call_2.assignment_id ",
+        "JOIN ", @beartooth, ".interview interview_2 ON interview_2.id = assignment_2.interview_id ",
+        "WHERE phone_call_2.status = 'contacted' ",
         "AND interview.id = interview_2.id ",
         "GROUP BY interview_2.id ) ",
       "WHERE event_type.name = CONCAT( 'reached (', qnaire.name, ')' )" );
@@ -403,6 +423,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- alternate -----------------------------------------------------------------------------------
+    SELECT "Processing alternate" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".alternate SELECT * FROM ", @mastodon, ".alternate" );
     PREPARE statement FROM @sql;
@@ -410,6 +431,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- availability --------------------------------------------------------------------------------
+    SELECT "Processing availability" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".availability SELECT * FROM ", @mastodon, ".availability" );
     PREPARE statement FROM @sql;
@@ -417,6 +439,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- consent -------------------------------------------------------------------------------------
+    SELECT "Processing consent" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".consent( id, update_timestamp, create_timestamp, participant_id ,",
                                          "accept, written, date, note ) ",
@@ -429,6 +452,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- jurisdiction --------------------------------------------------------------------------------
+    SELECT "Processing jurisdiction" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".jurisdiction SELECT * FROM ", @mastodon, ".jurisdiction" );
     PREPARE statement FROM @sql;
@@ -436,6 +460,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- phone ---------------------------------------------------------------------------------------
+    SELECT "Processing phone" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".phone SELECT * FROM ", @mastodon, ".phone" );
     PREPARE statement FROM @sql;
@@ -443,6 +468,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- quota ---------------------------------------------------------------------------------------
+    SELECT "Processing quota" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".quota ",
       "SELECT mquota.* ",
@@ -452,6 +478,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- person_note ---------------------------------------------------------------------------------
+    SELECT "Processing person_note" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".person_note SELECT * FROM ", @mastodon, ".person_note" );
     PREPARE statement FROM @sql;
@@ -459,6 +486,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- service_has_cohort --------------------------------------------------------------------------
+    SELECT "Processing service_has_cohort" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".service_has_cohort ",
       "SET service_id = ( SELECT id FROM service WHERE name = 'Beartooth' ), ",
@@ -478,6 +506,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- service_has_participant ---------------------------------------------------------------------
+    SELECT "Processing service_has_participant" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".service_has_participant( service_id, participant_id, preferred_site_id, datetime ) ",
       "SELECT service.id, mparticipant.id, mparticipant.site_id, mparticipant.sync_datetime ",
@@ -491,6 +520,7 @@ CREATE PROCEDURE convert_database()
     DEALLOCATE PREPARE statement;
 
     -- unique_identifier_pool ----------------------------------------------------------------------
+    SELECT "Processing unique_identifier_pool" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".unique_identifier_pool SELECT * FROM ", @mastodon, ".unique_identifier_pool" );
     PREPARE statement FROM @sql;
