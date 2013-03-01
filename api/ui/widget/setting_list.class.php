@@ -65,7 +65,7 @@ class setting_list extends base_list
       if( $is_mid_tier )
       { // include the site's value
         $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'site_id', '=', $session->get_site()->id );
+        $modifier->where( 'setting_value.site_id', '=', $session->get_site()->id );
         $setting_value_list = $record->get_setting_value_list( $modifier );
         $value = 1 == count( $setting_value_list ) ? $setting_value_list[0]->value : '';
 

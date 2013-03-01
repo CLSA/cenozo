@@ -80,7 +80,7 @@ class setting_manager extends \cenozo\singleton
       if( !is_null( $db_setting ) )
       {
         $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'site_id', '=', $db_site->id );
+        $modifier->where( 'setting_value.site_id', '=', $db_site->id );
         $setting_value_list = $db_setting->get_setting_value_list( $modifier );
         
         $string_value = count( $setting_value_list )

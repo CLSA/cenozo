@@ -92,6 +92,38 @@ final class service
   }
   
   /**
+   * Adds a list of key/value pairs to the settings
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $settings
+   * @param boolean $replace Whether to replace the existing settings array
+   * @access public
+   */
+  public function add_settings( $settings, $replace = false )
+  {
+    if( $replace )
+    {
+      $this->settings = $settings;
+    }
+    else
+    {
+      foreach( $settings as $category => $setting )
+      {
+        if( !array_key_exists( $category, $this->settings ) )
+        {
+          $this->settings[$category] = $setting;
+        }
+        else
+        {
+          foreach( $setting as $key => $value )
+            if( !array_key_exists( $key, $this->settings[$category] ) )
+              $this->settings[$category][$key] = $value;
+        }
+      }
+    }
+  }
+
+  /**
    * Executes the service.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -107,16 +139,23 @@ final class service
     ini_set( 'display_errors', '0' );
     error_reporting( E_ALL | E_STRICT );
 
+    // include the application's initialization settings
+    global $SETTINGS;
+    $this->add_settings( $SETTINGS, true );
+    unset( $SETTINGS );
+
     // include the framework's initialization settings
+    require_once( dirname( __FILE__ ).'/settings.local.ini.php' );
+    $this->add_settings( $settings );
     require_once( dirname( __FILE__ ).'/settings.ini.php' );
-    $this->settings = $SETTINGS;
+    $this->add_settings( $settings );
 
     if( !array_key_exists( 'general', $this->settings ) ||
         !array_key_exists( 'application_name', $this->settings['general'] ) )
       die( 'Error, application name not set!' );
 
     // make sure all paths are valid
-    foreach( $SETTINGS['path'] as $key => $path )
+    foreach( $this->settings['path'] as $key => $path )
       if( 'COOKIE' != $key &&
           'TEMP' != $key &&
           'TEMPLATE_CACHE' != $key &&
@@ -183,7 +222,14 @@ final class service
 
       // execute service type-specific operations
       $method_name = $this->operation_type;
+
+      if( lib::in_development_mode() )
+      {
+        $time = microtime( true );
+        $initialization_time = $time - $_SESSION['time']['script_start_time'];
+      }
       $output = $this->$method_name();
+      if( lib::in_development_mode() ) $operation_time = microtime( true ) - $time;
     }
     catch( exception\base_exception $e )
     {
@@ -234,6 +280,30 @@ final class service
 
     $session->set_error_code(
       array_key_exists( 'error_code', $result_array ) ? $result_array['error_code'] : NULL );
+
+    // show the profile if we are in development mode
+    if( lib::in_development_mode() &&
+        ( 'main' == $this->slot_name ||
+          'pull' == $this->operation_type ||
+          'push' == $this->operation_type ) )
+    {
+      $profile = array();
+      $profile['Elapsed Time'] = sprintf( '%0.3f', $util_class_name::get_elapsed_time() );
+      if( isset( $initialization_time ) )
+        $profile['Initialization Time'] = sprintf( '%0.3f', $initialization_time );
+      if( isset( $operation_time ) )
+        $profile['Operation Time'] = sprintf( '%0.3f', $operation_time );
+
+      $profile['Database Profile Time'] = 0;
+      $profile['Database Profile Breakdown'] = array();
+      foreach( $session->get_database()->get_all( 'SHOW PROFILE', false ) as $row )
+      {
+        $profile['Database Profile'][$row['Status']] = $row['Duration'];
+        $profile['Database Profile Time'] += $row['Duration'];
+      }
+      $profile['Database Profile Time'] = sprintf( '%0.3f', $profile['Database Profile Time'] );
+      log::info( $profile );
+    }
 
     // we can end output buffering now
     if( 'main' != $this->operation_type ) ob_end_clean();
@@ -322,7 +392,14 @@ final class service
     }
   }
   
-  // setup Twig
+  /**
+   * Sets up the twig template by providing it with variables.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $template
+   * @param array $variabes
+   * @access private
+   */
   private function render_template( $template, $variables )
   {
     $util_class_name = lib::get_class_name( 'util' );
@@ -440,11 +517,11 @@ final class service
   private function widget()
   {
     $session = lib::create( 'business\session' );
-    $slot_name = $this->url_tokens[1];
-    $slot_action = $this->url_tokens[2];
+    $this->slot_name = $this->url_tokens[1];
+    $this->slot_action = $this->url_tokens[2];
 
     // determine which widget to render based on the GET variables
-    $current_widget = $session->slot_current( $slot_name );
+    $current_widget = $session->slot_current( $this->slot_name );
 
     // if we are loading the same widget as last time then merge the arguments
     if( !is_null( $current_widget ) &&
@@ -463,19 +540,19 @@ final class service
     }
 
     // if the prev, next or refresh buttons were invoked, change the operation name appropriately
-    if( 'prev' == $slot_action )
+    if( 'prev' == $this->slot_action )
     {
-      $prev_widget = $session->slot_prev( $slot_name );
+      $prev_widget = $session->slot_prev( $this->slot_name );
       $this->operation_name = $prev_widget['name'];
       $this->arguments = $prev_widget['args'];
     }
-    else if( 'next' == $slot_action )
+    else if( 'next' == $this->slot_action )
     {
-      $next_widget = $session->slot_next( $slot_name );
+      $next_widget = $session->slot_next( $this->slot_name );
       $this->operation_name = $next_widget['name'];
       $this->arguments = $next_widget['args'];
     }
-    else if( 'refresh' == $slot_action && !is_null( $current_widget ) )
+    else if( 'refresh' == $this->slot_action && !is_null( $current_widget ) )
     {
       $this->operation_name = $current_widget['name'];
       $this->arguments = $current_widget['args'];
@@ -488,8 +565,8 @@ final class service
     $data = $this->render_template( $this->operation_name, $operation->get_variables() );
 
     // only push on load slot actions
-    if( 'load' == $slot_action )
-      $session->slot_push( $slot_name, $this->operation_name, $this->arguments );
+    if( 'load' == $this->slot_action )
+      $session->slot_push( $this->slot_name, $this->operation_name, $this->arguments );
 
     return array(
       'name' => NULL,
@@ -502,7 +579,7 @@ final class service
    * @var array
    * @access private
    */
-  private $settings;
+  private $settings = array();
 
   /**
    * The base url of the service request.
@@ -524,6 +601,20 @@ final class service
    * @access private
    */
   private $arguments = NULL;
+
+  /**
+   * The name of the slot involved in the operation, or NULL if the operation type is not "widget")
+   * @var string
+   * @access private
+   */
+  private $slot_name = NULL;
+
+  /**
+   * The action being performed on the slot, or NULL if the operation type is not "widget")
+   * @var string
+   * @access private
+   */
+  private $slot_action = NULL;
 
   /**
    * The type of the operation being performed

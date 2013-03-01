@@ -48,37 +48,45 @@ class database extends \cenozo\base_object
     $this->connection->SetFetchMode( ADODB_FETCH_ASSOC );
     
     $this->connect();
+    if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
+
+    // determine the framework name from the database name
+    $framework_name = str_replace( APPNAME, 'cenozo', $this->name );
 
     $column_mod = lib::create( 'database\modifier' );
-    $column_mod->where( 'TABLE_SCHEMA', '=', $this->name );
-    $column_mod->where( 'COLUMN_NAME', '!=', 'update_timestamp' ); // ignore timestamp columns
-    $column_mod->where( 'COLUMN_NAME', '!=', 'create_timestamp' );
-    $column_mod->where( 'COLUMN_TYPE', '!=', 'mediumtext' ); // ignore really big data types
-    $column_mod->where( 'COLUMN_TYPE', '!=', 'longtext' );
-    $column_mod->where( 'COLUMN_TYPE', '!=', 'mediumblob' );
-    $column_mod->where( 'COLUMN_TYPE', '!=', 'longblob' );
-    $column_mod->order( 'TABLE_NAME' );
-    $column_mod->order( 'COLUMN_NAME' );
+    $column_mod->where( 'table_schema', 'IN', array( $this->name, $framework_name ) );
+    $column_mod->where( 'column_name', '!=', 'update_timestamp' ); // ignore timestamp columns
+    $column_mod->where( 'column_name', '!=', 'create_timestamp' );
+    $column_mod->where( 'column_type', '!=', 'mediumtext' ); // ignore really big data types
+    $column_mod->where( 'column_type', '!=', 'longtext' );
+    $column_mod->where( 'column_type', '!=', 'mediumblob' );
+    $column_mod->where( 'column_type', '!=', 'longblob' );
+    $column_mod->order( 'table_name' );
+    $column_mod->order( 'column_name' );
 
     $rows = $this->get_all(
-      sprintf( 'SELECT TABLE_NAME AS table_name, '.
-                      'COLUMN_NAME AS column_name, '.
-                      'COLUMN_TYPE AS column_type, '.
-                      'DATA_TYPE AS data_type, '.
-                      'COLUMN_KEY AS column_key, '.
-                      'COLUMN_DEFAULT AS column_default '.
-               'FROM information_schema.COLUMNS %s ',
-               $column_mod->get_sql() ) );
+      sprintf( 'SELECT table_schema, table_name, column_name, column_type, '.
+                      'data_type, column_key, column_default '.
+               'FROM information_schema.columns %s ',
+               $column_mod->get_sql() ),
+      false ); // do not add table names
     
     // record the tables, columns and types
     foreach( $rows as $row )
     {
-      extract( $row ); // defines $table_name, $column_name and $column_type
+      extract( $row ); // defines variables based on column values in query
 
-      if( !array_key_exists( $table_name, $this->columns ) )
-        $this->columns[$table_name] = array();
+      if( !array_key_exists( $table_name, $this->tables ) )
+        $this->tables[$table_name] =
+          array( 'database' => $table_schema,
+                 'primary' => array(),
+                 'constraints' => array(),
+                 'columns' => array() );
 
-      $this->columns[$table_name][$column_name] =
+      if( 'PRI' == strtoupper( $column_key ) )
+        $this->tables[$table_name]['primary'][] = $column_name;
+
+      $this->tables[$table_name]['columns'][$column_name] =
         array( 'data_type' => $data_type,
                'type' => $column_type,
                'default' => $column_default,
@@ -86,9 +94,12 @@ class database extends \cenozo\base_object
     }
 
     $constraint_mod = lib::create( 'database\modifier' );
-    $constraint_mod->where( 'TABLE_CONSTRAINTS.TABLE_SCHEMA', '=', $this->name );
-    $constraint_mod->where( 'KEY_COLUMN_USAGE.TABLE_SCHEMA', '=', $this->name );
-    $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', 'UNIQUE' );
+    $constraint_mod->where(
+      'TABLE_CONSTRAINTS.TABLE_SCHEMA', 'IN', array( $this->name, $framework_name ) );
+    $constraint_mod->where(
+      'KEY_COLUMN_USAGE.TABLE_SCHEMA', 'IN', array( $this->name, $framework_name ) );
+    $constraint_mod->where(
+      'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', 'UNIQUE' );
     $constraint_mod->where(
       'TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'KEY_COLUMN_USAGE.CONSTRAINT_NAME', false );
     $constraint_mod->group( 'table_name' );
@@ -103,17 +114,13 @@ class database extends \cenozo\base_object
                       'TABLE_CONSTRAINTS.CONSTRAINT_NAME AS constraint_name, '.
                       'KEY_COLUMN_USAGE.COLUMN_NAME AS column_name '.
                'FROM information_schema.TABLE_CONSTRAINTS, information_schema.KEY_COLUMN_USAGE %s',
-               $constraint_mod->get_sql() ) );
+               $constraint_mod->get_sql() ),
+      false ); // do not add table names
     
-    // record the tables, columns and types
+    // record the constraints
     foreach( $rows as $row )
     {
       extract( $row ); // defines $table_name, $constraint_name and $column_name
-      if( !array_key_exists( $table_name, $this->tables ) )
-        $this->tables[$table_name] = array();
-      if( !array_key_exists( 'constraints', $this->tables[$table_name] ) )
-        $this->tables[$table_name]['constraints'] = array();
-
       $this->tables[$table_name]['constraints'][$constraint_name][] = $column_name;
     }
   }
@@ -128,8 +135,12 @@ class database extends \cenozo\base_object
    */
   public function start_transaction()
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     // only start a transaction for the main database (this is an ADOdb limitation)
-    if( lib::create( 'business\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
+    $database = sprintf(
+      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), APPNAME );
+    if( $database == $this->name )
     {
       if( self::$debug ) log::debug( '(DB) starting transaction' );
       $this->connection->StartTrans();
@@ -144,11 +155,15 @@ class database extends \cenozo\base_object
    */
   public function complete_transaction()
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     // only complete a transaction for the main database (this is an ADOdb limitation)
+    $database = sprintf(
+      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), APPNAME );
     $class_name = lib::get_class_name( 'business\setting_manager' );
     if( class_exists( 'cenozo\business\setting_manager' ) &&
         $class_name::exists() &&
-        lib::create( 'business\setting_manager' )->get_setting( 'db', 'database' ) == $this->name )
+        $database == $this->name )
     {
       if( self::$debug ) log::debug( '(DB) completing transaction' );
       $this->connection->CompleteTrans();
@@ -197,7 +212,7 @@ class database extends \cenozo\base_object
   public function table_exists( $table_name )
   {
     $table_name = $this->prefix.$table_name;
-    return array_key_exists( $table_name, $this->columns );
+    return array_key_exists( $table_name, $this->tables );
   }
 
   /**
@@ -211,8 +226,8 @@ class database extends \cenozo\base_object
   public function column_exists( $table_name, $column_name )
   {
     $table_name = $this->prefix.$table_name;
-    return array_key_exists( $table_name, $this->columns ) &&
-           array_key_exists( $column_name, $this->columns[$table_name] );
+    return array_key_exists( $table_name, $this->tables ) &&
+           array_key_exists( $column_name, $this->tables[$table_name]['columns'] );
   }
   
   /**
@@ -226,11 +241,11 @@ class database extends \cenozo\base_object
   {
     if( !$this->table_exists( $table_name ) )
       throw lib::create( 'exception\runtime',
-        sprintf( "Tried to get column names for table '%s' which doesn't exist.",
+        sprintf( 'Tried to get column names for table "%s" which doesn\'t exist.',
                  $table_name ), __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
-    return array_keys( $this->columns[$table_name] );
+    return array_keys( $this->tables[$table_name]['columns'] );
   }
 
   /**
@@ -245,12 +260,12 @@ class database extends \cenozo\base_object
   {
     if( !$this->column_exists( $table_name, $column_name ) )
       throw lib::create( 'exception\runtime',
-        sprintf( "Tried to get column type for '%s.%s' which doesn't exist.",
+        sprintf( 'Tried to get column type for "%s.%s" which doesn\'t exist.',
                  $table_name,
                  $column_name ), __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
-    return $this->columns[$table_name][$column_name]['type'];
+    return $this->tables[$table_name]['columns'][$column_name]['type'];
   }
   
   /**
@@ -265,12 +280,12 @@ class database extends \cenozo\base_object
   {
     if( !$this->column_exists( $table_name, $column_name ) )
       throw lib::create( 'exception\runtime',
-        sprintf( "Tried to get column data type for '%s.%s' which doesn't exist.",
+        sprintf( 'Tried to get column data type for "%s.%s" which doesn\'t exist.',
                  $table_name,
                  $column_name ), __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
-    return $this->columns[$table_name][$column_name]['data_type'];
+    return $this->tables[$table_name]['columns'][$column_name]['data_type'];
   }
   
   /**
@@ -285,12 +300,12 @@ class database extends \cenozo\base_object
   {
     if( !$this->column_exists( $table_name, $column_name ) )
       throw lib::create( 'exception\runtime',
-        sprintf( "Tried to get column key for '%s.%s' which doesn't exist.",
+        sprintf( 'Tried to get column key for "%s.%s" which doesn\'t exist.',
                  $table_name,
                  $column_name ), __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
-    return $this->columns[$table_name][$column_name]['key'];
+    return $this->tables[$table_name]['columns'][$column_name]['key'];
   }
   
   /**
@@ -305,12 +320,12 @@ class database extends \cenozo\base_object
   {
     if( !$this->column_exists( $table_name, $column_name ) )
       throw lib::create( 'exception\runtime',
-        sprintf( "Tried to get column default for '%s.%s' which doesn't exist.",
+        sprintf( 'Tried to get column default for "%s.%s" which doesn\'t exist.',
                  $table_name,
                  $column_name ), __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
-    return $this->columns[$table_name][$column_name]['default'];
+    return $this->tables[$table_name]['columns'][$column_name]['default'];
   }
   
   /**
@@ -325,7 +340,7 @@ class database extends \cenozo\base_object
   {
     if( !$this->table_exists( $table_name ) )
       throw lib::create( 'exception\runtime',
-        sprintf( "Tried to get unique keys for table '%s' which doesn't exist.", $table_name ),
+        sprintf( 'Tried to get unique keys for table "%s" which doesn\'t exist.', $table_name ),
         __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
@@ -342,11 +357,17 @@ class database extends \cenozo\base_object
    * @param string $table_name A table name.
    * @access public
    */
-  public function meta_primary_keys( $table_name )
+  public function get_primary_key( $table_name )
   {
+    if( !$this->table_exists( $table_name ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Tried to get primary key for table "%s" which doesn\'t exist.', $table_name ),
+        __METHOD__ );
+
     $table_name = $this->prefix.$table_name;
-    $this->connect();
-    return $this->connection->MetaPrimaryKeys( $table_name );
+    return array_key_exists( $table_name, $this->tables )
+         ? $this->tables[$table_name]['primary']
+         : array();
   }
 
   /**
@@ -362,10 +383,11 @@ class database extends \cenozo\base_object
    * @throws exception\database
    * @access public
    */
-  public function execute( $sql )
+  public function execute( $sql, $add_database_names = true )
   {
     $this->connect();
-    if( self::$debug ) log::debug( '(DB) executing "'.$sql.'"' );
+    if( $add_database_names ) $sql = $this->add_database_names( $sql );
+    if( self::$debug ) log::debug( sprintf( '(DB) executing "%s"', $sql ) );
     $result = $this->connection->Execute( $sql );
     if( false === $result )
     {
@@ -388,10 +410,11 @@ class database extends \cenozo\base_object
    * @throws exception\database
    * @access public
    */
-  public function get_one( $sql )
+  public function get_one( $sql, $add_database_names = true )
   {
     $this->connect();
-    if( self::$debug ) log::debug( '(DB) getting one "'.$sql.'"' );
+    if( $add_database_names ) $sql = $this->add_database_names( $sql );
+    if( self::$debug ) log::debug( sprintf( '(DB) getting one "%s"', $sql ) );
     $result = $this->connection->GetOne( $sql );
     if( false === $result )
     {
@@ -400,7 +423,7 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
-    if( self::$debug ) log::debug( '(DB) result "'.$result.'"' );
+    if( self::$debug ) log::debug( sprintf( '(DB) result "%s"', $result ) );
     return $result;
   }
   
@@ -415,10 +438,11 @@ class database extends \cenozo\base_object
    * @throws exception\database
    * @access public
    */
-  public function get_row( $sql )
+  public function get_row( $sql, $add_database_names = true )
   {
     $this->connect();
-    if( self::$debug ) log::debug( '(DB) getting row "'.$sql.'"' );
+    if( $add_database_names ) $sql = $this->add_database_names( $sql );
+    if( self::$debug ) log::debug( sprintf( '(DB) getting row "%s"', $sql ) );
     $result = $this->connection->GetRow( $sql );
     if( false === $result )
     {
@@ -427,7 +451,7 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
-    if( self::$debug ) log::debug( '(DB) returned '.( count( $result ) ? 1 : 0 ).' row' );
+    if( self::$debug ) log::debug( sprintf( '(DB) returned %d row', count( $result ) ? 1 : 0 ) );
     return $result;
   }
   
@@ -442,10 +466,11 @@ class database extends \cenozo\base_object
    * @throws exception\database
    * @access public
    */
-  public function get_all( $sql )
+  public function get_all( $sql, $add_database_names = true )
   {
     $this->connect();
-    if( self::$debug ) log::debug( '(DB) getting all "'.$sql.'"' );
+    if( $add_database_names ) $sql = $this->add_database_names( $sql );
+    if( self::$debug ) log::debug( sprintf( '(DB) getting all "%s"', $sql ) );
     $result = $this->connection->GetAll( $sql );
     if( false === $result )
     {
@@ -470,10 +495,11 @@ class database extends \cenozo\base_object
    * @throws exception\database
    * @access public
    */
-  public function get_col( $sql, $trim = false )
+  public function get_col( $sql, $trim = false, $add_database_names = true )
   {
     $this->connect();
-    if( self::$debug ) log::debug( '(DB) getting col "'.$sql.'"' );
+    if( $add_database_names ) $sql = $this->add_database_names( $sql );
+    if( self::$debug ) log::debug( sprintf( '(DB) getting col "%s"', $sql ) );
     $result = $this->connection->GetCol( $sql, $trim );
     if( false === $result )
     {
@@ -542,9 +568,132 @@ class database extends \cenozo\base_object
     // trim whitespace from the begining and end of the string
     if( is_string( $string ) ) $string = trim( $string );
     
-    return 0 == strlen( $string ) ? 'NULL' : '"'.mysql_real_escape_string( $string ).'"';
+    return 0 == strlen( $string ) ? 'NULL' : sprintf( '"%s"', mysql_real_escape_string( $string ) );
   }
   
+  /**
+   * Returns a version of the string with all framework and application table names prefixed
+   * with their database name.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $input An sql string
+   * @return string
+   * @access protected
+   */
+  protected function add_database_names( $input )
+  {
+    $split_words =
+      array( 'DUPLICATE KEY UPDATE', 'UPDATE', 'INSERT', 'REPLACE', 'SELECT', 'DELETE', 'INTO',
+             'FROM', 'LEFT JOIN', 'RIGHT JOIN', 'STRAIGHT JOIN', 'CROSS JOIN', 'JOIN', 'VALUES',
+             'VALUE', 'SET', 'WHERE', 'GROUP', 'HAVING', 'ORDER', 'LIMIT', 'PROCEDURE', 'INTO',
+             'FOR', 'ON' );
+
+    // split the sql based on the words above, then process each piece one at a time
+    $pieces = preg_split( sprintf( '/\b(%s)\b/i', implode( '|', $split_words ) ),
+                          $input,
+                          -1,
+                          PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
+
+    if( 2 > count( $pieces ) ) $output = $input;
+    else
+    {
+      $output = '';
+      $first_piece = true;
+      $in_update = false;
+      $in_replace = false;
+      $in_from = false;
+      $in_join = false;
+      foreach( $pieces as $piece )
+      {
+        $piece_upper = strtoupper( $piece );
+
+        // start by checking for the opening boundary of table names
+        if( 'UPDATE' == $piece_upper )
+        {
+          $in_update = true;
+          $output .= $piece;
+        }
+        else if( 'INTO' == $piece_upper )
+        {
+          $in_replace = true;
+          $output .= $piece;
+        }
+        else if( 'FROM' == $piece_upper )
+        {
+          $in_from = true;
+          $output .= $piece;
+        }
+        else if( 'LEFT JOIN' == $piece_upper ||
+                 'RIGHT JOIN' == $piece_upper ||
+                 'STRAIGHT JOIN' == $piece_upper ||
+                 'CROSS JOIN' == $piece_upper ||
+                 'JOIN' == $piece_upper )
+        {
+          $in_join = true;
+          $output .= $piece;
+        }
+        // not an opening boundary, so if we're not in a boundary so there's nothing to do
+        else if( !( $in_update || $in_replace || $in_from || $in_join ) )
+        {
+          $output .= $piece;
+        }
+        // not an opening boundary and we are in some boundary, see if we're closing a boundary
+        else if( 'DUPLICATE KEY UPDATE' == $piece_upper )
+        {
+          $in_insert = false;
+          $output .= $piece;
+        }
+        else if( 'SET' == $piece_upper )
+        {
+          $in_update = false;
+          $in_insert = false;
+          $in_replace = false;
+          $output .= $piece;
+        }
+        else if( 'VALUES' == $piece_upper ||
+                 'VALUE' == $piece_upper ||
+                 'SELECT' == $piece_upper )
+        {
+          $in_insert = false;
+          $in_replace = false;
+          $output .= $piece;
+        }
+        else if( 'ON' == $piece_upper )
+        {
+          $in_join = false;
+          $output .= $piece;
+        }
+        else if( 'WHERE' == $piece_upper ||
+                 'GROUP' == $piece_upper ||
+                 'HAVING' == $piece_upper ||
+                 'ORDER' == $piece_upper ||
+                 'LIMIT' == $piece_upper ||
+                 'PROCEDURE' == $piece_upper ||
+                 'INTO' == $piece_upper ||
+                 'FOR' == $piece_upper )
+        {
+          $in_from = false;
+          $in_join = false;
+          $output .= $piece;
+        }
+        else // in a boundary, not closing it, so process the table names in the piece
+        {
+          $first_string = true;
+          foreach( explode( ',', $piece ) as $table_string )
+          {
+            $output .= $first_string ? ' ' : ', ';
+            if( $first_string ) $first_string = false;
+            $table_words = explode( ' ', trim( $table_string ), 2 );
+            if( array_key_exists( $table_words[0], $this->tables ) )
+              $output .= $this->tables[$table_words[0]]['database'].'.';
+            $output .= ltrim( $table_string );
+          }
+        }
+      }
+    }
+    
+    return $output;
+  }
+
   /**
    * Returns whether the column name is of type "date"
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -615,14 +764,7 @@ class database extends \cenozo\base_object
   public static $debug = false;
 
   /**
-   * Holds all table column types in an associate array where table => ( column => type )
-   * @var array
-   * @access protected
-   */
-  protected $columns = array();
-
-  /**
-   * Holds all table information including unique key constraints.
+   * Holds all table information including database, columns, unique key constraints.
    * @var array
    * @access protected
    */

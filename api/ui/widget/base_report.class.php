@@ -58,6 +58,8 @@ abstract class base_report extends \cenozo\ui\widget
 
     $site_class_name = lib::get_class_name( 'database\site' );
     $region_class_name = lib::get_class_name( 'database\region' );
+    $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $source_class_name = lib::get_class_name( 'database\source' );
 
     if( $this->restrictions[ 'site' ] )
     {
@@ -66,9 +68,10 @@ abstract class base_report extends \cenozo\ui\widget
         // if allowed, give them a list of sites to choose from
         $sites = array( 0 => 'All sites' );
         $site_mod = lib::create( 'database\modifier' );
+        $site_mod->order( 'service_id' );
         $site_mod->order( 'name' );
         foreach( $site_class_name::select( $site_mod ) as $db_site )
-          $sites[$db_site->id] = $db_site->name;
+          $sites[$db_site->id] = $db_site->get_full_name();
   
         $this->set_parameter( 'restrict_site_id', key( $sites ), true, $sites );
       }
@@ -95,6 +98,26 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->set_parameter( 'restrict_start_date', '', false );
       $this->set_parameter( 'restrict_end_date', '', false );
+    }
+
+    if( $this->restrictions[ 'cohort' ] )
+    {
+      $session = lib::create( 'business\session' );
+
+      $cohort_list = array( 0 => 'all' );
+      foreach( $cohort_class_name::select() as $db_cohort )
+        $cohort_list[ $db_cohort->id ] = $db_cohort->name;
+
+      $this->set_parameter( 'restrict_cohort_id', key( $cohort_list ), true, $cohort_list );
+    }
+
+    if( $this->restrictions[ 'source' ] )
+    {
+      $source_list = array( 0 => 'all' );
+      foreach( $source_class_name::select() as $db_source )
+        $source_list[ $db_source->id ] = $db_source->name;
+      
+      $this->set_parameter( 'restrict_source_id', key( $source_list ), true, $source_list );
     }
 
     $this->set_variable( 'use_cache', $this->use_cache );
@@ -142,7 +165,7 @@ abstract class base_report extends \cenozo\ui\widget
         $this->add_parameter( 'restrict_site_id', 'hidden' );
 
         // if restricted, show the site's name in the heading
-        $predicate = lib::create( 'business\session' )->get_site()->name;
+        $predicate = lib::create( 'business\session' )->get_site()->get_full_name();
         $this->set_heading( $this->get_heading().' for '.$predicate );
       }
     }
@@ -152,15 +175,25 @@ abstract class base_report extends \cenozo\ui\widget
 
       $this->add_parameter(
         'restrict_start_date', 'date', 'Start Date',
-        'Leaving this blank will not restrict the report to a start date.' );
+        'Leaving this blank will leave the report unrestricted by start date.' );
       $this->add_parameter(
         'restrict_end_date', 'date', 'End Date',
-        'Leaving this blank will not restrict the report to an end date.' );
+        'Leaving this blank will leave the report unrestricted by end date.' );
     }
     else if( 'province' == $restriction_type )
     {
       $this->restrictions[ 'province' ] = true;
       $this->add_parameter( 'restrict_province_id', 'enum', 'Province' );
+    }
+    else if( 'cohort' == $restriction_type )
+    {
+      $this->restrictions[ 'cohort' ] = true;
+      $this->add_parameter( 'restrict_cohort_id', 'enum', 'Cohort' );
+    }
+    else if( 'source' == $restriction_type )
+    {
+      $this->restrictions[ 'source' ] = true;
+      $this->add_parameter( 'restrict_source_id', 'enum', 'Source' );
     }
   }
 
@@ -184,7 +217,7 @@ abstract class base_report extends \cenozo\ui\widget
       // build time time zone help text
       $date_obj = $util_class_name::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            lib::create( 'business\session' )->get_site()->name,
+                            lib::create( 'business\session' )->get_site()->get_full_name(),
                             $date_obj->format( 'T' ) );
       $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }
@@ -248,7 +281,9 @@ abstract class base_report extends \cenozo\ui\widget
     }
     else if( 'number' == $this->parameters[$param_id]['type'] )
     {
-      $value = floatval( $value );
+      $value = !$required && ( is_null( $value ) || 0 == strlen( $value ) )
+             ? ''
+             : floatval( $value );
     }
 
     $this->parameters[$param_id]['value'] = $value;
@@ -319,7 +354,9 @@ abstract class base_report extends \cenozo\ui\widget
   protected $restrictions = array( 
     'site' => false,
     'dates' => false,
-    'province' => false );
+    'province' => false,
+    'cohort' => false,
+    'source' => false );
 
   /**
    * Defines whether or not the report should use the caching system.

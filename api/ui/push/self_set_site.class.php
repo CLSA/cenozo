@@ -42,7 +42,7 @@ class self_set_site extends \cenozo\ui\push
     $db_user = lib::create( 'business\session' )->get_user();
 
     $role_mod = lib::create( 'database\modifier' );
-    $role_mod->where( 'site_id', '=', $db_site->id );
+    $role_mod->where( 'access.site_id', '=', $db_site->id );
     $role_list = $db_user->get_role_list( $role_mod );
     if( 0 == count( $role_list ) )
       throw lib::create( 'exception\runtime',
@@ -66,8 +66,8 @@ class self_set_site extends \cenozo\ui\push
 
     // try loading the same role as the last time this site was accessed
     $activity_mod = lib::create( 'database\modifier' );
-    $activity_mod->where( 'user_id', '=', $db_user->id );
-    $activity_mod->where( 'site_id', '=', $db_site->id );
+    $activity_mod->where( 'activity.user_id', '=', $db_user->id );
+    $activity_mod->where( 'activity.site_id', '=', $db_site->id );
     $activity_mod->order_desc( 'datetime' );
     $activity_mod->limit( 1 );
     $activity_class_name = lib::get_class_name( 'database\activity' );
@@ -76,14 +76,14 @@ class self_set_site extends \cenozo\ui\push
     {
       // make sure the user still has access to the site/role
       $role_mod = lib::create( 'database\modifier' );
-      $role_mod->where( 'site_id', '=', $db_activity->site_id );
-      $role_mod->where( 'role_id', '=', $db_activity->role_id );
+      $role_mod->where( 'access.site_id', '=', $db_activity->site_id );
+      $role_mod->where( 'access.role_id', '=', $db_activity->role_id );
       $db_role = current( $db_user->get_role_list( $role_mod ) );
     }
     
     // if we don't have a role then get the first role associated with the site
     $role_mod = lib::create( 'database\modifier' );
-    $role_mod->where( 'site_id', '=', $db_site->id );
+    $role_mod->where( 'access.site_id', '=', $db_site->id );
     $role_list = $db_user->get_role_list( $role_mod );
     if( !$db_role ) $db_role = current( $role_list );
 

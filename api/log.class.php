@@ -85,7 +85,7 @@ final class log extends singleton
         'backtrace' => false
       ),
       PEAR_LOG_INFO => array(
-        'log' => true,
+        'log' => false,
         'convert' => true,
         'label' => false,
         'backtrace' => false
@@ -348,7 +348,7 @@ final class log extends singleton
     $user_and_role = is_null( $db_user ) || is_null( $db_role )
                    ? 'unknown'
                    : $db_user->name.':'.$db_role->name;
-    $site = is_null( $db_site ) ? 'unknown' : $db_site->name;
+    $site = is_null( $db_site ) ? 'unknown' : $db_site->get_full_name();
     return sprintf( '<%s@%s> %s', $user_and_role, $site, $message );
   }
 

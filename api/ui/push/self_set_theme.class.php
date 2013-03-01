@@ -36,8 +36,6 @@ class self_set_theme extends \cenozo\ui\push
    */
   protected function execute()
   {
-    $db_user = lib::create( 'business\session' )->get_user();
-    $db_user->theme = $this->get_argument( 'theme' );
-    $db_user->save();
+    $db_user = lib::create( 'business\session' )->set_theme( $this->get_argument( 'theme' ) );
   }
 }

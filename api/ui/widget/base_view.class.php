@@ -134,7 +134,7 @@ abstract class base_view extends base_record implements actionable
       // build time time zone help text
       $date_obj = $util_class_name::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            lib::create( 'business\session' )->get_site()->name,
+                            lib::create( 'business\session' )->get_site()->get_full_name(),
                             $date_obj->format( 'T' ) );
       $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }
@@ -264,6 +264,18 @@ abstract class base_view extends base_record implements actionable
           $this->items[$item_id]['max_date'] = $date_limits['max_date'];
       }
     }
+  }
+  
+  /**
+   * Removes an item from the view.
+   * Note: this should only be done after all items have been set in the setup() method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $item_id The item's id, can be one of the record's column names.
+   * @access public
+   */
+  public function remove_item( $item_id )
+  {
+    unset( $this->items[$item_id] );
   }
 
   /**

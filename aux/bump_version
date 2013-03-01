@@ -34,7 +34,7 @@ if( !file_exists( $filename ) )
 
 // replace the general-version setting in the main ini file
 $contents = file_get_contents( $filename );
-$new_contents = preg_replace( "/(fwk_settings\['general'\]\['cenozo_version'\]) = '[^']+'/",
+$new_contents = preg_replace( "/(settings\['general'\]\['cenozo_version'\]) = '[^']+'/",
                         "\\1 = '$new_version'",
                         $contents,
                         1 );

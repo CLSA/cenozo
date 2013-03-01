@@ -65,16 +65,21 @@ class session extends \cenozo\singleton
     // don't initialize more than once
     if( $this->initialized ) return;
 
+    $service_class_name = lib::get_class_name( 'database\service' );
+
     $setting_manager = lib::create( 'business\setting_manager' );
 
-    // create the databases
+    // create the database object
     $this->database = lib::create( 'database\database',
       $setting_manager->get_setting( 'db', 'driver' ),
       $setting_manager->get_setting( 'db', 'server' ),
       $setting_manager->get_setting( 'db', 'username' ),
       $setting_manager->get_setting( 'db', 'password' ),
-      $setting_manager->get_setting( 'db', 'database' ),
+      sprintf( '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), APPNAME ),
       $setting_manager->get_setting( 'db', 'prefix' ) );
+
+    // define the application's service
+    $this->service = $service_class_name::get_unique_record( 'name', APPNAME );
 
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
@@ -110,9 +115,9 @@ class session extends \cenozo\singleton
       $this->requested_role = $role_class_name::get_unique_record( 'name', $role_name );
     }
   }
-  
+
   /**
-   * Get the main database.
+   * Get the database object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database
@@ -133,6 +138,15 @@ class session extends \cenozo\singleton
   public function get_role() { return $this->role; }
 
   /**
+   * Get the current user.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\user
+   * @access public
+   */
+  public function get_user() { return $this->user; }
+
+  /**
    * Get the current site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -142,13 +156,13 @@ class session extends \cenozo\singleton
   public function get_site() { return $this->site; }
 
   /**
-   * Get the current user.
+   * Get the current service.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\user
+   * @return database\service
    * @access public
    */
-  public function get_user() { return $this->user; }
+  public function get_service() { return $this->service; }
 
   /**
    * Get the current access.
@@ -289,7 +303,7 @@ class session extends \cenozo\singleton
         
         // if the user has logged in before, use whatever site/role they last used
         $activity_mod = lib::create( 'database\modifier' );
-        $activity_mod->where( 'user_id', '=', $this->user->id );
+        $activity_mod->where( 'activity.user_id', '=', $this->user->id );
         $activity_mod->order_desc( 'datetime' );
         $activity_mod->limit( 1 );
         $activity_class_name = lib::get_class_name( 'database\activity' );
@@ -298,8 +312,8 @@ class session extends \cenozo\singleton
         {
           // make sure the user still has access to the site/role
           $role_mod = lib::create( 'database\modifier' );
-          $role_mod->where( 'site_id', '=', $db_activity->site_id );
-          $role_mod->where( 'role_id', '=', $db_activity->role_id );
+          $role_mod->where( 'access.site_id', '=', $db_activity->site_id );
+          $role_mod->where( 'access.role_id', '=', $db_activity->role_id );
           $db_role = current( $this->user->get_role_list( $role_mod ) );
           
           // only bother setting the site if the access exists
@@ -311,7 +325,7 @@ class session extends \cenozo\singleton
         {
           $db_site = current( $site_list );
           $role_mod = lib::create( 'database\modifier' );
-          $role_mod->where( 'site_id', '=', $db_site->id );
+          $role_mod->where( 'access.site_id', '=', $db_site->id );
           $db_role = current( $this->user->get_role_list( $role_mod ) );
         }
 
@@ -347,11 +361,23 @@ class session extends \cenozo\singleton
 
     if( !is_null( $this->user ) )
     {
-      $user_theme = $this->user->theme;
+      $user_theme = $this->user->get_theme( $this->service );
       if( !is_null( $user_theme ) ) $theme = $user_theme;
     }
 
     return $theme;
+  }
+
+  /**
+   * Set the current jquery-ui theme.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $theme
+   * @access public
+   */
+  public function set_theme( $theme )
+  {
+    $this->user->set_theme( $this->service, $theme );
   }
   
   /**
@@ -690,7 +716,7 @@ class session extends \cenozo\singleton
   private $initialized = false;
 
   /**
-   * The main database object.
+   * The application's database object.
    * @var database
    * @access private
    */
@@ -716,6 +742,13 @@ class session extends \cenozo\singleton
    * @access private
    */
   private $site = NULL;
+
+  /**
+   * The record of the current service.
+   * @var database\service
+   * @access private
+   */
+  private $service = NULL;
 
   /**
    * The record of the requested role.

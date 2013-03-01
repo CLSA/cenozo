@@ -52,6 +52,7 @@ class activity_chart extends \cenozo\ui\widget
     $db_user = $user_class_name::get_unique_record(
       'name', $setting_manager->get_setting( 'general', 'machine_user' ) );
     $site_mod = lib::create( 'database\modifier' );
+    $site_mod->order( 'service_id' );
     $site_mod->order( 'name' );
 
     // start by building the array from the overall usage
@@ -67,13 +68,13 @@ class activity_chart extends \cenozo\ui\widget
       // get the usage for this site only
       $activity_mod = lib::create( 'database\modifier' );
       if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
-      $activity_mod->where( 'site_id', '=', $db_site->id );
+      $activity_mod->where( 'activity.site_id', '=', $db_site->id );
       $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 31 );
 
       $month_columns[] = array(
         'type' => 'number',
         'site_id' => $db_site->id,
-        'name' => $db_site->name );
+        'name' => $db_site->get_full_name() );
       $site_usage = $activity_class_name::get_usage( $activity_mod );
 
       // make sure to set the value to 0 if no value is returned
@@ -100,13 +101,13 @@ class activity_chart extends \cenozo\ui\widget
       // get the usage for this site only
       $activity_mod = lib::create( 'database\modifier' );
       if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
-      $activity_mod->where( 'site_id', '=', $db_site->id );
+      $activity_mod->where( 'activity.site_id', '=', $db_site->id );
       $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 365 );
 
       $year_columns[] = array(
         'type' => 'number',
         'site_id' => $db_site->id,
-        'name' => $db_site->name );
+        'name' => $db_site->get_full_name() );
       $site_usage = $activity_class_name::get_usage( $activity_mod, true );
 
       // make sure to set the value to 0 if no value is returned

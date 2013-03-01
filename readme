@@ -1,7 +1,7 @@
 Cenozo
 ======
 
-A PHP framework used to build enterprise-level web applications which tightly
+A PHP framework used to build participant-based web applications which tightly
 integrate with one another.  See GitHub projects Sabretooth, Beartooth and
 Mastodon for examples of web applications using this framework.
 
