@@ -1102,7 +1102,7 @@ abstract class record extends \cenozo\base_object
       throw lib::create( 'exception\runtime',
         sprintf( 'Load failed to find record for %s using columns "%s".',
                  static::get_table_name(),
-                 implode( static::get_unique_key_columns(), ', ' ) ),
+                 implode( ', ', static::get_unique_key_columns() ) ),
         __METHOD__ );
 
     return $id;
