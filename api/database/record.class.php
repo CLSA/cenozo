@@ -1224,6 +1224,7 @@ abstract class record extends \cenozo\base_object
    * Returns the name of the table associated with this record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
+   * @static
    * @access public
    */
   public static function get_table_name()
@@ -1252,6 +1253,7 @@ abstract class record extends \cenozo\base_object
    * returns a single column name.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
+   * @static
    * @access public
    */
   public static function get_primary_key_name()
@@ -1264,6 +1266,7 @@ abstract class record extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name A column name in the record's corresponding table.
    * @return array( string )
+   * @static
    * @access public
    */
   public static function get_enum_values( $column_name )
@@ -1332,6 +1335,7 @@ abstract class record extends \cenozo\base_object
    * @param string $table The name of the table to join to.
    * @param database\modifier $modifier The modifier necessary to join the table.
    * @param boolean $override Whether to replace an existing join to the table.
+   * @static
    * @access public
    */
   public static function customize_join( $table, $modifier, $override = false )
@@ -1370,6 +1374,7 @@ abstract class record extends \cenozo\base_object
    * Note, these names do not include the table_ prefix
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
+   * @static
    * @access protecteda
    */
   protected static function get_extending_table_list()
@@ -1468,6 +1473,7 @@ abstract class record extends \cenozo\base_object
   /**
    * The name of the table's primary key column.
    * @var string
+   * @static
    * @access protected
    */
   protected static $primary_key_name = 'id';
@@ -1484,6 +1490,7 @@ abstract class record extends \cenozo\base_object
    * An associative array containing all of the custom joins.  The key is the name of the table
    * being joined and the value a modifier object which defines the join.
    * @var array( database\modifier )
+   * @static
    * @access private
    */
   private static $custom_join_list = array();
@@ -1491,6 +1498,7 @@ abstract class record extends \cenozo\base_object
   /**
    * A list of tables which extend this record's data.  See add_extending_table() for more details.
    * @var array
+   * @static
    * @access private
    */
   private static $extending_table_list = array();
