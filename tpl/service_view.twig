@@ -12,5 +12,6 @@
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
   {{ include_list( 'cohort', cohort_list|default(false), true ) }}
+  {{ include_list( 'role', role_list|default(false), true ) }}
 
 {% endblock record %}

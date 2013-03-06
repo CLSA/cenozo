@@ -49,6 +49,10 @@ class service_view extends base_view
     // create the cohort sub-list widget
     $this->cohort_list = lib::create( 'ui\widget\cohort_list', $this->arguments );
     $this->cohort_list->set_parent( $this );
+
+    // create the role sub-list widget
+    $this->role_list = lib::create( 'ui\widget\role_list', $this->arguments );
+    $this->role_list->set_parent( $this );
   }
 
   /**
@@ -64,13 +68,6 @@ class service_view extends base_view
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
     $record = $this->get_record();
 
-    // create enum arrays
-    $cohorts = array();
-    $cohort_mod = lib::create( 'database\modifier' );
-    $cohort_mod->order( 'name' );
-    foreach( $cohort_class_name::select( $cohort_mod ) as $db_cohort )
-      $cohorts[$db_cohort->id] = $db_cohort->name;
-
     // set the view's items
     $this->set_item( 'name', $record->name );
     $this->set_item( 'title', $record->title );
@@ -83,6 +80,13 @@ class service_view extends base_view
       $this->set_variable( 'cohort_list', $this->cohort_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
+
+    try
+    {
+      $this->role_list->process();
+      $this->set_variable( 'role_list', $this->role_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**
@@ -91,4 +95,11 @@ class service_view extends base_view
    * @access protected
    */
   protected $cohort_list = NULL;
+
+  /**
+   * The role list widget.
+   * @var role_list
+   * @access protected
+   */
+  protected $role_list = NULL;
 }

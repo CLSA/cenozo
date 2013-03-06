@@ -283,11 +283,17 @@ VALUES( "widget", "service", "list", true, "List services in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "service", "primary", true, "Retrieves base service information." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "service", "add_cohort", true, "A form to create a new cohort to add to a service." );
+VALUES( "widget", "service", "add_cohort", true, "A form to add a cohort to a service." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "service", "new_cohort", true, "Add a cohort to a service." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "service", "delete_cohort", true, "Remove a service's cohort." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "service", "add_role", true, "A form to add a role to a service." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "service", "new_role", true, "Add a role to a service." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "service", "delete_role", true, "Remove a service's role." );
 
 -- setting
 INSERT INTO operation( type, subject, name, restricted, description )
