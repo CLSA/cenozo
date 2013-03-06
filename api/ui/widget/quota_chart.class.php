@@ -43,6 +43,7 @@ class quota_chart extends \cenozo\ui\widget
     $age_group_class_name = lib::get_class_name( 'database\age_group' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $session = lib::create( 'business\session' );
 
     $chart_data = array();
     foreach( $cohort_class_name::select() as $db_cohort )
@@ -100,6 +101,7 @@ class quota_chart extends \cenozo\ui\widget
       }
     }
     
+    $this->set_variable( 'service_title', $session->get_service()->title );
     $this->set_variable( 'chart_data', $chart_data );
   }
 }

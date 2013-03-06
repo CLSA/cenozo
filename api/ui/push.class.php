@@ -256,6 +256,21 @@ abstract class push extends operation
   }
 
   /**
+   * Returns the name of the service which sent the machine request.
+   * This value is NULL if a machine request was not made and an empty string
+   * if the service did not identify itself.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_machine_service_name()
+  {
+    $name = array_key_exists( 'HTTP_SERVICE_NAME', $_SERVER )
+          ? $_SERVER['HTTP_SERVICE_NAME'] : '';
+    return $this->get_machine_request_received() ? $name : NULL;
+  }
+
+  /**
    * Whether to replace the user with machine credentials when sending machine requests.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $use

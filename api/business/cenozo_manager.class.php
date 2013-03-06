@@ -83,6 +83,7 @@ class cenozo_manager extends \cenozo\factory
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
+    $request->addHeaders( array( 'service_name' => SERVICENAME ) );
     $request->setOptions( $auth );
     
     if( is_null( $arguments ) ) $arguments = array();
@@ -134,6 +135,7 @@ class cenozo_manager extends \cenozo\factory
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
+    $request->addHeaders( array( 'service_name' => SERVICENAME ) );
     $request->setOptions( $auth );
 
     if( is_null( $arguments ) ) $arguments = array();

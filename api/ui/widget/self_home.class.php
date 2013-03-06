@@ -65,7 +65,7 @@ class self_home extends \cenozo\ui\widget
 
     $this->set_variable( 'title',
       sprintf( 'Welcome to %s version %s',
-               ucwords( APPNAME ),
+               ucwords( SERVICENAME ),
                $setting_manager->get_setting( 'general', 'version' ) ) );
     $this->set_variable( 'user_name', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'role_name', $db_role->name );

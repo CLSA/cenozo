@@ -164,6 +164,7 @@ final class service
         die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
 
     define( 'APPNAME', $this->settings['general']['application_name'] );
+    define( 'SERVICENAME', $this->settings['general']['service_name'] );
     $this->settings['path']['CENOZO_API'] = $this->settings['path']['CENOZO'].'/api';
     $this->settings['path']['CENOZO_TPL'] = $this->settings['path']['CENOZO'].'/tpl';
 

@@ -39,8 +39,11 @@ class service_add extends base_view
     parent::prepare();
     
     // define all columns defining this record
-    $this->add_item( 'name', 'string', 'Name' );
-    $this->add_item( 'cohort_id', 'enum', 'Cohort' );
+    $this->add_item( 'name', 'string', 'Name',
+                     'May only contain letters, numbers and underscores.' );
+    $this->add_item( 'title', 'string', 'Title',
+                     'A user-friendly name for the service, may contain any characters.' );
+    $this->add_item( 'version', 'string', 'Version' );
   }
 
   /**
@@ -53,17 +56,9 @@ class service_add extends base_view
   {
     parent::setup();
     
-    $cohort_class_name = lib::get_class_name( 'database\cohort' );
-
-    // create enum arrays
-    $cohorts = array();
-    $cohort_mod = lib::create( 'database\modifier' );
-    $cohort_mod->order( 'name' );
-    foreach( $cohort_class_name::select( $cohort_mod ) as $db_cohort )
-      $cohorts[$db_cohort->id] = $db_cohort->name;
-
     // set the view's items
     $this->set_item( 'name', '' );
-    $this->set_item( 'cohort_id', key( $cohorts ), true, $cohorts );
+    $this->set_item( 'title', '' );
+    $this->set_item( 'version', '' );
   }
 }

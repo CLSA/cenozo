@@ -3,8 +3,6 @@
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 
-SOURCE roles.sql
-
 -- access
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "access", "delete", true, "Removes access from the system." );
@@ -143,10 +141,6 @@ VALUES( "push", "note", "new", false, "Creates a new note." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "note", "list", false, "Displays a list of notes." );
 
--- operation
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "operation", "list", true, "List operations in the system." );
-
 -- participant
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "delete", true, "Removes a participant from the system." );
@@ -242,16 +236,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "report", true, "Download a participant report." );
 
 -- role
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "delete", true, "Removes a role from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "edit", true, "Edits a role's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "new", true, "Add a new role to the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "role", "add", true, "View a form for creating a new role." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "role", "view", true, "View a role's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "role", "list", true, "List roles in the system." );
 

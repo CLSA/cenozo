@@ -36,6 +36,8 @@ class database extends \cenozo\base_object
    */
   public function __construct( $driver, $server, $username, $password, $database, $prefix )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     $this->driver = 'mysql' == $driver ? 'mysqlt' : $driver;
     $this->server = $server;
     $this->username = $username;
@@ -50,8 +52,9 @@ class database extends \cenozo\base_object
     $this->connect();
     if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
 
-    // determine the framework name from the database name
-    $framework_name = str_replace( APPNAME, 'cenozo', $this->name );
+    // determine the framework name
+    $framework_name = sprintf(
+      '%scenozo', $setting_manager->get_setting( 'db', 'database_prefix' ) );
 
     $column_mod = lib::create( 'database\modifier' );
     $column_mod->where( 'table_schema', 'IN', array( $this->name, $framework_name ) );
@@ -139,7 +142,7 @@ class database extends \cenozo\base_object
 
     // only start a transaction for the main database (this is an ADOdb limitation)
     $database = sprintf(
-      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), APPNAME );
+      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), SERVICENAME );
     if( $database == $this->name )
     {
       if( self::$debug ) log::debug( '(DB) starting transaction' );
@@ -159,7 +162,7 @@ class database extends \cenozo\base_object
 
     // only complete a transaction for the main database (this is an ADOdb limitation)
     $database = sprintf(
-      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), APPNAME );
+      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), SERVICENAME );
     $class_name = lib::get_class_name( 'business\setting_manager' );
     if( class_exists( 'cenozo\business\setting_manager' ) &&
         $class_name::exists() &&

@@ -41,6 +41,7 @@ class activity_chart extends \cenozo\ui\widget
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $setting_manager = lib::create( 'business\setting_manager' );
+    $session = lib::create( 'business\session' );
 
     $month_data = array();
     $month_columns = array(
@@ -115,6 +116,7 @@ class activity_chart extends \cenozo\ui\widget
         $year_data[$date][] = array_key_exists( $date, $site_usage ) ? $site_usage[$date]/60/60 : 0;
     }
 
+    $this->set_variable( 'service_title', $session->get_service()->title );
     $this->set_variable( 'month_title', 'Server Activity Over the Last Month (in minutes/day)' );
     $this->set_variable( 'month_columns', $month_columns );
     $this->set_variable( 'month_data', $month_data );

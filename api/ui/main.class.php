@@ -38,6 +38,7 @@ class main extends \cenozo\base_object
     $variables['show_shortcuts'] = true;
     $variables['show_settings'] = true;
     $variables['show_menu'] = true;
+    $variables['service_title'] = $session->get_service()->title;
 
     // create a list of jquery libraries making sure jquery itself is first
     $jquery_libraries = array( $setting_manager->get_setting( 'url', 'JQUERY_JS' ) );

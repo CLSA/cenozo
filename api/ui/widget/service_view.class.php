@@ -39,8 +39,11 @@ class service_view extends base_view
     parent::prepare();
 
     // create an associative array with everything we want to display about the service
-    $this->add_item( 'name', 'string', 'Name' );
-    $this->add_item( 'version', 'constant', 'Version' );
+    $this->add_item( 'name', 'string', 'Name',
+                     'May only contain letters, numbers and underscores.' );
+    $this->add_item( 'title', 'string', 'Title',
+                     'A user-friendly name for the service, may contain any characters.' );
+    $this->add_item( 'version', 'string', 'Version' );
     $this->add_item( 'sites', 'constant', 'Sites' );
 
     // create the cohort sub-list widget
@@ -70,6 +73,7 @@ class service_view extends base_view
 
     // set the view's items
     $this->set_item( 'name', $record->name );
+    $this->set_item( 'title', $record->title );
     $this->set_item( 'version', $record->version );
     $this->set_item( 'sites', $record->get_site_count() );
 

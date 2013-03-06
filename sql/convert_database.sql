@@ -48,10 +48,11 @@ CREATE PROCEDURE convert_database()
     -- service -------------------------------------------------------------------------------------
     SELECT "Processing service" AS "";
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".service( name, version ) VALUES ",
-      "( 'Mastodon', '1.2.0' ), ",
-      "( 'Beartooth', '1.1.0' ), ",
-      "( 'Sabretooth', '1.2.0' )" );
+      "INSERT INTO ", @cenozo, ".service( name, title, version ) VALUES ",
+      "( 'mastodon', 'Mastodon', '1.2.0' ), ",
+      "( 'beartooth', 'Beartooth', '1.1.0' ), ",
+      "( 'sabretooth', 'Sabretooth', '1.2.0' )" );
+      "( 'sabretoothmc', 'Sabretooth MC', '1.2.0' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -63,7 +64,7 @@ CREATE PROCEDURE convert_database()
       "SELECT user.id, service.id, muser.theme ",
       "FROM ", @cenozo, ".service, ", @cenozo, ".user ",
       "JOIN ", @mastodon, ".user muser ON user.name = muser.name ",
-      "WHERE service.name = 'Mastodon' ",
+      "WHERE service.title = 'Mastodon' ",
       "AND muser.theme IS NOT NULL " );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
@@ -74,7 +75,7 @@ CREATE PROCEDURE convert_database()
       "SELECT user.id, service.id, buser.theme ",
       "FROM ", @cenozo, ".service, ", @cenozo, ".user ",
       "JOIN ", @beartooth, ".user buser ON user.name = buser.name ",
-      "WHERE service.name = 'Beartooth' ",
+      "WHERE service.title = 'Beartooth' ",
       "AND buser.theme IS NOT NULL " );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
@@ -85,7 +86,7 @@ CREATE PROCEDURE convert_database()
       "SELECT user.id, service.id, suser.theme ",
       "FROM ", @cenozo, ".service, ", @cenozo, ".user ",
       "JOIN ", @sabretooth, ".user suser ON user.name = suser.name ",
-      "WHERE service.name = 'Sabretooth' ",
+      "WHERE service.title = 'Sabretooth' ",
       "AND suser.theme IS NOT NULL " );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
@@ -97,16 +98,16 @@ CREATE PROCEDURE convert_database()
       "INSERT INTO ", @cenozo, ".service_has_role( service_id, role_id ) ",
       "SELECT service.id, role.id ",
       "FROM ", @cenozo, ".service, ", @cenozo, ".role ",
-      "WHERE service.name = 'Mastodon' ",
+      "WHERE service.title = 'Mastodon' ",
       "AND role.name IN ( 'administrator', 'typist' ) UNION ",
       "SELECT service.id, role.id ",
       "FROM ", @cenozo, ".service, ", @cenozo, ".role ",
-      "WHERE service.name = 'Beartooth' ",
-      "AND role.name IN ( 'administrator', 'operator', 'supervisor', 'opal' ) UNION ",
+      "WHERE service.title = 'Beartooth' ",
+      "AND role.name IN ( 'administrator', 'coordinator', 'interviewer', 'onyx' ) UNION ",
       "SELECT service.id, role.id ",
       "FROM ", @cenozo, ".service, ", @cenozo, ".role ",
-      "WHERE service.name = 'Sabretooth' ",
-      "AND role.name IN ( 'administrator', 'coordinator', 'interviewer', 'onyx' ) " );
+      "WHERE service.title LIKE 'Sabretooth%' ",
+      "AND role.name IN ( 'administrator', 'operator', 'supervisor', 'opal' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -140,7 +141,7 @@ CREATE PROCEDURE convert_database()
       "site.city = bsite.city, ",
       "site.region_id = region.id, ",
       "site.postcode = bsite.postcode ",
-      "WHERE site.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Beartooth' ) ",
+      "WHERE site.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Beartooth' ) ",
       "AND site.name = bsite.name ",
       "AND bsite.region_id = bregion.id ",
       "AND bregion.name = region.name" );
@@ -164,7 +165,7 @@ CREATE PROCEDURE convert_database()
       "SELECT msystem_message.update_timestamp, msystem_message.create_timestamp, this_service.id, ",
              "msystem_message.site_id, msystem_message.role_id, msystem_message.title, msystem_message.note ",
       "FROM ", @cenozo, ".service this_service, ", @mastodon, ".system_message msystem_message ",
-      "WHERE this_service.name = 'Mastodon'" );
+      "WHERE this_service.title = 'Mastodon'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -179,7 +180,7 @@ CREATE PROCEDURE convert_database()
       "LEFT JOIN ", @cenozo, ".site ON ssite.name = site.name ",
       "LEFT JOIN ", @sabretooth, ".role srole ON ssystem_message.role_id = srole.id ",
       "LEFT JOIN ", @cenozo, ".role ON srole.name = role.name ",
-      "WHERE this_service.name = 'Sabretooth'" );
+      "WHERE this_service.title = 'Sabretooth'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -194,7 +195,7 @@ CREATE PROCEDURE convert_database()
       "LEFT JOIN ", @cenozo, ".site ON bsite.name = site.name ",
       "LEFT JOIN ", @beartooth, ".role brole ON bsystem_message.role_id = brole.id ",
       "LEFT JOIN ", @cenozo, ".role ON brole.name = role.name ",
-      "WHERE this_service.name = 'Beartooth'" );
+      "WHERE this_service.title = 'Beartooth'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -489,7 +490,7 @@ CREATE PROCEDURE convert_database()
     SELECT "Processing service_has_cohort" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".service_has_cohort ",
-      "SET service_id = ( SELECT id FROM service WHERE name = 'Beartooth' ), ",
+      "SET service_id = ( SELECT id FROM service WHERE title = 'Beartooth' ), ",
       "cohort_id = ( SELECT id FROM cohort WHERE name = 'comprehensive' ), ",
       "grouping = 'jurisdiction'" );
     PREPARE statement FROM @sql;
@@ -498,7 +499,7 @@ CREATE PROCEDURE convert_database()
 
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".service_has_cohort ",
-      "SET service_id = ( SELECT id FROM service WHERE name = 'Sabretooth' ), ",
+      "SET service_id = ( SELECT id FROM service WHERE title = 'Sabretooth' ), ",
       "cohort_id = ( SELECT id FROM cohort WHERE name = 'tracking' ), ",
       "grouping = 'region'" );
     PREPARE statement FROM @sql;

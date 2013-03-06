@@ -38,7 +38,7 @@ class service_list extends base_list
   {
     parent::prepare();
     
-    $this->add_column( 'name', 'string', 'Name', true );
+    $this->add_column( 'title', 'string', 'Title', true );
     if( !is_null( $this->parent ) && 'cohort' == $this->parent->get_subject() )
       $this->add_column( 'service_has_cohort.grouping', 'string', 'Grouping', true );
     $this->add_column( 'version', 'string', 'Version', true );
@@ -57,7 +57,7 @@ class service_list extends base_list
     
     foreach( $this->get_record_list() as $record )
     {
-      $row = array( 'name' => $record->name,
+      $row = array( 'title' => $record->title,
                     'version' => $record->version,
                     'sites' => $record->get_site_count() );
       if( !is_null( $this->parent ) && 'cohort' == $this->parent->get_subject() )

@@ -43,7 +43,7 @@ class site_new extends base_new
       throw lib::create( 'exception\notice', 'The site name cannot be left blank.', __METHOD__ );
 
     // validate the postcode
-    if( array_key_exists( 'postcode', $columns ) )
+    if( array_key_exists( 'postcode', $columns ) && $columns['postcode'] )
     {
       if( !preg_match( '/^[A-Z][0-9][A-Z] [0-9][A-Z][0-9]$/', $columns['postcode'] ) &&
           !preg_match( '/^[0-9]{5}$/', $columns['postcode'] ) )
