@@ -52,7 +52,6 @@ CREATE PROCEDURE convert_database()
       "( 'mastodon', 'Mastodon', '1.2.0' ), ",
       "( 'beartooth', 'Beartooth', '1.1.0' ), ",
       "( 'sabretooth', 'Sabretooth', '1.2.0' )" );
-      "( 'sabretoothmc', 'Sabretooth MC', '1.2.0' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -475,6 +474,17 @@ CREATE PROCEDURE convert_database()
       "INSERT INTO ", @cenozo, ".quota ",
       "SELECT mquota.* ",
       "FROM ", @mastodon, ".quota mquota " );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    -- adding new MC quotas ------------------------------------------------------------------------
+    SELECT "Adding new MC quotas" AS "";
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".quota ",
+      "SELECT ",
+      "FROM ", @mastodon, ".quota mquota "
+      "" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
