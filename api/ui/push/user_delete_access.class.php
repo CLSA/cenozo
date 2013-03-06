@@ -24,4 +24,25 @@ class user_delete_access extends base_delete_record
   {
     parent::__construct( 'user', 'access', $args );
   }
+
+  /**
+   * Validate the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function validate()
+  {
+    parent::validate();
+
+    // do not allow user's last access to be removed
+    if( 1 == $this->get_record()->get_access_count() )
+    {
+      throw lib::create( 'exception\notice',
+        'Cannot remove this user\'s only access.  If you wish to completely disable the user\'s '.
+        'access set their active state to "No" instead.',
+        __METHOD__ );
+    }
+  }
 }
