@@ -96,11 +96,14 @@ class user_list extends site_restricted_list
    */
   public function determine_record_count( $modifier = NULL )
   {
+    // only include users who have access to a role belonging to this service
+    $db_service = lib::create( 'business\session' )->get_service();
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'access.role_id', '=', 'service_has_role.role_id', false );
+    $modifier->where( 'service_has_role.service_id', '=', $db_service->id );
+
     if( !is_null( $this->db_restrict_site ) )
-    {
-      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
-    }
 
     // skip the parent method
     $grand_parent = get_parent_class( get_parent_class( get_class() ) );
@@ -117,11 +120,14 @@ class user_list extends site_restricted_list
    */
   public function determine_record_list( $modifier = NULL )
   {
+    // only include users who have access to a role belonging to this service
+    $db_service = lib::create( 'business\session' )->get_service();
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'access.role_id', '=', 'service_has_role.role_id', false );
+    $modifier->where( 'service_has_role.service_id', '=', $db_service->id );
+
     if( !is_null( $this->db_restrict_site ) )
-    {
-      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
-    }
 
     // skip the parent method
     $grand_parent = get_parent_class( get_parent_class( get_class() ) );

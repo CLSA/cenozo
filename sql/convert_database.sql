@@ -99,7 +99,8 @@ CREATE PROCEDURE convert_database()
       "SELECT service.id, role.id ",
       "FROM ", @cenozo, ".service, ", @cenozo, ".role ",
       "WHERE service.title = 'Mastodon' ",
-      "AND role.name IN ( 'administrator', 'typist' ) UNION ",
+      "AND role.name IN ( 'administrator', 'coordinator', 'interviewer', 'onyx', 'opal', ",
+                         "'operator', 'supervisor', 'typist' ) UNION ",
       "SELECT service.id, role.id ",
       "FROM ", @cenozo, ".service, ", @cenozo, ".role ",
       "WHERE service.title = 'Beartooth' ",
@@ -107,7 +108,7 @@ CREATE PROCEDURE convert_database()
       "SELECT service.id, role.id ",
       "FROM ", @cenozo, ".service, ", @cenozo, ".role ",
       "WHERE service.title LIKE 'Sabretooth%' ",
-      "AND role.name IN ( 'administrator', 'operator', 'supervisor', 'opal' )" );
+      "AND role.name IN ( 'administrator', 'opal', 'operator', 'supervisor' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
