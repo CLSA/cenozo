@@ -388,10 +388,21 @@ class database extends \cenozo\base_object
    */
   public function execute( $sql, $add_database_names = true )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
-    if( self::$debug ) log::debug( sprintf( '(DB) executing "%s"', $sql ) );
+    
+    if( self::$debug )
+    {
+      $time = $util_class_name::get_elapsed_time();
+      log::debug( sprintf( '(DB) executing "%s"', $sql ) );
+    }
     $result = $this->connection->Execute( $sql );
+    if( self::$debug ) log::debug( sprintf( '(DB) result "%s" [%0.2fs]',
+                                            $result ? 'y' : 'n',
+                                            $util_class_name::get_elapsed_time() - $time ) );
+
     if( false === $result )
     {
       // pass the db error code instead of a class error code
@@ -415,10 +426,20 @@ class database extends \cenozo\base_object
    */
   public function get_one( $sql, $add_database_names = true )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
-    if( self::$debug ) log::debug( sprintf( '(DB) getting one "%s"', $sql ) );
+
+    if( self::$debug )
+    {
+      $time = $util_class_name::get_elapsed_time();
+      log::debug( sprintf( '(DB) getting one "%s"', $sql ) );
+    }
     $result = $this->connection->GetOne( $sql );
+    if( self::$debug ) log::debug( sprintf( '(DB) result "%s" [%0.2fs]',
+                                            $result,
+                                            $util_class_name::get_elapsed_time() - $time ) );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
@@ -426,7 +447,6 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
-    if( self::$debug ) log::debug( sprintf( '(DB) result "%s"', $result ) );
     return $result;
   }
   
@@ -443,10 +463,20 @@ class database extends \cenozo\base_object
    */
   public function get_row( $sql, $add_database_names = true )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
-    if( self::$debug ) log::debug( sprintf( '(DB) getting row "%s"', $sql ) );
+
+    if( self::$debug )
+    {
+      $time = $util_class_name::get_elapsed_time();
+      log::debug( sprintf( '(DB) getting row "%s"', $sql ) );
+    }
     $result = $this->connection->GetRow( $sql );
+    if( self::$debug ) log::debug( sprintf( '(DB) returned %d row(s) [%0.2fs]',
+                                            $result ? ( count( $result ) ? 1 : 0 ) : 0,
+                                            $util_class_name::get_elapsed_time() - $time ) );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
@@ -454,7 +484,6 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
-    if( self::$debug ) log::debug( sprintf( '(DB) returned %d row', count( $result ) ? 1 : 0 ) );
     return $result;
   }
   
@@ -471,10 +500,20 @@ class database extends \cenozo\base_object
    */
   public function get_all( $sql, $add_database_names = true )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
-    if( self::$debug ) log::debug( sprintf( '(DB) getting all "%s"', $sql ) );
+
+    if( self::$debug )
+    {
+      $time = $util_class_name::get_elapsed_time();
+      log::debug( sprintf( '(DB) getting all "%s"', $sql ) );
+    }
     $result = $this->connection->GetAll( $sql );
+    if( self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
+                                            $result ? count( $result ) : 0,
+                                            $util_class_name::get_elapsed_time() - $time ) );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
@@ -482,7 +521,6 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
-    if( self::$debug ) log::debug( '(DB) returned '.count( $result ).' rows' );
     return $result;
   }
   
@@ -500,10 +538,20 @@ class database extends \cenozo\base_object
    */
   public function get_col( $sql, $trim = false, $add_database_names = true )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
-    if( self::$debug ) log::debug( sprintf( '(DB) getting col "%s"', $sql ) );
+
+    if( self::$debug )
+    {
+      $time = $util_class_name::get_elapsed_time();
+      log::debug( sprintf( '(DB) getting col "%s"', $sql ) );
+    }
     $result = $this->connection->GetCol( $sql, $trim );
+    if( self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
+                                            $result ? count( $result ) : 0,
+                                            $util_class_name::get_elapsed_time() - $time ) );
     if( false === $result )
     {
       // pass the database error code instead of a class error code
@@ -511,7 +559,6 @@ class database extends \cenozo\base_object
         $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
     }
 
-    if( self::$debug ) log::debug( '(DB) returned '.count( $result ).' rows' );
     return $result;
   }
   
