@@ -8,14 +8,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "access", "delete", true, "Removes access from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "access", "list", true, "List system access entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "access", "primary", true, "Retrieves base access information." );
 
 -- activity
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "activity", "list", true, "List system activity." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "activity", "primary", true, "Retrieves base activity information." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "activity", "chart", true, "Displays a chart describing system activity." );
 
@@ -32,8 +28,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "address", "view", true, "View the details of a participant's particular address entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "address", "list", true, "Lists a participant's address entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "address", "primary", true, "Retrieves base address information." );
 
 -- alternate
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -56,8 +50,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "alternate", "add_phone", true, "A form to create a new phone entry to add to an alternate contact person." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "alternate", "delete_phone", true, "Remove an alternate contact person's phone entry." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "alternate", "primary", true, "Retrieves base alternate contact person information." );
 
 -- availability
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -72,8 +64,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "availability", "view", true, "View the details of a participant's particular availability entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "availability", "list", true, "Lists a participant's availability entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "availability", "primary", true, "Retrieves base availability information." );
 
 -- cohort
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -88,8 +78,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "cohort", "view", true, "View a cohort's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "cohort", "list", true, "List cohorts in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "cohort", "primary", true, "Retrieves base cohort information." );
 
 -- consent
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -104,8 +92,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "consent", "view", true, "View the details of a participant's particular consent entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "consent", "list", true, "Lists a participant's consent entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "consent", "primary", true, "Retrieves base consent information." );
 
 -- event
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -120,16 +106,12 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "event", "view", true, "View the details of a participant's particular event entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "event", "list", true, "Lists a participant's event entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "event", "primary", true, "Retrieves base event information." );
 
 -- event_type
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "event_type", "view", true, "View the details of an event type." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "event_type", "list", true, "Lists event types." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "event_type", "primary", true, "Retrieves base event type information." );
 
 -- notes
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -208,8 +190,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "phone", "view", true, "View the details of a participant's particular phone entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "phone", "list", true, "Lists a participant's phone entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "phone", "primary", true, "Retrieves base phone information." );
 
 -- quota
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -224,8 +204,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "quota", "view", true, "View a quota's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "quota", "list", true, "List quotas in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "quota", "primary", true, "Retrieves base quota information." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "quota", "chart", true, "Displays a chart describing the progress of participant quotas." );
 
@@ -264,8 +242,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "self", "set_role", false, "Change the current user's active role." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "self", "set_theme", false, "Change the current user's web interface theme." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "self", "primary", false, "Retrieves the current user's information." );
 
 -- service
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -280,8 +256,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "service", "view", true, "View a service's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "service", "list", true, "List services in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "service", "primary", true, "Retrieves base service information." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "service", "add_cohort", true, "A form to add a cohort to a service." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -302,8 +276,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "setting", "view", true, "View a setting's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "setting", "list", true, "List settings in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "setting", "primary", true, "Retrieves base setting information." );
 
 -- site
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -322,8 +294,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "site", "new_access", true, "Grant access to a site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "site", "delete_access", true, "Remove accesss from a site." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "site", "primary", true, "Retrieves base site information." );
 
 -- system message
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -338,8 +308,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "system_message", "view", true, "View a system message's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "system_message", "list", true, "List system messages in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "system_message", "primary", true, "Retrieves base system message information." );
 
 -- user
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -364,8 +332,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "reset_password", true, "Resets a user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "set_password", true, "Sets a user's password." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "user", "primary", true, "Retrieves base user information." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "user", "list", true, "Retrieves information on lists of users." );
 
