@@ -478,17 +478,6 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
-    -- adding new MC quotas ------------------------------------------------------------------------
-    SELECT "Adding new MC quotas" AS "";
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".quota ",
-      "SELECT ",
-      "FROM ", @mastodon, ".quota mquota "
-      "" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
     -- person_note ---------------------------------------------------------------------------------
     SELECT "Processing person_note" AS "";
     SET @sql = CONCAT(
