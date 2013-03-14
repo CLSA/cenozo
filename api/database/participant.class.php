@@ -64,6 +64,18 @@ class participant extends person
   }
 
   /**
+   * Get this participant's hin record
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return hin
+   * @access public
+   */
+  public function get_hin()
+  {
+    $hin_list = $this->get_hin_list();
+    return count( $hin_list ) ? current( $hin_list ) : NULL;
+  }
+
+  /**
    * Get the participant's last consent
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return consent
@@ -296,31 +308,6 @@ class participant extends person
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
   
-  /**
-   * Get this participant's HIN information.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array( 'access', 'missing' )
-   * @access public
-   */
-  public function get_hin_information()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-   
-    $database_class_name = lib::get_class_name( 'database\database' );
-
-    // need custom SQL
-    $sql = ' SELECT access, future_access, code IS NULL AS missing'.
-           ' FROM hin'.
-           ' WHERE uid = '.$database_class_name::format_string( $this->uid );
-
-    return static::db()->get_row( $sql );
-  }
-
   /**
    * Adds an event to the participant at the given datetime
    * @author Patrick Emond <emondpd@mcmaster.ca>

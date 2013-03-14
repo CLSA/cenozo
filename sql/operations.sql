@@ -155,6 +155,8 @@ VALUES( "push", "participant", "delete_phone", true, "Remove a participant's pho
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "edit", true, "Edits a participant's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "hin", true, "View a participant's HIN details." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "list", true, "Retrieves base information for a list of participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "list", true, "List participants in the system." );
@@ -194,8 +196,6 @@ VALUES( "widget", "phone", "view", true, "View the details of a participant's pa
 -- quota
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "quota", "add", true, "View a form for creating a new quota." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "quota", "chart", true, "Displays a chart describing the progress of participant quotas." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "quota", "delete", true, "Removes a quota from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )

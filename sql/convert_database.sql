@@ -255,6 +255,19 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
+    -- hin -----------------------------------------------------------------------------------------
+    SELECT "Processing hin" AS "";
+    SET @sql = CONCAT(
+      "INSERT INTO hin ( update_timestamp, create_timestamp, participant_id, ",
+                        "access, future_access, code, region_id ) ",
+      "SELECT mhin.update_timestamp, mhin.create_timestamp, cparticipant.id, ",
+             "mhin.access, mhin.future_access, mhin.code, mhin.region_id ",
+      "FROM ", @mastodon, ".hin mhin ",
+      "JOIN ", @cenozo, ".participant cparticipant ON mhin.uid = cparticipant.uid" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
     -- event_type ----------------------------------------------------------------------------------
     SELECT "Processing event_type" AS "";
     SET @sql = CONCAT(

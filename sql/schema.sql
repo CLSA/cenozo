@@ -793,6 +793,37 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `cenozo`.`hin`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`hin` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`hin` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
+  `access` TINYINT(1) NULL DEFAULT NULL ,
+  `future_access` TINYINT(1) NULL DEFAULT NULL ,
+  `code` VARCHAR(45) NULL DEFAULT NULL ,
+  `region_id` INT UNSIGNED NULL DEFAULT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_participant_id` (`participant_id` ASC) ,
+  INDEX `fk_region_id` (`region_id` ASC) ,
+  UNIQUE INDEX `uq_participant_id` (`participant_id` ASC) ,
+  CONSTRAINT `fk_hin_participant_id`
+    FOREIGN KEY (`participant_id` )
+    REFERENCES `cenozo`.`participant` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_hin_region_id`
+    FOREIGN KEY (`region_id` )
+    REFERENCES `cenozo`.`region` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`person_first_address`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cenozo`.`person_first_address` (`person_id` INT, `address_id` INT);

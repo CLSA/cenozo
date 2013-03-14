@@ -112,6 +112,7 @@ class participant_view extends base_view
 
     // create enum arrays
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $operation_class_name = lib::get_class_name( 'database\operation' );
     $record = $this->get_record();
     $db_age_group = $record->get_age_group();
 
@@ -199,6 +200,12 @@ class participant_view extends base_view
       $this->set_variable( 'event_list', $this->event_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
+
+    // add an hin action
+    $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'hin' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $this->add_action( 'hin', 'HIN', $db_operation,
+        'Edit the participant\'s health insurance number.' );
   }
 
   /**
