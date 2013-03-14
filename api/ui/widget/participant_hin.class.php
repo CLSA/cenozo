@@ -40,9 +40,12 @@ class participant_hin extends base_view
 
     $operation_class_name = lib::create( 'database\operation' );
 
+    $this->set_heading( sprintf( 'Health Insurance Number for %s', $this->get_record()->uid ) );
+    $db_operation = $operation_class_name::get_operation( 'push', 'participant', 'edit' );
+    $this->set_editable( lib::create( 'business\session' )->is_allowed( $db_operation ) );
+
     // we need to manually set the editable state based on whether the user has access to the
     // participant hin push operation
-    $db_operation = $operation_class_name::get_operation( 'push', 'participant', 'hin' );
     $db_hin = $this->get_record()->get_hin();
     $is_valid = is_null( $db_hin ) ? NULL : $db_hin->is_valid();
     $format = is_null( $db_hin ) || is_null( $db_hin->get_format() ) ? NULL : $db_hin->get_format();
@@ -52,9 +55,6 @@ class participant_hin extends base_view
       $code_help = $is_valid
                  ? 'Code is valid.'
                  : sprintf( 'Code is invalid, expecting format to be "%s".', $format );
-
-    $this->set_heading( sprintf( 'Health Insurance Number for %s', $this->get_record()->uid ) );
-    $this->set_editable( lib::create( 'business\session' )->is_allowed( $db_operation ) );
 
     // create an associative array with everything we want to display about the participant
     $this->add_item( 'hin_access', 'boolean', 'Consent to provide' );

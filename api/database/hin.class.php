@@ -27,19 +27,19 @@ class hin extends record
     {
       $db_region = $this->get_region();
 
-      if( 'Alberta' == $db_region->name ||
-          'Manitoba' == $db_region->name ||
-          'New Brunswick' == $db_region->name ||
-          'Northwest Territories' == $db_region->name ||
+      if( 'Alberta' == $db_region->name ) $retval = '00000-0000';
+      else if( 'British Columbia' == $db_region->name ) $retval = '9000 000 000';
+      if( 'Manitoba' == $db_region->name ||
           'Nunavut' == $db_region->name ||
-          'Saskatchewan' == $db_region->name ||
-          'Yukon' == $db_region->name ) $retval = '000000000';
-      else if( 'British Columbia' == $db_region->name ) $retval = '9000000000';
-      else if( 'Newfoundland and Labrador' == $db_region->name ) $retval = '000000000000';
-      else if( 'Nova Scotia' == $db_region->name ) $retval = '0000000000';
-      else if( 'Ontario' == $db_region->name ) $retval = '0000000000[XX]';
-      else if( 'Prince Edward Island' == $db_region->name ) $retval = '00000000';
-      else if( 'Quebec' == $db_region->name ) $retval = 'XXXX00000000';
+          'Saskatchewan' == $db_region->name ) $retval = '000 000 000';
+      if( 'New Brunswick' == $db_region->name ||
+          'Yukon' == $db_region->name ) $retval = '000-000-000';
+      else if( 'Newfoundland and Labrador' == $db_region->name ) $retval = '000 000 000 000';
+      else if( 'Northwest Territories' == $db_region->name ) $retval = 'X0000000';
+      else if( 'Nova Scotia' == $db_region->name ) $retval = '0000 000 000';
+      else if( 'Ontario' == $db_region->name ) $retval = '0000-000-000 or 0000-000-000-XX';
+      else if( 'Prince Edward Island' == $db_region->name ) $retval = '0 0000000';
+      else if( 'Quebec' == $db_region->name ) $retval = 'XXXX 0000 0000';
     }
 
     return $retval;
@@ -62,12 +62,12 @@ class hin extends record
       if( 'Alberta' == $db_region->name ||
           'Manitoba' == $db_region->name ||
           'New Brunswick' == $db_region->name ||
-          'Northwest Territories' == $db_region->name ||
           'Nunavut' == $db_region->name ||
           'Saskatchewan' == $db_region->name ||
           'Yukon' == $db_region->name ) $regex = '/^[0-9]{9}$/';
       else if( 'British Columbia' == $db_region->name ) $regex = '/^9[0-9]{9}$/';
       else if( 'Newfoundland and Labrador' == $db_region->name ) $regex = '/^[0-9]{12}$/';
+      else if( 'Northwest Territories' == $db_region->name ) $regex = '/^[a-zA-Z][0-9]{7}$/';
       else if( 'Nova Scotia' == $db_region->name ) $regex = '/^[0-9]{10}$/';
       else if( 'Ontario' == $db_region->name ) $regex = '/^[0-9]{10}([a-zA-Z]{2})?$/';
       else if( 'Prince Edward Island' == $db_region->name ) $regex = '/^[0-9]{8}$/';
