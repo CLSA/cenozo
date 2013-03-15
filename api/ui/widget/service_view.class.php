@@ -53,6 +53,10 @@ class service_view extends base_view
     // create the role sub-list widget
     $this->role_list = lib::create( 'ui\widget\role_list', $this->arguments );
     $this->role_list->set_parent( $this );
+
+    // create the site sub-list widget
+    $this->site_list = lib::create( 'ui\widget\site_list', $this->arguments );
+    $this->site_list->set_parent( $this );
   }
 
   /**
@@ -87,6 +91,13 @@ class service_view extends base_view
       $this->set_variable( 'role_list', $this->role_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
+
+    try
+    {
+      $this->site_list->process();
+      $this->set_variable( 'site_list', $this->site_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**
@@ -102,4 +113,11 @@ class service_view extends base_view
    * @access protected
    */
   protected $role_list = NULL;
+
+  /**
+   * The site list widget.
+   * @var site_list
+   * @access protected
+   */
+  protected $site_list = NULL;
 }
