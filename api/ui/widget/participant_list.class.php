@@ -37,13 +37,15 @@ class participant_list extends site_restricted_list
   protected function prepare()
   {
     parent::prepare();
+
+    $session = lib::create( 'business\session' );
     
     $this->add_column( 'uid', 'string', 'UID', true );
     $this->add_column( 'first_name', 'string', 'First', true );
     $this->add_column( 'last_name', 'string', 'Last', true );
     $this->add_column( 'active', 'boolean', 'Active', true );
     $this->add_column( 'source.name', 'string', 'Source', true );
-    if( is_null( $this->db_restrict_site ) )
+    if( 1 != $session->get_service()->get_cohort_count() )
       $this->add_column( 'cohort.name', 'string', 'Cohort', true );
     $this->add_column( 'site', 'string', 'Site', false );
 
@@ -69,6 +71,7 @@ class participant_list extends site_restricted_list
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
+    $session = lib::create( 'business\session' );
     
     foreach( $this->get_record_list() as $record )
     {
@@ -85,7 +88,7 @@ class participant_list extends site_restricted_list
         'site' => $site_name,
         // note count isn't a column, it's used for the note button
         'note_count' => $record->get_note_count() );
-      if( is_null( $this->db_restrict_site ) )
+      if( 1 != $session->get_service()->get_cohort_count() )
         $columns['cohort.name'] = $record->get_cohort()->name;
       $this->add_row( $record->id, $columns );
     }
@@ -93,17 +96,12 @@ class participant_list extends site_restricted_list
     $this->set_variable( 'conditions', $participant_class_name::get_enum_values( 'status' ) );
     $this->set_variable( 'restrict_condition', $this->get_argument( 'restrict_condition', '' ) );
 
-    // include the sync action if the widget isn't parented
+    // include the participant site reassign action if the widget isn't parented
     if( is_null( $this->parent ) )
     {
-      $db_operation = $operation_class_name::get_operation( 'widget', 'import', 'add' );
-      if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
-        $this->add_action( 'import', 'Import', $db_operation,
-          'Import participants from an external CSV file' );
-
       $db_operation =
         $operation_class_name::get_operation( 'widget', 'participant', 'site_reassign' );
-      if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      if( $session->is_allowed( $db_operation ) )
         $this->add_action( 'reassign', 'Site Reassign', $db_operation,
           'Change the preferred site of multiple participants at once' );
     }
@@ -122,7 +120,7 @@ class participant_list extends site_restricted_list
     $restrict_condition = $this->get_argument( 'restrict_condition', '' );
     if( $restrict_condition )
     {
-      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'status', '=', $restrict_condition );
     }
 
@@ -142,7 +140,7 @@ class participant_list extends site_restricted_list
     $restrict_condition = $this->get_argument( 'restrict_condition', '' );
     if( $restrict_condition )
     {
-      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+      if( if_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'status', '=', $restrict_condition );
     }
 
