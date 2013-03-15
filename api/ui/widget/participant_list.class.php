@@ -140,7 +140,7 @@ class participant_list extends site_restricted_list
     $restrict_condition = $this->get_argument( 'restrict_condition', '' );
     if( $restrict_condition )
     {
-      if( if_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'status', '=', $restrict_condition );
     }
 
