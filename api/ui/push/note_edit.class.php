@@ -88,4 +88,3 @@ class note_edit extends \cenozo\ui\push
     return $args;
   }
 }
-?>

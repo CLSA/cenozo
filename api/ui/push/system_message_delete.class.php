@@ -45,4 +45,3 @@ class system_message_delete extends base_delete
         'You do not have access to remove this system message.', __METHOD__ );
   }
 }
-?>

@@ -51,4 +51,3 @@ abstract class base_delete_record extends base_record
    */
   protected $child_subject;
 }
-?>

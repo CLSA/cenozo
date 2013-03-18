@@ -57,11 +57,11 @@ class self_settings extends \cenozo\ui\widget
     
     $sites = array();
     foreach( $db_user->get_site_list() as $db_site )
-      $sites[ $db_site->id ] = $db_site->name;
+      $sites[ $db_site->id ] = $db_site->get_full_name();
 
     $roles = array();
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_current_site->id );
+    $modifier->where( 'access.site_id', '=', $db_current_site->id );
     foreach( $db_user->get_role_list( $modifier ) as $db_role )
       $roles[ $db_role->id ] = $db_role->name;
     
@@ -70,19 +70,19 @@ class self_settings extends \cenozo\ui\widget
     foreach( new \DirectoryIterator( JQUERY_UI_THEMES_PATH ) as $file )
       if( !$file->isDot() && $file->isDir() ) $themes[] = $file->getFilename();
 
+    $this->set_variable( 'service_title', $session->get_service()->title );
     $this->set_variable( 'user', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'version',
       lib::create( 'business\setting_manager' )->get_setting( 'general', 'version' ) );
     $this->set_variable( 'development', lib::in_development_mode() );
     $this->set_variable( 'current_site_id', $db_current_site->id );
-    $this->set_variable( 'current_site_name', $db_current_site->name );
+    $this->set_variable( 'current_site_name', $db_current_site->get_full_name() );
     $this->set_variable( 'current_role_id', $db_current_role->id );
     $this->set_variable( 'current_role_name', $db_current_role->name );
     $this->set_variable( 'current_theme_name', $session->get_theme() );
     $this->set_variable( 'roles', $roles );
     $this->set_variable( 'sites', $sites );
     $this->set_variable( 'themes', $themes );
-    $this->set_variable( 'logo', false );
+    $this->set_variable( 'logo', 'img/logo_small.png' );
   }
 }
-?>

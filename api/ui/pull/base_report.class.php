@@ -190,7 +190,7 @@ abstract class base_report extends \cenozo\ui\pull
       if( $restrict_site_id )
       {
         $db_site = lib::create( 'database\site', $restrict_site_id );
-        $main_title = $main_title.' for '.$db_site->name;
+        $main_title = $main_title.' for '.$db_site->get_full_name();
       }
       else
       {
@@ -509,4 +509,3 @@ abstract class base_report extends \cenozo\ui\pull
    */
   protected $report;
 }
-?>

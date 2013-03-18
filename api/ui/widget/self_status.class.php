@@ -59,4 +59,3 @@ class self_status extends \cenozo\ui\widget
       $util_class_name::get_timezone_object()->getOffset( $datetime_obj ) );
   }
 }
-?>

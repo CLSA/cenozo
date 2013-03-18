@@ -140,4 +140,3 @@ class base_exception extends \Exception
    */
   private $raw_message;
 }
-?>

@@ -13,4 +13,3 @@ use cenozo\lib, cenozo\log;
  * region: record
  */
 class region extends record {}
-?>

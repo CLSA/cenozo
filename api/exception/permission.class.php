@@ -45,4 +45,3 @@ class permission extends base_exception
    */
   protected $operation = NULL;
 }
-?>

@@ -15,78 +15,6 @@ use cenozo\lib, cenozo\log;
 abstract class base_access extends record
 {
   /**
-   * Count the total number of rows in the table.
-   * 
-   * Overrides the parent method since this class is related to others through the access table.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the count.
-   * @return int
-   * @static
-   * @access public
-   */
-  public static function count( $modifier = NULL )
-  {
-    return static::select( $modifier, true );
-  }            
-
-  /**
-   * Select a number of records.
-   * 
-   * Overrides the parent method since this class is related to others through the access table.
-   * Warning, the functionality in the parent class' select method searches for foreign keys in
-   * the order clauses of the modifier to link to the related tables if necessary.  Currently the
-   * access-related tables (user, role and site) do not have any foreign keys in them so that
-   * functionality has been left out of this method.  Should that change then this method will
-   * need to be expanded.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @return array( record )
-   * @static
-   * @access public
-   */
-  public static function select( $modifier = NULL, $count = false )
-  {
-    $subject_name = static::get_table_name();
-
-    // check to see if the modifier is sorting a value in the access table
-    if( !is_null( $modifier ) )
-    {
-      foreach( array( 'user', 'role', 'site' ) as $access_table )
-      {
-        if( $subject_name != $access_table )
-        {
-          if( $modifier->has_where( $access_table.'_id' ) )
-          {
-            $modifier->where( $subject_name.'.id', '=', 'access.'.$subject_name.'_id', false );
-            
-            $sql = sprintf( $count ? 'SELECT COUNT( DISTINCT %s.id ) FROM %s, access %s'
-                                   : 'SELECT DISTINCT %s.id FROM %s, access %s',
-                            $subject_name,
-                            $subject_name,
-                            $modifier->get_sql() );
-            
-            if( $count )
-            {
-              return intval( static::db()->get_one( $sql ) );
-            }
-            else
-            {
-              $id_list = static::db()->get_col( $sql );
-              $records = array();
-              foreach( $id_list as $id ) $records[] = new static( $id );
-              return $records;
-            }
-          }
-        }
-      }
-    }
-
-    // if we get here then the regular parent method is fine
-    return parent::select( $modifier, $count );
-  }
-
-  /**
    * Returns the most recent activity performed by this access-based record.
    * NOTE: this method gets the last activity based on the activity table's primary
    *       ID instead of datetime since it appears to be significatly faster.
@@ -133,7 +61,7 @@ abstract class base_access extends record
     
     $activity_class_name = lib::get_class_name( 'database\activity' );
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( $subject_name.'_id', '=', $this->id );
+    $modifier->where( 'activity.'.$subject_name.'_id', '=', $this->id );
     return $activity_class_name::count( $modifier );
   }
 
@@ -157,7 +85,7 @@ abstract class base_access extends record
     
     $activity_class_name = lib::get_class_name( 'database\activity' );
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( $subject_name.'_id', '=', $this->id );
+    $modifier->where( 'activity.'.$subject_name.'_id', '=', $this->id );
     return $activity_class_name::select( $modifier );
   }
 
@@ -210,7 +138,7 @@ abstract class base_access extends record
               ? $args[0]
               : lib::create( 'database\modifier' );
 
-    $modifier->where( $subject_name.'_id', '=', $this->id );
+    $modifier->where( 'access.'.$subject_name.'_id', '=', $this->id );
     
     $class_name = lib::get_class_name( 'database\\'.$related_name );
     return 'list' == $action
@@ -218,4 +146,3 @@ abstract class base_access extends record
            : $class_name::count( $modifier );
   }
 }
-?>

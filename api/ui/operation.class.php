@@ -278,4 +278,3 @@ abstract class operation extends \cenozo\base_object
    */
   private $validate_access = true;
 }
-?>

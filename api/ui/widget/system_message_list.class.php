@@ -38,6 +38,7 @@ class system_message_list extends site_restricted_list
   {
     parent::prepare();
 
+    $this->add_column( 'service.name', 'string', 'Service', false );
     $this->add_column( 'site.name', 'string', 'Site', false );
     $this->add_column( 'role.name', 'string', 'Role', false );
     $this->add_column( 'title', 'string', 'Title', true );
@@ -55,12 +56,14 @@ class system_message_list extends site_restricted_list
     
     foreach( $this->get_record_list() as $record )
     {
+      $db_service = $record->get_service();
       $db_site = $record->get_site();
       $db_role = $record->get_role();
 
       // assemble the row for this record
       $this->add_row( $record->id,
-        array( 'site.name' => $db_site ? $db_site->name : 'all',
+        array( 'service.name' => $db_service ? $db_service->name : 'all',
+               'site.name' => $db_site ? $db_site->get_full_name() : 'all',
                'role.name' => $db_role ? $db_role->name : 'all',
                'title' => $record->title ) );
     }
@@ -79,14 +82,19 @@ class system_message_list extends site_restricted_list
     if( !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
-      $modifier->or_where( 'site_id', '=', NULL );
+      $modifier->where_bracket( true );
+      $modifier->where( 'system_message.site_id', '=', $this->db_restrict_site->id );
+      $modifier->or_where( 'system_message.site_id', '=', NULL );
+      $modifier->where_bracket( false );
+      $modifier->where_bracket( true );
+      $modifier->where( 'system_message.service_id', '=', $this->db_restrict_site->service_id );
+      $modifier->or_where( 'system_message.service_id', '=', NULL );
+      $modifier->where_bracket( false );
     }
     
     // skip the parent method
-    // php doesn't allow parent::parent::method() so we have to do the less safe code below
-    $base_list_class_name = lib::get_class_name( 'ui\widget\base_list' );
-    return $base_list_class_name::determine_record_count( $modifier );
+    $grand_parent = get_parent_class( get_parent_class( get_class() ) );
+    return $grand_parent::determine_record_count( $modifier );
   }
 
   /**
@@ -102,14 +110,18 @@ class system_message_list extends site_restricted_list
     if( !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
-      $modifier->or_where( 'site_id', '=', NULL );
+      $modifier->where_bracket( true );
+      $modifier->where( 'system_message.site_id', '=', $this->db_restrict_site->id );
+      $modifier->or_where( 'system_message.site_id', '=', NULL );
+      $modifier->where_bracket( false );
+      $modifier->where_bracket( true );
+      $modifier->where( 'system_message.service_id', '=', $this->db_restrict_site->service_id );
+      $modifier->or_where( 'system_message.service_id', '=', NULL );
+      $modifier->where_bracket( false );
     }
     
     // skip the parent method
-    // php doesn't allow parent::parent::method() so we have to do the less safe code below
-    $base_list_class_name = lib::get_class_name( 'ui\widget\base_list' );
-    return $base_list_class_name::determine_record_list( $modifier );
+    $grand_parent = get_parent_class( get_parent_class( get_class() ) );
+    return $grand_parent::determine_record_list( $modifier );
   }
 }
-?>

@@ -265,4 +265,3 @@ class ldap_manager extends \cenozo\singleton
    */
   protected $active_directory = false;
 }
-?>

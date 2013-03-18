@@ -1,4 +1,31 @@
 ====================================================================================================
+0.2.0
+====================================================================================================
+
+* Incorperating participant management into Cenozo
+  - Cenozo now includes participants, addresses, phone numbers, consent status, etc
+  - Applications now have cross-database access
+
+* Adding generic participant report
+  - Provides a list of participants given any number of arbritrary constraints
+
+* Tables can now be "extended" by applications with additional columns
+
+* Adding events
+  - Any event can now be tracked for every participant
+
+====================================================================================================
+0.1.9
+====================================================================================================
+
+* Various improvements
+  - Testing for table.column existance before writing in base_edit
+  - Improving notice message when database duplicates are detected
+  - Detecting a machine request using HTTP_APPLICATION_NAME instead of noid arguments
+  - Making booleans print nicer in log
+  - Adding new censored_operation_list so that passwords aren't logged
+
+====================================================================================================
 0.1.8
 ====================================================================================================
 

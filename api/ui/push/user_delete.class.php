@@ -69,4 +69,3 @@ class user_delete extends base_delete
     }
   }
 }
-?>

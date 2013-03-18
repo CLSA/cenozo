@@ -40,4 +40,3 @@ class postcode extends record
     return 0 == count( $postcode_list ) ? NULL : current( $postcode_list );
   }
 }
-?>

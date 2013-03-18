@@ -49,4 +49,3 @@ class user_reset_password extends base_record
     }
   }
 }
-?>

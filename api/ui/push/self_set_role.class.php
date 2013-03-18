@@ -44,4 +44,3 @@ class self_set_role extends \cenozo\ui\push
     $session->set_site_and_role( $db_site, $db_role );
   }
 }
-?>

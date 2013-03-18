@@ -41,6 +41,7 @@ class activity_chart extends \cenozo\ui\widget
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $setting_manager = lib::create( 'business\setting_manager' );
+    $session = lib::create( 'business\session' );
 
     $month_data = array();
     $month_columns = array(
@@ -52,6 +53,7 @@ class activity_chart extends \cenozo\ui\widget
     $db_user = $user_class_name::get_unique_record(
       'name', $setting_manager->get_setting( 'general', 'machine_user' ) );
     $site_mod = lib::create( 'database\modifier' );
+    $site_mod->order( 'service_id' );
     $site_mod->order( 'name' );
 
     // start by building the array from the overall usage
@@ -67,13 +69,13 @@ class activity_chart extends \cenozo\ui\widget
       // get the usage for this site only
       $activity_mod = lib::create( 'database\modifier' );
       if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
-      $activity_mod->where( 'site_id', '=', $db_site->id );
+      $activity_mod->where( 'activity.site_id', '=', $db_site->id );
       $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 31 );
 
       $month_columns[] = array(
         'type' => 'number',
         'site_id' => $db_site->id,
-        'name' => $db_site->name );
+        'name' => $db_site->get_full_name() );
       $site_usage = $activity_class_name::get_usage( $activity_mod );
 
       // make sure to set the value to 0 if no value is returned
@@ -100,13 +102,13 @@ class activity_chart extends \cenozo\ui\widget
       // get the usage for this site only
       $activity_mod = lib::create( 'database\modifier' );
       if( $db_user ) $activity_mod->where( 'user_id', '!=', $db_user->id );
-      $activity_mod->where( 'site_id', '=', $db_site->id );
+      $activity_mod->where( 'activity.site_id', '=', $db_site->id );
       $activity_mod->where( 'DATEDIFF( UTC_TIMESTAMP(), datetime )', '<=', 365 );
 
       $year_columns[] = array(
         'type' => 'number',
         'site_id' => $db_site->id,
-        'name' => $db_site->name );
+        'name' => $db_site->get_full_name() );
       $site_usage = $activity_class_name::get_usage( $activity_mod, true );
 
       // make sure to set the value to 0 if no value is returned
@@ -114,6 +116,7 @@ class activity_chart extends \cenozo\ui\widget
         $year_data[$date][] = array_key_exists( $date, $site_usage ) ? $site_usage[$date]/60/60 : 0;
     }
 
+    $this->set_variable( 'service_title', $session->get_service()->title );
     $this->set_variable( 'month_title', 'Server Activity Over the Last Month (in minutes/day)' );
     $this->set_variable( 'month_columns', $month_columns );
     $this->set_variable( 'month_data', $month_data );
@@ -122,4 +125,3 @@ class activity_chart extends \cenozo\ui\widget
     $this->set_variable( 'year_data', $year_data );
   }
 }
-?>

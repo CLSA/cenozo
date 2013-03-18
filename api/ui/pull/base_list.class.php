@@ -76,4 +76,3 @@ abstract class base_list extends \cenozo\ui\pull
    */
   public function get_data_type() { return "json"; }
 }
-?>

@@ -725,4 +725,3 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    */
   private $record_list;
 }
-?>

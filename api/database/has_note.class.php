@@ -86,4 +86,3 @@ abstract class has_note extends record
     return lib::create( 'database\\'.static::get_table_name().'_note', $id );
   }
 }
-?>

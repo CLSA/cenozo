@@ -49,6 +49,7 @@ class user_add extends base_view
           : 'hidden';
     $this->add_item( 'site_id', $type, 'Site' );
     $this->add_item( 'role_id', 'enum', 'Role' );
+    $this->add_item( 'language', 'enum', 'Language' );
   }
 
   /**
@@ -61,8 +62,10 @@ class user_add extends base_view
   {
     parent::setup();
     
+    $user_class_name = lib::get_class_name( 'database\user' );
     $role_class_name = lib::get_class_name( 'database\role' );
     $site_class_name = lib::get_class_name( 'database\site' );
+
     $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
 
@@ -72,14 +75,18 @@ class user_add extends base_view
     $roles = array();
     foreach( $role_class_name::select( $modifier ) as $db_role )
       $roles[$db_role->id] = $db_role->name;
-    
+    $languages = array();
+    foreach( $user_class_name::get_enum_values( 'language' ) as $language )
+      $languages[] = $language;
+    $languages = array_combine( $languages, $languages );
     $sites = array();
     if( $is_top_tier )
     {
       $site_mod = lib::create( 'database\modifier' );
+      $site_mod->order( 'service_id' );
       $site_mod->order( 'name' );
       foreach( $site_class_name::select( $site_mod ) as $db_site )
-        $sites[$db_site->id] = $db_site->name;
+        $sites[$db_site->id] = $db_site->get_full_name();
     }
 
     // set the view's items
@@ -90,6 +97,6 @@ class user_add extends base_view
     $value = $is_top_tier ? current( $sites ) : $session->get_site()->id;
     $this->set_item( 'site_id', $value, true, $is_top_tier ? $sites : NULL );
     $this->set_item( 'role_id', current( $roles ), true, $roles );
+    $this->set_item( 'language', 'en', true, $languages );
   }
 }
-?>
