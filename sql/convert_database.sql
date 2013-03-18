@@ -125,7 +125,20 @@ CREATE PROCEDURE convert_database()
     -- region --------------------------------------------------------------------------------------
     SELECT "Processing region" AS "";
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".region SELECT * FROM ", @mastodon, ".region" );
+      "INSERT INTO ", @cenozo, ".region( id, update_timestamp, create_timestamp, name, abbreviation, country ) ",
+      "SELECT id, update_timestamp, create_timestamp, name, abbreviation, country FROM ", @mastodon, ".region" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    -- service_region_site -------------------------------------------------------------------------
+    SELECT "Processing service_region_site" AS "";
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".service_region_site( service_id, region_id, site_id ) ",
+      "SELECT service.id, region.id, region.site_id ",
+      "FROM ", @mastodon, ".region, ", @cenozo, ".service ",
+      "WHERE region.site_id IS NOT NULL "
+      "AND service.title = 'Sabretooth'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -468,7 +481,11 @@ CREATE PROCEDURE convert_database()
     -- jurisdiction --------------------------------------------------------------------------------
     SELECT "Processing jurisdiction" AS "";
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".jurisdiction SELECT * FROM ", @mastodon, ".jurisdiction" );
+      "INSERT INTO ", @cenozo, ".jurisdiction( id, update_timestamp, create_timestamp, postcode, ",
+                                              "site_id, longitude, latitude, distance, service_id ) ",
+      "SELECT mj.*, service.id ",
+      "FROM ", @mastodon, ".jurisdiction AS mj, ", @cenozo, ".service ",
+      "WHERE service.title = 'Beartooth'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
