@@ -81,9 +81,13 @@ class site_view extends base_view
     $site_class_name = lib::get_class_name( 'database\site' );
     $timezones = $site_class_name::get_enum_values( 'timezone' );
     $timezones = array_combine( $timezones, $timezones );
+
+    $region_mod = lib::create( 'database\modifier' );
+    $region_mod->where( 'country' );
+    $region_mod->where( 'name' );
     $regions = array();
     $region_class_name = lib::get_class_name( 'database\region' );
-    foreach( $region_class_name::select() as $db_region )
+    foreach( $region_class_name::select( $region_mod ) as $db_region )
       $regions[$db_region->id] = $db_region->name.', '.$db_region->country;
     reset( $regions );
 
