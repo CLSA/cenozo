@@ -34,7 +34,8 @@
           modal: true,
           width: 400,
           height: 260,
-          autoOpen: true
+          autoOpen: true,
+          beforeClose: function( event, ui ) { $(this).html( "" ); },
         } );
         slot_load( "password", "self", "password" );
       } );

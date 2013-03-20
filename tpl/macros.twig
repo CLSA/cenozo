@@ -89,9 +89,11 @@
 {##
  # This widget displays an icon/button which pops up a list of notes.
  # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string namespace Which namespace to use for elements (parent widget name, for instance).
  # @param string subject What subject to show notes for.
  # @param int id The primary id of the subject to get notes for.
- # @param int note_count The current number of notes.
+ # @param int icon Which icon to use for the note button
+ # @param string What to name the button
  #}
 {% macro note_widget( namespace, subject, id, icon, text ) %}
   
@@ -129,6 +131,7 @@
         modal: true,
         width: 550,
         height: 600,
+        beforeClose: function( event, ui ) { $(this).html( "" ); },
         close: function( event, ui ) {
           // refresh the main slot to refresh any note counts
           slot_refresh( "main" );

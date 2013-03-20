@@ -54,7 +54,6 @@ class self_shortcuts extends \cenozo\ui\widget
     $this->set_variable( 'calculator', false );
     $this->set_variable( 'timezone_calculator', false );
     $this->set_variable( 'navigation', true );
-    $this->set_variable( 'refresh', true );
     $this->set_variable( 'home', false );
   }
 }

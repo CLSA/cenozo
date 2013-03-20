@@ -44,9 +44,10 @@
         $( "#{{ widget.full }}_slot" ).dialog( {
           autoOpen: false,
           title: "Edit event",
-          modal: false,
+          modal: true,
           width: 800,
           height: 600,
+          beforeClose: function( event, ui ) { $(this).html( "" ); },
           close: function( event, ui ) {
             $( "#{{ widget.full }}_calendar" ).fullCalendar( 'refetchEvents' );
             $( "#{{ widget.full }}_calendar" ).fullCalendar( 'rerenderEvents' );
