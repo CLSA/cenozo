@@ -310,6 +310,31 @@ class participant extends person
   }
   
   /**
+   * Returns the quota that this participant belongs to (NULL if none)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\quota $db_quota
+   * @access public
+   */
+  public function get_quota()
+  {
+    $database_class_name = lib::get_class_name( 'database\database' );
+
+    $quota_id = static::db()->get_one( sprintf(
+      'SELECT id '.
+      'FROM quota '.
+      'WHERE region_id = %s '.
+      'AND site_id = %s '.
+      'AND gender = %s '.
+      'AND age_group_id = %s',
+      $database_class_name::format_string( $this->get_primary_address()->region_id ),
+      $database_class_name::format_string( $this->get_effective_site()->id ),
+      $database_class_name::format_string( $this->gender ),
+      $database_class_name::format_string( $this->age_group_id ) ) );
+
+    return $quota_id ? lib::create( 'database\quota', $quota_id ) : NULL;
+  }
+
+  /**
    * Adds an event to the participant at the given datetime
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\event_type $db_event_type
