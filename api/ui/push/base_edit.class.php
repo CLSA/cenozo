@@ -46,10 +46,10 @@ abstract class base_edit extends base_record
     {
       $start_value = array_key_exists( 'start_time', $columns )
                    ? $columns['start_time']
-                   : substr( $this->get_record()->start_time, 0, -3 );
+                   : $this->get_record()->start_time;
       $end_value = array_key_exists( 'end_time', $columns )
                  ? $columns['end_time']
-                 : substr( $this->get_record()->end_time, 0, -3 );
+                 : $this->get_record()->end_time;
 
       if( strtotime( $start_value ) >= strtotime( $end_value ) )
       {
@@ -65,10 +65,10 @@ abstract class base_edit extends base_record
     {
       $start_value = array_key_exists( 'start_datetime', $columns )
                    ? $columns['start_datetime']
-                   : substr( $this->get_record()->start_datetime, 0, -3 );
+                   : $this->get_record()->start_datetime;
       $end_value = array_key_exists( 'end_datetime', $columns )
                  ? $columns['end_datetime']
-                 : substr( $this->get_record()->end_datetime, 0, -3 );
+                 : $this->get_record()->end_datetime;
 
       if( strtotime( $start_value ) >= strtotime( $end_value ) )
       {
