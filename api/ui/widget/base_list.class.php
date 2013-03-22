@@ -292,7 +292,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     else
     {
       $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
-      return $class_name::count( $modifier );
+      return $class_name::count( $modifier, !$this->disable_distinct );
     }
   }
 
@@ -319,7 +319,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     else
     {
       $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
-      return $class_name::select( $modifier );
+      return $class_name::select( $modifier, false, !$this->disable_distinct );
     }
   }
   
@@ -424,7 +424,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   {
     $this->removable = $enable;
   }
-  
+
   /**
    * Gets whether sorting has been disabled for this list
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -446,7 +446,33 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   {
     $this->disable_sorting = $enable;
   }
-  
+
+  /**
+   * Gets whether distinct checking has been disabled for this list
+   * Disabling distinct checking will improve performance but may cause duplicates to appear
+   * in the list depending on the underlying database relationships involved.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_disable_distinct()
+  {
+    return $this->disable_distinct;
+  }
+
+  /**
+   * Sets whether distinct checking is disabled for this list
+   * Disabling distinct checking will improve performance but may cause duplicates to appear
+   * in the list depending on the underlying database relationships involved.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_disable_distinct( $enable )
+  {
+    $this->disable_distinct = $enable;
+  }
+
   /**
    * Set the number of items to show per page
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -670,6 +696,13 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    */
   private $disable_sorting = false;
   
+  /**
+   * Whether to disable distinct checking of the list
+   * @var boolean
+   * @access private
+   */
+  private $disable_distinct = false;
+
   /**
    * An array of columns.
    * 

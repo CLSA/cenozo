@@ -19,11 +19,12 @@ class role extends base_access
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @param boolean $full If true then records will not be restricted by service
    * @access public
    * @static
    */
-  public static function select( $modifier = NULL, $count = false, $full = false )
+  public static function select( $modifier = NULL, $count = false, $distinct = true, $full = false )
   {
     if( !$full )
     {
@@ -33,7 +34,7 @@ class role extends base_access
                         lib::create( 'business\session' )->get_service()->id );
     }
 
-    return parent::select( $modifier, $count );
+    return parent::select( $modifier, $count, $distinct );
   }
 
   /**
