@@ -301,6 +301,8 @@ VALUES( "widget", "system_message", "list", true, "List system messages in the s
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "system_message", "new", true, "Add a new system message to the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "system_message", "show", false, "Displays appropriate system messages to the user." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "system_message", "view", true, "View a system message's details." );
 
 -- user
