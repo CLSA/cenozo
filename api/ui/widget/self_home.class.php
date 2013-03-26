@@ -90,4 +90,11 @@ class self_home extends \cenozo\ui\widget
     }
     catch( \cenozo\exception\permission $e ) {}
   }
+  
+  /**
+   * The system message show widget.
+   * @var system_message_show
+   * @access protected
+   */
+  protected $system_message_show = NULL;
 }
