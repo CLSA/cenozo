@@ -51,12 +51,15 @@ class participant_list extends site_restricted_list
 
     $this->extended_site_selection = true;
 
-    $restrict_condition = $this->get_argument( 'restrict_condition', '' );
-    if( $restrict_condition )
-      $this->set_heading(
-        sprintf( '%s, restricted to %s',
-                 $this->get_heading(),
-                 $restrict_condition ) );
+    if( $this->allow_restrict_condition )
+    {
+      $restrict_condition = $this->get_argument( 'restrict_condition', '' );
+      if( $restrict_condition )
+        $this->set_heading(
+          sprintf( '%s, restricted to %s',
+                   $this->get_heading(),
+                   $restrict_condition ) );
+    }
   }
   
   /**
@@ -93,8 +96,11 @@ class participant_list extends site_restricted_list
       $this->add_row( $record->id, $columns );
     }
 
-    $this->set_variable( 'conditions', $participant_class_name::get_enum_values( 'status' ) );
-    $this->set_variable( 'restrict_condition', $this->get_argument( 'restrict_condition', '' ) );
+    if( $this->allow_restrict_condition )
+    {
+      $this->set_variable( 'conditions', $participant_class_name::get_enum_values( 'status' ) );
+      $this->set_variable( 'restrict_condition', $this->get_argument( 'restrict_condition', '' ) );
+    }
 
     // include the participant site reassign action if the widget isn't parented
     if( is_null( $this->parent ) )
@@ -117,11 +123,14 @@ class participant_list extends site_restricted_list
    */
   public function determine_record_count( $modifier = NULL )
   {
-    $restrict_condition = $this->get_argument( 'restrict_condition', '' );
-    if( $restrict_condition )
+    if( $this->allow_restrict_condition )
     {
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'status', '=', $restrict_condition );
+      $restrict_condition = $this->get_argument( 'restrict_condition', '' );
+      if( $restrict_condition )
+      {
+        if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'status', '=', $restrict_condition );
+      }
     }
 
     return parent::determine_record_count( $modifier );
@@ -137,13 +146,45 @@ class participant_list extends site_restricted_list
    */
   public function determine_record_list( $modifier = NULL )
   {
-    $restrict_condition = $this->get_argument( 'restrict_condition', '' );
-    if( $restrict_condition )
+    if( $this->allow_restrict_condition )
     {
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'status', '=', $restrict_condition );
+      $restrict_condition = $this->get_argument( 'restrict_condition', '' );
+      if( $restrict_condition )
+      {
+        if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'status', '=', $restrict_condition );
+      }
     }
 
     return parent::determine_record_list( $modifier );
   }
+
+  /**
+   * Get whether to include a drop down to restrict the list by condition
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_allow_restrict_condition()
+  {
+    return $this->allow_restrict_condition;
+  }
+
+  /**
+   * Set whether to include a drop down to restrict the list by condition
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_allow_restrict_condition( $enable )
+  {
+    $this->allow_restrict_condition = $enable;
+  }
+
+  /**
+   * Whether to include a drop down to restrict the list by condition
+   * @var boolean
+   * @access protected
+   */
+  protected $allow_restrict_condition = true;
 }
