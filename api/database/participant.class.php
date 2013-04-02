@@ -43,15 +43,16 @@ class participant extends person
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
+   * @param boolean $full If true then records will not be restricted by service
    * @return database\record
    * @static
    * @access public
    */
-  public static function get_unique_record( $column, $value )
+  public static function get_unique_record( $column, $value, $full = false )
   {
     $db_participant = parent::get_unique_record( $column, $value );
 
-    if( !is_null( $db_participant ) )
+    if( !is_null( $db_participant ) && !$full )
     { // make sure the participant has been released
       $db_service = lib::create( 'business\session' )->get_service();
 
