@@ -360,6 +360,16 @@ CREATE PROCEDURE convert_database()
 
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT consent.participant_id, event_type.id, consent.date ",
+      "FROM ", @cenozo, ".event_type, ", @cenozo, ".consent ",
+      "WHERE consent.note = 'Consented during pilot.' ",
+      "AND event_type.name = 'consent signed'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
       "SELECT participant.id, event_type.id, phone_call.start_datetime ",
       "FROM ", @cenozo, ".event_type, ", @sabretooth, ".interview ",
       "JOIN ", @sabretooth, ".qnaire ON interview.qnaire_id = qnaire.id ",
