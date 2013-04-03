@@ -649,6 +649,7 @@ class database extends \cenozo\base_object
       $output = '';
       $first_piece = true;
       $in_update = false;
+      $in_insert = false;
       $in_replace = false;
       $in_from = false;
       $in_join = false;
@@ -664,6 +665,7 @@ class database extends \cenozo\base_object
         }
         else if( 'INTO' == $piece_upper )
         {
+          $in_insert = true;
           $in_replace = true;
           $output .= $piece;
         }
@@ -682,7 +684,7 @@ class database extends \cenozo\base_object
           $output .= $piece;
         }
         // not an opening boundary, so if we're not in a boundary so there's nothing to do
-        else if( !( $in_update || $in_replace || $in_from || $in_join ) )
+        else if( !( $in_update || $in_insert || $in_replace || $in_from || $in_join ) )
         {
           $output .= $piece;
         }
@@ -732,7 +734,7 @@ class database extends \cenozo\base_object
           {
             $output .= $first_string ? ' ' : ', ';
             if( $first_string ) $first_string = false;
-            $table_words = explode( ' ', trim( $table_string ), 2 );
+            $table_words = preg_split( '/[ ()]/', trim( $table_string ), 2 );
             if( array_key_exists( $table_words[0], $this->tables ) )
               $output .= $this->tables[$table_words[0]]['database'].'.';
             $output .= ltrim( $table_string );
