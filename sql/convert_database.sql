@@ -281,14 +281,28 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
+    -- consent -------------------------------------------------------------------------------------
+    SELECT "Processing consent" AS "";
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".consent( id, update_timestamp, create_timestamp, participant_id ,",
+                                         "accept, written, date, note ) ",
+      "SELECT mc.id, mc.update_timestamp, mc.create_timestamp, mc.participant_id, ",
+             "mc.event IN ( 'verbal accept', 'written accept' ), ",
+             "mc.event IN ( 'written accept', 'written deny' ), mc.date, mc.note ",
+      "FROM ", @mastodon, ".consent mc" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
     -- event_type ----------------------------------------------------------------------------------
     SELECT "Processing event_type" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".event_type( name, description ) VALUES ",
       "( 'completed pilot interview', 'Pilot interview completed (for StatsCan tracking participants only).' ), ",
       "( 'imported by rdd', 'Imported by random digit dialing import (for RDD participants only).' ), ",
-      "( 'consent to contact received', 'Consent to contact form received (dated by the participant).' ), ",
-      "( 'consent for proxy received', 'Consent for proxy form received (dated by the participant).' ), ",
+      "( 'consent to contact received', 'Consent to contact form signed by participant.' ), ",
+      "( 'consent signed', 'Consent form signed by participant.' ), ",
+      "( 'consent for proxy received', 'Consent for proxy form signed by participant.' ), ",
       "( 'package mailed', 'Information package mailed to participant (dated by mailout report).' ), ",
       "( 'first attempt (Baseline)', 'First attempt to contact (for the baseline interview).' ), ",
       "( 'reached (Baseline)', 'The participant was first reached (for the baseline interview).' ), ",
@@ -324,6 +338,22 @@ CREATE PROCEDURE convert_database()
              "event_type.id, mstatus.datetime ",
       "FROM ", @mastodon, ".status mstatus ",
       "JOIN ", @cenozo, ".event_type ON mstatus.event = event_type.name" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT consent.participant_id, event_type.id, ",
+             "IF( consent_form_entry.id IS NULL, ",
+                 "consent_form.date, ",
+                 "IFNULL( consent_form_entry.date, DATE( consent_form_entry.update_timestamp ) ) ) ",
+      "FROM ", @cenozo, ".event_type, ", @mastodon, ".consent_form ",
+      "JOIN ", @cenozo, ".consent ON consent_form.consent_id = consent.id ",
+      "LEFT JOIN ", @mastodon, ".consent_form_entry ",
+      "ON consent_form.validated_consent_form_entry_id = consent_form_entry.id ",
+      "WHERE consent_form.complete = true ",
+      "AND event_type.name = 'consent signed'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -449,6 +479,23 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
+    -- now rename select event types
+    SET @sql = CONCAT(
+      "UPDATE ", @cenozo, ".event_type ",
+      "SET name = 'consent to contact signed' ",
+      "WHERE name = 'consent to contact received'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "UPDATE ", @cenozo, ".event_type ",
+      "SET name = 'consent for proxy signed' ",
+      "WHERE name = 'consent for proxy received'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
     -- alternate -----------------------------------------------------------------------------------
     SELECT "Processing alternate" AS "";
     SET @sql = CONCAT(
@@ -461,19 +508,6 @@ CREATE PROCEDURE convert_database()
     SELECT "Processing availability" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".availability SELECT * FROM ", @mastodon, ".availability" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
-    -- consent -------------------------------------------------------------------------------------
-    SELECT "Processing consent" AS "";
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".consent( id, update_timestamp, create_timestamp, participant_id ,",
-                                         "accept, written, date, note ) ",
-      "SELECT mc.id, mc.update_timestamp, mc.create_timestamp, mc.participant_id, ",
-             "mc.event IN ( 'verbal accept', 'written accept' ), ",
-             "mc.event IN ( 'written accept', 'written deny' ), mc.date, mc.note ",
-      "FROM ", @mastodon, ".consent mc" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
