@@ -12,14 +12,51 @@
   {{ parent() }}
   <script type="text/javascript">
     $( function () {
-      $( "#{{ widget.full }}__proceed" ).click( function () {
+      // update button
+      $( "#{{ widget.full }}__update" ).click( function () {
         var args = new Object();
-        args.uid_list = $( "#{{ widget.full }}__uid_list" ).val();
-        args.note = $( "#{{ widget.full }}__note" ).val();
-        if( ajax_push( "participant", "multinote", args ) ) {
-          alert( "The multinote has been successfully applied." );
-          slot_refresh( {{ slot }} );
+        $( "#{{ widget.full }}_form :input" ).each( function() {
+          var id_string = $(this).attr( "id" );
+          var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+          if( "update" != param_name )
+            args[param_name] = "checkbox" == $(this).attr( "type" )
+                             ? ( $(this).is( ":checked" ) ? 1 : 0 )
+                             : $(this).val();
+        } );
+
+        var data = ajax_pull( "participant", "multinote", args );
+        if( undefined != data ) {
+          var html = '<table style="width:34%; margin-left:33%; margin-right:33%">';
+          for( var key in data )
+          {
+            html += '<tr><td class="heading">' + key +
+                    '</td><td>' + data[key] +
+                    '</td></tr>';
+          }
+          html += '</table>' +
+                  '<div class="spacer" style="text-align: right">' +
+                  '<button id="{{ widget.full }}__proceed" style="width:120px">Proceed</button>' +
+                  '</div>';
+          $( "#{{ widget.full }}__results" ).html( html );
+          $( "#{{ widget.full }}__proceed" ).button();
         }
+
+        $( "#{{ widget.full }}__proceed" ).click( function () {
+          var args = new Object();
+          $( "#{{ widget.full }}_form :input" ).each( function() {
+            var id_string = $(this).attr( "id" );
+            var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+            if( "update" != param_name )
+              args[param_name] = "checkbox" == $(this).attr( "type" )
+                               ? ( $(this).is( ":checked" ) ? 1 : 0 )
+                               : $(this).val();
+          } );
+          if( ajax_push( "participant", "multinote", args ) ) {
+            // let the user know the operation is complete and delete the proceed button
+            $(this).remove();
+            alert( "The operation was successful." );
+          }
+        } );
       } );
     } );
   </script>
@@ -27,7 +64,7 @@
 {% endblock javascript %}
 
 {% block widget %}
-  <div class="ui-widget ui-widget-content app-widget-content">
+  <div id="{{ widget.full }}_form" class="ui-widget ui-widget-content app-widget-content">
     <div class="spacer">
       <p>
         Provide a list of participant UIDs which you wish to add a note to.
@@ -54,7 +91,8 @@
       </tr>
     </table>
     <div class="spacer" style="text-align: right">
-      <button id="{{ widget.full }}__proceed" style="width:120px">Proceed</button>
+      <button id="{{ widget.full }}__update" style="width:120px">Update</button>
     </div>
+    <div id="{{ widget.full }}__results"></div>
   </div>
 {% endblock widget %}

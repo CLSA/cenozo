@@ -161,6 +161,8 @@ VALUES( "pull", "participant", "list", true, "Retrieves base information for a l
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "list", true, "List participants in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "multinote", true, "Gets a summary of participants affected by a multinote operation." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "multinote", true, "Adds a note to a group of participants." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "multinote", true, "A form to add a note to multiple participants at once." );
@@ -173,9 +175,11 @@ VALUES( "pull", "participant", "report", true, "Download a participant report." 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "report", true, "Set up a participant report." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "participant", "site_reassign", true, "A form to mass reassign the preferred site of multiple participants at once." );
+VALUES( "pull", "participant", "site_reassign", true, "Gets a summary of participants affected by a site reassign operation." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "site_reassign", true, "Updates the preferred site of a group of participants." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "site_reassign", true, "A form to mass reassign the preferred site of multiple participants at once." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "view", true, "View a participant's details." );
 

@@ -17,18 +17,56 @@
       $( "#{{ widget.full }}__service_id" ).change( function () {
         populate_site_list( $( "#{{ widget.full }}__service_id" ).val() );
       } );
-
-      // proceed button clicked
-      $( "#{{ widget.full }}__proceed" ).click( function () {
-        var args = new Object();
-        args.service_id = $( "#{{ widget.full }}__service_id" ).val();
-        args.site_id = $( "#{{ widget.full }}__site_id" ).val();
-        args.uid_list = $( "#{{ widget.full }}__uid_list" ).val();
-        if( ajax_push( "participant", "site_reassign", args ) ) slot_prev( {{ slot }} );
-      } );
     
       // populate the list on load
       populate_site_list( $( "#{{ widget.full }}__service_id" ).val() );
+
+      // update button
+      $( "#{{ widget.full }}__update" ).click( function () {
+        var args = new Object();
+        $( "#{{ widget.full }}_form :input" ).each( function() {
+          var id_string = $(this).attr( "id" );
+          var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+          if( "update" != param_name )
+            args[param_name] = "checkbox" == $(this).attr( "type" )
+                             ? ( $(this).is( ":checked" ) ? 1 : 0 )
+                             : $(this).val();
+        } );
+
+        var data = ajax_pull( "participant", "site_reassign", args );
+        if( undefined != data ) {
+          var html = '<table style="width:34%; margin-left:33%; margin-right:33%">';
+          for( var key in data )
+          {
+            html += '<tr><td class="heading">' + key +
+                    '</td><td>' + data[key] +
+                    '</td></tr>';
+          }
+          html += '</table>' +
+                  '<div class="spacer" style="text-align: right">' +
+                  '<button id="{{ widget.full }}__proceed" style="width:120px">Proceed</button>' +
+                  '</div>';
+          $( "#{{ widget.full }}__results" ).html( html );
+          $( "#{{ widget.full }}__proceed" ).button();
+        }
+
+        $( "#{{ widget.full }}__proceed" ).click( function () {
+          var args = new Object();
+          $( "#{{ widget.full }}_form :input" ).each( function() {
+            var id_string = $(this).attr( "id" );
+            var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+            if( "update" != param_name )
+              args[param_name] = "checkbox" == $(this).attr( "type" )
+                               ? ( $(this).is( ":checked" ) ? 1 : 0 )
+                               : $(this).val();
+          } );
+          if( ajax_push( "participant", "site_reassign", args ) ) {
+            // let the user know the operation is complete and delete the proceed button
+            $(this).remove();
+            alert( "The operation was successful." );
+          }
+        } );
+      } );
     } );
 
     // populate site drop-down with the selected service's sites
@@ -56,7 +94,7 @@
 {% endblock javascript %}
 
 {% block widget %}
-  <div class="ui-widget ui-widget-content app-widget-content">
+  <div id="{{ widget.full }}_form" class="ui-widget ui-widget-content app-widget-content">
     <div class="spacer">
       <p>
         Provide a list of participant UIDs which you wish to set the preferred site to.
@@ -103,7 +141,8 @@
       </tr>
     </table>
     <div class="spacer" style="text-align: right">
-      <button id="{{ widget.full }}__proceed" style="width:120px">Proceed</button>
+      <button id="{{ widget.full }}__update" style="width:120px">Update</button>
     </div>
+    <div id="{{ widget.full }}__results"></div>
   </div>
 {% endblock widget %}
