@@ -45,6 +45,8 @@ class participant_site_reassign extends \cenozo\ui\pull
     $affected_count = 0;
     
     $db_service = lib::create( 'database\service', $this->get_argument( 'service_id' ) );
+    $cohort_id_list = array();
+    foreach( $db_service->get_cohort_list() as $db_cohort ) $cohort_id_list[] = $db_cohort->id;
     $site_id = $this->get_argument( 'site_id' );
     $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
     $uid_list_string = trim( $uid_list_string );
@@ -53,7 +55,8 @@ class participant_site_reassign extends \cenozo\ui\pull
     // count how many participants in the UID list belong to the selected service
     $participant_mod = lib::create( 'database\modifier' );
     $participant_mod->where( 'uid', 'IN', $uid_list );
-    $participant_count = $db_service->get_participant_count( $participant_mod );
+    $participant_mod->where( 'cohort_id', 'IN', $cohort_id_list );
+    $participant_count = $participant_class_name::count( $participant_mod );
     $invalid_count = count( $uid_list ) - $participant_count;
 
     // count participant's whose effective site will be affected by the operation
