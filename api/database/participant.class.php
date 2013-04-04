@@ -210,19 +210,17 @@ class participant extends person
   /**
    * Sets the preferred site for a particular service.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the application's service is used.
+   * @param database\service $db_service
    * @param database\site $db_site
    * @access public
    */
-  public function set_preferred_site( $db_service = NULL, $db_site = NULL )
+  public function set_preferred_site( $db_service, $db_site = NULL )
   {
     // no primary key means no preferred site
     if( is_null( $this->id ) ) return NULL;
 
     $database_class_name = lib::get_class_name( 'database\database' );
     
-    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
-
     // make sure this participant's cohort belongs to the service
     if( !static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
