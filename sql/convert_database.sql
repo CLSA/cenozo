@@ -170,49 +170,6 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
-    -- system_message ------------------------------------------------------------------------------
-    SELECT "Processing system_message" AS "";
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".system_message( update_timestamp, create_timestamp, service_id, ",
-                                         "site_id, role_id, title, note ) ",
-      "SELECT msystem_message.update_timestamp, msystem_message.create_timestamp, this_service.id, ",
-             "msystem_message.site_id, msystem_message.role_id, msystem_message.title, msystem_message.note ",
-      "FROM ", @cenozo, ".service this_service, ", @mastodon, ".system_message msystem_message ",
-      "WHERE this_service.title = 'Mastodon'" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".system_message( update_timestamp, create_timestamp, service_id, ",
-                                         "site_id, role_id, title, note ) ",
-      "SELECT ssystem_message.update_timestamp, ssystem_message.create_timestamp, this_service.id, ",
-             "site.id, role.id, ssystem_message.title, ssystem_message.note ",
-      "FROM ", @cenozo, ".service this_service, ", @sabretooth, ".system_message ssystem_message ",
-      "LEFT JOIN ", @sabretooth, ".site ssite ON ssystem_message.site_id = ssite.id ",
-      "LEFT JOIN ", @cenozo, ".site ON ssite.name = site.name ",
-      "LEFT JOIN ", @sabretooth, ".role srole ON ssystem_message.role_id = srole.id ",
-      "LEFT JOIN ", @cenozo, ".role ON srole.name = role.name ",
-      "WHERE this_service.title = 'Sabretooth'" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".system_message( update_timestamp, create_timestamp, service_id, ",
-                                         "site_id, role_id, title, note ) ",
-      "SELECT  bsystem_message.update_timestamp, bsystem_message.create_timestamp, this_service.id, ",
-              "site.id, role.id, bsystem_message.title, bsystem_message.note ",
-      "FROM ", @cenozo, ".service this_service, ", @beartooth, ".system_message bsystem_message ",
-      "LEFT JOIN ", @beartooth, ".site bsite ON bsystem_message.site_id = bsite.id ",
-      "LEFT JOIN ", @cenozo, ".site ON bsite.name = site.name ",
-      "LEFT JOIN ", @beartooth, ".role brole ON bsystem_message.role_id = brole.id ",
-      "LEFT JOIN ", @cenozo, ".role ON brole.name = role.name ",
-      "WHERE this_service.title = 'Beartooth'" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
     -- postcode ------------------------------------------------------------------------------------
     SELECT "Processing postcode" AS "";
     SET @sql = CONCAT(
