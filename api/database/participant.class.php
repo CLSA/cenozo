@@ -334,33 +334,6 @@ class participant extends person
   }
 
   /**
-   * Adds an event to the participant at the given datetime
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\event_type $db_event_type
-   * @param string $datetime
-   * @access public
-   */
-  public function add_event( $db_event_type, $datetime )
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to add event to participant with no id.' );
-      return;
-    }
-
-    $util_class_name = lib::get_class_name( 'util' );
-    $database_class_name = lib::get_class_name( 'database\database' );
-
-    static::db()->execute( sprintf(
-      'INSERT INTO event ( create_timestamp, participant_id, event_type_id, datetime ) '.
-      'VALUES ( NULL, %s, %s, %s )',
-      $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( $db_event_type->id ),
-      $database_class_name::format_string( $util_class_name::to_server_datetime( $datetime ) ) ) );
-  }
-
-  /**
    * Returns an array of all dates for this participant where a particular event type occurred
    * (in ascending order).
    * If the event type has never occurred then an empty array is returned.
