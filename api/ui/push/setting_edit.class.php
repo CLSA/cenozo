@@ -63,7 +63,8 @@ class setting_edit extends base_edit
     if( !is_null( $this->site_value ) )
     {
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+      $modifier->where(
+        'setting_value.site_id', '=', lib::create( 'business\session' )->get_site()->id );
       $setting_value_list = $this->get_record()->get_setting_value_list( $modifier );
 
       if( 1 == count( $setting_value_list ) )
@@ -96,4 +97,3 @@ class setting_edit extends base_edit
    */
   protected $site_value = NULL;
 }
-?>

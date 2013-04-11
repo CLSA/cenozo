@@ -70,4 +70,3 @@ abstract class base_delete extends base_record
     }
   }
 }
-?>

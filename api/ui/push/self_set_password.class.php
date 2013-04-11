@@ -90,4 +90,3 @@ class self_set_password extends \cenozo\ui\push
     }
   }
 }
-?>

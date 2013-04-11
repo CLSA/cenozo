@@ -94,4 +94,3 @@ abstract class base_add_list extends base_record
    */
   protected $child_subject;
 }
-?>

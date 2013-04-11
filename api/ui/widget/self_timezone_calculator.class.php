@@ -70,4 +70,3 @@ class self_timezone_calculator extends \cenozo\ui\widget
     $this->set_variable( 'timezone_list', $timezone_list );
   }
 }
-?>

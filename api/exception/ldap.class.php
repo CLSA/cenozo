@@ -71,4 +71,3 @@ class ldap extends base_exception
     return 0 > $number ? 99000 + abs( $number ) : $number;
   }
 }
-?>

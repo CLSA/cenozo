@@ -28,4 +28,3 @@ class user_list extends base_list
     parent::__construct( 'user', $args );
   }
 }
-?>

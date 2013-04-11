@@ -1,0 +1,26 @@
+{##
+ # self_home.twig
+ # 
+ # Hope page.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see widget.twig for parameters
+ #}
+{% extends "widget.twig" %}
+
+{% block widget %}
+
+  <div class="ui-widget ui-widget-content app-widget-content">
+    {% if message_list|length %}
+      <div class="spacer" />
+      {% for message in message_list %}
+        <div class="ui-widget ui-widget-header">{{ message.title }}</div>
+        <div style="padding: 1em; padding-left: 2em;"
+             class="ui-widget ui-widget-content">{{ message.note|nl2br|raw }}</div>
+      {% endfor %}
+      <div class="spacer" />
+    {% else %}
+      <div style="padding: 1em;">There are no system messages.</div>
+    {% endif %}
+  </div>
+
+{% endblock widget %}

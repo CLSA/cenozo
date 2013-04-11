@@ -39,6 +39,11 @@ class self_home extends \cenozo\ui\widget
     parent::prepare();
 
     $this->show_heading( false );
+
+    // create the system message show sub-widget
+    $this->system_message_show = lib::create( 'ui\widget\system_message_show', $this->arguments );
+    $this->system_message_show->set_parent( $this );
+    $this->system_message_show->set_heading( 'System Messages' );
   }
 
   /**
@@ -55,6 +60,7 @@ class self_home extends \cenozo\ui\widget
 
     $session = lib::create( 'business\session' );
     $setting_manager = lib::create( 'business\setting_manager' );
+    $db_service = $session->get_service();
     $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -64,11 +70,11 @@ class self_home extends \cenozo\ui\widget
 
     $this->set_variable( 'title',
       sprintf( 'Welcome to %s version %s',
-               ucwords( APPNAME ),
+               ucwords( SERVICENAME ),
                $setting_manager->get_setting( 'general', 'version' ) ) );
     $this->set_variable( 'user_name', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'role_name', $db_role->name );
-    $this->set_variable( 'site_name', $db_site->name );
+    $this->set_variable( 'site_name', $db_site->get_full_name() );
     if( $db_activity )
     {
       $this->set_variable(
@@ -77,52 +83,18 @@ class self_home extends \cenozo\ui\widget
         'last_time', $util_class_name::get_formatted_time( $db_activity->datetime ) );
     }
 
-    // add any messages that apply to this user
-    $message_list = array();
-    $system_message_class_name = lib::get_class_name( 'database\system_message' );
-
-    // global messages go first
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', NULL );
-    $modifier->where( 'role_id', '=', NULL );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
+    try
     {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
+      $this->system_message_show->process();
+      $this->set_variable( 'system_message_show', $this->system_message_show->get_variables() );
     }
-    
-    // then all-site messages
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', NULL );
-    $modifier->where( 'role_id', '=', $db_role->id );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-
-    // then all-role site-specific messages
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', NULL );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-
-    // then role-specific site-specific messages
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', $db_role->id );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-
-    $this->set_variable( 'message_list', $message_list );
-
+    catch( \cenozo\exception\permission $e ) {}
   }
+  
+  /**
+   * The system message show widget.
+   * @var system_message_show
+   * @access protected
+   */
+  protected $system_message_show = NULL;
 }
-?>

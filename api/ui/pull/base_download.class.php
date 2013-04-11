@@ -100,4 +100,3 @@ abstract class base_download extends \cenozo\ui\pull
    */
   private $file_name = NULL;
 }
-?>

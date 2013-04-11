@@ -49,4 +49,3 @@ class system_message_new extends base_new
         'The message\'s note cannot be left blank.', __METHOD__ );
   }
 }
-?>

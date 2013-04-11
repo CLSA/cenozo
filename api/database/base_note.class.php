@@ -29,4 +29,3 @@ abstract class base_note extends record
     return $column_list;
   }
 }
-?>

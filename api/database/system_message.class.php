@@ -13,4 +13,3 @@ use cenozo\lib, cenozo\log;
  * system_message: record
  */
 class system_message extends record {}
-?>

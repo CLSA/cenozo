@@ -145,4 +145,3 @@ abstract class has_rank extends record
    */
   protected static $rank_parent = NULL;
 }
-?>

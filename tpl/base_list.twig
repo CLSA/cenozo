@@ -249,11 +249,56 @@
       $header_buttons_restrictable.rightClick( function( event ) {
         var column = $(this).parent( "th" ).attr( "id" );
         var column_name = $(this).button().text();
+        
+        $restrict_dialog = $( "#{{ widget.compound }}__restrict_dialog" );
+
         $( "#{{ widget.compound }}__restrict_dialog_label" ).html( column_name );
         $( "#{{ widget.compound }}__restrict_dialog_id" ).val( column );
         $( "#{{ widget.compound }}__restrict_dialog_value" ).val( "" );
-        $( "#{{ widget.compound }}__restrict_dialog" ).dialog( "open" );
-        $( "#{{ widget.compound }}__restrict_dialog" ).parent().keypress( function(e) {
+
+        // define the restrict dialog's Ok and Cancel buttons
+        $restrict_dialog.dialog( "option", "buttons", [
+          {
+            text: "Ok",
+            click: function() {
+              // create the restrictions array
+              var restrictions = new Object();
+              {% for id, restrict in restrictions %}
+                restrictions["{{ id }}"] = {
+                  compare: "{{ restrict.compare }}",
+                  value: "{{ restrict.value|e('js') }}"
+                };
+              {% endfor %}
+              restrictions[$( "#{{ widget.compound }}__restrict_dialog_id" ).val()] = {
+                compare: $( "#{{ widget.compound }}__restrict_dialog_compare" ).val(),
+                value: $( "#{{ widget.compound }}__restrict_dialog_value" ).val()
+              };
+      
+              var args = new Object();
+              {% if parent.exists %}
+                {% if parent.id|default(false) %}
+                  args.{{ parent.full }} = { "id": {{ parent.id }} };
+                {% endif %}
+                args.{{ widget.full }} = { "restrictions": restrictions };
+                slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
+              {% else %}
+                args.restrictions = restrictions;
+                slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
+              {% endif %}
+      
+              $(this).dialog( "close" );
+            },
+          },
+          {
+            text: "Cancel",
+            click: function() {
+              $(this).dialog( "close" );
+            }
+          }
+        ] );
+
+        $restrict_dialog.dialog( "open" );
+        $restrict_dialog.parent().keypress( function(e) {
           if( ( e.which && e.which == 13 ) || ( e.keyCode && e.keyCode == 13 ) ) {
             $(this).find( "button" ).eq(0).click();
             return false;
@@ -304,39 +349,6 @@
         height: 150,
         width: 450,
         modal: true,
-        buttons: {
-          Ok: function() {
-            // create the restrictions array
-            var restrictions = new Object();
-            {% for id, restrict in restrictions %}
-              restrictions["{{ id }}"] = {
-                compare: "{{ restrict.compare }}",
-                value: "{{ restrict.value|e('js') }}"
-              };
-            {% endfor %}
-            restrictions[$( "#{{ widget.compound }}__restrict_dialog_id" ).val()] = {
-              compare: $( "#{{ widget.compound }}__restrict_dialog_compare" ).val(),
-              value: $( "#{{ widget.compound }}__restrict_dialog_value" ).val()
-            };
-    
-            var args = new Object();
-            {% if parent.exists %}
-              {% if parent.id|default(false) %}
-                args.{{ parent.full }} = { "id": {{ parent.id }} };
-              {% endif %}
-              args.{{ widget.full }} = { "restrictions": restrictions };
-              slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
-            {% else %}
-              args.restrictions = restrictions;
-              slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
-            {% endif %}
-    
-            $(this).dialog( "close" );
-          },
-          Cancel: function() {
-            $(this).dialog( "close" );
-          }
-        }
       } );
 
       {% if items_per_page < number_of_items %}

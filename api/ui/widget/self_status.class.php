@@ -57,6 +57,6 @@ class self_status extends \cenozo\ui\widget
     $this->set_variable( 'timezone_name', $datetime_obj->format( 'T' ) );
     $this->set_variable( 'timezone_offset',
       $util_class_name::get_timezone_object()->getOffset( $datetime_obj ) );
+    $this->set_variable( 'home', true );
   }
 }
-?>

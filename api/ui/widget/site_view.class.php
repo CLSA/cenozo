@@ -39,8 +39,17 @@ class site_view extends base_view
     parent::prepare();
 
     // create an associative array with everything we want to display about the site
+    $this->add_item( 'service_id', 'constant', 'Service' );
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'timezone', 'enum', 'Time Zone' );
+    $this->add_item( 'title', 'string', 'Institution' );
+    $this->add_item( 'phone_number', 'string', 'Phone Number' );
+    $this->add_item( 'address1', 'string', 'Address1' );
+    $this->add_item( 'address2', 'string', 'Address2' );
+    $this->add_item( 'city', 'string', 'City' );
+    $this->add_item( 'region_id', 'enum', 'Region' );
+    $this->add_item( 'postcode', 'string', 'Postcode',
+      'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.' );
     $this->add_item( 'users', 'constant', 'Number of users' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
 
@@ -66,18 +75,36 @@ class site_view extends base_view
     parent::setup();
     
     $util_class_name = lib::get_class_name( 'util' );
+    $record = $this->get_record();
 
     // create enum arrays
     $site_class_name = lib::get_class_name( 'database\site' );
     $timezones = $site_class_name::get_enum_values( 'timezone' );
     $timezones = array_combine( $timezones, $timezones );
 
-    // set the view's items
-    $this->set_item( 'name', $this->get_record()->name, true );
-    $this->set_item( 'timezone', $this->get_record()->timezone, true, $timezones );
-    $this->set_item( 'users', $this->get_record()->get_user_count() );
+    $region_mod = lib::create( 'database\modifier' );
+    $region_mod->order( 'country' );
+    $region_mod->order( 'name' );
+    $regions = array();
+    $region_class_name = lib::get_class_name( 'database\region' );
+    foreach( $region_class_name::select( $region_mod ) as $db_region )
+      $regions[$db_region->id] = $db_region->name.', '.$db_region->country;
+    reset( $regions );
 
-    $db_activity = $this->get_record()->get_last_activity();
+    // set the view's items
+    $this->set_item( 'service_id', $record->get_service()->name );
+    $this->set_item( 'name', $record->name, true );
+    $this->set_item( 'timezone', $record->timezone, true, $timezones );
+    $this->set_item( 'title', $this->get_record()->title );
+    $this->set_item( 'phone_number', $this->get_record()->phone_number );
+    $this->set_item( 'address1', $this->get_record()->address1 );
+    $this->set_item( 'address2', $this->get_record()->address2 );
+    $this->set_item( 'city', $this->get_record()->city );
+    $this->set_item( 'region_id', $this->get_record()->region_id, false, $regions );
+    $this->set_item( 'postcode', $this->get_record()->postcode, true );
+    $this->set_item( 'users', $record->get_user_count() );
+
+    $db_activity = $record->get_last_activity();
     $last = $util_class_name::get_fuzzy_period_ago(
               is_null( $db_activity ) ? null : $db_activity->datetime );
     $this->set_item( 'last_activity', $last );
@@ -110,7 +137,7 @@ class site_view extends base_view
   {
     $access_class_name = lib::get_class_name( 'database\access' );
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $this->get_record()->id );
+    $modifier->where( 'access.site_id', '=', $this->get_record()->id );
     return $access_class_name::count( $modifier );
   }
 
@@ -126,7 +153,7 @@ class site_view extends base_view
   {
     $access_class_name = lib::get_class_name( 'database\access' );
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $this->get_record()->id );
+    $modifier->where( 'access.site_id', '=', $this->get_record()->id );
     return $access_class_name::select( $modifier );
   }
 
@@ -169,4 +196,3 @@ class site_view extends base_view
    */
   protected $activity_list = NULL;
 }
-?>

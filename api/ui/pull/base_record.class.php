@@ -74,4 +74,3 @@ abstract class base_record
    */
   private $record = NULL;
 }
-?>

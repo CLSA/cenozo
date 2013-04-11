@@ -83,8 +83,8 @@ class activity extends record
     $end_datetime_obj = NULL;
 
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'user_id', '=', $db_user->id );
-    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'activity.user_id', '=', $db_user->id );
+    $modifier->where( 'activity.site_id', '=', $db_site->id );
     $modifier->where( 'operation.subject', '!=', 'self' );
     $modifier->where( 'datetime', '>=', $db_site->to_site_datetime( $date.' 0:00:00' ) );
     $modifier->where( 'datetime', '<=', $db_site->to_site_datetime( $date.' 23:59:59' ) );
@@ -145,4 +145,3 @@ class activity extends record
     return $usage;
   }
 }
-?>

@@ -25,4 +25,3 @@ class site_new_access extends base_new_access
     parent::__construct( 'site', $args );
   }
 }
-?>

@@ -25,4 +25,3 @@ class site_delete_access extends base_delete_record
     parent::__construct( 'site', 'access', $args );
   }
 }
-?>

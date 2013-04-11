@@ -42,9 +42,16 @@ abstract class site_restricted_list extends base_list
     if( static::may_restrict() )
     {
       $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
-      $this->db_restrict_site = $restrict_site_id
-                              ? lib::create( 'database\site', $restrict_site_id )
-                              : NULL;
+      if( -1 == $restrict_site_id )
+      {
+        $this->no_site = true;
+      }
+      else
+      {
+        $this->db_restrict_site = $restrict_site_id
+                                ? lib::create( 'database\site', $restrict_site_id )
+                                : NULL;
+      }
     }
     else // anyone else is restricted to their own site
     {
@@ -57,8 +64,9 @@ abstract class site_restricted_list extends base_list
       $this->set_heading(
         sprintf( '%s list for %s',
                  $this->get_subject(),
-                 is_null( $this->db_restrict_site ) ?
-                   'all sites' : $this->db_restrict_site->name ) );
+                 $this->no_site ? 'no site' : (
+                   is_null( $this->db_restrict_site ) ?
+                   'all sites' : $this->db_restrict_site->get_full_name() ) ) );
     }
   }
   
@@ -75,6 +83,10 @@ abstract class site_restricted_list extends base_list
     // if this list has a parent don't allow restricting (the parent already does)
     if( !is_null( $this->parent ) ) $this->db_restrict_site = NULL;
 
+    // we're restricting to a site, so remove the service column
+    if( $this->no_site || !is_null( $this->db_restrict_site ) )
+      $this->remove_column( 'site.service_id' );
+
     if( static::may_restrict() )
     {
       // if this is a top tier role, give them a list of sites to choose from
@@ -82,23 +94,24 @@ abstract class site_restricted_list extends base_list
       if( is_null( $this->parent ) )
       {
         $site_class_name = lib::get_class_name( 'database\site' );
-        $sites = array();
         $site_mod = lib::create( 'database\modifier' );
+        $site_mod->order( 'service_id' );
         $site_mod->order( 'name' );
+        $sites = array( -1 => 'No Site' );
         foreach( $site_class_name::select( $site_mod ) as $db_site )
-          $sites[$db_site->id] = $db_site->name;
+          $sites[$db_site->id] = $db_site->get_full_name();
         $this->set_variable( 'sites', $sites );
       }
     }
 
-    if( is_null( $this->db_restrict_site ) )
-    {
-      $this->set_variable( 'restrict_site_id', 0 );
+    if( $this->no_site || !is_null( $this->db_restrict_site ) )
+    { // we're restricting to a site, so remove the site column
+      $this->remove_column( 'site.name' );
+      $this->set_variable( 'restrict_site_id', $this->no_site ? -1 : $this->db_restrict_site->id );
     }
     else
-    { // we're restricting to the user's site, so remove the site column
-      $this->remove_column( 'site.name' );
-      $this->set_variable( 'restrict_site_id', $this->db_restrict_site->id );
+    {
+      $this->set_variable( 'restrict_site_id', 0 );
     }
   }
 
@@ -112,10 +125,13 @@ abstract class site_restricted_list extends base_list
    */
   public function determine_record_count( $modifier = NULL )
   {
-    if( !is_null( $this->db_restrict_site ) )
+    if( $this->no_site || !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+      $site_column = sprintf( '%s.site_id',
+                              $this->extended_site_selection ?
+                              'participant_site' : $this->get_subject() );
+      $modifier->where( $site_column, '=', $this->no_site ? NULL : $this->db_restrict_site->id );
     }
 
     return parent::determine_record_count( $modifier );
@@ -131,10 +147,13 @@ abstract class site_restricted_list extends base_list
    */
   public function determine_record_list( $modifier = NULL )
   {
-    if( !is_null( $this->db_restrict_site ) )
+    if( $this->no_site || !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+      $site_column = sprintf( '%s.site_id',
+                              $this->extended_site_selection ?
+                              'participant_site' : $this->get_subject() );
+      $modifier->where( $site_column, '=', $this->no_site ? NULL : $this->db_restrict_site->id );
     }
 
     return parent::determine_record_list( $modifier );
@@ -156,8 +175,21 @@ abstract class site_restricted_list extends base_list
   /**
    * The site to restrict to.
    * @var database\site
-   * @access private
+   * @access protected
    */
   protected $db_restrict_site = NULL;
+
+  /**
+   * If true then the list is restricted to records which have NO site.
+   * @var boolean
+   * @access protected
+   */
+  protected $no_site = false;
+
+  /**
+   * Whether the subject is participant_site based.
+   * @var boolean
+   * @access protected
+   */
+  protected $extended_site_selection = false;
 }
-?>

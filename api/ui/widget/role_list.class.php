@@ -60,4 +60,3 @@ class role_list extends base_list
     }
   }
 }
-?>

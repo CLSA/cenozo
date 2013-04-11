@@ -225,4 +225,3 @@ abstract class widget extends operation
    */
   private $show_heading = true;
 }
-?>

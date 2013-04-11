@@ -146,4 +146,3 @@ class user_new extends base_new
    */
   protected $role_id = NULL;
 }
-?>
