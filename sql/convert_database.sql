@@ -125,7 +125,20 @@ CREATE PROCEDURE convert_database()
     -- region --------------------------------------------------------------------------------------
     SELECT "Processing region" AS "";
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".region SELECT * FROM ", @mastodon, ".region" );
+      "INSERT INTO ", @cenozo, ".region( id, update_timestamp, create_timestamp, name, abbreviation, country ) ",
+      "SELECT id, update_timestamp, create_timestamp, name, abbreviation, country FROM ", @mastodon, ".region" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    -- service_region_site -------------------------------------------------------------------------
+    SELECT "Processing service_region_site" AS "";
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".service_region_site( service_id, region_id, site_id ) ",
+      "SELECT service.id, region.id, region.site_id ",
+      "FROM ", @mastodon, ".region, ", @cenozo, ".service ",
+      "WHERE region.site_id IS NOT NULL "
+      "AND service.title = 'Sabretooth'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -153,49 +166,6 @@ CREATE PROCEDURE convert_database()
     SELECT "Processing access" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".access SELECT * FROM ", @mastodon, ".access" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
-    -- system_message ------------------------------------------------------------------------------
-    SELECT "Processing system_message" AS "";
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".system_message( update_timestamp, create_timestamp, service_id, ",
-                                         "site_id, role_id, title, note ) ",
-      "SELECT msystem_message.update_timestamp, msystem_message.create_timestamp, this_service.id, ",
-             "msystem_message.site_id, msystem_message.role_id, msystem_message.title, msystem_message.note ",
-      "FROM ", @cenozo, ".service this_service, ", @mastodon, ".system_message msystem_message ",
-      "WHERE this_service.title = 'Mastodon'" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".system_message( update_timestamp, create_timestamp, service_id, ",
-                                         "site_id, role_id, title, note ) ",
-      "SELECT ssystem_message.update_timestamp, ssystem_message.create_timestamp, this_service.id, ",
-             "site.id, role.id, ssystem_message.title, ssystem_message.note ",
-      "FROM ", @cenozo, ".service this_service, ", @sabretooth, ".system_message ssystem_message ",
-      "LEFT JOIN ", @sabretooth, ".site ssite ON ssystem_message.site_id = ssite.id ",
-      "LEFT JOIN ", @cenozo, ".site ON ssite.name = site.name ",
-      "LEFT JOIN ", @sabretooth, ".role srole ON ssystem_message.role_id = srole.id ",
-      "LEFT JOIN ", @cenozo, ".role ON srole.name = role.name ",
-      "WHERE this_service.title = 'Sabretooth'" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".system_message( update_timestamp, create_timestamp, service_id, ",
-                                         "site_id, role_id, title, note ) ",
-      "SELECT  bsystem_message.update_timestamp, bsystem_message.create_timestamp, this_service.id, ",
-              "site.id, role.id, bsystem_message.title, bsystem_message.note ",
-      "FROM ", @cenozo, ".service this_service, ", @beartooth, ".system_message bsystem_message ",
-      "LEFT JOIN ", @beartooth, ".site bsite ON bsystem_message.site_id = bsite.id ",
-      "LEFT JOIN ", @cenozo, ".site ON bsite.name = site.name ",
-      "LEFT JOIN ", @beartooth, ".role brole ON bsystem_message.role_id = brole.id ",
-      "LEFT JOIN ", @cenozo, ".role ON brole.name = role.name ",
-      "WHERE this_service.title = 'Beartooth'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -268,14 +238,28 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
+    -- consent -------------------------------------------------------------------------------------
+    SELECT "Processing consent" AS "";
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".consent( id, update_timestamp, create_timestamp, participant_id ,",
+                                         "accept, written, date, note ) ",
+      "SELECT mc.id, mc.update_timestamp, mc.create_timestamp, mc.participant_id, ",
+             "mc.event IN ( 'verbal accept', 'written accept' ), ",
+             "mc.event IN ( 'written accept', 'written deny' ), mc.date, mc.note ",
+      "FROM ", @mastodon, ".consent mc" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
     -- event_type ----------------------------------------------------------------------------------
     SELECT "Processing event_type" AS "";
     SET @sql = CONCAT(
       "INSERT INTO ", @cenozo, ".event_type( name, description ) VALUES ",
       "( 'completed pilot interview', 'Pilot interview completed (for StatsCan tracking participants only).' ), ",
       "( 'imported by rdd', 'Imported by random digit dialing import (for RDD participants only).' ), ",
-      "( 'consent to contact received', 'Consent to contact form received (dated by the participant).' ), ",
-      "( 'consent for proxy received', 'Consent for proxy form received (dated by the participant).' ), ",
+      "( 'consent to contact received', 'Consent to contact form signed by participant.' ), ",
+      "( 'consent signed', 'Consent form signed by participant.' ), ",
+      "( 'consent for proxy received', 'Consent for proxy form signed by participant.' ), ",
       "( 'package mailed', 'Information package mailed to participant (dated by mailout report).' ), ",
       "( 'first attempt (Baseline)', 'First attempt to contact (for the baseline interview).' ), ",
       "( 'reached (Baseline)', 'The participant was first reached (for the baseline interview).' ), ",
@@ -311,6 +295,32 @@ CREATE PROCEDURE convert_database()
              "event_type.id, mstatus.datetime ",
       "FROM ", @mastodon, ".status mstatus ",
       "JOIN ", @cenozo, ".event_type ON mstatus.event = event_type.name" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT consent.participant_id, event_type.id, ",
+             "IF( consent_form_entry.id IS NULL, ",
+                 "consent_form.date, ",
+                 "IFNULL( consent_form_entry.date, DATE( consent_form_entry.update_timestamp ) ) ) ",
+      "FROM ", @cenozo, ".event_type, ", @mastodon, ".consent_form ",
+      "JOIN ", @cenozo, ".consent ON consent_form.consent_id = consent.id ",
+      "LEFT JOIN ", @mastodon, ".consent_form_entry ",
+      "ON consent_form.validated_consent_form_entry_id = consent_form_entry.id ",
+      "WHERE consent_form.complete = true ",
+      "AND event_type.name = 'consent signed'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT INTO ", @cenozo, ".event ( participant_id, event_type_id, datetime ) ",
+      "SELECT consent.participant_id, event_type.id, consent.date ",
+      "FROM ", @cenozo, ".event_type, ", @cenozo, ".consent ",
+      "WHERE consent.note = 'Consented during pilot.' ",
+      "AND event_type.name = 'consent signed'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
@@ -436,6 +446,23 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
+    -- now rename select event types
+    SET @sql = CONCAT(
+      "UPDATE ", @cenozo, ".event_type ",
+      "SET name = 'consent to contact signed' ",
+      "WHERE name = 'consent to contact received'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "UPDATE ", @cenozo, ".event_type ",
+      "SET name = 'consent for proxy signed' ",
+      "WHERE name = 'consent for proxy received'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement; 
+    DEALLOCATE PREPARE statement;
+
     -- alternate -----------------------------------------------------------------------------------
     SELECT "Processing alternate" AS "";
     SET @sql = CONCAT(
@@ -452,23 +479,14 @@ CREATE PROCEDURE convert_database()
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;
 
-    -- consent -------------------------------------------------------------------------------------
-    SELECT "Processing consent" AS "";
-    SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".consent( id, update_timestamp, create_timestamp, participant_id ,",
-                                         "accept, written, date, note ) ",
-      "SELECT mc.id, mc.update_timestamp, mc.create_timestamp, mc.participant_id, ",
-             "mc.event IN ( 'verbal accept', 'written accept' ), ",
-             "mc.event IN ( 'written accept', 'written deny' ), mc.date, mc.note ",
-      "FROM ", @mastodon, ".consent mc" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement; 
-    DEALLOCATE PREPARE statement;
-
     -- jurisdiction --------------------------------------------------------------------------------
     SELECT "Processing jurisdiction" AS "";
     SET @sql = CONCAT(
-      "INSERT INTO ", @cenozo, ".jurisdiction SELECT * FROM ", @mastodon, ".jurisdiction" );
+      "INSERT INTO ", @cenozo, ".jurisdiction( id, update_timestamp, create_timestamp, postcode, ",
+                                              "site_id, longitude, latitude, distance, service_id ) ",
+      "SELECT mj.*, service.id ",
+      "FROM ", @mastodon, ".jurisdiction AS mj, ", @cenozo, ".service ",
+      "WHERE service.title = 'Beartooth'" );
     PREPARE statement FROM @sql;
     EXECUTE statement; 
     DEALLOCATE PREPARE statement;

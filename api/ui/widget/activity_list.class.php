@@ -25,6 +25,9 @@ class activity_list extends site_restricted_list
   public function __construct( $args )
   {
     parent::__construct( 'activity', $args );
+
+    // the activity list can be taxing, so turn off distinct checking to increase performance
+    $this->set_disable_distinct( true );
   }
 
   /**

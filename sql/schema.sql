@@ -45,6 +45,41 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `cenozo`.`region`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`region` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`region` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `abbreviation` VARCHAR(5) NOT NULL ,
+  `country` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) ,
+  UNIQUE INDEX `uq_abbreviation` (`abbreviation` ASC) )
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
+
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`cohort`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`cohort` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`cohort` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) )
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
+
+
+-- -----------------------------------------------------
 -- Table `cenozo`.`service`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`service` ;
@@ -100,48 +135,6 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
--- Table `cenozo`.`region`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`region` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`region` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  `name` VARCHAR(45) NOT NULL ,
-  `abbreviation` VARCHAR(5) NOT NULL ,
-  `country` VARCHAR(45) NOT NULL ,
-  `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which site manages participants.' ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) ,
-  UNIQUE INDEX `uq_abbreviation` (`abbreviation` ASC) ,
-  INDEX `fk_site_id` (`site_id` ASC) ,
-  CONSTRAINT `fk_region_site`
-    FOREIGN KEY (`site_id` )
-    REFERENCES `cenozo`.`site` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`cohort`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`cohort` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`cohort` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  `name` VARCHAR(45) NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) )
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
 -- Table `cenozo`.`access`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`access` ;
@@ -171,42 +164,6 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`access` (
   CONSTRAINT `fk_access_site_id`
     FOREIGN KEY (`site_id` )
     REFERENCES `cenozo`.`site` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`system_message`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`system_message` ;
-
-CREATE  TABLE IF NOT EXISTS `cenozo`.`system_message` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  `service_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `site_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `role_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `title` VARCHAR(255) NOT NULL ,
-  `note` TEXT NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `fk_site_id` (`site_id` ASC) ,
-  INDEX `fk_role_id` (`role_id` ASC) ,
-  INDEX `fk_service_id` (`service_id` ASC) ,
-  CONSTRAINT `fk_system_message_site_id`
-    FOREIGN KEY (`site_id` )
-    REFERENCES `cenozo`.`site` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_system_message_role_id`
-    FOREIGN KEY (`role_id` )
-    REFERENCES `cenozo`.`role` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_system_message_service_id`
-    FOREIGN KEY (`service_id` )
-    REFERENCES `cenozo`.`service` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -494,17 +451,24 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`jurisdiction` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
+  `service_id` INT UNSIGNED NOT NULL ,
   `postcode` VARCHAR(7) NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `longitude` FLOAT NOT NULL ,
   `latitude` FLOAT NOT NULL ,
   `distance` FLOAT NOT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_postcode` (`postcode` ASC) ,
+  UNIQUE INDEX `uq_service_id_postcode` (`service_id` ASC, `postcode` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
+  INDEX `fk_service_id` (`service_id` ASC) ,
   CONSTRAINT `fk_jurisdiction_site_id`
     FOREIGN KEY (`site_id` )
     REFERENCES `cenozo`.`site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_jurisdiction_service_id`
+    FOREIGN KEY (`service_id` )
+    REFERENCES `cenozo`.`service` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -824,6 +788,41 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `cenozo`.`service_region_site`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`service_region_site` ;
+
+CREATE  TABLE IF NOT EXISTS `cenozo`.`service_region_site` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL COMMENT 'Used to determine a participant\'s default site.' ,
+  `service_id` INT UNSIGNED NOT NULL ,
+  `region_id` INT UNSIGNED NOT NULL ,
+  `site_id` INT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_service_id` (`service_id` ASC) ,
+  INDEX `fk_region_id` (`region_id` ASC) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
+  UNIQUE INDEX `uq_service_id_region_id` (`service_id` ASC, `region_id` ASC) ,
+  CONSTRAINT `fk_service_region_site_service_id`
+    FOREIGN KEY (`service_id` )
+    REFERENCES `cenozo`.`service` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_service_region_site_region_id`
+    FOREIGN KEY (`region_id` )
+    REFERENCES `cenozo`.`region` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_service_region_site_site_id`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `cenozo`.`site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`person_first_address`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cenozo`.`person_first_address` (`person_id` INT, `address_id` INT);
@@ -919,10 +918,10 @@ SELECT person_id, id AS address_id
 FROM address AS t1
 WHERE t1.rank = (
   SELECT MIN( t2.rank )
-  FROM address AS t2, region
-  WHERE t2.region_id = region.id
-  AND t2.active
-  AND region.site_id IS NOT NULL
+  FROM address AS t2
+  JOIN region ON t2.region_id = region.id
+  JOIN service_region_site ON region.id = service_region_site.region_id
+  WHERE t2.active
   AND t1.person_id = t2.person_id
   GROUP BY t2.person_id );
 
@@ -999,7 +998,7 @@ SELECT service.id AS service_id,
          IF(
            service_has_cohort.grouping = 'jurisdiction',
            jurisdiction.site_id,
-           region.site_id
+           service_region_site.site_id
          ),
          service_has_participant.preferred_site_id
        ) AS site_id
@@ -1010,7 +1009,10 @@ AND service_has_cohort.cohort_id = participant.cohort_id
 LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
 LEFT JOIN address ON participant_primary_address.address_id = address.id
 LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
+AND service.id = jurisdiction.service_id
 LEFT JOIN region ON address.region_id = region.id
+LEFT JOIN service_region_site ON region.id = service_region_site.region_id
+AND service.id = service_region_site.service_id
 LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
 AND service_has_participant.participant_id = participant.id;
 
@@ -1048,7 +1050,7 @@ SELECT service.id AS service_id,
        IF(
          service_has_cohort.grouping = 'jurisdiction',
          jurisdiction.site_id,
-         region.site_id
+         service_region_site.site_id
        ) AS site_id
 FROM service
 CROSS JOIN participant
@@ -1057,7 +1059,10 @@ AND service_has_cohort.cohort_id = participant.cohort_id
 LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
 LEFT JOIN address ON participant_primary_address.address_id = address.id
 LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
-LEFT JOIN region ON address.region_id = region.id;
+AND service.id = jurisdiction.service_id
+LEFT JOIN region ON address.region_id = region.id
+LEFT JOIN service_region_site ON region.id = service_region_site.region_id
+AND service.id = service_region_site.service_id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`participant_preferred_site`

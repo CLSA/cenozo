@@ -38,10 +38,10 @@ class quota_list extends site_restricted_list
   {
     parent::prepare();
     
-    $this->add_column( 'site.name', 'string', 'Site', true );
+    $this->add_column( 'site.name', 'string', 'Site', true, false );
     $this->add_column( 'region.name', 'string', 'Region', true );
     $this->add_column( 'gender', 'string', 'Gender', true );
-    $this->add_column( 'age_group.lower', 'string', 'Age Group', true );
+    $this->add_column( 'age_group.lower', 'string', 'Age Group', true, false );
     $this->add_column( 'population', 'number', 'Population', true );
   }
   

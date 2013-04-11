@@ -55,14 +55,17 @@ class self_settings extends \cenozo\ui\widget
     $db_current_site = $session->get_site();
     $db_current_role = $session->get_role();
     
+    $site_mod = lib::create( 'database\modifier' );
+    $site_mod->order( 'name' );
     $sites = array();
-    foreach( $db_user->get_site_list() as $db_site )
+    foreach( $db_user->get_site_list( $site_mod ) as $db_site )
       $sites[ $db_site->id ] = $db_site->get_full_name();
 
     $roles = array();
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'access.site_id', '=', $db_current_site->id );
-    foreach( $db_user->get_role_list( $modifier ) as $db_role )
+    $role_mod = lib::create( 'database\modifier' );
+    $role_mod->where( 'access.site_id', '=', $db_current_site->id );
+    $role_mod->order( 'name' );
+    foreach( $db_user->get_role_list( $role_mod ) as $db_role )
       $roles[ $db_role->id ] = $db_role->name;
     
     // themes are found in the jquery-ui 

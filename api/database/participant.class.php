@@ -19,11 +19,12 @@ class participant extends person
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @param boolean $full If true then records will not be restricted by service
    * @access public
    * @static
    */
-  public static function select( $modifier = NULL, $count = false, $full = false )
+  public static function select( $modifier = NULL, $count = false, $distinct = true, $full = false )
   {
     if( !$full )
     {
@@ -34,7 +35,7 @@ class participant extends person
       $modifier->where( 'service_has_participant.datetime', '!=', NULL );
     }
 
-    return parent::select( $modifier, $count );
+    return parent::select( $modifier, $count, $distinct );
   }
 
   /**
@@ -42,15 +43,16 @@ class participant extends person
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
+   * @param boolean $full If true then records will not be restricted by service
    * @return database\record
    * @static
    * @access public
    */
-  public static function get_unique_record( $column, $value )
+  public static function get_unique_record( $column, $value, $full = false )
   {
     $db_participant = parent::get_unique_record( $column, $value );
 
-    if( !is_null( $db_participant ) )
+    if( !is_null( $db_participant ) && !$full )
     { // make sure the participant has been released
       $db_service = lib::create( 'business\session' )->get_service();
 
@@ -208,19 +210,17 @@ class participant extends person
   /**
    * Sets the preferred site for a particular service.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the application's service is used.
+   * @param database\service $db_service
    * @param database\site $db_site
    * @access public
    */
-  public function set_preferred_site( $db_service = NULL, $db_site = NULL )
+  public function set_preferred_site( $db_service, $db_site = NULL )
   {
     // no primary key means no preferred site
     if( is_null( $this->id ) ) return NULL;
 
     $database_class_name = lib::get_class_name( 'database\database' );
     
-    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
-
     // make sure this participant's cohort belongs to the service
     if( !static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
@@ -309,30 +309,28 @@ class participant extends person
   }
   
   /**
-   * Adds an event to the participant at the given datetime
+   * Returns the quota that this participant belongs to (NULL if none)
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\event_type $db_event_type
-   * @param string $datetime
+   * @return database\quota $db_quota
    * @access public
    */
-  public function add_event( $db_event_type, $datetime )
+  public function get_quota()
   {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to add event to participant with no id.' );
-      return;
-    }
-
-    $util_class_name = lib::get_class_name( 'util' );
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    static::db()->execute( sprintf(
-      'INSERT INTO event ( create_timestamp, participant_id, event_type_id, datetime ) '.
-      'VALUES ( NULL, %s, %s, %s )',
-      $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( $db_event_type->id ),
-      $database_class_name::format_string( $util_class_name::to_server_datetime( $datetime ) ) ) );
+    $quota_id = static::db()->get_one( sprintf(
+      'SELECT id '.
+      'FROM quota '.
+      'WHERE region_id = %s '.
+      'AND site_id = %s '.
+      'AND gender = %s '.
+      'AND age_group_id = %s',
+      $database_class_name::format_string( $this->get_primary_address()->region_id ),
+      $database_class_name::format_string( $this->get_effective_site()->id ),
+      $database_class_name::format_string( $this->gender ),
+      $database_class_name::format_string( $this->age_group_id ) ) );
+
+    return $quota_id ? lib::create( 'database\quota', $quota_id ) : NULL;
   }
 
   /**

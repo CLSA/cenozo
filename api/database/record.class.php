@@ -908,11 +908,12 @@ abstract class record extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @return array( record ) | int
    * @static
    * @access public
    */
-  public static function select( $modifier = NULL, $count = false )
+  public static function select( $modifier = NULL, $count = false, $distinct = true )
   {
     $class_index = lib::get_class_name( get_called_class(), true );
     $this_table = static::get_table_name();
@@ -988,8 +989,9 @@ abstract class record extends \cenozo\base_object
       $first = false;
     }
 
-    $sql = sprintf( 'SELECT%s DISTINCT %s.%s %sFROM %s %s',
+    $sql = sprintf( 'SELECT%s %s %s.%s %sFROM %s %s',
                     $count ? ' COUNT(' : '',
+                    $distinct ? 'DISTINCT' : '',
                     $this_table,
                     static::get_primary_key_name(),
                     $count ? ') ' : '',
@@ -1014,13 +1016,14 @@ abstract class record extends \cenozo\base_object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the count.
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @return int
    * @static
    * @access public
    */
-  public static function count( $modifier = NULL )
+  public static function count( $modifier = NULL, $distinct = true )
   {
-    return static::select( $modifier, true );
+    return static::select( $modifier, true, $distinct );
   }
 
   /**

@@ -64,6 +64,7 @@ class address_view extends base_view
   {
     parent::setup();
     
+    $region_class_name = lib::get_class_name( 'database\region' );
     $record = $this->get_record();
 
     $this->set_variable( 'january', $record->january );
@@ -84,9 +85,12 @@ class address_view extends base_view
     $ranks = array();
     for( $rank = 1; $rank <= $num_addresss; $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
+
+    $region_mod = lib::create( 'database\modifier' );
+    $region_mod->order( 'country' );
+    $region_mod->order( 'name' );
     $regions = array();
-    $class_name = lib::get_class_name( 'database\region' );
-    foreach( $class_name::select() as $db_region )
+    foreach( $region_class_name::select( $region_mod ) as $db_region )
       $regions[$db_region->id] = $db_region->name.', '.$db_region->country;
 
     // set the view's items

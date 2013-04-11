@@ -46,7 +46,6 @@ class participant_view extends base_view
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'language', 'enum', 'Preferred Language' );
-    $this->add_item( 'status', 'enum', 'Condition' );
 
     // add an item for default and preferred sites for all services the participant's cohort
     // belongs to
@@ -68,6 +67,7 @@ class participant_view extends base_view
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'age_group', 'constant', 'Age Group' );
+    $this->add_item( 'status', 'enum', 'Condition' );
 
     // create the address sub-list widget
     $this->address_list = lib::create( 'ui\widget\address_list', $this->arguments );
