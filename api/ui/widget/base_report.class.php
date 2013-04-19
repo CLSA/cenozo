@@ -59,6 +59,7 @@ abstract class base_report extends \cenozo\ui\widget
     $site_class_name = lib::get_class_name( 'database\site' );
     $region_class_name = lib::get_class_name( 'database\region' );
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $service_class_name = lib::get_class_name( 'database\service' );
     $source_class_name = lib::get_class_name( 'database\source' );
 
     if( $this->restrictions[ 'site' ] )
@@ -109,6 +110,15 @@ abstract class base_report extends \cenozo\ui\widget
         $cohort_list[ $db_cohort->id ] = $db_cohort->name;
 
       $this->set_parameter( 'restrict_cohort_id', key( $cohort_list ), true, $cohort_list );
+    }
+
+    if( $this->restrictions[ 'service' ] )
+    {
+      $service_list = array( 0 => 'all' );
+      foreach( $service_class_name::select() as $db_service )
+        $service_list[ $db_service->id ] = $db_service->name;
+      
+      $this->set_parameter( 'restrict_service_id', key( $service_list ), true, $service_list );
     }
 
     if( $this->restrictions[ 'source' ] )
@@ -189,6 +199,11 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->restrictions[ 'cohort' ] = true;
       $this->add_parameter( 'restrict_cohort_id', 'enum', 'Cohort' );
+    }
+    else if( 'service' == $restriction_type )
+    {
+      $this->restrictions[ 'service' ] = true;
+      $this->add_parameter( 'restrict_service_id', 'enum', 'Service' );
     }
     else if( 'source' == $restriction_type )
     {
@@ -356,6 +371,7 @@ abstract class base_report extends \cenozo\ui\widget
     'dates' => false,
     'province' => false,
     'cohort' => false,
+    'service' => false,
     'source' => false );
 
   /**
