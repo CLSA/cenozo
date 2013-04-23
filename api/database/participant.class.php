@@ -326,7 +326,7 @@ class participant extends person
       'AND gender = %s '.
       'AND age_group_id = %s',
       $database_class_name::format_string( $this->get_primary_address()->region_id ),
-      $database_class_name::format_string( $this->get_effective_site()->id ),
+      $database_class_name::format_string( $this->get_default_site()->id ),
       $database_class_name::format_string( $this->gender ),
       $database_class_name::format_string( $this->age_group_id ) ) );
 
