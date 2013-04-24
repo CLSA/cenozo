@@ -43,10 +43,7 @@ class user_add extends base_view
     $this->add_item( 'first_name', 'string', 'First name' );
     $this->add_item( 'last_name', 'string', 'Last name' );
     $this->add_item( 'active', 'boolean', 'Active' );
-
-    $type = 3 == lib::create( 'business\session' )->get_role()->tier
-          ? 'enum'
-          : 'hidden';
+    $type = lib::create( 'business\session' )->get_role()->all_sites ? 'enum' : 'hidden';
     $this->add_item( 'site_id', $type, 'Site' );
     $this->add_item( 'role_id', 'enum', 'Role' );
     $this->add_item( 'language', 'enum', 'Language' );
@@ -67,7 +64,7 @@ class user_add extends base_view
     $site_class_name = lib::get_class_name( 'database\site' );
 
     $session = lib::create( 'business\session' );
-    $is_top_tier = 3 == $session->get_role()->tier;
+    $all_sites = $session->get_role()->all_sites;
 
     // create enum arrays
     $modifier = lib::create( 'database\modifier' );
@@ -80,7 +77,7 @@ class user_add extends base_view
       $languages[] = $language;
     $languages = array_combine( $languages, $languages );
     $sites = array();
-    if( $is_top_tier )
+    if( $all_sites )
     {
       $site_mod = lib::create( 'database\modifier' );
       $site_mod->order( 'service_id' );
@@ -94,8 +91,8 @@ class user_add extends base_view
     $this->set_item( 'first_name', '', true );
     $this->set_item( 'last_name', '', true );
     $this->set_item( 'active', true, true );
-    $value = $is_top_tier ? current( $sites ) : $session->get_site()->id;
-    $this->set_item( 'site_id', $value, true, $is_top_tier ? $sites : NULL );
+    $value = $all_sites ? current( $sites ) : $session->get_site()->id;
+    $this->set_item( 'site_id', $value, true, $all_sites ? $sites : NULL );
     $this->set_item( 'role_id', current( $roles ), true, $roles );
     $this->set_item( 'language', 'en', true, $languages );
   }

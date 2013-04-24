@@ -37,10 +37,10 @@ class system_message_edit extends base_edit
   {
     parent::validate();
 
-    // make sure that only top tier roles can edit system messages not belonging to the current site
+    // make sure that only all-site roles can edit system messages not belonging to the current site
     $session = lib::create( 'business\session' );
 
-    if( 3 != $session->get_role()->tier &&
+    if( !$session->get_role()->all_sites &&
         $session->get_site()->id != $this->get_record()->site_id )
       throw lib::create( 'exception\notice',
         'You do not have access to edit this system message.', __METHOD__ );

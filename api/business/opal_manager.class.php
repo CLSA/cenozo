@@ -64,7 +64,7 @@ class opal_manager extends \cenozo\factory
       rawurlencode( $datasource ),
       rawurlencode( $table ),
       $db_participant->uid,
-      rawurlencode( $variable ) ) );
+      rawurlencode( $variable ) );
     $request->setUrl( $url );
     $message = $request->send();
 

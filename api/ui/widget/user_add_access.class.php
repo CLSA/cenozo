@@ -40,7 +40,7 @@ class user_add_access extends base_add_access
     parent::prepare();
 
     $session = lib::create( 'business\session' );
-    if( 3 == $session->get_role()->tier )
+    if( $session->get_role()->all_sites )
     {
       // This widget is special.  We need a list of sites and roles, not an access list, so we
       // override the construction of the list_widget performed by the parent method
@@ -49,14 +49,12 @@ class user_add_access extends base_add_access
       $this->list_widget->set_checkable( true );
       $this->list_widget->set_heading( 'Choose sites to grant access to the user' );
     }
-    else // not top tier
+    else // site restricted role
     {
       // we need to do a bit of code bending here
-      // mid tier roles need to be able to add access to their site, but they do not have permission
-      // to view the site list - however, they don't need a site list, any access HAS to be added
-      // to their site only - but, the current design of the list ui classes insists on some kind
-      // of list.  So, we'll create the user list, catch the permission error, then mark the
-      // template to not display a user list but instead just use the user's current site
+      // site-restricted roles need to be able to add access to their site, but they do not have
+      // permission to view the site list - however, they don't need a site list, any access HAS to
+      // be added to their site only - so instead we use the force_child_id variable
       $this->set_variable( 'force_child_id', $session->get_site()->id );
     }
   }
