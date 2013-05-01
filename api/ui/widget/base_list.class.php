@@ -216,17 +216,17 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
       if( !is_null( $datetime_column ) )
       {
         $this->sort_column = $datetime_column;
-        $this->sort_desc = false;
+        $this->sort_desc = true;
       }
       if( !is_null( $date_column ) )
       {
         $this->sort_column = $date_column;
-        $this->sort_desc = false;
+        $this->sort_desc = true;
       }
       if( !is_null( $time_column ) )
       {
         $this->sort_column = $time_column;
-        $this->sort_desc = false;
+        $this->sort_desc = true;
       }
     }
 
