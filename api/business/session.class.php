@@ -508,10 +508,11 @@ class session extends \cenozo\singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $slot The name of the slot.
+   * @param boolean $pop Whether to remove all widgets after the previous one.
    * @return string The name of the previous widget (or NULL if there is no next widget).
    * @access public
    */
-  public function slot_prev( $slot )
+  public function slot_prev( $slot, $clip = false )
   {
     // make sure the slot's stack has been created
     $this->validate_slot( $slot ); 
@@ -526,6 +527,14 @@ class session extends \cenozo\singleton
       $_SESSION['slot'][$slot]['stack']['index'] = $new_index;
       // get the (now) previous item
       $value = $this->slot_current( $slot );
+
+      if( $clip )
+      {
+        // hack off whatever comes after the new index
+        $_SESSION['slot'][$slot]['stack']['widgets'] =
+          array_slice( $_SESSION['slot'][$slot]['stack']['widgets'], 0, $new_index + 1 );
+      }
+
       $this->update_slot_cookies();
     }
 
