@@ -153,6 +153,8 @@ VALUES( "push", "participant", "delete_event", true, "Remove a participant's eve
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "delete_phone", true, "Remove a participant's phone entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "delink", true, "Permanently removes the link between a participant and their current unique identifier." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "edit", true, "Edits a participant's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "hin", true, "View a participant's HIN details." );

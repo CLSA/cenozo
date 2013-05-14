@@ -7,6 +7,27 @@
  #}
 {% extends "base_view.twig" %}
 
+{% block javascript %}
+  {{ parent() }}
+  {% if allow_delink %}
+    <script type="text/javascript">
+      $( function() {
+        // delink button
+        $( "#{{ widget.full }}__delink" ).click( function() {
+          confirm_dialog(
+            "De-link participant?",
+            "Are you sure you want to de-link this participant? THIS CANNOT BE UN-DONE!",
+            function() {
+              if( ajax_push( "participant", "delink", { "id": {{ id }} } ) )
+                window.location.reload();
+            }
+          );
+        } );
+      } );
+    </script>
+  {% endif %}
+{% endblock javascript %}
+
 {% block record %}
 
   {{ parent() }}
