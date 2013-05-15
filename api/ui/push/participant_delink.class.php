@@ -189,6 +189,16 @@ class participant_delink extends \cenozo\ui\push\base_record
         $db_phone->save();
       }
     }
+
+    // censor the old participant's HIN information
+    foreach( $db_old_participant->get_hin_list() as $db_hin )
+    {
+      if( !is_null( $db_hin->code ) )
+      {
+        $db_hin->code = '(censored)';
+        $db_hin->save();
+      }
+    }
   }
 
   /**
