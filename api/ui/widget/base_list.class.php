@@ -216,33 +216,30 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
       if( !is_null( $datetime_column ) )
       {
         $this->sort_column = $datetime_column;
-        $this->sort_desc = false;
+        $this->sort_desc = true;
       }
       if( !is_null( $date_column ) )
       {
         $this->sort_column = $date_column;
-        $this->sort_desc = false;
+        $this->sort_desc = true;
       }
       if( !is_null( $time_column ) )
       {
         $this->sort_column = $time_column;
-        $this->sort_desc = false;
+        $this->sort_desc = true;
       }
-    }
-
-    // If we still aren't sorting by anything then sort by the subject's id column
-    // We MUST do this since the select which gets this list is using the DISTINCT keyword,
-    // but MySQL has a bug when using distinct which doesn't return the right rows when
-    // using LIMIT and OFFSET unless we are also using the ORDER keyword
-    if( !$this->sort_column )
-    {
-      $this->sort_column = sprintf( '%s.id', $this->get_subject() );
-      $this->sort_desc = false;
     }
 
     // apply ordering and paging to sql query
     if( strlen( $this->sort_column ) ) $modifier->order( $this->sort_column, $this->sort_desc );
     $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
+
+    // Sort by the subject's id column, descending.
+    // We MUST do this since the select which gets this list is using the DISTINCT keyword,
+    // but MySQL has a bug when using distinct which doesn't return the right rows when
+    // using LIMIT and OFFSET unless we are also using the ORDER keyword on a column with
+    // a unique constraint
+    $modifier->order_desc( sprintf( '%s.id', $this->get_subject() ) );
     
     $method_name = 'determine_'.$this->get_subject().'_list';
     $this->record_list =

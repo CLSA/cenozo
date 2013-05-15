@@ -48,7 +48,7 @@ abstract class has_note extends record
     if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_key_name, '=', $this->id );
     $modifier->order( 'sticky', true );
-    $modifier->order( 'datetime' );
+    $modifier->order_desc( 'datetime' );
     return $note_class_name::select( $modifier );
   }
 

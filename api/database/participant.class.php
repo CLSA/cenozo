@@ -318,17 +318,30 @@ class participant extends person
   {
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    $quota_id = static::db()->get_one( sprintf(
-      'SELECT id '.
-      'FROM quota '.
-      'WHERE region_id = %s '.
-      'AND site_id = %s '.
-      'AND gender = %s '.
-      'AND age_group_id = %s',
-      $database_class_name::format_string( $this->get_primary_address()->region_id ),
-      $database_class_name::format_string( $this->get_default_site()->id ),
-      $database_class_name::format_string( $this->gender ),
-      $database_class_name::format_string( $this->age_group_id ) ) );
+    $db_primary_address = $this->get_primary_address();
+    $db_default_site = $this->get_default_site();
+    $db_age_group = $this->get_age_group();
+
+    $quota_id = 0;
+
+    if( !is_null( $db_primary_address ) &&
+        !is_null( $db_primary_address->region_id ) &&
+        !is_null( $db_default_site ) &&
+        !is_null( $this->gender ) &&
+        !is_null( $db_age_group ) )
+    {
+      $quota_id = static::db()->get_one( sprintf(
+        'SELECT id '.
+        'FROM quota '.
+        'WHERE region_id = %s '.
+        'AND site_id = %s '.
+        'AND gender = %s '.
+        'AND age_group_id = %s',
+        $database_class_name::format_string( $db_primary_address->region_id ),
+        $database_class_name::format_string( $db_default_site->id ),
+        $database_class_name::format_string( $this->gender ),
+        $database_class_name::format_string( $db_age_group->id ) ) );
+    }
 
     return $quota_id ? lib::create( 'database\quota', $quota_id ) : NULL;
   }
