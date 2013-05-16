@@ -638,7 +638,7 @@ class database extends \cenozo\base_object
              'FOR', 'ON' );
 
     // split the sql based on the words above, then process each piece one at a time
-    $pieces = preg_split( sprintf( '/\b(%s)\b/i', implode( '|', $split_words ) ),
+    $pieces = preg_split( sprintf( '/\b(%s)\b|(\')|(")/i', implode( '|', $split_words ) ),
                           $input,
                           -1,
                           PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
@@ -653,91 +653,110 @@ class database extends \cenozo\base_object
       $in_replace = false;
       $in_from = false;
       $in_join = false;
+      $in_single_quote = false;
+      $in_double_quote = false;
       foreach( $pieces as $piece )
       {
         $piece_upper = strtoupper( $piece );
 
         // start by checking for the opening boundary of table names
-        if( 'UPDATE' == $piece_upper )
+        if( "'" == $piece_upper )
         {
-          $in_update = true;
+          $in_single_quote = !$in_single_quote;
           $output .= $piece;
         }
-        else if( 'INTO' == $piece_upper )
+        else if( '"' == $piece_upper )
         {
-          $in_insert = true;
-          $in_replace = true;
+          $in_double_quote = !$in_double_quote;
           $output .= $piece;
         }
-        else if( 'FROM' == $piece_upper )
-        {
-          $in_from = true;
+        else if( $in_single_quote || $in_double_quote )
+        { // ignore anything inside quotes
           $output .= $piece;
         }
-        else if( 'LEFT JOIN' == $piece_upper ||
-                 'RIGHT JOIN' == $piece_upper ||
-                 'STRAIGHT JOIN' == $piece_upper ||
-                 'CROSS JOIN' == $piece_upper ||
-                 'JOIN' == $piece_upper )
+        else
         {
-          $in_join = true;
-          $output .= $piece;
-        }
-        // not an opening boundary, so if we're not in a boundary so there's nothing to do
-        else if( !( $in_update || $in_insert || $in_replace || $in_from || $in_join ) )
-        {
-          $output .= $piece;
-        }
-        // not an opening boundary and we are in some boundary, see if we're closing a boundary
-        else if( 'DUPLICATE KEY UPDATE' == $piece_upper )
-        {
-          $in_insert = false;
-          $output .= $piece;
-        }
-        else if( 'SET' == $piece_upper )
-        {
-          $in_update = false;
-          $in_insert = false;
-          $in_replace = false;
-          $output .= $piece;
-        }
-        else if( 'VALUES' == $piece_upper ||
-                 'VALUE' == $piece_upper ||
-                 'SELECT' == $piece_upper )
-        {
-          $in_insert = false;
-          $in_replace = false;
-          $output .= $piece;
-        }
-        else if( 'ON' == $piece_upper )
-        {
-          $in_join = false;
-          $output .= $piece;
-        }
-        else if( 'WHERE' == $piece_upper ||
-                 'GROUP' == $piece_upper ||
-                 'HAVING' == $piece_upper ||
-                 'ORDER' == $piece_upper ||
-                 'LIMIT' == $piece_upper ||
-                 'PROCEDURE' == $piece_upper ||
-                 'INTO' == $piece_upper ||
-                 'FOR' == $piece_upper )
-        {
-          $in_from = false;
-          $in_join = false;
-          $output .= $piece;
-        }
-        else // in a boundary, not closing it, so process the table names in the piece
-        {
-          $first_string = true;
-          foreach( explode( ',', $piece ) as $table_string )
+          if( 'UPDATE' == $piece_upper )
           {
-            $output .= $first_string ? ' ' : ', ';
-            if( $first_string ) $first_string = false;
-            $table_words = preg_split( '/[ ()]/', trim( $table_string ), 2 );
-            if( array_key_exists( $table_words[0], $this->tables ) )
-              $output .= $this->tables[$table_words[0]]['database'].'.';
-            $output .= ltrim( $table_string );
+            $in_update = true;
+            $output .= $piece;
+          }
+          else if( 'INTO' == $piece_upper )
+          {
+            $in_insert = true;
+            $in_replace = true;
+            $output .= $piece;
+          }
+          else if( 'FROM' == $piece_upper )
+          {
+            $in_from = true;
+            $output .= $piece;
+          }
+          else if( 'LEFT JOIN' == $piece_upper ||
+                   'RIGHT JOIN' == $piece_upper ||
+                   'STRAIGHT JOIN' == $piece_upper ||
+                   'CROSS JOIN' == $piece_upper ||
+                   'JOIN' == $piece_upper )
+          {
+            $in_join = true;
+            $output .= $piece;
+          }
+          // not an opening boundary, so if we're not in a boundary so there's nothing to do
+          else if( !( $in_update || $in_insert || $in_replace || $in_from || $in_join ) )
+          {
+            $output .= $piece;
+          }
+          // not an opening boundary and we are in some boundary, see if we're closing a boundary
+          else if( 'DUPLICATE KEY UPDATE' == $piece_upper )
+          {
+            $in_insert = false;
+            $output .= $piece;
+          }
+          else if( 'SET' == $piece_upper )
+          {
+            $in_update = false;
+            $in_insert = false;
+            $in_replace = false;
+            $output .= $piece;
+          }
+          else if( 'VALUES' == $piece_upper ||
+                   'VALUE' == $piece_upper ||
+                   'SELECT' == $piece_upper )
+          {
+            $in_insert = false;
+            $in_replace = false;
+            $output .= $piece;
+          }
+          else if( 'ON' == $piece_upper )
+          {
+            $in_join = false;
+            $output .= $piece;
+          }
+          else if( 'WHERE' == $piece_upper ||
+                   'GROUP' == $piece_upper ||
+                   'HAVING' == $piece_upper ||
+                   'ORDER' == $piece_upper ||
+                   'LIMIT' == $piece_upper ||
+                   'PROCEDURE' == $piece_upper ||
+                   'INTO' == $piece_upper ||
+                   'FOR' == $piece_upper )
+          {
+            $in_from = false;
+            $in_join = false;
+            $output .= $piece;
+          }
+          else // in a boundary, not closing it, so process the table names in the piece
+          {
+            $first_string = true;
+            foreach( explode( ',', $piece ) as $table_string )
+            {
+              $output .= $first_string ? ' ' : ', ';
+              if( $first_string ) $first_string = false;
+              $table_words = preg_split( '/[ ()]/', trim( $table_string ), 2 );
+              if( array_key_exists( $table_words[0], $this->tables ) )
+                $output .= $this->tables[$table_words[0]]['database'].'.';
+              $output .= ltrim( $table_string );
+            }
           }
         }
       }

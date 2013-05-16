@@ -318,17 +318,30 @@ class participant extends person
   {
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    $quota_id = static::db()->get_one( sprintf(
-      'SELECT id '.
-      'FROM quota '.
-      'WHERE region_id = %s '.
-      'AND site_id = %s '.
-      'AND gender = %s '.
-      'AND age_group_id = %s',
-      $database_class_name::format_string( $this->get_primary_address()->region_id ),
-      $database_class_name::format_string( $this->get_effective_site()->id ),
-      $database_class_name::format_string( $this->gender ),
-      $database_class_name::format_string( $this->age_group_id ) ) );
+    $db_primary_address = $this->get_primary_address();
+    $db_default_site = $this->get_default_site();
+    $db_age_group = $this->get_age_group();
+
+    $quota_id = 0;
+
+    if( !is_null( $db_primary_address ) &&
+        !is_null( $db_primary_address->region_id ) &&
+        !is_null( $db_default_site ) &&
+        !is_null( $this->gender ) &&
+        !is_null( $db_age_group ) )
+    {
+      $quota_id = static::db()->get_one( sprintf(
+        'SELECT id '.
+        'FROM quota '.
+        'WHERE region_id = %s '.
+        'AND site_id = %s '.
+        'AND gender = %s '.
+        'AND age_group_id = %s',
+        $database_class_name::format_string( $db_primary_address->region_id ),
+        $database_class_name::format_string( $db_default_site->id ),
+        $database_class_name::format_string( $this->gender ),
+        $database_class_name::format_string( $db_age_group->id ) ) );
+    }
 
     return $quota_id ? lib::create( 'database\quota', $quota_id ) : NULL;
   }
@@ -357,82 +370,6 @@ class participant extends person
       'ORDER BY datetime',
       $database_class_name::format_string( $this->id ),
       $database_class_name::format_string( $db_event_type->id ) ) );
-  }
-
-  /**
-   * Get a list of all participants who have or do not have a particular event.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array( database\participant )
-   * @param database\event_type $db_event_type
-   * @param boolean $exists Set to true to return participants with the event, false for those
-   *                without it.
-   * @param modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @return array( record ) | int
-   * @static
-   * @access public
-   */
-  public static function select_for_event(
-    $db_event_type, $exists = true, $modifier = NULL, $count = false )
-  {
-    $database_class_name = lib::get_class_name( 'database\database' );
-
-    // we need to build custom sql for this query
-    $sql = sprintf(
-      'SELECT DISTINCT participant.id '.
-      'FROM participant, event '.
-      'WHERE participant.id = event.participant_id '.
-      'AND event.event_type_id = %s',
-      $database_class_name::format_string( $db_event_type->id ) );
-
-    if( $exists )
-    {
-      // add in the COUNT function if we are counting
-      if( $count ) preg_replace( '/DISTINCT participant.id/',
-                                 'COUNT( DISTINCT participant.id )',
-                                 $sql );
-    }
-    else
-    {
-      // determine the inverse (missing events) by using a sub-select
-      $sql = sprintf(
-        ( $count ? 'SELECT COUNT(*) ' : 'SELECT id ' ).
-        'FROM participant '.
-        'WHERE id NOT IN ( %s ) ',
-        $sql );
-    }
-
-    // add in the modifier if it exists
-    if( !is_null( $modifier ) ) $sql .= $modifier->get_sql( true );
-
-    if( $count )
-    {
-      return intval( static::db()->get_one( $sql ) );
-    }
-    else
-    {
-      $id_list = static::db()->get_col( $sql );
-      $records = array();
-      foreach( $id_list as $id ) $records[] = new static( $id );
-      return $records;
-    }
-  }
-
-  /**
-   * Count all participants who have or do not have a particular event.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\event_type $db_event_type
-   * @param boolean $exists Set to true to return participants with the event, false for those
-   *                without it.
-   * @param modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @return array( record ) | int
-   * @static
-   * @access public
-   */
-  public static function count_for_event( $db_event_type, $exists = true, $modifier = NULL )
-  {
-    return static::select_for_event( $db_event_type, $exists, $modifier, true );
   }
 
   /**

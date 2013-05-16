@@ -188,7 +188,7 @@ class person extends has_note
     if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'person_id', '=', $person_id );
     $modifier->order( 'sticky', true );
-    $modifier->order( 'datetime' );
+    $modifier->order_desc( 'datetime' );
     return $note_class_name::select( $modifier );
   }
 

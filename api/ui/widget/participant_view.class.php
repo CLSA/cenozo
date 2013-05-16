@@ -201,6 +201,16 @@ class participant_view extends base_view
     }
     catch( \cenozo\exception\permission $e ) {}
 
+    // add an delink action
+    $db_operation = $operation_class_name::get_operation( 'push', 'participant', 'delink' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    {
+      $this->set_variable( 'allow_delink', true );
+      $this->add_action( 'delink', 'De-Link', NULL,
+        'Permanently removes the link between a participant and their current unique identifier.' );
+    }
+    else $this->set_variable( 'allow_delink', true );
+
     // add an hin action
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'hin' );
     if( lib::create( 'business\session' )->is_allowed( $db_operation ) )

@@ -547,6 +547,12 @@ final class service
       $this->operation_name = $prev_widget['name'];
       $this->arguments = $prev_widget['args'];
     }
+    else if( 'prev_clip' == $this->slot_action )
+    {
+      $prev_widget = $session->slot_prev( $this->slot_name, true );
+      $this->operation_name = $prev_widget['name'];
+      $this->arguments = $prev_widget['args'];
+    }
     else if( 'next' == $this->slot_action )
     {
       $next_widget = $session->slot_next( $this->slot_name );
