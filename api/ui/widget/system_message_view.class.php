@@ -40,7 +40,7 @@ class system_message_view extends base_view
 
     // define all columns defining this record
 
-    $type = 3 == lib::create( 'business\session' )->get_role()->tier ? 'enum' : 'hidden';
+    $type = lib::create( 'business\session' )->get_role()->all_sites ? 'enum' : 'hidden';
     $this->add_item( 'site_id', $type, 'Site',
       'Leaving the site blank will show the message across all sites.' );
     $this->add_item( 'role_id', 'enum', 'Role',
@@ -63,10 +63,10 @@ class system_message_view extends base_view
     $role_class_name = lib::get_class_name( 'database\role' );
 
     $session = lib::create( 'business\session' );
-    $is_top_tier = 3 == $session->get_role()->tier;
+    $all_sites = $session->get_role()->all_sites;
 
     // create enum arrays
-    if( $is_top_tier )
+    if( $all_sites )
     {
       $sites = array();
       $site_mod = lib::create( 'database\modifier' );
@@ -84,7 +84,7 @@ class system_message_view extends base_view
 
     // set the view's items
     $this->set_item(
-      'site_id', $this->get_record()->site_id, false, $is_top_tier ? $sites : NULL );
+      'site_id', $this->get_record()->site_id, false, $all_sites ? $sites : NULL );
     $this->set_item( 'role_id', $this->get_record()->role_id, false, $roles );
     $this->set_item( 'title', $this->get_record()->title, true );
     $this->set_item( 'note', $this->get_record()->note, true );

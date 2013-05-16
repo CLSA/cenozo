@@ -49,7 +49,7 @@
               if( ajax_push( "{{ widget.subject }}", "new_{{ list_subject }}", args ) ) {
                 // clear the checked ids object cookie and return to the previous page
                 $.cookie( "{{ widget.full }}_{{ list_widget_name }}_checked_ids", null );
-                slot_prev( {{ slot }} );
+                slot_prev_clip( {{ slot }} );
               }
             }
           );

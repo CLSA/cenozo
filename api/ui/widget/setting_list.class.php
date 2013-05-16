@@ -38,12 +38,11 @@ class setting_list extends base_list
   {
     parent::prepare();
 
-    $is_mid_tier = 2 == lib::create( 'business\session' )->get_role()->tier;
-
     $this->add_column( 'category', 'string', 'Category', true );
     $this->add_column( 'name', 'string', 'Name', true );
     $this->add_column( 'value', 'string', 'Default', false );
-    if( $is_mid_tier ) $this->add_column( 'site_value', 'string', 'Value', false );
+    if( !lib::create( 'business\session' )->get_role()->all_sites )
+      $this->add_column( 'site_value', 'string', 'Value', false );
     $this->add_column( 'description', 'text', 'Description', true, true, 'left' );
   }
 
@@ -58,11 +57,10 @@ class setting_list extends base_list
     parent::setup();
     
     $session = lib::create( 'business\session' );
-    $is_mid_tier = 2 == $session->get_role()->tier;
 
     foreach( $this->get_record_list() as $record )
     {
-      if( $is_mid_tier )
+      if( !$session->get_role()->all_sites )
       { // include the site's value
         $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'setting_value.site_id', '=', $session->get_site()->id );

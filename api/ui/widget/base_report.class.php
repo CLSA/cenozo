@@ -344,7 +344,7 @@ abstract class base_report extends \cenozo\ui\widget
    */
   public static function may_restrict_by_site()
   {
-    return 3 == lib::create( 'business\session' )->get_role()->tier;
+    return lib::create( 'business\session' )->get_role()->all_sites;
   }
 
   /**
