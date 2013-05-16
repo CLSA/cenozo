@@ -66,4 +66,3 @@ abstract class base_feed extends \cenozo\ui\pull
    */
   protected $end_datetime = NULL;
 }
-?>

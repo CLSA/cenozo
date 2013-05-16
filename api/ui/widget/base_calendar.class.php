@@ -59,4 +59,3 @@ abstract class base_calendar extends \cenozo\ui\widget
    */
   private $editable = false;
 }
-?>

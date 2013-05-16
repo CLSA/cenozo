@@ -58,8 +58,7 @@ class access_list extends site_restricted_list
       $this->add_row( $record->id,
         array( 'user.name' => $record->get_user()->name,
                'role.name' => $record->get_role()->name,
-               'site.name' => $record->get_site()->name ) );
+               'site.name' => $record->get_site()->get_full_name() ) );
     }
   }
 }
-?>

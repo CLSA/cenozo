@@ -55,14 +55,17 @@ class self_settings extends \cenozo\ui\widget
     $db_current_site = $session->get_site();
     $db_current_role = $session->get_role();
     
+    $site_mod = lib::create( 'database\modifier' );
+    $site_mod->order( 'name' );
     $sites = array();
-    foreach( $db_user->get_site_list() as $db_site )
-      $sites[ $db_site->id ] = $db_site->name;
+    foreach( $db_user->get_site_list( $site_mod ) as $db_site )
+      $sites[ $db_site->id ] = $db_site->get_full_name();
 
     $roles = array();
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_current_site->id );
-    foreach( $db_user->get_role_list( $modifier ) as $db_role )
+    $role_mod = lib::create( 'database\modifier' );
+    $role_mod->where( 'access.site_id', '=', $db_current_site->id );
+    $role_mod->order( 'name' );
+    foreach( $db_user->get_role_list( $role_mod ) as $db_role )
       $roles[ $db_role->id ] = $db_role->name;
     
     // themes are found in the jquery-ui 
@@ -70,19 +73,19 @@ class self_settings extends \cenozo\ui\widget
     foreach( new \DirectoryIterator( JQUERY_UI_THEMES_PATH ) as $file )
       if( !$file->isDot() && $file->isDir() ) $themes[] = $file->getFilename();
 
+    $this->set_variable( 'service_title', $session->get_service()->title );
     $this->set_variable( 'user', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'version',
       lib::create( 'business\setting_manager' )->get_setting( 'general', 'version' ) );
     $this->set_variable( 'development', lib::in_development_mode() );
     $this->set_variable( 'current_site_id', $db_current_site->id );
-    $this->set_variable( 'current_site_name', $db_current_site->name );
+    $this->set_variable( 'current_site_name', $db_current_site->get_full_name() );
     $this->set_variable( 'current_role_id', $db_current_role->id );
     $this->set_variable( 'current_role_name', $db_current_role->name );
     $this->set_variable( 'current_theme_name', $session->get_theme() );
     $this->set_variable( 'roles', $roles );
     $this->set_variable( 'sites', $sites );
     $this->set_variable( 'themes', $themes );
-    $this->set_variable( 'logo', false );
+    $this->set_variable( 'logo', 'img/logo_small.png' );
   }
 }
-?>

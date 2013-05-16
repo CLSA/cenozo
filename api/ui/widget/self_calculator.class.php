@@ -41,4 +41,3 @@ class self_calculator extends \cenozo\ui\widget
     $this->show_heading( false );
   }
 }
-?>

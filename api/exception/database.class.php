@@ -76,4 +76,3 @@ class database extends base_exception
    */
   protected $sql = NULL;
 }
-?>

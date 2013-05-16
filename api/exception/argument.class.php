@@ -43,4 +43,3 @@ class argument extends base_exception
    */
   protected $argument_name = NULL;
 }
-?>

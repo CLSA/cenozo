@@ -45,18 +45,22 @@ abstract class factory
         'Tried to call self() method without at least one argument.', __METHOD__ );
     }
     
+    $class_index = lib::get_class_name( get_called_class(), true );
+
     $arguments = func_get_args();
     if( !self::exists( $arguments[0] ) )
     {
       // this creates a child-class instance (new static = new child_class)
-      self::$instance_list[ get_called_class() ][ serialize( $arguments[0] ) ] =
+      self::$instance_list[$class_index][serialize( $arguments[0] )] =
         new static( func_get_args() );
     }
-    return self::$instance_list[ get_called_class() ][ serialize( $arguments[0] ) ];
+    return self::$instance_list[$class_index][serialize( $arguments[0] )];
   }
   
   public static function exists( $arg )
   {
+    $class_index = lib::get_class_name( get_called_class(), true );
+
     $type = gettype( $arg );
     if( 'boolean' != $type &&
         'integer' != $type &&
@@ -70,7 +74,7 @@ abstract class factory
                  $type ), __METHOD__ );
     }
     
-    return isset( self::$instance_list[ get_called_class() ][ serialize( $arg ) ]  );
+    return isset( self::$instance_list[$class_index][serialize( $arg )]  );
   }
 
   /**
@@ -80,4 +84,3 @@ abstract class factory
    */
   private static $instance_list = array();
 }
-?>

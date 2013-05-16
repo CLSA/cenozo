@@ -48,7 +48,7 @@ class cenozo_manager extends \cenozo\factory
   protected function set_site_and_role( &$arguments )
   {
     $session = lib::create( 'business\session' );
-    $arguments['request_site_name'] = $session->get_site()->name;
+    $arguments['request_site_name'] = $session->get_site()->get_full_name();
     $arguments['request_role_name'] = $session->get_role()->name;
   }
 
@@ -83,6 +83,7 @@ class cenozo_manager extends \cenozo\factory
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
+    $request->addHeaders( array( 'service_name' => SERVICENAME ) );
     $request->setOptions( $auth );
     
     if( is_null( $arguments ) ) $arguments = array();
@@ -134,6 +135,7 @@ class cenozo_manager extends \cenozo\factory
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
+    $request->addHeaders( array( 'service_name' => SERVICENAME ) );
     $request->setOptions( $auth );
 
     if( is_null( $arguments ) ) $arguments = array();

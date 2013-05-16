@@ -25,4 +25,3 @@ class access_delete extends base_delete
     parent::__construct( 'access', $args );
   }
 }
-?>

@@ -37,6 +37,7 @@ class user_reset_password extends base_record
   {
     parent::execute();
 
+    $util_class_name = lib::get_class_name( 'util' );
     $user_class_name = lib::get_class_name( 'database\user' );
 
     $db_user = $this->get_record();
@@ -49,4 +50,3 @@ class user_reset_password extends base_record
     }
   }
 }
-?>

@@ -148,4 +148,3 @@ abstract class base_new_access extends base_record
     return parent::convert_from_noid( $args );
   }
 }
-?>

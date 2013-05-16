@@ -1,3 +1,4 @@
+DELETE FROM postcode;
 INSERT INTO postcode ( name, region_id, timezone_offset, daylight_savings ) VALUES
 ( "B", ( SELECT id FROM region WHERE abbreviation = "NS" ), -4, 1 ),
 ( "C", ( SELECT id FROM region WHERE abbreviation = "PE" ), -4, 1 ),

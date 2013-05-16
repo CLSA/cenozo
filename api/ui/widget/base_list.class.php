@@ -216,23 +216,30 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
       if( !is_null( $datetime_column ) )
       {
         $this->sort_column = $datetime_column;
-        $this->sort_desc = false;
+        $this->sort_desc = true;
       }
       if( !is_null( $date_column ) )
       {
         $this->sort_column = $date_column;
-        $this->sort_desc = false;
+        $this->sort_desc = true;
       }
       if( !is_null( $time_column ) )
       {
         $this->sort_column = $time_column;
-        $this->sort_desc = false;
+        $this->sort_desc = true;
       }
     }
 
     // apply ordering and paging to sql query
     if( strlen( $this->sort_column ) ) $modifier->order( $this->sort_column, $this->sort_desc );
     $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
+
+    // Sort by the subject's id column, descending.
+    // We MUST do this since the select which gets this list is using the DISTINCT keyword,
+    // but MySQL has a bug when using distinct which doesn't return the right rows when
+    // using LIMIT and OFFSET unless we are also using the ORDER keyword on a column with
+    // a unique constraint
+    $modifier->order_desc( sprintf( '%s.id', $this->get_subject() ) );
     
     $method_name = 'determine_'.$this->get_subject().'_list';
     $this->record_list =
@@ -292,7 +299,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     else
     {
       $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
-      return $class_name::count( $modifier );
+      return $class_name::count( $modifier, !$this->disable_distinct );
     }
   }
 
@@ -319,7 +326,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     else
     {
       $class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
-      return $class_name::select( $modifier );
+      return $class_name::select( $modifier, false, !$this->disable_distinct );
     }
   }
   
@@ -424,7 +431,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   {
     $this->removable = $enable;
   }
-  
+
   /**
    * Gets whether sorting has been disabled for this list
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -446,7 +453,33 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   {
     $this->disable_sorting = $enable;
   }
-  
+
+  /**
+   * Gets whether distinct checking has been disabled for this list
+   * Disabling distinct checking will improve performance but may cause duplicates to appear
+   * in the list depending on the underlying database relationships involved.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_disable_distinct()
+  {
+    return $this->disable_distinct;
+  }
+
+  /**
+   * Sets whether distinct checking is disabled for this list
+   * Disabling distinct checking will improve performance but may cause duplicates to appear
+   * in the list depending on the underlying database relationships involved.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_disable_distinct( $enable )
+  {
+    $this->disable_distinct = $enable;
+  }
+
   /**
    * Set the number of items to show per page
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -671,6 +704,13 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   private $disable_sorting = false;
   
   /**
+   * Whether to disable distinct checking of the list
+   * @var boolean
+   * @access private
+   */
+  private $disable_distinct = false;
+
+  /**
    * An array of columns.
    * 
    * Every item in the array must have the following:
@@ -725,4 +765,3 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    */
   private $record_list;
 }
-?>

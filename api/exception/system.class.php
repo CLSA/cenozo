@@ -29,4 +29,3 @@ class system extends base_exception
     parent::__construct( $message, $context, $previous );
   }
 }
-?>

@@ -19,4 +19,3 @@ class relationship
   const ONE_TO_MANY = 2;
   const MANY_TO_MANY = 3;
 }
-?>

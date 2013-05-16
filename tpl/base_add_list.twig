@@ -32,9 +32,13 @@
             "{{ widget.subject_name }}, or click cancel.</p>",
             true );
         } else {
-          var args = new Object();
-          args.id = {{ id }};
-          args.id_list = ids;
+
+          {% block arguments %}
+            var args = new Object();
+            args.id = {{ id }};
+            args.id_list = ids;
+          {% endblock arguments %}
+
           confirm_dialog(
             "Add {{ list_subjects }} to the {{ widget.subject_name }}?",
             "<p>You have selected " + 

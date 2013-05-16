@@ -85,7 +85,7 @@ final class log extends singleton
         'backtrace' => false
       ),
       PEAR_LOG_INFO => array(
-        'log' => true,
+        'log' => false,
         'convert' => true,
         'label' => false,
         'backtrace' => false
@@ -253,13 +253,16 @@ final class log extends singleton
     $class_name = lib::get_class_name( 'business\session' );
     if( !class_exists( $class_name ) || !$class_name::exists() ) return;
 
-    // replace cenozo and application path strings with something smaller
     if( is_string( $message ) )
-    {
+    { // replace cenozo and application path strings with something smaller
       $message = str_replace(
         array( CENOZO_PATH, APPLICATION_PATH ),
         array( 'cenozo', APPNAME ),
         $message );
+    }
+    else if( is_bool( $message ) )
+    { // convert booleans to a string so that they display properly
+      $message = $message ? 'true' : 'false';
     }
 
     // if in devel mode log to firephp
@@ -345,7 +348,7 @@ final class log extends singleton
     $user_and_role = is_null( $db_user ) || is_null( $db_role )
                    ? 'unknown'
                    : $db_user->name.':'.$db_role->name;
-    $site = is_null( $db_site ) ? 'unknown' : $db_site->name;
+    $site = is_null( $db_site ) ? 'unknown' : $db_site->get_full_name();
     return sprintf( '<%s@%s> %s', $user_and_role, $site, $message );
   }
 
@@ -569,4 +572,3 @@ final class log extends singleton
 // define a custom error handlers
 set_error_handler( array( '\cenozo\log', 'error_handler' ) );
 register_shutdown_function( array( '\cenozo\log', 'fatal_error_handler' ) );
-?>

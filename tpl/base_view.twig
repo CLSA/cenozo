@@ -186,11 +186,11 @@
                         var columns = new Object();
                         columns[column_name] = $(this).children( "textarea" ).val();
                         args.columns = columns;
-            
+
                         // push the data, reload the record on success
                         if( ajax_push( "{{ widget.subject }}", "edit", args ) )
                           slot_refresh( {{ slot }} );
-            
+
                         $(this).dialog( "close" );
                       },
                       Cancel: function() {

@@ -61,6 +61,7 @@ class system_message_view extends base_view
 
     $site_class_name = lib::get_class_name( 'database\site' );
     $role_class_name = lib::get_class_name( 'database\role' );
+
     $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
 
@@ -69,9 +70,10 @@ class system_message_view extends base_view
     {
       $sites = array();
       $site_mod = lib::create( 'database\modifier' );
+      $site_mod->order( 'service_id' );
       $site_mod->order( 'name' );
       foreach( $site_class_name::select( $site_mod ) as $db_site )
-        $sites[$db_site->id] = $db_site->name;
+        $sites[$db_site->id] = $db_site->get_full_name();
     }
 
     $roles = array();
@@ -88,4 +90,3 @@ class system_message_view extends base_view
     $this->set_item( 'note', $this->get_record()->note, true );
   }
 }
-?>

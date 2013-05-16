@@ -52,4 +52,3 @@ class cenozo_service extends base_exception
   
   protected $code;
 }
-?>

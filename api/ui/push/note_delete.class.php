@@ -82,4 +82,3 @@ class note_delete extends \cenozo\ui\push
     return $args;
   }
 }
-?>

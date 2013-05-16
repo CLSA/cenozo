@@ -530,4 +530,3 @@ class modifier extends \cenozo\base_object
    */
   protected $limit_offset = 0;
 }
-?>

@@ -27,4 +27,3 @@ class user_edit extends base_edit
     parent::__construct( 'user', $args );
   }
 }
-?>
