@@ -20,11 +20,11 @@ class opal_manager extends \cenozo\factory
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
-  protected function __construct()
+  protected function __construct( $arguments )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     $this->enabled = true === $setting_manager->get_setting( 'opal', 'enabled' );
-    $this->server = $setting_manager->get_setting( 'opal', 'server' );
+    $this->server = $arguments[0];
     $this->port = $setting_manager->get_setting( 'opal', 'port' );
     $this->username = $setting_manager->get_setting( 'opal', 'username' );
     $this->password = $setting_manager->get_setting( 'opal', 'password' );
@@ -58,7 +58,7 @@ class opal_manager extends \cenozo\factory
 
     // send the http request
     $url = sprintf(
-      '%s:%d/ws/datasource/%s/table/%s/valueSet/%s/variable/%s/value',
+      'https://%s:%d/ws/datasource/%s/table/%s/valueSet/%s/variable/%s/value',
       $this->server,
       $this->port,
       rawurlencode( $datasource ),
@@ -69,12 +69,15 @@ class opal_manager extends \cenozo\factory
     $message = $request->send();
 
     $code = $message->getResponseCode();
-    if( 200 != $code )
+    if( 404 == $code )
+    { // 404 on missing data
+      throw lib::create( 'exception\argument', 'participant', $db_participant->uid, __METHOD__ );
+    }
+    else if( 200 != $code )
     {
-      throw lib::create( 'exception\runtime', sprintf(
-        'Unable to connect to Opal service for url "%s" (code: %s)',
-        $url,
-        $code ) );
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Unable to connect to Opal service for url "%s" (code: %s)', $url, $code ),
+        __METHOD__ );
     }
 
     return $util_class_name::json_decode( $message->body );
