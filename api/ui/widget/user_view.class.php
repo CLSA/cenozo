@@ -113,7 +113,7 @@ class user_view extends base_view
     }
     catch( \cenozo\exception\permission $e ) {}
   }
-  
+
   /**
    * Overrides the access list widget's method.
    * 
@@ -124,12 +124,15 @@ class user_view extends base_view
    */
   public function determine_access_count( $modifier = NULL )
   {
+    $session = lib::create( 'business\session' );
+
     $access_class_name = lib::get_class_name( 'database\access' );
     $site_restricted_list_class_name = lib::get_class_name( 'ui\widget\site_restricted_list' );
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
+    $modifier->where( 'site.service_id', '=', $session->get_service()->id );
     if( !$site_restricted_list_class_name::may_restrict() )
-      $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
+      $modifier->where( 'access.site_id', '=', $session->get_site()->id );
     return $access_class_name::count( $modifier );
   }
 
@@ -143,12 +146,15 @@ class user_view extends base_view
    */
   public function determine_access_list( $modifier = NULL )
   {
+    $session = lib::create( 'business\session' );
+
     $access_class_name = lib::get_class_name( 'database\access' );
     $site_restricted_list_class_name = lib::get_class_name( 'ui\widget\site_restricted_list' );
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
+    $modifier->where( 'site.service_id', '=', $session->get_service()->id );
     if( !$site_restricted_list_class_name::may_restrict() )
-      $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
+      $modifier->where( 'access.site_id', '=', $session->get_site()->id );
     return $access_class_name::select( $modifier );
   }
 

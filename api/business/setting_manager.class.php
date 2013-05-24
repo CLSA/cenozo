@@ -30,6 +30,7 @@ class setting_manager extends \cenozo\singleton
                          'general',
                          'interface',
                          'ldap',
+                         'opal',
                          'path',
                          'url',
                          'version' );
