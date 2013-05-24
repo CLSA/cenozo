@@ -315,6 +315,7 @@ abstract class base_report extends \cenozo\ui\pull
         $this->report->set_background_color( '000000' );
         $this->report->set_foreground_color( 'FFFFFF' );
         $this->report->set_cell( 'A'.$row, $table['title'] );
+        $this->report->set_foreground_color( '000000' );
         $row++;
       }
 
