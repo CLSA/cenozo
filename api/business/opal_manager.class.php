@@ -44,6 +44,8 @@ class opal_manager extends \cenozo\factory
    */
   public function get_value( $datasource, $table, $db_participant, $variable )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     if( is_null( $db_participant ) )
       throw lib::create( 'exception\argument', 'db_participant', $db_participant, __METHOD__ );
     else if( 0 == strlen( $variable ) )
