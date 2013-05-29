@@ -82,7 +82,7 @@ class opal_manager extends \cenozo\factory
         __METHOD__ );
     }
 
-    return $util_class_name::json_decode( $message->body );
+    return $message->body;
   }
 
   /**
