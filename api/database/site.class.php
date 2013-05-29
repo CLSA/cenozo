@@ -129,4 +129,25 @@ class site extends base_access
     $datetime_obj->setTimeZone( $util_class_name::get_timezone_object( $server ) );
     return $datetime_obj->format( $format );
   }
+
+  /**
+   * Determines the difference in hours between the user's timezone and the site's timezone
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return float (NULL if it is not possible to get the time difference)
+   * @access public
+   */
+  public function get_time_diff()
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    // create a datetime object using this site's timezone
+    $site_datetime_obj =
+      new \DateTime( NULL, $util_class_name::get_timezone_object( false, $this ) );
+
+    // get the user's and site's timezone differential from UTC
+    $user_offset = $util_class_name::get_datetime_object()->getOffset() / 3600;
+    $site_offset = $site_datetime_obj->getOffset() / 3600;
+
+    return $site_offset - $user_offset;
+  }
 }
