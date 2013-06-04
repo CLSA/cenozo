@@ -68,7 +68,20 @@ class opal_manager extends \cenozo\factory
       $db_participant->uid,
       rawurlencode( $variable ) );
     $request->setUrl( $url );
-    $message = $request->send();
+    
+    try
+    {
+      $message = $request->send();
+    }
+    catch( \Exception $e )
+    {
+      // We've caught one of HttpRuntime, HttpRequest, HttpMalformedHeader or HttpEncoding Exceptions
+      // These errors may be transient, so instruct the user to reload the page
+      throw lib::create( 'exception\notice',
+        'The server appears to be busy, please try reloading the page. '.
+        'If this still does not fix the problem please report the issue to a superior.',
+        __METHOD__ );
+    }
 
     $code = $message->getResponseCode();
     if( 404 == $code )
