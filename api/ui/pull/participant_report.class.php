@@ -213,6 +213,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     $phone_count = $this->get_argument( 'phone_count' );
     $address_count = $this->get_argument( 'address_count' );
 
+    $contents = array();
     foreach( $participant_class_name::select( $this->modifier ) as $db_participant )
     {
       if( '' === $address_count || 0 != $address_count )
