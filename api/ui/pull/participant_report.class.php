@@ -40,6 +40,7 @@ class participant_report extends \cenozo\ui\pull\base_report
   {
     parent::prepare();
 
+    $util_class_name = lib::get_class_name( 'util' );
     $service_class_name = lib::get_class_name( 'database\service' );
     $database_class_name = lib::get_class_name( 'database\database' );
 
@@ -78,10 +79,10 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     // define the date of birth start/end
     $date_of_birth_start_obj = '' !== $date_of_birth_start_date
-                             ? util::get_datetime_object( $date_of_birth_start_date )
+                             ? $util_class_name::get_datetime_object( $date_of_birth_start_date )
                              : NULL;
     $date_of_birth_end_obj = '' !== $date_of_birth_end_date
-                           ? util::get_datetime_object( $date_of_birth_end_date )
+                           ? $util_class_name::get_datetime_object( $date_of_birth_end_date )
                            : NULL;
     if( '' !== $date_of_birth_start_date && '' !== $date_of_birth_end_date &&
         $date_of_birth_end_obj < $date_of_birth_start_obj )
@@ -94,10 +95,10 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     // define the event start/end
     $event_start_obj = '' !== $event_start_date
-                     ? util::get_datetime_object( $event_start_date )
+                     ? $util_class_name::get_datetime_object( $event_start_date )
                      : NULL;
     $event_end_obj = '' !== $event_end_date
-                   ? util::get_datetime_object( $event_end_date )
+                   ? $util_class_name::get_datetime_object( $event_end_date )
                    : NULL;
     if( '' !== $event_start_date && '' !== $event_end_date &&
         $event_end_obj < $event_start_obj )
@@ -213,6 +214,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     $phone_count = $this->get_argument( 'phone_count' );
     $address_count = $this->get_argument( 'address_count' );
 
+    $contents = array();
     foreach( $participant_class_name::select( $this->modifier ) as $db_participant )
     {
       if( '' === $address_count || 0 != $address_count )

@@ -20,11 +20,11 @@ class opal_manager extends \cenozo\factory
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
-  protected function __construct()
+  protected function __construct( $arguments )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     $this->enabled = true === $setting_manager->get_setting( 'opal', 'enabled' );
-    $this->server = $setting_manager->get_setting( 'opal', 'server' );
+    $this->server = $arguments[0];
     $this->port = $setting_manager->get_setting( 'opal', 'port' );
     $this->username = $setting_manager->get_setting( 'opal', 'username' );
     $this->password = $setting_manager->get_setting( 'opal', 'password' );
@@ -44,6 +44,8 @@ class opal_manager extends \cenozo\factory
    */
   public function get_value( $datasource, $table, $db_participant, $variable )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     if( is_null( $db_participant ) )
       throw lib::create( 'exception\argument', 'db_participant', $db_participant, __METHOD__ );
     else if( 0 == strlen( $variable ) )
@@ -58,7 +60,7 @@ class opal_manager extends \cenozo\factory
 
     // send the http request
     $url = sprintf(
-      '%s:%d/ws/datasource/%s/table/%s/valueSet/%s/variable/%s/value',
+      'https://%s:%d/ws/datasource/%s/table/%s/valueSet/%s/variable/%s/value',
       $this->server,
       $this->port,
       rawurlencode( $datasource ),
@@ -66,18 +68,34 @@ class opal_manager extends \cenozo\factory
       $db_participant->uid,
       rawurlencode( $variable ) );
     $request->setUrl( $url );
-    $message = $request->send();
-
-    $code = $message->getResponseCode();
-    if( 200 != $code )
+    
+    try
     {
-      throw lib::create( 'exception\runtime', sprintf(
-        'Unable to connect to Opal service for url "%s" (code: %s)',
-        $url,
-        $code ) );
+      $message = $request->send();
+    }
+    catch( \Exception $e )
+    {
+      // We've caught one of HttpRuntime, HttpRequest, HttpMalformedHeader or HttpEncoding Exceptions
+      // These errors may be transient, so instruct the user to reload the page
+      throw lib::create( 'exception\notice',
+        'The server appears to be busy, please try reloading the page. '.
+        'If this still does not fix the problem please report the issue to a superior.',
+        __METHOD__ );
     }
 
-    return $util_class_name::json_decode( $message->body );
+    $code = $message->getResponseCode();
+    if( 404 == $code )
+    { // 404 on missing data
+      throw lib::create( 'exception\argument', 'participant', $db_participant->uid, __METHOD__ );
+    }
+    else if( 200 != $code )
+    {
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Unable to connect to Opal service for url "%s" (code: %s)', $url, $code ),
+        __METHOD__ );
+    }
+
+    return $message->body;
   }
 
   /**
