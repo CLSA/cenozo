@@ -405,9 +405,20 @@ class database extends \cenozo\base_object
 
     if( false === $result )
     {
-      // pass the db error code instead of a class error code
-      throw lib::create( 'exception\database',
-        $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
+      // if a deadlock has occurred then notify the user with a notice
+      if( 1213 == $this->connection->ErrorNo() )
+      {
+        log::warning( 'Deadlock has prevented an update to the database.' );
+        throw lib::create( 'exception\notice',
+          'The server was too busy to complete your request, please try again. '.
+          'If this error persists please contact support.' , __METHOD__ );
+      }
+      else
+      {
+        // pass the db error code instead of a class error code
+        throw lib::create( 'exception\database',
+          $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
+      }
     }
 
     return $result;
