@@ -313,7 +313,7 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`participant` (
   `gender` ENUM('male','female') NOT NULL ,
   `date_of_birth` DATE NULL DEFAULT NULL ,
   `age_group_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `status` ENUM('deceased','deaf','mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','sourcing required','unreachable','duplicate','other') NULL DEFAULT NULL ,
+  `status` ENUM('deceased','deaf','mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','sourcing required','unreachable','consent unavailable','duplicate','other') NULL DEFAULT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `use_informant` TINYINT(1) NULL DEFAULT NULL ,
   `email` VARCHAR(255) NULL DEFAULT NULL ,
