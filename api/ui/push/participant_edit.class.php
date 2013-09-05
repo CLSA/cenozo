@@ -44,11 +44,11 @@ class participant_edit extends base_edit
     if( array_key_exists( 'status', $columns ) )
     {
       if( 'unreachable' == $columns['status'] &&
-          !in_array( $role, array( 'administrator', 'curator' ) ) )
+          !in_array( $role, array( 'administrator', 'curator', 'supervisor' ) ) )
       {
         throw lib::create( 'exception\notice',
-          'Only adminstrators and curators are permitted to set the "unreachable" condition. '.
-          'Please contact your superior for more information.', __METHOD__ );
+          'Only adminstrators, curators and supervisors are permitted to set the "unreachable" '.
+          'condition. Please contact your superior for more information.', __METHOD__ );
       }
       else if( 'consent unavailable' == $columns['status'] && 
                !in_array( $role, array( 'administrator', 'curator' ) ) )
