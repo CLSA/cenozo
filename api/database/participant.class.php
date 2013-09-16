@@ -180,6 +180,35 @@ class participant extends person
   }
 
   /**
+   * Gets the datetime when the participant was released to a given service, or NULL
+   * if they have not yet been released.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\service $db_service If null then the application's service is used.
+   * @return datetime object
+   * @access public
+   */
+  public function get_release_date( $db_service = NULL )
+  {
+    // no primary key means no release date
+    if( is_null( $this->id ) ) return NULL;
+
+    $util_class_name = lib::get_class_name( 'util' );
+    $database_class_name = lib::get_class_name( 'database\database' );
+
+    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
+
+    $datetime = static::db()->get_one( sprintf( 
+      'SELECT datetime '.
+      'FROM service_has_participant '.
+      'WHERE service_id = %s '.
+      'AND participant_id = %s',
+      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $this->id ) ) );
+
+    return $datetime ? $util_class_name::get_datetime_object( $datetime ) : NULL;
+  }
+
+  /**
    * Get the preferred site that the participant belongs to for a given service.
    * If the participant does not have a preferred site NULL is returned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -189,7 +218,7 @@ class participant extends person
    */
   public function get_preferred_site( $db_service = NULL )
   {
-    // no primary key means no preferred siet
+    // no primary key means no preferred site
     if( is_null( $this->id ) ) return NULL;
 
     $database_class_name = lib::get_class_name( 'database\database' );
