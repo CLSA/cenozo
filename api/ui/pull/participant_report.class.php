@@ -43,6 +43,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     $util_class_name = lib::get_class_name( 'util' );
     $service_class_name = lib::get_class_name( 'database\service' );
     $database_class_name = lib::get_class_name( 'database\database' );
+    $session = lib::create( 'business\session' );
 
     // get the report arguments
     $source_id = $this->get_argument( 'restrict_source_id' );
@@ -139,7 +140,7 @@ class participant_report extends \cenozo\ui\pull\base_report
             'ON service_has_participant.participant_id = participant.id '.
             'AND service_has_participant.service_id = %s '.
             'WHERE datetime IS NOT NULL',
-            $database_class_name::format_string( $db_service->id ) );
+            $database_class_name::format_string( $session->get_site()->get_service()->id ) );
 
           $this->modifier->where( 'participant.id', 'NOT IN', sprintf( '( %s )', $sql ), false );
         }
