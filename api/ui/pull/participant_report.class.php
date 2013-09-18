@@ -120,8 +120,9 @@ class participant_report extends \cenozo\ui\pull\base_report
     {
       if( '' !== $site_id )
       {
-        $this->modifier->where( 'participant_site.service_id', '=', $service_id );
-        $this->modifier->where( 'participant_site.site_id', '=', $site_id );
+        $service_name = lib::create( 'database\service', $service_id )->name;
+        $this->modifier->where( $service_name.'_participant_site.service_id', '=', $service_id );
+        $this->modifier->where( $service_name.'_participant_site.site_id', '=', $site_id );
       }
     }
     foreach( $released_list as $service_id => $released )
@@ -192,6 +193,83 @@ class participant_report extends \cenozo\ui\pull\base_report
              'AND address.active = true';
       $this->modifier->where( $address_count, '=', sprintf( '( %s )', $sql ), false );
     }
+
+    $this->sql_tables =
+      'FROM participant '.
+      'JOIN source ON participant.source_id = source.id '.
+      'JOIN cohort ON participant.cohort_id = cohort.id ';
+
+    $this->sql_columns =
+      'SELECT participant.uid, '.
+      ( '' === $active ? 'IF( participant.active, "Yes", "No" ) active, ' : '' ).
+      ( '' === $source_id ? 'source.name AS source_name, ' : '' ).
+      ( '' === $cohort_id ? 'cohort.name AS cohort_name, ' : '' ).
+      'participant.first_name, '.
+      'participant.last_name, ';
+
+    foreach( $service_class_name::select() as $db_service )
+    {
+      if( $db_service->get_site_count() )
+      {
+        $this->sql_tables .= sprintf(
+          'LEFT JOIN participant_site AS %s_participant_site '.
+          'ON participant.id = %s_participant_site.participant_id '.
+          'AND %s_participant_site.service_id = %d '.
+          'LEFT JOIN site AS %s_site ON %s_participant_site.site_id = %s_site.id ',
+          $db_service->name,
+          $db_service->name,
+          $db_service->name,
+          $db_service->id,
+          $db_service->name,
+          $db_service->name,
+          $db_service->name );
+
+        $this->sql_columns .= sprintf(
+          '%s_site.name AS %s_site_name, ',
+          $db_service->name,
+          $db_service->name );
+      }
+    }
+
+    // now build the column and table parts of the custom sql
+    $this->sql_columns .= '' === $gender ? 'participant.gender, ' : '';
+
+    if( '' === $age_group_id )
+    {
+      $this->sql_tables .= 'LEFT JOIN age_group ON participant.age_group_id = age_group.id ';
+      $this->sql_columns .= 'CONCAT( age_group.lower, " to ", age_group.upper ) AS age_group, ';
+    }
+
+    $this->sql_columns .= '' === $status ? 'participant.status AS `condition`, ' : '';
+    $this->sql_columns .= '' === $language ? 'IFNULL( participant.language, "en" ) AS language, ' : '';
+
+    if( '' === $address_count || 0 != $address_count )
+    {
+      $this->sql_tables .=
+        'LEFT JOIN participant_primary_address '.
+        'ON participant.id = participant_primary_address.participant_id '.
+        'LEFT JOIN address ON participant_primary_address.address_id = address.id '.
+        'LEFT JOIN region ON address.region_id = region.id ';
+
+      $this->sql_columns .=
+        'address.address1, '.
+        'address.address2, '.
+        'address.city, '.
+        'region.name AS region, '.
+        'region.country, '.
+        'address.postcode, ';
+    }
+
+    if( '' === $phone_count || 0 != $phone_count )
+    {
+      $this->sql_tables .=
+        'LEFT JOIN phone ON participant.person_id = phone.person_id '.
+        'AND phone.rank = 1 ';
+
+      $this->sql_columns .= 'phone.number AS phone_number, ';
+    }
+    
+    $this->sql_columns .= 'participant.email ';
   }
 
   /**
@@ -202,103 +280,23 @@ class participant_report extends \cenozo\ui\pull\base_report
   protected function build()
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
-    $service_class_name = lib::get_class_name( 'database\service' );
 
-    // get the report arguments
-    $source_id = $this->get_argument( 'restrict_source_id' );
-    $cohort_id = $this->get_argument( 'restrict_cohort_id' );
-    $active = $this->get_argument( 'active' );
-    $gender = $this->get_argument( 'gender' );
-    $age_group_id = $this->get_argument( 'age_group_id' );
-    $status = $this->get_argument( 'status' );
-    $language = $this->get_argument( 'language' );
-    $phone_count = $this->get_argument( 'phone_count' );
-    $address_count = $this->get_argument( 'address_count' );
-
-    $contents = array();
-    foreach( $participant_class_name::select( $this->modifier ) as $db_participant )
-    {
-      if( '' === $address_count || 0 != $address_count )
-      {
-        $db_address = $db_participant->get_first_address();
-        $db_region = is_null( $db_address ) ? NULL : $db_address->get_region();
-      }
-
-      if( '' === $phone_count || 0 != $phone_count )
-      {
-        $phone_mod = lib::create( 'database\modifier' );
-        $phone_mod->where( 'rank', '=', 1 );
-        $db_phone = current( $db_participant->get_phone_list( $phone_mod ) );
-      }
-
-      $content = array();
-      $content[] = $db_participant->uid;
-      if( '' === $active ) $content[] = $db_participant->active ? 'yes' : 'no';
-      if( '' === $source_id ) $content[] = $db_participant->get_source()->name;
-      if( '' === $cohort_id ) $content[] = $db_participant->get_cohort()->name;
-      $content[] = $db_participant->first_name;
-      $content[] = $db_participant->last_name;
-      foreach( $service_class_name::select() as $db_service )
-      {
-        if( $db_service->get_site_count() )
-        {
-          $db_effective_site = $db_participant->get_effective_site( $db_service );
-          $content[] = is_null( $db_effective_site ) ? '' : $db_effective_site->name;
-        }
-      }
-      if( '' === $gender ) $content[] = $db_participant->gender;
-      if( '' === $age_group_id )
-      {
-        $db_age_group = $db_participant->get_age_group();
-        $content[] = is_null( $db_age_group ) ? 'unknown' : $db_age_group->to_string();
-      }
-      if( '' === $status )
-        $content[] = is_null( $db_participant->status ) ? '' : $db_participant->status;
-      if( '' === $language )
-        $content[] = is_null( $db_participant->language ) ? 'en' : $db_participant->language;
-      if( '' === $address_count || 0 != $address_count )
-      {
-        $content[] = is_null( $db_address ) ? '' : $db_address->address1;
-        $content[] = is_null( $db_address ) ? '' : $db_address->address2;
-        $content[] = is_null( $db_address ) ? '' : $db_address->city;
-        $content[] = is_null( $db_region ) ? '' : $db_region->name;
-        $content[] = is_null( $db_region ) ? '' : $db_region->country;
-        $content[] = is_null( $db_address ) ? '' : $db_address->postcode;
-      }
-      if( '' === $phone_count || 0 != $phone_count )
-        $content[] = is_null( $db_phone ) ? '' : $db_phone->number;
-      $content[] = is_null( $db_participant->email ) ? '' : $db_participant->email;
-
-      $contents[] = $content;
-    }
+    $sql = sprintf( '%s %s %s', $this->sql_columns, $this->sql_tables, $this->modifier->get_sql() );
+    $rows = $participant_class_name::db()->get_all( $sql );
 
     $header = array();
-    $header[] = 'CLSA ID';
-    if( '' === $active ) $header[] = 'Active';
-    if( '' === $source_id ) $header[] = 'Source';
-    if( '' === $cohort_id ) $header[] = 'Cohort';
-    $header[] = 'First Name';
-    $header[] = 'Last Name';
-    foreach( $service_class_name::select() as $db_service )
-      if( $db_service->get_site_count() )
-        $header[] = $db_service->name.' Site';
-    if( '' === $gender ) $header[] = 'Sex';
-    if( '' === $age_group_id ) $header[] = 'Age Group';
-    if( '' === $status ) $header[] = 'Status';
-    if( '' === $language ) $header[] = 'Language';
-    if( '' === $address_count || 0 != $address_count )
+    $content = array();
+    foreach( $rows as $row )
     {
-      $header[] = 'Address Line 1';
-      $header[] = 'Address Line 2';
-      $header[] = 'City';
-      $header[] = 'Region';
-      $header[] = 'Country';
-      $header[] = 'Postal Code';
+      // set up the header
+      if( 0 == count( $header ) )
+        foreach( $row as $column => $value )
+          $header[] = ucwords( str_replace( '_', ' ', $column ) );
+
+      $content[] = array_values( $row );
     }
-    if( '' === $phone_count || 0 != $phone_count ) $header[] = 'Phone Number';
-    $header[] = 'eMail';
-    
-    $this->add_table( NULL, $header, $contents, NULL );
+
+    $this->add_table( NULL, $header, $content, NULL );
   }
 
   /**
@@ -307,4 +305,18 @@ class participant_report extends \cenozo\ui\pull\base_report
    * @access protected
    */
   protected $modifier = NULL;
+
+  /**
+   * The columns portion of the custom sql used to generate this report
+   * @var string
+   * @access protected
+   */
+  protected $sql_columns = '';
+
+  /**
+   * The tables portion of the custom sql used to generate this report
+   * @var string
+   * @access protected
+   */
+  protected $sql_tables = '';
 }
