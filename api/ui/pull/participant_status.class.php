@@ -43,7 +43,8 @@ class participant_status extends \cenozo\ui\pull
     $sql =
       'SELECT uid, IF( accept = false, "withdraw", IF( status IS NOT NULL, status, "" ) ) status '.
       'FROM participant '.
-      'JOIN participant_last_consent ON participant.id = participant_last_consent.participant_id';
+      'JOIN participant_last_consent ON participant.id = participant_last_consent.participant_id '.
+      'ORDER BY uid';
 
     $this->data = $participant_class_name::db()->get_all( $sql );
   }
