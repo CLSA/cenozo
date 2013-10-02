@@ -121,8 +121,16 @@ class participant_report extends \cenozo\ui\pull\base_report
       if( '' !== $site_id )
       {
         $service_name = lib::create( 'database\service', $service_id )->name;
-        $this->modifier->where( $service_name.'_participant_site.service_id', '=', $service_id );
-        $this->modifier->where( $service_name.'_participant_site.site_id', '=', $site_id );
+        if( -1 == $site_id )
+        {
+          $this->modifier->where( $service_name.'_participant_site.service_id', '=', $service_id );
+          $this->modifier->where( $service_name.'_participant_site.site_id', '=', NULL );
+        }
+        else
+        {
+          $this->modifier->where( $service_name.'_participant_site.service_id', '=', $service_id );
+          $this->modifier->where( $service_name.'_participant_site.site_id', '=', $site_id );
+        }
       }
     }
     foreach( $released_list as $service_id => $released )
@@ -170,12 +178,14 @@ class participant_report extends \cenozo\ui\pull\base_report
       $this->modifier->where( 'consent.accept', '=', $consent_accept );
     if( '' !== $consent_written )
       $this->modifier->where( 'consent.written', '=', $consent_written );
+    
     if( '' !== $event_type_id )
       $this->modifier->where( 'event.event_type_id', '=', $event_type_id );
     if( '' !== $event_start_date )
       $this->modifier->where( 'event.datetime', '>=', $event_start_date );
     if( '' !== $event_end_date )
       $this->modifier->where( 'event.datetime', '<=', $event_end_date );
+
     if( '' !== $phone_count )
     {
       $sql = 'SELECT COUNT( DISTINCT phone.id ) '.
@@ -229,6 +239,11 @@ class participant_report extends \cenozo\ui\pull\base_report
           $db_service->name,
           $db_service->name );
       }
+    }
+
+    if( '' !== $event_type_id || '' !== $event_start_date || '' !== $event_end_date )
+    {
+      $this->sql_tables .= 'LEFT JOIN event ON participant.id = event.participant_id ';
     }
 
     // now build the column and table parts of the custom sql

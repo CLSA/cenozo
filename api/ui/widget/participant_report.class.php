@@ -123,7 +123,7 @@ class participant_report extends \cenozo\ui\widget\base_report
     {
       $site_mod = lib::create( 'database\modifier' );
       $site_mod->order( 'name' );
-      $site_list = array();
+      $site_list = array( -1 => 'No Site' );
       foreach( $db_service->get_site_list( $site_mod ) as $db_site )
         $site_list[$db_site->id] = $db_site->name;
 
