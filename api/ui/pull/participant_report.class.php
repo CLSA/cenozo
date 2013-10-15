@@ -196,13 +196,14 @@ class participant_report extends \cenozo\ui\pull\base_report
         {
           $sql = sprintf(
             'SELECT participant.id FROM participant '.
-            'JOIN service_has_participant '.
-            'ON %s_shp.participant_id = participant.id '.
-            'AND %s_shp.service_id = %s '.
+            'JOIN service_has_participant AS %s_shp '.
+            'ON participant.id = %s_shp.participant_id '.
+            'AND %s_shp.service_id = %d '.
             'WHERE datetime IS NOT NULL',
             $service_name,
             $service_name,
-            $database_class_name::format_string( $session->get_site()->get_service()->id ) );
+            $service_name,
+            $service_id );
 
           $this->modifier->where( 'participant.id', 'NOT IN', sprintf( '( %s )', $sql ), false );
         }
