@@ -68,6 +68,7 @@ class participant_view extends base_view
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'age_group', 'constant', 'Age Group' );
     $this->add_item( 'status', 'enum', 'Condition' );
+    $this->add_item( 'override_quota', 'boolean', 'Override Quota' );
 
     // create the address sub-list widget
     $this->address_list = lib::create( 'ui\widget\address_list', $this->arguments );
@@ -132,6 +133,7 @@ class participant_view extends base_view
     $this->set_item( 'last_name', $record->last_name );
     $this->set_item( 'language', $record->language, false, $languages );
     $this->set_item( 'status', $record->status, false, $statuses );
+    $this->set_item( 'override_quota', $record->override_quota, true );
 
     // set items for default and preferred sites for all services the participant's cohort
     // belongs to

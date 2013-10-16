@@ -163,6 +163,12 @@ VALUES( "pull", "participant", "list", true, "Retrieves base information for a l
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "list", true, "List participants in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "multiedit", true, "Gets a summary of participants affected by a multiedit operation." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "multiedit", true, "Edits the details of a group of participants." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "multiedit", true, "A form to edit details of multiple participants at once." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "multinote", true, "Gets a summary of participants affected by a multinote operation." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "multinote", true, "Adds a note to a group of participants." );

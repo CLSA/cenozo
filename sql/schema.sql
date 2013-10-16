@@ -316,6 +316,7 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`participant` (
   `status` ENUM('deceased','deaf','mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','sourcing required','unreachable','consent unavailable','duplicate','other') NULL DEFAULT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `use_informant` TINYINT(1) NULL DEFAULT NULL ,
+  `override_quota` TINYINT(1) NOT NULL DEFAULT 0 ,
   `email` VARCHAR(255) NULL DEFAULT NULL ,
   `withdraw_letter` CHAR(1) NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
