@@ -28,6 +28,39 @@ class participant_edit extends base_edit
   }
 
   /**
+   * Validate the operation.  If validation fails this method will throw a notice exception.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function validate()
+  {
+    parent::validate();
+
+    // restrict unreachable and conseent unavailable to certain roles
+    // TODO: this needs to be replaced with a better system for managing participant status
+    $role = lib::create( 'business\session' )->get_role()->name;
+    $columns = $this->get_argument( 'columns', array() );
+    if( array_key_exists( 'status', $columns ) )
+    {
+      if( 'unreachable' == $columns['status'] &&
+          !in_array( $role, array( 'administrator', 'curator', 'supervisor' ) ) )
+      {
+        throw lib::create( 'exception\notice',
+          'Only adminstrators, curators and supervisors are permitted to set the "unreachable" '.
+          'condition. Please contact your superior for more information.', __METHOD__ );
+      }
+      else if( 'consent unavailable' == $columns['status'] && 
+               !in_array( $role, array( 'administrator', 'curator' ) ) )
+      {
+        throw lib::create( 'exception\notice',
+          'Only adminstrators and curators are permitted to set the "consent unavailable" '.
+          'condition. Please contact your superior for more information.', __METHOD__ );
+      }
+    }
+  }
+
+  /**
    * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

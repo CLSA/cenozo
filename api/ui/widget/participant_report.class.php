@@ -123,11 +123,11 @@ class participant_report extends \cenozo\ui\widget\base_report
     {
       $site_mod = lib::create( 'database\modifier' );
       $site_mod->order( 'name' );
-      $site_list = array();
+      $site_list = array( -1 => 'No Site' );
       foreach( $db_service->get_site_list( $site_mod ) as $db_site )
         $site_list[$db_site->id] = $db_site->name;
 
-      if( count( $site_list ) )
+      if( 1 < count( $site_list ) )
       { // don't include services without sites
         $this->set_parameter( $db_service->name.'_site_id', NULL, false, $site_list );
         $this->set_parameter( $db_service->name.'_released', NULL, false );

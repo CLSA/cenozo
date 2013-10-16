@@ -183,6 +183,8 @@ VALUES( "push", "participant", "site_reassign", true, "Updates the preferred sit
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "site_reassign", true, "A form to mass reassign the preferred site of multiple participants at once." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "status", true, "Provides a status list for all participants." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "view", true, "View a participant's details." );
 
 -- phone
