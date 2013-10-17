@@ -792,11 +792,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `cenozo`.`service_region_site`
+-- Table `cenozo`.`region_site`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`service_region_site` ;
+DROP TABLE IF EXISTS `cenozo`.`region_site` ;
 
-CREATE  TABLE IF NOT EXISTS `cenozo`.`service_region_site` (
+CREATE  TABLE IF NOT EXISTS `cenozo`.`region_site` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL COMMENT 'Used to determine a participant\'s default site.' ,
@@ -808,17 +808,17 @@ CREATE  TABLE IF NOT EXISTS `cenozo`.`service_region_site` (
   INDEX `fk_region_id` (`region_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
   UNIQUE INDEX `uq_service_id_region_id` (`service_id` ASC, `region_id` ASC) ,
-  CONSTRAINT `fk_service_region_site_service_id`
+  CONSTRAINT `fk_region_site_service_id`
     FOREIGN KEY (`service_id` )
     REFERENCES `cenozo`.`service` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_service_region_site_region_id`
+  CONSTRAINT `fk_region_site_region_id`
     FOREIGN KEY (`region_id` )
     REFERENCES `cenozo`.`region` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_service_region_site_site_id`
+  CONSTRAINT `fk_region_site_site_id`
     FOREIGN KEY (`site_id` )
     REFERENCES `cenozo`.`site` (`id` )
     ON DELETE NO ACTION
@@ -924,7 +924,7 @@ WHERE t1.rank = (
   SELECT MIN( t2.rank )
   FROM address AS t2
   JOIN region ON t2.region_id = region.id
-  JOIN service_region_site ON region.id = service_region_site.region_id
+  JOIN region_site ON region.id = region_site.region_id
   WHERE t2.active
   AND t1.person_id = t2.person_id
   GROUP BY t2.person_id );
@@ -1002,7 +1002,7 @@ SELECT service.id AS service_id,
          IF(
            service_has_cohort.grouping = 'jurisdiction',
            jurisdiction.site_id,
-           service_region_site.site_id
+           region_site.site_id
          ),
          service_has_participant.preferred_site_id
        ) AS site_id
@@ -1015,8 +1015,8 @@ LEFT JOIN address ON participant_primary_address.address_id = address.id
 LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
 AND service.id = jurisdiction.service_id
 LEFT JOIN region ON address.region_id = region.id
-LEFT JOIN service_region_site ON region.id = service_region_site.region_id
-AND service.id = service_region_site.service_id
+LEFT JOIN region_site ON region.id = region_site.region_id
+AND service.id = region_site.service_id
 LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
 AND service_has_participant.participant_id = participant.id;
 
@@ -1054,7 +1054,7 @@ SELECT service.id AS service_id,
        IF(
          service_has_cohort.grouping = 'jurisdiction',
          jurisdiction.site_id,
-         service_region_site.site_id
+         region_site.site_id
        ) AS site_id
 FROM service
 CROSS JOIN participant
@@ -1065,8 +1065,8 @@ LEFT JOIN address ON participant_primary_address.address_id = address.id
 LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
 AND service.id = jurisdiction.service_id
 LEFT JOIN region ON address.region_id = region.id
-LEFT JOIN service_region_site ON region.id = service_region_site.region_id
-AND service.id = service_region_site.service_id;
+LEFT JOIN region_site ON region.id = region_site.region_id
+AND service.id = region_site.service_id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`participant_preferred_site`
