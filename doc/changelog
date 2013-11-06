@@ -5,6 +5,9 @@
 * Adding new participant multiedit operations
   - Certain roles may now edit multiple participants in a single operation
 
+* Fixing bugs which prevented more than one instance of cenozo on the same server
+  - a new setting 'framework_name' has been added allowing for multiple instances
+
 ====================================================================================================
 0.2.1
 ====================================================================================================

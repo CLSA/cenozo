@@ -54,7 +54,9 @@ class database extends \cenozo\base_object
 
     // determine the framework name
     $framework_name = sprintf(
-      '%scenozo', $setting_manager->get_setting( 'db', 'database_prefix' ) );
+      '%s%s',
+      $setting_manager->get_setting( 'db', 'database_prefix' ),
+      $setting_manager->get_setting( 'general', 'framework_name' ) );
 
     $column_mod = lib::create( 'database\modifier' );
     $column_mod->where( 'table_schema', 'IN', array( $this->name, $framework_name ) );
