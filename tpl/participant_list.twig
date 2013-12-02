@@ -21,41 +21,6 @@
           slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", 
                      { "restrict_condition": condition } );
         } );
-
-        // search button shows/hides search dialog
-        $( "#{{ widget.full }}__search" ).button().click( function() {
-          $dialog = $( "#{{ widget.full }}__search_dialog" );
-          if( $dialog.is( ":visible" ) ) $dialog.hide( "slow" );
-          else $dialog.show( "slow" );
-        } );
-
-        // identify a mutable element by changing classes on mouse over/out
-        $( "div.mutable" ).mouseover( function() {
-          $(this).removeClass( "padded" );
-          $(this).addClass( "ui-widget-content" );
-        } );
-        $( "div.mutable" ).mouseout( function() {
-          $(this).removeClass( "ui-widget-content" );
-          $(this).addClass( "padded" );
-        } );
-
-        // make the search dialog elements jeditable
-        var jeditable_params = new Object();
-        jeditable_params.tooltop = "click to edit";
-        jeditable_params.cssclass = "ui-state-default";
-        jeditable_params.event = "click";
-        jeditable_params.onblur = "cancel";
-        jeditable_params.placeholder = "&nbsp;";
-        jeditable_params.submit = "save";
-        jeditable_params.cancel = "cancel";
-        jeditable_params.type = "text";
-        $( "#{{ widget.full }}__search_phone" ).editable( function( value, settings ) {
-          return value;
-        }, jeditable_params );
-        $( "#{{ widget.full }}__search_postcode" ).editable( function( value, settings ) {
-          return value;
-        }, jeditable_params );
-
       } );
     </script>
   {% endif %}
@@ -78,25 +43,6 @@
     </select>
   {% endif %}
   {{ parent() }}
-  <button id="{{ widget.full }}__search">Search</button>
-  <div id="{{ widget.full }}__search_dialog"
-       class="ui-widget-content"
-       style="display:none; margin-left:20%; margin-right:20%; margin-top:1%; margin-bottom:1%">
-    <table>
-      <tr>
-        <td class="heading">Phone:</td>
-        <td class="content">
-          <div id="{{ widget.full }}__search_phone" class="mutable padded"></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="heading">Postcode:</td>
-        <td class="content">
-          <div id="{{ widget.full }}__search_postcode" class="mutable padded"></div>
-        </td>
-      </tr>
-    </table>
-  </div>
 
 {% endblock prelist %}
 
