@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`service` (
   `name` VARCHAR(45) NOT NULL,
   `title` VARCHAR(45) NOT NULL,
   `version` VARCHAR(45) NOT NULL,
+  `release_based` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_name` (`name` ASC))
 ENGINE = InnoDB

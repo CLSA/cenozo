@@ -45,6 +45,7 @@ class service_view extends base_view
                      'A user-friendly name for the service, may contain any characters.' );
     $this->add_item( 'version', 'string', 'Version' );
     $this->add_item( 'sites', 'constant', 'Sites' );
+    $this->add_item( 'release_based', 'boolean', 'Release Based' );
 
     // create the cohort sub-list widget
     $this->cohort_list = lib::create( 'ui\widget\cohort_list', $this->arguments );
@@ -77,6 +78,7 @@ class service_view extends base_view
     $this->set_item( 'title', $record->title );
     $this->set_item( 'version', $record->version );
     $this->set_item( 'sites', $record->get_site_count() );
+    $this->set_item( 'release_based', $record->release_based );
 
     try
     {
