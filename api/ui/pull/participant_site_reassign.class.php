@@ -62,7 +62,8 @@ class participant_site_reassign extends \cenozo\ui\pull
     // count participant's whose effective site will be affected by the operation
     $participant_mod = lib::create( 'database\modifier' );
     $participant_mod->where( 'uid', 'IN', $uid_list );
-    $participant_mod->where( 'service_has_participant.service_id', '=', $db_service->id );
+    if( $db_service->release_based )
+      $participant_mod->where( 'service_has_participant.service_id', '=', $db_service->id );
     $participant_mod->where( 'participant_default_site.service_id', '=', $db_service->id );
     $participant_mod->where( 'participant_preferred_site.service_id', '=', $db_service->id );
 

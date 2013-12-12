@@ -126,6 +126,13 @@ class self_menu extends \cenozo\ui\widget
                             'type' => 'widget',
                             'subject' => 'participant',
                             'name' => 'site_reassign' );
+    $db_operation =
+      $operation_class_name::get_operation( 'widget', 'participant', 'search' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $utilities[] = array( 'heading' => 'Participant Search',
+                            'type' => 'widget',
+                            'subject' => 'participant',
+                            'name' => 'search' );
 
     // get all report widgets that the user has access to
     $reports = array();

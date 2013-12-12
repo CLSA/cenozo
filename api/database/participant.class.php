@@ -26,12 +26,12 @@ class participant extends person
    */
   public static function select( $modifier = NULL, $count = false, $distinct = true, $full = false )
   {
-    if( !$full )
+    $db_service = lib::create( 'business\session' )->get_service();
+    if( !$full && $db_service->release_based )
     {
       // make sure to only include sites belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'service_has_participant.service_id', '=',
-                        lib::create( 'business\session' )->get_service()->id );
+      $modifier->where( 'service_has_participant.service_id', '=', $db_service->id );
       $modifier->where( 'service_has_participant.datetime', '!=', NULL );
     }
 
@@ -50,12 +50,11 @@ class participant extends person
    */
   public static function get_unique_record( $column, $value, $full = false )
   {
+    $db_service = lib::create( 'business\session' )->get_service();
     $db_participant = parent::get_unique_record( $column, $value );
 
-    if( !is_null( $db_participant ) && !$full )
+    if( !is_null( $db_participant ) && !$full && $db_service->release_based )
     { // make sure the participant has been released
-      $db_service = lib::create( 'business\session' )->get_service();
-
       $participant_mod = lib::create( 'database\modifier' );
       $participant_mod->where( 'participant.id', '=', $db_participant->id );
       $participant_mod->where( 'service_has_participant.datetime', '!=', NULL );

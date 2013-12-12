@@ -183,6 +183,8 @@ VALUES( "pull", "participant", "report", true, "Download a participant report." 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "report", true, "Set up a participant report." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "search", true, "Search for participants based on partial information." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "site_reassign", true, "Gets a summary of participants affected by a site reassign operation." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "site_reassign", true, "Updates the preferred site of a group of participants." );

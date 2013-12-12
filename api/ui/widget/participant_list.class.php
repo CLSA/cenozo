@@ -102,7 +102,7 @@ class participant_list extends site_restricted_list
       $this->set_variable( 'restrict_condition', $this->get_argument( 'restrict_condition', '' ) );
     }
 
-    // include the participant site reassign action if the widget isn't parented
+    // include the participant site reassign and search actions if the widget isn't parented
     if( is_null( $this->parent ) )
     {
       $db_operation =
@@ -110,6 +110,11 @@ class participant_list extends site_restricted_list
       if( $session->is_allowed( $db_operation ) )
         $this->add_action( 'reassign', 'Site Reassign', $db_operation,
           'Change the preferred site of multiple participants at once' );
+      $db_operation =
+        $operation_class_name::get_operation( 'widget', 'participant', 'search' );
+      if( $session->is_allowed( $db_operation ) )
+        $this->add_action( 'search', 'Search', $db_operation,
+          'Search for participants based on partial information' );
     }
   }
 
