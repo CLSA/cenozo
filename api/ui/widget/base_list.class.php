@@ -90,7 +90,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   {
     parent::setup();
 
-    if( !is_null( $this->parent ) )
+    if( !is_null( $this->parent ) && !$this->allow_parent_column )
     {
       // remove any columns which belong to the parent's record
       foreach( $this->columns as $column_id => $column )
@@ -626,6 +626,19 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
   }
 
   /**
+   * Sets whether to allow the parent widget's subject's columns in the list
+   * By default when parenting a widget all of its columns who's subject is the same as the parent's
+   * subject are removed.  Setting this value to true will override this functionality.
+   * 
+   * @param boolean $allow
+   * @access public
+   */
+  public function set_allow_parent_column( $allow )
+  {
+    $this->allow_parent_column = $allow;
+  }
+
+  /**
    * Which page to display.
    * @var int
    * @access private
@@ -764,4 +777,11 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    * @access private
    */
   private $record_list;
+
+  /**
+   * Whether to allow the parent widget's subject's columns in the list
+   * @var boolean
+   * @access protected
+   */
+  protected $allow_parent_column = false;
 }
