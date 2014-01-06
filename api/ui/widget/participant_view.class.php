@@ -67,7 +67,7 @@ class participant_view extends base_view
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'age_group', 'constant', 'Age Group' );
-    $this->add_item( 'status', 'enum', 'Condition' );
+    $this->add_item( 'state_id', 'enum', 'Condition' );
     $this->add_item( 'override_quota', 'boolean', 'Override Quota' );
 
     // create the address sub-list widget
@@ -113,16 +113,16 @@ class participant_view extends base_view
 
     // create enum arrays
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $state_class_name = lib::get_class_name( 'database\state' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $record = $this->get_record();
     $db_age_group = $record->get_age_group();
+    $db_state = $record->get_state();
 
     $genders = $participant_class_name::get_enum_values( 'gender' );
     $genders = array_combine( $genders, $genders );
     $languages = $participant_class_name::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
-    $statuses = $participant_class_name::get_enum_values( 'status' );
-    $statuses = array_combine( $statuses, $statuses );
 
     // set the view's items
     $this->set_item( 'active', $record->active, true );
@@ -132,7 +132,7 @@ class participant_view extends base_view
     $this->set_item( 'first_name', $record->first_name );
     $this->set_item( 'last_name', $record->last_name );
     $this->set_item( 'language', $record->language, false, $languages );
-    $this->set_item( 'status', $record->status, false, $statuses );
+    $this->set_item( 'state_id', is_null( $db_state ) ? NULL : $db_state->name, false );
     $this->set_item( 'override_quota', $record->override_quota, true );
 
     // set items for default and preferred sites for all services the participant's cohort

@@ -37,25 +37,20 @@ class participant_edit extends base_edit
   {
     parent::validate();
 
-    // restrict unreachable and conseent unavailable to certain roles
-    // TODO: this needs to be replaced with a better system for managing participant status
-    $role = lib::create( 'business\session' )->get_role()->name;
+    // make sure role has access to state
+    $db_role = lib::create( 'business\session' )->get_role();
     $columns = $this->get_argument( 'columns', array() );
-    if( array_key_exists( 'status', $columns ) )
+    if( array_key_exists( 'state_id', $columns ) )
     {
-      if( 'unreachable' == $columns['status'] &&
-          !in_array( $role, array( 'administrator', 'curator', 'supervisor' ) ) )
+      $db_state = $lib::create( 'database\state', $columns['state_id'] );
+      if( !lib::create( 'business\session' )->get_role()->has_state( $db_state ) )
       {
         throw lib::create( 'exception\notice',
-          'Only adminstrators, curators and supervisors are permitted to set the "unreachable" '.
-          'condition. Please contact your superior for more information.', __METHOD__ );
-      }
-      else if( 'consent unavailable' == $columns['status'] && 
-               !in_array( $role, array( 'administrator', 'curator' ) ) )
-      {
-        throw lib::create( 'exception\notice',
-          'Only adminstrators and curators are permitted to set the "consent unavailable" '.
-          'condition. Please contact your superior for more information.', __METHOD__ );
+          sprintf(
+            'Your role is not permitted to use set a participant\'s condition to %s. '.
+            'Please contact your superior for more information.',
+            $db_state->name ),
+          __METHOD__ );
       }
     }
   }

@@ -295,6 +295,24 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `cenozo`.`state`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`state` ;
+
+CREATE TABLE IF NOT EXISTS `cenozo`.`state` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `rank` INT NOT NULL,
+  `description` VARCHAR(512) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uq_name` (`name` ASC),
+  UNIQUE INDEX `uq_rank` (`rank` ASC))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `cenozo`.`participant`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`participant` ;
@@ -314,7 +332,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   `gender` ENUM('male','female') NOT NULL,
   `date_of_birth` DATE NULL DEFAULT NULL,
   `age_group_id` INT UNSIGNED NULL DEFAULT NULL,
-  `status` ENUM('deceased','deaf','mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','sourcing required','unreachable','consent unavailable','duplicate','other') NULL DEFAULT NULL,
+  `state_id` INT UNSIGNED NULL DEFAULT NULL,
   `language` ENUM('en','fr') NULL DEFAULT NULL,
   `use_informant` TINYINT(1) NULL DEFAULT NULL,
   `override_quota` TINYINT(1) NOT NULL DEFAULT 0,
@@ -324,12 +342,12 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   UNIQUE INDEX `uq_uid` (`uid` ASC),
   UNIQUE INDEX `uq_person_id` (`person_id` ASC),
   INDEX `dk_active` (`active` ASC),
-  INDEX `dk_status` (`status` ASC),
   INDEX `dk_uid` (`uid` ASC),
   INDEX `fk_person_id` (`person_id` ASC),
   INDEX `fk_age_group_id` (`age_group_id` ASC),
   INDEX `fk_cohort_id` (`cohort_id` ASC),
   INDEX `fk_source_id` (`source_id` ASC),
+  INDEX `fk_state_id` (`state_id` ASC),
   CONSTRAINT `fk_participant_person_id`
     FOREIGN KEY (`person_id`)
     REFERENCES `cenozo`.`person` (`id`)
@@ -348,6 +366,11 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   CONSTRAINT `fk_participant_source_id`
     FOREIGN KEY (`source_id`)
     REFERENCES `cenozo`.`source` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_participant_state_id`
+    FOREIGN KEY (`state_id`)
+    REFERENCES `cenozo`.`state` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -533,7 +556,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`quota` (
   INDEX `fk_region_id` (`region_id` ASC),
   INDEX `fk_age_group_id` (`age_group_id` ASC),
   INDEX `fk_site_id` (`site_id` ASC),
-  CONSTRAINT `fk_quota_region`
+  CONSTRAINT `fk_quota_region_id`
     FOREIGN KEY (`region_id`)
     REFERENCES `cenozo`.`region` (`id`)
     ON DELETE NO ACTION
@@ -826,6 +849,42 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`region_site` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`role_has_state`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`role_has_state` ;
+
+CREATE TABLE IF NOT EXISTS `cenozo`.`role_has_state` (
+  `role_id` INT UNSIGNED NOT NULL,
+  `state_id` INT UNSIGNED NOT NULL,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  PRIMARY KEY (`role_id`, `state_id`),
+  INDEX `fk_state_id` (`state_id` ASC),
+  INDEX `fk_role_id` (`role_id` ASC),
+  CONSTRAINT `fk_role_has_state_role_id`
+    FOREIGN KEY (`role_id`)
+    REFERENCES `cenozo`.`role` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_role_has_state_state_id`
+    FOREIGN KEY (`state_id`)
+    REFERENCES `cenozo`.`state` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`timestamps`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`timestamps` ;
+
+CREATE TABLE IF NOT EXISTS `cenozo`.`timestamps` (
+  `create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` TIMESTAMP NULL);
+
 USE `cenozo` ;
 
 -- -----------------------------------------------------
@@ -1097,6 +1156,7 @@ DELIMITER $$
 USE `cenozo`$$
 DROP TRIGGER IF EXISTS `cenozo`.`remove_uid_from_pool` $$
 USE `cenozo`$$
+
 
 
 

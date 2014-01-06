@@ -54,7 +54,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     $age_group_id = $this->get_argument( 'age_group_id' );
     $date_of_birth_start_date = $this->get_argument( 'date_of_birth_start_date' );
     $date_of_birth_end_date = $this->get_argument( 'date_of_birth_end_date' );
-    $status = $this->get_argument( 'status' );
+    $state_id = $this->get_argument( 'state_id' );
     $language = $this->get_argument( 'language' );
     $consent_accept = $this->get_argument( 'consent_accept' );
     $consent_written = $this->get_argument( 'consent_written' );
@@ -229,13 +229,13 @@ class participant_report extends \cenozo\ui\pull\base_report
     if( '' !== $date_of_birth_end_date ) 
       $this->modifier->where( 'participant.date_of_birth', '<=',
                                $date_of_birth_end_obj->format( 'Y-m-d' ) );
-    if( '' !== $status )
+    if( '' !== $state_id )
     {
-      if( 'any' == $status ) $this->modifier->where( 'participant.status', '!=', NULL );
-      else if( 'none' == $status ) $this->modifier->where( 'participant.status', '=', NULL );
-      else $this->modifier->where( 'participant.status', '=', $status );
+      if( 'any' == $state_id ) $this->modifier->where( 'participant.state_id', '!=', NULL );
+      else if( 'none' == $state_id ) $this->modifier->where( 'participant.state_id', '=', NULL );
+      else $this->modifier->where( 'participant.state_id', '=', $state_id );
     }
-    else $this->sql_columns .= 'participant.status AS `condition`, ';
+    else $this->sql_columns .= 'participant.state_id AS `condition`, ';
 
     if( '' !== $language )
       $this->modifier->where( 'IFNULL( participant.language, "en" )', '=', $language );
