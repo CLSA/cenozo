@@ -111,18 +111,24 @@ class participant_view extends base_view
   {
     parent::setup();
 
-    // create enum arrays
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $state_class_name = lib::get_class_name( 'database\state' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
-    $record = $this->get_record();
-    $db_age_group = $record->get_age_group();
-    $db_state = $record->get_state();
 
+    // create enum arrays
     $genders = $participant_class_name::get_enum_values( 'gender' );
     $genders = array_combine( $genders, $genders );
     $languages = $participant_class_name::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
+    $states = array();
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
+      $states[$db_state->id] = $db_state->name;
+
+    $record = $this->get_record();
+    $db_age_group = $record->get_age_group();
+    $db_state = $record->get_state();
 
     // set the view's items
     $this->set_item( 'active', $record->active, true );
@@ -132,7 +138,7 @@ class participant_view extends base_view
     $this->set_item( 'first_name', $record->first_name );
     $this->set_item( 'last_name', $record->last_name );
     $this->set_item( 'language', $record->language, false, $languages );
-    $this->set_item( 'state_id', is_null( $db_state ) ? NULL : $db_state->name, false );
+    $this->set_item( 'state_id', is_null( $db_state ) ? NULL : $db_state->id, false, $states );
     $this->set_item( 'override_quota', $record->override_quota, true );
 
     // set items for default and preferred sites for all services the participant's cohort

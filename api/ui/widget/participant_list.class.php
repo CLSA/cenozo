@@ -99,7 +99,7 @@ class participant_list extends site_restricted_list
     if( $this->allow_restrict_state )
     {
       $state_mod = lib::create( 'database\modifier' );
-      $state_mod->order( 'state_id' );
+      $state_mod->order( 'rank' );
       $state_list = array();
       foreach( $state_class_name::select( $state_mod ) as $db_state )
         $state_list[$db_state->id] = $db_state->name;

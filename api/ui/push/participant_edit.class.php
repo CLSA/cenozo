@@ -40,9 +40,9 @@ class participant_edit extends base_edit
     // make sure role has access to state
     $db_role = lib::create( 'business\session' )->get_role();
     $columns = $this->get_argument( 'columns', array() );
-    if( array_key_exists( 'state_id', $columns ) )
+    if( array_key_exists( 'state_id', $columns ) && $columns['state_id'] )
     {
-      $db_state = $lib::create( 'database\state', $columns['state_id'] );
+      $db_state = lib::create( 'database\state', $columns['state_id'] );
       if( !lib::create( 'business\session' )->get_role()->has_state( $db_state ) )
       {
         throw lib::create( 'exception\notice',

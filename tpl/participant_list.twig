@@ -12,7 +12,7 @@
 {% block javascript %}
   {{ parent() }}
 
-  {% if states is defined %}
+  {% if state_list is defined %}
     <script type="text/javascript">
       $( function() {
         // reload page if state selector is changed
@@ -29,15 +29,15 @@
 
 {% block prelist %}
   
-  {% if states is defined %}
+  {% if state_list is defined %}
     {% set restrict_state_id = restrict_state_id|default(0) %}
     <label for="{{ widget.full }}__restrict_state_id">Restrict to condition:</label>
     <select id="{{ widget.full }}__restrict_state_id" class="ui-state-default"
             style="margin-top:4px;margin-bottom:4px;">
       <option {% if "" == restrict_state_id %}selected{% endif %}
               value="">No restriction</option>
-      {% for id, name in states %}
-        <option {% if name == restrict_state_id %}selected{% endif %}
+      {% for id, name in state_list %}
+        <option {% if id == restrict_state_id %}selected{% endif %}
                 value="{{ id }}">{{ name }}</option>
       {% endfor %}
     </select>
