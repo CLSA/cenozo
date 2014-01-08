@@ -26,12 +26,15 @@ class consent extends record
   {
     if( $this->accept )
     {
-      $db_participant = $this->get_participant();
-      if( !is_null( $db_participant ) && !is_null( $db_participant->withdraw_letter ) )
+      if( $this->participant_id )
       {
-        throw lib::create( 'exception\notice',
-          'The participant has completed the withdraw script, '.
-          'no changes to consent status are allowed.', __METHOD__ );
+        $db_participant = $this->get_participant();
+        if( !is_null( $db_participant->withdraw_letter ) )
+        {
+          throw lib::create( 'exception\notice',
+            'The participant has completed the withdraw script, '.
+            'no changes to consent status are allowed.', __METHOD__ );
+        }
       }
     }
 
