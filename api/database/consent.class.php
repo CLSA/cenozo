@@ -26,7 +26,7 @@ class consent extends record
   {
     if( $this->accept )
     {
-      if( $this->participant_id )
+      if( !is_null( $this->participant_id ) )
       {
         $db_participant = $this->get_participant();
         if( !is_null( $db_participant->withdraw_letter ) )
