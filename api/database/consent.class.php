@@ -28,7 +28,7 @@ class consent extends record
     {
       if( !is_null( $this->participant_id ) )
       {
-        $db_participant = $this->get_participant();
+        $db_participant = lib::create( 'database\participant', $this->participant_id );
         if( !is_null( $db_participant->withdraw_letter ) )
         {
           throw lib::create( 'exception\notice',
