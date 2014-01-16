@@ -58,7 +58,7 @@ class participant_list extends site_restricted_list
         $this->set_heading(
           sprintf( '%s, restricted to %s',
                    $this->get_heading(),
-                   $restrict_state_id ) );
+                   lib::create( 'database\state', $restrict_state_id )->name ) );
     }
   }
   
