@@ -37,9 +37,11 @@ class participant_edit extends base_edit
   {
     parent::validate();
 
+    $util_class_name = lib::get_class_name( 'util' );
+    $columns = $this->get_argument( 'columns', array() );
+
     // make sure role has access to state
     $db_role = lib::create( 'business\session' )->get_role();
-    $columns = $this->get_argument( 'columns', array() );
     if( array_key_exists( 'state_id', $columns ) && $columns['state_id'] )
     {
       $db_state = lib::create( 'database\state', $columns['state_id'] );
@@ -52,6 +54,18 @@ class participant_edit extends base_edit
             $db_state->name ),
           __METHOD__ );
       }
+    }
+
+    // make sure the email address is valid
+    if( array_key_exists( 'email', $columns ) &&
+        0 < strlen( trim( $columns['email'] ) ) &&
+        !$util_class_name::validate_email( $columns['email'] ) )
+    {
+      throw lib::create( 'exception\notice',
+        'Email address is not in the correct format.  Please only include a single email '.
+        'address in the form "account@domain.name"  For invalid addresses, or if you wish '.
+        'to leave the field empty please leave the field empty.',
+        __METHOD__ );
     }
   }
 

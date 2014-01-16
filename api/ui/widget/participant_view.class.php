@@ -63,7 +63,7 @@ class participant_view extends base_view
         'Preferred Site'.$title_postfix );
     }
 
-    $this->add_item( 'email', 'string', 'Email' );
+    $this->add_item( 'email', 'string', 'Email', 'Must be in the format "account@domain.name"' );
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'age_group', 'constant', 'Age Group' );

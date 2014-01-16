@@ -51,7 +51,7 @@ class participant_add extends base_view
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'language', 'enum', 'Preferred Language' );
-    $this->add_item( 'email', 'string', 'Email' );
+    $this->add_item( 'email', 'string', 'Email', 'Must be in the format "account@domain.name"' );
     $this->add_item( 'state_id', 'enum', 'Condition' );
     $this->add_item( 'person_id', 'hidden' );
   }

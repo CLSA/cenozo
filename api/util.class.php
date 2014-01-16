@@ -585,6 +585,7 @@ class util
    * @param string $number
    * @param boolean $numeric_only Whether to ignore all non-numeric characters during check
    * @return boolean
+   * @static
    * @access public
    */
   public static function validate_phone_number( $number, $numeric_only = false )
@@ -598,6 +599,40 @@ class util
                   : $number;
 
     return preg_match( $regex, $check_number );
+  }
+
+  /**
+   * Validates an email address in account@domain.name format.
+   * 
+   * Note, this function does not thoroughly check email addresses.  It only checks to make
+   * sure that there are no spaces or commas, there is exactly one @ symbol and at least one
+   * period (.) which comes after the @ symbol.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $email
+   * @return boolean
+   * @static
+   * @access public
+   */
+  public static function validate_email( $email )
+  {
+    // remove spaces around the address
+    $email = trim( $email );
+
+    // check for spaces
+    if( preg_match( '/[ ,]/', $email ) ) return false;
+    
+    // explode on the @ symbol
+    $parts = explode( '@', $email );
+    if( 2 != count( $parts ) || 0 == strlen( $parts[0] ) || 0 == strlen( $parts[1] ) ) return false;
+
+    // explode the host part by the . symbol
+    $parts = explode( '.', $parts[1] );
+    if( 2 > count( $parts ) ) return false;
+
+    // make sure each part isn't blank
+    foreach( $parts as $part ) if( 0 == strlen( $part ) ) return false;
+
+    return true;
   }
 
   /**

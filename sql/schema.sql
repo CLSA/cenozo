@@ -337,6 +337,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   `use_informant` TINYINT(1) NULL DEFAULT NULL,
   `override_quota` TINYINT(1) NOT NULL DEFAULT 0,
   `email` VARCHAR(255) NULL DEFAULT NULL,
+  `email_datetime` DATETIME NULL DEFAULT NULL,
   `withdraw_letter` CHAR(1) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_uid` (`uid` ASC),
@@ -348,6 +349,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   INDEX `fk_cohort_id` (`cohort_id` ASC),
   INDEX `fk_source_id` (`source_id` ASC),
   INDEX `fk_state_id` (`state_id` ASC),
+  INDEX `dk_email_datetime` (`email_datetime` ASC),
   CONSTRAINT `fk_participant_person_id`
     FOREIGN KEY (`person_id`)
     REFERENCES `cenozo`.`person` (`id`)

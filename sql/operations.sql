@@ -93,6 +93,12 @@ VALUES( "push", "consent", "new", true, "Creates new consent entry for a partici
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "consent", "view", true, "View the details of a participant's particular consent entry." );
 
+-- email
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "email", "report", true, "Download a email report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "email", "report", true, "Set up a email report." );
+
 -- event
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "event", "add", true, "View a form for creating new event entry for a participant." );
