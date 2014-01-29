@@ -69,7 +69,7 @@ class email_report extends \cenozo\ui\pull\base_report
         $start_datetime_obj->format( 'Y-m-d 00:00:00' ) );
     if( !is_null( $end_datetime_obj ) )
       $participant_mod->where( 'email_datetime', '<=',
-        $end_datetime_obj->format( 'Y-m-d 00:00:00' ) );
+        $end_datetime_obj->format( 'Y-m-d 23:59:59' ) );
 
     $contents = array();
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
