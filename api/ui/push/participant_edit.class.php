@@ -56,6 +56,14 @@ class participant_edit extends base_edit
       }
     }
 
+    // only admins can change active state
+    if( array_key_exists( 'active', $columns ) && 'administrator' != $db_role->name )
+    {
+      throw lib::create( 'exception\notice',
+        'Only administrators are allowed to set a participant\'s active status.',
+        __METHOD__ );
+    }
+
     // make sure the email address is valid
     if( array_key_exists( 'email', $columns ) &&
         0 < strlen( trim( $columns['email'] ) ) &&
