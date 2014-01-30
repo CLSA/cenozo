@@ -41,6 +41,7 @@ class state_view extends base_view
     // create an associative array with everything we want to display about the state
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'rank', 'enum', 'Rank' );
+    $this->add_item( 'participants', 'constant', 'Participants' );
     $this->add_item( 'description', 'string', 'Description' );
 
     // create the role sub-list widget
@@ -70,6 +71,7 @@ class state_view extends base_view
     // set the view's items
     $this->set_item( 'name', $record->name );
     $this->set_item( 'rank', $record->rank, true, $ranks );
+    $this->set_item( 'participants', $record->get_participant_count() );
     $this->set_item( 'description', $record->description );
 
     try

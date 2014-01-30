@@ -868,12 +868,12 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`role_has_state` (
   CONSTRAINT `fk_role_has_state_role_id`
     FOREIGN KEY (`role_id`)
     REFERENCES `cenozo`.`role` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_role_has_state_state_id`
     FOREIGN KEY (`state_id`)
     REFERENCES `cenozo`.`state` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 

@@ -12,4 +12,4 @@ use cenozo\lib, cenozo\log;
 /**
  * state: record
  */
-class state extends record {}
+class state extends has_rank {}
