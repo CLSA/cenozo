@@ -37,26 +37,43 @@ class participant_edit extends base_edit
   {
     parent::validate();
 
-    // restrict unreachable and conseent unavailable to certain roles
-    // TODO: this needs to be replaced with a better system for managing participant status
-    $role = lib::create( 'business\session' )->get_role()->name;
+    $util_class_name = lib::get_class_name( 'util' );
     $columns = $this->get_argument( 'columns', array() );
-    if( array_key_exists( 'status', $columns ) )
+
+    // make sure role has access to state
+    $db_role = lib::create( 'business\session' )->get_role();
+    if( array_key_exists( 'state_id', $columns ) && $columns['state_id'] )
     {
-      if( 'unreachable' == $columns['status'] &&
-          !in_array( $role, array( 'administrator', 'curator', 'supervisor' ) ) )
+      $db_state = lib::create( 'database\state', $columns['state_id'] );
+      if( !lib::create( 'business\session' )->get_role()->has_state( $db_state ) )
       {
         throw lib::create( 'exception\notice',
-          'Only adminstrators, curators and supervisors are permitted to set the "unreachable" '.
-          'condition. Please contact your superior for more information.', __METHOD__ );
+          sprintf(
+            'Your role is not permitted to use set a participant\'s condition to %s. '.
+            'Please contact your superior for more information.',
+            $db_state->name ),
+          __METHOD__ );
       }
-      else if( 'consent unavailable' == $columns['status'] && 
-               !in_array( $role, array( 'administrator', 'curator' ) ) )
-      {
-        throw lib::create( 'exception\notice',
-          'Only adminstrators and curators are permitted to set the "consent unavailable" '.
-          'condition. Please contact your superior for more information.', __METHOD__ );
-      }
+    }
+
+    // only admins can change active state
+    if( array_key_exists( 'active', $columns ) && 'administrator' != $db_role->name )
+    {
+      throw lib::create( 'exception\notice',
+        'Only administrators are allowed to set a participant\'s active status.',
+        __METHOD__ );
+    }
+
+    // make sure the email address is valid
+    if( array_key_exists( 'email', $columns ) &&
+        0 < strlen( trim( $columns['email'] ) ) &&
+        !$util_class_name::validate_email( $columns['email'] ) )
+    {
+      throw lib::create( 'exception\notice',
+        'Email address is not in the correct format.  Please only include a single email '.
+        'address in the form "account@domain.name"  For invalid addresses, or if you wish '.
+        'to leave the field empty please leave the field empty.',
+        __METHOD__ );
     }
   }
 

@@ -42,7 +42,7 @@ class participant_multiedit extends \cenozo\ui\push
     $active = $this->get_argument( 'active' );
     $gender = $this->get_argument( 'gender' );
     $age_group_id = $this->get_argument( 'age_group_id' );
-    $status = $this->get_argument( 'status' );
+    $state_id = $this->get_argument( 'state_id' );
     $language = $this->get_argument( 'language' );
     $override_quota = $this->get_argument( 'override_quota' );
 
@@ -61,7 +61,7 @@ class participant_multiedit extends \cenozo\ui\push
         if( -1 != $active ) $columns['active'] = $active;
         if( -1 != $gender ) $columns['gender'] = $gender;
         if( -1 != $age_group_id ) $columns['age_group_id'] = $age_group_id;
-        if( -1 != $status ) $columns['status'] = $status;
+        if( -1 != $state_id ) $columns['state_id'] = $state_id;
         if( -1 != $language ) $columns['language'] = $language;
         if( -1 != $override_quota ) $columns['override_quota'] = $override_quota;
 

@@ -51,8 +51,8 @@ class participant_add extends base_view
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'language', 'enum', 'Preferred Language' );
-    $this->add_item( 'email', 'string', 'Email' );
-    $this->add_item( 'status', 'enum', 'Condition' );
+    $this->add_item( 'email', 'string', 'Email', 'Must be in the format "account@domain.name"' );
+    $this->add_item( 'state_id', 'enum', 'Condition' );
     $this->add_item( 'person_id', 'hidden' );
   }
 
@@ -68,6 +68,7 @@ class participant_add extends base_view
     
     // create enum arrays
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $state_class_name = lib::get_class_name( 'database\state' );
     $source_class_name = lib::get_class_name( 'database\source' );
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
 
@@ -81,8 +82,12 @@ class participant_add extends base_view
     $genders = array_combine( $genders, $genders );
     $languages = $participant_class_name::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
-    $statuses = $participant_class_name::get_enum_values( 'status' );
-    $statuses = array_combine( $statuses, $statuses );
+
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    $state_list = array();
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
+      $state_list[$db_state->id] = $db_state->name;
     
     $sites = array();
     $site_class_name = lib::get_class_name( 'database\site' );
@@ -103,7 +108,7 @@ class participant_add extends base_view
     $this->set_item( 'date_of_birth', '' );
     $this->set_item( 'language', '', false, $languages );
     $this->set_item( 'email', '' );
-    $this->set_item( 'status', '', false, $statuses );
+    $this->set_item( 'state_id', '', false, $state_list );
     // this particular entry is filled in by the push/participant_new operation
     $this->set_item( 'person_id', 0 );
   }

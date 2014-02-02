@@ -1,4 +1,22 @@
 ====================================================================================================
+0.2.4
+====================================================================================================
+
+* Tracking changes to participant email addresses
+  - email addresses are now validated using simple word@word.word validation
+  - any change to a participant's email address is tracked by date and time
+  - a new email report has been created which provides a list of all participants with new email
+    addresses
+
+* Replacing participant.status with new state table
+  - Participant conditions (states) can now be managed by administrators
+  - Each role can be restricted to only setting certain states
+
+* Adding automatic tertiary table-joining to N-to-N joins
+  - When an N-to-N table join includes a reference to a tertiary table with a foreign key in any
+    of the N-to-N tables it is automatically joined to
+
+====================================================================================================
 0.2.3
 ====================================================================================================
 

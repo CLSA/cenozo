@@ -15,6 +15,25 @@ use cenozo\lib, cenozo\log;
 class participant extends person
 {
   /**
+   * Audit changs to email address by overriding the magic __set method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name The name of the column
+   * @param mixed $value The value to set the contents of a column to
+   * @throws exception\argument
+   * @access public
+   */
+  public function __set( $column_name, $value )
+  {
+    parent::__set( $column_name, $value );
+
+    $util_class_name = lib::get_class_name( 'util' );
+    if( 'email' == $column_name )
+      $this->email_datetime = is_null( $this->email ) || 0 == strlen( trim( $this->email ) )
+                            ? NULL
+                            : $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+  }
+
+  /**
    * Extend parent method by restricting selection to records belonging to this service only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.

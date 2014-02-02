@@ -38,6 +38,7 @@ class participant_multiedit extends \cenozo\ui\widget
     parent::setup();
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $state_class_name = lib::get_class_name( 'database\state' );
     $age_group_class_name = lib::get_class_name( 'database\age_group' );
 
     // define all template variables for this widget
@@ -52,9 +53,12 @@ class participant_multiedit extends \cenozo\ui\widget
       $age_group_list[$db_age_group->id] = $db_age_group->to_string();
     $this->set_variable( 'age_group_list', $age_group_list );
     
-    $status_list = $participant_class_name::get_enum_values( 'status' );
-    $status_list = array_combine( $status_list, $status_list );
-    $this->set_variable( 'status_list', $status_list );
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    $state_list = array();
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
+      $state_list[$db_state->id] = $db_state->name;
+    $this->set_variable( 'state_list', $state_list );
 
     $language_list = $participant_class_name::get_enum_values( 'language' );
     $language_list = array_combine( $language_list, $language_list );
