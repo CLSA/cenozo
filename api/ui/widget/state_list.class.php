@@ -41,6 +41,7 @@ class state_list extends base_list
     $this->add_column( 'name', 'string', 'Name', true );
     $this->add_column( 'rank', 'number', 'Rank', true );
     $this->add_column( 'roles', 'number', 'Roles', false );
+    $this->add_column( 'participants', 'number', 'Participants', false );
   }
   
   /**
@@ -58,7 +59,8 @@ class state_list extends base_list
       $this->add_row( $record->id,
         array( 'name' => $record->name,
                'rank' => $record->rank,
-               'roles' => $record->get_role_count() ) );
+               'roles' => $record->get_role_count(),
+               'participants' => $record->get_participant_count() ) );
     }
   }
 }

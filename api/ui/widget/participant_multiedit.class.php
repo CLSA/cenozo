@@ -58,6 +58,7 @@ class participant_multiedit extends \cenozo\ui\widget
     $state_list = array();
     foreach( $state_class_name::select( $state_mod ) as $db_state )
       $state_list[$db_state->id] = $db_state->name;
+    $this->set_variable( 'state_list', $state_list );
 
     $language_list = $participant_class_name::get_enum_values( 'language' );
     $language_list = array_combine( $language_list, $language_list );

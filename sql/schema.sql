@@ -338,6 +338,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   `override_quota` TINYINT(1) NOT NULL DEFAULT 0,
   `email` VARCHAR(255) NULL DEFAULT NULL,
   `email_datetime` DATETIME NULL DEFAULT NULL,
+  `email_old` VARCHAR(255) NULL DEFAULT NULL,
   `withdraw_letter` CHAR(1) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_uid` (`uid` ASC),
@@ -868,12 +869,12 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`role_has_state` (
   CONSTRAINT `fk_role_has_state_role_id`
     FOREIGN KEY (`role_id`)
     REFERENCES `cenozo`.`role` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_role_has_state_state_id`
     FOREIGN KEY (`state_id`)
     REFERENCES `cenozo`.`state` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 

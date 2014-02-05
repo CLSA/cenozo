@@ -39,6 +39,8 @@ class user_list extends site_restricted_list
     parent::prepare();
 
     $this->add_column( 'name', 'string', 'Username', true );
+    $this->add_column( 'first_name', 'string', 'First Name', true );
+    $this->add_column( 'last_name', 'string', 'Last Name', true );
     $this->add_column( 'active', 'boolean', 'Active', true );
     $this->add_column( 'site.name', 'string', 'Site', false );
     $this->add_column( 'role.name', 'string', 'Role', false );
@@ -79,6 +81,8 @@ class user_list extends site_restricted_list
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'name' => $record->name,
+               'first_name' => $record->first_name,
+               'last_name' => $record->last_name,
                'active' => $record->active,
                'site.name' => $site,
                'role.name' => $role,

@@ -42,6 +42,7 @@ class email_report extends \cenozo\ui\widget\base_report
 
     $this->add_parameter( 'language', 'enum', 'Language' );
     $this->add_restriction( 'dates' );
+    $this->add_parameter( 'type', 'enum', 'Type' );
 
     $this->set_variable( 'description',
       'This report provides a list of all participants who last changed their email address '.
@@ -68,6 +69,10 @@ class email_report extends \cenozo\ui\widget\base_report
       $languages[] = $language;
     $languages = array_combine( $languages, $languages );
 
+    $types = array( 'added or changed', 'removed' );
+    $types = array_combine( $types, $types );
+
     $this->set_parameter( 'language', 'any', true, $languages );
+    $this->set_parameter( 'type', 'added or changed', true, $types );
   }
 }

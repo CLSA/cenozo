@@ -210,7 +210,7 @@ class participant_report extends \cenozo\ui\pull\base_report
       }
     }
 
-    if( '' !== $region_id ) $this->modifier->where( 'address.region_id', '=', $region );
+    if( '' !== $region_id ) $this->modifier->where( 'address.region_id', '=', $region_id );
 
     if( '' !== $gender ) $this->modifier->where( 'participant.gender', '=', $gender );
     else $this->sql_columns .= 'participant.gender, ';
