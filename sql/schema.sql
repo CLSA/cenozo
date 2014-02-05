@@ -338,6 +338,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   `override_quota` TINYINT(1) NOT NULL DEFAULT 0,
   `email` VARCHAR(255) NULL DEFAULT NULL,
   `email_datetime` DATETIME NULL DEFAULT NULL,
+  `email_old` VARCHAR(255) NULL DEFAULT NULL,
   `withdraw_letter` CHAR(1) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_uid` (`uid` ASC),

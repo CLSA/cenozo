@@ -24,13 +24,16 @@ class participant extends person
    */
   public function __set( $column_name, $value )
   {
+    $old_email = $this->email;
+
     parent::__set( $column_name, $value );
 
-    $util_class_name = lib::get_class_name( 'util' );
-    if( 'email' == $column_name )
-      $this->email_datetime = is_null( $this->email ) || 0 == strlen( trim( $this->email ) )
-                            ? NULL
-                            : $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+    if( 'email' == $column_name && $old_email != $this->email )
+    {
+      $util_class_name = lib::get_class_name( 'util' );
+      $this->email_datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $this->email_old = $old_email;
+    }
   }
 
   /**

@@ -39,6 +39,7 @@ class email_report extends \cenozo\ui\pull\base_report
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     $language = $this->get_argument( 'language' );
+    $type = $this->get_argument( 'type' );
     $restrict_start_date = $this->get_argument( 'restrict_start_date' );
     $restrict_end_date = $this->get_argument( 'restrict_end_date' );
     $start_datetime_obj = NULL;
@@ -70,6 +71,7 @@ class email_report extends \cenozo\ui\pull\base_report
     if( !is_null( $end_datetime_obj ) )
       $participant_mod->where( 'email_datetime', '<=',
         $end_datetime_obj->format( 'Y-m-d 23:59:59' ) );
+    $participant_mod->where( 'email', 'removed' == $type ? '=' : '!=', NULL );
 
     $contents = array();
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
@@ -78,6 +80,7 @@ class email_report extends \cenozo\ui\pull\base_report
         $db_participant->language,
         $db_participant->first_name,
         $db_participant->last_name,
+        $db_participant->email_old,
         $db_participant->email,
         $util_class_name::get_formatted_date( $db_participant->email_datetime ) );
     }
@@ -86,6 +89,7 @@ class email_report extends \cenozo\ui\pull\base_report
       'Language',
       'First Name',
       'Last Name',
+      'Previous Email',
       'Email',
       'Date Changed' );
 
