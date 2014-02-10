@@ -63,9 +63,9 @@ class state_view extends base_view
     $record = $this->get_record();
 
     // create enum arrays
-    $num_phones = $state_class_name::count();
+    $num_states = $state_class_name::count();
     $ranks = array();
-    for( $rank = 1; $rank <= $num_phones; $rank++ ) $ranks[] = $rank;
+    for( $rank = 1; $rank <= $num_states; $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
 
     // set the view's items
