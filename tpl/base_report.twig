@@ -59,6 +59,8 @@
           {% endfor %}
           </td></tr>
 
+        {% elseif 'separator' == param.type %}
+          <tr><td colspan="2"><hr class="ui-widget ui-widget-content"></td></tr>
         {% elseif 'hidden' != param.type %}
 
           <tr>

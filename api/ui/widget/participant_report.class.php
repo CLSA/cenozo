@@ -47,12 +47,16 @@ class participant_report extends \cenozo\ui\widget\base_report
     {
       if( $db_service->get_site_count() )
       { // don't include services without sites
+        $this->add_separator();
         $this->add_parameter(
-          $db_service->name.'_site_id', 'enum', $db_service->name.' Site' );
+          $db_service->name.'_include', 'boolean', 'Include '.$db_service->title.' Site' );
         $this->add_parameter(
-          $db_service->name.'_released', 'boolean', 'Released to '.$db_service->name );
+          $db_service->name.'_site_id', 'enum', $db_service->title.' Site' );
+        $this->add_parameter(
+          $db_service->name.'_released', 'boolean', 'Released to '.$db_service->title );
       }
     }
+    $this->add_separator();
     $this->add_parameter( 'region_id', 'enum', 'Region' );
     $this->add_parameter( 'gender', 'enum', 'Gender' );
     $this->add_parameter( 'age_group_id', 'enum', 'Age Group' );
@@ -131,6 +135,7 @@ class participant_report extends \cenozo\ui\widget\base_report
 
       if( 1 < count( $site_list ) )
       { // don't include services without sites
+        $this->set_parameter( $db_service->name.'_include', false, true );
         $this->set_parameter( $db_service->name.'_site_id', NULL, false, $site_list );
         $this->set_parameter( $db_service->name.'_released', NULL, false );
       }
