@@ -257,9 +257,9 @@ class participant_report extends \cenozo\ui\pull\base_report
     if( '' !== $event_type_id )
       $this->modifier->where( 'event.event_type_id', '=', $event_type_id );
     if( '' !== $event_start_date )
-      $this->modifier->where( 'event.datetime', '>=', $event_start_date );
+      $this->modifier->where( 'DATE( event.datetime )', '>=', $event_start_obj->format( 'Y-m-d' ) );
     if( '' !== $event_end_date )
-      $this->modifier->where( 'event.datetime', '<=', $event_end_date );
+      $this->modifier->where( 'DATE( event.datetime )', '<=', $event_end_obj->format( 'Y-m-d' ) );
 
     if( '' !== $phone_count )
     {
