@@ -32,6 +32,9 @@ abstract class operation extends \cenozo\base_object
    */
   public function __construct( $type, $subject, $name, $args )
   {
+    // by default all operations use transactions
+    lib::create( 'business\session' )->set_use_transaction( true );
+
     // type must either be a pull, push or widget
     if( 'push' != $type && 'pull' != $type && 'widget' != $type )
       throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );

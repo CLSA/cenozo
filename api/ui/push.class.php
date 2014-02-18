@@ -27,9 +27,6 @@ abstract class push extends operation
   public function __construct( $subject, $name, $args )
   {
     parent::__construct( 'push', $subject, $name, $args );
-
-    // by default all push operations use transactions
-    lib::create( 'business\session' )->set_use_transaction( true );
   }
 
   /**

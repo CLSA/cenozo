@@ -496,13 +496,19 @@ abstract class record extends \cenozo\base_object
         
         // execute the function
         $modifier = 0 == count( $args ) ? NULL : $args[0];
+        $distinct = 1 >= count( $args ) ? NULL : $args[1];
+
         if( 'list' == $sub_action )
         {
-          return $this->get_record_list( $subject, $modifier, $inverted );
+          return is_null( $distinct )
+            ? $this->get_record_list( $subject, $modifier, $inverted )
+            : $this->get_record_list( $subject, $modifier, $inverted, false, $distinct );
         }
         else if( 'count' == $sub_action )
         {
-          return $this->get_record_count( $subject, $modifier, $inverted );
+          return is_null( $distinct )
+            ? $this->get_record_count( $subject, $modifier, $inverted )
+            : $this->get_record_count( $subject, $modifier, $inverted, $distinct );
         }
       }
     }
@@ -556,11 +562,12 @@ abstract class record extends \cenozo\base_object
    * @param modifier $modifier A modifier to apply to the list or count.
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @return array( record ) | int
    * @access protected
    */
   protected function get_record_list(
-    $record_type, $modifier = NULL, $inverted = false, $count = false )
+    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
   {
     $table_name = static::get_table_name();
     $primary_key_name = sprintf( '%s.%s', $table_name, static::get_primary_key_name() );
@@ -697,8 +704,9 @@ abstract class record extends \cenozo\base_object
         // now create SQL that gets all primary ids that are NOT in that list
         $modifier->where( $foreign_key_name, 'NOT IN', $sub_select_sql, false );
         $sql = sprintf( $count
-                          ? 'SELECT COUNT( %s ) FROM %s %s'
-                          : 'SELECT %s FROM %s %s',
+                          ? 'SELECT COUNT( %s%s ) FROM %s %s'
+                          : 'SELECT %s%s FROM %s %s',
+                        $distinct ? 'DISTINCT ' : '',
                         $foreign_key_name,
                         $record_type,
                         $modifier->get_sql() );
@@ -709,8 +717,9 @@ abstract class record extends \cenozo\base_object
         $modifier->where( $joining_primary_key_name, '=', $primary_key_name, false );
         $modifier->where( $primary_key_name, '=', $primary_key_value );
         $sql = sprintf( $count
-                          ? 'SELECT COUNT( %s ) FROM %s %s'
-                          : 'SELECT %s FROM %s %s',
+                          ? 'SELECT COUNT( %s%s ) FROM %s %s'
+                          : 'SELECT %s%s FROM %s %s',
+                        $distinct ? 'DISTINCT ' : '',
                         $joining_foreign_key_name,
                         $select_tables,
                         $modifier->get_sql() );
@@ -748,9 +757,10 @@ abstract class record extends \cenozo\base_object
    * @return int
    * @access protected
    */
-  protected function get_record_count( $record_type, $modifier = NULL, $inverted = false )
+  protected function get_record_count(
+    $record_type, $modifier = NULL, $inverted = false, $distinct = true )
   {
-    return $this->get_record_list( $record_type, $modifier, $inverted, true );
+    return $this->get_record_list( $record_type, $modifier, $inverted, true, $distinct );
   }
 
   /**
