@@ -9,6 +9,13 @@
   - replaced internal library for generating CSV files with native code
   - reports generation time no longer scales linearly with the number of rows
 
+* Multi-participant operations can now take CSV files as input
+  - the first column of a csv file can be taken as UIDs in multi-participant operations
+  - designed so that the csv output from the participant report can be used as input
+
+* Adding new temporary file upload operation
+  - temporary files can be written to disk and used in future operations
+
 ====================================================================================================
 0.2.4
 ====================================================================================================

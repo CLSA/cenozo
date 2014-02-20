@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * widget participant multinote
  */
-class participant_multinote extends \cenozo\ui\widget
+class participant_multinote extends \cenozo\ui\widget\base_participant_multi
 {
   /**
    * Constructor
@@ -24,6 +24,33 @@ class participant_multinote extends \cenozo\ui\widget
    */
   public function __construct( $args )
   {
-    parent::__construct( 'participant', 'multinote', $args );
+    parent::__construct( 'multinote', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
+    $this->add_parameter( 'note', 'text', 'Note' );
+  }
+
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $this->set_parameter( 'note', '' );
   }
 }

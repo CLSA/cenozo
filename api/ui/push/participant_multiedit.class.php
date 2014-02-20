@@ -12,9 +12,9 @@ use cenozo\lib, cenozo\log;
 /**
  * push: participant multiedit
  *
- * Syncs participant information between Sabretooth and Mastodon
+ * Edits multiple participants at once
  */
-class participant_multiedit extends \cenozo\ui\push
+class participant_multiedit extends \cenozo\ui\push\base_participant_multi
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class participant_multiedit extends \cenozo\ui\push
    */
   public function __construct( $args )
   {
-    parent::__construct( 'participant', 'multiedit', $args );
+    parent::__construct( 'multiedit', $args );
   }
 
   /**
@@ -46,30 +46,13 @@ class participant_multiedit extends \cenozo\ui\push
     $language = $this->get_argument( 'language' );
     $override_quota = $this->get_argument( 'override_quota' );
 
-    $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
-    $uid_list_string = trim( $uid_list_string );
-    $uid_list = array_unique( preg_split( '/\s+/', $uid_list_string ) );
+    if( 'dnc' != $active ) $columns['active'] = 'y' == $active;
+    if( 'dnc' != $gender ) $columns['gender'] = $gender;
+    if( 'dnc' != $age_group_id ) $columns['age_group_id'] = $age_group_id;
+    if( 'dnc' != $state_id ) $columns['state_id'] = $state_id;
+    if( 'dnc' != $language ) $columns['language'] = $language;
+    if( 'dnc' != $override_quota ) $columns['override_quota'] = 'y' == $override_quota;
 
-    foreach( $uid_list as $uid )
-    {
-      // determine the participant record and make sure it is valid
-      $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
-
-      if( !is_null( $db_participant ) )
-      {
-        $columns = array();
-        if( -1 != $active ) $columns['active'] = $active;
-        if( -1 != $gender ) $columns['gender'] = $gender;
-        if( -1 != $age_group_id ) $columns['age_group_id'] = $age_group_id;
-        if( -1 != $state_id ) $columns['state_id'] = $state_id;
-        if( -1 != $language ) $columns['language'] = $language;
-        if( -1 != $override_quota ) $columns['override_quota'] = $override_quota;
-
-        $args = array( 'columns' => $columns,
-                       'id' => $db_participant->id );
-        $operation = lib::create( 'ui\push\participant_edit', $args );
-        $operation->process();
-      }
-    }
+    $participant_class_name::multiedit( $this->modifier, $columns );
   }
 }

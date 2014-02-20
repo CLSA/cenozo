@@ -257,6 +257,8 @@ VALUES( "push", "self", "set_theme", false, "Change the current user's web inter
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "status", false, "The current user's status." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "self", "temporary_file", false, "Upload a temporary file to the server." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "timezone_calculator", false, "A timezone calculator widget." );
 
 -- service

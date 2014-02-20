@@ -86,6 +86,7 @@ $settings['path']['TEMP'] =
   '/tmp/'.$this->settings['general']['framework_name'].$this->settings['path']['APPLICATION'];
 $settings['path']['TEMPLATE_CACHE'] = $settings['path']['TEMP'].'/template';
 $settings['path']['REPORT_CACHE'] = $settings['path']['TEMP'].'/report';
+$settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
 
 // database settings
 $settings['db']['driver'] = 'mysql';

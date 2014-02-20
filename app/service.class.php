@@ -156,12 +156,23 @@ final class service
 
     // make sure all paths are valid
     foreach( $this->settings['path'] as $key => $path )
-      if( 'COOKIE' != $key &&
-          'TEMP' != $key &&
-          'TEMPLATE_CACHE' != $key &&
-          'REPORT_CACHE' != $key &&
-          !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
+    {
+      if( 'TEMP' == $key )
+      { // create the temp directory if it doesn't already exist
+        if( !is_dir( $path ) ) mkdir( $path );
+      }
+      else if( false !== strpos( $path, $this->settings['path']['TEMP'] ) )
+      { // create paths which are in the temp directory
+        if( !is_dir( $path ) ) mkdir( $path );
+      }
+      else if( 'COOKIE' != $key &&
+               'TEMPLATE_CACHE' != $key &&
+               'REPORT_CACHE' != $key &&
+               !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
+      {
         die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
+      }
+    }
 
     define( 'APPNAME', $this->settings['general']['application_name'] );
     define( 'SERVICENAME', $this->settings['general']['service_name'] );

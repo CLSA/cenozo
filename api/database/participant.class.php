@@ -301,6 +301,53 @@ class participant extends person
   }
 
   /**
+   * Sets the preferred site of multiple participants for a particular service.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier
+   * @param database\service $db_service
+   * @param database\site $db_site
+   * @access public
+   */
+  public static function multi_set_preferred_site( $modifier, $db_service, $db_site = NULL )
+  {
+    $database_class_name = lib::get_class_name( 'database\database' );
+    
+    // make sure all participants' cohorts belongs to the service
+    $total = static::db()->get_one( sprintf(
+      'SELECT COUNT(*) '.
+      'FROM participant %s',
+      $modifier->get_where() ) );
+    $with_cohort = static::db()->get_one( sprintf(
+      'SELECT COUNT(*) '.
+      'FROM participant '.
+      'JOIN service_has_cohort ON service_has_cohort.cohort_id = participant.cohort_id %s '.
+      'AND service_has_cohort.service_id = %s',
+      $modifier->get_where(),
+      $database_class_name::format_string( $db_service->id ) ) );
+    if( $total != $with_cohort )
+      throw lib::create( 'exception\runtime', sprintf(
+        'Tried to set preferred %s site for %d participants, '.
+        'but only %d have access to the %s cohort',
+        $db_service->name,
+        $total,
+        $with_cohort,
+        $this->get_cohort()->name ),
+        __METHOD__ );
+
+    // we want to add the row (if none exists) or just update the preferred_site_id column
+    // if a row already exists
+    static::db()->execute( sprintf(
+      'INSERT INTO service_has_participant( '.
+        'create_timestamp, service_id, participant_id, preferred_site_id ) '.
+      'SELECT NULL, %s, id, %s '.
+      'FROM participant %s '.
+      'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
+      $database_class_name::format_string( $db_service->id ),
+      is_null( $db_site ) ? 'NULL' : $database_class_name::format_string( $db_site->id ),
+      $modifier->get_sql() ) );
+  }
+
+  /**
    * Get the default site that the participant belongs to for a given service.
    * This depends on the type of grouping that the participant's cohort uses for each service
    * (region or jurisdition)
@@ -420,6 +467,42 @@ class participant extends person
       'ORDER BY datetime',
       $database_class_name::format_string( $this->id ),
       $database_class_name::format_string( $db_event_type->id ) ) );
+  }
+
+  /**
+   * Edits multiple participants at once
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Defines which participants are to be edited.
+   * @param array $columns An associative array of column name => value, where each column
+   *              name must be a column in the participant table
+   * @static
+   * @access public
+   */
+  public static function multiedit( $modifier, $columns )
+  {
+    // make sure the columns parameter is valid
+    if( !is_array( $columns ) || 0 == count( $columns ) )
+      throw lib::create( 'exception\argument', 'columns', $columns, __METHOD__ );
+
+    $database_class_name = lib::get_class_name( 'database\database' );
+
+    $sql = 'UPDATE participant ';
+    $first = true;
+    foreach( $columns as $column => $value )
+    {
+      if( !static::column_exists( $column ) )
+        throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
+
+      $sql .= sprintf( '%s %s = %s',
+                       $first ? 'SET ' : ', ',
+                       $column,
+                       $database_class_name::format_string( $value ) );
+      $first = false;
+    }
+
+    $sql .= ' '.$modifier->get_sql();
+    static::db()->execute( $sql );
   }
 
   /**
