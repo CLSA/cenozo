@@ -71,6 +71,8 @@ class participant_report extends \cenozo\ui\pull\base_report
     {
       if( $db_service->get_site_count() )
       { // don't include services without sites
+        $column_name = $db_service->name.'_include';
+        $site_include[$db_service->id] = $this->get_argument( $column_name );
         $column_name = $db_service->name.'_site_id';
         $site_id_list[$db_service->id] = $this->get_argument( $column_name );
         $column_name = $db_service->name.'_released';
@@ -136,7 +138,7 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     foreach( $service_class_name::select() as $db_service )
     {
-      if( $db_service->get_site_count() )
+      if( $db_service->get_site_count() && $site_include[$db_service->id] )
       {
         $this->sql_tables .= sprintf(
           'LEFT JOIN participant_site AS %s_ps '.
@@ -210,7 +212,7 @@ class participant_report extends \cenozo\ui\pull\base_report
       }
     }
 
-    if( '' !== $region_id ) $this->modifier->where( 'address.region_id', '=', $region );
+    if( '' !== $region_id ) $this->modifier->where( 'address.region_id', '=', $region_id );
 
     if( '' !== $gender ) $this->modifier->where( 'participant.gender', '=', $gender );
     else $this->sql_columns .= 'participant.gender, ';
@@ -257,9 +259,9 @@ class participant_report extends \cenozo\ui\pull\base_report
     if( '' !== $event_type_id )
       $this->modifier->where( 'event.event_type_id', '=', $event_type_id );
     if( '' !== $event_start_date )
-      $this->modifier->where( 'event.datetime', '>=', $event_start_date );
+      $this->modifier->where( 'DATE( event.datetime )', '>=', $event_start_obj->format( 'Y-m-d' ) );
     if( '' !== $event_end_date )
-      $this->modifier->where( 'event.datetime', '<=', $event_end_date );
+      $this->modifier->where( 'DATE( event.datetime )', '<=', $event_end_obj->format( 'Y-m-d' ) );
 
     if( '' !== $phone_count )
     {

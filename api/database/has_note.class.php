@@ -55,22 +55,62 @@ abstract class has_note extends record
   /**
    * Adds a new note to the record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param user $user
+   * @param database\user $db_user
    * @param string $note
    * @access public
    */
-  public function add_note( $user, $note )
+  public function add_note( $db_user, $note )
   {
     $util_class_name = lib::get_class_name( 'util' );
     $date_obj = $util_class_name::get_datetime_object();
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
     $db_note = lib::create( 'database\\'.$table_name.'_note' );
-    $db_note->user_id = $user->id;
+    $db_note->user_id = $db_user->id;
     $db_note->$subject_key_name = $this->id;
     $db_note->datetime = $date_obj->format( 'Y-m-d H:i:s' );
     $db_note->note = $note;
     $db_note->save();
+  }
+
+  /**
+   * Adds a new note to multiple records.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier
+   * @param database\user $db_user
+   * @param string $note
+   * @static
+   * @access public
+   */
+  public static function multinote( $modifier, $db_user, $note )
+  {
+    // validate parameters
+    if( !is_object( $db_user ) || 'user' != $db_user->get_class_name() )
+      throw lib::create( 'exception\argument', 'db_user', $db_user, __METHOD__ );
+    if( !is_string( $note ) || 0 == strlen( $note ) )
+      throw lib::create( 'exception\argument', 'note', $note, __METHOD__ );
+
+    $database_class_name = lib::get_class_name( 'database\database' );
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $date_obj = $util_class_name::get_datetime_object();
+    $table_name = static::get_table_name();
+    $subject_key_name = $table_name.'_'.static::get_primary_key_name();
+    
+    $sql = sprintf(
+      'INSERT INTO %s_note( create_timestamp, %s, user_id, datetime, note ) '.
+      'SELECT NULL, id, %s, %s, %s '.
+      'FROM %s %s',
+      $table_name,
+      $subject_key_name,
+      $database_class_name::format_string( $db_user->id ),
+      $database_class_name::format_string(
+        $util_class_name::to_server_datetime(
+          $date_obj->format( 'Y-m-d H:i:s' ) ) ),
+      $database_class_name::format_string( $note ),
+      $table_name,
+      $modifier->get_sql() );
+    static::db()->execute( $sql );
   }
   
   /**

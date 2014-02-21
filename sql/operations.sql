@@ -257,6 +257,8 @@ VALUES( "push", "self", "set_theme", false, "Change the current user's web inter
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "status", false, "The current user's status." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "self", "temporary_file", false, "Upload a temporary file to the server." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "timezone_calculator", false, "A timezone calculator widget." );
 
 -- service
@@ -310,6 +312,20 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "site", "new_access", true, "Grant access to a site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "view", true, "View a site's details." );
+
+-- source
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source", "add", true, "View a form for creating a new source." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "source", "delete", true, "Removes a source from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "source", "edit", true, "Edits a source's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source", "list", true, "List sources in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "source", "new", true, "Add a new source to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source", "view", true, "View a source's details." );
 
 -- state
 INSERT INTO operation( type, subject, name, restricted, description )

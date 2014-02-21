@@ -28,6 +28,22 @@ class participant_edit extends base_edit
   }
 
   /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
+    // trim the email column argument, if it exists
+    if( array_key_exists( 'columns', $this->arguments ) &&
+        array_key_exists( 'email', $this->arguments['columns'] ) )
+      $this->arguments['columns']['email'] = trim( $this->arguments['columns']['email'] );
+  }
+
+  /**
    * Validate the operation.  If validation fails this method will throw a notice exception.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

@@ -14,7 +14,7 @@ use cenozo\lib, cenozo\log;
  *
  * Syncs participant information between Sabretooth and Mastodon
  */
-class participant_multinote extends \cenozo\ui\push
+class participant_multinote extends \cenozo\ui\push\base_participant_multi
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class participant_multinote extends \cenozo\ui\push
    */
   public function __construct( $args )
   {
-    parent::__construct( 'participant', 'multinote', $args );
+    parent::__construct( 'multinote', $args );
   }
 
   /**
@@ -38,26 +38,8 @@ class participant_multinote extends \cenozo\ui\push
     parent::execute();
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
-
+    $db_user = lib::create( 'business\session' )->get_user();
     $note = $this->get_argument( 'note' );
-
-    $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
-    $uid_list_string = trim( $uid_list_string );
-    $uid_list = array_unique( preg_split( '/\s+/', $uid_list_string ) );
-
-    foreach( $uid_list as $uid )
-    {
-      // determine the participant record and make sure it is valid
-      $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
-
-      if( !is_null( $db_participant ) )
-      {
-        $args = array( 'category' => 'participant',
-                       'category_id' => $db_participant->id,
-                       'note' => $note );
-        $operation = lib::create( 'ui\push\note_new', $args );
-        $operation->process();
-      }
-    }
+    $participant_class_name::multinote( $this->modifier, $db_user, $note );
   }
 }

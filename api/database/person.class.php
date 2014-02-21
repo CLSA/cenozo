@@ -193,7 +193,7 @@ class person extends has_note
   }
 
   /**
-   * Override parent method (since note are related to person)
+   * Override parent method (since all extending class notes are related to the person table)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param user $user
    * @param string $note
@@ -202,14 +202,53 @@ class person extends has_note
   public function add_note( $user, $note )
   {
     $util_class_name = lib::get_class_name( 'util' );
-    $person_id = 'person' == $this->get_class_name() ? $this->id : $this->person_id;
     $date_obj = $util_class_name::get_datetime_object();
+    $person_id = 'person' == $this->get_class_name() ? $this->id : $this->person_id;
     $db_note = lib::create( 'database\person_note' );
     $db_note->user_id = $user->id;
     $db_note->person_id = $person_id;
     $db_note->datetime = $date_obj->format( 'Y-m-d H:i:s' );
     $db_note->note = $note;
     $db_note->save();
+  }
+
+  /**
+   * Override parent method (since all extending class notes are related to the person table)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier
+   * @param database\user $db_user
+   * @param string $note
+   * @static
+   * @access public
+   */
+  public static function multinote( $modifier, $db_user, $note )
+  {
+    // validate parameters
+    if( !is_object( $db_user ) || 'user' != $db_user->get_class_name() )
+      throw lib::create( 'exception\argument', 'db_user', $db_user, __METHOD__ );
+    if( !is_string( $note ) || 0 == strlen( $note ) )
+      throw lib::create( 'exception\argument', 'note', $note, __METHOD__ );
+
+    $database_class_name = lib::get_class_name( 'database\database' );
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $date_obj = $util_class_name::get_datetime_object();
+    $table_name = static::get_table_name();
+    
+    $sql = sprintf(
+      'INSERT INTO person_note( create_timestamp, person_id, user_id, datetime, note ) '.
+      'SELECT NULL, person.id, %s, %s, %s '.
+      'FROM %s '.
+      'JOIN person ON %s.person_id = person.id %s',
+      $database_class_name::format_string( $db_user->id ),
+      $database_class_name::format_string(
+        $util_class_name::to_server_datetime(
+          $date_obj->format( 'Y-m-d H:i:s' ) ) ),
+      $database_class_name::format_string( $note ),
+      $table_name,
+      $table_name,
+      $modifier->get_sql() );
+    static::db()->execute( $sql );
   }
 
   /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * participant_multinote.class.php
+ * source_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget participant multinote
+ * widget source add
  */
-class participant_multinote extends \cenozo\ui\widget\base_participant_multi
+class source_add extends base_view
 {
   /**
    * Constructor
@@ -24,7 +24,7 @@ class participant_multinote extends \cenozo\ui\widget\base_participant_multi
    */
   public function __construct( $args )
   {
-    parent::__construct( 'multinote', $args );
+    parent::__construct( 'source', 'add', $args );
   }
 
   /**
@@ -37,12 +37,15 @@ class participant_multinote extends \cenozo\ui\widget\base_participant_multi
   protected function prepare()
   {
     parent::prepare();
-
-    $this->add_parameter( 'note', 'text', 'Note' );
+    
+    // define all columns defining this record
+    $this->add_item( 'name', 'string', 'Name' );
+    $this->add_item( 'override_quota', 'boolean', 'Override Quota' );
+    $this->add_item( 'description', 'string', 'Description' );
   }
 
   /**
-   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
@@ -51,6 +54,9 @@ class participant_multinote extends \cenozo\ui\widget\base_participant_multi
   {
     parent::setup();
 
-    $this->set_parameter( 'note', '' );
+    // set the view's items
+    $this->set_item( 'name', '' );
+    $this->set_item( 'override_quota', false, true );
+    $this->set_item( 'description', '' );
   }
 }

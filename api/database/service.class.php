@@ -39,12 +39,16 @@ class service extends record
   /**
    * Make sure to only include cohorts which this service has access to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
    * @param database\modifier $modifier Modifications to the list.
+   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
+   * @param boolean $count If true then this method returns the count instead of list of records.
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @return array( database\cohort )
    * @access public
    */
   protected function get_record_list(
-    $record_type, $modifier = NULL, $inverted = false, $count = false )
+    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
   {
     if( 'cohort' == $record_type )
     {
@@ -52,7 +56,7 @@ class service extends record
       $modifier->where( 'service_has_cohort.service_id', '=',
                         lib::create( 'business\session' )->get_service()->id );
     }
-    return parent::get_record_list( $record_type, $modifier, $inverted, $count );
+    return parent::get_record_list( $record_type, $modifier, $inverted, $count, $distinct );
   }
 
   /**
@@ -76,7 +80,6 @@ class service extends record
     // cohort_ids may be a single integer, make sure it is an array
     if( !is_array( $cohort_ids ) ) $cohort_ids = array( $cohort_ids );
 
-    database::$debug = true;
     static::db()->execute( sprintf(
       'UPDATE service_has_cohort '.
       'SET grouping = %s '.
@@ -85,7 +88,6 @@ class service extends record
       $database_class_name::format_string( $grouping ),
       $database_class_name::format_string( $this->id ),
       $database_class_name::format_string( implode( ',', $cohort_ids ) ) ) );
-    database::$debug = false;
   }
 
   /**

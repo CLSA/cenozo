@@ -675,6 +675,59 @@ class session extends \cenozo\singleton
   }
 
   /**
+   * Acquire a semaphore
+   * 
+   * This will block other semaphores with the same key from proceeding until it is released by
+   * using the release_semaphore() method.
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @access public
+   */
+  public function acquire_semaphore()
+  {
+    if( !is_null( $this->semaphore ) )
+    {
+      throw lib::create( 'exception\runtime',
+        'Tried to acquire semaphore which already exists',
+        __METHOD__ );
+    }
+
+    // we need to complete any transactions before continuing
+    if( $this->use_transaction() ) $this->get_database()->complete_transaction();
+
+    $this->semaphore = sem_get( getmyinode() );
+    if( !sem_acquire( $this->semaphore ) )
+    {
+      log::err( 'Unable to aquire semaphore' );
+      throw lib::create( 'exception\notice',
+        'The server is busy, please wait a few seconds then click the refresh button.',
+        __METHOD__ );
+    }
+  }
+
+  /**
+   * Release an earlier acquired semaphore
+   * 
+   * Once a semaphore is released the next process which acquired a semaphore will be allowed
+   * to proceed.
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @access public
+   */
+  public function release_semaphore()
+  {
+    if( is_null( $this->semaphore ) )
+    {
+      throw lib::create( 'exception\runtime',
+        'Tried to release semaphore which doesn\'t exist',
+        __METHOD__ );
+    }
+
+    if( !sem_release( $this->semaphore ) )
+      log::err( 'Unable to release semaphore' );
+
+    $this->semaphore = NULL;
+  }
+
+  /**
    * Returns whether to use a database transaction.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -793,4 +846,11 @@ class session extends \cenozo\singleton
    * @access private
    */
   private $transaction = false;
+
+  /**
+   * A semaphore used to block processing by other threads
+   * @var resource
+   * @access private
+   */
+  private $semaphore = NULL;
 }
