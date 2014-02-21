@@ -13,7 +13,7 @@
 $settings = array();
 
 // Framework software version (is never overridded by the application's ini file)
-$settings['general']['cenozo_version'] = '0.2.0';
+$settings['general']['cenozo_version'] = '0.2.4';
 
 // When set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -82,7 +82,8 @@ $settings['url']['JQUERY_FULLCALENDAR_CSS'] =
 $settings['path']['LOG_FILE'] = '/var/local/cenozo/log';
 
 // the location of the template and report caches
-$settings['path']['TEMP'] = '/tmp/cenozo'.$this->settings['path']['APPLICATION'];
+$settings['path']['TEMP'] =
+  '/tmp/'.$this->settings['general']['framework_name'].$this->settings['path']['APPLICATION'];
 $settings['path']['TEMPLATE_CACHE'] = $settings['path']['TEMP'].'/template';
 $settings['path']['REPORT_CACHE'] = $settings['path']['TEMP'].'/report';
 
@@ -100,6 +101,13 @@ $settings['ldap']['base'] = '';
 $settings['ldap']['username'] = '';
 $settings['ldap']['password'] = '';
 $settings['ldap']['active_directory'] = true;
+
+// opal settings
+$settings['opal']['enabled'] = false;
+$settings['opal']['server'] = 'localhost';
+$settings['opal']['port'] = 8843;
+$settings['opal']['username'] = '';
+$settings['opal']['password'] = '';
 
 // themes
 $settings['interface']['default_theme'] = 'smoothness';

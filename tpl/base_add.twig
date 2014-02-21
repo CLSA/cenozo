@@ -25,7 +25,7 @@
         } );
         args.columns = columns;
     
-        if( ajax_push( "{{ widget.subject }}", "new", args ) ) slot_prev( {{ slot }} );
+        if( ajax_push( "{{ widget.subject }}", "new", args ) ) slot_prev_clip( {{ slot }} );
       } );
     } );
   </script>
@@ -188,7 +188,7 @@
             </td>
           </tr>
           {% if not loop.last %}
-            <tr><td></td><td><hr class="ui-widget ui-widget-content"</td></tr>
+            <tr><td></td><td><hr class="ui-widget ui-widget-content"></td></tr>
           {% endif %}
 
         {% endif %}

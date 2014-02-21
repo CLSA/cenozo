@@ -51,14 +51,14 @@ class participant_list extends site_restricted_list
 
     $this->extended_site_selection = true;
 
-    if( $this->allow_restrict_condition )
+    if( $this->allow_restrict_state )
     {
-      $restrict_condition = $this->get_argument( 'restrict_condition', '' );
-      if( $restrict_condition )
+      $restrict_state_id = $this->get_argument( 'restrict_state_id', '' );
+      if( $restrict_state_id )
         $this->set_heading(
           sprintf( '%s, restricted to %s',
                    $this->get_heading(),
-                   $restrict_condition ) );
+                   lib::create( 'database\state', $restrict_state_id )->name ) );
     }
   }
   
@@ -72,7 +72,7 @@ class participant_list extends site_restricted_list
   {
     parent::setup();
 
-    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $state_class_name = lib::get_class_name( 'database\state' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $session = lib::create( 'business\session' );
     
@@ -96,13 +96,18 @@ class participant_list extends site_restricted_list
       $this->add_row( $record->id, $columns );
     }
 
-    if( $this->allow_restrict_condition )
+    if( $this->allow_restrict_state )
     {
-      $this->set_variable( 'conditions', $participant_class_name::get_enum_values( 'status' ) );
-      $this->set_variable( 'restrict_condition', $this->get_argument( 'restrict_condition', '' ) );
+      $state_mod = lib::create( 'database\modifier' );
+      $state_mod->order( 'rank' );
+      $state_list = array();
+      foreach( $state_class_name::select( $state_mod ) as $db_state )
+        $state_list[$db_state->id] = $db_state->name;
+      $this->set_variable( 'state_list', $state_list );
+      $this->set_variable( 'restrict_state_id', $this->get_argument( 'restrict_state_id', '' ) );
     }
 
-    // include the participant site reassign action if the widget isn't parented
+    // include the participant site reassign and search actions if the widget isn't parented
     if( is_null( $this->parent ) )
     {
       $db_operation =
@@ -110,11 +115,16 @@ class participant_list extends site_restricted_list
       if( $session->is_allowed( $db_operation ) )
         $this->add_action( 'reassign', 'Site Reassign', $db_operation,
           'Change the preferred site of multiple participants at once' );
+      $db_operation =
+        $operation_class_name::get_operation( 'widget', 'participant', 'search' );
+      if( $session->is_allowed( $db_operation ) )
+        $this->add_action( 'search', 'Search', $db_operation,
+          'Search for participants based on partial information' );
     }
   }
 
   /**
-   * Overrides the parent class method based on the restrict condition argument.
+   * Overrides the parent class method based on the restrict state argument.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
@@ -123,13 +133,13 @@ class participant_list extends site_restricted_list
    */
   public function determine_record_count( $modifier = NULL )
   {
-    if( $this->allow_restrict_condition )
+    if( $this->allow_restrict_state )
     {
-      $restrict_condition = $this->get_argument( 'restrict_condition', '' );
-      if( $restrict_condition )
+      $restrict_state_id = $this->get_argument( 'restrict_state_id', '' );
+      if( $restrict_state_id )
       {
         if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'status', '=', $restrict_condition );
+        $modifier->where( 'state_id', '=', $restrict_state_id );
       }
     }
 
@@ -137,7 +147,7 @@ class participant_list extends site_restricted_list
   }
 
   /**
-   * Overrides the parent class method based on the restrict condition argument.
+   * Overrides the parent class method based on the restrict state argument.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
@@ -146,13 +156,13 @@ class participant_list extends site_restricted_list
    */
   public function determine_record_list( $modifier = NULL )
   {
-    if( $this->allow_restrict_condition )
+    if( $this->allow_restrict_state )
     {
-      $restrict_condition = $this->get_argument( 'restrict_condition', '' );
-      if( $restrict_condition )
+      $restrict_state_id = $this->get_argument( 'restrict_state_id', '' );
+      if( $restrict_state_id )
       {
         if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'status', '=', $restrict_condition );
+        $modifier->where( 'state_id', '=', $restrict_state_id );
       }
     }
 
@@ -160,31 +170,31 @@ class participant_list extends site_restricted_list
   }
 
   /**
-   * Get whether to include a drop down to restrict the list by condition
+   * Get whether to include a drop down to restrict the list by state
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
-  public function get_allow_restrict_condition()
+  public function get_allow_restrict_state()
   {
-    return $this->allow_restrict_condition;
+    return $this->allow_restrict_state;
   }
 
   /**
-   * Set whether to include a drop down to restrict the list by condition
+   * Set whether to include a drop down to restrict the list by state
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
    * @access public
    */
-  public function set_allow_restrict_condition( $enable )
+  public function set_allow_restrict_state( $enable )
   {
-    $this->allow_restrict_condition = $enable;
+    $this->allow_restrict_state = $enable;
   }
 
   /**
-   * Whether to include a drop down to restrict the list by condition
+   * Whether to include a drop down to restrict the list by state
    * @var boolean
    * @access protected
    */
-  protected $allow_restrict_condition = true;
+  protected $allow_restrict_state = true;
 }

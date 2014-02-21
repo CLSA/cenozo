@@ -41,6 +41,9 @@ class modifier extends \cenozo\base_object
     if( !is_string( $column ) || 0 == strlen( $column ) )
       throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
 
+    if( is_array( $value ) && 0 == count( $value ) )
+      throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
+
     $this->where_list[] = array( 'column' => $column,
                                  'operator' => strtoupper( $operator ),
                                  'value' => $value,
@@ -207,7 +210,16 @@ class modifier extends \cenozo\base_object
   {
     $columns = array();
     foreach( $this->where_list as $where )
-      if( array_key_exists( 'column', $where ) ) $columns[] = $where['column'];
+    {
+      if( array_key_exists( 'column', $where ) )
+      {
+        // get the first table.name match, or if no match is found leave the string alone
+        $matches = array();
+        if( 1 == preg_match( '/\w+\.\w+/', $where['column'], $matches ) ) $columns[] = $matches[0];
+        else $columns[] = $where['column'];
+      }
+    }
+
     return $columns;
   }
 
@@ -221,7 +233,16 @@ class modifier extends \cenozo\base_object
    */
   public function get_group_columns()
   {
-    return array_keys( $this->group_list );
+    $columns = array();
+    foreach( $this->group_list as $column => $value )
+    {
+      // get the first table.name match, or if no match if found leave the string alone
+      $matches = array();
+      if( 1 == preg_match( '/\w+\.\w+/', $column, $matches ) ) $columns[] = $matches[0];
+      else $columns[] = $column;
+    }
+
+    return $columns;
   }
 
   /**
@@ -234,7 +255,16 @@ class modifier extends \cenozo\base_object
    */
   public function get_order_columns()
   {
-    return array_keys( $this->order_list );
+    $columns = array();
+    foreach( $this->order_list as $column => $value )
+    {
+      // get the first table.name match, or if no match if found leave the string alone
+      $matches = array();
+      if( 1 == preg_match( '/\w+\.\w+/', $column, $matches ) ) $columns[] = $matches[0];
+      else $columns[] = $column;
+    }
+
+    return $columns;
   }
 
   /**

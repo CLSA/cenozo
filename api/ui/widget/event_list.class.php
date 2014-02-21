@@ -38,7 +38,7 @@ class event_list extends base_list
   {
     parent::prepare();
     
-    $this->add_column( 'event.name', 'string', 'Event', true );
+    $this->add_column( 'event_type.name', 'string', 'Event', true );
     $this->add_column( 'datetime', 'datetime', 'Date', true );
   }
   
@@ -55,7 +55,7 @@ class event_list extends base_list
     foreach( $this->get_record_list() as $record )
     {
       $this->add_row( $record->id,
-        array( 'event.name' => $record->get_event_type()->name,
+        array( 'event_type.name' => $record->get_event_type()->name,
                'datetime' => $record->datetime ) );
     }
   }

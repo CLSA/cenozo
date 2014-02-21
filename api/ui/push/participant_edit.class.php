@@ -28,6 +28,72 @@ class participant_edit extends base_edit
   }
 
   /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
+    // trim the email column argument, if it exists
+    if( array_key_exists( 'columns', $this->arguments ) &&
+        array_key_exists( 'email', $this->arguments['columns'] ) )
+      $this->arguments['columns']['email'] = trim( $this->arguments['columns']['email'] );
+  }
+
+  /**
+   * Validate the operation.  If validation fails this method will throw a notice exception.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function validate()
+  {
+    parent::validate();
+
+    $util_class_name = lib::get_class_name( 'util' );
+    $columns = $this->get_argument( 'columns', array() );
+
+    // make sure role has access to state
+    $db_role = lib::create( 'business\session' )->get_role();
+    if( array_key_exists( 'state_id', $columns ) && $columns['state_id'] )
+    {
+      $db_state = lib::create( 'database\state', $columns['state_id'] );
+      if( !lib::create( 'business\session' )->get_role()->has_state( $db_state ) )
+      {
+        throw lib::create( 'exception\notice',
+          sprintf(
+            'Your role is not permitted to use set a participant\'s condition to %s. '.
+            'Please contact your superior for more information.',
+            $db_state->name ),
+          __METHOD__ );
+      }
+    }
+
+    // only admins can change active state
+    if( array_key_exists( 'active', $columns ) && 'administrator' != $db_role->name )
+    {
+      throw lib::create( 'exception\notice',
+        'Only administrators are allowed to set a participant\'s active status.',
+        __METHOD__ );
+    }
+
+    // make sure the email address is valid
+    if( array_key_exists( 'email', $columns ) &&
+        0 < strlen( trim( $columns['email'] ) ) &&
+        !$util_class_name::validate_email( $columns['email'] ) )
+    {
+      throw lib::create( 'exception\notice',
+        'Email address is not in the correct format.  Please only include a single email '.
+        'address in the form "account@domain.name"  For invalid addresses, or if you wish '.
+        'to leave the field empty please leave the field empty.',
+        __METHOD__ );
+    }
+  }
+
+  /**
    * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

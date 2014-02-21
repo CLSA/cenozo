@@ -496,13 +496,19 @@ abstract class record extends \cenozo\base_object
         
         // execute the function
         $modifier = 0 == count( $args ) ? NULL : $args[0];
+        $distinct = 1 >= count( $args ) ? NULL : $args[1];
+
         if( 'list' == $sub_action )
         {
-          return $this->get_record_list( $subject, $modifier, $inverted );
+          return is_null( $distinct )
+            ? $this->get_record_list( $subject, $modifier, $inverted )
+            : $this->get_record_list( $subject, $modifier, $inverted, false, $distinct );
         }
         else if( 'count' == $sub_action )
         {
-          return $this->get_record_count( $subject, $modifier, $inverted );
+          return is_null( $distinct )
+            ? $this->get_record_count( $subject, $modifier, $inverted )
+            : $this->get_record_count( $subject, $modifier, $inverted, $distinct );
         }
       }
     }
@@ -556,11 +562,12 @@ abstract class record extends \cenozo\base_object
    * @param modifier $modifier A modifier to apply to the list or count.
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @return array( record ) | int
    * @access protected
    */
   protected function get_record_list(
-    $record_type, $modifier = NULL, $inverted = false, $count = false )
+    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
   {
     $table_name = static::get_table_name();
     $primary_key_name = sprintf( '%s.%s', $table_name, static::get_primary_key_name() );
@@ -611,12 +618,75 @@ abstract class record extends \cenozo\base_object
     }
     else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $joining_table_name = static::get_joining_table_name( $record_type );
+
+      // check to see if the modifier is sorting a value in a foreign table
+      $table_list = array( $table_name, $joining_table_name, $record_type );
+      if( !is_null( $modifier ) )
+      {
+        // build an array of all foreign tables in the modifier
+        $columns = $modifier->get_where_columns();
+        $columns = array_merge( $columns, $modifier->get_order_columns() );
+        $tables = array();
+        foreach( $columns as $index => $column ) $tables[] = strstr( $column, '.', true );
+        $tables = array_unique( $tables, SORT_STRING );
+
+        foreach( $tables as $table )
+        {
+          if( $table && 0 < strlen( $table ) && !in_array( $table, $table_list ) )
+          {
+            // add the table name to the list
+            $table_list[] = $table;
+
+            // check to see if the joined table has a foreign key for this table and join if it does
+            $foreign_key_name = $table.'_id';
+            $table_class_name = lib::get_class_name( 'database\\'.$table );
+            if( static::db()->column_exists( $record_type, $foreign_key_name ) )
+            {
+              $modifier->where(
+                sprintf( '%s.%s', $record_type, $foreign_key_name ),
+                '=',
+                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
+                false );
+            }
+            // check to see if the joining table has this table as a foreign key
+            else if( static::db()->column_exists( $joining_table_name, $foreign_key_name ) )
+            {
+              $modifier->where(
+                sprintf( '%s.%s', $joining_table_name, $foreign_key_name ),
+                '=',
+                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
+                false );
+            }
+            // check to see if the origin table has this table as a foreign key
+            else if( static::column_exists( $foreign_key_name ) )
+            {
+              $modifier->where(
+                sprintf( '%s.%s', $table_name, $foreign_key_name ),
+                '=',
+                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
+                false );
+            }
+          }
+        }
+      }
+
+      // build the table list
+      $select_tables = '';
+      $first = true;
+      foreach( array_unique( $table_list, SORT_STRING ) as $table )
+      {
+        $select_tables .= sprintf( '%s %s',
+                                   $first ? '' : ',',
+                                   $table );
+        $first = false;
+      }
+
       $foreign_key_name =
         sprintf( '%s.%s', $record_type, $foreign_class_name::get_primary_key_name() );
       $joining_primary_key_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
       $joining_foreign_key_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
   
       if( $inverted )
       { // we need to invert the list
@@ -626,18 +696,17 @@ abstract class record extends \cenozo\base_object
         $sub_modifier->where( $joining_primary_key_name, '=', $primary_key_name, false );
         $sub_modifier->where( $primary_key_name, '=', $primary_key_value );
         $sub_select_sql =
-          sprintf( 'SELECT %s FROM %s, %s, %s %s',
+          sprintf( 'SELECT %s FROM %s %s',
                    $joining_foreign_key_name,
-                   $record_type,
-                   $joining_table_name,
-                   $table_name,
+                   $select_tables,
                    $sub_modifier->get_sql() );
   
         // now create SQL that gets all primary ids that are NOT in that list
         $modifier->where( $foreign_key_name, 'NOT IN', $sub_select_sql, false );
         $sql = sprintf( $count
-                          ? 'SELECT COUNT( %s ) FROM %s %s'
-                          : 'SELECT %s FROM %s %s',
+                          ? 'SELECT COUNT( %s%s ) FROM %s %s'
+                          : 'SELECT %s%s FROM %s %s',
+                        $distinct ? 'DISTINCT ' : '',
                         $foreign_key_name,
                         $record_type,
                         $modifier->get_sql() );
@@ -648,12 +717,11 @@ abstract class record extends \cenozo\base_object
         $modifier->where( $joining_primary_key_name, '=', $primary_key_name, false );
         $modifier->where( $primary_key_name, '=', $primary_key_value );
         $sql = sprintf( $count
-                          ? 'SELECT COUNT( %s ) FROM %s, %s, %s %s'
-                          : 'SELECT %s FROM %s, %s, %s %s',
+                          ? 'SELECT COUNT( %s%s ) FROM %s %s'
+                          : 'SELECT %s%s FROM %s %s',
+                        $distinct ? 'DISTINCT ' : '',
                         $joining_foreign_key_name,
-                        $record_type,
-                        $joining_table_name,
-                        $table_name,
+                        $select_tables,
                         $modifier->get_sql() );
       }
       
@@ -689,9 +757,10 @@ abstract class record extends \cenozo\base_object
    * @return int
    * @access protected
    */
-  protected function get_record_count( $record_type, $modifier = NULL, $inverted = false )
+  protected function get_record_count(
+    $record_type, $modifier = NULL, $inverted = false, $distinct = true )
   {
-    return $this->get_record_list( $record_type, $modifier, $inverted, true );
+    return $this->get_record_list( $record_type, $modifier, $inverted, true, $distinct );
   }
 
   /**

@@ -89,8 +89,6 @@ abstract class site_restricted_list extends base_list
 
     if( static::may_restrict() )
     {
-      // if this is a top tier role, give them a list of sites to choose from
-      // (for lists with no parent only!)
       if( is_null( $this->parent ) )
       {
         $site_class_name = lib::get_class_name( 'database\site' );
@@ -169,7 +167,7 @@ abstract class site_restricted_list extends base_list
    */
   public static function may_restrict()
   {
-    return 3 == lib::create( 'business\session' )->get_role()->tier;
+    return lib::create( 'business\session' )->get_role()->all_sites;
   }
 
   /**

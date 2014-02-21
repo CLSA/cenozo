@@ -93,6 +93,12 @@ VALUES( "push", "consent", "new", true, "Creates new consent entry for a partici
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "consent", "view", true, "View the details of a participant's particular consent entry." );
 
+-- email
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "email", "report", true, "Download a email report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "email", "report", true, "Set up a email report." );
+
 -- event
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "event", "add", true, "View a form for creating new event entry for a participant." );
@@ -153,6 +159,8 @@ VALUES( "push", "participant", "delete_event", true, "Remove a participant's eve
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "delete_phone", true, "Remove a participant's phone entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "delink", true, "Permanently removes the link between a participant and their current unique identifier." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "edit", true, "Edits a participant's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "hin", true, "View a participant's HIN details." );
@@ -160,6 +168,12 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "list", true, "Retrieves base information for a list of participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "list", true, "List participants in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "multiedit", true, "Gets a summary of participants affected by a multiedit operation." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "multiedit", true, "Edits the details of a group of participants." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "multiedit", true, "A form to edit details of multiple participants at once." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "multinote", true, "Gets a summary of participants affected by a multinote operation." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -175,11 +189,15 @@ VALUES( "pull", "participant", "report", true, "Download a participant report." 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "report", true, "Set up a participant report." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "search", true, "Search for participants based on partial information." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "site_reassign", true, "Gets a summary of participants affected by a site reassign operation." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "site_reassign", true, "Updates the preferred site of a group of participants." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "site_reassign", true, "A form to mass reassign the preferred site of multiple participants at once." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "status", true, "Provides a status list for all participants." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "view", true, "View a participant's details." );
 
@@ -292,6 +310,26 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "site", "new_access", true, "Grant access to a site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "view", true, "View a site's details." );
+
+-- state
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "state", "add", true, "View a form for creating a new state." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "state", "add_role", true, "A form to add a role to a state." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "state", "delete", true, "Removes a state from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "state", "delete_role", true, "Remove a state's role." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "state", "edit", true, "Edits a state's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "state", "list", true, "List states in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "state", "new", true, "Add a new state to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "state", "new_role", true, "Add a role to a state." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "state", "view", true, "View a state's details." );
 
 -- system message
 INSERT INTO operation( type, subject, name, restricted, description )

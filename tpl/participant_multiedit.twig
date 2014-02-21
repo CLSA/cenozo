@@ -1,0 +1,178 @@
+{##
+ # participant_multiedit.twig
+ # 
+ # Form to mass reassign the preferred site of multiple participants
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see widget.twig for parameters
+ #}
+{% extends "widget.twig" %}
+
+{% block javascript %}
+
+  {{ parent() }}
+  <script type="text/javascript">
+    $( function () {
+      // update button
+      $( "#{{ widget.full }}__update" ).click( function () {
+        var args = new Object();
+        $( "#{{ widget.full }}_form :input" ).each( function() {
+          var id_string = $(this).attr( "id" );
+          var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+          if( "update" != param_name )
+            args[param_name] = "checkbox" == $(this).attr( "type" )
+                             ? ( $(this).is( ":checked" ) ? 1 : 0 )
+                             : $(this).val();
+        } );
+
+        var data = ajax_pull( "participant", "multiedit", args );
+        if( undefined != data ) {
+          var html = '<table style="width:34%; margin-left:33%; margin-right:33%">';
+          for( var key in data )
+          {
+            html += '<tr><td class="heading">' + key +
+                    '</td><td>' + data[key] +
+                    '</td></tr>';
+          }
+          html += '</table>' +
+                  '<div class="spacer" style="text-align: right">' +
+                  '<button id="{{ widget.full }}__proceed" style="width:120px">Proceed</button>' +
+                  '</div>';
+          $( "#{{ widget.full }}__results" ).html( html );
+          $( "#{{ widget.full }}__proceed" ).button();
+        }
+
+        $( "#{{ widget.full }}__proceed" ).click( function () {
+          var args = new Object();
+          $( "#{{ widget.full }}_form :input" ).each( function() {
+            var id_string = $(this).attr( "id" );
+            var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+            if( "update" != param_name )
+              args[param_name] = "checkbox" == $(this).attr( "type" )
+                               ? ( $(this).is( ":checked" ) ? 1 : 0 )
+                               : $(this).val();
+          } );
+          if( ajax_push( "participant", "multiedit", args ) ) {
+            // let the user know the operation is complete and delete the proceed button
+            $(this).remove();
+            alert( "The operation was successful." );
+          }
+        } );
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}
+
+{% block widget %}
+  <div id="{{ widget.full }}_form" class="ui-widget ui-widget-content app-widget-content">
+    <div class="spacer">
+      <p>
+        Provide a list of participant UIDs which you wish to edit.
+        UIDs must be separated by a comma or space and may be qualified by single
+        or double quotes (ie: A123456 B123456 C123456).
+      </p>
+    </div>
+    <table>
+      <tr>
+        <td class="heading">
+          <span class="title">Active:</span>
+        </td>
+        <td class="content">
+          <select id="{{ widget.full }}__active"
+                  style="width: 100%"
+                  class="ui-state-default">
+            <option value="-1">do not change</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">
+          <span class="title">Gender:</span>
+        </td>
+        <td class="content">
+          <select id="{{ widget.full }}__gender"
+                  style="width: 100%"
+                  class="ui-state-default">
+            <option value="-1">do not change</option>
+            {% for value_id, value in gender_list %}
+              <option value="{{ value_id }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">
+          <span class="title">Age Group:</span>
+        </td>
+        <td class="content">
+          <select id="{{ widget.full }}__age_group_id"
+                  style="width: 100%"
+                  class="ui-state-default">
+            <option value="-1">do not change</option>
+            {% for value_id, value in age_group_list %}
+              <option value="{{ value_id }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">
+          <span class="title">Condition:</span>
+        </td>
+        <td class="content">
+          <select id="{{ widget.full }}__state_id"
+                  style="width: 100%"
+                  class="ui-state-default">
+            <option value="-1">do not change</option>
+            {% for value_id, value in state_list %}
+              <option value="{{ value_id }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">
+          <span class="title">Language:</span>
+        </td>
+        <td class="content">
+          <select id="{{ widget.full }}__language"
+                  style="width: 100%"
+                  class="ui-state-default">
+            <option value="-1">do not change</option>
+            {% for value_id, value in language_list %}
+              <option value="{{ value_id }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">
+          <span class="title">Override Quota:</span>
+        </td>
+        <td class="content">
+          <select id="{{ widget.full }}__override_quota"
+                  style="width: 100%"
+                  class="ui-state-default">
+            <option value="-1">do not change</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">
+          <span class="title">UID list:</span>
+        </td>
+        <td class="content">
+          <textarea id="{{ widget.full }}__uid_list" style="height: 16em;"></textarea>
+        </td>
+      </tr>
+    </table>
+    <div class="spacer" style="text-align: right">
+      <button id="{{ widget.full }}__update" style="width:120px">Update</button>
+    </div>
+    <div id="{{ widget.full }}__results"></div>
+  </div>
+{% endblock widget %}

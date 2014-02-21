@@ -58,7 +58,7 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->add_parameter( 'age_group_id', 'enum', 'Age Group' );
     $this->add_parameter( 'date_of_birth_start_date', 'date', 'Date of Birth Start Date' );
     $this->add_parameter( 'date_of_birth_end_date', 'date', 'Date of Birth End Date' );
-    $this->add_parameter( 'status', 'enum', 'Status' );
+    $this->add_parameter( 'state_id', 'enum', 'Condition' );
     $this->add_parameter( 'language', 'enum', 'Language' );
     $this->add_parameter( 'consent_accept', 'boolean', 'Consent Accepted' );
     $this->add_parameter( 'consent_written', 'boolean', 'Written Consent' );
@@ -86,6 +86,7 @@ class participant_report extends \cenozo\ui\widget\base_report
     $region_class_name = lib::get_class_name( 'database\region' );
     $age_group_class_name = lib::get_class_name( 'database\age_group' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $state_class_name = lib::get_class_name( 'database\state' );
     $event_type_class_name = lib::get_class_name( 'database\event_type' );
 
     // create the enum lists
@@ -104,10 +105,11 @@ class participant_report extends \cenozo\ui\widget\base_report
     foreach( $age_group_class_name::select( $age_group_mod ) as $db_age_group )
       $age_group_list[$db_age_group->id] = $db_age_group->to_string();
 
-    $status_list = $participant_class_name::get_enum_values( 'status' );
-    array_unshift( $status_list, 'any' );
-    array_unshift( $status_list, 'none' );
-    $status_list = array_combine( $status_list, $status_list );
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    $state_list = array( 'none' => 'none', 'any' => 'any' );
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
+      $state_list[$db_state->id] = $db_state->name;
 
     $language_list = $participant_class_name::get_enum_values( 'language' );
     $language_list = array_combine( $language_list, $language_list );
@@ -123,11 +125,11 @@ class participant_report extends \cenozo\ui\widget\base_report
     {
       $site_mod = lib::create( 'database\modifier' );
       $site_mod->order( 'name' );
-      $site_list = array();
+      $site_list = array( -1 => 'No Site' );
       foreach( $db_service->get_site_list( $site_mod ) as $db_site )
         $site_list[$db_site->id] = $db_site->name;
 
-      if( count( $site_list ) )
+      if( 1 < count( $site_list ) )
       { // don't include services without sites
         $this->set_parameter( $db_service->name.'_site_id', NULL, false, $site_list );
         $this->set_parameter( $db_service->name.'_released', NULL, false );
@@ -138,7 +140,7 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->set_parameter( 'age_group_id', NULL, false, $age_group_list );
     $this->set_parameter( 'date_of_birth_start_date', NULL, false );
     $this->set_parameter( 'date_of_birth_end_date', NULL, false );
-    $this->set_parameter( 'status', NULL, false, $status_list );
+    $this->set_parameter( 'state_id', NULL, false, $state_list );
     $this->set_parameter( 'language', NULL, false, $language_list );
     $this->set_parameter( 'consent_accept', NULL, false );
     $this->set_parameter( 'consent_written', NULL, false );

@@ -193,6 +193,16 @@ function slot_prev( slot ) {
 }
 
 /**
+ * Bring the slot back to the previous widget and remove all that come after it.
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @param string slot The slot to affect.
+ */
+function slot_prev_clip( slot ) {
+  ajax_slot( slot, 'prev_clip' );
+}
+
+/**
  * Bring the slot to the current widget (after using slot_prev)
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>

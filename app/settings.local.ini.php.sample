@@ -14,6 +14,9 @@ $settings = array();
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
 
+// we need to declare the framework's working name
+$settings['general']['framework_name'] = 'cenozo';
+
 // the web url of the cenozo framework
 $settings['url']['CENOZO'] = sprintf( 'http%s://%s/url/to/cenozo',
                                           'on' == $_SERVER["HTTPS"] ? 's' : '',
@@ -36,3 +39,10 @@ $settings['ldap']['base'] = '';
 $settings['ldap']['username'] = '';
 $settings['ldap']['password'] = '';
 $settings['ldap']['active_directory'] = true;
+
+// opal settings
+$settings['opal']['enabled'] = false;
+$settings['opal']['server'] = 'localhost';
+$settings['opal']['port'] = 8843;
+$settings['opal']['username'] = '';
+$settings['opal']['password'] = '';

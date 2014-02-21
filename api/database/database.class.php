@@ -54,7 +54,9 @@ class database extends \cenozo\base_object
 
     // determine the framework name
     $framework_name = sprintf(
-      '%scenozo', $setting_manager->get_setting( 'db', 'database_prefix' ) );
+      '%s%s',
+      $setting_manager->get_setting( 'db', 'database_prefix' ),
+      $setting_manager->get_setting( 'general', 'framework_name' ) );
 
     $column_mod = lib::create( 'database\modifier' );
     $column_mod->where( 'table_schema', 'IN', array( $this->name, $framework_name ) );
@@ -405,9 +407,20 @@ class database extends \cenozo\base_object
 
     if( false === $result )
     {
-      // pass the db error code instead of a class error code
-      throw lib::create( 'exception\database',
-        $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
+      // if a deadlock has occurred then notify the user with a notice
+      if( 1213 == $this->connection->ErrorNo() )
+      {
+        log::warning( 'Deadlock has prevented an update to the database.' );
+        throw lib::create( 'exception\notice',
+          'The server was too busy to complete your request, please try again. '.
+          'If this error persists please contact support.' , __METHOD__ );
+      }
+      else
+      {
+        // pass the db error code instead of a class error code
+        throw lib::create( 'exception\database',
+          $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
+      }
     }
 
     return $result;

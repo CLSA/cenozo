@@ -105,13 +105,13 @@ class self_menu extends \cenozo\ui\widget
     // insert participant site reassign and multinote into the utilities
     $utilities = array();
 
-    $db_operation =
-      $operation_class_name::get_operation( 'widget', 'participant', 'site_reassign' );
+    $db_operation =         
+      $operation_class_name::get_operation( 'widget', 'participant', 'multiedit' );
     if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
-      $utilities[] = array( 'heading' => 'Participant Reassign',
+      $utilities[] = array( 'heading' => 'Participant Multiedit',
                             'type' => 'widget',
                             'subject' => 'participant',
-                            'name' => 'site_reassign' );
+                            'name' => 'multiedit' );
     $db_operation =         
       $operation_class_name::get_operation( 'widget', 'participant', 'multinote' );
     if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
@@ -119,6 +119,20 @@ class self_menu extends \cenozo\ui\widget
                             'type' => 'widget',
                             'subject' => 'participant',
                             'name' => 'multinote' );
+    $db_operation =
+      $operation_class_name::get_operation( 'widget', 'participant', 'site_reassign' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $utilities[] = array( 'heading' => 'Participant Reassign',
+                            'type' => 'widget',
+                            'subject' => 'participant',
+                            'name' => 'site_reassign' );
+    $db_operation =
+      $operation_class_name::get_operation( 'widget', 'participant', 'search' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $utilities[] = array( 'heading' => 'Participant Search',
+                            'type' => 'widget',
+                            'subject' => 'participant',
+                            'name' => 'search' );
 
     // get all report widgets that the user has access to
     $reports = array();

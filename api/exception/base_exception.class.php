@@ -102,7 +102,6 @@ class base_exception extends \Exception
   public function get_previous() { return $this->getPrevious(); }
 
   /**
-  /**
    * Get the exception message.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string

@@ -15,6 +15,28 @@ use cenozo\lib, cenozo\log;
 class participant extends person
 {
   /**
+   * Audit changs to email address by overriding the magic __set method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name The name of the column
+   * @param mixed $value The value to set the contents of a column to
+   * @throws exception\argument
+   * @access public
+   */
+  public function __set( $column_name, $value )
+  {
+    $old_email = $this->email;
+
+    parent::__set( $column_name, $value );
+
+    if( 'email' == $column_name && $old_email != $this->email )
+    {
+      $util_class_name = lib::get_class_name( 'util' );
+      $this->email_datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $this->email_old = $old_email;
+    }
+  }
+
+  /**
    * Extend parent method by restricting selection to records belonging to this service only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
@@ -26,12 +48,12 @@ class participant extends person
    */
   public static function select( $modifier = NULL, $count = false, $distinct = true, $full = false )
   {
-    if( !$full )
+    $db_service = lib::create( 'business\session' )->get_service();
+    if( !$full && $db_service->release_based )
     {
       // make sure to only include sites belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'service_has_participant.service_id', '=',
-                        lib::create( 'business\session' )->get_service()->id );
+      $modifier->where( 'service_has_participant.service_id', '=', $db_service->id );
       $modifier->where( 'service_has_participant.datetime', '!=', NULL );
     }
 
@@ -50,12 +72,11 @@ class participant extends person
    */
   public static function get_unique_record( $column, $value, $full = false )
   {
+    $db_service = lib::create( 'business\session' )->get_service();
     $db_participant = parent::get_unique_record( $column, $value );
 
-    if( !is_null( $db_participant ) && !$full )
+    if( !is_null( $db_participant ) && !$full && $db_service->release_based )
     { // make sure the participant has been released
-      $db_service = lib::create( 'business\session' )->get_service();
-
       $participant_mod = lib::create( 'database\modifier' );
       $participant_mod->where( 'participant.id', '=', $db_participant->id );
       $participant_mod->where( 'service_has_participant.datetime', '!=', NULL );
@@ -180,6 +201,35 @@ class participant extends person
   }
 
   /**
+   * Gets the datetime when the participant was released to a given service, or NULL
+   * if they have not yet been released.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\service $db_service If null then the application's service is used.
+   * @return datetime object
+   * @access public
+   */
+  public function get_release_date( $db_service = NULL )
+  {
+    // no primary key means no release date
+    if( is_null( $this->id ) ) return NULL;
+
+    $util_class_name = lib::get_class_name( 'util' );
+    $database_class_name = lib::get_class_name( 'database\database' );
+
+    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
+
+    $datetime = static::db()->get_one( sprintf( 
+      'SELECT datetime '.
+      'FROM service_has_participant '.
+      'WHERE service_id = %s '.
+      'AND participant_id = %s',
+      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $this->id ) ) );
+
+    return $datetime ? $util_class_name::get_datetime_object( $datetime ) : NULL;
+  }
+
+  /**
    * Get the preferred site that the participant belongs to for a given service.
    * If the participant does not have a preferred site NULL is returned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -189,7 +239,7 @@ class participant extends person
    */
   public function get_preferred_site( $db_service = NULL )
   {
-    // no primary key means no preferred siet
+    // no primary key means no preferred site
     if( is_null( $this->id ) ) return NULL;
 
     $database_class_name = lib::get_class_name( 'database\database' );

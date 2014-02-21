@@ -63,11 +63,12 @@ class participant_view extends base_view
         'Preferred Site'.$title_postfix );
     }
 
-    $this->add_item( 'email', 'string', 'Email' );
+    $this->add_item( 'email', 'string', 'Email', 'Must be in the format "account@domain.name"' );
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'age_group', 'constant', 'Age Group' );
-    $this->add_item( 'status', 'enum', 'Condition' );
+    $this->add_item( 'state_id', 'enum', 'Condition' );
+    $this->add_item( 'override_quota', 'boolean', 'Override Quota' );
 
     // create the address sub-list widget
     $this->address_list = lib::create( 'ui\widget\address_list', $this->arguments );
@@ -110,18 +111,24 @@ class participant_view extends base_view
   {
     parent::setup();
 
-    // create enum arrays
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $state_class_name = lib::get_class_name( 'database\state' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
-    $record = $this->get_record();
-    $db_age_group = $record->get_age_group();
 
+    // create enum arrays
     $genders = $participant_class_name::get_enum_values( 'gender' );
     $genders = array_combine( $genders, $genders );
     $languages = $participant_class_name::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
-    $statuses = $participant_class_name::get_enum_values( 'status' );
-    $statuses = array_combine( $statuses, $statuses );
+    $states = array();
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
+      $states[$db_state->id] = $db_state->name;
+
+    $record = $this->get_record();
+    $db_age_group = $record->get_age_group();
+    $db_state = $record->get_state();
 
     // set the view's items
     $this->set_item( 'active', $record->active, true );
@@ -131,7 +138,8 @@ class participant_view extends base_view
     $this->set_item( 'first_name', $record->first_name );
     $this->set_item( 'last_name', $record->last_name );
     $this->set_item( 'language', $record->language, false, $languages );
-    $this->set_item( 'status', $record->status, false, $statuses );
+    $this->set_item( 'state_id', is_null( $db_state ) ? NULL : $db_state->id, false, $states );
+    $this->set_item( 'override_quota', $record->override_quota, true );
 
     // set items for default and preferred sites for all services the participant's cohort
     // belongs to
@@ -200,6 +208,16 @@ class participant_view extends base_view
       $this->set_variable( 'event_list', $this->event_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
+
+    // add an delink action
+    $db_operation = $operation_class_name::get_operation( 'push', 'participant', 'delink' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    {
+      $this->set_variable( 'allow_delink', true );
+      $this->add_action( 'delink', 'De-Link', NULL,
+        'Permanently removes the link between a participant and their current unique identifier.' );
+    }
+    else $this->set_variable( 'allow_delink', true );
 
     // add an hin action
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'hin' );
