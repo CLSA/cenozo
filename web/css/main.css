@@ -73,7 +73,8 @@ html, body {
 
 .extruder.left .text {
   font: 14px Arial, Helvetica, sans-serif;
-  padding: 10px;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 ins.no_icon {
@@ -234,8 +235,9 @@ span.status_icons {
 .ui-timepicker-div td { font-size: 90%; }
 #ui-datepicker-div { z-index: 2000 !important; }
 
-/* override a few things in the jquery ui theme (buttons are too big) */
-.ui-widget { font-size: 1.0em; }
+/* override a few things in the jquery ui theme */
+.ui-widget { font-size: 1.0em; } /* buttons are too big */
+.ui-accordion-content { padding: 0.5em !important; } /* too much spacing */
 
 /* override a few things in the timepicker plugin (layout is bad) */
 .ui-datepicker-buttonpane { margin-top: 2.5em !important; }
