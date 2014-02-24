@@ -83,7 +83,7 @@
                   $( "#{{ widget.full }}__{{ item_id }}" ).datetimepicker( {
                     dateFormat: 'yy-mm-dd',
                     timeFormat: 'hh:mm',
-                    ampm: false,
+                    timeFormat: "HH:mm",
                     stepMinute: 5,
                     {% if entry.min_date|default( false ) %}
                       minDateTime: new Date( '{{ entry.min_date }}' ),
@@ -124,7 +124,7 @@
                   $( "#{{ widget.full }}__{{ item_id }}" ).timepicker( {
                     timeFormat: 'hh:mm',
                     showAnim: 'slideDown',
-                    ampm: false,
+                    timeFormat: "HH:mm",
                     stepMinute: 5
                     {% if "start_time" == item_id %}
                     , onClose: function( timeText, date_inst, time_inst ) {

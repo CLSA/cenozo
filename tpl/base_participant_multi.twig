@@ -154,7 +154,7 @@
                   $( "#{{ widget.full }}__{{ param_id }}" ).datetimepicker( {
                     dateFormat: 'yy-mm-dd',
                     timeFormat: 'hh:mm',
-                    ampm: false,
+                    timeFormat: "HH:mm",
                     stepMinute: 5,
                     {% if param.min_date|default( false ) %}
                       minDateTime: new Date( '{{ param.min_date }}' ),
@@ -195,7 +195,7 @@
                   $( "#{{ widget.full }}__{{ param_id }}" ).timepicker( {
                     timeFormat: 'hh:mm',
                     showAnim: 'slideDown',
-                    ampm: false,
+                    timeFormat: "HH:mm",
                     stepMinute: 5
                     {% if "start_time" == param_id %}
                     , onClose: function( timeText, date_inst, time_inst ) {

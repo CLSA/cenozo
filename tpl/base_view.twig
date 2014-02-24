@@ -286,7 +286,7 @@
                     $input_{{ item_id }}.datetimepicker( {
                       dateFormat: 'yy-mm-dd',
                       timeFormat: {{ 'datetime' == entry.type ? '"hh:mm"' : '"hh:mm:ss"' }},
-                      ampm: false,
+                      timeFormat: "HH:mm",
                       {% if 'datetime' == entry.type %}
                         stepMinute: 5,
                       {% else %}
@@ -327,7 +327,7 @@
                     $input_{{ item_id }}.timepicker( {
                       timeFormat: {{ 'time' == entry.type ? '"hh:mm"' : '"hh:mm:ss"' }},
                       showAnim: "slideDown",
-                      ampm: false,
+                      timeFormat: "HH:mm",
                       {% if 'time' == entry.type %}
                         stepMinute: 5,
                       {% else %}
