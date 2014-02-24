@@ -143,7 +143,9 @@
       {% if checkable %}
         // get the checked id object from the cookies
         var json_checked_ids = $.cookie( "{{ widget.compound }}_checked_ids" );
-        var checked_ids = "null" == json_checked_ids
+        var checked_ids = undefined == json_checked_ids ||
+                          null == json_checked_ids ||
+                          "null" == json_checked_ids
                         ? new Object()
                         : jQuery.parseJSON( json_checked_ids );
           
