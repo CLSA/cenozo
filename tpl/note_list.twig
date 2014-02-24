@@ -22,7 +22,7 @@
           $(this).addClass( "padded" );
         } ).click( function() {
           var args = new Object();
-          var id_string = $(this).attr( "id" );
+          var id_string = $(this).prop( "id" );
           args.id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
           args.category = "{{ category }}";
           args.sticky = $(this).hasClass( "ui-icon-pin-w" );
@@ -40,7 +40,7 @@
           $(this).removeClass( "ui-widget-header" );
           $(this).addClass( "padded" );
         } ).click( function() {
-          var id_string = $(this).attr( "id" );
+          var id_string = $(this).prop( "id" );
           var id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
           $( "#{{ namespace }}_dialog__" + id ).dialog( "open" );
         } );
@@ -56,7 +56,7 @@
             Ok: function() {
               // build the args object
               var args = new Object();
-              var id_string = $(this).attr( "id" );
+              var id_string = $(this).prop( "id" );
               args.id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
               args.category = "{{ category }}";
               args.note = $(this).children( "textarea" ).val();
@@ -82,7 +82,7 @@
           $(this).addClass( "padded" );
         } ).click( function() {
           var args = new Object();
-          var id_string = $(this).attr( "id" );
+          var id_string = $(this).prop( "id" );
           args.id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
           args.category = "{{ category }}";
           ajax_push( "note", "delete", args );

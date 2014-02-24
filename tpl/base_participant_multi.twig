@@ -16,10 +16,10 @@
     function get_arguments( $inputs ) {
       var args = new Object();
       $inputs.each( function() {
-        var id_string = $(this).attr( "id" );
+        var id_string = $(this).prop( "id" );
         var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
         if( "update" != param_name )
-          args[param_name] = "checkbox" == $(this).attr( "type" )
+          args[param_name] = "checkbox" == $(this).prop( "type" )
                            ? ( $(this).is( ":checked" ) ? 1 : 0 )
                            : $(this).val();
       } );
