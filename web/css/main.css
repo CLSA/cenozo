@@ -30,7 +30,7 @@ html, body {
   cursor: pointer;
 }
 
-.extruder.top .content {
+.extruder.top .extruder-content {
   display: none;
   border-radius: 0 0 4px 4px;
   box-shadow: black 2px 2px 5px;
@@ -66,27 +66,15 @@ html, body {
   cursor: pointer;
 }
 
-.extruder.left .content {
+.extruder.left .extruder-content {
   display: none;
   box-shadow: black 2px 0px 5px;
 }
 
 .extruder.left .text {
   font: 14px Arial, Helvetica, sans-serif;
-  padding: 10px;
-}
-
-#tooltip {
-  position: absolute;
-  z-index: 3000;
-  padding: 5px;
-  opacity: 1.0;
-  border-radius: 5px;
-  box-shadow: black 2px 2px 5px;
-}
-
-#tooltip h3, #tooltip div {
-  margin: 0;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 ins.no_icon {
@@ -248,8 +236,8 @@ span.status_icons {
 #ui-datepicker-div { z-index: 2000 !important; }
 
 /* override a few things in the jquery ui theme */
-.ui-button-text-only .ui-button-text { padding: .1em 1em; }
-.ui-button-icon-only .ui-button-text, .ui-button-icons-only .ui-button-text { padding: .1em; text-indent: -9999999px; }
-.ui-button-text-icon-primary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .1em 1em .1em 2.1em; }
-.ui-button-text-icon-secondary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .1em 2.1em .1em 1em; }
-.ui-button-text-icons .ui-button-text { padding-left: 2.1em; padding-right: 2.1em; }
+.ui-widget { font-size: 1.0em; } /* buttons are too big */
+.ui-accordion-content { padding: 0.5em !important; } /* too much spacing */
+
+/* override a few things in the timepicker plugin (layout is bad) */
+.ui-datepicker-buttonpane { margin-top: 2.5em !important; }

@@ -13,7 +13,7 @@
 $settings = array();
 
 // Framework software version (is never overridded by the application's ini file)
-$settings['general']['cenozo_version'] = '0.2.4';
+$settings['general']['cenozo_version'] = '0.2.5';
 
 // When set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -34,13 +34,15 @@ $settings['url']['JS'] = $this->settings['url']['CENOZO'].'/js';
 $settings['url']['CSS'] = $this->settings['url']['CENOZO'].'/css';
 
 // javascript libraries
-$settings['version']['JQUERY'] = '1.4.4';
-$settings['version']['JQUERY_UI'] = '1.8.9';
+$settings['version']['JQUERY'] = '1.10.2';
+$settings['version']['JQUERY_UI'] = '1.10.4';
 
 $settings['url']['JQUERY'] = '/jquery';
-$settings['url']['JQUERY_UI'] = $settings['url']['JQUERY'].'/ui';
+$settings['url']['JQUERY_UI'] =
+  $settings['url']['JQUERY'].'/ui-'.$settings['version']['JQUERY_UI'];
 $settings['url']['JQUERY_PLUGINS'] = $settings['url']['JQUERY'].'/plugins';
-$settings['path']['JQUERY_UI_THEMES'] = '/var/www/jquery/ui/css';
+$settings['path']['JQUERY_UI_THEMES'] =
+  '/var/www/jquery/ui-'.$settings['version']['JQUERY_UI'].'/css';
 
 $settings['url']['JQUERY_JS'] = 
   $settings['url']['JQUERY'].'/jquery-'.$settings['version']['JQUERY'].'.min.js';
@@ -54,8 +56,6 @@ $settings['url']['JQUERY_COOKIE_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/cookie.js';
 $settings['url']['JQUERY_HOVERINTENT_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/hoverIntent.js';
-$settings['url']['JQUERY_METADATA_JS'] =
-  $settings['url']['JQUERY_PLUGINS'].'/metadata.js';
 $settings['url']['JQUERY_FLIPTEXT_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/flipText.js';
 $settings['url']['JQUERY_EXTRUDER_JS'] =
@@ -66,8 +66,6 @@ $settings['url']['JQUERY_TIMEPICKER_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/timepicker.js';
 $settings['url']['JQUERY_RIGHTCLICK_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/rightClick.js';
-$settings['url']['JQUERY_TOOLTIP_JS'] =
-  $settings['url']['JQUERY_PLUGINS'].'/tooltip.js';
 $settings['url']['JQUERY_FULLCALENDAR_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/fullcalendar.js';
 $settings['url']['JQUERY_FONTSCALE_JS'] =
@@ -86,6 +84,7 @@ $settings['path']['TEMP'] =
   '/tmp/'.$this->settings['general']['framework_name'].$this->settings['path']['APPLICATION'];
 $settings['path']['TEMPLATE_CACHE'] = $settings['path']['TEMP'].'/template';
 $settings['path']['REPORT_CACHE'] = $settings['path']['TEMP'].'/report';
+$settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
 
 // database settings
 $settings['db']['driver'] = 'mysql';

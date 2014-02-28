@@ -1,7 +1,7 @@
 {##
- # base_report.twig
+ # base_participant_multi.twig
  # 
- # Test report.
+ # Base form elements required to perform an action on multiple participants
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @see widget.twig for parameters
  #}
@@ -10,21 +10,77 @@
 {% block javascript %}
 
   {{ parent() }}
+  <script type="text/javascript" src="{{ constant('JS_URL') }}/md5.js"></script>
   <script type="text/javascript">
-    $( function () {
-      // download button
-      $( "#{{ widget.compound }}_download" ).click( function () {
-        // push the form information
-        var args = new Object();
-        $( "#{{ widget.full }}_download_form :input" ).each( function() {
-          var id_string = $(this).prop( "id" );
-          var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+
+    function get_arguments( $inputs ) {
+      var args = new Object();
+      $inputs.each( function() {
+        var id_string = $(this).prop( "id" );
+        var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+        if( "update" != param_name )
           args[param_name] = "checkbox" == $(this).prop( "type" )
                            ? ( $(this).is( ":checked" ) ? 1 : 0 )
                            : $(this).val();
+      } );
+      return args;
+    }
+
+    $( function () {
+      // file button handler
+      $( "#{{ widget.full }}__file" ).change( function() {
+        var file = this.files[0];
+        if( 0 == file.size ) {
+          alert( "Unable to proceed, the file you selected is empty." );
+          $(this).val( "" );
+        } else {
+          // upload the file
+          ajax_push(
+            "self",
+            "temporary_file",
+            file,
+            function( request ) {
+              if( 200 == request.status ) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                  md5 = hex_md5( e.target.result );
+                  $( "#{{ widget.full }}__md5" ).val( md5 );
+                  $( "#{{ widget.full }}__file_confirmation" ).html( " (upload successful)" );
+                }
+                reader.readAsBinaryString( file );
+              }
+            } );
+        }
+      } );
+
+      // update button
+      $( "#{{ widget.full }}__update" ).click( function () {
+        var args = get_arguments( $( "#{{ widget.full }}_form :input" ) );
+        var data = ajax_pull( "{{ widget.subject }}", "{{ widget.name }}", args );
+        if( undefined != data ) {
+          var html = '<table style="width:34%; margin-left:33%; margin-right:33%">';
+          for( var key in data )
+          {
+            html += '<tr><td class="heading">' + key +
+                    '</td><td>' + data[key] +
+                    '</td></tr>';
+          }
+          html += '</table>' +
+                  '<div class="spacer" style="text-align: right">' +
+                  '<button id="{{ widget.full }}__proceed" style="width:120px">Proceed</button>' +
+                  '</div>';
+          $( "#{{ widget.full }}__results" ).html( html );
+          $( "#{{ widget.full }}__proceed" ).button();
+        }
+
+        $( "#{{ widget.full }}__proceed" ).click( function () {
+          var args = get_arguments( $( "#{{ widget.full }}_form :input" ) );
+          if( ajax_push( "{{ widget.subject }}", "{{ widget.name }}", args ) ) {
+            // let the user know the operation is complete and delete the proceed button
+            $(this).remove();
+            alert( "The operation was successful." );
+          }
         } );
-        
-        window.location = "{{ widget.subject }}/report?" + jQuery.param( args );
       } );
     } );
   </script>
@@ -32,8 +88,18 @@
 {% endblock javascript %}
 
 {% block widget %}
-
-  <div id="{{ widget.full }}_download_form" class="ui-widget ui-widget-content app-widget-content">
+  <div id="{{ widget.full }}_form" class="ui-widget ui-widget-content app-widget-content">
+    <div class="spacer">
+      <p>
+        Provide a list of participant UIDs which you wish to affect.
+        UIDs must be separated by a comma or space and may be qualified by single
+        or double quotes (ie: A123456 B123456 C123456).
+      </p>
+      <p>
+        Alternatively, provide a CSV file where the first column is a list of UIDs
+        which you wish to affect.
+      </p>
+    </div>
 
     {# put hidden parameters here #}
     {% for param_id, param in parameters %}
@@ -190,39 +256,29 @@
 
         {% endif %}
       {% endfor %}
-    </table>
-    <hr class="ui-widget ui-widget-content">
-    <table>
-      {% if use_cache %}
-        <tr>
-          <td class="heading">Refresh Cache:</td>
-          <td class="content">
-            <select id="{{ widget.full }}__refresh_cache"
-                    style="width: 100%" class="ui-state-default">
-              <option value="1">Yes</option>
-              <option value="0" selected>No</option>
-            </select>
-          </td>
-        </tr>
-      {% endif %}
       <tr>
-        <td class="heading">Format:</td>
+        <td class="heading">
+          <span class="title">CSV file:</span>
+        </td>
         <td class="content">
-          <select id="{{ widget.full }}__format"
-                  style="width: 100%" class="ui-state-default">
-            <option value="xlsx">Microsoft Excel 2007</option>
-            <option value="xls">Microsoft Excel 5.0</option>
-            <option value="html">HTML (web page)</option>
-            {# PDF file types were causing problems, dissabled for now
-              <option value="pdf">PDF</option>
-            #}
-            <option value="csv">CSV</option>
-          </select>
+          <input type="hidden" id="{{ widget.full }}__md5" value="" />
+          <input type="file" id="{{ widget.full }}__file" name="file" />
+          <span id="{{ widget.full }}__file_confirmation" />
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">
+          <span class="title">UID list:</span>
+        </td>
+        <td class="content">
+          <textarea id="{{ widget.full }}__uid_list" style="height: 16em;"></textarea>
         </td>
       </tr>
     </table>
-    <div class="spacer"></div>
+    <div class="spacer" style="text-align: right">
+      <button id="{{ widget.full }}__update" style="width:120px">Update</button>
+    </div>
+    <div id="{{ widget.full }}__results"></div>
   </div>
-  {% from 'macros.twig' import confirm_buttons %}
-  {{ confirm_buttons( slot, widget.compound, [ 'download' ], false, 'right', true ) }}
+
 {% endblock widget %}

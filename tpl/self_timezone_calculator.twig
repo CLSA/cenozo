@@ -27,7 +27,7 @@
         $( "#{{ widget.full }}__{{ id }}" ).timepicker( {
           timeFormat: 'hh:mm',
           showAnim: 'slideDown',
-          ampm: false,
+          timeFormat: "HH:mm",
           stepMinute: 5,
           onClose: function( timeText, date_inst, time_inst ) {
             // timeText has the time value sent as a HH:MM string, so translate to utc time

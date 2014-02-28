@@ -213,6 +213,16 @@ abstract class base_report extends \cenozo\ui\widget
   }
 
   /**
+   * Add a separator between parameters.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function add_separator()
+  {
+    $this->parameters['sep'.rand()]['type'] = 'separator';
+  }
+
+  /**
    * Add a parameter to the report.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $param_id The parameter's id, can be one of the record's column names.

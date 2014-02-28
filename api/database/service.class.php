@@ -80,7 +80,6 @@ class service extends record
     // cohort_ids may be a single integer, make sure it is an array
     if( !is_array( $cohort_ids ) ) $cohort_ids = array( $cohort_ids );
 
-    database::$debug = true;
     static::db()->execute( sprintf(
       'UPDATE service_has_cohort '.
       'SET grouping = %s '.
@@ -89,7 +88,6 @@ class service extends record
       $database_class_name::format_string( $grouping ),
       $database_class_name::format_string( $this->id ),
       $database_class_name::format_string( implode( ',', $cohort_ids ) ) ) );
-    database::$debug = false;
   }
 
   /**

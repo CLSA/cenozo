@@ -70,13 +70,13 @@
        */
       function process_change( widget_subject, widget_name, element, new_value, type ) {
         // don't do anything if there hasn't been any change to the value
-        var old_value = $( "#old_" + element.attr( 'id' ) ).val();
+        var old_value = $( "#old_" + element.prop( 'id' ) ).val();
         if( new_value == old_value ) return old_value;
         
         var widget_full = widget_subject + "_" + widget_name;
 
         // build the args object
-        var id_string = element.attr( 'id' );
+        var id_string = element.prop( 'id' );
         var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
         var args = new Object();
         args.id = {{ id|default(0) }};
@@ -119,7 +119,7 @@
           }
       
           // update the old value
-          $( "#old_" + element.attr( 'id' ) ).val( new_value );
+          $( "#old_" + element.prop( 'id' ) ).val( new_value );
 
           {% block post_edit %}{% endblock post_edit %}
 
@@ -179,7 +179,7 @@
                     buttons: {
                       Ok: function() {
                         // build the args object
-                        var id_string = $(this).attr( "id" );
+                        var id_string = $(this).prop( "id" );
                         var column_name = id_string.substring( id_string.lastIndexOf("__") + 2 );
                         var args = new Object();
                         args.id = {{ id|default(0) }};
@@ -286,7 +286,7 @@
                     $input_{{ item_id }}.datetimepicker( {
                       dateFormat: 'yy-mm-dd',
                       timeFormat: {{ 'datetime' == entry.type ? '"hh:mm"' : '"hh:mm:ss"' }},
-                      ampm: false,
+                      timeFormat: "HH:mm",
                       {% if 'datetime' == entry.type %}
                         stepMinute: 5,
                       {% else %}
@@ -327,7 +327,7 @@
                     $input_{{ item_id }}.timepicker( {
                       timeFormat: {{ 'time' == entry.type ? '"hh:mm"' : '"hh:mm:ss"' }},
                       showAnim: "slideDown",
-                      ampm: false,
+                      timeFormat: "HH:mm",
                       {% if 'time' == entry.type %}
                         stepMinute: 5,
                       {% else %}

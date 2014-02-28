@@ -14,7 +14,7 @@ use cenozo\lib, cenozo\log;
  * 
  * @abstract
  */
-class participant_site_reassign extends \cenozo\ui\pull
+class participant_site_reassign extends \cenozo\ui\pull\base_participant_multi
 {
   /**
    * Constructor
@@ -25,7 +25,7 @@ class participant_site_reassign extends \cenozo\ui\pull
    */
   public function __construct( $args )
   {
-    parent::__construct( 'participant', 'site_reassign', $args );
+    parent::__construct( 'site_reassign', $args );
   }
 
   /**
@@ -48,22 +48,15 @@ class participant_site_reassign extends \cenozo\ui\pull
     $cohort_id_list = array();
     foreach( $db_service->get_cohort_list() as $db_cohort ) $cohort_id_list[] = $db_cohort->id;
     $site_id = $this->get_argument( 'site_id' );
-    $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
-    $uid_list_string = trim( $uid_list_string );
-    $uid_list = array_unique( preg_split( '/\s+/', $uid_list_string ) );
     
     // count how many participants in the UID list belong to the selected service
-    $participant_mod = lib::create( 'database\modifier' );
-    $participant_mod->where( 'uid', 'IN', $uid_list );
+    $participant_mod = clone $this->modifier;
     $participant_mod->where( 'cohort_id', 'IN', $cohort_id_list );
     $participant_count = $participant_class_name::count( $participant_mod );
-    $invalid_count = count( $uid_list ) - $participant_count;
+    $invalid_count = count( $this->uid_list ) - $participant_count;
 
     // count participant's whose effective site will be affected by the operation
-    $participant_mod = lib::create( 'database\modifier' );
-    $participant_mod->where( 'uid', 'IN', $uid_list );
-    if( $db_service->release_based )
-      $participant_mod->where( 'service_has_participant.service_id', '=', $db_service->id );
+    $participant_mod = clone $this->modifier;
     $participant_mod->where( 'participant_default_site.service_id', '=', $db_service->id );
     $participant_mod->where( 'participant_preferred_site.service_id', '=', $db_service->id );
 
@@ -88,13 +81,4 @@ class participant_site_reassign extends \cenozo\ui\pull
       'Participants not belonging to service' => $invalid_count,
       'Participants affected by operation' => $affected_count );
   }
-  
-  /**
-   * Lists are always returned in JSON format.
-   * 
-   * @author Dean Inglis <inglisd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_data_type() { return "json"; }
 }

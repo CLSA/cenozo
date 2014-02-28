@@ -166,242 +166,275 @@ abstract class base_report extends \cenozo\ui\pull
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    // determine the widest table size
-    $max = 1;
-    foreach( $this->report_tables as $table )
+    if( 'csv' == $this->get_argument( 'format' ) )
     {
-      if( is_array( $table['header'] ) )
+      foreach( $this->report_tables as $table )
+      {
+        // add the header row
+        $line = '';
+        $first = true;
+        foreach( $table['header'] as $cell )
+        {
+          if( !$first ) $line .= ',';
+          else $first = false;
+          $line .= sprintf( '"%s"', str_replace( '"', '\"', $cell ) );
+        }
+        $this->data .= $line."\n";
+
+        // now add the content rows
+        foreach( $table['contents'] as $content )
+        {
+          $line = '';
+          $first = true;
+          foreach( $content as $cell )
+          {
+            if( !$first ) $line .= ',';
+            else $first = false;
+            $line .= sprintf( '"%s"', str_replace( '"', '\"', $cell ) );
+          }
+          $this->data .= $line."\n";
+        }
+      }
+    }
+    else
+    {
+      // determine the widest table size
+      $max = 1;
+      foreach( $this->report_tables as $table )
+      {
+        if( is_array( $table['header'] ) )
+        {
+          $width = max(
+            count( $table['header'] ),
+            count( $table['footer'] ) );
+          if( $max < $width ) $max = $width;
+        }
+      }
+      
+      // add in the title(s)
+      $row = 1;
+      $max_col = 1 < $max ? chr( 64 + $max ) : false;
+
+      $main_title = $this->get_heading();
+      if( !is_null( $this->get_argument( 'restrict_site_id', NULL ) ) )
+      {
+        $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
+        if( $restrict_site_id )
+        {
+          $db_site = lib::create( 'database\site', $restrict_site_id );
+          $main_title = $main_title.' for '.$db_site->get_full_name();
+        }
+        else
+        {
+          $main_title = $main_title.' for All Sites';
+        }
+      }
+        
+      $this->report->set_size( 16 );
+      $this->report->set_bold( true );
+      $this->report->set_horizontal_alignment( 'center' );
+      if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+      $this->report->set_cell( 'A'.$row, $main_title );
+
+      $row++;
+
+      $now_datetime_obj = $util_class_name::get_datetime_object();
+      $time_title = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
+                     ' at '.$now_datetime_obj->format( 'H:i T' );
+      $this->report->set_size( 14 );
+      $this->report->set_bold( false );
+      if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+      $this->report->set_cell( 'A'.$row, $time_title );
+
+      $row++;
+
+      if( !is_null( $this->get_argument( 'restrict_start_date', NULL ) ) ||
+          !is_null( $this->get_argument( 'restrict_end_date', NULL ) ) )
+      {
+        $restrict_start_date = $this->get_argument( 'restrict_start_date' );
+        $restrict_end_date = $this->get_argument( 'restrict_end_date' );
+        $now_datetime_obj = $util_class_name::get_datetime_object();
+        if( $restrict_start_date )
+        {
+          $start_datetime_obj = $util_class_name::get_datetime_object( $restrict_start_date );
+          if( $start_datetime_obj > $now_datetime_obj )
+          {
+            $start_datetime_obj = clone $now_datetime_obj;
+          }
+        }
+        if( $restrict_end_date )
+        {
+          $end_datetime_obj = $util_class_name::get_datetime_object( $restrict_end_date );
+          if( $end_datetime_obj > $now_datetime_obj )
+          {
+            $end_datetime_obj = clone $now_datetime_obj;
+          }
+        }
+
+        $date_title = '';
+        if( $restrict_start_date && $restrict_end_date )
+        {
+          if( $end_datetime_obj < $start_datetime_obj )
+          {
+            $start_datetime_obj = $util_class_name::get_datetime_object( $restrict_end_date );
+            $end_datetime_obj = $util_class_name::get_datetime_object( $restrict_start_date );
+          }
+          if( $start_datetime_obj == $end_datetime_obj ) 
+          {
+            $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
+          }
+          else
+          {
+            $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
+                     $end_datetime_obj->format( 'Y-m-d' );
+          }       
+        }
+        else if( $restrict_start_date && !$restrict_end_date ) 
+        {
+          if( $start_datetime_obj == $now_datetime_obj )
+          {
+            $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
+          }
+          else
+          {
+            $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
+              $now_datetime_obj->format( 'Y-m-d' );
+          }    
+        }
+        else if( !$restrict_start_date && $restrict_end_date )
+        {
+          $date_title = 'Dated up to '.$end_datetime_obj->format( 'Y-m-d' );
+        }
+        else
+        {
+          $date_title = 'No date restriction';
+        }
+        if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+        $this->report->set_cell( 'A'.$row, $date_title );
+        $row++;
+      }
+
+      $this->report->set_size( 14 );
+      $this->report->set_bold( false );
+
+      foreach( $this->report_titles as $title )
+      {
+        if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+        $this->report->set_cell( 'A'.$row, $title );
+        $row++;
+      }
+
+      $this->report->set_size( NULL );
+      
+      // add in each table
+      foreach( $this->report_tables as $table )
       {
         $width = max(
           count( $table['header'] ),
           count( $table['footer'] ) );
-        if( $max < $width ) $max = $width;
-      }
-    }
-    
-    // add in the title(s)
-    $row = 1;
-    $max_col = 1 < $max ? chr( 64 + $max ) : false;
+        $max_col = 1 < $max ? chr( 64 + $width ) : false;
 
-    $main_title = $this->get_heading();
-    if( !is_null( $this->get_argument( 'restrict_site_id', NULL ) ) )
-    {
-      $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-      if( $restrict_site_id )
-      {
-        $db_site = lib::create( 'database\site', $restrict_site_id );
-        $main_title = $main_title.' for '.$db_site->get_full_name();
-      }
-      else
-      {
-        $main_title = $main_title.' for All Sites';
-      }
-    }
-      
-    $this->report->set_size( 16 );
-    $this->report->set_bold( true );
-    $this->report->set_horizontal_alignment( 'center' );
-    if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-    $this->report->set_cell( 'A'.$row, $main_title );
-
-    $row++;
-
-    $now_datetime_obj = $util_class_name::get_datetime_object();
-    $time_title = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
-                   ' at '.$now_datetime_obj->format( 'H:i T' );
-    $this->report->set_size( 14 );
-    $this->report->set_bold( false );
-    if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-    $this->report->set_cell( 'A'.$row, $time_title );
-
-    $row++;
-
-    if( !is_null( $this->get_argument( 'restrict_start_date', NULL ) ) ||
-        !is_null( $this->get_argument( 'restrict_end_date', NULL ) ) )
-    {
-      $restrict_start_date = $this->get_argument( 'restrict_start_date' );
-      $restrict_end_date = $this->get_argument( 'restrict_end_date' );
-      $now_datetime_obj = $util_class_name::get_datetime_object();
-      if( $restrict_start_date )
-      {
-        $start_datetime_obj = $util_class_name::get_datetime_object( $restrict_start_date );
-        if( $start_datetime_obj > $now_datetime_obj )
-        {
-          $start_datetime_obj = clone $now_datetime_obj;
-        }
-      }
-      if( $restrict_end_date )
-      {
-        $end_datetime_obj = $util_class_name::get_datetime_object( $restrict_end_date );
-        if( $end_datetime_obj > $now_datetime_obj )
-        {
-          $end_datetime_obj = clone $now_datetime_obj;
-        }
-      }
-
-      $date_title = '';
-      if( $restrict_start_date && $restrict_end_date )
-      {
-        if( $end_datetime_obj < $start_datetime_obj )
-        {
-          $start_datetime_obj = $util_class_name::get_datetime_object( $restrict_end_date );
-          $end_datetime_obj = $util_class_name::get_datetime_object( $restrict_start_date );
-        }
-        if( $start_datetime_obj == $end_datetime_obj ) 
-        {
-          $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
-        }
-        else
-        {
-          $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
-                   $end_datetime_obj->format( 'Y-m-d' );
-        }       
-      }
-      else if( $restrict_start_date && !$restrict_end_date ) 
-      {
-        if( $start_datetime_obj == $now_datetime_obj )
-        {
-          $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
-        }
-        else
-        {
-          $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
-            $now_datetime_obj->format( 'Y-m-d' );
-        }    
-      }
-      else if( !$restrict_start_date && $restrict_end_date )
-      {
-        $date_title = 'Dated up to '.$end_datetime_obj->format( 'Y-m-d' );
-      }
-      else
-      {
-        $date_title = 'No date restriction';
-      }
-      if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-      $this->report->set_cell( 'A'.$row, $date_title );
-      $row++;
-    }
-
-    $this->report->set_size( 14 );
-    $this->report->set_bold( false );
-
-    foreach( $this->report_titles as $title )
-    {
-      if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-      $this->report->set_cell( 'A'.$row, $title );
-      $row++;
-    }
-
-    $this->report->set_size( NULL );
-    
-    // add in each table
-    foreach( $this->report_tables as $table )
-    {
-      $width = max(
-        count( $table['header'] ),
-        count( $table['footer'] ) );
-      $max_col = 1 < $max ? chr( 64 + $width ) : false;
-
-      // always skip a row before each table
-      $row++;
-
-      $this->report->set_horizontal_alignment( 'center' );
-      $this->report->set_bold( true );
-
-      // put in the table title
-      if( !is_null( $table['title'] ) )
-      {
-        if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-        $this->report->set_background_color( '000000' );
-        $this->report->set_foreground_color( 'FFFFFF' );
-        $this->report->set_cell( 'A'.$row, $table['title'] );
-        $this->report->set_foreground_color( '000000' );
+        // always skip a row before each table
         $row++;
-      }
 
-      // put in the table header
-      if( count( $table['header'] ) )
-      {
-        $this->report->set_background_color( 'CCCCCC' );
-        $col = 'A';
-        foreach( $table['header'] as $header )
+        $this->report->set_horizontal_alignment( 'center' );
+        $this->report->set_bold( true );
+
+        // put in the table title
+        if( !is_null( $table['title'] ) )
         {
-          $autosize = !in_array( $col, $table['fixed'] );
-          $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-          $this->report->set_cell( $col.$row, $header, $autosize );
-          $col++;
+          if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+          $this->report->set_background_color( '000000' );
+          $this->report->set_foreground_color( 'FFFFFF' );
+          $this->report->set_cell( 'A'.$row, $table['title'] );
+          $this->report->set_foreground_color( '000000' );
+          $row++;
         }
-        $row++;
-      }
 
-      $this->report->set_bold( false );
-      $this->report->set_background_color( NULL );
-      
-      $first_content_row = $row;
-
-      // put in the table contents
-      $contents_are_numeric = array();
-      if( count( $table['contents'] ) )
-      {
-        $content_row = 0;
-        $insert_row = count( $table['blanks'] ) > 0 ? true : false;
-        foreach( $table['contents'] as $contents )
+        // put in the table header
+        if( count( $table['header'] ) )
         {
+          $this->report->set_background_color( 'CCCCCC' );
           $col = 'A';
-          foreach( $contents as $content )
+          foreach( $table['header'] as $header )
           {
             $autosize = !in_array( $col, $table['fixed'] );
             $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-            $this->report->set_cell( $col.$row, $content, $autosize );
-            if( !array_key_exists( $col, $contents_are_numeric ) )
-              $contents_are_numeric[$col] = false;
-            $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
+            $this->report->set_cell( $col.$row, $header, $autosize );
             $col++;
           }
-          
-          if( $insert_row && in_array( $content_row, $table['blanks'] ) ) $row++;    
-                    
-          $content_row++;
+          $row++;
+        }
+
+        $this->report->set_bold( false );
+        $this->report->set_background_color( NULL );
+        
+        $first_content_row = $row;
+
+        // put in the table contents
+        $contents_are_numeric = array();
+        if( count( $table['contents'] ) )
+        {
+          $content_row = 0;
+          $insert_row = count( $table['blanks'] ) > 0 ? true : false;
+          foreach( $table['contents'] as $contents )
+          {
+            $col = 'A';
+            foreach( $contents as $content )
+            {
+              $autosize = !in_array( $col, $table['fixed'] );
+              $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+              $this->report->set_cell( $col.$row, $content, $autosize );
+              if( !array_key_exists( $col, $contents_are_numeric ) )
+                $contents_are_numeric[$col] = false;
+              $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
+              $col++;
+            }
+            
+            if( $insert_row && in_array( $content_row, $table['blanks'] ) ) $row++;    
+                      
+            $content_row++;
+            $row++;
+          }
+        }
+        $last_content_row = $row - 1;
+        
+        $this->report->set_bold( true );
+
+        // put in the table footer
+        if( count( $table['footer'] ) )
+        {
+          $col = 'A';
+          foreach( $table['footer'] as $footer )
+          {
+            // the footer may be a function, convert if necessary
+            if( preg_match( '/[0-9a-zA-Z_]+\(\)/', $footer ) )
+            {
+              if( $first_content_row == $last_content_row + 1 || !$contents_are_numeric[ $col ] )
+              {
+                $footer = 'N/A';
+              }
+              else
+              {
+                $coordinate = sprintf( '%s%s:%s%s',
+                                       $col,
+                                       $first_content_row,
+                                       $col,
+                                       $last_content_row );
+                $footer = '='.preg_replace( '/\(\)/', '('.$coordinate.')', $footer );
+              }
+            }
+
+            $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+            $this->report->set_cell( $col.$row, $footer );
+            $col++;
+          }
           $row++;
         }
       }
-      $last_content_row = $row - 1;
-      
-      $this->report->set_bold( true );
 
-      // put in the table footer
-      if( count( $table['footer'] ) )
-      {
-        $col = 'A';
-        foreach( $table['footer'] as $footer )
-        {
-          // the footer may be a function, convert if necessary
-          if( preg_match( '/[0-9a-zA-Z_]+\(\)/', $footer ) )
-          {
-            if( $first_content_row == $last_content_row + 1 || !$contents_are_numeric[ $col ] )
-            {
-              $footer = 'N/A';
-            }
-            else
-            {
-              $coordinate = sprintf( '%s%s:%s%s',
-                                     $col,
-                                     $first_content_row,
-                                     $col,
-                                     $last_content_row );
-              $footer = '='.preg_replace( '/\(\)/', '('.$coordinate.')', $footer );
-            }
-          }
-
-          $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-          $this->report->set_cell( $col.$row, $footer );
-          $col++;
-        }
-        $row++;
-      }
+      $this->data = $this->report->get_file( $this->get_argument( 'format' ) );
     }
-
-    $this->data = $this->report->get_file( $this->get_argument( 'format' ) );
   }
 
   /**

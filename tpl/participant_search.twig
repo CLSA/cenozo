@@ -79,7 +79,7 @@
 
       // set up the inputs
       $( "#{{ widget.full }}__form :input" ).each( function() {
-        var id_string = $(this).attr( "id" );
+        var id_string = $(this).prop( "id" );
         var compound = id_string.substring( id_string.lastIndexOf('__') + 2 );
         var subject = compound.substring( 0, compound.indexOf('_') );
         var scenario = compound.substring( compound.indexOf('_') + 1, compound.lastIndexOf('_') );
@@ -93,7 +93,7 @@
         icons: { primary: "ui-icon-plusthick" }
       } ).click( function() {
         // add a search parameter
-        var id_string = $(this).attr( "id" );
+        var id_string = $(this).prop( "id" );
         var compound = id_string.substring( id_string.lastIndexOf('__') + 2 );
         var scenario = compound.substring( compound.lastIndexOf('_') + 1 );
         
@@ -110,7 +110,7 @@
         text: false,
         icons: { primary: "ui-icon-closethick" }
       } ).click( function() {
-        var id_string = $(this).attr( "id" );
+        var id_string = $(this).prop( "id" );
         var compound = id_string.substring( id_string.lastIndexOf('__') + 2 );
 
         if( compound.match( /remove_scenario/ ) ) {

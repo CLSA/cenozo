@@ -17,9 +17,9 @@
         var args = new Object();
         var columns = new Object();
         $( "#{{ widget.full }}_add_form :input" ).each( function() {
-          var id_string = $(this).attr( "id" );
+          var id_string = $(this).prop( "id" );
           var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
-          columns[column_name] = "checkbox" == $(this).attr( "type" )
+          columns[column_name] = "checkbox" == $(this).prop( "type" )
                                ? ( $(this).is( ":checked" ) ? 1 : 0 )
                                : $(this).val();
         } );
@@ -83,7 +83,7 @@
                   $( "#{{ widget.full }}__{{ item_id }}" ).datetimepicker( {
                     dateFormat: 'yy-mm-dd',
                     timeFormat: 'hh:mm',
-                    ampm: false,
+                    timeFormat: "HH:mm",
                     stepMinute: 5,
                     {% if entry.min_date|default( false ) %}
                       minDateTime: new Date( '{{ entry.min_date }}' ),
@@ -124,7 +124,7 @@
                   $( "#{{ widget.full }}__{{ item_id }}" ).timepicker( {
                     timeFormat: 'hh:mm',
                     showAnim: 'slideDown',
-                    ampm: false,
+                    timeFormat: "HH:mm",
                     stepMinute: 5
                     {% if "start_time" == item_id %}
                     , onClose: function( timeText, date_inst, time_inst ) {
