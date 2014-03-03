@@ -237,7 +237,11 @@ class participant_report extends \cenozo\ui\pull\base_report
       else if( 'none' == $state_id ) $this->modifier->where( 'participant.state_id', '=', NULL );
       else $this->modifier->where( 'participant.state_id', '=', $state_id );
     }
-    else $this->sql_columns .= 'participant.state_id AS `condition`, ';
+    else
+    {
+      $this->sql_tables .= 'LEFT JOIN state ON participant.state_id = state.id ';
+      $this->sql_columns .= 'state.name AS `condition`, ';
+    }
 
     if( '' !== $language )
       $this->modifier->where( 'IFNULL( participant.language, "en" )', '=', $language );

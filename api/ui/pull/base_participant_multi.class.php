@@ -60,6 +60,9 @@ class base_participant_multi extends \cenozo\ui\pull
       $this->uid_list = array_unique( $this->uid_list );
     }
 
+    // remove any empty lines or headers
+    $this->uid_list = array_diff( $this->uid_list, array( '', 'uid', 'Uid', 'UID' ) );
+
     $this->modifier = lib::create( 'database\modifier' );
     $this->modifier->where( 'uid', 'IN', $this->uid_list );
   }

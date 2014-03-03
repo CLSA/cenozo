@@ -34,13 +34,15 @@ $settings['url']['JS'] = $this->settings['url']['CENOZO'].'/js';
 $settings['url']['CSS'] = $this->settings['url']['CENOZO'].'/css';
 
 // javascript libraries
-$settings['version']['JQUERY'] = '1.4.4';
-$settings['version']['JQUERY_UI'] = '1.8.9';
+$settings['version']['JQUERY'] = '1.10.2';
+$settings['version']['JQUERY_UI'] = '1.10.4';
 
 $settings['url']['JQUERY'] = '/jquery';
-$settings['url']['JQUERY_UI'] = $settings['url']['JQUERY'].'/ui';
+$settings['url']['JQUERY_UI'] =
+  $settings['url']['JQUERY'].'/ui-'.$settings['version']['JQUERY_UI'];
 $settings['url']['JQUERY_PLUGINS'] = $settings['url']['JQUERY'].'/plugins';
-$settings['path']['JQUERY_UI_THEMES'] = '/var/www/jquery/ui/css';
+$settings['path']['JQUERY_UI_THEMES'] =
+  '/var/www/jquery/ui-'.$settings['version']['JQUERY_UI'].'/css';
 
 $settings['url']['JQUERY_JS'] = 
   $settings['url']['JQUERY'].'/jquery-'.$settings['version']['JQUERY'].'.min.js';
@@ -54,8 +56,6 @@ $settings['url']['JQUERY_COOKIE_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/cookie.js';
 $settings['url']['JQUERY_HOVERINTENT_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/hoverIntent.js';
-$settings['url']['JQUERY_METADATA_JS'] =
-  $settings['url']['JQUERY_PLUGINS'].'/metadata.js';
 $settings['url']['JQUERY_FLIPTEXT_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/flipText.js';
 $settings['url']['JQUERY_EXTRUDER_JS'] =
@@ -66,8 +66,6 @@ $settings['url']['JQUERY_TIMEPICKER_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/timepicker.js';
 $settings['url']['JQUERY_RIGHTCLICK_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/rightClick.js';
-$settings['url']['JQUERY_TOOLTIP_JS'] =
-  $settings['url']['JQUERY_PLUGINS'].'/tooltip.js';
 $settings['url']['JQUERY_FULLCALENDAR_JS'] =
   $settings['url']['JQUERY_PLUGINS'].'/fullcalendar.js';
 $settings['url']['JQUERY_FONTSCALE_JS'] =

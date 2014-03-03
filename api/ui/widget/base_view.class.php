@@ -61,10 +61,6 @@ abstract class base_view extends base_record implements actionable
           $operation_class_name::get_operation( 'push', $this->get_subject(), 'delete' ) );
       }
 
-      if( $this->removable ) $this->add_action( 'remove', 'Remove', NULL,
-        sprintf( 'Removes the %s, but only if it is not being used by the system',
-                 str_replace( '_', ' ', $this->get_subject() ) ) );
-
       if( is_null( $this->get_heading() ) )
         $this->set_heading( 'Viewing '.$this->get_subject().' details' );
     }
@@ -87,6 +83,10 @@ abstract class base_view extends base_record implements actionable
   protected function setup()
   {
     parent::setup();
+
+    if( $this->removable ) $this->add_action( 'remove', 'Remove', NULL,
+      sprintf( 'Removes the %s, but only if it is not being used by the system',
+               str_replace( '_', ' ', $this->get_subject() ) ) );
 
     // define all template variables for this widget
     $this->set_variable( 'editable', $this->editable );
