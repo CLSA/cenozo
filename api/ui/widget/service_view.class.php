@@ -58,6 +58,11 @@ class service_view extends base_view
     // create the site sub-list widget
     $this->site_list = lib::create( 'ui\widget\site_list', $this->arguments );
     $this->site_list->set_parent( $this );
+
+    // create the region_site sub-list widget
+    $this->region_site_list = lib::create( 'ui\widget\region_site_list', $this->arguments );
+    $this->region_site_list->set_parent( $this );
+    $this->region_site_list->set_heading( 'Region-Site Associations' );
   }
 
   /**
@@ -100,6 +105,13 @@ class service_view extends base_view
       $this->set_variable( 'site_list', $this->site_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
+
+    try
+    {
+      $this->region_site_list->process();
+      $this->set_variable( 'region_site_list', $this->region_site_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**
@@ -122,4 +134,11 @@ class service_view extends base_view
    * @access protected
    */
   protected $site_list = NULL;
+
+  /**
+   * The region_site list widget.
+   * @var region_site_list
+   * @access protected
+   */
+  protected $region_site_list = NULL;
 }

@@ -229,6 +229,20 @@ VALUES( "push", "quota", "new", true, "Add a new quota to the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "quota", "view", true, "View a quota's details." );
 
+-- region_site
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "region_site", "add", true, "View a form for creating new association between regions and sites." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "region_site", "delete", true, "Removes an association between a region and a site from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "region_site", "edit", true, "Edits an association between a region and a site." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "region_site", "list", true, "List associations between regions and sites in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "region_site", "new", true, "Add a new association between a region and a site to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "region_site", "view", true, "View an association between a region and a site." );
+
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "role", "list", true, "List roles in the system." );
@@ -267,11 +281,15 @@ VALUES( "widget", "service", "add", true, "View a form for creating a new servic
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "service", "add_cohort", true, "A form to add a cohort to a service." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "service", "add_region_site", true, "A form to create a new association between region and site for a service." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "service", "add_role", true, "A form to add a role to a service." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "service", "delete", true, "Removes a service from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "service", "delete_cohort", true, "Remove a service's cohort." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "service", "delete_region_site", true, "Remove a service's association between region and site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "service", "delete_role", true, "Remove a service's role." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -286,6 +304,7 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "service", "new_role", true, "Add a role to a service." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "service", "view", true, "View a service's details." );
+
 
 -- setting
 INSERT INTO operation( type, subject, name, restricted, description )
