@@ -63,6 +63,10 @@ class service_view extends base_view
     $this->region_site_list = lib::create( 'ui\widget\region_site_list', $this->arguments );
     $this->region_site_list->set_parent( $this );
     $this->region_site_list->set_heading( 'Region-Site Associations' );
+
+    // create the jurisdiction sub-list widget
+    $this->jurisdiction_list = lib::create( 'ui\widget\jurisdiction_list', $this->arguments );
+    $this->jurisdiction_list->set_parent( $this );
   }
 
   /**
@@ -112,6 +116,13 @@ class service_view extends base_view
       $this->set_variable( 'region_site_list', $this->region_site_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
+
+    try
+    {
+      $this->jurisdiction_list->process();
+      $this->set_variable( 'jurisdiction_list', $this->jurisdiction_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**
@@ -141,4 +152,11 @@ class service_view extends base_view
    * @access protected
    */
   protected $region_site_list = NULL;
+
+  /**
+   * The jurisdiction list widget.
+   * @var jurisdiction_list
+   * @access protected
+   */
+  protected $jurisdiction_list = NULL;
 }
