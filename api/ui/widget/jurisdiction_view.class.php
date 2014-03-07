@@ -38,12 +38,6 @@ class jurisdiction_view extends base_view
   {
     parent::prepare();
 
-    // specify in the heading which service this jurisdiction belongs to
-    $this->set_heading(
-      sprintf( '%s for %s',
-               $this->get_heading(),
-               $this->get_record()->get_service()->title ) );
-
     $this->add_item( 'service_id', 'hidden', 'Service' );
     $this->add_item( 'postcode', 'string', 'Postcode' );
     $this->add_item( 'longitude', 'number', 'Longitude' );

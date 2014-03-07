@@ -27,16 +27,6 @@ class region_site_add extends base_view
     parent::__construct( 'region_site', 'add', $args );
   }
 
-  protected function validate()
-  {
-    parent::validate();
-
-    // this widget must have a parent, and it's subject must be service
-    if( is_null( $this->parent ) || 'service' != $this->parent->get_subject() )
-      throw lib::create( 'exception\runtime',
-        'Region_site widget must have a parent with service as the subject.', __METHOD__ );
-  }
-
   /**
    * Processes arguments, preparing them for the operation.
    * 
@@ -49,9 +39,7 @@ class region_site_add extends base_view
     parent::prepare();
     
     // specify in the heading which service this region_site belongs to
-    $this->set_heading(
-      sprintf( 'Add a new association between a region and site for %s',
-               $this->parent->get_record()->title ) );
+    $this->set_heading( 'Add a new association between a region and site' );
 
     $this->add_item( 'service_id', 'hidden' );
     $this->add_item( 'region_id', 'enum', 'Region' );
@@ -71,7 +59,9 @@ class region_site_add extends base_view
     $region_class_name = lib::get_class_name( 'database\region' );
     $site_class_name = lib::get_class_name( 'database\site' );
 
-    $db_service = $this->parent->get_record();
+    $db_service = is_null( $this->parent )
+                ? lib::create( 'business\session' )->get_service()
+                : $this->parent->get_record();
 
     // create enum arrays
     $regions = array();

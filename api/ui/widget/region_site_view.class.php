@@ -38,12 +38,6 @@ class region_site_view extends base_view
   {
     parent::prepare();
 
-    // specify in the heading which service this region_site belongs to
-    $this->set_heading(
-      sprintf( '%s for %s',
-               $this->get_heading(),
-               $this->get_record()->get_service()->title ) );
-
     $this->add_item( 'service_id', 'hidden', 'Service' );
     $this->add_item( 'region_id', 'enum', 'Region' );
     $this->add_item( 'site_id', 'enum', 'Site' );

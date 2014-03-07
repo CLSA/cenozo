@@ -27,16 +27,6 @@ class jurisdiction_add extends base_view
     parent::__construct( 'jurisdiction', 'add', $args );
   }
 
-  protected function validate()
-  {
-    parent::validate();
-
-    // this widget must have a parent, and it's subject must be service
-    if( is_null( $this->parent ) || 'service' != $this->parent->get_subject() )
-      throw lib::create( 'exception\runtime',
-        'Jurisdiction widget must have a parent with service as the subject.', __METHOD__ );
-  }
-
   /**
    * Processes arguments, preparing them for the operation.
    * 
@@ -49,9 +39,7 @@ class jurisdiction_add extends base_view
     parent::prepare();
     
     // specify in the heading which service this jurisdiction belongs to
-    $this->set_heading(
-      sprintf( 'Add a new association between a postcode and site for %s',
-               $this->parent->get_record()->title ) );
+    $this->set_heading( 'Add a new association between a postcode and site' );
 
     $this->add_item( 'service_id', 'hidden' );
     $this->add_item( 'postcode', 'string', 'Postcode',
@@ -73,7 +61,9 @@ class jurisdiction_add extends base_view
 
     $site_class_name = lib::get_class_name( 'database\site' );
 
-    $db_service = $this->parent->get_record();
+    $db_service = is_null( $this->parent )
+                ? lib::create( 'business\session' )->get_service()
+                : $this->parent->get_record();
 
     // create enum arrays
     $sites = array();

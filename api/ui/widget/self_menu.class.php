@@ -33,6 +33,11 @@ class self_menu extends \cenozo\ui\widget
       'consent',
       'event',
       'phone' ) );
+
+    // exclude any grouping types which aren't used by the service
+    $grouping_list = lib::create( 'business\session' )->get_service()->get_grouping_list();
+    if( !in_array( 'jurisdiction', $grouping_list ) ) $this->exclude_list( 'jurisdiction' );
+    if( !in_array( 'region_site', $grouping_list ) ) $this->exclude_list( 'region' );
   }
 
   /**

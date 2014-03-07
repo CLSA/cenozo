@@ -36,6 +36,29 @@ class service extends record
     return parent::select( $modifier, $count, $distinct );
   } 
     
+  /** 
+   * Call parent method without restricting records by service.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|array $column A column with the unique key property (or array of columns)
+   * @param string|array $value The value of the column to match (or array of values)
+   * @return database\record
+   * @static
+   * @access public
+   */
+  public static function get_unique_record( $column, $value, $full = false )
+  {
+    $db_service = parent::get_unique_record( $column, $value );
+
+    if( !$full )
+    {
+      if( !is_null( $db_service ) &&
+          $db_service->id != lib::create( 'business\session' )->get_service()->id )
+        $db_service = NULL;
+    }
+
+    return $db_service;
+  }
+
   /**
    * Make sure to only include cohorts which this service has access to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -132,7 +155,25 @@ class service extends record
   }
 
   /**
+   * Returns an array of all grouping types used by this service
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array( string )
+   * @access public
+   */
+  public function get_grouping_list()
+  {
+    $database_class_name = lib::get_class_name( 'database\database' );
+
+    return static::db()->get_row( sprintf(
+      'SELECT DISTINCT grouping FROM service_has_cohort WHERE service_id = %s',
+      $database_class_name::format_string( $this->id ) ) );
+  }
+
+  /**
    * Returns an array of all grouping types (from the service_has_cohort.grouping column).
+   * 
+   * This method is needed since there is no service_has_cohort active record class to call
+   * get_enum_values() on.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name A column name in the record's corresponding table.
    * @return array( string )
