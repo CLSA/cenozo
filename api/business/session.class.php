@@ -109,7 +109,9 @@ class session extends \cenozo\singleton
     if( !is_null( $site_name ) && !is_null( $role_name ) )
     {
       $site_class_name = lib::get_class_name( 'database\site' );
-      $this->requested_site = $site_class_name::get_unique_record( 'name', $site_name );
+      $this->requested_site = $site_class_name::get_unique_record(
+        array( 'service_id', 'name' ),
+        array( $this->service->id, $site_name ) );
 
       $role_class_name = lib::get_class_name( 'database\role' );
       $this->requested_role = $role_class_name::get_unique_record( 'name', $role_name );
