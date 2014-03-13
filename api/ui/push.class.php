@@ -45,37 +45,6 @@ abstract class push extends operation
   }
 
   /**
-   * Sets up the operation with any pre-execution instructions that may be necessary.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\notice
-   * @abstract
-   * @access protected
-   */
-  protected function setup()
-  {
-    parent::setup();
-
-    if( !$this->get_machine_request_received() && $this->machine_request_enabled )
-      $this->machine_arguments = $this->convert_to_noid( $this->arguments );
-  }
-
-  /**
-   * Finishes the operation with any post-execution instructions that may be necessary.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function finish()
-  {
-    parent::finish();
-
-    // if this operation was not received by machine then send a machine request
-    if( !$this->get_machine_request_received() && $this->machine_request_enabled )
-      $this->send_machine_request();
-  }
-
-  /**
    * Converts primary keys to unique keys in operation arguments.
    * All converted arguments will appear in the array under a 'noid' key.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -169,64 +138,6 @@ abstract class push extends operation
   }
       
   /**
-   * Returns whether or not the operation is to send a machine request along with performing the
-   * push locally.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return boolean
-   * @access public
-   */
-  public function get_machine_request_enabled()
-  {
-    return $this->machine_request_enabled;
-  }
-
-  /**
-   * Defines whether or not to send a machine request along with performing the push locally.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $enabled
-   * @access public
-   */
-  public function set_machine_request_enabled( $enabled )
-  {
-    $this->machine_request_enabled = $enabled;
-  }
-
-  /**
-   * Returns the url which the machine request is sent to.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_machine_request_url()
-  {
-    return $this->machine_request_url;
-  }
-
-  /**
-   * Defines the url to send machine requests to.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $url
-   * @access public
-   */
-  public function set_machine_request_url( $url )
-  {
-    $this->machine_request_url = $url;
-  }
-
-  /**
-   * Sends a machine request.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args An associative array of arguments to be sent.
-   * @access protected
-   */
-  protected function send_machine_request()
-  {
-    $cenozo_manager = lib::create( 'business\cenozo_manager', $this->machine_request_url );
-    $cenozo_manager->use_machine_credentials( $this->machine_credentials );
-    $cenozo_manager->push( $this->get_subject(), $this->get_name(), $this->machine_arguments );
-  }
-
-  /**
    * Whether the push operation was received by a machine.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
@@ -266,43 +177,4 @@ abstract class push extends operation
           ? $_SERVER['HTTP_SERVICE_NAME'] : '';
     return $this->get_machine_request_received() ? $name : NULL;
   }
-
-  /**
-   * Whether to replace the user with machine credentials when sending machine requests.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $use
-   * @access protected
-   */
-  protected function use_machine_credentials( $use )
-  {
-    $this->machine_credentials = (bool) $use;
-  }
-
-  /**
-   * The url to send machine requests to.
-   * @var string
-   * @access private
-   */
-  private $machine_request_url = NULL;
-
-  /**
-   * Whether or not to send machine requests along with the local push operation.
-   * @var boolean
-   * @access private
-   */
-  private $machine_request_enabled = false;
-
-  /**
-   * The arguments to send with a machine request.
-   * @var array( array )
-   * @access protected
-   */
-  protected $machine_arguments = array();
-
-  /**
-   * Whether to use the machine's credentials when sending a machine request
-   * @var boolean
-   * @access private
-   */
-  private $machine_credentials = false;
 }
