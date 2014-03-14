@@ -227,7 +227,7 @@ class cenozo_manager extends \cenozo\factory
     { // A non-cenozo error has happened
       throw lib::create( 'exception\runtime', sprintf(
         'Unable to connect to Cenozo service at %s (code: %s)',
-        $base_url,
+        $request->getUrl(),
         $code ), __METHOD__ );
     }
 
