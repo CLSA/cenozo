@@ -190,8 +190,9 @@ class cenozo_manager extends \cenozo\factory
     if( !is_array( $arguments ) )
       throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
 
-    // request the current site and role
-    $this->set_site_and_role( $arguments );
+    // add site and role names
+    $arguments = array_merge( $arguments, $this->get_site_and_role() );
+
     $request->setPostFields( static::prepare_arguments( $arguments ) );
 
     static::send( $request );
