@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * This is an enum class which defines all types of database table relationships.
  */
-class relationship
+abstract class relationship
 {
   const NONE = 0;
   const ONE_TO_ONE = 1;
