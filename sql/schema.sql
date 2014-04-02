@@ -489,7 +489,6 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`jurisdiction` (
   `site_id` INT UNSIGNED NOT NULL,
   `longitude` FLOAT NOT NULL,
   `latitude` FLOAT NOT NULL,
-  `distance` FLOAT NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_service_id_postcode` (`service_id` ASC, `postcode` ASC),
   INDEX `fk_site_id` (`site_id` ASC),

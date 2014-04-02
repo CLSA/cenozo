@@ -37,6 +37,29 @@ class site extends base_access
   }
 
   /**
+   * Call parent method without restricting records by service.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|array $column A column with the unique key property (or array of columns)
+   * @param string|array $value The value of the column to match (or array of values)
+   * @return database\record
+   * @static
+   * @access public
+   */
+  public static function get_unique_record( $column, $value, $full = false )
+  {
+    $db_site = parent::get_unique_record( $column, $value );
+
+    if( !$full )
+    {
+      if( !is_null( $db_site ) &&
+          $db_site->service_id != lib::create( 'business\session' )->get_service()->id )
+        $db_site = NULL;
+    }
+    
+    return $db_site;
+  }
+
+  /**
    * Gives a complete name for the site.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>

@@ -38,18 +38,84 @@ class cenozo_manager extends \cenozo\factory
   {
     return $this->enabled;
   }
+
+  /**
+   * Set which user to use when making requests (or set to NULL to use the default)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $user_name
+   * @access public
+   */
+  public function set_user( $user_name = NULL )
+  {
+    $this->user_name = $user_name;
+  }
   
   /**
-   * Adds the current site and role to the arguments
+   * Set which password to use when making requests (or set to NULL to use the default)
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array& $arguments
-   * @access protected
+   * @param string $password
+   * @access public
    */
-  protected function set_site_and_role( &$arguments )
+  public function set_password( $password = NULL )
+  {
+    $this->password = $password;
+  }
+  
+  /**
+   * Set which site to use when making requests (or set to NULL to use the default)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $site_name
+   * @access public
+   */
+  public function set_site( $site_name = NULL )
+  {
+    $this->site_name = $site_name;
+  }
+  
+  /**
+   * Set which role to use when making requests (or set to NULL to use the default)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $role_name
+   * @access public
+   */
+  public function set_role( $role_name = NULL )
+  {
+    $this->role_name = $role_name;
+  }
+  
+  /**
+   * Returns the httpauth string (user:pass) to use when making http requests
+   * 
+   * If the user or password was not specified then the current user's details are provided
+   * instead.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_httpauth()
+  {
+    return sprintf( '%s:%s',
+      is_null( $this->user_name ) ? $_SERVER['PHP_AUTH_USER'] : $this->user_name,
+      is_null( $this->password ) ? $_SERVER['PHP_AUTH_PW'] : $this->password );
+  }
+
+  /**
+   * Returns the site and role name to use when making http requests
+   * 
+   * If the site or role was not specified then the current user's details are provided
+   * instead.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array( string )
+   * @access public
+   */
+  public function get_site_and_role()
   {
     $session = lib::create( 'business\session' );
-    $arguments['request_site_name'] = $session->get_site()->get_full_name();
-    $arguments['request_role_name'] = $session->get_role()->name;
+    return array(
+      'request_site_name' =>
+        is_null( $this->site_name ) ? $session->get_site()->name : $this->site_name,
+      'request_role_name' =>
+        is_null( $this->role_name ) ? $session->get_role()->name : $this->role_name );
   }
 
   /**
@@ -67,31 +133,24 @@ class cenozo_manager extends \cenozo\factory
     if( !$this->enabled ) return NULL;
 
     $util_class_name = lib::get_class_name( 'util' );
+    $service_name = lib::create( 'business\session' )->get_service()->name;
     
-    $auth = array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] );
-    
-    if( $this->machine_credentials )
-    { // replace credentials if needed
-      $setting_manager = lib::create( 'business\setting_manager' );
-      $user = $setting_manager->get_setting( 'general', 'machine_user' );
-      $pass = $setting_manager->get_setting( 'general', 'machine_password' );
-      $auth['httpauth'] = $user.':'.$pass;
-    }
-
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
-    $request->addHeaders( array( 'service_name' => SERVICENAME ) );
-    $request->setOptions( $auth );
+    $request->addHeaders( array( 'service_name' => $service_name ) );
+    $request->setOptions( array( 'httpauth' => $this->get_httpauth() ) );
     
+    // validate the input arguments
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
       throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
 
-    // request the current site and role
-    $this->set_site_and_role( $arguments );
+    // add site and role names
+    $arguments = array_merge( $arguments, $this->get_site_and_role() );
+
     $request->setQueryData( static::prepare_arguments( $arguments ) );
     
     try
@@ -120,30 +179,23 @@ class cenozo_manager extends \cenozo\factory
   {
     if( !$this->enabled ) return;
 
-    $auth = array( 'httpauth' => $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'] );
-    
-    if( $this->machine_credentials )
-    { // replace credentials if needed
-      $setting_manager = lib::create( 'business\setting_manager' );
-      $user = $setting_manager->get_setting( 'general', 'machine_user' );
-      $pass = $setting_manager->get_setting( 'general', 'machine_password' );
-      $auth['httpauth'] = $user.':'.$pass;
-    }
+    $service_name = lib::create( 'business\session' )->get_service()->name;
 
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
-    $request->addHeaders( array( 'service_name' => SERVICENAME ) );
-    $request->setOptions( $auth );
+    $request->addHeaders( array( 'service_name' => $service_name ) );
+    $request->setOptions( array( 'httpauth' => $this->get_httpauth() ) );
 
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
       throw lib::create( 'exception\arguments', $arguments, __METHOD__ );
 
-    // request the current site and role
-    $this->set_site_and_role( $arguments );
+    // add site and role names
+    $arguments = array_merge( $arguments, $this->get_site_and_role() );
+
     $request->setPostFields( static::prepare_arguments( $arguments ) );
 
     static::send( $request );
@@ -179,7 +231,7 @@ class cenozo_manager extends \cenozo\factory
     { // A non-cenozo error has happened
       throw lib::create( 'exception\runtime', sprintf(
         'Unable to connect to Cenozo service at %s (code: %s)',
-        $base_url,
+        $request->getUrl(),
         $code ), __METHOD__ );
     }
 
@@ -212,17 +264,6 @@ class cenozo_manager extends \cenozo\factory
   }
 
   /**
-   * Whether to replace the user with machine credentials when sending requests.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $use
-   * @access public
-   */
-  public function use_machine_credentials( $use )
-  {
-    $this->machine_credentials = (bool) $use;
-  }
-
-  /**
    * Whether or not Cenozo is enabled
    * @var boolean
    * @access protected
@@ -244,9 +285,34 @@ class cenozo_manager extends \cenozo\factory
   protected $logged_in = false;
 
   /**
-   * Whether to use the machine's credentials when sending a request
-   * @var boolean
+   * The user name to use when communicating with a remote server.
+   * If not set then the current user's name is used.
+   * @var user_name
    * @access private
    */
-  private $machine_credentials = false;
+  private $user_name = NULL;
+
+  /**
+   * The password to use when communicating with a remote server
+   * If not set then the current password is used.
+   * @var string
+   * @access private
+   */
+  private $password = NULL;
+
+  /**
+   * The site name to use when communicating with a remote server
+   * If not set then the current site's name is used.
+   * @var string
+   * @access private
+   */
+  private $site_name = NULL;
+
+  /**
+   * The role name to use when communicating with a remote server
+   * If not set then the current role's name is used.
+   * @var string
+   * @access private
+   */
+  private $role_name = NULL;
 }

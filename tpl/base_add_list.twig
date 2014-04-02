@@ -15,7 +15,6 @@
         // get the object of checked ids from the cookies
         var json_checked_ids =
           $.cookie( "{{ widget.full }}_{{ list_widget_name }}_checked_ids" );
-        console.log( json_checked_ids );
         var checked_ids = undefined == json_checked_ids ||
                           null == json_checked_ids ||
                           "null" == json_checked_ids
