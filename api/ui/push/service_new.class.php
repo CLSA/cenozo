@@ -56,4 +56,18 @@ class service_new extends base_new
       throw lib::create( 'exception\notice',
         'The service\'s name cannot be left blank.', __METHOD__ );
   }
+
+  /**
+   * Finishes the operation with any post-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function finish()
+  {
+    parent::finish();
+
+    // update the service's event_type
+    $this->get_record()->update_release_event_type();
+  }
 }

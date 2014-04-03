@@ -44,6 +44,7 @@ class service_add extends base_view
     $this->add_item( 'title', 'string', 'Title',
                      'A user-friendly name for the service, may contain any characters.' );
     $this->add_item( 'version', 'string', 'Version' );
+    $this->add_item( 'release_based', 'boolean', 'Release Based' );
   }
 
   /**
@@ -60,5 +61,6 @@ class service_add extends base_view
     $this->set_item( 'name', '' );
     $this->set_item( 'title', '' );
     $this->set_item( 'version', '' );
+    $this->set_item( 'release_based', false );
   }
 }

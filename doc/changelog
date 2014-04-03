@@ -8,6 +8,8 @@
 
 * Adding method to Opal manager to get a variable's labels
 
+* Event system now tracks when participants are released to services
+
 ====================================================================================================
 0.2.5
 ====================================================================================================
