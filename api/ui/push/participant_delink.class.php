@@ -128,7 +128,7 @@ class participant_delink extends \cenozo\ui\push\base_record
       {
         $db_new_address = $address_class_name::get_unique_record(
           array( 'person_id', 'rank' ),
-          $db_new_person->id, $db_old_phone->get_address()->rank );
+          array( $db_new_person->id, $db_old_phone->get_address()->rank ) );
         $db_new_phone->address_id = $db_new_address->id;
       }
       $db_new_phone->save();
