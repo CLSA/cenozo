@@ -189,4 +189,25 @@ class service extends record
 
     return $values;
   }
+
+  /**
+   * Returns the event-type associated with the releasing of participants to this service
+   * 
+   * Note that only services which are release-based will have an event-type associated with it.
+   * If no event-type exists this method will return NULL.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\event_type
+   * @access public
+   */
+  public function get_release_event_type()
+  {
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to get release event_type for service with no id.' );
+      return '';
+    }
+
+    return is_null( $this->release_event_type_id ) ?
+      NULL : lib::create( 'database\event_type', $this->release_event_type_id );
+  }
 }

@@ -58,6 +58,22 @@ class service_new extends base_new
   }
 
   /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    // create a release event type for the new service
+    $db_release_event_type = lib::create( 'database\event_type' );
+    $db_release_event_type->save();
+    $this->get_record()->release_event_type_id = $db_release_event_type->id;
+  }
+
+  /**
    * Finishes the operation with any post-execution instructions that may be necessary.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
