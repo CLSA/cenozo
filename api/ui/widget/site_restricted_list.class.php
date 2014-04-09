@@ -126,10 +126,19 @@ abstract class site_restricted_list extends base_list
     if( $this->no_site || !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $site_column = sprintf( '%s.site_id',
-                              $this->extended_site_selection ?
-                              'participant_site' : $this->get_subject() );
-      $modifier->where( $site_column, '=', $this->no_site ? NULL : $this->db_restrict_site->id );
+
+      $site_id = $this->no_site ? NULL : $this->db_restrict_site->id;
+      if( $this->extended_site_selection )
+      { // extended site selection means we link to the participant_site table
+        // we must link using the current site's service (for mastodon's lists to work correctly)
+        $service_id = lib::create( 'business\session' )->get_site()->service_id;
+        $modifier->where( 'participant_site.site_id', '=', $site_id );
+        $modifier->where( 'participant_site.service_id', '=', $service_id );
+      }
+      else
+      {
+        $modifier->where( $this->get_subject().'.site_id', '=', $site_id );
+      }
     }
 
     return parent::determine_record_count( $modifier );
@@ -148,10 +157,18 @@ abstract class site_restricted_list extends base_list
     if( $this->no_site || !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $site_column = sprintf( '%s.site_id',
-                              $this->extended_site_selection ?
-                              'participant_site' : $this->get_subject() );
-      $modifier->where( $site_column, '=', $this->no_site ? NULL : $this->db_restrict_site->id );
+
+      if( $this->extended_site_selection )
+      { // extended site selection means we link to the participant_site table
+        // we must link using the current site's service (for mastodon's lists to work correctly)
+        $service_id = lib::create( 'business\session' )->get_site()->service_id;
+        $modifier->where( 'participant_site.site_id', '=', $site_id );
+        $modifier->where( 'participant_site.service_id', '=', $service_id );
+      }
+      else
+      {
+        $modifier->where( $this->get_subject().'.site_id', '=', $site_id );
+      }
     }
 
     return parent::determine_record_list( $modifier );
