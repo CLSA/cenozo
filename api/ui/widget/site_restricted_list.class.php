@@ -158,6 +158,7 @@ abstract class site_restricted_list extends base_list
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
 
+      $site_id = $this->no_site ? NULL : $this->db_restrict_site->id;
       if( $this->extended_site_selection )
       { // extended site selection means we link to the participant_site table
         // we must link using the current site's service (for mastodon's lists to work correctly)
