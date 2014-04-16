@@ -43,8 +43,8 @@ class alternate_view extends base_view
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'association', 'string', 'Association' );
     $this->add_item( 'alternate', 'boolean', 'Alternate' );
-    $this->add_item( 'informant', 'boolean', 'Informant' );
-    $this->add_item( 'proxy', 'boolean', 'Proxy' );
+    $this->add_item( 'informant', 'boolean', 'Proxy Information Provider' );
+    $this->add_item( 'proxy', 'boolean', 'Proxy Decision Maker' );
     
     // create the address sub-list widget
     $this->address_list = lib::create( 'ui\widget\address_list', $this->arguments );

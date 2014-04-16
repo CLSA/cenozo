@@ -41,8 +41,8 @@ class alternate_list extends base_list
     $this->add_column( 'first_name', 'string', 'First', true );
     $this->add_column( 'last_name', 'string', 'Last', true );
     $this->add_column( 'alternate', 'boolean', 'Alternate', true );
-    $this->add_column( 'informant', 'boolean', 'Informant', true );
-    $this->add_column( 'proxy', 'boolean', 'Proxy', true );
+    $this->add_column( 'informant', 'boolean', 'Information Provider', true );
+    $this->add_column( 'proxy', 'boolean', 'Decision Maker', true );
   }
   
   /**
