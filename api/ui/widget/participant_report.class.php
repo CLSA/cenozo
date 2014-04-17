@@ -42,6 +42,7 @@ class participant_report extends \cenozo\ui\widget\base_report
 
     $this->add_restriction( 'source' );
     $this->add_restriction( 'cohort' );
+    $this->add_restriction( 'grouping' );
     $this->add_parameter( 'active', 'boolean', 'Active' );
     foreach( $service_class_name::select() as $db_service )
     {

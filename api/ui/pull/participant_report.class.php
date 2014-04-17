@@ -48,6 +48,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     // get the report arguments
     $source_id = $this->get_argument( 'restrict_source_id' );
     $cohort_id = $this->get_argument( 'restrict_cohort_id' );
+    $grouping = $this->get_argument( 'restrict_grouping' );
     $active = $this->get_argument( 'active' );
     $region_id = $this->get_argument( 'region_id' );
     $gender = $this->get_argument( 'gender' );
@@ -127,6 +128,7 @@ class participant_report extends \cenozo\ui\pull\base_report
       ( '' === $active ? 'IF( participant.active, "Yes", "No" ) active, ' : '' ).
       ( '' === $source_id ? 'source.name AS source_name, ' : '' ).
       ( '' === $cohort_id ? 'cohort.name AS cohort_name, ' : '' ).
+      ( '' === $grouping ? 'participant.grouping, ' : '' ).
       'participant.first_name, '.
       'participant.last_name, ';
 
@@ -134,6 +136,7 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     if( '' !== $source_id ) $this->modifier->where( 'participant.source_id', '=', $source_id );
     if( '' !== $cohort_id ) $this->modifier->where( 'participant.cohort_id', '=', $cohort_id );
+    if( '' !== $grouping ) $this->modifier->where( 'participant.grouping', '=', $grouping );
     if( '' !== $active ) $this->modifier->where( 'participant.active', '=', $active );
 
     foreach( $service_class_name::select() as $db_service )
