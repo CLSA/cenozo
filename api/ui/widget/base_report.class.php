@@ -113,10 +113,9 @@ abstract class base_report extends \cenozo\ui\widget
 
     if( $this->restrictions[ 'grouping' ] )
     {
-      $grouping_list = array( 'all' );
       foreach( $participant_class_name::get_distinct_values( 'grouping' ) as $grouping )
-        $grouping_list[] = $grouping;
-      $grouping_list = array_combine( $grouping_list, $grouping_list );
+        $grouping_list[$grouping] = $grouping;
+      $grouping_list[''] = 'all';
 
       $this->set_parameter( 'restrict_grouping', key( $grouping_list ), true, $grouping_list );
     }
@@ -213,7 +212,6 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->restrictions[ 'grouping' ] = true;
       $this->add_parameter( 'restrict_grouping', 'enum', 'Grouping' );
-      log::debug( $this->restrictions );
     }
     else if( 'service' == $restriction_type )
     {
