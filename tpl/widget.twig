@@ -29,10 +29,10 @@
   // determine this widget's slot
   var {{ widget.compound }}_slot = "";
   $( function() {
-    update_shortcuts();
     $( "button, input:submit" ).button();
     var slot_id = $( "#{{ widget.compound }}_slot_id" ).parents( "div[id$='_slot']" ).prop( "id" );
     {{ slot }} = slot_id.substring( 0, slot_id.lastIndexOf( "_" ) );
+    update_shortcuts();
   } );
 </script>
   
