@@ -79,7 +79,7 @@ class session extends \cenozo\singleton
       $setting_manager->get_setting( 'db', 'prefix' ) );
 
     // define the application's service
-    $this->service = $service_class_name::get_unique_record( 'name', SERVICENAME );
+    $this->service = $service_class_name::get_unique_record( 'name', SERVICENAME, true );
 
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];

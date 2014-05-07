@@ -42,14 +42,13 @@ class participant extends person
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param boolean $full If true then records will not be restricted by service
    * @access public
    * @static
    */
-  public static function select( $modifier = NULL, $count = false, $distinct = true, $full = false )
+  public static function select( $modifier = NULL, $count = false, $distinct = true )
   {
     $db_service = lib::create( 'business\session' )->get_service();
-    if( !$full && $db_service->release_based )
+    if( $db_service->release_based )
     {
       // make sure to only include sites belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
@@ -65,25 +64,52 @@ class participant extends person
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
-   * @param boolean $full If true then records will not be restricted by service
    * @return database\record
    * @static
    * @access public
    */
-  public static function get_unique_record( $column, $value, $full = false )
+  public static function get_unique_record( $column, $value )
   {
     $db_service = lib::create( 'business\session' )->get_service();
     $db_participant = parent::get_unique_record( $column, $value );
 
-    if( !is_null( $db_participant ) && !$full && $db_service->release_based )
-    { // make sure the participant has been released
-      $participant_mod = lib::create( 'database\modifier' );
-      $participant_mod->where( 'participant.id', '=', $db_participant->id );
-      $participant_mod->where( 'service_has_participant.datetime', '!=', NULL );
-      if( 0 == $db_service->get_participant_count( $participant_mod ) ) $db_participant = NULL;
+    if( $db_service->release_based )
+    {
+      if( !is_null( $db_participant ) )
+      { // make sure the participant has been released
+        $participant_mod = lib::create( 'database\modifier' );
+        $participant_mod->where( 'participant.id', '=', $db_participant->id );
+        $participant_mod->where( 'service_has_participant.service_id', '=', $db_service->id );
+        $participant_mod->where( 'service_has_participant.datetime', '!=', NULL );
+        if( 0 == $db_service->get_participant_count( $participant_mod ) ) $db_participant = NULL;
+      }
     }
 
     return $db_participant;
+  }
+
+  /**
+   * Make sure to only include participants which this service has access to.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @param modifier $modifier A modifier to apply to the list or count.
+   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
+   * @param boolean $count If true then this method returns the count instead of list of records.
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @return array( record ) | int
+   * @access protected
+   */
+  protected function get_record_list(
+    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
+  {
+    if( 'service' == $record_type )
+    {
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'service_has_participant.service_id', '=',
+                        lib::create( 'business\session' )->get_service()->id );
+      $modifier->where( 'service_has_participant.datetime', '!=', NULL );
+    }
+    return parent::get_record_list( $record_type, $modifier, $inverted, $count, $distinct );
   }
 
   /**
@@ -112,7 +138,7 @@ class participant extends person
       log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
-    
+
     $database_class_name = lib::get_class_name( 'database\database' );
 
     // need custom SQL
@@ -138,7 +164,7 @@ class participant extends person
       log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
-    
+
     $database_class_name = lib::get_class_name( 'database\database' );
 
     // need custom SQL
@@ -164,9 +190,9 @@ class participant extends person
       log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
-    
+
     $database_class_name = lib::get_class_name( 'database\database' );
-    
+
     // need custom SQL
     $address_id = static::db()->get_one(
       sprintf( 'SELECT address_id FROM participant_primary_address WHERE participant_id = %s',
@@ -218,7 +244,7 @@ class participant extends person
 
     if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
 
-    $datetime = static::db()->get_one( sprintf( 
+    $datetime = static::db()->get_one( sprintf(
       'SELECT datetime '.
       'FROM service_has_participant '.
       'WHERE service_id = %s '.
@@ -246,7 +272,7 @@ class participant extends person
 
     if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
 
-    $site_id = static::db()->get_one( sprintf( 
+    $site_id = static::db()->get_one( sprintf(
       'SELECT site_id '.
       'FROM participant_preferred_site '.
       'WHERE service_id = %s '.
@@ -270,7 +296,7 @@ class participant extends person
     if( is_null( $this->id ) ) return NULL;
 
     $database_class_name = lib::get_class_name( 'database\database' );
-    
+
     // make sure this participant's cohort belongs to the service
     if( !static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
@@ -311,7 +337,7 @@ class participant extends person
   public static function multi_set_preferred_site( $modifier, $db_service, $db_site = NULL )
   {
     $database_class_name = lib::get_class_name( 'database\database' );
-    
+
     // make sure all participants' cohorts belongs to the service
     $total = static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
@@ -365,7 +391,7 @@ class participant extends person
 
     if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
 
-    $site_id = static::db()->get_one( sprintf( 
+    $site_id = static::db()->get_one( sprintf(
       'SELECT site_id '.
       'FROM participant_default_site '.
       'WHERE service_id = %s '.
@@ -394,7 +420,7 @@ class participant extends person
 
     if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
 
-    $site_id = static::db()->get_one( sprintf( 
+    $site_id = static::db()->get_one( sprintf(
       'SELECT site_id '.
       'FROM participant_site '.
       'WHERE service_id = %s '.
@@ -404,7 +430,7 @@ class participant extends person
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
-  
+
   /**
    * Returns the quota that this participant belongs to (NULL if none)
    * @author Patrick Emond <emondpd@mcmaster.ca>

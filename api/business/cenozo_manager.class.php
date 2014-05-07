@@ -133,13 +133,14 @@ class cenozo_manager extends \cenozo\factory
     if( !$this->enabled ) return NULL;
 
     $util_class_name = lib::get_class_name( 'util' );
+    $service_name = lib::create( 'business\session' )->get_service()->name;
     
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
-    $request->addHeaders( array( 'service_name' => SERVICENAME ) );
+    $request->addHeaders( array( 'service_name' => $service_name ) );
     $request->setOptions( array( 'httpauth' => $this->get_httpauth() ) );
     
     // validate the input arguments
@@ -178,12 +179,14 @@ class cenozo_manager extends \cenozo\factory
   {
     if( !$this->enabled ) return;
 
+    $service_name = lib::create( 'business\session' )->get_service()->name;
+
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
     $request->addHeaders( array( 'application_name' => APPNAME ) );
-    $request->addHeaders( array( 'service_name' => SERVICENAME ) );
+    $request->addHeaders( array( 'service_name' => $service_name ) );
     $request->setOptions( array( 'httpauth' => $this->get_httpauth() ) );
 
     if( is_null( $arguments ) ) $arguments = array();

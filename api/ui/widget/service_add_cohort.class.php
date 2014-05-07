@@ -26,6 +26,7 @@ class service_add_cohort extends base_add_list
   public function __construct( $args )
   {
     parent::__construct( 'service', 'cohort', $args );
+    $this->set_heading( '' );
   }
 
   /**

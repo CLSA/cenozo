@@ -38,6 +38,55 @@ class role extends base_access
   }
 
   /**
+   * Override parent method by restricting returned records to those belonging to this service only
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|array $column A column with the unique key property (or array of columns)
+   * @param string|array $value The value of the column to match (or array of values)
+   * @return database\record
+   * @static
+   * @access public
+   */
+  public static function get_unique_record( $column, $value, $full = false )
+  {
+    $db_role = parent::get_unique_record( $column, $value );
+
+    // make sure to only include roles belonging to this application
+    if( !$full )
+    {
+      $service_mod = lib::create( 'database\modifier' );
+      $service_mod->where(
+        'service_id', '=', lib::create( 'business\session' )->get_service()->id );
+      if( !is_null( $db_role ) &&
+          0 == $db_role->get_service_count( $service_mod ) ) $db_role = NULL;
+    }
+
+    return $db_role;
+  }
+
+  /**
+   * Make sure to only include roles which this service has access to.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @param modifier $modifier A modifier to apply to the list or count.
+   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
+   * @param boolean $count If true then this method returns the count instead of list of records.
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @return array( record ) | int
+   * @access protected
+   */
+  protected function get_record_list(
+    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
+  {
+    if( 'service' == $record_type )
+    {
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'service_has_role.service_id', '=',
+                        lib::create( 'business\session' )->get_service()->id );
+    }
+    return parent::get_record_list( $record_type, $modifier, $inverted, $count, $distinct );
+  }
+
+  /**
    * Returns whether the role has access to an operation
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

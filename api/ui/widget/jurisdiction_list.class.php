@@ -1,6 +1,6 @@
 <?php
 /**
- * self_shortcuts.class.php
+ * jurisdiction_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,21 +10,21 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget self shortcuts
+ * widget jurisdiction list
  */
-class self_shortcuts extends \cenozo\ui\widget
+class jurisdiction_list extends base_list
 {
   /**
    * Constructor
    * 
-   * Defines all variables which need to be set for the associated template.
+   * Defines all variables required by the jurisdiction list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'self', 'shortcuts', $args );
+    parent::__construct( 'jurisdiction', $args );
   }
 
   /**
@@ -37,12 +37,13 @@ class self_shortcuts extends \cenozo\ui\widget
   protected function prepare()
   {
     parent::prepare();
-
-    $this->show_heading( false );
+    
+    $this->add_column( 'postcode', 'string', 'Postcode', true );
+    $this->add_column( 'site.name', 'string', 'Site', true );
   }
-
+  
   /**
-   * Defines all items in the view.
+   * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
@@ -51,8 +52,11 @@ class self_shortcuts extends \cenozo\ui\widget
   {
     parent::setup();
     
-    $this->set_variable( 'calculator', false );
-    $this->set_variable( 'timezone_calculator', false );
-    $this->set_variable( 'navigation', true );
+    foreach( $this->get_record_list() as $record )
+    {
+      $this->add_row( $record->id,
+        array( 'postcode' => $record->postcode,
+               'site.name' => $record->get_site()->name ) );
+    }
   }
 }

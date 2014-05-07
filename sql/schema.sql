@@ -81,6 +81,22 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
+-- Table `cenozo`.`event_type`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`event_type` ;
+
+CREATE TABLE IF NOT EXISTS `cenozo`.`event_type` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `description` TEXT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uq_name` (`name` ASC))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `cenozo`.`service`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`service` ;
@@ -93,8 +109,15 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`service` (
   `title` VARCHAR(45) NOT NULL,
   `version` VARCHAR(45) NOT NULL,
   `release_based` TINYINT(1) NOT NULL DEFAULT 1,
+  `release_event_type_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uq_name` (`name` ASC))
+  UNIQUE INDEX `uq_name` (`name` ASC),
+  INDEX `fk_release_event_type_id` (`release_event_type_id` ASC),
+  CONSTRAINT `fk_service_release_event_type_id`
+    FOREIGN KEY (`release_event_type_id`)
+    REFERENCES `cenozo`.`event_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
@@ -489,7 +512,6 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`jurisdiction` (
   `site_id` INT UNSIGNED NOT NULL,
   `longitude` FLOAT NOT NULL,
   `latitude` FLOAT NOT NULL,
-  `distance` FLOAT NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_service_id_postcode` (`service_id` ASC, `postcode` ASC),
   INDEX `fk_site_id` (`site_id` ASC),
@@ -645,22 +667,6 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`service_has_participant` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`event_type`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`event_type` ;
-
-CREATE TABLE IF NOT EXISTS `cenozo`.`event_type` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `update_timestamp` TIMESTAMP NOT NULL,
-  `create_timestamp` TIMESTAMP NOT NULL,
-  `name` VARCHAR(45) NOT NULL,
-  `description` TEXT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `uq_name` (`name` ASC))
-ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
