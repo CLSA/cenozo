@@ -105,6 +105,76 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Add a having statement to the modifier.
+   * 
+   * This method appends having clauses onto the end of already existing having clauses.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to restrict.
+   * @param string $operator Specify which comparison operator to use.  Examples include 'in',
+   *                         for the SQL IN() function, 'like' for the SQL LIKE() function, '=',
+   *                         '>', '>=', '<=', '<', etc.
+   *                         When this is set to 'in' $value may be an array of values.
+   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                        This should only be set to false when $value is the name of a column
+   *                        or a pre-formatted function, etc.
+   * @param boolean $or Whether to logically "or" the clause (default is false, which means "and")
+   * @throws exception\argument
+   * @access public
+   */
+  public function having(
+    $column, $operator, $value, $format = true, $or = false )
+  {
+    if( !is_string( $column ) || 0 == strlen( $column ) )
+      throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
+
+    if( is_array( $value ) && 0 == count( $value ) )
+      throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
+
+    $this->having_list[] = array( 'column' => $column,
+                                 'operator' => strtoupper( $operator ),
+                                 'value' => $value,
+                                 'format' => $format,
+                                 'or' => $or );
+  }
+  
+  /**
+   * Add having statement which will be "or" combined to the modifier.
+   * 
+   * This is a convenience method which makes having() calls more readable.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to restrict.
+   * @param string $operator Specify which comparison operator to use.  Examples include 'in',
+   *                         for the SQL IN() function, 'like' for the SQL LIKE() function, '=',
+   *                         '>', '>=', '<=', '<', etc.
+   *                         When this is set to 'in' $value may be an array of values.
+   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                         This should only be set to false when $value is the name of a column
+   *                         or a pre-formatted function, etc.
+   * @access public
+   */
+  public function or_having( $column, $operator, $value, $format = true )
+  {
+    $this->having( $column, $operator, $value, $format, true );
+  }
+
+  /**
+   * Add a bracket to a having statement
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $open Whether to open or close a bracket
+   * @param boolean $or Whether to logically "or" the contents of the bracket
+   *        (default is false, which means "and").  This is ignored when closing brackets.
+   * @access public
+   */
+  public function having_bracket( $open, $or = false )
+  {
+    $this->having_list[] = array( 'bracket' => $open,
+                                 'or' => $or );
+  }
+
+  /**
    * Adds an order statement to the modifier.
    * 
    * This method appends order clauses onto the end of already existing order clauses.
@@ -186,6 +256,21 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Returns whether the modifier has a certain column in it's having clauses.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to search for.
+   * @return boolean
+   * @access public
+   */
+  public function has_having( $column )
+  {
+    foreach( $this->having_list as $having )
+      if( array_key_exists( 'column', $having ) &&
+          $column == $having['column'] ) return true;
+    return false;
+  }
+
+  /**
    * Returns whether the modifier has a certain column in it's order clauses.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for.
@@ -246,6 +331,32 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Get an array of having clauses.
+   * 
+   * Each element contains an associative array having the indeces 'value' and 'format' contain
+   * the column's value and whether to format the value, respectively.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
+   */
+  public function get_having_columns()
+  {
+    $columns = array();
+    foreach( $this->having_list as $having )
+    {
+      if( array_key_exists( 'column', $having ) )
+      {
+        // get the first table.name match, or if no match is found leave the string alone
+        $matches = array();
+        if( 1 == preg_match( '/\w+\.\w+/', $having['column'], $matches ) ) $columns[] = $matches[0];
+        else $columns[] = $having['column'];
+      }
+    }
+
+    return $columns;
+  }
+
+  /**
    * Get an array of order clauses.
    * 
    * The returned array is an associative array of "column name" => "descending" values.
@@ -297,6 +408,21 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Changes the column name of all having statements of a given name
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $old The name of the column to change
+   * @param string $new The name to change the column to
+   * @access public
+   */
+  public function change_having_column( $old, $new )
+  {
+    foreach( $this->having_list as $index => $having )
+      if( array_key_exists( 'column', $having ) && $old == $having['column'] )
+         $this->having_list[$index]['column'] = $new;
+  }
+
+  /**
    * Changes the column name of all order statements of a given name
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -321,9 +447,10 @@ class modifier extends \cenozo\base_object
    */
   public function get_sql( $appending = false )
   {
-    return sprintf( '%s %s %s %s',
+    return sprintf( '%s %s %s %s %s',
                     $this->get_where( $appending ),
                     $this->get_group(),
+                    $this->get_having(),
                     $this->get_order(),
                     $this->get_limit() );
   }
@@ -462,6 +589,115 @@ class modifier extends \cenozo\base_object
   }
   
   /**
+   * Returns an SQL having statement.
+   * 
+   * This method should only be called by an record class and only after all modifications
+   * have been set.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $appending Whether this modifier is being appended to an existing having clause
+   * @return string
+   * @access public
+   */
+  public function get_having( $appending = false )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $database_class_name = lib::get_class_name( 'database\database' );
+    $sql = '';
+    $first_item = true;
+    $last_open_bracket = false;
+    foreach( $this->having_list as $having )
+    {
+      $statement = '';
+
+      // check if this is a bracket
+      if( array_key_exists( 'bracket', $having ) )
+      {
+        $statement = $having['bracket'] ? '(' : ')';
+      }
+      else
+      {
+        $convert_time = $database_class_name::is_time_column( $having['column'] );
+        $convert_datetime = $database_class_name::is_datetime_column( $having['column'] );
+
+        if( 'IN' == $having['operator'] || 'NOT IN' == $having['operator'] )
+        {
+          if( is_array( $having['value'] ) )
+          {
+            $first_value = true;
+            foreach( $having['value'] as $value )
+            {
+              if( $having['format'] )
+              {
+                if( $convert_time )
+                  $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
+                else if( $convert_datetime )
+                  $value = $util_class_name::to_server_datetime( $value );
+                $value = $database_class_name::format_string( $value );
+              }
+
+              $statement .= $first_value
+                        ? sprintf( '%s %s( ', $having['column'], $having['operator'] )
+                        : ', ';
+              $statement .= $value;
+              $first_value = false;
+            }
+            $statement .= ' )';
+          }
+          else
+          {
+            $value = $having['value'];
+            if( $having['format'] )
+            {
+              if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
+              else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
+              $value = $database_class_name::format_string( $value );
+            }
+
+            $statement = sprintf( '%s %s( %s )',
+                                $having['column'],
+                                $having['operator'],
+                                $value );
+          }
+        }
+        else
+        {
+          $value = $having['value'];
+          if( $having['format'] )
+          {
+            if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
+            else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
+            $value = $database_class_name::format_string( $value );
+          }
+          
+          if( 'NULL' == $value )
+          {
+            if( '=' == $having['operator'] ) $statement = $having['column'].' IS NULL';
+            else if( '!=' == $having['operator'] ) $statement = $having['column'].' IS NOT NULL';
+            else log::err(
+                   'Tried to compare to NULL value with "'.$having['operator'].'" operator.' );
+          }
+          else
+          {
+            $statement = sprintf( '%s %s %s',
+                                $having['column'],
+                                $having['operator'],
+                                $value );
+          }
+        }
+      }
+      
+      $logic_type = $having['or'] ? ' OR' : ' AND';
+      if( ( !$first_item || $appending ) &&
+          ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
+      $sql .= ' '.$statement;
+      $first_item = false;
+      $last_open_bracket = '(' == $statement;
+    }
+
+    return ( $appending || 0 == strlen( $sql ) ? '' : 'HAVING ' ).$sql;
+  }
+  
+  /**
    * Returns an SQL order statement.
    * 
    * This method should only be called by an record class and only after all modifications
@@ -509,7 +745,8 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Merges another modifier with this one.  Merging only includes where, group and order items.
+   * Merges another modifier with this one.  Merging only includes where, group, having
+   * and order items.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param modifier $modifier
@@ -521,6 +758,7 @@ class modifier extends \cenozo\base_object
     {
       foreach( $modifier->where_list as $item ) $this->where_list[] = $item;
       foreach( $modifier->group_list as $item ) $this->group_list[] = $item;
+      foreach( $modifier->having_list as $item ) $this->having_list[] = $item;
       foreach( $modifier->order_list as $item ) $this->order_list[] = $item;
     }
   }
@@ -538,6 +776,13 @@ class modifier extends \cenozo\base_object
    * @access protected
    */
   protected $group_list = array();
+  
+  /**
+   * Holds all having clauses in an array of associative arrays
+   * @var array
+   * @access protected
+   */
+  protected $having_list = array();
   
   /**
    * Holds all order clauses.

@@ -1353,6 +1353,27 @@ abstract class record extends \cenozo\base_object
   }
   
   /**
+   * Returns an array of all distinct values for a particular column.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name A column name in the record's corresponding table.
+   * @return array( string )
+   * @static
+   * @access public
+   */
+  public static function get_distinct_values( $column_name )
+  {
+    // not an column from the extending table list, make sure the column exists in the main table
+    if( !static::column_exists( $column_name ) )
+      throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
+
+    $sql = sprintf( 'SELECT DISTINCT %s FROM %s ORDER BY %s',
+                    $column_name,
+                    static::get_table_name(),
+                    $column_name );
+    return static::db()->get_col( $sql );
+  }
+  
+  /**
    * Convenience method for database::column_exists(), but for this record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name A column name.

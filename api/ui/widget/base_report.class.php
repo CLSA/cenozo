@@ -61,6 +61,7 @@ abstract class base_report extends \cenozo\ui\widget
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
     $service_class_name = lib::get_class_name( 'database\service' );
     $source_class_name = lib::get_class_name( 'database\source' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
 
     if( $this->restrictions[ 'site' ] )
     {
@@ -103,13 +104,20 @@ abstract class base_report extends \cenozo\ui\widget
 
     if( $this->restrictions[ 'cohort' ] )
     {
-      $session = lib::create( 'business\session' );
-
       $cohort_list = array( 0 => 'all' );
       foreach( $cohort_class_name::select() as $db_cohort )
         $cohort_list[ $db_cohort->id ] = $db_cohort->name;
 
       $this->set_parameter( 'restrict_cohort_id', key( $cohort_list ), true, $cohort_list );
+    }
+
+    if( $this->restrictions[ 'grouping' ] )
+    {
+      foreach( $participant_class_name::get_distinct_values( 'grouping' ) as $grouping )
+        $grouping_list[$grouping] = $grouping;
+      $grouping_list[''] = 'all';
+
+      $this->set_parameter( 'restrict_grouping', key( $grouping_list ), true, $grouping_list );
     }
 
     if( $this->restrictions[ 'service' ] )
@@ -199,6 +207,11 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->restrictions[ 'cohort' ] = true;
       $this->add_parameter( 'restrict_cohort_id', 'enum', 'Cohort' );
+    }
+    else if( 'grouping' == $restriction_type )
+    {
+      $this->restrictions[ 'grouping' ] = true;
+      $this->add_parameter( 'restrict_grouping', 'enum', 'Grouping' );
     }
     else if( 'service' == $restriction_type )
     {
@@ -381,6 +394,7 @@ abstract class base_report extends \cenozo\ui\widget
     'dates' => false,
     'province' => false,
     'cohort' => false,
+    'grouping' => false,
     'service' => false,
     'source' => false );
 

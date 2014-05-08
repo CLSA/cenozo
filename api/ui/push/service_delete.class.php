@@ -24,4 +24,39 @@ class service_delete extends base_delete
   {
     parent::__construct( 'service', $args );
   }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
+    $this->db_release_event_type = $this->get_record()->get_release_event_type();
+  }
+
+  /**
+   * Finishes the operation with any post-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function finish()
+  {
+    parent::finish();
+
+    // delete the event_type associated with this service (if it is not in use)
+    if( 0 == $this->db_release_event_type->get_event_count() )
+      $this->db_release_event_type->delete();
+  }
+
+  /**
+   * The service's release event-type
+   * @var database\event_type $db_release_event_type
+   * @access protected
+   */
+  protected $db_release_event_type;
 }

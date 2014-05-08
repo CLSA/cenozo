@@ -42,9 +42,13 @@ class participant_status extends \cenozo\ui\pull
     $this->data = array();
     $sql =
       'SELECT uid, IF( '.
-        'accept = false, "withdraw", IF( state.name IS NOT NULL, state.name, "" ) ) status '.
+        'accept = false, "withdraw", IF( state.name IS NOT NULL, state.name, "" ) ) status, '.
+        'IFNULL( region.name, "None" ) region '.
       'FROM participant '.
       'JOIN participant_last_consent ON participant.id = participant_last_consent.participant_id '.
+      'LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id '.
+      'LEFT JOIN address ON participant_primary_address.address_id = address.id '.
+      'LEFT JOIN region ON address.region_id = region.id '.
       'LEFT JOIN state ON participant.state_id = state.id '.
       'ORDER BY uid';
 
