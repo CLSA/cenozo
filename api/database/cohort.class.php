@@ -64,7 +64,7 @@ class cohort extends record
   }
 
   /**
-   * Make sure to only include cohorts which this service has access to.
+   * Make sure to only include services which this cohort has access to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param modifier $modifier A modifier to apply to the list or count.
