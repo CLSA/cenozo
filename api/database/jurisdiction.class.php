@@ -26,12 +26,10 @@ class jurisdiction extends record
   public static function select( $modifier = NULL, $count = false, $distinct = true )
   {
     $db_service = lib::create( 'business\session' )->get_service();
-    if( $db_service->release_based )
-    {
-      // make sure to only include jurisdictions belonging to this application
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'jurisdiction.service_id', '=', $db_service->id );
-    }
+
+    // make sure to only include jurisdictions belonging to this application
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'jurisdiction.service_id', '=', $db_service->id );
 
     return parent::select( $modifier, $count, $distinct );
   }
@@ -50,12 +48,8 @@ class jurisdiction extends record
     $db_service = lib::create( 'business\session' )->get_service();
     $db_jurisdiction = parent::get_unique_record( $column, $value );
 
-    // make sure to only include jurisdictions belonging to this application
-    if( $db_service->release_based )
-    {
-      if( !is_null( $db_jurisdiction ) &&
-          $db_jurisdiction->service_id != $db_service->id ) $db_jurisdiction = NULL;
-    }
+    if( !is_null( $db_jurisdiction ) &&
+        $db_jurisdiction->service_id != $db_service->id ) $db_jurisdiction = NULL;
 
     return $db_jurisdiction;
   }

@@ -26,12 +26,10 @@ class quota extends record
   public static function select( $modifier = NULL, $count = false, $distinct = true )
   {
     $db_service = lib::create( 'business\session' )->get_service();
-    if( $db_service->release_based )
-    {
-      // make sure to only include quotas belonging to this application
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site.service_id', '=', $db_service->id );
-    }
+
+    // make sure to only include quotas belonging to this application
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'site.service_id', '=', $db_service->id );
 
     return parent::select( $modifier, $count, $distinct );
   }
@@ -50,14 +48,10 @@ class quota extends record
     $db_service = lib::create( 'business\session' )->get_service();
     $db_quota = parent::get_unique_record( $column, $value );
 
-    // make sure to only include quotas belonging to this application
-    if( $db_service->release_based )
-    {
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'site.service_id', '=', $db_service->id );
-      if( !is_null( $db_quota ) &&
-          $db_quota->get_site()->get_service()->id != $db_service->id ) $db_quota = NULL;
-    }
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'site.service_id', '=', $db_service->id );
+    if( !is_null( $db_quota ) &&
+        $db_quota->get_site()->get_service()->id != $db_service->id ) $db_quota = NULL;
 
     return $db_quota;
   }

@@ -26,12 +26,10 @@ class region_site extends record
   public static function select( $modifier = NULL, $count = false, $distinct = true )
   {
     $db_service = lib::create( 'business\session' )->get_service();
-    if( $db_service->release_based )
-    {
-      // make sure to only include region_sites belonging to this application
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'region_site.service_id', '=', $db_service->id );
-    }
+
+    // make sure to only include region_sites belonging to this application
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'region_site.service_id', '=', $db_service->id );
 
     return parent::select( $modifier, $count, $distinct );
   }
@@ -50,12 +48,8 @@ class region_site extends record
     $db_service = lib::create( 'business\session' )->get_service();
     $db_region_site = parent::get_unique_record( $column, $value );
 
-    // make sure to only include region_sites belonging to this application
-    if( $db_service->release_based )
-    {
-      if( !is_null( $db_region_site ) &&
-          $db_region_site->service_id != $db_service->id ) $db_region_site = NULL;
-    }
+    if( !is_null( $db_region_site ) &&
+        $db_region_site->service_id != $db_service->id ) $db_region_site = NULL;
 
     return $db_region_site;
   }

@@ -26,13 +26,11 @@ class cohort extends record
   public static function select( $modifier = NULL, $count = false, $distinct = true )
   {
     $db_service = lib::create( 'business\session' )->get_service();
-    if( $db_service->release_based )
-    {
-      // make sure to only include cohorts belonging to this application
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'service_has_cohort.service_id', '=',
-                        lib::create( 'business\session' )->get_service()->id );
-    }
+
+    // make sure to only include cohorts belonging to this application
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'service_has_cohort.service_id', '=',
+                      lib::create( 'business\session' )->get_service()->id );
 
     return parent::select( $modifier, $count, $distinct );
   }
@@ -51,14 +49,10 @@ class cohort extends record
     $db_service = lib::create( 'business\session' )->get_service();
     $db_cohort = parent::get_unique_record( $column, $value );
 
-    // make sure to only include cohorts belonging to this application
-    if( $db_service->release_based )
-    {
-      $service_mod = lib::create( 'database\modifier' );
-      $service_mod->where( 'service_id', '=', $db_service->id );
-      if( !is_null( $db_cohort ) &&
-          0 == $db_cohort->get_service_count( $service_mod ) ) $db_cohort = NULL;
-    }
+    $service_mod = lib::create( 'database\modifier' );
+    $service_mod->where( 'service_id', '=', $db_service->id );
+    if( !is_null( $db_cohort ) &&
+        0 == $db_cohort->get_service_count( $service_mod ) ) $db_cohort = NULL;
 
     return $db_cohort;
   }
