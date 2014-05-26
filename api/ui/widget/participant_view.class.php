@@ -133,7 +133,6 @@ class participant_view extends base_view
 
     $record = $this->get_record();
     $db_age_group = $record->get_age_group();
-    $db_state = $record->get_state();
 
     // set the view's items
     $this->set_item( 'active', $record->active, true );
@@ -143,7 +142,7 @@ class participant_view extends base_view
     $this->set_item( 'first_name', $record->first_name );
     $this->set_item( 'last_name', $record->last_name );
     $this->set_item( 'language_id', $record->language_id, false, $languages );
-    $this->set_item( 'state_id', is_null( $db_state ) ? NULL : $db_state->id, false, $states );
+    $this->set_item( 'state_id', $record->state_id, false, $states );
     $this->set_item( 'override_quota', $record->override_quota, true );
 
     // set items for default and preferred sites for all services the participant's cohort
