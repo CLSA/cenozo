@@ -105,12 +105,12 @@ class opal_manager extends \cenozo\factory
    * @param database\participant $db_participant The participant to get a value from
    * @param string $variable The name of the variable to get the label for
    * @param string $value The value of the variable to get the label for
-   * @param string $locale Which locale (language) to return the label in
+   * @param database\language $db_language Which language to return the label in
    * @return string
    * @throws exception\argument, exception\runtime
    * @access public
    */
-  public function get_label( $datasource, $table, $variable, $value, $locale )
+  public function get_label( $datasource, $table, $variable, $value, $db_language = NULL )
   {
     $util_class_name = lib::get_class_name( 'util' );
 
@@ -118,8 +118,10 @@ class opal_manager extends \cenozo\factory
       throw lib::create( 'exception\argument', 'variable', $variable, __METHOD__ );
     else if( 0 == strlen( $value ) )
       throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
-    else if( 0 == strlen( $locale ) )
-      throw lib::create( 'exception\argument', 'locale', $locale, __METHOD__ );
+
+    // if no language is specified then use the service's default
+    if( is_null( $db_language ) )
+      $db_language = lib::create( 'business\session' )->get_service()->get_language();
 
     // prepare the http request
     $authorization = sprintf( '%s:%s', $this->username, $this->password );
@@ -172,7 +174,7 @@ class opal_manager extends \cenozo\factory
     foreach( $object->categories as $category )
       if( $value == $category->name )
         foreach( $category->attributes as $attribute )
-          if( 'label' == $attribute->name && $locale == $attribute->locale )
+          if( 'label' == $attribute->name && $db_language->code == $attribute->locale )
             return utf8_decode( $attribute->value );
 
     log::warning( sprintf( 'Label of Opal variable "%s" was not found.', $variable ) );

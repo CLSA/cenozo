@@ -20,11 +20,9 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`user` (
   `first_name` VARCHAR(255) NOT NULL,
   `last_name` VARCHAR(255) NOT NULL,
   `active` TINYINT(1) NOT NULL DEFAULT 1,
-  `language` ENUM('any','en','fr') NOT NULL DEFAULT 'en',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_name` (`name` ASC),
-  INDEX `dk_active` (`active` ASC),
-  INDEX `dk_language` (`language` ASC))
+  INDEX `dk_active` (`active` ASC))
 ENGINE = InnoDB;
 
 
@@ -97,6 +95,24 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `cenozo`.`language`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`language` ;
+
+CREATE TABLE IF NOT EXISTS `cenozo`.`language` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 0,
+  `code` CHAR(2) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uq_name` (`name` ASC),
+  UNIQUE INDEX `uq_code` (`code` ASC))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `cenozo`.`service`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`service` ;
@@ -110,12 +126,19 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`service` (
   `version` VARCHAR(45) NOT NULL,
   `release_based` TINYINT(1) NOT NULL DEFAULT 1,
   `release_event_type_id` INT UNSIGNED NOT NULL,
+  `language_id` INT UNSIGNED NOT NULL COMMENT 'The default language for the service.',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_name` (`name` ASC),
   INDEX `fk_release_event_type_id` (`release_event_type_id` ASC),
+  INDEX `fk_language_id` (`language_id` ASC),
   CONSTRAINT `fk_service_release_event_type_id`
     FOREIGN KEY (`release_event_type_id`)
     REFERENCES `cenozo`.`event_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_service_language_id`
+    FOREIGN KEY (`language_id`)
+    REFERENCES `cenozo`.`language` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -358,7 +381,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   `date_of_birth` DATE NULL DEFAULT NULL,
   `age_group_id` INT UNSIGNED NULL DEFAULT NULL,
   `state_id` INT UNSIGNED NULL DEFAULT NULL,
-  `language` ENUM('en','fr') NULL DEFAULT NULL,
+  `language_id` INT UNSIGNED NULL DEFAULT NULL,
   `use_informant` TINYINT(1) NULL DEFAULT NULL,
   `override_quota` TINYINT(1) NOT NULL DEFAULT 0,
   `email` VARCHAR(255) NULL DEFAULT NULL,
@@ -376,6 +399,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   INDEX `fk_source_id` (`source_id` ASC),
   INDEX `fk_state_id` (`state_id` ASC),
   INDEX `dk_email_datetime` (`email_datetime` ASC),
+  INDEX `fk_language_id` (`language_id` ASC),
   CONSTRAINT `fk_participant_person_id`
     FOREIGN KEY (`person_id`)
     REFERENCES `cenozo`.`person` (`id`)
@@ -399,6 +423,11 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   CONSTRAINT `fk_participant_state_id`
     FOREIGN KEY (`state_id`)
     REFERENCES `cenozo`.`state` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_participant_language_id`
+    FOREIGN KEY (`language_id`)
+    REFERENCES `cenozo`.`language` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -895,6 +924,32 @@ DROP TABLE IF EXISTS `cenozo`.`timestamps` ;
 CREATE TABLE IF NOT EXISTS `cenozo`.`timestamps` (
   `create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` TIMESTAMP NULL);
+
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`user_has_language`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`user_has_language` ;
+
+CREATE TABLE IF NOT EXISTS `cenozo`.`user_has_language` (
+  `user_id` INT UNSIGNED NOT NULL,
+  `language_id` INT UNSIGNED NOT NULL,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  PRIMARY KEY (`user_id`, `language_id`),
+  INDEX `fk_language_id` (`language_id` ASC),
+  INDEX `fk_user_id` (`user_id` ASC),
+  CONSTRAINT `fk_user_has_language_user_id`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `cenozo`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_has_language_language_id`
+    FOREIGN KEY (`language_id`)
+    REFERENCES `cenozo`.`language` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 USE `cenozo` ;
 

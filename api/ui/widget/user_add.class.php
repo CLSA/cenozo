@@ -46,7 +46,6 @@ class user_add extends base_view
     $type = lib::create( 'business\session' )->get_role()->all_sites ? 'enum' : 'hidden';
     $this->add_item( 'site_id', $type, 'Site' );
     $this->add_item( 'role_id', 'enum', 'Role' );
-    $this->add_item( 'language', 'enum', 'Language' );
   }
 
   /**
@@ -72,10 +71,6 @@ class user_add extends base_view
     $roles = array();
     foreach( $role_class_name::select( $modifier ) as $db_role )
       $roles[$db_role->id] = $db_role->name;
-    $languages = array();
-    foreach( $user_class_name::get_enum_values( 'language' ) as $language )
-      $languages[] = $language;
-    $languages = array_combine( $languages, $languages );
     $sites = array();
     if( $all_sites )
     {
@@ -94,6 +89,5 @@ class user_add extends base_view
     $value = $all_sites ? current( $sites ) : $session->get_site()->id;
     $this->set_item( 'site_id', $value, true, $all_sites ? $sites : NULL );
     $this->set_item( 'role_id', current( $roles ), true, $roles );
-    $this->set_item( 'language', 'en', true, $languages );
   }
 }

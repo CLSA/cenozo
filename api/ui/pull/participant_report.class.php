@@ -56,7 +56,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     $date_of_birth_start_date = $this->get_argument( 'date_of_birth_start_date' );
     $date_of_birth_end_date = $this->get_argument( 'date_of_birth_end_date' );
     $state_id = $this->get_argument( 'state_id' );
-    $language = $this->get_argument( 'language' );
+    $restrict_language_id = $this->get_argument( 'restrict_language_id' );
     $consent_accept = $this->get_argument( 'consent_accept' );
     $consent_written = $this->get_argument( 'consent_written' );
     $event_type_id = $this->get_argument( 'event_type_id' );
@@ -246,9 +246,12 @@ class participant_report extends \cenozo\ui\pull\base_report
       $this->sql_columns .= 'state.name AS `condition`, ';
     }
 
-    if( '' !== $language )
-      $this->modifier->where( 'IFNULL( participant.language, "en" )', '=', $language );
-    else $this->sql_columns .= 'IFNULL( participant.language, "en" ) AS language, ';
+    $column =
+      sprintf( 'IFNULL( participant.language_id, %s )',
+               $database_class_name::format_string( $session->get_service()->language_id ) );
+    if( '' !== $restrict_language_id )
+      $this->modifier->where( $column, '=', $restrict_language_id );
+    else $this->sql_columns .= $column.' AS language_id, ';
 
     if( '' !== $consent_accept || '' !== $consent_written )
     {

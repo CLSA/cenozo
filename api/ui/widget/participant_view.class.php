@@ -45,7 +45,7 @@ class participant_view extends base_view
     $this->add_item( 'cohort', 'constant', 'Cohort' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
-    $this->add_item( 'language', 'enum', 'Preferred Language' );
+    $this->add_item( 'language_id', 'enum', 'Preferred Language' );
 
     // add an item for default and preferred sites for all services the participant's cohort
     // belongs to
@@ -114,12 +114,17 @@ class participant_view extends base_view
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $state_class_name = lib::get_class_name( 'database\state' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
+    $language_class_name = lib::get_class_name( 'database\language' );
 
     // create enum arrays
     $genders = $participant_class_name::get_enum_values( 'gender' );
     $genders = array_combine( $genders, $genders );
-    $languages = $participant_class_name::get_enum_values( 'language' );
-    $languages = array_combine( $languages, $languages );
+    $languages = array();
+    $language_mod = lib::create( 'database\modifier' );
+    $language_mod->where( 'active', '=', true );
+    $language_mod->order( 'name' );
+    foreach( $language_class_name::select( $language_mod ) as $db_language )
+      $languages[$db_language->id] = $db_language->name;
     $states = array();
     $state_mod = lib::create( 'database\modifier' );
     $state_mod->order( 'rank' );
@@ -137,7 +142,7 @@ class participant_view extends base_view
     $this->set_item( 'source', $record->get_source()->name );
     $this->set_item( 'first_name', $record->first_name );
     $this->set_item( 'last_name', $record->last_name );
-    $this->set_item( 'language', $record->language, false, $languages );
+    $this->set_item( 'language_id', $record->language_id, false, $languages );
     $this->set_item( 'state_id', is_null( $db_state ) ? NULL : $db_state->id, false, $states );
     $this->set_item( 'override_quota', $record->override_quota, true );
 

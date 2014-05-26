@@ -43,6 +43,7 @@ class service_view extends base_view
                      'May only contain letters, numbers and underscores.' );
     $this->add_item( 'title', 'string', 'Title',
                      'A user-friendly name for the service, may contain any characters.' );
+    $this->add_item( 'language_id', 'enum', 'Default Language' );
     $this->add_item( 'version', 'string', 'Version' );
     $this->add_item( 'sites', 'constant', 'Sites' );
     $this->add_item( 'release_based', 'boolean', 'Release Based' );
@@ -80,11 +81,20 @@ class service_view extends base_view
     parent::setup();
 
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $language_class_name = lib::get_class_name( 'database\language' );
     $record = $this->get_record();
+
+    $language_mod = lib::create( 'database\modifier' );
+    $language_mod->where( 'active', '=', true );
+    $language_mod->order( 'name' );
+    $language_list = array();
+    foreach( $language_class_name::select( $language_mod ) as $db_language )
+      $language_list[$db_language->id] = $db_language->name;
 
     // set the view's items
     $this->set_item( 'name', $record->name );
     $this->set_item( 'title', $record->title );
+    $this->set_item( 'language_id', $record->language_id, true, $language_list );
     $this->set_item( 'version', $record->version );
     $this->set_item( 'sites', $record->get_site_count() );
     $this->set_item( 'release_based', $record->release_based );

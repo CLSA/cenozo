@@ -4,6 +4,12 @@
 
 * Adding a check to make sure software and database versions match
 
+* Adding better internationalization support
+  - A list of 184 languages have been added and can now be activated
+  - Services must now have a default language
+  - Users can be restricted to any activited language
+  - Participants can have their preferred language set to any active language
+
 ====================================================================================================
 0.2.6
 ====================================================================================================

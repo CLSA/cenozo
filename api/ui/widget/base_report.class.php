@@ -59,6 +59,7 @@ abstract class base_report extends \cenozo\ui\widget
     $site_class_name = lib::get_class_name( 'database\site' );
     $region_class_name = lib::get_class_name( 'database\region' );
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $language_class_name = lib::get_class_name( 'database\language' );
     $service_class_name = lib::get_class_name( 'database\service' );
     $source_class_name = lib::get_class_name( 'database\source' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
@@ -89,7 +90,7 @@ abstract class base_report extends \cenozo\ui\widget
       $region_mod = lib::create( 'database\modifier' );
       $region_mod->order( 'abbreviation' );
       $region_mod->where( 'country', '=', 'Canada' );
-      $region_types = array( 'All provinces' );
+      $region_types = array( 'all' );
       foreach( $region_class_name::select( $region_mod ) as $db_region )
         $region_types[ $db_region->id ] = $db_region->name;
 
@@ -104,8 +105,10 @@ abstract class base_report extends \cenozo\ui\widget
 
     if( $this->restrictions[ 'cohort' ] )
     {
+      $cohort_mod = lib::create( 'database\modifier' );
+      $cohort_mod->order( 'name' );
       $cohort_list = array( 0 => 'all' );
-      foreach( $cohort_class_name::select() as $db_cohort )
+      foreach( $cohort_class_name::select( $cohort_mod ) as $db_cohort )
         $cohort_list[ $db_cohort->id ] = $db_cohort->name;
 
       $this->set_parameter( 'restrict_cohort_id', key( $cohort_list ), true, $cohort_list );
@@ -120,10 +123,24 @@ abstract class base_report extends \cenozo\ui\widget
       $this->set_parameter( 'restrict_grouping', key( $grouping_list ), true, $grouping_list );
     }
 
+    if( $this->restrictions[ 'language' ] )
+    {
+      $language_mod = lib::create( 'database\modifier' );
+      $language_mod->where( 'active', '=', true );
+      $language_mod->order( 'name' );
+      $language_list = array( 0 => 'all' );
+      foreach( $language_class_name::select( $language_mod ) as $db_language )
+        $language_list[ $db_language->id ] = $db_language->name;
+      
+      $this->set_parameter( 'restrict_language_id', key( $language_list ), true, $language_list );
+    }
+
     if( $this->restrictions[ 'service' ] )
     {
+      $service_mod = lib::create( 'database\modifier' );
+      $service_mod->order( 'name' );
       $service_list = array( 0 => 'all' );
-      foreach( $service_class_name::select() as $db_service )
+      foreach( $service_class_name::select( $service_mod ) as $db_service )
         $service_list[ $db_service->id ] = $db_service->name;
       
       $this->set_parameter( 'restrict_service_id', key( $service_list ), true, $service_list );
@@ -131,8 +148,10 @@ abstract class base_report extends \cenozo\ui\widget
 
     if( $this->restrictions[ 'source' ] )
     {
+      $source_mod = lib::create( 'database\modifier' );
+      $source_mod->order( 'name' );
       $source_list = array( 0 => 'all' );
-      foreach( $source_class_name::select() as $db_source )
+      foreach( $source_class_name::select( $source_mod ) as $db_source )
         $source_list[ $db_source->id ] = $db_source->name;
       
       $this->set_parameter( 'restrict_source_id', key( $source_list ), true, $source_list );
@@ -212,6 +231,11 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->restrictions[ 'grouping' ] = true;
       $this->add_parameter( 'restrict_grouping', 'enum', 'Grouping' );
+    }
+    else if( 'language' == $restriction_type )
+    {
+      $this->restrictions[ 'language' ] = true;
+      $this->add_parameter( 'restrict_language_id', 'enum', 'Language' );
     }
     else if( 'service' == $restriction_type )
     {
@@ -395,6 +419,7 @@ abstract class base_report extends \cenozo\ui\widget
     'province' => false,
     'cohort' => false,
     'grouping' => false,
+    'language' => false,
     'service' => false,
     'source' => false );
 

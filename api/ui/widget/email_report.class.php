@@ -40,7 +40,7 @@ class email_report extends \cenozo\ui\widget\base_report
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
-    $this->add_parameter( 'language', 'enum', 'Language' );
+    $this->add_restriction( 'language' );
     $this->add_restriction( 'dates' );
     $this->add_parameter( 'type', 'enum', 'Type' );
 
@@ -64,15 +64,9 @@ class email_report extends \cenozo\ui\widget\base_report
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // create the necessary enum arrays
-    $languages = array( 'any' );
-    foreach( $participant_class_name::get_enum_values( 'language' ) as $language )
-      $languages[] = $language;
-    $languages = array_combine( $languages, $languages );
-
     $types = array( 'added or changed', 'removed' );
     $types = array_combine( $types, $types );
 
-    $this->set_parameter( 'language', 'any', true, $languages );
     $this->set_parameter( 'type', 'added or changed', true, $types );
   }
 }
