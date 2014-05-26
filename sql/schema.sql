@@ -124,6 +124,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`service` (
   `name` VARCHAR(45) NOT NULL,
   `title` VARCHAR(45) NOT NULL,
   `version` VARCHAR(45) NOT NULL,
+  `cenozo` VARCHAR(45) NOT NULL,
   `release_based` TINYINT(1) NOT NULL DEFAULT 1,
   `release_event_type_id` INT UNSIGNED NOT NULL,
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The default language for the service.',
@@ -1222,10 +1223,6 @@ DELIMITER $$
 USE `cenozo`$$
 DROP TRIGGER IF EXISTS `cenozo`.`remove_uid_from_pool` $$
 USE `cenozo`$$
-
-
-
-
 CREATE TRIGGER remove_uid_from_pool BEFORE
 INSERT ON participant
 FOR EACH ROW BEGIN

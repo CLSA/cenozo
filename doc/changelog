@@ -1,6 +1,10 @@
 ====================================================================================================
-0.2.7
+1.0.0
 ====================================================================================================
+
+* Creating framework upgrade scripts
+  - Currently, each application must implement changes to the framework's database, this is now
+    done centrally
 
 * Adding a check to make sure software and database versions match
 
