@@ -20,17 +20,18 @@ class jurisdiction extends record
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @param boolean $full If true then records will not be restricted by service
    * @access public
    * @static
    */
-  public static function select( $modifier = NULL, $count = false, $distinct = true )
+  public static function select( $modifier = NULL, $count = false, $distinct = true, $full = false )
   {
-    $db_service = lib::create( 'business\session' )->get_service();
-    if( $db_service->release_based )
+    if( !$full )
     {
       // make sure to only include jurisdictions belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'jurisdiction.service_id', '=', $db_service->id );
+      $modifier->where(
+        'jurisdiction.service_id', '=', lib::create( 'business\session' )->get_service()->id );
     }
 
     return parent::select( $modifier, $count, $distinct );
@@ -41,20 +42,20 @@ class jurisdiction extends record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
+   * @param boolean $full If true then records will not be restricted by service
    * @return database\record
    * @static
    * @access public
    */
-  public static function get_unique_record( $column, $value )
+  public static function get_unique_record( $column, $value, $full = false )
   {
-    $db_service = lib::create( 'business\session' )->get_service();
     $db_jurisdiction = parent::get_unique_record( $column, $value );
 
-    // make sure to only include jurisdictions belonging to this application
-    if( $db_service->release_based )
+    if( !$full )
     {
       if( !is_null( $db_jurisdiction ) &&
-          $db_jurisdiction->service_id != $db_service->id ) $db_jurisdiction = NULL;
+          $db_jurisdiction->service_id !=
+            lib::create( 'business\session' )->get_service()->id ) $db_jurisdiction = NULL;
     }
 
     return $db_jurisdiction;

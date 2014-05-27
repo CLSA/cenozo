@@ -20,13 +20,13 @@ class cohort extends record
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @param boolean $full If true then records will not be restricted by service
    * @access public
    * @static
    */
-  public static function select( $modifier = NULL, $count = false, $distinct = true )
+  public static function select( $modifier = NULL, $count = false, $distinct = true, $full = false )
   {
-    $db_service = lib::create( 'business\session' )->get_service();
-    if( $db_service->release_based )
+    if( !$full )
     {
       // make sure to only include cohorts belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
@@ -42,20 +42,20 @@ class cohort extends record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
+   * @param boolean $full If true then records will not be restricted by service
    * @return database\record
    * @static
    * @access public
    */
-  public static function get_unique_record( $column, $value )
+  public static function get_unique_record( $column, $value, $full = false )
   {
-    $db_service = lib::create( 'business\session' )->get_service();
     $db_cohort = parent::get_unique_record( $column, $value );
 
-    // make sure to only include cohorts belonging to this application
-    if( $db_service->release_based )
+    if( !$full )
     {
       $service_mod = lib::create( 'database\modifier' );
-      $service_mod->where( 'service_id', '=', $db_service->id );
+      $service_mod->where(
+        'service_id', '=', lib::create( 'business\session' )->get_service()->id );
       if( !is_null( $db_cohort ) &&
           0 == $db_cohort->get_service_count( $service_mod ) ) $db_cohort = NULL;
     }
@@ -64,7 +64,7 @@ class cohort extends record
   }
 
   /**
-   * Make sure to only include cohorts which this service has access to.
+   * Make sure to only include services which this cohort has access to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param modifier $modifier A modifier to apply to the list or count.
