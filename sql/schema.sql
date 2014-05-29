@@ -867,12 +867,14 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`region_site` (
   `create_timestamp` TIMESTAMP NOT NULL COMMENT 'Used to determine a participant\'s default site.',
   `service_id` INT UNSIGNED NOT NULL,
   `region_id` INT UNSIGNED NOT NULL,
+  `language_id` INT UNSIGNED NOT NULL,
   `site_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_service_id` (`service_id` ASC),
   INDEX `fk_region_id` (`region_id` ASC),
   INDEX `fk_site_id` (`site_id` ASC),
-  UNIQUE INDEX `uq_service_id_region_id` (`service_id` ASC, `region_id` ASC),
+  UNIQUE INDEX `uq_service_id_region_id_language_id` (`service_id` ASC, `region_id` ASC, `language_id` ASC),
+  INDEX `fk_language_id` (`language_id` ASC),
   CONSTRAINT `fk_region_site_service_id`
     FOREIGN KEY (`service_id`)
     REFERENCES `cenozo`.`service` (`id`)
@@ -886,6 +888,11 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`region_site` (
   CONSTRAINT `fk_region_site_site_id`
     FOREIGN KEY (`site_id`)
     REFERENCES `cenozo`.`site` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_region_site_language_id`
+    FOREIGN KEY (`language_id`)
+    REFERENCES `cenozo`.`language` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -955,16 +962,6 @@ ENGINE = InnoDB;
 USE `cenozo` ;
 
 -- -----------------------------------------------------
--- Placeholder table for view `cenozo`.`person_first_address`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`person_first_address` (`person_id` INT, `address_id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `cenozo`.`person_primary_address`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`person_primary_address` (`person_id` INT, `address_id` INT);
-
--- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_first_address`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cenozo`.`participant_first_address` (`participant_id` INT, `address_id` INT);
@@ -995,11 +992,6 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant_site` (`service_id` INT, `parti
 CREATE TABLE IF NOT EXISTS `cenozo`.`alternate_first_address` (`alternate_id` INT, `address_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `cenozo`.`alternate_primary_address`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`alternate_primary_address` (`alternate_id` INT, `address_id` INT);
-
--- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_default_site`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cenozo`.`participant_default_site` (`service_id` INT, `participant_id` INT, `site_id` INT);
@@ -1010,52 +1002,9 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant_default_site` (`service_id` INT
 CREATE TABLE IF NOT EXISTS `cenozo`.`participant_preferred_site` (`service_id` INT, `participant_id` INT, `site_id` INT);
 
 -- -----------------------------------------------------
--- View `cenozo`.`person_first_address`
+-- Placeholder table for view `cenozo`.`person_first_address`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `cenozo`.`person_first_address` ;
-DROP TABLE IF EXISTS `cenozo`.`person_first_address`;
-USE `cenozo`;
-CREATE OR REPLACE VIEW `cenozo`.`person_first_address` AS
-SELECT person_id, id AS address_id
-FROM address AS t1
-WHERE t1.rank = (
-  SELECT MIN( t2.rank )
-  FROM address AS t2
-  WHERE t2.active
-  AND t1.person_id = t2.person_id
-  AND CASE MONTH( CURRENT_DATE() )
-        WHEN 1 THEN t2.january
-        WHEN 2 THEN t2.february
-        WHEN 3 THEN t2.march
-        WHEN 4 THEN t2.april
-        WHEN 5 THEN t2.may
-        WHEN 6 THEN t2.june
-        WHEN 7 THEN t2.july
-        WHEN 8 THEN t2.august
-        WHEN 9 THEN t2.september
-        WHEN 10 THEN t2.october
-        WHEN 11 THEN t2.november
-        WHEN 12 THEN t2.december
-        ELSE 0 END = 1
-  GROUP BY t2.person_id );
-
--- -----------------------------------------------------
--- View `cenozo`.`person_primary_address`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `cenozo`.`person_primary_address` ;
-DROP TABLE IF EXISTS `cenozo`.`person_primary_address`;
-USE `cenozo`;
-CREATE OR REPLACE VIEW `cenozo`.`person_primary_address` AS
-SELECT person_id, id AS address_id
-FROM address AS t1
-WHERE t1.rank = (
-  SELECT MIN( t2.rank )
-  FROM address AS t2
-  JOIN region ON t2.region_id = region.id
-  JOIN region_site ON region.id = region_site.region_id
-  WHERE t2.active
-  AND t1.person_id = t2.person_id
-  GROUP BY t2.person_id );
+CREATE TABLE IF NOT EXISTS `cenozo`.`person_first_address` (`person_id` INT, `address_id` INT);
 
 -- -----------------------------------------------------
 -- View `cenozo`.`participant_first_address`
@@ -1075,9 +1024,19 @@ DROP VIEW IF EXISTS `cenozo`.`participant_primary_address` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_primary_address`;
 USE `cenozo`;
 CREATE OR REPLACE VIEW `cenozo`.`participant_primary_address` AS
-SELECT participant.id AS participant_id, address_id
-FROM person_primary_address, participant
-WHERE person_primary_address.person_id = participant.person_id;
+SELECT participant.id AS participant_id, address.id AS address_id
+FROM address
+JOIN participant ON address.person_id = participant.person_id
+WHERE address.rank = (
+  SELECT MIN( address2.rank )
+  FROM address AS address2
+  JOIN region ON address2.region_id = region.id
+  -- Joining to region_site is used to exclude addresses which are not
+  -- in region_site, actual linkage (and language) is irrelevant
+  JOIN region_site ON region.id = region_site.region_id
+  WHERE address2.active
+  AND address.person_id = address2.person_id
+  GROUP BY address2.person_id );
 
 -- -----------------------------------------------------
 -- View `cenozo`.`participant_last_consent`
@@ -1145,6 +1104,7 @@ AND service.id = jurisdiction.service_id
 LEFT JOIN region ON address.region_id = region.id
 LEFT JOIN region_site ON region.id = region_site.region_id
 AND service.id = region_site.service_id
+AND IFNULL( participant.language_id, service.language_id ) = region_site.language_id
 LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
 AND service_has_participant.participant_id = participant.id;
 
@@ -1158,17 +1118,6 @@ CREATE OR REPLACE VIEW `cenozo`.`alternate_first_address` AS
 SELECT alternate.id AS alternate_id, address_id
 FROM person_first_address, alternate
 WHERE person_first_address.person_id = alternate.person_id;
-
--- -----------------------------------------------------
--- View `cenozo`.`alternate_primary_address`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `cenozo`.`alternate_primary_address` ;
-DROP TABLE IF EXISTS `cenozo`.`alternate_primary_address`;
-USE `cenozo`;
-CREATE OR REPLACE VIEW `cenozo`.`alternate_primary_address` AS
-SELECT alternate.id AS alternate_id, address_id
-FROM person_primary_address, alternate
-WHERE person_primary_address.person_id = alternate.person_id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`participant_default_site`
@@ -1194,6 +1143,7 @@ LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
 AND service.id = jurisdiction.service_id
 LEFT JOIN region ON address.region_id = region.id
 LEFT JOIN region_site ON region.id = region_site.region_id
+AND IFNULL( participant.language_id, service.language_id ) = region_site.language_id
 AND service.id = region_site.service_id;
 
 -- -----------------------------------------------------
@@ -1212,6 +1162,36 @@ JOIN service_has_cohort ON service.id = service_has_cohort.service_id
 AND service_has_cohort.cohort_id = participant.cohort_id
 LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
 AND service_has_participant.participant_id = participant.id;
+
+-- -----------------------------------------------------
+-- View `cenozo`.`person_first_address`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `cenozo`.`person_first_address` ;
+DROP TABLE IF EXISTS `cenozo`.`person_first_address`;
+USE `cenozo`;
+CREATE OR REPLACE VIEW `cenozo`.`person_first_address` AS
+SELECT person_id, id AS address_id
+FROM address AS t1
+WHERE t1.rank = (
+  SELECT MIN( t2.rank )
+  FROM address AS t2
+  WHERE t2.active
+  AND t1.person_id = t2.person_id
+  AND CASE MONTH( CURRENT_DATE() )
+        WHEN 1 THEN t2.january
+        WHEN 2 THEN t2.february
+        WHEN 3 THEN t2.march
+        WHEN 4 THEN t2.april
+        WHEN 5 THEN t2.may
+        WHEN 6 THEN t2.june
+        WHEN 7 THEN t2.july
+        WHEN 8 THEN t2.august
+        WHEN 9 THEN t2.september
+        WHEN 10 THEN t2.october
+        WHEN 11 THEN t2.november
+        WHEN 12 THEN t2.december
+        ELSE 0 END = 1
+  GROUP BY t2.person_id );
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

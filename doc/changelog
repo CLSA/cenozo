@@ -14,6 +14,9 @@
   - Users can be restricted to any activited language
   - Participants can have their preferred language set to any active language
 
+* Adding language to region-site assignments
+  - When participants are grouped into regions it is now possible to also specify language
+
 ====================================================================================================
 0.2.6
 ====================================================================================================

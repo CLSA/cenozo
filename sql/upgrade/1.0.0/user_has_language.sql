@@ -11,39 +11,30 @@ CREATE PROCEDURE patch_user_has_language()
       WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = "user_has_language" );
     IF @test = 0 THEN
-      SET @sql = CONCAT(
-        "CREATE TABLE IF NOT EXISTS user_has_language ( ",
-          "user_id INT UNSIGNED NOT NULL, ",
-          "language_id INT UNSIGNED NOT NULL, ",
-          "update_timestamp TIMESTAMP NOT NULL, ",
-          "create_timestamp TIMESTAMP NOT NULL, ",
-          "PRIMARY KEY (user_id, language_id), ",
-          "INDEX fk_language_id (language_id ASC), ",
-          "INDEX fk_user_id (user_id ASC), ",
-          "CONSTRAINT fk_user_has_language_user_id ",
-            "FOREIGN KEY (user_id) ",
-            "REFERENCES user (id) ",
-            "ON DELETE NO ACTION ",
-            "ON UPDATE NO ACTION, ",
-          "CONSTRAINT fk_user_has_language_language_id ",
-            "FOREIGN KEY (language_id) ",
-            "REFERENCES language (id) ",
-            "ON DELETE NO ACTION ",
-            "ON UPDATE NO ACTION) ",
-        "ENGINE = InnoDB" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
+      CREATE TABLE IF NOT EXISTS user_has_language ( 
+        user_id INT UNSIGNED NOT NULL, 
+        language_id INT UNSIGNED NOT NULL, 
+        update_timestamp TIMESTAMP NOT NULL, 
+        create_timestamp TIMESTAMP NOT NULL, 
+        PRIMARY KEY (user_id, language_id), 
+        INDEX fk_language_id (language_id ASC), 
+        INDEX fk_user_id (user_id ASC), 
+        CONSTRAINT fk_user_has_language_user_id 
+          FOREIGN KEY (user_id) 
+          REFERENCES user (id) 
+          ON DELETE NO ACTION 
+          ON UPDATE NO ACTION, 
+        CONSTRAINT fk_user_has_language_language_id 
+          FOREIGN KEY (language_id) 
+          REFERENCES language (id) 
+          ON DELETE NO ACTION 
+          ON UPDATE NO ACTION) 
+      ENGINE = InnoDB;
 
-      SET @sql = CONCAT(
-        "INSERT INTO user_has_language( user_id, language_id ) ",
-        "SELECT user.id, language.id ",
-        "FROM user ",
-        "JOIN language ON user.language = language.code" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
-
+      INSERT INTO user_has_language( user_id, language_id ) 
+      SELECT user.id, language.id 
+      FROM user 
+      JOIN language ON user.language = language.code;
     END IF;
 
   END //

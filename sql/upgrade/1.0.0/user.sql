@@ -12,12 +12,7 @@ CREATE PROCEDURE patch_user()
       AND TABLE_NAME = "user"
       AND COLUMN_NAME = "language" );
     IF @test = 1 THEN
-      SET @sql = CONCAT(
-        "ALTER TABLE user ",
-        "DROP COLUMN language" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
+      ALTER TABLE user DROP COLUMN language;
     END IF;
 
   END //
