@@ -39,9 +39,9 @@ class email_report extends \cenozo\ui\pull\base_report
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     $restrict_language_id = $this->get_argument( 'restrict_language_id' );
-    $db_language = 'any' == $restrict_language_id
-                 ? NULL
-                 : lib::create( 'database\language', $restrict_language_id );
+    $db_language = $restrict_language_id
+                 ? lib::create( 'database\language', $restrict_language_id )
+                 : NULL;
     $type = $this->get_argument( 'type' );
     $restrict_start_date = $this->get_argument( 'restrict_start_date' );
     $restrict_end_date = $this->get_argument( 'restrict_end_date' );
