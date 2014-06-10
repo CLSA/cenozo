@@ -31,6 +31,7 @@
 
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
+  {{ include_list( 'language', language_list|default(false), true ) }}
   {{ include_list( 'access', access_list|default(false), true ) }}
   {{ include_list( 'activity', activity_list|default(false), true ) }}
 

@@ -38,7 +38,10 @@ class email_report extends \cenozo\ui\pull\base_report
     $util_class_name = lib::get_class_name( 'util' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
-    $language = $this->get_argument( 'language' );
+    $restrict_language_id = $this->get_argument( 'restrict_language_id' );
+    $db_language = $restrict_language_id
+                 ? lib::create( 'database\language', $restrict_language_id )
+                 : NULL;
     $type = $this->get_argument( 'type' );
     $restrict_start_date = $this->get_argument( 'restrict_start_date' );
     $restrict_end_date = $this->get_argument( 'restrict_end_date' );
@@ -57,14 +60,14 @@ class email_report extends \cenozo\ui\pull\base_report
       $end_datetime_obj = clone $temp_datetime_obj;
     }
 
-    $this->add_title( 'any' == $language ?
-      'for all languages' : 'restricted to the language "'.$language.'"' );
+    $this->add_title( is_null( $db_language ) ?
+      'for all languages' : 'restricted to the language "'.$db_language->name.'"' );
 
     // loop through all participants whose email_datetime is inside the datespan
     $participant_mod = lib::create( 'database\modifier' );
     $participant_mod->where( 'email_datetime', '!=', NULL ); // don't include unchanged emails
-    if( 'any' != $language )
-      $participant_mod->where( 'language', '=', $language );
+    if( !is_null( $db_language ) )
+      $participant_mod->where( 'language_id', '=', $db_language->id );
     if( !is_null( $start_datetime_obj ) )
       $participant_mod->where( 'email_datetime', '>=',
         $start_datetime_obj->format( 'Y-m-d 00:00:00' ) );
@@ -77,7 +80,7 @@ class email_report extends \cenozo\ui\pull\base_report
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
       $contents[] = array(
-        $db_participant->language,
+        $db_participant->get_language()->name,
         $db_participant->first_name,
         $db_participant->last_name,
         $db_participant->email_old,

@@ -39,6 +39,7 @@ class region_site_list extends base_list
     parent::prepare();
     
     $this->add_column( 'region.name', 'string', 'Region', true );
+    $this->add_column( 'language.name', 'string', 'Language', false );
     $this->add_column( 'site.name', 'string', 'Site', true );
   }
   
@@ -56,6 +57,7 @@ class region_site_list extends base_list
     {
       $this->add_row( $record->id,
         array( 'region.name' => $record->get_region()->name,
+               'language.name' => $record->get_language()->name,
                'site.name' => $record->get_site()->name ) );
     }
   }

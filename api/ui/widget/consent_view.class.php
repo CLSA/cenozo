@@ -45,6 +45,13 @@ class consent_view extends base_view
       'Whether the consent was written (true) or verbal (false).' );
     $this->add_item( 'date', 'date', 'Date' );
     $this->add_item( 'note', 'text', 'Note' );
+
+    // only allow admins to edit or delete consent records
+    if( 3 > lib::create( 'business\session' )->get_role()->tier )
+    {
+      $this->set_editable( false );
+      $this->set_removable( false );
+    }
   }
 
   /**

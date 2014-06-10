@@ -133,6 +133,14 @@ VALUES( "push", "jurisdiction", "new", true, "Add a new association between a po
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "jurisdiction", "view", true, "View an association between a postcode and a site." );
 
+-- language
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "language", "edit", true, "Edits a language's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "language", "list", true, "List of languages." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "language", "view", true, "View a language's details." );
+
 -- notes
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "note", "delete", true, "Removes a note from the system." );
@@ -406,9 +414,13 @@ VALUES( "widget", "user", "add", true, "View a form for creating a new user." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "add_access", true, "View sites to grant the user access to." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "user", "add_language", true, "View languages to restrict the user to." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "delete", true, "Removes a user from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "delete_access", true, "Removes this user's access to a site." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "user", "delete_language", true, "Removes this user's language restriction." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "edit", true, "Edits a user's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -419,6 +431,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "new", true, "Add a new user to the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "new_access", true, "Grant this user access to sites." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "user", "new_language", true, "Restricts this user to a particular language." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "reset_password", true, "Resets a user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )

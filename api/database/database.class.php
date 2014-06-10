@@ -409,8 +409,8 @@ class database extends \cenozo\base_object
 
     if( false === $result )
     {
-      // if a deadlock has occurred then notify the user with a notice
-      if( 1213 == $this->connection->ErrorNo() )
+      // if a deadlock or lock-wait timout has occurred then notify the user with a notice
+      if( 1213 == $this->connection->ErrorNo() || 1205 == $this->connection->ErrorNo() )
       {
         log::warning( 'Deadlock has prevented an update to the database.' );
         throw lib::create( 'exception\notice',

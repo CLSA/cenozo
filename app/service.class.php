@@ -232,6 +232,16 @@ final class service
       }
       else $session->initialize();
 
+      // make sure the software and database versions match
+      if( $this->settings['general']['version'] != $session->get_service()->version )
+        throw lib::create( 'exception\notice',
+          sprintf(
+            'The software version (%s) does not match the database version (%s).  The service will '.
+            'remain unavailable until this problem is corrected by an administrator.',
+            $this->settings['general']['version'],
+            $session->get_service()->version ),
+          __METHOD__ );
+
       // execute service type-specific operations
       $method_name = $this->operation_type;
 

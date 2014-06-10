@@ -1,4 +1,23 @@
 ====================================================================================================
+1.0.0
+====================================================================================================
+
+* Creating framework upgrade scripts
+  - Currently, each application must implement changes to the framework's database, this is now
+    done centrally
+
+* Adding a check to make sure software and database versions match
+
+* Adding better internationalization support
+  - A list of 184 languages have been added and can now be activated
+  - Services must now have a default language
+  - Users can be restricted to any activited language
+  - Participants can have their preferred language set to any active language
+
+* Adding language to region-site assignments
+  - When participants are grouped into regions it is now possible to also specify language
+
+====================================================================================================
 0.2.6
 ====================================================================================================
 

@@ -50,7 +50,7 @@ class participant_add extends base_view
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
-    $this->add_item( 'language', 'enum', 'Preferred Language' );
+    $this->add_item( 'language_id', 'enum', 'Preferred Language' );
     $this->add_item( 'email', 'string', 'Email', 'Must be in the format "account@domain.name"' );
     $this->add_item( 'state_id', 'enum', 'Condition' );
     $this->add_item( 'person_id', 'hidden' );
@@ -71,6 +71,7 @@ class participant_add extends base_view
     $state_class_name = lib::get_class_name( 'database\state' );
     $source_class_name = lib::get_class_name( 'database\source' );
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $language_class_name = lib::get_class_name( 'database\language' );
 
     $sources = array();
     foreach( $source_class_name::select() as $db_source )
@@ -80,8 +81,12 @@ class participant_add extends base_view
       $cohorts[$db_cohort->id] = $db_cohort->name;
     $genders = $participant_class_name::get_enum_values( 'gender' );
     $genders = array_combine( $genders, $genders );
-    $languages = $participant_class_name::get_enum_values( 'language' );
-    $languages = array_combine( $languages, $languages );
+    $languages = array();
+    $language_mod = lib::create( 'database\modifier' );
+    $language_mod->where( 'active', '=', true );
+    $language_mod->order( 'name' );
+    foreach( $language_class_name::select( $language_mod ) as $db_language )
+      $languages[$db_language->id] = $db_language->name;
 
     $state_mod = lib::create( 'database\modifier' );
     $state_mod->order( 'rank' );
@@ -106,7 +111,8 @@ class participant_add extends base_view
     $this->set_item( 'last_name', '', true );
     $this->set_item( 'gender', key( $genders ), true, $genders );
     $this->set_item( 'date_of_birth', '' );
-    $this->set_item( 'language', '', false, $languages );
+    $this->set_item( 'language_id',
+      lib::create( 'business\session' )->get_service()->language_id, false, $languages );
     $this->set_item( 'email', '' );
     $this->set_item( 'state_id', '', false, $state_list );
     // this particular entry is filled in by the push/participant_new operation

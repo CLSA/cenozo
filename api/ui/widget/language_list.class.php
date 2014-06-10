@@ -1,6 +1,6 @@
 <?php
 /**
- * consent_list.class.php
+ * language_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,21 +10,21 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget consent list
+ * widget language list
  */
-class consent_list extends base_list
+class language_list extends base_list
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the consent list.
+   * Defines all variables required by the language list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'consent', $args );
+    parent::__construct( 'language', $args );
   }
 
   /**
@@ -38,16 +38,15 @@ class consent_list extends base_list
   {
     parent::prepare();
     
-    $this->add_column( 'accept', 'boolean', 'Accept', true );
-    $this->add_column( 'written', 'boolean', 'Written', true );
-    $this->add_column( 'date', 'datetime', 'Date', true );
-
-    // only allow admins to edit or delete consent records
-    if( 3 > lib::create( 'business\session' )->get_role()->tier ) $this->set_removable( false );
+    $this->add_column( 'name', 'string', 'Name', true );
+    $this->add_column( 'code', 'string', 'Code', true );
+    $this->add_column( 'active', 'boolean', 'Active', true );
+    $this->add_column( 'participants', 'number', 'Participants', false );
+    $this->add_column( 'users', 'number', 'Users', false );
   }
   
   /**
-   * Finish setting the variables in a widget.
+   * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
@@ -55,13 +54,15 @@ class consent_list extends base_list
   protected function setup()
   {
     parent::setup();
-
+    
     foreach( $this->get_record_list() as $record )
     {
       $this->add_row( $record->id,
-        array( 'accept' => $record->accept,
-               'written' => $record->written,
-               'date' => $record->date ) );
+        array( 'name' => $record->name,
+               'code' => $record->code,
+               'active' => $record->active,
+               'participants' => $record->get_participant_count(),
+               'users' => $record->get_user_count() ) );
     }
   }
 }

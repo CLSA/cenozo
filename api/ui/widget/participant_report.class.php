@@ -64,7 +64,7 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->add_parameter( 'date_of_birth_start_date', 'date', 'Date of Birth Start Date' );
     $this->add_parameter( 'date_of_birth_end_date', 'date', 'Date of Birth End Date' );
     $this->add_parameter( 'state_id', 'enum', 'Condition' );
-    $this->add_parameter( 'language', 'enum', 'Language' );
+    $this->add_restriction( 'language' );
     $this->add_parameter( 'consent_accept', 'boolean', 'Consent Accepted' );
     $this->add_parameter( 'consent_written', 'boolean', 'Written Consent' );
     $this->add_parameter( 'event_type_id', 'enum', 'Event Type' );
@@ -116,9 +116,6 @@ class participant_report extends \cenozo\ui\widget\base_report
     foreach( $state_class_name::select( $state_mod ) as $db_state )
       $state_list[$db_state->id] = $db_state->name;
 
-    $language_list = $participant_class_name::get_enum_values( 'language' );
-    $language_list = array_combine( $language_list, $language_list );
-
     $event_type_mod = lib::create( 'database\modifier' );
     $event_type_mod->order( 'name' );
     $event_list = array();
@@ -147,7 +144,6 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->set_parameter( 'date_of_birth_start_date', NULL, false );
     $this->set_parameter( 'date_of_birth_end_date', NULL, false );
     $this->set_parameter( 'state_id', NULL, false, $state_list );
-    $this->set_parameter( 'language', NULL, false, $language_list );
     $this->set_parameter( 'consent_accept', NULL, false );
     $this->set_parameter( 'consent_written', NULL, false );
     $this->set_parameter( 'event_type_id', NULL, false, $event_type_list );
