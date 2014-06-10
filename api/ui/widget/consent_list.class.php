@@ -41,6 +41,9 @@ class consent_list extends base_list
     $this->add_column( 'accept', 'boolean', 'Accept', true );
     $this->add_column( 'written', 'boolean', 'Written', true );
     $this->add_column( 'date', 'datetime', 'Date', true );
+
+    // only allow admins to edit or delete consent records
+    if( 3 > lib::create( 'business\session' )->get_role()->tier ) $this->set_removable( false );
   }
   
   /**
