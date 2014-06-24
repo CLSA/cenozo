@@ -68,13 +68,26 @@ abstract class record extends \cenozo\base_object
     {
       // make sure this table has an id column as the primary key
       $primary_key_names = static::db()->get_primary_key( static::get_table_name() );
-      if( 1 != count( $primary_key_names ) ||
-          static::get_primary_key_name() != $primary_key_names[0] )
+      if( 0 == count( $primary_key_names ) )
       {
         throw lib::create( 'exception\runtime',
           'Unable to create record, single-column primary key "'.
           static::get_primary_key_name().'" does not exist.', __METHOD__ );
       }
+      else if( 1 < count( $primary_key_names ) )
+      {
+        throw lib::create( 'exception\runtime',
+          'Unable to create record, multiple primary keys found (there may be tables in the '.
+          'application and framework with the same name).', __METHOD__ );
+      }
+      else if( static::get_primary_key_name() != $primary_key_names[0] )
+      {
+        throw lib::create( 'exception\runtime',
+          'Unable to create record, the table\'s primary key name, "'.
+          $primary_key_names[0].'", does not match the class\' primary key name, "'.
+          static::get_primary_key_name().'".', __METHOD__ );
+      }
+
       $this->column_values[static::get_primary_key_name()] = intval( $id );
     }
 
