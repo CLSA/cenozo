@@ -653,33 +653,37 @@ abstract class record extends \cenozo\base_object
             $table_list[] = $table;
 
             // check to see if the joined table has a foreign key for this table and join if it does
-            $foreign_key_name = $table.'_id';
-            $table_class_name = lib::get_class_name( 'database\\'.$table );
-            if( static::db()->column_exists( $record_type, $foreign_key_name ) )
+            // but make sure not to do this check for N-to-N joining tables
+            if( false === strpos( $table, '_has_' ) )
             {
-              $modifier->where(
-                sprintf( '%s.%s', $record_type, $foreign_key_name ),
-                '=',
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
-                false );
-            }
-            // check to see if the joining table has this table as a foreign key
-            else if( static::db()->column_exists( $joining_table_name, $foreign_key_name ) )
-            {
-              $modifier->where(
-                sprintf( '%s.%s', $joining_table_name, $foreign_key_name ),
-                '=',
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
-                false );
-            }
-            // check to see if the origin table has this table as a foreign key
-            else if( static::column_exists( $foreign_key_name ) )
-            {
-              $modifier->where(
-                sprintf( '%s.%s', $table_name, $foreign_key_name ),
-                '=',
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
-                false );
+              $foreign_key_name = $table.'_id';
+              $table_class_name = lib::get_class_name( 'database\\'.$table );
+              if( static::db()->column_exists( $record_type, $foreign_key_name ) )
+              {
+                $modifier->where(
+                  sprintf( '%s.%s', $record_type, $foreign_key_name ),
+                  '=',
+                  sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
+                  false );
+              }
+              // check to see if the joining table has this table as a foreign key
+              else if( static::db()->column_exists( $joining_table_name, $foreign_key_name ) )
+              {
+                $modifier->where(
+                  sprintf( '%s.%s', $joining_table_name, $foreign_key_name ),
+                  '=',
+                  sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
+                  false );
+              }
+              // check to see if the origin table has this table as a foreign key
+              else if( static::column_exists( $foreign_key_name ) )
+              {
+                $modifier->where(
+                  sprintf( '%s.%s', $table_name, $foreign_key_name ),
+                  '=',
+                  sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
+                  false );
+              }
             }
           }
         }
