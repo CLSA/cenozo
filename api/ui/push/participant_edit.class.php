@@ -80,6 +80,14 @@ class participant_edit extends base_edit
         __METHOD__ );
     }
 
+    // only admins can change age_group
+    if( array_key_exists( 'age_group_id', $columns ) && 'administrator' != $db_role->name )
+    {
+      throw lib::create( 'exception\notice',
+        'Only administrators are allowed to set a participant\'s age group.',
+        __METHOD__ );
+    }
+
     // make sure the email address is valid
     if( array_key_exists( 'email', $columns ) &&
         0 < strlen( trim( $columns['email'] ) ) &&

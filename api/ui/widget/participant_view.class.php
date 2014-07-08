@@ -66,7 +66,7 @@ class participant_view extends base_view
     $this->add_item( 'email', 'string', 'Email', 'Must be in the format "account@domain.name"' );
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
-    $this->add_item( 'age_group', 'constant', 'Age Group' );
+    $this->add_item( 'age_group_id', 'enum', 'Age Group' );
     $this->add_item( 'state_id', 'enum', 'Condition' );
     $this->add_item( 'override_quota', 'boolean', 'Override Quota' );
 
@@ -113,6 +113,7 @@ class participant_view extends base_view
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $state_class_name = lib::get_class_name( 'database\state' );
+    $age_group_class_name = lib::get_class_name( 'database\age_group' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $language_class_name = lib::get_class_name( 'database\language' );
 
@@ -130,6 +131,11 @@ class participant_view extends base_view
     $state_mod->order( 'rank' );
     foreach( $state_class_name::select( $state_mod ) as $db_state )
       $states[$db_state->id] = $db_state->name;
+    $age_groups = array();
+    $age_group_mod = lib::create( 'database\modifier' );
+    $age_group_mod->order( 'lower' );
+    foreach( $age_group_class_name::select( $age_group_mod ) as $db_age_group )
+      $age_groups[$db_age_group->id] = $db_age_group->to_string();
 
     $record = $this->get_record();
     $db_age_group = $record->get_age_group();
@@ -169,7 +175,8 @@ class participant_view extends base_view
     $this->set_item( 'email', $record->email, false );
     $this->set_item( 'gender', $record->gender, true, $genders );
     $this->set_item( 'date_of_birth', $record->date_of_birth );
-    $this->set_item( 'age_group', is_null( $db_age_group ) ? '' : $db_age_group->to_string() );
+    $this->set_item(
+      'age_group_id', is_null( $db_age_group ) ? NULL : $db_age_group->id, false, $age_groups );
 
     try
     {

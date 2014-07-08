@@ -686,18 +686,22 @@ class session extends \cenozo\singleton
    */
   public function acquire_semaphore()
   {
-    if( !is_null( $this->semaphore ) )
+    $backtrace = debug_backtrace();
+    $filename = $backtrace[0]['file'];
+    $id = fileinode( $filename );
+
+    if( array_key_exists( $id, $this->semaphore_list ) )
     {
       throw lib::create( 'exception\runtime',
-        'Tried to acquire semaphore which already exists',
+        sprintf( 'Tried to acquire semaphore for file "%s" which already exists', $filename ),
         __METHOD__ );
     }
 
     // we need to complete any transactions before continuing
     if( $this->use_transaction() ) $this->get_database()->complete_transaction();
 
-    $this->semaphore = sem_get( getmyinode() );
-    if( !sem_acquire( $this->semaphore ) )
+    $this->semaphore_list[$id] = sem_get( $id );
+    if( !sem_acquire( $this->semaphore_list[$id] ) )
     {
       log::err( 'Unable to aquire semaphore' );
       throw lib::create( 'exception\notice',
@@ -716,17 +720,20 @@ class session extends \cenozo\singleton
    */
   public function release_semaphore()
   {
-    if( is_null( $this->semaphore ) )
+    $backtrace = debug_backtrace();
+    $filename = $backtrace[0]['file'];
+    $id = fileinode( $filename );
+
+    if( !array_key_exists( $id, $this->semaphore_list ) )
     {
       throw lib::create( 'exception\runtime',
-        'Tried to release semaphore which doesn\'t exist',
+        sprintf( 'Tried to release semaphore for file "%s" which doesn\'t exist', $filename ),
         __METHOD__ );
     }
 
-    if( !sem_release( $this->semaphore ) )
-      log::err( 'Unable to release semaphore' );
+    if( !sem_release( $this->semaphore_list[$id] ) ) log::err( 'Unable to release semaphore' );
 
-    $this->semaphore = NULL;
+    unset( $this->semaphore_list[$id] );
   }
 
   /**
@@ -850,9 +857,9 @@ class session extends \cenozo\singleton
   private $transaction = false;
 
   /**
-   * A semaphore used to block processing by other threads
+   * A list of all semaphores used to block processing by other threads
    * @var resource
    * @access private
    */
-  private $semaphore = NULL;
+  private $semaphore_list = array();
 }
