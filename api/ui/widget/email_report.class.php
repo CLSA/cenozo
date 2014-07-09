@@ -40,6 +40,7 @@ class email_report extends \cenozo\ui\widget\base_report
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
+    $this->add_restriction( 'collection' );
     $this->add_restriction( 'language' );
     $this->add_restriction( 'dates' );
     $this->add_parameter( 'type', 'enum', 'Type' );
