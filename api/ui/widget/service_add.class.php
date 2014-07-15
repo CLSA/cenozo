@@ -43,6 +43,7 @@ class service_add extends base_view
                      'May only contain letters, numbers and underscores.' );
     $this->add_item( 'title', 'string', 'Title',
                      'A user-friendly name for the service, may contain any characters.' );
+    $this->add_item( 'language_id', 'enum', 'Default Language' );
     $this->add_item( 'version', 'string', 'Version' );
     $this->add_item( 'release_based', 'boolean', 'Release Based' );
   }
@@ -57,9 +58,19 @@ class service_add extends base_view
   {
     parent::setup();
     
+    $language_class_name = lib::get_class_name( 'database\language' );
+
+    $language_mod = lib::create( 'database\modifier' );
+    $language_mod->where( 'active', '=', true );
+    $language_mod->order( 'name' );
+    $language_list = array();
+    foreach( $language_class_name::select( $language_mod ) as $db_language )
+      $language_list[$db_language->id] = $db_language->name;
+    
     // set the view's items
     $this->set_item( 'name', '' );
     $this->set_item( 'title', '' );
+    $this->set_item( 'language_id', key( $language_list ), true, $language_list );
     $this->set_item( 'version', '' );
     $this->set_item( 'release_based', false );
   }

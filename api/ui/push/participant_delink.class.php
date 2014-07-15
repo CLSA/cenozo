@@ -62,7 +62,7 @@ class participant_delink extends \cenozo\ui\push\base_record
     $this->db_new_participant->first_name = $db_old_participant->first_name;
     $this->db_new_participant->last_name = $db_old_participant->last_name;
     $this->db_new_participant->gender = $db_old_participant->gender;
-    $this->db_new_participant->language = $db_old_participant->language;
+    $this->db_new_participant->language_id = $db_old_participant->language_id;
     $this->db_new_participant->save();
 
     $db_old_participant->active = false;
@@ -70,7 +70,7 @@ class participant_delink extends \cenozo\ui\push\base_record
     $db_old_participant->last_name = '(censored)';
     $db_old_participant->date_of_birth = NULL;
     $db_old_participant->age_group_id = NULL;
-    $db_old_participant->language = NULL;
+    $db_old_participant->language_id = NULL;
     $db_old_participant->use_informant = NULL;
     $db_old_participant->email = NULL;
     $db_old_participant->save();
