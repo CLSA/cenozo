@@ -28,6 +28,29 @@ class participant_delink extends \cenozo\ui\push\base_record
   }
 
   /**
+   * Validate the operation.  If validation fails this method will throw a notice exception.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws excpetion\argument, exception\permission
+   * @access protected
+   */
+  protected function validate()
+  {
+    parent::validate();
+
+    // make sure the participant's withdraw_letter is a delink letter (g through n)
+    $letter = $this->get_record()->withdraw_letter;
+    $delink_letter_list = array( 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n' );
+    if( !in_array( $letter, $delink_letter_list ) )
+    {
+      throw lib::create( 'exception\notice', sprintf(
+        'Cannot de-link this participant because the database does not indicate that they '.
+        'have requested to be de-linked (code "%s").', $letter ),
+        __METHOD__ );
+    }
+  }
+
+  /**
    * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
