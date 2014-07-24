@@ -49,51 +49,89 @@ class opal_manager extends \cenozo\factory
     else if( 0 == strlen( $variable ) )
       throw lib::create( 'exception\argument', 'variable', $variable, __METHOD__ );
 
-    // prepare the http request
-    $authorization = sprintf( '%s:%s', $this->username, $this->password );
-    $request = new \HttpRequest();
-    $request->setMethod( \HttpRequest::METH_GET );
-    $request->addHeaders( array(
-      'Authorization' => 'X-Opal-Auth '.base64_encode( $authorization ) ) );
-
-    // send the http request
-    $url = sprintf(
-      'https://%s:%d/ws/datasource/%s/table/%s/valueSet/%s/variable/%s/value',
-      $this->server,
-      $this->port,
-      rawurlencode( $datasource ),
-      rawurlencode( $table ),
-      $db_participant->uid,
-      rawurlencode( $variable ) );
-    $request->setUrl( $url );
+    // NOTE: as a temporary fix to Opal not responding promptly to queries the following
+    // variables have been cached into the local database and are to be accessed directly
+    // instead of making a request to Opal
+    $cached_variables = array(
+      'CCC_PARK_DCS',
+      'CCT_PARK_TRM',
+      'AGE_DOB_AGE_COM',
+      'AGE_DOB_TRM',
+      'SDC_MRTL_COM',
+      'SDC_MRTL_TRM' );
     
-    try
+    $value = NULL;
+    if( in_array( $variable, $cached_variables ) )
     {
-      $message = $request->send();
+      $participant_class_name = lib::get_class_name( 'database\participant' );
+
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'uid', '=', $db_participant->uid );
+      $sql = sprintf(
+        'SELECT %s FROM opal_data %s',
+        $variable,
+        $modifier->get_sql() );
+      $value = $participant_class_name::db()->get_one( $sql );
+      
+      if( false === $value )
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Unable to retrieve cached opal value for %s, data is missing.',
+                   $db_participant->uid ),
+          __METHOD__ );
     }
-    catch( \Exception $e )
+    else
     {
-      // We've caught one of HttpRuntime, HttpRequest, HttpMalformedHeader or HttpEncoding Exceptions
-      // These errors may be transient, so instruct the user to reload the page
-      throw lib::create( 'exception\notice',
-        'The server appears to be busy, please try reloading the page. '.
-        'If this still does not fix the problem please report the issue to a superior.',
-        __METHOD__ );
+      // prepare the http request
+      $authorization = sprintf( '%s:%s', $this->username, $this->password );
+      $request = new \HttpRequest();
+      $request->setMethod( \HttpRequest::METH_GET );
+      $request->addHeaders( array(
+        'Authorization' => 'X-Opal-Auth '.base64_encode( $authorization ) ) );
+
+      // send the http request
+      $url = sprintf(
+        'https://%s:%d/ws/datasource/%s/table/%s/valueSet/%s/variable/%s/value',
+        $this->server,
+        $this->port,
+        rawurlencode( $datasource ),
+        rawurlencode( $table ),
+        $db_participant->uid,
+        rawurlencode( $variable ) );
+      $request->setUrl( $url );
+      
+      try
+      {
+        $message = $request->send();
+      }
+      catch( \Exception $e )
+      {
+        // We've caught one of HttpRuntime, HttpRequest, HttpMalformedHeader or HttpEncoding Exceptions
+        // These errors may be transient, so instruct the user to reload the page
+        throw lib::create( 'exception\notice',
+          'The server appears to be busy, please try reloading the page. '.
+          'If this still does not fix the problem please report the issue to a superior.',
+          __METHOD__ );
+      }
+
+      $code = $message->getResponseCode();
+      if( 404 == $code )
+      { // 404 on missing data
+        throw lib::create( 'exception\argument', 'participant', $db_participant->uid, __METHOD__ );
+      }
+      else if( 200 != $code )
+      {
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Unable to connect to Opal service for url "%s" (code: %s)', $url, $code ),
+          __METHOD__ );
+      }
+
+      $value = $message->body;
     }
 
-    $code = $message->getResponseCode();
-    if( 404 == $code )
-    { // 404 on missing data
-      throw lib::create( 'exception\argument', 'participant', $db_participant->uid, __METHOD__ );
-    }
-    else if( 200 != $code )
-    {
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Unable to connect to Opal service for url "%s" (code: %s)', $url, $code ),
-        __METHOD__ );
-    }
+    if( is_null( $value ) )
+      log::warning( sprintf( 'Value of Opal variable "%s" was not found.', $variable ) );
 
-    return $message->body;
+    return $value;
   }
 
   /**
@@ -123,62 +161,124 @@ class opal_manager extends \cenozo\factory
     if( is_null( $db_language ) )
       $db_language = lib::create( 'business\session' )->get_service()->get_language();
 
-    // prepare the http request
-    $authorization = sprintf( '%s:%s', $this->username, $this->password );
-    $request = new \HttpRequest();
-    $request->setMethod( \HttpRequest::METH_GET );
-    $request->addHeaders( array(
-      'Authorization' => 'X-Opal-Auth '.base64_encode( $authorization ),
-      'Accept' => 'application/json' ) );
-
-    // send the http request
-    $url = sprintf(
-      'https://%s:%d/ws/datasource/%s/table/%s/variable/%s',
-      $this->server,
-      $this->port,
-      rawurlencode( $datasource ),
-      rawurlencode( $table ),
-      rawurlencode( $variable ) );
-    $request->setUrl( $url );
+    // NOTE: as a temporary fix to Opal not responding promptly to queries the following
+    // variables have been cached into the local database and are to be accessed directly
+    // instead of making a request to Opal
+    $cached_variables = array(
+      'SDC_MRTL_COM',
+      'SDC_MRTL_TRM' );
     
-    try
-    {
-      $message = $request->send();
-    }
-    catch( \Exception $e )
-    {
-      // We've caught one of HttpRuntime, HttpRequest, HttpMalformedHeader or HttpEncoding Exceptions
-      // These errors may be transient, so instruct the user to reload the page
-      throw lib::create( 'exception\notice',
-        'The server appears to be busy, please try reloading the page. '.
-        'If this still does not fix the problem please report the issue to a superior.',
-        __METHOD__ );
-    }
-
-    $code = $message->getResponseCode();
-    if( 200 != $code )
-    {
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Unable to connect to Opal service for url "%s" (code: %s)', $url, $code ),
-        __METHOD__ );
-    }
-
-    // find the variable in the response
-    $object = $util_class_name::json_decode( $message->body );
-    if( !is_object( $object ) || !property_exists( $object, 'categories' ) )
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Unrecognized response from Opal service for url "%s"', $url ),
-        __METHOD__ );
-
     $label = NULL;
-    foreach( $object->categories as $category )
-      if( $value == $category->name )
-        foreach( $category->attributes as $attribute )
-          if( 'label' == $attribute->name && $db_language->code == $attribute->locale )
-            return utf8_decode( $attribute->value );
+    if( in_array( $variable, $cached_variables ) )
+    {
+      // manually translate the label
+      if( 'SINGLE' == $value )
+      {
+        $label = 'en' == $db_language->code
+               ? 'Single, never married or never lived with a partner'
+               : 'Célibataire, jamais marié(e) ou ne vit pas avec un(e) conjoint(e) de fait';
+      }
+      else if( 'COMMON-LAW' == $value )
+      {
+        $label = 'en' == $db_language->code
+               ? 'Married/Living with a partner in a common-law relationship'
+               : 'Marié(e) / Vit avec un(e) conjoint(e) de fait';
+      }
+      else if( 'WIDOWED' == $value )
+      {
+        $label = 'en' == $db_language->code
+               ? 'Widowed'
+               : 'Veuf/Veuve';
+      }
+      else if( 'DIVORCED' == $value )
+      {
+        $label = 'en' == $db_language->code
+               ? 'Divorced'
+               : 'Divorcé(e)';
+      }
+      else if( 'SEPARATED' == $value )
+      {
+        $label = 'en' == $db_language->code
+               ? 'Separated'
+               : 'Séparé(e)';
+      }
+      else if( 'REFUSED' == $value )
+      {
+        $label = 'en' == $db_language->code
+               ? '[DO NOT READ] Refused'
+               : '[NE PAS LIRE] Refus';
+      }
+      else $label = 'UNKNOWN';
+    }
+    else
+    {
+      // prepare the http request
+      $authorization = sprintf( '%s:%s', $this->username, $this->password );
+      $request = new \HttpRequest();
+      $request->setMethod( \HttpRequest::METH_GET );
+      $request->addHeaders( array(
+        'Authorization' => 'X-Opal-Auth '.base64_encode( $authorization ),
+        'Accept' => 'application/json' ) );
 
-    log::warning( sprintf( 'Label of Opal variable "%s" was not found.', $variable ) );
-    return NULL;
+      // send the http request
+      $url = sprintf(
+        'https://%s:%d/ws/datasource/%s/table/%s/variable/%s',
+        $this->server,
+        $this->port,
+        rawurlencode( $datasource ),
+        rawurlencode( $table ),
+        rawurlencode( $variable ) );
+      $request->setUrl( $url );
+      
+      try
+      {
+        $message = $request->send();
+      }
+      catch( \Exception $e )
+      {
+        // We've caught one of HttpRuntime, HttpRequest, HttpMalformedHeader or HttpEncoding Exceptions
+        // These errors may be transient, so instruct the user to reload the page
+        throw lib::create( 'exception\notice',
+          'The server appears to be busy, please try reloading the page. '.
+          'If this still does not fix the problem please report the issue to a superior.',
+          __METHOD__ );
+      }
+
+      $code = $message->getResponseCode();
+      if( 200 != $code )
+      {
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Unable to connect to Opal service for url "%s" (code: %s)', $url, $code ),
+          __METHOD__ );
+      }
+
+      // find the variable in the response
+      $object = $util_class_name::json_decode( $message->body );
+      if( !is_object( $object ) || !property_exists( $object, 'categories' ) )
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Unrecognized response from Opal service for url "%s"', $url ),
+          __METHOD__ );
+
+      foreach( $object->categories as $category )
+      {
+        if( $value == $category->name )
+        {
+          foreach( $category->attributes as $attribute )
+          {
+            if( 'label' == $attribute->name && $db_language->code == $attribute->locale )
+              $label = utf8_decode( $attribute->value );
+
+            if( !is_null( $label ) ) break;
+          }
+        }
+        if( !is_null( $label ) ) break;
+      }
+    }
+
+    if( is_null( $label ) )
+      log::warning( sprintf( 'Label of Opal variable "%s" was not found.', $variable ) );
+
+    return $label;
   }
 
   /**
