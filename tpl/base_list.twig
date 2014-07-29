@@ -31,6 +31,21 @@
 {% block javascript %}
 
   <script type="text/javascript">
+    // reloads the list to a specific page
+    function load_page( page ) {
+      var args = new Object();
+      {% if parent.exists %}
+        {% if parent.id|default(false) %}
+          args.{{ parent.full }} = { "id": {{ parent.id }} };
+        {% endif %}
+        args.{{ widget.full }} = { "page": page };
+        slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
+      {% else %}
+        args.page = page;
+        slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
+      {% endif %}
+    }
+
     $( function() {
       // make button icons
       $( "button.{{ widget.full }}_sortable.{{ widget.full }}_unsorted" ).button( {
@@ -354,41 +369,6 @@
           return false;
         }
       } );
-
-      {% if items_per_page < number_of_items %}
-        // previous page button
-        $( "#{{ widget.full }}_page_prev" ).click( function() {
-          var args = new Object();
-          {% if parent.exists %}
-            {% if parent.id|default(false) %}
-              args.{{ parent.full }} = { "id": {{ parent.id }} };
-            {% endif %}
-            args.{{ widget.full }} = { "page": {{ page - 1 }} };
-            slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
-          {% else %}
-            args.page = {{ page - 1 }};
-            slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
-          {% endif %}
-        } );
-      
-        // next page button
-        $( "#{{ widget.full }}_page_next" ).click( function() {
-          var args = new Object();
-          {% if parent.exists %}
-            {% if parent.id|default(false) %}
-              args.{{ parent.full }} = { "id": {{ parent.id }} };
-            {% endif %}
-            args.{{ widget.full }} = { "page": {{ page + 1 }} };
-            slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
-          {% else %}
-            args.page = {{ page + 1 }};
-            slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
-          {% endif %}
-        } );
-      
-        // create a button set
-        $( "#{{ widget.full }}_page_next" ).button().parent().buttonset();
-      {% endif %}
         
       {% if actions|length %}
         // action buttons
@@ -406,6 +386,40 @@
           {% endif %}
 
         {% endfor %}
+      {% endif %}
+
+      {% if items_per_page < number_of_items %}
+        $( "#{{ widget.compound }}__item_from" ).keypress( function(e) {
+          // allow backspace, enter, left, up, right, down and delete keys
+          var keys = [ 8, 13, 37, 38, 39, 40, 46 ];
+          // allow any number
+          var regex = /[0-9]/;
+
+          var key = e.keyCode || e.which;
+          code = String.fromCharCode( key );
+          if( !regex.test( code ) && 0 > $.inArray( key, keys ) ) {
+            e.returnValue = false;
+            if(e.preventDefault) e.preventDefault();
+          }
+        } );
+
+        $( "#{{ widget.compound }}__item_from" ).change( function() {
+          var item_from = $(this).val();
+          load_page( Math.ceil( item_from / {{ items_per_page }} ) );
+        } );
+
+        // previous page button
+        $( "#{{ widget.full }}_page_prev" ).click( function() {
+          load_page( {{ page - 1 }} );
+        } );
+      
+        // next page button
+        $( "#{{ widget.full }}_page_next" ).click( function() {
+          load_page( {{ page + 1 }} );
+        } );
+      
+        // create a button set
+        $( "#{{ widget.full }}_page_next" ).button().parent().buttonset();
       {% endif %}
     } );
   </script>
@@ -519,12 +533,18 @@
           {% if rows|length %}
             {% set item_from = ( page - 1 ) * items_per_page + 1 %}
             {% set item_to = item_from + rows|length - 1 %}
-            Viewing: {{ item_from }} to {{ item_to }} of {{ number_of_items }}
+            Viewing:
+            {% if items_per_page < number_of_items %}
+              <input type="text" id="{{ widget.compound }}__item_from" value="{{ item_from }}"
+                     class="text ui-widget-content ui-corner-all" style="width:4em" />
+            {% else %}
+              {{ item_from }}
+            {% endif %}
+            to {{ item_to }} of {{ number_of_items }}
           {% endif %}
 
           {% if items_per_page < number_of_items %}
-            <span style="margin-left:20px"></span>
-            <span>
+            <span style="margin-left:1em">
               Page:
               <button style="width:80px"
                       id="{{ widget.full }}_page_prev"
