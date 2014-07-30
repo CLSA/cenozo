@@ -210,6 +210,27 @@ abstract class base_report extends \cenozo\ui\pull
           if( $max < $width ) $max = $width;
         }
       }
+
+      // the underlying php-excel library is very inefficient, fail the report if there are more
+      // than 20,000 cells to avoid mem/cpu overruns
+      $cell_count = 0;
+      foreach( $this->report_tables as $table )
+      {
+        $column_count = max(
+          count( $table['header'] ),
+          count( $table['footer'] ) );
+        $row_count = count( $table['contents'] );
+
+        $cell_count += $column_count * $row_count;
+      }
+      if( 20000 < $cell_count )
+      {
+        throw lib::create( 'exception\notice',
+          sprintf(
+            'Report is too large to create in %s format.  Please try again using CSV format.',
+            $this->get_argument( 'format' ) ),
+          __METHOD__ );
+      }
       
       // add in the title(s)
       $row = 1;

@@ -686,28 +686,18 @@ class session extends \cenozo\singleton
    */
   public function acquire_semaphore()
   {
-    $backtrace = debug_backtrace();
-    $filename = $backtrace[0]['file'];
-    $id = fileinode( $filename );
-
-    if( array_key_exists( $id, $this->semaphore_list ) )
-    {
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Tried to acquire semaphore for file "%s" which already exists', $filename ),
-        __METHOD__ );
-    }
-
     // we need to complete any transactions before continuing
     if( $this->use_transaction() ) $this->get_database()->complete_transaction();
 
-    $this->semaphore_list[$id] = sem_get( $id );
-    if( !sem_acquire( $this->semaphore_list[$id] ) )
+    $this->semaphore = sem_get( getmyinode() );
+    if( !sem_acquire( $this->semaphore ) )
     {
       log::err( 'Unable to aquire semaphore' );
       throw lib::create( 'exception\notice',
         'The server is busy, please wait a few seconds then click the refresh button.',
         __METHOD__ );
     }
+    else $this->semaphore_count++;
   }
 
   /**
@@ -720,20 +710,21 @@ class session extends \cenozo\singleton
    */
   public function release_semaphore()
   {
-    $backtrace = debug_backtrace();
-    $filename = $backtrace[0]['file'];
-    $id = fileinode( $filename );
-
-    if( !array_key_exists( $id, $this->semaphore_list ) )
+    if( is_null( $this->semaphore ) )
     {
       throw lib::create( 'exception\runtime',
-        sprintf( 'Tried to release semaphore for file "%s" which doesn\'t exist', $filename ),
+        'Tried to release semaphore which doesn\'t exist',
         __METHOD__ );
     }
 
-    if( !sem_release( $this->semaphore_list[$id] ) ) log::err( 'Unable to release semaphore' );
+    // decrement the semaphore count and, if the count is now zero, release it
+    $this->semaphore_count--;
 
-    unset( $this->semaphore_list[$id] );
+    if( 0 == $this->semaphore_count )
+    {
+      if( !sem_release( $this->semaphore ) ) log::err( 'Unable to release semaphore' );
+      $this->semaphore = NULL;
+    }
   }
 
   /**
@@ -857,9 +848,16 @@ class session extends \cenozo\singleton
   private $transaction = false;
 
   /**
-   * A list of all semaphores used to block processing by other threads
+   * A semaphore used to block processing by other threads
    * @var resource
    * @access private
    */
-  private $semaphore_list = array();
+  private $semaphore = NULL;
+
+  /**
+   * A count of how many times a semaphore has been requested
+   * @var int
+   * @access private
+   */
+  private $semaphore_count = 0;
 }
