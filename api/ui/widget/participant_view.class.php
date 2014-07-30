@@ -68,6 +68,7 @@ class participant_view extends base_view
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'age_group_id', 'enum', 'Age Group' );
     $this->add_item( 'state_id', 'enum', 'Condition' );
+    $this->add_item( 'withdraw_option', 'constant', 'Withdraw Option' );
     $this->add_item( 'override_quota', 'boolean', 'Override Quota' );
 
     // create the address sub-list widget
@@ -140,6 +141,23 @@ class participant_view extends base_view
     $record = $this->get_record();
     $db_age_group = $record->get_age_group();
 
+    $withdraw_option = 'Not withdrawn';
+    if( !is_null( $record->withdraw_letter ) )
+    {
+      if( in_array( $record->withdraw_letter, array( 'a', 'b', 'c', 'd' ) ) )
+        $withdraw_option = 'Withdrawn: Option #1';
+      else if( in_array( $record->withdraw_letter, array( 'e', 'f', 'g', 'h' ) ) )
+        $withdraw_option = 'Withdrawn: Option #2';
+      else if( in_array( $record->withdraw_letter, array( 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p' ) ) )
+        $withdraw_option = 'Withdrawn: Option #3';
+      else if( in_array( $record->withdraw_letter, array( 'q', 'r', 's', 't' ) ) )
+        $withdraw_option = 'Withdrawn: Option #4';
+      else if( '0' == $record->withdraw_letter )
+        $withdraw_option = 'Withdrawn: no option (data never provided)';
+      else
+        $withdraw_option = 'Withdrawn: unknown option';
+    }
+
     // set the view's items
     $this->set_item( 'active', $record->active, true );
     $this->set_item( 'uid', $record->uid, true );
@@ -149,6 +167,7 @@ class participant_view extends base_view
     $this->set_item( 'last_name', $record->last_name );
     $this->set_item( 'language_id', $record->language_id, false, $languages );
     $this->set_item( 'state_id', $record->state_id, false, $states );
+    $this->set_item( 'withdraw_option', $withdraw_option );
     $this->set_item( 'override_quota', $record->override_quota, true );
 
     // set items for default and preferred sites for all services the participant's cohort
