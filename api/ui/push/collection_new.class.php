@@ -40,9 +40,17 @@ class collection_new extends base_new
 
     // make sure the name column isn't blank
     $columns = $this->get_argument( 'columns' );
-    if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
-      throw lib::create( 'exception\notice',
-        'The collection\'s name cannot be left blank.', __METHOD__ );
+    if( array_key_exists( 'name', $columns ) )
+    {
+      if( 0 == strlen( $columns['name'] ) )
+        throw lib::create( 'exception\notice',
+          'The collection\'s name cannot be left blank.', __METHOD__ );
+
+      // make sure the name column contains letters, numbers and underscores only
+      if( preg_match( '/[^a-zA-Z0-9_]/', $columns['name'] ) )
+        throw lib::create( 'exception\notice',
+          'The collection\'s name can include letters, numbers and underscores only.', __METHOD__ );
+    }
   }
 
   /**

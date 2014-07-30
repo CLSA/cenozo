@@ -39,7 +39,8 @@ class collection_view extends base_view
     parent::prepare();
 
     // create an associative array with everything we want to display about the collection
-    $this->add_item( 'name', 'string', 'Name' );
+    $this->add_item( 'name', 'string', 'Name',
+                     'May only contain letters, numbers and underscores.' );
     $this->add_item( 'active', 'boolean', 'Active',
       'Inactive collections will not show as options in reports or to external applications.' );
     $this->add_item( 'locked', 'boolean', 'Locked',

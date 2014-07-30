@@ -39,7 +39,8 @@ class collection_add extends base_view
     parent::prepare();
     
     // define all columns defining this record
-    $this->add_item( 'name', 'string', 'Name' );
+    $this->add_item( 'name', 'string', 'Name',
+                     'May only contain letters, numbers and underscores.' );
     $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'locked', 'boolean', 'Locked',
       'If collection is locked then only select users can add/remove participants from the group.' );

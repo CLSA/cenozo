@@ -40,7 +40,7 @@ class collection_list extends base_list
     
     $this->add_column( 'name', 'string', 'Name', true );
     $this->add_column( 'active', 'boolean', 'Active', true );
-    $this->add_column( 'locked', 'boolean', 'Active', true );
+    $this->add_column( 'locked', 'boolean', 'Locked', true );
     $this->add_column( 'participants', 'number', 'Participants', false );
     $this->add_column( 'users', 'number', 'Users', false );
   }

@@ -45,6 +45,11 @@ class collection_edit extends base_edit
       if( 0 == strlen( $columns['name'] ) )
         throw lib::create( 'exception\notice',
           'The collection\'s name cannot be left blank.', __METHOD__ );
+
+      // make sure the name column contains letters, numbers and underscores only
+      if( preg_match( '/[^a-zA-Z0-9_]/', $columns['name'] ) )
+        throw lib::create( 'exception\notice',
+          'The collection\'s name can include letters, numbers and underscores only.', __METHOD__ );
     }
   }
 }
