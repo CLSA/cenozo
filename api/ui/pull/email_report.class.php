@@ -79,8 +79,9 @@ class email_report extends \cenozo\ui\pull\base_report
     $contents = array();
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
+      $db_language = $db_participant->get_language();
       $contents[] = array(
-        $db_participant->get_language()->name,
+        is_null( $db_language ) ? 'none' : $db_language->name,
         $db_participant->first_name,
         $db_participant->last_name,
         $db_participant->email_old,
