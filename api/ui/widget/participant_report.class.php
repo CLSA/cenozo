@@ -65,11 +65,16 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->add_parameter( 'date_of_birth_end_date', 'date', 'Date of Birth End Date' );
     $this->add_parameter( 'state_id', 'enum', 'Condition' );
     $this->add_restriction( 'language' );
+    $this->add_separator();
+    $this->add_parameter( 'has_consent', 'boolean', 'Has Consent' );
     $this->add_parameter( 'consent_accept', 'boolean', 'Consent Accepted' );
-    $this->add_parameter( 'consent_written', 'boolean', 'Written Consent' );
+    $this->add_parameter( 'has_written_consent', 'boolean', 'Has Written Consent' );
+    $this->add_parameter( 'written_consent_accept', 'boolean', 'Written Consent Accepted' );
+    $this->add_separator();
     $this->add_parameter( 'event_type_id', 'enum', 'Event Type' );
     $this->add_parameter( 'event_start_date', 'date', 'Event Start Date' );
     $this->add_parameter( 'event_end_date', 'date', 'Event End Date' );
+    $this->add_separator();
     $this->add_parameter( 'phone_count', 'number', 'Phone Count' );
     $this->add_parameter( 'address_count', 'number', 'Address Count' );
     
@@ -144,8 +149,10 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->set_parameter( 'date_of_birth_start_date', NULL, false );
     $this->set_parameter( 'date_of_birth_end_date', NULL, false );
     $this->set_parameter( 'state_id', NULL, false, $state_list );
+    $this->set_parameter( 'has_consent', NULL, false );
     $this->set_parameter( 'consent_accept', NULL, false );
-    $this->set_parameter( 'consent_written', NULL, false );
+    $this->set_parameter( 'has_written_consent', NULL, false );
+    $this->set_parameter( 'written_consent_accept', NULL, false );
     $this->set_parameter( 'event_type_id', NULL, false, $event_type_list );
     $this->set_parameter( 'event_start_date', NULL, false );
     $this->set_parameter( 'event_end_date', NULL, false );
