@@ -1,6 +1,6 @@
 <?php
 /**
- * service_edit.class.php
+ * collection_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,11 +10,11 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: service edit
+ * push: collection new
  *
- * Edit a service.
+ * Create a new collection.
  */
-class service_edit extends base_edit
+class collection_new extends base_new
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class service_edit extends base_edit
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', $args );
+    parent::__construct( 'collection', $args );
   }
 
   /**
@@ -44,26 +44,26 @@ class service_edit extends base_edit
     {
       if( 0 == strlen( $columns['name'] ) )
         throw lib::create( 'exception\notice',
-          'The service\'s name cannot be left blank.', __METHOD__ );
+          'The collection\'s name cannot be left blank.', __METHOD__ );
 
       // make sure the name column contains letters, numbers and underscores only
       if( preg_match( '/[^a-zA-Z0-9_]/', $columns['name'] ) )
         throw lib::create( 'exception\notice',
-          'The service\'s name can include letters, numbers and underscores only.', __METHOD__ );
+          'The collection\'s name can include letters, numbers and underscores only.', __METHOD__ );
     }
   }
 
   /**
-   * Finishes the operation with any post-execution instructions that may be necessary.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
-  protected function finish()
+  protected function execute()
   {
-    parent::finish();
+    parent::execute();
 
-    // update the service's event_type
-    $this->get_record()->update_release_event_type();
+    // add the current user to the group's user list
+    $this->get_record()->add_user( array( lib::create( 'business\session' )->get_user()->id ) );
   }
 }

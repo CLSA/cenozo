@@ -1,0 +1,22 @@
+{##
+ # collection_view.twig
+ # 
+ # View collection details.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_view.twig for parameters
+ #}
+{% extends "base_view.twig" %}
+
+{% block post_edit %}
+  // refresh the page if we are changing the collection's locked state
+  if( "locked" == column_name ) slot_refresh( {{ slot }} );
+{% endblock post_edit %}
+
+{% block record %}
+
+  {{ parent() }}
+  {% from 'macros.twig' import include_list %}
+  {{ include_list( 'participant', participant_list|default(false), true ) }}
+  {{ include_list( 'user', user_list|default(false), true ) }}
+
+{% endblock record %}

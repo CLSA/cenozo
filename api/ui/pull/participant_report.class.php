@@ -46,6 +46,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     $session = lib::create( 'business\session' );
 
     // get the report arguments
+    $collection_id = $this->get_argument( 'restrict_collection_id' );
     $source_id = $this->get_argument( 'restrict_source_id' );
     $cohort_id = $this->get_argument( 'restrict_cohort_id' );
     $grouping = $this->get_argument( 'restrict_grouping' );
@@ -165,6 +166,13 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     $this->modifier->order( 'uid' );
 
+    if( '' !== $collection_id )
+    {
+      $this->modifier->where( 'collection_has_participant.collection_id', '=', $collection_id );
+      $this->sql_tables .=
+        'JOIN collection_has_participant '.
+        'ON participant.id = collection_has_participant.participant_id ';
+    }
     if( '' !== $source_id ) $this->modifier->where( 'participant.source_id', '=', $source_id );
     if( '' !== $cohort_id ) $this->modifier->where( 'participant.cohort_id', '=', $cohort_id );
     if( '' !== $grouping ) $this->modifier->where( 'participant.grouping', '=', $grouping );
