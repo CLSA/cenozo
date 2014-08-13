@@ -959,6 +959,77 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`user_has_language` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`collection`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`collection` ;
+
+CREATE TABLE IF NOT EXISTS `cenozo`.`collection` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `locked` TINYINT(1) NOT NULL DEFAULT 0,
+  `description` TEXT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uq_name` (`name` ASC))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`collection_has_participant`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`collection_has_participant` ;
+
+CREATE TABLE IF NOT EXISTS `cenozo`.`collection_has_participant` (
+  `collection_id` INT UNSIGNED NOT NULL,
+  `participant_id` INT UNSIGNED NOT NULL,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  PRIMARY KEY (`collection_id`, `participant_id`),
+  INDEX `fk_participant_id` (`participant_id` ASC),
+  INDEX `fk_collection_id` (`collection_id` ASC),
+  CONSTRAINT `fk_collection_has_participant_collection_id`
+    FOREIGN KEY (`collection_id`)
+    REFERENCES `cenozo`.`collection` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_collection_has_participant_participant_id`
+    FOREIGN KEY (`participant_id`)
+    REFERENCES `cenozo`.`participant` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cenozo`.`user_has_collection`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cenozo`.`user_has_collection` ;
+
+CREATE TABLE IF NOT EXISTS `cenozo`.`user_has_collection` (
+  `user_id` INT UNSIGNED NOT NULL,
+  `collection_id` INT UNSIGNED NOT NULL,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  PRIMARY KEY (`user_id`, `collection_id`),
+  INDEX `fk_collection_id` (`collection_id` ASC),
+  INDEX `fk_user_id` (`user_id` ASC),
+  CONSTRAINT `fk_user_has_collection_user_id`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `cenozo`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_has_collection_collection_id`
+    FOREIGN KEY (`collection_id`)
+    REFERENCES `cenozo`.`collection` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Users who can edit locked collections.';
+
 USE `cenozo` ;
 
 -- -----------------------------------------------------

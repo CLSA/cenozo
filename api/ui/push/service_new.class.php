@@ -38,23 +38,16 @@ class service_new extends base_new
   {
     parent::validate();
 
-    // make sure the name column isn't blank
     $columns = $this->get_argument( 'columns' );
+
+    // make sure the name column isn't blank
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
       throw lib::create( 'exception\notice',
         'The service\'s name cannot be left blank.', __METHOD__ );
-
     // make sure the name column contains letters, numbers and underscores only
-    $columns = $this->get_argument( 'columns' );
-    if( !array_key_exists( 'name', $columns ) || preg_match( '/[^a-zA-Z0-9_]/', $columns['name'] ) )
+    else if( preg_match( '/[^a-zA-Z0-9_]/', $columns['name'] ) )
       throw lib::create( 'exception\notice',
         'The service\'s name can include letters, numbers and underscores only.', __METHOD__ );
-
-    // make sure the title column isn't blank
-    $columns = $this->get_argument( 'columns' );
-    if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
-      throw lib::create( 'exception\notice',
-        'The service\'s name cannot be left blank.', __METHOD__ );
   }
 
   /**

@@ -59,6 +59,7 @@ abstract class base_report extends \cenozo\ui\widget
     $site_class_name = lib::get_class_name( 'database\site' );
     $region_class_name = lib::get_class_name( 'database\region' );
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $collection_class_name = lib::get_class_name( 'database\collection' );
     $language_class_name = lib::get_class_name( 'database\language' );
     $service_class_name = lib::get_class_name( 'database\service' );
     $source_class_name = lib::get_class_name( 'database\source' );
@@ -112,6 +113,18 @@ abstract class base_report extends \cenozo\ui\widget
         $cohort_list[ $db_cohort->id ] = $db_cohort->name;
 
       $this->set_parameter( 'restrict_cohort_id', key( $cohort_list ), true, $cohort_list );
+    }
+
+    if( $this->restrictions[ 'collection' ] )
+    {
+      $collection_mod = lib::create( 'database\modifier' );
+      $collection_mod->where( 'active', '=', true );
+      $collection_mod->order( 'name' );
+      $collection_list = array( 0 => 'all' );
+      foreach( $collection_class_name::select( $collection_mod ) as $db_collection )
+        $collection_list[ $db_collection->id ] = $db_collection->name;
+
+      $this->set_parameter( 'restrict_collection_id', key( $collection_list ), true, $collection_list );
     }
 
     if( $this->restrictions[ 'grouping' ] )
@@ -226,6 +239,11 @@ abstract class base_report extends \cenozo\ui\widget
     {
       $this->restrictions[ 'cohort' ] = true;
       $this->add_parameter( 'restrict_cohort_id', 'enum', 'Cohort' );
+    }
+    else if( 'collection' == $restriction_type )
+    {
+      $this->restrictions[ 'collection' ] = true;
+      $this->add_parameter( 'restrict_collection_id', 'enum', 'Collection' );
     }
     else if( 'grouping' == $restriction_type )
     {
@@ -418,6 +436,7 @@ abstract class base_report extends \cenozo\ui\widget
     'dates' => false,
     'province' => false,
     'cohort' => false,
+    'collection' => false,
     'grouping' => false,
     'language' => false,
     'service' => false,

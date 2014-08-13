@@ -38,6 +38,10 @@ class email_report extends \cenozo\ui\pull\base_report
     $util_class_name = lib::get_class_name( 'util' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
+    $restrict_collection_id = $this->get_argument( 'restrict_collection_id' );
+    $db_collection = $restrict_collection_id
+                   ? lib::create( 'database\collection', $restrict_collection_id )
+                   : NULL;
     $restrict_language_id = $this->get_argument( 'restrict_language_id' );
     $db_language = $restrict_language_id
                  ? lib::create( 'database\language', $restrict_language_id )
@@ -60,12 +64,18 @@ class email_report extends \cenozo\ui\pull\base_report
       $end_datetime_obj = clone $temp_datetime_obj;
     }
 
-    $this->add_title( is_null( $db_language ) ?
-      'for all languages' : 'restricted to the language "'.$db_language->name.'"' );
+    if( !is_null( $db_collection ) )
+      $this->add_title( 'restricted to the collection "'.$db_collection->name.'"' );
+
+    if( !is_null( $db_language ) )
+      $this->add_title( 'restricted to the language "'.$db_language->name.'"' );
 
     // loop through all participants whose email_datetime is inside the datespan
     $participant_mod = lib::create( 'database\modifier' );
     $participant_mod->where( 'email_datetime', '!=', NULL ); // don't include unchanged emails
+    if( !is_null( $db_collection ) )
+      $participant_mod->where(
+        'collection_has_participant.collection_id', '=', $db_collection->id );
     if( !is_null( $db_language ) )
       $participant_mod->where( 'language_id', '=', $db_language->id );
     if( !is_null( $start_datetime_obj ) )

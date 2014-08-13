@@ -40,6 +40,7 @@ class participant_report extends \cenozo\ui\widget\base_report
 
     $service_class_name = lib::get_class_name( 'database\service' );
 
+    $this->add_restriction( 'collection' );
     $this->add_restriction( 'source' );
     $this->add_restriction( 'cohort' );
     $this->add_restriction( 'grouping' );
