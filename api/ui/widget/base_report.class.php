@@ -265,6 +265,12 @@ abstract class base_report extends \cenozo\ui\widget
       $this->restrictions[ 'source' ] = true;
       $this->add_parameter( 'restrict_source_id', 'enum', 'Source' );
     }
+    else if( 'uid_list' == $restriction_type )
+    {
+      $this->restrictions[ 'uid_list' ] = true;
+      $this->add_parameter( 'restrict_uid_list_id', 'text', 'UID list' );
+      $this->set_variable( 'use_uid_file', true );
+    }
   }
 
   /**
@@ -440,7 +446,8 @@ abstract class base_report extends \cenozo\ui\widget
     'grouping' => false,
     'language' => false,
     'service' => false,
-    'source' => false );
+    'source' => false,
+    'uid_list' => false );
 
   /**
    * Defines whether or not the report should use the caching system.

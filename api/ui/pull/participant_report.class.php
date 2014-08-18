@@ -67,6 +67,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     $event_end_date = $this->get_argument( 'event_end_date' );
     $phone_count = $this->get_argument( 'phone_count' );
     $address_count = $this->get_argument( 'address_count' );
+    $uid_only = $this->get_argument( 'uid_only' );
 
     // get the list of all site_id arguments
     $site_id_list = array();
@@ -354,6 +355,9 @@ class participant_report extends \cenozo\ui\pull\base_report
     }
     
     $this->sql_columns .= 'participant.email ';
+
+    // change sql columns if we only need UIDs
+    if( $uid_only ) $this->sql_columns = 'SELECT participant.uid ';
   }
 
   /**

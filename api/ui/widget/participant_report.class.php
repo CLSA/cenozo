@@ -78,6 +78,8 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->add_separator();
     $this->add_parameter( 'phone_count', 'number', 'Phone Count' );
     $this->add_parameter( 'address_count', 'number', 'Address Count' );
+    $this->add_separator();
+    $this->add_parameter( 'uid_only', 'boolean', 'Include UID only' );
     
     $this->set_variable( 'description',
       'This report provides a list of participants based on any of the provided restrictions.' );
@@ -159,5 +161,6 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->set_parameter( 'event_end_date', NULL, false );
     $this->set_parameter( 'phone_count', NULL, false );
     $this->set_parameter( 'address_count', NULL, false );
+    $this->set_parameter( 'uid_only', false );
   }
 }
