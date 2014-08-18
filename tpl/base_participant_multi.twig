@@ -35,6 +35,7 @@
           $(this).val( "" );
         } else {
           // upload the file
+          $( "#{{ widget.full }}__file_confirmation" ).html( " (uploading...)" );
           ajax_push(
             "self",
             "temporary_file",
