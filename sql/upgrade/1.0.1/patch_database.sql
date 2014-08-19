@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE alternate.sql
 SOURCE collection.sql
 SOURCE collection_has_participant.sql
 SOURCE user_has_collection.sql
