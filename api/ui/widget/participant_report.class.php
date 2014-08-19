@@ -161,6 +161,6 @@ class participant_report extends \cenozo\ui\widget\base_report
     $this->set_parameter( 'event_end_date', NULL, false );
     $this->set_parameter( 'phone_count', NULL, false );
     $this->set_parameter( 'address_count', NULL, false );
-    $this->set_parameter( 'uid_only', false );
+    $this->set_parameter( 'uid_only', false, true );
   }
 }
