@@ -284,6 +284,8 @@
                 
                     $input_{{ item_id }} = $( "input.datetimepicker_{{ item_id }}" );
                     $input_{{ item_id }}.datetimepicker( {
+                      changeYear: true,
+                      changeMonth: true,
                       dateFormat: 'yy-mm-dd',
                       timeFormat: {{ 'datetime' == entry.type ? '"hh:mm"' : '"hh:mm:ss"' }},
                       timeFormat: "HH:mm",
@@ -311,6 +313,8 @@
                     $input_{{ item_id }}.datepicker( {
                       dateFormat: 'yy-mm-dd',
                       showAnim: 'slideDown',
+                      changeYear: true,
+                      changeMonth: true,
                       onClose: function( dateText, inst ) {
                         return process_change(
                           "{{ widget.subject }}",
