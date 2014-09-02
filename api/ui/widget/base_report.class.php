@@ -268,7 +268,7 @@ abstract class base_report extends \cenozo\ui\widget
     else if( 'uid_list' == $restriction_type )
     {
       $this->restrictions[ 'uid_list' ] = true;
-      $this->add_parameter( 'restrict_uid_list_id', 'text', 'UID list' );
+      $this->add_parameter( 'uid_list', 'text', 'UID list' );
       $this->set_variable( 'use_uid_file', true );
     }
   }
