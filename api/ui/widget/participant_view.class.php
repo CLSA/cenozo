@@ -64,6 +64,8 @@ class participant_view extends base_view
     }
 
     $this->add_item( 'email', 'string', 'Email', 'Must be in the format "account@domain.name"' );
+    $this->add_item( 'email_do_not_contact', 'boolean', 'Do not send email',
+      'Whether the participant has asked to be excluded from mass emails.' );
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'age_group_id', 'enum', 'Age Group' );
@@ -192,6 +194,7 @@ class participant_view extends base_view
     }
 
     $this->set_item( 'email', $record->email, false );
+    $this->set_item( 'email_do_not_contact', $record->email_do_not_contact, true );
     $this->set_item( 'gender', $record->gender, true, $genders );
     $this->set_item( 'date_of_birth', $record->date_of_birth );
     $this->set_item(
