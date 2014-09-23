@@ -70,12 +70,18 @@ class cohort extends record
    * @param modifier $modifier A modifier to apply to the list or count.
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @return array( record ) | int
+   *r@param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @param boolean $id_only Whether to return a list of primary ids instead of active records
+   * @return array( record ) | array( int ) | int
    * @access protected
    */
-  protected function get_record_list(
-    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
+  public function get_record_list(
+    $record_type,
+    $modifier = NULL,
+    $inverted = false,
+    $count = false,
+    $distinct = true,
+    $id_only = false )
   { 
     if( 'service' == $record_type )
     {
@@ -83,6 +89,7 @@ class cohort extends record
       $modifier->where( 'service_has_cohort.service_id', '=',
                         lib::create( 'business\session' )->get_service()->id );
     }                   
-    return parent::get_record_list( $record_type, $modifier, $inverted, $count, $distinct );
+    return parent::get_record_list(
+      $record_type, $modifier, $inverted, $count, $distinct, $id_only );
   }
 }

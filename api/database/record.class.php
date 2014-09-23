@@ -411,8 +411,12 @@ abstract class record extends \cenozo\base_object
    *               calling get_other_list() will return an array of "other" records which are
    *               linked in the joining table, and get_other_count() will return the number of
    *               "other" recrods found in the joining table.
-   * @method array get_record_list_inverted() This is the same as the non-inverted method but it
-   *               returns all items which are NOT linked to joining table.
+   * @method array get_<record>_list_inverted() This is the same as the non-inverted method but it
+   *               returns all items which are NOT linked to the joining table.
+   * @method array get_<record>_id_list() Returns an array of primary ids from the joining <record>
+                   table.
+   * @method array get_<record>_id_list_inverted() This is the same as the non-inverted method but
+   *               returns all ids which are NOT linked to the joining table.
    * @method int get_<record>_count() Returns the number of records in the joining <record> table
    *             given the provided modifier.
    * @method int get_<record>_count_inverted() This is the same as the non-inverted method but it
@@ -435,7 +439,7 @@ abstract class record extends \cenozo\base_object
     
     // set up regular expressions
     $start = '/^add_|remove_|get_/';
-    $end = '/(_list|_count)(_inverted)?$/';
+    $end = '/(_list|_idlist|_count)(_inverted)?$/';
     
     // see if the start of the function name is a match
     if( !preg_match( $start, $name, $match ) ) throw $exception;
@@ -482,6 +486,8 @@ abstract class record extends \cenozo\base_object
       else
       { // calling one of: get_<record>_list( $modifier = NULL )
         //                 get_<record>_list_inverted( $modifier = NULL )
+        //                 get_<record>_idlist( $modifier = NULL )
+        //                 get_<record>_idlist_inverted( $modifier = NULL )
         //                 get_<record>_count( $modifier = NULL )
         //                 get_<record>_count_inverted( $modifier = NULL )
   
@@ -494,7 +500,12 @@ abstract class record extends \cenozo\base_object
         
         // determine the sub action and whether to invert the result
         $inverted = false;
-        if( 'list' == $sub_action || 'count' == $sub_action ) {}
+        if( 'list' == $sub_action || 'idlist' == $sub_action || 'count' == $sub_action ) {}
+        else if( 'idlist_inverted' == $sub_action )
+        {
+          $sub_action = 'idlist';
+          $inverted = true;
+        }
         else if( 'list_inverted' == $sub_action )
         {
           $sub_action = 'list';
@@ -516,6 +527,12 @@ abstract class record extends \cenozo\base_object
           return is_null( $distinct )
             ? $this->get_record_list( $subject, $modifier, $inverted )
             : $this->get_record_list( $subject, $modifier, $inverted, false, $distinct );
+        }
+        if( 'idlist' == $sub_action )
+        {
+          return is_null( $distinct )
+            ? $this->get_record_idlist( $subject, $modifier, $inverted, false, true, true )
+            : $this->get_record_idlist( $subject, $modifier, $inverted, false, $distinct, true );
         }
         else if( 'count' == $sub_action )
         {
@@ -567,7 +584,7 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * Returns an array of records from the joining record table.
+   * Returns an array of records (or primary keys of those records) from the joining record table.
    * This method is used to select a record's child records in one-to-many or many-to-many
    * relationships.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -576,11 +593,17 @@ abstract class record extends \cenozo\base_object
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @return array( record ) | int
+   * @param boolean $id_only Whether to return a list of primary ids instead of active records
+   * @return array( record ) | array( int ) | int
    * @access protected
    */
-  protected function get_record_list(
-    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
+  public function get_record_list(
+    $record_type,
+    $modifier = NULL,
+    $inverted = false,
+    $count = false,
+    $distinct = true,
+    $id_only = false )
   {
     $table_name = static::get_table_name();
     $primary_key_name = sprintf( '%s.%s', $table_name, static::get_primary_key_name() );
@@ -749,6 +772,9 @@ abstract class record extends \cenozo\base_object
       else
       {
         $ids = static::db()->get_col( $sql );
+        if( $id_only) return $ids; // requested to return a list of ids only
+
+        // create records from the ids
         $records = array();
         foreach( $ids as $id ) $records[] = lib::create( 'database\\'.$record_type, $id );
         return $records;
@@ -761,6 +787,23 @@ abstract class record extends \cenozo\base_object
                $table_name,
                $record_type ) );
     return $count ? 0 : array();
+  }
+
+  /**
+   * Returns an array of primary keys from the joining record table.
+   * This method is used to select a record's child records in one-to-many or many-to-many
+   * relationships.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @param modifier $modifier A modifier to apply to the count.
+   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
+   * @return int
+   * @access protected
+   */
+  protected function get_record_idlist(
+    $record_type, $modifier = NULL, $inverted = false, $distinct = true )
+  {
+    return $this->get_record_list( $record_type, $modifier, $inverted, false, $distinct, true );
   }
 
   /**
