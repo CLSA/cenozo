@@ -42,10 +42,12 @@ class participant extends person
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @param boolean $id_only Whether to return a list of primary ids instead of active records
    * @access public
    * @static
    */
-  public static function select( $modifier = NULL, $count = false, $distinct = true )
+  public static function select(
+    $modifier = NULL, $count = false, $distinct = true, $id_only = false )
   {
     $db_service = lib::create( 'business\session' )->get_service();
     if( $db_service->release_based )
@@ -56,7 +58,7 @@ class participant extends person
       $modifier->where( 'service_has_participant.datetime', '!=', NULL );
     }
 
-    return parent::select( $modifier, $count, $distinct );
+    return parent::select( $modifier, $count, $distinct, $id_only );
   }
 
   /**

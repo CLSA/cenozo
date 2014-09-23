@@ -1038,11 +1038,13 @@ abstract class record extends \cenozo\base_object
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @param boolean $id_only Whether to return a list of primary ids instead of active records
    * @return array( record ) | int
    * @static
    * @access public
    */
-  public static function select( $modifier = NULL, $count = false, $distinct = true )
+  public static function select(
+    $modifier = NULL, $count = false, $distinct = true, $id_only = false )
   {
     $class_index = lib::get_class_name( get_called_class(), true );
     $this_table = static::get_table_name();
@@ -1134,6 +1136,9 @@ abstract class record extends \cenozo\base_object
     else
     {
       $id_list = static::db()->get_col( $sql );
+      if( $id_only ) return $id_list;
+
+      // create records from the ids
       $records = array();
       foreach( $id_list as $id ) $records[] = new static( $id );
       return $records;
