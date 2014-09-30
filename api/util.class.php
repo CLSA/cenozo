@@ -188,7 +188,7 @@ class util
     if( is_null( $date ) || !is_string( $date ) ) return $invalid;
 
     $datetime_obj = self::get_datetime_object( $date );
-    return $datetime_obj->format( 'l, F jS, Y' );
+    return $datetime_obj->format( 'D, F jS, Y' );
   }
 
   /**

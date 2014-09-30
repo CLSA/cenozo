@@ -45,8 +45,7 @@ class participant_site_reassign extends \cenozo\ui\pull\base_participant_multi
     $affected_count = 0;
     
     $db_service = lib::create( 'database\service', $this->get_argument( 'service_id' ) );
-    $cohort_id_list = array();
-    foreach( $db_service->get_cohort_list() as $db_cohort ) $cohort_id_list[] = $db_cohort->id;
+    $cohort_id_list = $db_service->get_cohort_idlist();
     $site_id = $this->get_argument( 'site_id' );
     
     // count how many participants in the UID list belong to the selected service

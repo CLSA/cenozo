@@ -58,13 +58,16 @@ class participant_report extends \cenozo\ui\pull\base_report
     $date_of_birth_end_date = $this->get_argument( 'date_of_birth_end_date' );
     $state_id = $this->get_argument( 'state_id' );
     $restrict_language_id = $this->get_argument( 'restrict_language_id' );
+    $has_consent = $this->get_argument( 'has_consent' );
     $consent_accept = $this->get_argument( 'consent_accept' );
-    $consent_written = $this->get_argument( 'consent_written' );
+    $has_written_consent = $this->get_argument( 'has_written_consent' );
+    $written_consent_accept = $this->get_argument( 'written_consent_accept' );
     $event_type_id = $this->get_argument( 'event_type_id' );
     $event_start_date = $this->get_argument( 'event_start_date' );
     $event_end_date = $this->get_argument( 'event_end_date' );
     $phone_count = $this->get_argument( 'phone_count' );
     $address_count = $this->get_argument( 'address_count' );
+    $uid_only = $this->get_argument( 'uid_only' );
 
     // get the list of all site_id arguments
     $site_id_list = array();
@@ -114,6 +117,22 @@ class participant_report extends \cenozo\ui\pull\base_report
       unset( $temp_obj );
     }
 
+    // create temporary table of last consent
+    $service_class_name::db()->execute(
+      'CREATE TEMPORARY TABLE temp_last_consent '.
+      'SELECT * FROM participant_last_consent' );
+    $service_class_name::db()->execute(
+      'ALTER TABLE temp_last_consent '.
+      'ADD INDEX dk_participant_id_consent_id ( participant_id, consent_id )' );
+
+    // create temporary table of last written consent
+    $service_class_name::db()->execute(
+      'CREATE TEMPORARY TABLE temp_last_written_consent '.
+      'SELECT * FROM participant_last_written_consent' );
+    $service_class_name::db()->execute(
+      'ALTER TABLE temp_last_written_consent '.
+      'ADD INDEX dk_participant_id ( participant_id )' );
+
     // define the sql tables, columns and modifier based on the report parameters
     $this->sql_tables =
       'FROM participant '.
@@ -122,7 +141,11 @@ class participant_report extends \cenozo\ui\pull\base_report
       'LEFT JOIN participant_primary_address '.
       'ON participant.id = participant_primary_address.participant_id '.
       'LEFT JOIN address ON participant_primary_address.address_id = address.id '.
-      'LEFT JOIN region ON address.region_id = region.id ';
+      'LEFT JOIN region ON address.region_id = region.id '.
+      'JOIN temp_last_consent AS participant_last_consent '.
+      'ON participant.id = participant_last_consent.participant_id '.
+      'JOIN temp_last_written_consent AS participant_last_written_consent '.
+      'ON participant.id = participant_last_written_consent.participant_id ';
 
     $this->sql_columns =
       'SELECT participant.uid, '.
@@ -131,7 +154,16 @@ class participant_report extends \cenozo\ui\pull\base_report
       ( '' === $cohort_id ? 'cohort.name AS cohort_name, ' : '' ).
       ( '' === $grouping ? 'participant.grouping, ' : '' ).
       'participant.first_name, '.
-      'participant.last_name, ';
+      'participant.last_name, '.
+      'IF( participant_last_consent.accept IS NULL, '.
+          '"none", '.
+          'IF( participant_last_consent.accept, "Yes", "No" ) ) AS last_consent_accept, '.
+      'IF( participant_last_consent.written IS NULL, '.
+          '"none", '.
+          'IF( participant_last_consent.written, "Yes", "No" ) ) AS last_consent_written, '.
+      'IF( participant_last_written_consent.accept IS NULL, '.
+          '"none", '.
+          'IF( participant_last_written_consent.accept, "Yes", "No" ) ) AS last_written_consent_accept, ';
 
     $this->modifier->order( 'uid' );
 
@@ -261,16 +293,18 @@ class participant_report extends \cenozo\ui\pull\base_report
       $this->modifier->where( $column, '=', $restrict_language_id );
     else $this->sql_columns .= $column.' AS language_id, ';
 
-    if( '' !== $consent_accept || '' !== $consent_written )
-    {
-      $this->sql_tables .=
-        'JOIN participant_last_consent '.
-        'ON participant.id = participant_last_consent.participant_id ';
-    }
+    if( '' !== $has_consent )
+      $this->modifier->where(
+        'participant_last_consent.consent_id', $has_consent ? '!=' : '=', NULL );
     if( '' !== $consent_accept )
-      $this->modifier->where( 'participant_last_consent.accept', '=', $consent_accept );
-    if( '' !== $consent_written )
-      $this->modifier->where( 'participant_last_consent.written', '=', $consent_written );
+      $this->modifier->where(
+        'participant_last_consent.accept', '=', $consent_accept );
+    if( '' !== $has_written_consent )
+      $this->modifier->where(
+        'participant_last_written_consent.consent_id', $has_written_consent ? '!=' : '=', NULL );
+    if( '' !== $written_consent_accept )
+      $this->modifier->where(
+        'participant_last_written_consent.accept', '=', $written_consent_accept );
     
     if( '' !== $event_type_id || '' !== $event_start_date || '' !== $event_end_date )
       $this->sql_tables .= 'LEFT JOIN event ON participant.id = event.participant_id ';
@@ -321,6 +355,9 @@ class participant_report extends \cenozo\ui\pull\base_report
     }
     
     $this->sql_columns .= 'participant.email ';
+
+    // change sql columns if we only need UIDs
+    if( $uid_only ) $this->sql_columns = 'SELECT participant.uid ';
   }
 
   /**

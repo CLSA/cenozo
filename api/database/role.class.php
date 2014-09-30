@@ -20,11 +20,13 @@ class role extends base_access
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @param boolean $id_only Whether to return a list of primary ids instead of active records
    * @param boolean $full If true then records will not be restricted by service
    * @access public
    * @static
    */
-  public static function select( $modifier = NULL, $count = false, $distinct = true, $full = false )
+  public static function select(
+    $modifier = NULL, $count = false, $distinct = true, $id_only = false, $full = false )
   {
     if( !$full )
     {
@@ -34,7 +36,7 @@ class role extends base_access
                         lib::create( 'business\session' )->get_service()->id );
     }
 
-    return parent::select( $modifier, $count, $distinct );
+    return parent::select( $modifier, $count, $distinct, $id_only );
   }
 
   /**
@@ -71,11 +73,17 @@ class role extends base_access
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @return array( record ) | int
+   * @param boolean $id_only Whether to return a list of primary ids instead of active records
+   * @return array( record ) | array( int ) | int
    * @access protected
    */
-  protected function get_record_list(
-    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
+  public function get_record_list(
+    $record_type,
+    $modifier = NULL,
+    $inverted = false,
+    $count = false,
+    $distinct = true,
+    $id_only = false )
   {
     if( 'service' == $record_type )
     {
@@ -83,7 +91,8 @@ class role extends base_access
       $modifier->where( 'service_has_role.service_id', '=',
                         lib::create( 'business\session' )->get_service()->id );
     }
-    return parent::get_record_list( $record_type, $modifier, $inverted, $count, $distinct );
+    return parent::get_record_list(
+      $record_type, $modifier, $inverted, $count, $distinct, $id_only );
   }
 
   /**

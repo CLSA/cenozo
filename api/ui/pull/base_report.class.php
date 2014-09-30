@@ -46,6 +46,38 @@ abstract class base_report extends \cenozo\ui\pull
     // check to see if a template exists for this report
     $filename = sprintf( '%s/report/%s.xls', DOC_PATH, $this->get_full_name() );
     $this->report = lib::create( 'business\report', file_exists( $filename ) ? $filename : NULL );
+
+    // if received, convert the uid list into an array of uids
+    $uid_list = $this->get_argument( 'uid_list', false );
+    if( $uid_list )
+    {
+      $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
+      $uid_list_string = trim( $uid_list_string );
+      $this->uid_list = array_unique( preg_split( '/\s+/', $uid_list_string ) );
+    }
+    
+    // if received, convert the temporary csv file into a list of uids
+    $md5 = $this->get_argument( 'md5', false );
+    if( $md5 )
+    {
+      $filename = sprintf( '%s/%s', TEMPORARY_FILES_PATH, $md5 );
+      $data = file_get_contents( $filename );
+      if( false === $data )
+        throw lib::create( 'database\notice', 'Unable to load temporary file', __METHOD__ );
+
+      if( is_null( $this->uid_list ) ) $this->uid_list = array();
+      $lines = preg_split( '/[\n\r]+/', $data );
+      foreach( $lines as $line )
+      {   
+        $items = str_getcsv( $line );
+        if( 0 < count( $items ) && 0 < strlen( $items[0] ) ) $this->uid_list[] = $items[0];
+      }   
+      $this->uid_list = array_unique( $this->uid_list );
+    }
+
+    // remove any empty lines or headers
+    if( !is_null( $this->uid_list ) )
+      $this->uid_list = array_diff( $this->uid_list, array( '', 'uid', 'Uid', 'UID' ) );
   }
 
   /**
@@ -563,4 +595,11 @@ abstract class base_report extends \cenozo\ui\pull
    * @access private
    */
   protected $report;
+
+  /**
+   * An array of UIDs to restrict the report to (or NULL if no list is required).
+   * @var array
+   * @access protected
+   */
+  protected $uid_list = NULL;
 }

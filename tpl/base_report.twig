@@ -10,6 +10,9 @@
 {% block javascript %}
 
   {{ parent() }}
+  {% if use_uid_file|default( false ) %}
+    <script type="text/javascript" src="{{ constant('JS_URL') }}/md5.js"></script>
+  {% endif %}
   <script type="text/javascript">
     $( function () {
       // download button
@@ -26,6 +29,35 @@
         
         window.location = "{{ widget.subject }}/report?" + jQuery.param( args );
       } );
+
+      {% if use_uid_file|default( false ) %}
+        // file button handler
+        $( "#{{ widget.full }}__file" ).change( function() {
+          var file = this.files[0];
+          if( 0 == file.size ) {
+            alert( "Unable to proceed, the file you selected is empty." );
+            $(this).val( "" );
+          } else {
+            // upload the file
+            $( "#{{ widget.full }}__file_confirmation" ).html( " (uploading...)" );
+            ajax_push(
+              "self",
+              "temporary_file",
+              file,
+              function( request ) {
+                if( 200 == request.status ) {
+                  var reader = new FileReader();
+                  reader.onload = function(e) {
+                    md5 = hex_md5( e.target.result );
+                    $( "#{{ widget.full }}__md5" ).val( md5 );
+                    $( "#{{ widget.full }}__file_confirmation" ).html( " (upload successful)" );
+                  }
+                  reader.readAsBinaryString( file );
+                }
+              } );
+          }
+        } );
+      {% endif %}
     } );
   </script>
 
@@ -190,6 +222,18 @@
 
         {% endif %}
       {% endfor %}
+      {% if use_uid_file|default( false ) %}
+        <tr>
+          <td class="heading">
+            <span class="title">CSV file:</span>
+          </td>
+          <td class="content">
+            <input type="hidden" id="{{ widget.full }}__md5" value="" />
+            <input type="file" id="{{ widget.full }}__file" name="file" />
+            <span id="{{ widget.full }}__file_confirmation" />
+          </td>
+        </tr>
+      {% endif %}
     </table>
     <hr class="ui-widget ui-widget-content">
     <table>

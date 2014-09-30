@@ -65,10 +65,10 @@ class email_report extends \cenozo\ui\pull\base_report
     }
 
     if( !is_null( $db_collection ) )
-      $this->add_title( 'restricted to the collection "'.$db_collection->name.'"' );
+      $this->add_title( 'restricted to the "'.$db_collection->name.'" collection' );
 
     if( !is_null( $db_language ) )
-      $this->add_title( 'restricted to the language "'.$db_language->name.'"' );
+      $this->add_title( 'restricted to the "'.$db_language->name.'" language' );
 
     // loop through all participants whose email_datetime is inside the datespan
     $participant_mod = lib::create( 'database\modifier' );
@@ -89,8 +89,9 @@ class email_report extends \cenozo\ui\pull\base_report
     $contents = array();
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
+      $db_language = $db_participant->get_language();
       $contents[] = array(
-        $db_participant->get_language()->name,
+        is_null( $db_language ) ? 'none' : $db_language->name,
         $db_participant->first_name,
         $db_participant->last_name,
         $db_participant->email_old,
