@@ -93,6 +93,7 @@ class email_report extends \cenozo\ui\pull\base_report
       $contents[] = array(
         is_null( $db_language ) ? 'none' : $db_language->name,
         $db_participant->first_name,
+        $db_participant->other_name,
         $db_participant->last_name,
         $db_participant->email_old,
         $db_participant->email,

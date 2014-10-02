@@ -154,6 +154,7 @@ class participant_report extends \cenozo\ui\pull\base_report
       ( '' === $cohort_id ? 'cohort.name AS cohort_name, ' : '' ).
       ( '' === $grouping ? 'participant.grouping, ' : '' ).
       'participant.first_name, '.
+      'participant.other_name, '.
       'participant.last_name, '.
       'IF( participant_last_consent.accept IS NULL, '.
           '"none", '.

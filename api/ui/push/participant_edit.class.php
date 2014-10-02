@@ -72,6 +72,24 @@ class participant_edit extends base_edit
       }
     }
 
+    // do not allow double quotes or paretheses in first or last name
+    if( array_key_exists( 'first_name', $columns ) &&
+        preg_match( '/[,`"(){}\[\]]/', $columns['first_name'] ) )
+    {
+      throw lib::create( 'exception\notice',
+        'First and last names cannot include commas (,), back ticks (`), '.
+        'double quotes (") or brackets.',
+        __METHOD__ );
+    }
+    if( array_key_exists( 'last_name', $columns ) &&
+        preg_match( '/[,`"(){}\[\]]/', $columns['last_name'] ) )
+    {
+      throw lib::create( 'exception\notice',
+        'First and last names cannot include commas (,), back ticks (`), '.
+        'double quotes (") or brackets.',
+        __METHOD__ );
+    }
+
     // only admins can change active state
     if( array_key_exists( 'active', $columns ) && 'administrator' != $db_role->name )
     {

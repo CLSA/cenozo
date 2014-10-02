@@ -377,6 +377,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   `cohort_id` INT UNSIGNED NOT NULL,
   `grouping` VARCHAR(45) NULL DEFAULT NULL,
   `first_name` VARCHAR(45) NOT NULL,
+  `other_name` VARCHAR(100) NOT NULL DEFAULT '',
   `last_name` VARCHAR(45) NOT NULL,
   `gender` ENUM('male','female') NOT NULL,
   `date_of_birth` DATE NULL DEFAULT NULL,
