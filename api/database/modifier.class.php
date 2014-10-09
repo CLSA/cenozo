@@ -18,6 +18,118 @@ use cenozo\lib, cenozo\log;
 class modifier extends \cenozo\base_object
 {
   /**
+   * Add a join statement to the modifier.
+   * 
+   * This method appends join clauses onto the end of already existing join clauses.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table The table to join to.
+   * @param modifier $modifier The modifier containing a where statement that defines how the
+   *                           join is made.
+   * @param string $type The type of join to use.  May be blank or include inner, cross, straight,
+   *                     left, left outer, right or right outer
+   * @throws exception\argument
+   * @access public
+   */
+  public function join_modifier( $table, $modifier, $type = '' )
+  {
+    if( !is_string( $table ) || 0 == strlen( $table ) )
+      throw lib::create( 'exception\argument', 'table', $column, __METHOD__ );
+
+    if( is_null( $modifier ) || false === strpos( get_class( $modifier ), 'database\modifier' ) )
+      throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
+
+    $type = strtoupper( $type );
+
+    $valid_types = array(
+      '',
+      'INNER',
+      'CROSS',
+      'STRAIGHT',
+      'LEFT',
+      'LEFT OUTER',
+      'RIGHT',
+      'RIGHT OUTER' );
+    if( !is_string( $table) || !in_array( $type, $valid_types ) )
+      throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
+
+    $this->join_list[] = array( 'table' => $table,
+                                'modifier' => $modifier,
+                                'type' => strtoupper( $type ) );
+  }
+
+  /**
+   * A convenience join method where the left and right columns can be defined and are made
+   * to be equal to each other.
+   * @param string $table The table to join to.
+   * @param string $on_left The left column of the join rule.
+   * @param string $on_right The right column of the join rule.
+   * @param string $type The type of join to use.  May be blank or include inner, cross, straight,
+   *                     left, left outer, right or right outer
+   * @throws exception\argument
+   * @access public
+   */
+  public function join( $table, $on_left, $on_right, $type = '' )
+  {
+    $on_mod = new static();
+    $on_mod->where( $on_left, '=', $on_right );
+    $this->join_modifier( $table, $on_mod, $type );
+  }
+
+  /**
+   * A convenience left join method.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table The table to join to.
+   * @param modifier $modifier The modifier containing a where statement that defines how the
+   *                           join is made.
+   * @throws exception\argument
+   * @access public
+   */
+  public function left_join_modifier( $table, $modifier )
+  {
+    $this->join_modifier( $table, $modifier, 'left' );
+  }
+
+  /**
+   * A convenience left join method.
+   * @param string $table The table to join to.
+   * @param string $on_left The left column of the join rule.
+   * @param string $on_right The right column of the join rule.
+   * @throws exception\argument
+   * @access public
+   */
+  public function left_join( $table, $on_left, $on_right )
+  {
+    $this->join( $table, $on_left, $on_right, 'left' );
+  }
+
+  /**
+   * A convenience right join method.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table The table to join to.
+   * @param modifier $modifier The modifier containing a where statement that defines how the
+   *                           join is made.
+   * @throws exception\argument
+   * @access public
+   */
+  public function right_join_modifier( $table, $modifier )
+  {
+    $this->join_modifier( $table, $modifier, 'right' );
+  }
+
+  /**
+   * A convenience right join method.
+   * @param string $table The table to join to.
+   * @param string $on_left The left column of the join rule.
+   * @param string $on_right The right column of the join rule.
+   * @throws exception\argument
+   * @access public
+   */
+  public function right_join( $table, $on_right, $on_right )
+  {
+    $this->join( $table, $on_right, $on_right, 'right' );
+  }
+
+  /**
    * Add a where statement to the modifier.
    * 
    * This method appends where clauses onto the end of already existing where clauses.
@@ -229,7 +341,22 @@ class modifier extends \cenozo\base_object
   }
   
   /**
-   * Returns whether the modifier has a certain column in it's where clauses.
+   * Returns whether the modifier has a certain table in its join clauses.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table The table to search for.
+   * @return boolean
+   * @access public
+   */
+  public function has_join( $table )
+  {
+    foreach( $this->where_list as $where )
+      if( array_key_exists( 'column', $where ) &&
+          $column == $where['column'] ) return true;
+    return false;
+  }
+
+  /**
+   * Returns whether the modifier has a certain column in its where clauses.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for.
    * @return boolean
@@ -244,7 +371,7 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Returns whether the modifier has a certain column in it's group clauses.
+   * Returns whether the modifier has a certain column in its group clauses.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for.
    * @return boolean
@@ -256,7 +383,7 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Returns whether the modifier has a certain column in it's having clauses.
+   * Returns whether the modifier has a certain column in its having clauses.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for.
    * @return boolean
@@ -271,7 +398,7 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Returns whether the modifier has a certain column in it's order clauses.
+   * Returns whether the modifier has a certain column in its order clauses.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for.
    * @return boolean
@@ -447,7 +574,8 @@ class modifier extends \cenozo\base_object
    */
   public function get_sql( $appending = false )
   {
-    return sprintf( '%s %s %s %s %s',
+    return sprintf( '%s %s %s %s %s %s',
+                    $appending ? '' : $this->get_join(),
                     $this->get_where( $appending ),
                     $this->get_group(),
                     $this->get_having(),
@@ -456,9 +584,37 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Returns an SQL join statement.
+   * 
+   * This method should only be called by a record class and only after all modifications
+   * have been set.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_join()
+  {
+    $sql = '';
+    foreach( $this->join_list as $join )
+    {
+      $type = sprintf( '%s%sJOIN', $join['type'], 'STRAIGHT' == $join['type'] ? '_' : ' ' );
+      $on_clause = $join['modifier']->get_where( true );
+      // remove the " AND " at the beginning of the appended where clause
+      $on_clause = preg_replace( '/^ AND /', '', $on_clause );
+
+      $sql .= sprintf( '%s %s ON %s',
+                       $type,
+                       $join['table'],
+                       $on_clause );
+    }
+
+    return $sql;
+  }
+
+  /**
    * Returns an SQL where statement.
    * 
-   * This method should only be called by an record class and only after all modifications
+   * This method should only be called by a record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $appending Whether this modifier is being appended to an existing where clause
@@ -567,7 +723,7 @@ class modifier extends \cenozo\base_object
   /**
    * Returns an SQL group statement.
    * 
-   * This method should only be called by an record class and only after all modifications
+   * This method should only be called by a record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -591,7 +747,7 @@ class modifier extends \cenozo\base_object
   /**
    * Returns an SQL having statement.
    * 
-   * This method should only be called by an record class and only after all modifications
+   * This method should only be called by a record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $appending Whether this modifier is being appended to an existing having clause
@@ -700,7 +856,7 @@ class modifier extends \cenozo\base_object
   /**
    * Returns an SQL order statement.
    * 
-   * This method should only be called by an record class and only after all modifications
+   * This method should only be called by a record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -725,7 +881,7 @@ class modifier extends \cenozo\base_object
   /**
    * Returns an SQL limit statement.
    * 
-   * This method should only be called by an record class and only after all modifications
+   * This method should only be called by a record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -745,7 +901,7 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Merges another modifier with this one.  Merging only includes where, group, having
+   * Merges another modifier with this one.  Merging only includes join, where, group, having
    * and order items.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -756,6 +912,7 @@ class modifier extends \cenozo\base_object
   {
     if( !is_null( $modifier ) )
     {
+      foreach( $modifier->join_list as $item ) $this->join_list[] = $item;
       foreach( $modifier->where_list as $item ) $this->where_list[] = $item;
       foreach( $modifier->group_list as $item ) $this->group_list[] = $item;
       foreach( $modifier->having_list as $item ) $this->having_list[] = $item;
@@ -763,6 +920,13 @@ class modifier extends \cenozo\base_object
     }
   }
 
+  /**
+   * Holds all join clauses in an array of associative arrays
+   * @var array
+   * @access protected
+   */
+  protected $join_list = array();
+  
   /**
    * Holds all where clauses in an array of associative arrays
    * @var array
