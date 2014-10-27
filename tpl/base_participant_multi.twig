@@ -91,6 +91,7 @@
 {% block widget %}
   <div id="{{ widget.full }}_form" class="ui-widget ui-widget-content app-widget-content">
     <div class="spacer">
+{% block description %}
       <p>
         Provide a list of participant UIDs which you wish to affect.
         UIDs must be separated by a comma or space and may be qualified by single
@@ -100,6 +101,7 @@
         Alternatively, provide a CSV file where the first column is a list of UIDs
         which you wish to affect.
       </p>
+{% endblock description %}
     </div>
 
     {# put hidden parameters here #}
