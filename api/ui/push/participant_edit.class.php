@@ -37,10 +37,20 @@ class participant_edit extends base_edit
   {
     parent::prepare();
 
-    // trim the email column argument, if it exists
-    if( array_key_exists( 'columns', $this->arguments ) &&
-        array_key_exists( 'email', $this->arguments['columns'] ) )
-      $this->arguments['columns']['email'] = trim( $this->arguments['columns']['email'] );
+    if( array_key_exists( 'columns', $this->arguments ) )
+    {
+      // trim the email column argument, if it exists
+      if( array_key_exists( 'email', $this->arguments['columns'] ) )
+        $this->arguments['columns']['email'] = trim( $this->arguments['columns']['email'] );
+
+      // convert the "email_mass_messages" to "email_do_not_contact"
+      if( array_key_exists( 'email_mass_messages', $this->arguments['columns'] ) )
+      {
+        $this->arguments['columns']['email_do_not_contact'] =
+          $this->arguments['columns']['email_mass_messages'] ? 0 : 1;
+        unset( $this->arguments['columns']['email_mass_messages'] );
+      }
+    }
   }
 
   /**

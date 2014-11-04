@@ -1146,6 +1146,23 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * Select a number of record ids.
+   * 
+   * A convenience method that returns an array of record primary ids.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the selection.
+   * @param boolean $count If true the total number of records instead of a list
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @return array( int )
+   * @static
+   * @access public
+   */
+  public static function idselect( $modifier = NULL, $count = false, $distinct = true )
+  {
+    return static::select( $modifier, $count, $distinct, true );
+  }
+
+  /**
    * Count the total number of rows in the table.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
