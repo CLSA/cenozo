@@ -32,13 +32,17 @@ class modifier extends \cenozo\base_object
    */
   public function join_modifier( $table, $modifier, $type = '' )
   {
+    $type = strtoupper( $type );
+
     if( !is_string( $table ) || 0 == strlen( $table ) )
       throw lib::create( 'exception\argument', 'table', $column, __METHOD__ );
 
-    if( is_null( $modifier ) || false === strpos( get_class( $modifier ), 'database\modifier' ) )
+    // don't allow null modifiers unless this is a cross or inner join
+    if( 'CROSS' != $type &&
+        'INNER' != $type &&
+        ( is_null( $modifier ) ||
+          false === strpos( get_class( $modifier ), 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
-
-    $type = strtoupper( $type );
 
     $valid_types = array(
       '',
@@ -127,6 +131,30 @@ class modifier extends \cenozo\base_object
   public function right_join( $table, $on_right, $on_right )
   {
     $this->join( $table, $on_right, $on_right, 'right' );
+  }
+
+  /**
+   * A convenience cross join method.
+   * @param string $table The table to join to.
+   * @param modifier $modifier Unlike other join types this can be left NULL
+   * @throws exception\argument
+   * @access public
+   */
+  public function cross_join( $table, $modifier = NULL )
+  {
+    $this->join( $table, $modifier, 'cross' );
+  }
+
+  /**
+   * A convenience inner join method.
+   * @param string $table The table to join to.
+   * @param modifier $modifier Unlike other join types this can be left NULL
+   * @throws exception\argument
+   * @access public
+   */
+  public function inner_join( $table, $modifier = NULL )
+  {
+    $this->join( $table, $modifier, 'inner' );
   }
 
   /**
