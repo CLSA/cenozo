@@ -13,7 +13,7 @@ CREATE PROCEDURE patch_participant()
       AND COLUMN_NAME = "other_name" );
     IF @test = 0 THEN
       ALTER TABLE participant 
-      ADD COLUMN other_name VARCHAR(100) NOT NULL DEFAULT ''
+      ADD COLUMN other_name VARCHAR(100) NULL DEFAULT NULL
       AFTER first_name;
 
       -- update the other_name of participants who have been censored
