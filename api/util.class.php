@@ -87,6 +87,42 @@ class util
   }
   
   /**
+   * Test whether a variable's string value matches its int value
+   * 
+   * This function converts the variable to an int then into string and tests whether this is the
+   * exact same as only converting the variable to a string.
+   * Example: values "1", 123, -15 and "-141" will all return true
+   *          values "00", 1.1, "one", "11one" and NULL will all return false
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $var The variable to test
+   * @return boolean
+   * @static
+   * @access public
+   */
+  public static function string_matches_int( $var )
+  {
+    return (string)(int)$var === (string)$var;
+  }
+
+  /**
+   * Test whether a variable's string value matches its float value
+   * 
+   * This function converts the variable to an float then into string and tests whether this is the
+   * exact same as only converting the variable to a string.
+   * Example: values "1", 123, -15, "-141", 1.1 and "1.154" will all return true
+   *          values "00", "one", "11one" and NULL will all return false
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $var The variable to test
+   * @return boolean
+   * @static
+   * @access public
+   */
+  public static function string_matches_float( $var )
+  {
+    return (string)(float)$var === (string)$var;
+  }
+
+  /**
    * Returns a DateTimeZone object for the user's current site's timezone
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
