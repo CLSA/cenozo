@@ -2,8 +2,6 @@
 
 SET AUTOCOMMIT=0;
 
-SOURCE participant.sql
-
 SOURCE update_version_number.sql
 
 COMMIT;
