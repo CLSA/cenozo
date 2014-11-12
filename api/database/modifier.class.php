@@ -377,9 +377,9 @@ class modifier extends \cenozo\base_object
    */
   public function has_join( $table )
   {
-    foreach( $this->where_list as $where )
-      if( array_key_exists( 'column', $where ) &&
-          $column == $where['column'] ) return true;
+    foreach( $this->join_list as $join )
+      if( array_key_exists( 'table', $join ) &&
+          $table == $join['table'] ) return true;
     return false;
   }
 
