@@ -178,7 +178,7 @@ class opal_manager extends \cenozo\factory
                ? 'Single, never married or never lived with a partner'
                : 'Célibataire, jamais marié(e) ou ne vit pas avec un(e) conjoint(e) de fait';
       }
-      else if( 'COMMON-LAW' == $value )
+      else if( 'COMMON-LAW' == $value || 'COMMON_LAW' == $value )
       {
         $label = 'en' == $db_language->code
                ? 'Married/Living with a partner in a common-law relationship'

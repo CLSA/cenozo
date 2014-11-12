@@ -64,7 +64,8 @@ class base_participant_multi extends \cenozo\ui\pull
     $this->uid_list = array_diff( $this->uid_list, array( '', 'uid', 'Uid', 'UID' ) );
 
     $this->modifier = lib::create( 'database\modifier' );
-    $this->modifier->where( 'uid', 'IN', $this->uid_list );
+    if( 0 < count( $this->uid_list ) )
+      $this->modifier->where( 'uid', 'IN', $this->uid_list );
   }
 
   /**

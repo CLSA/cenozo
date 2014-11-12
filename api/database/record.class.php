@@ -717,8 +717,8 @@ abstract class record extends \cenozo\base_object
       $first = true;
       foreach( array_unique( $table_list, SORT_STRING ) as $table )
       {
-        $select_tables .= sprintf( '%s %s',
-                                   $first ? '' : ',',
+        $select_tables .= sprintf( ' %s %s',
+                                   $first ? '' : 'CROSS JOIN',
                                    $table );
         $first = false;
       }
@@ -1114,8 +1114,8 @@ abstract class record extends \cenozo\base_object
     $first = true;
     foreach( array_unique( $table_list, SORT_STRING ) as $table )
     {
-      $select_tables .= sprintf( '%s %s',
-                                 $first ? '' : ',',
+      $select_tables .= sprintf( ' %s %s',
+                                 $first ? '' : 'CROSS JOIN',
                                  $table );
       $first = false;
     }

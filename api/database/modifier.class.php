@@ -75,7 +75,7 @@ class modifier extends \cenozo\base_object
   public function join( $table, $on_left, $on_right, $type = '' )
   {
     $on_mod = new static();
-    $on_mod->where( $on_left, '=', $on_right );
+    $on_mod->where( $on_left, '=', $on_right, false );
     $this->join_modifier( $table, $on_mod, $type );
   }
 
@@ -128,9 +128,9 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function right_join( $table, $on_right, $on_right )
+  public function right_join( $table, $on_left, $on_right )
   {
-    $this->join( $table, $on_right, $on_right, 'right' );
+    $this->join( $table, $on_left, $on_right, 'right' );
   }
 
   /**
@@ -140,9 +140,22 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function cross_join( $table, $modifier = NULL )
+  public function cross_join_modifier( $table, $modifier = NULL )
   {
     $this->join( $table, $modifier, 'cross' );
+  }
+
+  /**
+   * A convenience cross join method.
+   * @param string $table The table to join to.
+   * @param string $on_left The left column of the join rule.
+   * @param string $on_right The right column of the join rule.
+   * @throws exception\argument
+   * @access public
+   */
+  public function cross_join( $table, $on_left, $on_right )
+  {
+    $this->join( $table, $on_left, $on_right, 'cross' );
   }
 
   /**
