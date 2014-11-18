@@ -670,57 +670,42 @@ abstract class record extends \cenozo\base_object
 
         foreach( $tables as $table )
         {
-          if( $table && 0 < strlen( $table ) && !in_array( $table, $table_list ) )
+          if( $table && 0 < strlen( $table ) &&
+              // skip joins which are done below
+              !in_array( $table, $table_list ) &&
+              // check to see if the joined table has a foreign key for this table and join if it
+              // does but make sure not to do this check for N-to-N joining tables
+              false === strpos( $table, '_has_' ) &&
+              // don't add joins that already exist
+              !$modifier->has_join( $table ) )
           {
-            // add the table name to the list
-            $table_list[] = $table;
-
-            // check to see if the joined table has a foreign key for this table and join if it does
-            // but make sure not to do this check for N-to-N joining tables
-            if( false === strpos( $table, '_has_' ) )
+            $foreign_key_name = $table.'_id';
+            $table_class_name = lib::get_class_name( 'database\\'.$table );
+            if( static::db()->column_exists( $record_type, $foreign_key_name ) )
             {
-              $foreign_key_name = $table.'_id';
-              $table_class_name = lib::get_class_name( 'database\\'.$table );
-              if( static::db()->column_exists( $record_type, $foreign_key_name ) )
-              {
-                $modifier->where(
-                  sprintf( '%s.%s', $record_type, $foreign_key_name ),
-                  '=',
-                  sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
-                  false );
-              }
-              // check to see if the joining table has this table as a foreign key
-              else if( static::db()->column_exists( $joining_table_name, $foreign_key_name ) )
-              {
-                $modifier->where(
-                  sprintf( '%s.%s', $joining_table_name, $foreign_key_name ),
-                  '=',
-                  sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
-                  false );
-              }
-              // check to see if the origin table has this table as a foreign key
-              else if( static::column_exists( $foreign_key_name ) )
-              {
-                $modifier->where(
-                  sprintf( '%s.%s', $table_name, $foreign_key_name ),
-                  '=',
-                  sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
-                  false );
-              }
+              $modifier->cross_join(
+                $table, 
+                sprintf( '%s.%s', $record_type, $foreign_key_name ),
+                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
+            }
+            // check to see if the joining table has this table as a foreign key
+            else if( static::db()->column_exists( $joining_table_name, $foreign_key_name ) )
+            {
+              $modifier->where(
+                $table,
+                sprintf( '%s.%s', $joining_table_name, $foreign_key_name ),
+                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
+            }
+            // check to see if the origin table has this table as a foreign key
+            else if( static::column_exists( $foreign_key_name ) )
+            {
+              $modifier->where(
+                $table,
+                sprintf( '%s.%s', $table_name, $foreign_key_name ),
+                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
             }
           }
         }
-      }
-
-      // build the table list
-      $select_tables = '';
-      $first = true;
-      foreach( array_unique( $table_list, SORT_STRING ) as $table )
-      {
-        $select_tables .= sprintf( ' %s %s',
-                                   $first ? '' : 'CROSS JOIN',
-                                   $table );
-        $first = false;
       }
 
       $foreign_key_name =
@@ -732,13 +717,13 @@ abstract class record extends \cenozo\base_object
       { // we need to invert the list
         // first create SQL to match all records in the joining table
         $sub_modifier = lib::create( 'database\modifier' );
-        $sub_modifier->where( $foreign_key_name, '=', $joining_foreign_key_name, false );
-        $sub_modifier->where( $joining_primary_key_name, '=', $primary_key_name, false );
+        $sub_modifier->cross_join( $joining_table_name, $primary_key_name, $joining_primary_key_name );
+        $sub_modifier->cross_join( $record_type, $joining_foreign_key_name, $foreign_key_name );
         $sub_modifier->where( $primary_key_name, '=', $primary_key_value );
         $sub_select_sql =
           sprintf( 'SELECT %s FROM %s %s',
                    $joining_foreign_key_name,
-                   $select_tables,
+                   $table_name,
                    $sub_modifier->get_sql() );
   
         // now create SQL that gets all primary ids that are NOT in that list
@@ -753,15 +738,15 @@ abstract class record extends \cenozo\base_object
       }
       else
       { // no inversion, just select the records from the joining table
-        $modifier->where( $foreign_key_name, '=', $joining_foreign_key_name, false );
-        $modifier->where( $joining_primary_key_name, '=', $primary_key_name, false );
+        $modifier->cross_join( $joining_table_name, $primary_key_name, $joining_primary_key_name );
+        $modifier->cross_join( $record_type, $joining_foreign_key_name, $foreign_key_name );
         $modifier->where( $primary_key_name, '=', $primary_key_value );
         $sql = sprintf( $count
                           ? 'SELECT COUNT( %s%s ) FROM %s %s'
                           : 'SELECT %s%s FROM %s %s',
                         $distinct ? 'DISTINCT ' : '',
                         $joining_foreign_key_name,
-                        $select_tables,
+                        $table_name,
                         $modifier->get_sql() );
       }
       
@@ -1050,7 +1035,6 @@ abstract class record extends \cenozo\base_object
     $this_table = static::get_table_name();
     
     // check to see if the modifier is sorting a value in a foreign table
-    $table_list = array( $this_table );
     if( !is_null( $modifier ) )
     {
       // build an array of all foreign tables in the modifier
@@ -1062,71 +1046,53 @@ abstract class record extends \cenozo\base_object
 
       foreach( $tables as $table )
       {
-        if( $table && 0 < strlen( $table ) && $table != $this_table )
+        if( $table && 0 < strlen( $table ) &&
+            // don't join this table to itself
+            $table != $this_table &&
+            // don't add joins that already exist
+            !$modifier->has_join( $table ) )
         {
           // check to see if we have a predefined join for this table
           if( array_key_exists( $class_index, self::$custom_join_list ) &&
               array_key_exists( $table, self::$custom_join_list[$class_index] ) )
           {
-            // add all tables in the defined join modifier
-            $join_modifier = self::$custom_join_list[$class_index][$table];
-            $columns = $join_modifier->get_where_columns();
-            foreach( $columns as $index => $column ) $table_list[] = strstr( $column, '.', true );
-            $table_list[] = $table;
-
             // merge the defined join modifier
-            $modifier->merge( $join_modifier );
+            $modifier->merge( self::$custom_join_list[$class_index][$table] );
           }
           else
           {
-            // add the table name to the list
-            $table_list[] = $table;
-
             // check to see if we have a foreign key for this table and join if we do
             $foreign_key_name = $table.'_id';
             if( static::column_exists( $foreign_key_name ) )
             {
               $table_class_name = lib::get_class_name( 'database\\'.$table );
               // add the table to the list to select and join it in the modifier
-              $modifier->where(
+              $modifier->cross_join(
+                $table,
                 sprintf( '%s.%s', $this_table, $foreign_key_name ),
-                '=',
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ),
-                false );
+                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
             }
             // check to see if the foreign table has this table as a foreign key
             else if( static::db()->column_exists( $table, $this_table.'_id' ) )
             {
               // add the table to the list to select and join it in the modifier
-              $modifier->where(
+              $modifier->cross_join(
+                $table,
                 sprintf( '%s.%s_id', $table, $this_table ),
-                '=',
-                sprintf( '%s.%s', $this_table, static::get_primary_key_name() ),
-                false );
+                sprintf( '%s.%s', $this_table, static::get_primary_key_name() ) );
             }
           }
         }
       }
     }
     
-    // build the table list
-    $select_tables = '';
-    $first = true;
-    foreach( array_unique( $table_list, SORT_STRING ) as $table )
-    {
-      $select_tables .= sprintf( ' %s %s',
-                                 $first ? '' : 'CROSS JOIN',
-                                 $table );
-      $first = false;
-    }
-
     $sql = sprintf( 'SELECT%s %s %s.%s %sFROM %s %s',
                     $count ? ' COUNT(' : '',
                     $distinct ? 'DISTINCT' : '',
                     $this_table,
                     static::get_primary_key_name(),
                     $count ? ') ' : '',
-                    $select_tables,
+                    $this_table,
                     is_null( $modifier ) ? '' : $modifier->get_sql() );
 
     if( $count )

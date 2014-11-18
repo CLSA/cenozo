@@ -131,22 +131,22 @@ class participant_search extends \cenozo\ui\widget
 
       if( $address_join )
       {
-        $this->modifier->where( 'participant.person_id', '=', 'address.person_id', false );
+        $this->modifier->join( 'address', 'participant.person_id', 'address.person_id' );
         $address_join = true;
       }
       if( $person_note_join )
       {
-        $this->modifier->where( 'participant.person_id', '=', 'person_note.person_id', false );
+        $this->modifier->join( 'person_note', 'participant.person_id', 'person_note.person_id' );
         $person_note_join = true;
       }
       if( $phone_join )
       {
-        $this->modifier->where( 'participant.person_id', '=', 'phone.person_id', false );
+        $this->modifier->join( 'phone', 'participant.person_id', 'phone.person_id' );
         $phone_join = true;
       }
       if( $region_join )
       {
-        $this->modifier->where( 'address.region_id', '=', 'region.id', false );
+        $this->modifier->join( 'region', 'address.region_id', 'region.id' );
         $region_join = true;
       }
     }

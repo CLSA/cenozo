@@ -16,6 +16,8 @@ class availability extends record {}
 
 // define the join to the participant_site table
 $participant_site_mod = lib::create( 'database\modifier' );
-$participant_site_mod->where(
-  'availability.participant_id', '=', 'participant_site.participant_id', false );
+$participant_site_mod->join(
+  'participant_site',
+  'availability.participant_id',
+  'participant_site.participant_id' );
 availability::customize_join( 'participant_site', $participant_site_mod );

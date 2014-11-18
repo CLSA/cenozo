@@ -643,7 +643,7 @@ class modifier extends \cenozo\base_object
       // remove the " AND " at the beginning of the appended where clause
       $on_clause = preg_replace( '/^ AND /', '', $on_clause );
 
-      $sql .= sprintf( '%s %s ON %s',
+      $sql .= sprintf( '%s %s ON %s ',
                        $type,
                        $join['table'],
                        $on_clause );

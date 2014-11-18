@@ -103,10 +103,11 @@ class user_list extends site_restricted_list
     // only include users who have access to a site and role belonging to this service
     $db_service = lib::create( 'business\session' )->get_service();
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'access.role_id', '=', 'service_has_role.role_id', false );
-    $modifier->where( 'service_has_role.service_id', '=', $db_service->id );
-    $modifier->where( 'access.site_id', '=', 'site.id', false );
+    $modifier->join( 'access', 'user.id', 'access.user_id' );
+    $modifier->join( 'site', 'access.site_id', 'site.id' );
     $modifier->where( 'site.service_id', '=', $db_service->id );
+    $modifier->join( 'service_has_role', 'access.role_id', 'service_has_role.role_id' );
+    $modifier->where( 'service_has_role.service_id', '=', $db_service->id );
 
     if( !is_null( $this->db_restrict_site ) )
       $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
@@ -129,10 +130,11 @@ class user_list extends site_restricted_list
     // only include users who have access to a site and role belonging to this service
     $db_service = lib::create( 'business\session' )->get_service();
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'access.role_id', '=', 'service_has_role.role_id', false );
-    $modifier->where( 'service_has_role.service_id', '=', $db_service->id );
-    $modifier->where( 'access.site_id', '=', 'site.id', false );
+    $modifier->join( 'access', 'user.id', 'access.user_id' );
+    $modifier->join( 'site', 'access.site_id', 'site.id' );
     $modifier->where( 'site.service_id', '=', $db_service->id );
+    $modifier->join( 'service_has_role', 'access.role_id', 'service_has_role.role_id' );
+    $modifier->where( 'service_has_role.service_id', '=', $db_service->id );
 
     if( !is_null( $this->db_restrict_site ) )
       $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
