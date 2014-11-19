@@ -152,9 +152,16 @@ class participant extends person
 
     // need custom SQL
     $consent_id = static::db()->get_one(
-      sprintf( 'SELECT consent_id '.
-               'FROM participant_last_consent '.
-               'WHERE participant_id = %s',
+      sprintf( 'SELECT id '.
+               'FROM consent '.
+               'WHERE participant_id = %s '.
+               'AND date = ( '.
+                 'SELECT MAX( date ) '.
+                 'FROM consent '.
+                 'WHERE participant_id = %s '.
+                 'ORDER BY id DESC '.
+               ')',
+               $database_class_name::format_string( $this->id ),
                $database_class_name::format_string( $this->id ) ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
   }
@@ -178,9 +185,17 @@ class participant extends person
 
     // need custom SQL
     $consent_id = static::db()->get_one(
-      sprintf( 'SELECT consent_id '.
-               'FROM participant_last_written_consent '.
-               'WHERE participant_id = %s',
+      sprintf( 'SELECT id '.
+               'FROM consent '.
+               'WHERE participant_id = %s '.
+               'AND date = ( '.
+                 'SELECT MAX( date ) '.
+                 'FROM consent '.
+                 'WHERE participant_id = %s '.
+                 'AND written = 1 '.
+                 'ORDER BY id DESC '.
+               ')',
+               $database_class_name::format_string( $this->id ),
                $database_class_name::format_string( $this->id ) ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
   }
