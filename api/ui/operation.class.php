@@ -67,11 +67,33 @@ abstract class operation extends \cenozo\base_object
    */
   public function process()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    if( self::$debug ) $time['begin'] = $util_class_name::get_elapsed_time();
+
     $this->prepare();
+    if( self::$debug ) $time['prepare'] = $util_class_name::get_elapsed_time();
+
     $this->validate();
+    if( self::$debug ) $time['validate'] = $util_class_name::get_elapsed_time();
+    
     $this->setup();
+    if( self::$debug ) $time['setup'] = $util_class_name::get_elapsed_time();
+    
     $this->execute();
+    if( self::$debug ) $time['execute'] = $util_class_name::get_elapsed_time();
+    
     $this->finish();
+    if( self::$debug ) $time['finish'] = $util_class_name::get_elapsed_time();
+
+    if( self::$debug )
+    {
+      log::debug( sprintf( '(%s) %s times: (%s) => (%s)',
+                           strtoupper( $this->get_type() ),
+                           $this->get_full_name(),
+                           implode( ', ', array_keys( $time ) ),
+                           implode( ', ', array_values( $time ) ) ) );
+    }
   }
 
   /**
@@ -246,6 +268,14 @@ abstract class operation extends \cenozo\base_object
     $this->validate_access = $access;
   }
 
+  /**
+   * When set to true all operation processes will report elapsed times to the debug log
+   * @var boolean
+   * @static
+   * @access public
+   */
+  public static $debug = false;
+  
   /**
    * The operation's heading.
    * @var string
