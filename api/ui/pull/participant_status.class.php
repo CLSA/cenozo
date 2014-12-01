@@ -72,6 +72,38 @@ class participant_status extends \cenozo\ui\pull
     $service_list = $service_class_name::select( $service_mod );
 
     // now build the custom query
+    $modifier = lib::create( 'database\modifier' );
+    foreach( $service_list as $db_service )
+    {
+      $event = $db_service->name.'_event';
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'participant.id', '=', $event.'.participant_id', false );
+      $join_mod->where( $event.'.event_type_id', '=', $db_service->release_event_type_id );
+      $modifier->left_join( 'event AS '.$event, $join_mod );
+    }
+      
+    $modifier->left_join( 'collection_has_participant',
+      'participant.id', 'collection_has_participant.participant_id' );
+    $modifier->left_join( 'collection',
+      'collection_has_participant.collection_id', 'collection.id' );
+    $modifier->join( 'last_consent',
+      'participant.id', 'last_consent.participant_id' );
+    $modifier->left_join( 'consent AS lconsent',
+      'last_consent.consent_id', 'lconsent.id' );
+    $modifier->join( 'written_consent',
+      'participant.id', 'written_consent.participant_id' );
+    $modifier->left_join( 'consent AS wconsent',
+      'written_consent.consent_id', 'wconsent.id' );
+    $modifier->left_join( 'participant_primary_address',
+      'participant.id', 'participant_primary_address.participant_id' );
+    $modifier->left_join( 'address',
+      'participant_primary_address.address_id', 'address.id' );
+    $modifier->left_join( 'region', 'address.region_id', 'region.id' );
+    $modifier->left_join( 'state', 'participant.state_id', 'state.id' );
+    $modifier->where( 'IFNULL( collection.active, true )', '=', true );
+    $modifier->group( 'participant.id' );
+    $modifier->order( 'participant.uid' );
+
     $this->data = array();
     $sql =
       'SELECT uid, '.
@@ -93,35 +125,7 @@ class participant_status extends \cenozo\ui\pull
         'IFNULL( GROUP_CONCAT( collection.name ), "" ) AS collections '.
       'FROM participant ';
 
-    foreach( $service_list as $db_service )
-      $sql .= sprintf(
-        'LEFT JOIN event AS %s_event '.
-        'ON participant.id = %s_event.participant_id '.
-        'AND %s_event.event_type_id = %s ',
-        $db_service->name,
-        $db_service->name,
-        $db_service->name,
-        $database_class_name::format_string( $db_service->release_event_type_id ) );
-      
-    $sql .=
-      'LEFT JOIN collection_has_participant '.
-      'ON participant.id = collection_has_participant.participant_id '.
-      'LEFT JOIN collection '.
-      'ON collection_has_participant.collection_id = collection.id '.
-      'JOIN last_consent ON participant.id = last_consent.participant_id '.
-      'LEFT JOIN consent AS lconsent ON last_consent.consent_id = lconsent.id '.
-      'JOIN written_consent ON participant.id = written_consent.participant_id '.
-      'LEFT JOIN consent AS wconsent ON written_consent.consent_id = wconsent.id '.
-      'LEFT JOIN participant_primary_address '.
-      'ON participant.id = participant_primary_address.participant_id '.
-      'LEFT JOIN address ON participant_primary_address.address_id = address.id '.
-      'LEFT JOIN region ON address.region_id = region.id '.
-      'LEFT JOIN state ON participant.state_id = state.id '.
-      'WHERE IFNULL( collection.active, true ) = true '.
-      'GROUP BY participant.id '.
-      'ORDER BY participant.uid';
-
-    $this->data = $participant_class_name::db()->get_all( $sql );
+    $this->data = $participant_class_name::db()->get_all( $sql.$modifier->get_sql() );
   }
 
   /**

@@ -81,7 +81,9 @@ class participant_report extends \cenozo\ui\pull\base_report
         $column_name = $db_service->name.'_site_id';
         $site_id_list[$db_service->id] = $this->get_argument( $column_name );
         $column_name = $db_service->name.'_released';
-        $released_list[$db_service->id] = $this->get_argument( $column_name );
+        $released_list[$db_service->id] =
+          array( 'db_service' => $db_service,
+                 'released' => $this->get_argument( $column_name ) );
       }
     }
 
@@ -134,18 +136,15 @@ class participant_report extends \cenozo\ui\pull\base_report
       'ADD INDEX dk_participant_id ( participant_id )' );
 
     // define the sql tables, columns and modifier based on the report parameters
-    $this->sql_tables =
-      'FROM participant '.
-      'JOIN source ON participant.source_id = source.id '.
-      'JOIN cohort ON participant.cohort_id = cohort.id '.
-      'LEFT JOIN participant_primary_address '.
-      'ON participant.id = participant_primary_address.participant_id '.
-      'LEFT JOIN address ON participant_primary_address.address_id = address.id '.
-      'LEFT JOIN region ON address.region_id = region.id '.
-      'JOIN temp_last_consent AS participant_last_consent '.
-      'ON participant.id = participant_last_consent.participant_id '.
-      'JOIN temp_last_written_consent AS participant_last_written_consent '.
-      'ON participant.id = participant_last_written_consent.participant_id ';
+    $this->modifier->join( 'source', 'participant.source_id', 'source.id' );
+    $this->modifier->join( 'cohort', 'participant.cohort_id', 'cohort.id' );
+    $this->modifier->left_join( 'participant_primary_address', 'participant.id', 'participant_primary_address.participant_id' );
+    $this->modifier->left_join( 'address', 'participant_primary_address.address_id', 'address.id' );
+    $this->modifier->left_join( 'region', 'address.region_id', 'region.id' );
+    $this->modifier->join( 'temp_last_consent AS participant_last_consent',
+      'participant.id', 'participant_last_consent.participant_id' );
+    $this->modifier->join( 'temp_last_written_consent AS participant_last_written_consent',
+      'participant.id', 'participant_last_written_consent.participant_id' );
 
     $this->sql_columns =
       'SELECT participant.uid, '.
@@ -170,10 +169,9 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     if( '' !== $collection_id )
     {
+      $this->modifier->join( 'collection_has_participant',
+        'participant.id', 'collection_has_participant.participant_id' );
       $this->modifier->where( 'collection_has_participant.collection_id', '=', $collection_id );
-      $this->sql_tables .=
-        'JOIN collection_has_participant '.
-        'ON participant.id = collection_has_participant.participant_id ';
     }
     if( '' !== $source_id ) $this->modifier->where( 'participant.source_id', '=', $source_id );
     if( '' !== $cohort_id ) $this->modifier->where( 'participant.cohort_id', '=', $cohort_id );
@@ -184,72 +182,63 @@ class participant_report extends \cenozo\ui\pull\base_report
     {
       if( $db_service->get_site_count() && $site_include[$db_service->id] )
       {
-        $this->sql_tables .= sprintf(
-          'LEFT JOIN participant_site AS %s_ps '.
-          'ON participant.id = %s_ps.participant_id '.
-          'AND %s_ps.service_id = %d '.
-          'LEFT JOIN site AS %s_site ON %s_ps.site_id = %s_site.id ',
-          $db_service->name,
-          $db_service->name,
-          $db_service->name,
-          $db_service->id,
-          $db_service->name,
-          $db_service->name,
-          $db_service->name );
+        $site = sprintf( '%s_site', $db_service->name );
+        $participant_site = sprintf( '%s_ps', $db_service->name );
 
-        $this->sql_columns .= sprintf(
-          '%s_site.name AS %s_site_name, ',
-          $db_service->name,
-          $db_service->name );
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', $participant_site.'.participant_id', false );
+        $join_mod->where( $participant_site.'.service_id', '=', $db_service->id );
+        $this->modifier->left_join( 'participant_site AS '.$participant_site, $join_mod );
+        $this->modifier->left_join( 'site AS '.$site, $participant_site.'.site_id', $site.'.id' );
+
+        $this->sql_columns .= sprintf( '%s.name AS %s_name, ', $site, $site );
 
         // restrict, if necessary
         $site_id = $site_id_list[$db_service->id];
         if( '' !== $site_id )
         {
-          $service_name = $db_service->name;
           if( -1 == $site_id )
           {
-            $this->modifier->where( $service_name.'_ps.service_id', '=', $db_service->id );
-            $this->modifier->where( $service_name.'_ps.site_id', '=', NULL );
+            $this->modifier->where( $participant_site.'.service_id', '=', $db_service->id );
+            $this->modifier->where( $participant_site.'.site_id', '=', NULL );
           }
           else
           {
-            $this->modifier->where( $service_name.'_ps.service_id', '=', $db_service->id );
-            $this->modifier->where( $service_name.'_ps.site_id', '=', $site_id );
+            $this->modifier->where( $participant_site.'.service_id', '=', $db_service->id );
+            $this->modifier->where( $participant_site.'.site_id', '=', $site_id );
           }
         }
       }
     }
 
-    foreach( $released_list as $service_id => $released )
+    foreach( $released_list as $service_id => $data )
     {
+      $db_service = $data['db_service'];
+      $released = $data['released'];
+
       if( '' !== $released )
       {
-        $service_name = lib::create( 'database\service', $service_id )->name;
+        $service_has_participant = sprintf( '%s_shp', $db_service->name );
         if( $released )
         {
-          $this->modifier->where( $service_name.'_shp.datetime', '!=', NULL );
-          $this->sql_tables .= sprintf(
-            'JOIN service_has_participant AS %s_shp '.
-            'ON participant.id = %s_shp.participant_id '.
-            'AND %s_shp.service_id = %d ',
-            $service_name,
-            $service_name,
-            $service_name,
-            $service_id );
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', $service_has_participant.'.participant_id', false );
+          $join_mod->where( $service_has_participant.'.service_id', '=', $service_id );
+          $this->modifier->join( 'service_has_participant AS '.$service_has_participant, $join_mod );
+          $this->modifier->where( $service_has_participant.'.datetime', '!=', NULL );
         }
         else // not released means the participant may not be in the service_has_participant table
         {
+          $modifier = lib::create( 'database\modifier' );
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', $service_has_participant.'.participant_id', false );
+          $join_mod->where( $service_has_participant.'.service_id', '=', $service_id );
+          $modifier->join( 'service_has_participant AS '.$service_has_participant, $join_mod );
+          $modifier->where( 'datetime', '!=', NULL );
+
           $sql = sprintf(
-            'SELECT participant.id FROM participant '.
-            'JOIN service_has_participant AS %s_shp '.
-            'ON participant.id = %s_shp.participant_id '.
-            'AND %s_shp.service_id = %d '.
-            'WHERE datetime IS NOT NULL',
-            $service_name,
-            $service_name,
-            $service_name,
-            $service_id );
+            'SELECT participant.id FROM participant %s',
+            $sub_mod->get_sql() );
 
           $this->modifier->where( 'participant.id', 'NOT IN', sprintf( '( %s )', $sql ), false );
         }
@@ -265,7 +254,7 @@ class participant_report extends \cenozo\ui\pull\base_report
       $this->modifier->where( 'participant.age_group_id', '=', $age_group_id );
     else
     {
-      $this->sql_tables .= 'LEFT JOIN age_group ON participant.age_group_id = age_group.id ';
+      $this->modifier->left_join( 'age_group', 'participant.age_group_id', 'age_group.id' );
       $this->sql_columns .= 'CONCAT( age_group.lower, " to ", age_group.upper ) AS age_group, ';
     }
 
@@ -283,7 +272,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     }
     else
     {
-      $this->sql_tables .= 'LEFT JOIN state ON participant.state_id = state.id ';
+      $this->modifier->left_join( 'state', 'participant.state_id', 'state.id' );
       $this->sql_columns .= 'state.name AS `condition`, ';
     }
 
@@ -308,7 +297,7 @@ class participant_report extends \cenozo\ui\pull\base_report
         'participant_last_written_consent.accept', '=', $written_consent_accept );
     
     if( '' !== $event_type_id || '' !== $event_start_date || '' !== $event_end_date )
-      $this->sql_tables .= 'LEFT JOIN event ON participant.id = event.participant_id ';
+      $this->modifier->left_join( 'event', 'participant.id', 'event.participant_id' );
     if( '' !== $event_type_id )
       $this->modifier->where( 'event.event_type_id', '=', $event_type_id );
     if( '' !== $event_start_date )
@@ -349,9 +338,10 @@ class participant_report extends \cenozo\ui\pull\base_report
     // if we're not looking at phone count then add the phone column
     if( '' === $phone_count || 0 != $phone_count )
     {
-      $this->sql_tables .=
-        'LEFT JOIN phone ON participant.person_id = phone.person_id '.
-        'AND phone.rank = 1 ';
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'phone', 'participant.person_id', 'phone.person_id', false );
+      $join_mod->where( 'phone.rank', '=', 1 );
+      $this->modifier->left_join( 'phone', $join_mod );
       $this->sql_columns .= 'phone.number AS phone_number, ';
     }
     
@@ -370,7 +360,7 @@ class participant_report extends \cenozo\ui\pull\base_report
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
-    $sql = sprintf( '%s %s %s', $this->sql_columns, $this->sql_tables, $this->modifier->get_sql() );
+    $sql = sprintf( '%s FROM participant %s', $this->sql_columns, $this->modifier->get_sql() );
     $rows = $participant_class_name::db()->get_all( $sql );
 
     $header = array();
@@ -401,11 +391,4 @@ class participant_report extends \cenozo\ui\pull\base_report
    * @access protected
    */
   protected $sql_columns = '';
-
-  /**
-   * The tables portion of the custom sql used to generate this report
-   * @var string
-   * @access protected
-   */
-  protected $sql_tables = '';
 }
