@@ -287,7 +287,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return int
-   * @access protected
+   * @access public
    */
   public function determine_record_count( $modifier = NULL )
   {
@@ -314,7 +314,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return array( record )
-   * @access protected
+   * @access public
    */
   public function determine_record_list( $modifier = NULL )
   {
