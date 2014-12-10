@@ -75,6 +75,7 @@ class user_view extends base_view
     $util_class_name = lib::get_class_name( 'util' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $user_class_name = lib::get_class_name( 'database\user' );
+    $site_restricted_list_class_name = lib::get_class_name( 'ui\widget\site_restricted_list' );
 
     // set the view's items
     $this->set_item( 'name', $this->get_record()->name, true );
@@ -114,6 +115,11 @@ class user_view extends base_view
     try
     {
       $this->activity_list->process();
+      if( !$site_restricted_list_class_name::may_restrict() )
+      {
+        $this->activity_list->remove_column( 'site.name' );
+        $this->activity_list->execute();
+      }
       $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
@@ -176,7 +182,7 @@ class user_view extends base_view
     if( !$site_restricted_list_class_name::may_restrict() )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
+      $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
     }
 
     return $this->get_record()->get_activity_count( $modifier );
@@ -196,7 +202,7 @@ class user_view extends base_view
     if( !$site_restricted_list_class_name::may_restrict() )
     {
       if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
+      $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
     }
 
     return $this->get_record()->get_activity_list( $modifier );
