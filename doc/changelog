@@ -1,4 +1,19 @@
 ====================================================================================================
+1.1.0
+====================================================================================================
+
+* Adding join methods to modifiers
+  - all types of joins can now be defined by a modifier (straight, cross, left, right, etc)
+
+* Providing data access using string-based identifiers
+  - new business\data_manager class created to provide dynamic data based on string identifiers
+
+* Overhauling semaphore system
+  - new business\semaphore class created to exclusively handle semaphores
+  - class automatically counts the number of processes in a semaphore block
+  - new pull method for requesting the number of processes in a semaphore block
+
+====================================================================================================
 1.0.1
 ====================================================================================================
 

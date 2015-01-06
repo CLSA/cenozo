@@ -305,9 +305,7 @@ VALUES( "widget", "self", "menu", false, "The current user's main menu." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "password", false, "Dialog for changing the user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "settings", false, "The current user's settings manager." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "shortcuts", false, "The current user's shortcut icon set." );
+VALUES( "pull", "self", "semaphore_count", false, "Provides the total number of active and pending semaphores." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "self", "set_password", false, "Changes the user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -316,6 +314,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "self", "set_site", false, "Change the current user's active site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "self", "set_theme", false, "Change the current user's web interface theme." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "settings", false, "The current user's settings manager." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "shortcuts", false, "The current user's shortcut icon set." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "status", false, "The current user's status." );
 INSERT INTO operation( type, subject, name, restricted, description )

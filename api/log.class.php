@@ -255,10 +255,12 @@ final class log extends singleton
 
     if( is_string( $message ) )
     { // replace cenozo and application path strings with something smaller
+      /*
       $message = str_replace(
         array( CENOZO_PATH, APPLICATION_PATH ),
         array( 'cenozo', APPNAME ),
         $message );
+      */
     }
     else if( is_bool( $message ) )
     { // convert booleans to a string so that they display properly

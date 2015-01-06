@@ -677,6 +677,119 @@ class session extends \cenozo\singleton
   }
 
   /**
+   * Get the current semaphore count
+   * 
+   * This will return the total number of sessions holding or waiting for a semaphore across
+   * all processes.
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_semaphore_count()
+  {
+    // get a shared memory resource
+    if( is_null( $this->shared_memory ) )
+      $this->shared_memory = shm_attach( getmyinode(), SHARED_MEMORY_SIZE );
+    if( false === $this->shared_memory )
+    {
+      log::err( 'Unable to aquire shared memory' );
+      throw lib::create( 'exception\notice',
+        'The server is busy, please wait a few seconds then click the refresh button.',
+        __METHOD__ );
+    }
+
+    // get the semaphore count
+    $value = 0;
+    if( shm_has_var( $this->shared_memory, SHARED_MEMORY_SEMAPHORE_COUNT ) )
+    {
+      $value = shm_get_var( $this->shared_memory, SHARED_MEMORY_SEMAPHORE_COUNT );
+      if( false === $value )
+      {
+        log::err( "Failed to retreive shared memory for \"semaphore count\"" );
+        throw lib::create( 'exception\notice',
+          'The server is busy, please wait a few seconds then click the refresh button.',
+          __METHOD__ );
+      }
+    }
+
+    return $value;
+  }
+
+  /**
+   * Acquire a semaphore
+   * 
+   * This will block other semaphores with the same key from proceeding until it is released by
+   * using the release_semaphore() method.
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @access public
+   */
+  public function acquire_semaphore()
+  {
+    // we need to complete any transactions before continuing
+    if( $this->use_transaction() ) $this->get_database()->complete_transaction();
+
+    /*
+    // increment the semaphore count
+    if( false === shm_put_var( $this->shared_memory,
+                               SHARED_MEMORY_SEMAPHORE_COUNT,
+                               $this->get_semaphore_count() + 1 ) )
+    {
+      log::err( "Failed to increment \"semaphore count\" in shared memory" );
+      throw lib::create( 'exception\notice',
+        'The server is busy, please wait a few seconds then click the refresh button.',
+        __METHOD__ );
+    }
+    */
+
+    // get a semaphore resource
+    if( is_null( $this->semaphore ) ) $this->semaphore = sem_get( getmyinode() );
+    if( false === $this->semaphore || false === sem_acquire( $this->semaphore ) )
+    {
+      log::err( 'Unable to aquire semaphore' );
+      throw lib::create( 'exception\notice',
+        'The server is busy, please wait a few seconds then click the refresh button.',
+        __METHOD__ );
+    }
+    else $this->semaphore_request_count++;
+  }
+
+  /**
+   * Release an earlier acquired semaphore
+   * 
+   * Once a semaphore is released the next process which acquired a semaphore will be allowed
+   * to proceed.
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @access public
+   */
+  public function release_semaphore()
+  {
+    if( is_null( $this->semaphore ) )
+    {
+      throw lib::create( 'exception\runtime',
+        'Tried to release semaphore which doesn\'t exist',
+        __METHOD__ );
+    }
+
+    // decrement the semaphore count and, if the count is now zero, release it
+    $this->semaphore_request_count--;
+
+    if( 0 == $this->semaphore_request_count )
+    {
+      /*
+      // decrement the semaphore count
+      if( !shm_put_var( $this->shared_memory,
+                        SHARED_MEMORY_SEMAPHORE_COUNT,
+                        $this->get_semaphore_count() - 1 ) )
+        log::err( "Failed to decrement \"semaphore count\" in shared memory" );
+      */
+
+      // release the semaphore
+      if( !sem_release( $this->semaphore ) ) log::err( 'Unable to release semaphore' );
+      $this->semaphore = NULL;
+    }
+  }
+
+  /**
    * Returns whether to use a database transaction.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -795,4 +908,37 @@ class session extends \cenozo\singleton
    * @access private
    */
   private $transaction = false;
+
+  /**
+   * A shared memory resource used privately but this class
+   * @var resource
+   * @access private
+   */
+  private $shared_memory = NULL;
+
+  /**
+   * The amount of memory reserved by the shared memory resource
+   * @const int
+   */
+  const SHARED_MEMORY_SIZE = 512;
+
+  /**
+   * The index of the semaphore count variable in shared memory
+   * @const int
+   */
+  const SHARED_MEMORY_SEMAPHORE_COUNT = 1;
+
+  /**
+   * A semaphore used to block processing by other threads
+   * @var resource
+   * @access private
+   */
+  private $semaphore = NULL;
+
+  /**
+   * A count of how many times a semaphore has been requested by this process only
+   * @var int
+   * @access private
+   */
+  private $semaphore_request_count = 0;
 }
