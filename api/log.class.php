@@ -258,7 +258,7 @@ final class log extends singleton
       /*
       $message = str_replace(
         array( CENOZO_PATH, APPLICATION_PATH ),
-        array( 'cenozo', APPNAME ),
+        array( 'cenozo', APPLICATION ),
         $message );
       */
     }

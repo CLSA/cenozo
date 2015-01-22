@@ -140,12 +140,11 @@ class database extends \cenozo\base_object
    */
   public function start_transaction()
   {
-    $service_name = lib::create( 'business\session' )->get_service()->name;
     $setting_manager = lib::create( 'business\setting_manager' );
 
     // only start a transaction for the main database (this is an ADOdb limitation)
     $database = sprintf(
-      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), $service_name );
+      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE );
     if( $database == $this->name )
     {
       if( self::$debug ) log::debug( '(DB) starting transaction' );
@@ -161,12 +160,11 @@ class database extends \cenozo\base_object
    */
   public function complete_transaction()
   {
-    $service_name = lib::create( 'business\session' )->get_service()->name;
     $setting_manager = lib::create( 'business\setting_manager' );
 
     // only complete a transaction for the main database (this is an ADOdb limitation)
     $database = sprintf(
-      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), $service_name );
+      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE );
     $class_name = lib::get_class_name( 'business\setting_manager' );
     if( class_exists( 'cenozo\business\setting_manager' ) &&
         $class_name::exists() &&

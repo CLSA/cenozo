@@ -49,40 +49,4 @@ class note_new extends \cenozo\ui\push
 
     $db_record->add_note( lib::create( 'business\session' )->get_user(), $note );
   }
-
-  /**
-   * Override parent method to handle the note category
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args An argument list, usually those passed to the push operation.
-   * @return array
-   * @access protected
-   */
-  protected function convert_to_noid( $args )
-  {
-    $foreign_key = sprintf( '%s_id', $args['category'] );
-    $args[$foreign_key] = $args['category_id'];
-    unset( $args['category_id'] );
-    return parent::convert_to_noid( $args );
-  }
-
-  /**
-   * Override parent method to handle the note category
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args An argument list, usually those passed to the push operation.
-   * @return array
-   * @access protected
-   */
-  protected function convert_from_noid( $args )
-  {
-    $args = parent::convert_from_noid( $args );
-    if( $this->get_machine_request_received() )
-    {
-      $foreign_key = sprintf( '%s_id', $args['category'] );
-      if( !array_key_exists( $foreign_key, $args ) )
-        throw lib::create( 'exception\argument', 'args['.$foreign_key.']', NULL, __METHOD__ );
-      $args['category_id'] = $args[$foreign_key];
-      unset( $args[$foreign_key] );
-    }
-    return $args;
-  }
 }

@@ -23,7 +23,7 @@ $code = substr( $result_array['error_type'], 0, 1 ).'.'.$result_array['error_cod
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-  <title><?php echo ucwords( SERVICENAME ); ?></title>
+  <title><?php echo ucwords( INSTANCE ); ?></title>
   <link rel="shortcut icon" href="img/favicon.ico" />
   <link href="<?php echo CSS_URL; ?>/main.css" rel="stylesheet" />
   <style type="text/css">
