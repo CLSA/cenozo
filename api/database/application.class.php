@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment.class.php
+ * application.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,18 +10,18 @@ namespace cenozo\database;
 use cenozo\lib, cenozo\log;
 
 /**
- * appointment: record
+ * application: record
  */
-class appointment extends record
+class application extends record
 {
   /**
-   * Extend parent method by restricting selection to records belonging to this appointment only
+   * Extend parent method by restricting selection to records belonging to this application only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @param boolean $id_only Whether to return a list of primary ids instead of active records
-   * @param boolean $full If true then records will not be restricted by appointment
+   * @param boolean $full If true then records will not be restricted by application
    * @access public
    * @static
    */
@@ -30,16 +30,16 @@ class appointment extends record
   {
     if( !$full )
     {
-      // make sure to only include appointments belonging to this application
+      // make sure to only include applications belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'id', '=', lib::create( 'business\session' )->get_appointment()->id );
+      $modifier->where( 'id', '=', lib::create( 'business\session' )->get_application()->id );
     }
 
     return parent::select( $modifier, $count, $distinct, $id_only );
   } 
     
   /** 
-   * Call parent method without restricting records by appointment.
+   * Call parent method without restricting records by application.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
@@ -49,20 +49,20 @@ class appointment extends record
    */
   public static function get_unique_record( $column, $value, $full = false )
   {
-    $db_appointment = parent::get_unique_record( $column, $value );
+    $db_application = parent::get_unique_record( $column, $value );
 
     if( !$full )
     {
-      if( !is_null( $db_appointment ) &&
-          $db_appointment->id != lib::create( 'business\session' )->get_appointment()->id )
-        $db_appointment = NULL;
+      if( !is_null( $db_application ) &&
+          $db_application->id != lib::create( 'business\session' )->get_application()->id )
+        $db_application = NULL;
     }
 
-    return $db_appointment;
+    return $db_application;
   }
 
   /**
-   * Make sure to only include cohorts which this appointment has access to.
+   * Make sure to only include cohorts which this application has access to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param database\modifier $modifier Modifications to the list.
@@ -84,15 +84,15 @@ class appointment extends record
     if( 'cohort' == $record_type )
     {
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'appointment_has_cohort.appointment_id', '=',
-                        lib::create( 'business\session' )->get_appointment()->id );
+      $modifier->where( 'application_has_cohort.application_id', '=',
+                        lib::create( 'business\session' )->get_application()->id );
     }
     return parent::get_record_list(
       $record_type, $modifier, $inverted, $count, $distinct, $id_only );
   }
 
   /**
-   * Adds one or more cohorts so a appointment.
+   * Adds one or more cohorts so a application.
    * This method effectively overrides the parent add_records() method so that grouping can also
    * be included.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -104,7 +104,7 @@ class appointment extends record
   {
     parent::add_cohort( $cohort_ids );
 
-    // do nothing if the appointment has no primary key
+    // do nothing if the application has no primary key
     if( is_null( $this->id ) ) return;
 
     $database_class_name = lib::get_class_name( 'database\database' );
@@ -113,9 +113,9 @@ class appointment extends record
     if( !is_array( $cohort_ids ) ) $cohort_ids = array( $cohort_ids );
 
     static::db()->execute( sprintf(
-      'UPDATE appointment_has_cohort '.
+      'UPDATE application_has_cohort '.
       'SET grouping = %s '.
-      'WHERE appointment_id = %s '.
+      'WHERE application_id = %s '.
       'AND cohort_id IN ( %s )',
       $database_class_name::format_string( $grouping ),
       $database_class_name::format_string( $this->id ),
@@ -123,7 +123,7 @@ class appointment extends record
   }
 
   /**
-   * Returns the url for this appointment as defined in the local settings file
+   * Returns the url for this application as defined in the local settings file
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
@@ -134,7 +134,7 @@ class appointment extends record
     $constant_name = sprintf( '%s_URL', strtoupper( $this->name ) );
     if( !defined( $constant_name ) )
       throw lib::create( 'exception\runtime', sprintf(
-        'Tried to get url for appointment "%s" but setting ["url"]["%s"] is missing.',
+        'Tried to get url for application "%s" but setting ["url"]["%s"] is missing.',
         $this->name,
         strtoupper( $this->name ) ) );
 
@@ -142,7 +142,7 @@ class appointment extends record
   }
 
   /**
-   * Returns the type of grouping that this appointment has for a particular cohort.
+   * Returns the type of grouping that this application has for a particular cohort.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\cohort $db_cohort
@@ -153,18 +153,18 @@ class appointment extends record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get cohort gropuing for appointment with no id.' );
+      log::warning( 'Tried to get cohort gropuing for application with no id.' );
       return '';
     }
 
     return static::db()->get_one( sprintf(
-      'SELECT grouping FROM appointment_has_cohort WHERE appointment_id = %s AND cohort_id = %s',
+      'SELECT grouping FROM application_has_cohort WHERE application_id = %s AND cohort_id = %s',
       $this->id,
       $db_cohort->id ) );
   }
 
   /**
-   * Returns an array of all grouping types used by this appointment
+   * Returns an array of all grouping types used by this application
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @access public
@@ -174,14 +174,14 @@ class appointment extends record
     $database_class_name = lib::get_class_name( 'database\database' );
 
     return static::db()->get_row( sprintf(
-      'SELECT DISTINCT grouping FROM appointment_has_cohort WHERE appointment_id = %s',
+      'SELECT DISTINCT grouping FROM application_has_cohort WHERE application_id = %s',
       $database_class_name::format_string( $this->id ) ) );
   }
 
   /**
-   * Returns an array of all grouping types (from the appointment_has_cohort.grouping column).
+   * Returns an array of all grouping types (from the application_has_cohort.grouping column).
    * 
-   * This method is needed since there is no appointment_has_cohort active record class to call
+   * This method is needed since there is no application_has_cohort active record class to call
    * get_enum_values() on.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name A column name in the record's corresponding table.
@@ -191,7 +191,7 @@ class appointment extends record
    */
   public static function get_grouping_types()
   {
-    $type = static::db()->get_column_type( 'appointment_has_cohort', 'grouping' );
+    $type = static::db()->get_column_type( 'application_has_cohort', 'grouping' );
     preg_match_all( "/'[^']+'/", $type, $matches );
     $values = array();
     foreach( current( $matches ) as $match ) $values[] = substr( $match, 1, -1 );
@@ -200,9 +200,9 @@ class appointment extends record
   }
 
   /**
-   * Returns the event-type associated with the releasing of participants to this appointment
+   * Returns the event-type associated with the releasing of participants to this application
    * 
-   * Note that only appointments which are release-based will have an event-type associated with it.
+   * Note that only applications which are release-based will have an event-type associated with it.
    * If no event-type exists this method will return NULL.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\event_type
@@ -212,7 +212,7 @@ class appointment extends record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get release event_type for appointment with no id.' );
+      log::warning( 'Tried to get release event_type for application with no id.' );
       return '';
     }
 
