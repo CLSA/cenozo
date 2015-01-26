@@ -39,7 +39,7 @@ class participant_status extends \cenozo\ui\pull
 
     $database_class_name = lib::get_class_name( 'database\database' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
-    $service_class_name = lib::get_class_name( 'database\service' );
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
     $timezone = lib::create( 'business\session' )->get_site()->timezone;
 
     // first create temporary tables with the consent information
@@ -65,20 +65,20 @@ class participant_status extends \cenozo\ui\pull
       'ADD INDEX consent ( consent_id ASC )';
     $participant_class_name::db()->execute( $sql );
 
-    // get a list of all release-based services
-    $service_mod = lib::create( 'database\modifier' );
-    $service_mod->where( 'release_based', '=', true );
-    $service_mod->order( 'name' );
-    $service_list = $service_class_name::select( $service_mod );
+    // get a list of all release-based appointments
+    $appointment_mod = lib::create( 'database\modifier' );
+    $appointment_mod->where( 'release_based', '=', true );
+    $appointment_mod->order( 'name' );
+    $appointment_list = $appointment_class_name::select( $appointment_mod );
 
     // now build the custom query
     $modifier = lib::create( 'database\modifier' );
-    foreach( $service_list as $db_service )
+    foreach( $appointment_list as $db_appointment )
     {
-      $event = $db_service->name.'_event';
+      $event = $db_appointment->name.'_event';
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'participant.id', '=', $event.'.participant_id', false );
-      $join_mod->where( $event.'.event_type_id', '=', $db_service->release_event_type_id );
+      $join_mod->where( $event.'.event_type_id', '=', $db_appointment->release_event_type_id );
       $modifier->left_join( 'event AS '.$event, $join_mod );
     }
       
@@ -110,12 +110,12 @@ class participant_status extends \cenozo\ui\pull
         'IFNULL( region.name, "None" ) AS region, '.
         'IFNULL( state.name, "" ) AS state, ';
 
-    foreach( $service_list as $db_service )
+    foreach( $appointment_list as $db_appointment )
       $sql .= sprintf(
         'IFNULL( DATE( CONVERT_TZ( %s_event.datetime, %s, "UTC" ) ), "" ) AS %s_release, ',
-        $db_service->name,
+        $db_appointment->name,
         $database_class_name::format_string( $timezone ),
-        $db_service->name );
+        $db_appointment->name );
 
     $sql .=
         'IFNULL( lconsent.accept, "" ) AS last_consent, '.

@@ -11,6 +11,6 @@
 
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
-  {{ include_list( 'service', service_list|default(false), true ) }}
+  {{ include_list( 'appointment', appointment_list|default(false), true ) }}
 
 {% endblock record %}

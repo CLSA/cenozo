@@ -1,0 +1,2 @@
+Change 'service_name' in settings.local.ini.php to 'instance_name'
+Change '/app/service.class.php' to '/app/application.class.php' in cron.hourly

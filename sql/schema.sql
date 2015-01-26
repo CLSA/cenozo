@@ -113,40 +113,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `cenozo`.`service`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`service` ;
-
-CREATE TABLE IF NOT EXISTS `cenozo`.`service` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `update_timestamp` TIMESTAMP NOT NULL,
-  `create_timestamp` TIMESTAMP NOT NULL,
-  `name` VARCHAR(45) NOT NULL,
-  `title` VARCHAR(45) NOT NULL,
-  `version` VARCHAR(45) NOT NULL,
-  `cenozo` VARCHAR(45) NOT NULL,
-  `release_based` TINYINT(1) NOT NULL DEFAULT 1,
-  `release_event_type_id` INT UNSIGNED NOT NULL,
-  `language_id` INT UNSIGNED NOT NULL COMMENT 'The default language for the service.',
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `uq_name` (`name` ASC),
-  INDEX `fk_release_event_type_id` (`release_event_type_id` ASC),
-  INDEX `fk_language_id` (`language_id` ASC),
-  CONSTRAINT `fk_service_release_event_type_id`
-    FOREIGN KEY (`release_event_type_id`)
-    REFERENCES `cenozo`.`event_type` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_service_language_id`
-    FOREIGN KEY (`language_id`)
-    REFERENCES `cenozo`.`language` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
 -- Table `cenozo`.`site`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`site` ;
@@ -156,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`site` (
   `update_timestamp` TIMESTAMP NOT NULL,
   `create_timestamp` TIMESTAMP NOT NULL,
   `name` VARCHAR(45) NOT NULL,
-  `service_id` INT UNSIGNED NOT NULL,
+  `application_id` INT UNSIGNED NOT NULL,
   `timezone` ENUM('Canada/Pacific','Canada/Mountain','Canada/Central','Canada/Eastern','Canada/Atlantic','Canada/Newfoundland') NOT NULL,
   `title` VARCHAR(45) NULL,
   `phone_number` VARCHAR(45) NULL,
@@ -166,12 +132,12 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`site` (
   `region_id` INT UNSIGNED NULL,
   `postcode` VARCHAR(10) NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uq_name_service_id` (`name` ASC, `service_id` ASC),
-  INDEX `fk_service_id` (`service_id` ASC),
+  UNIQUE INDEX `uq_name_application_id` (`name` ASC, `application_id` ASC),
+  INDEX `fk_application_id` (`application_id` ASC),
   INDEX `fk_region_id` (`region_id` ASC),
-  CONSTRAINT `fk_site_service_id`
-    FOREIGN KEY (`service_id`)
-    REFERENCES `cenozo`.`service` (`id`)
+  CONSTRAINT `fk_site_application_id`
+    FOREIGN KEY (`application_id`)
+    REFERENCES `cenozo`.`application` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_site_region_id`
@@ -377,7 +343,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant` (
   `cohort_id` INT UNSIGNED NOT NULL,
   `grouping` VARCHAR(45) NULL DEFAULT NULL,
   `first_name` VARCHAR(45) NOT NULL,
-  `other_name` VARCHAR(100) NOT NULL DEFAULT '',
+  `other_name` VARCHAR(100) NULL DEFAULT NULL,
   `last_name` VARCHAR(45) NOT NULL,
   `gender` ENUM('male','female') NOT NULL,
   `date_of_birth` DATE NULL DEFAULT NULL,
@@ -539,23 +505,23 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`jurisdiction` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `update_timestamp` TIMESTAMP NOT NULL,
   `create_timestamp` TIMESTAMP NOT NULL,
-  `service_id` INT UNSIGNED NOT NULL,
+  `application_id` INT UNSIGNED NOT NULL,
   `postcode` VARCHAR(7) NOT NULL,
   `site_id` INT UNSIGNED NOT NULL,
   `longitude` FLOAT NOT NULL,
   `latitude` FLOAT NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uq_service_id_postcode` (`service_id` ASC, `postcode` ASC),
+  UNIQUE INDEX `uq_application_id_postcode` (`application_id` ASC, `postcode` ASC),
   INDEX `fk_site_id` (`site_id` ASC),
-  INDEX `fk_service_id` (`service_id` ASC),
+  INDEX `fk_application_id` (`application_id` ASC),
   CONSTRAINT `fk_jurisdiction_site_id`
     FOREIGN KEY (`site_id`)
     REFERENCES `cenozo`.`site` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_jurisdiction_service_id`
-    FOREIGN KEY (`service_id`)
-    REFERENCES `cenozo`.`service` (`id`)
+  CONSTRAINT `fk_jurisdiction_application_id`
+    FOREIGN KEY (`application_id`)
+    REFERENCES `cenozo`.`application` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -667,41 +633,6 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
--- Table `cenozo`.`service_has_participant`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`service_has_participant` ;
-
-CREATE TABLE IF NOT EXISTS `cenozo`.`service_has_participant` (
-  `service_id` INT UNSIGNED NOT NULL,
-  `participant_id` INT UNSIGNED NOT NULL,
-  `update_timestamp` TIMESTAMP NOT NULL,
-  `create_timestamp` TIMESTAMP NOT NULL,
-  `preferred_site_id` INT UNSIGNED NULL DEFAULT NULL,
-  `datetime` DATETIME NULL DEFAULT NULL,
-  PRIMARY KEY (`service_id`, `participant_id`),
-  INDEX `fk_participant_id` (`participant_id` ASC),
-  INDEX `fk_service_id` (`service_id` ASC),
-  INDEX `fk_preferred_site_id` (`preferred_site_id` ASC),
-  CONSTRAINT `fk_service_has_participant_service_id`
-    FOREIGN KEY (`service_id`)
-    REFERENCES `cenozo`.`service` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_service_has_participant_participant_id`
-    FOREIGN KEY (`participant_id`)
-    REFERENCES `cenozo`.`participant` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_service_has_participant_preferred_site_id`
-    FOREIGN KEY (`preferred_site_id`)
-    REFERENCES `cenozo`.`site` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
 -- Table `cenozo`.`event`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`event` ;
@@ -748,86 +679,6 @@ DEFAULT CHARACTER SET = latin1;
 
 
 -- -----------------------------------------------------
--- Table `cenozo`.`service_has_cohort`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`service_has_cohort` ;
-
-CREATE TABLE IF NOT EXISTS `cenozo`.`service_has_cohort` (
-  `service_id` INT UNSIGNED NOT NULL,
-  `cohort_id` INT UNSIGNED NOT NULL,
-  `update_timestamp` TIMESTAMP NOT NULL,
-  `create_timestamp` TIMESTAMP NOT NULL,
-  `grouping` ENUM('region','jurisdiction') NOT NULL DEFAULT 'region',
-  PRIMARY KEY (`service_id`, `cohort_id`),
-  INDEX `fk_cohort_id` (`cohort_id` ASC),
-  INDEX `fk_service_id` (`service_id` ASC),
-  CONSTRAINT `fk_service_has_cohort_service_id`
-    FOREIGN KEY (`service_id`)
-    REFERENCES `cenozo`.`service` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_service_has_cohort_cohort_id`
-    FOREIGN KEY (`cohort_id`)
-    REFERENCES `cenozo`.`cohort` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`service_has_role`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`service_has_role` ;
-
-CREATE TABLE IF NOT EXISTS `cenozo`.`service_has_role` (
-  `service_id` INT UNSIGNED NOT NULL,
-  `role_id` INT UNSIGNED NOT NULL,
-  `update_timestamp` TIMESTAMP NOT NULL,
-  `create_timestamp` TIMESTAMP NOT NULL,
-  PRIMARY KEY (`service_id`, `role_id`),
-  INDEX `fk_role_id` (`role_id` ASC),
-  INDEX `fk_service_id` (`service_id` ASC),
-  CONSTRAINT `fk_service_has_role_service_id`
-    FOREIGN KEY (`service_id`)
-    REFERENCES `cenozo`.`service` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_service_has_role_role_id`
-    FOREIGN KEY (`role_id`)
-    REFERENCES `cenozo`.`role` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = latin1;
-
-
--- -----------------------------------------------------
--- Table `cenozo`.`user_has_service`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `cenozo`.`user_has_service` ;
-
-CREATE TABLE IF NOT EXISTS `cenozo`.`user_has_service` (
-  `user_id` INT UNSIGNED NOT NULL,
-  `service_id` INT UNSIGNED NOT NULL,
-  `theme` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`user_id`, `service_id`),
-  INDEX `fk_service_id` (`service_id` ASC),
-  INDEX `fk_user_id` (`user_id` ASC),
-  CONSTRAINT `fk_user_has_service_user_id`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `cenozo`.`user` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_has_service_service_id`
-    FOREIGN KEY (`service_id`)
-    REFERENCES `cenozo`.`service` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `cenozo`.`hin`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `cenozo`.`hin` ;
@@ -867,19 +718,19 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`region_site` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `update_timestamp` TIMESTAMP NOT NULL,
   `create_timestamp` TIMESTAMP NOT NULL COMMENT 'Used to determine a participant\'s default site.',
-  `service_id` INT UNSIGNED NOT NULL,
+  `application_id` INT UNSIGNED NOT NULL,
   `region_id` INT UNSIGNED NOT NULL,
   `language_id` INT UNSIGNED NOT NULL,
   `site_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `fk_service_id` (`service_id` ASC),
+  INDEX `fk_application_id` (`application_id` ASC),
   INDEX `fk_region_id` (`region_id` ASC),
   INDEX `fk_site_id` (`site_id` ASC),
-  UNIQUE INDEX `uq_service_id_region_id_language_id` (`service_id` ASC, `region_id` ASC, `language_id` ASC),
+  UNIQUE INDEX `uq_application_id_region_id_language_id` (`application_id` ASC, `region_id` ASC, `language_id` ASC),
   INDEX `fk_language_id` (`language_id` ASC),
-  CONSTRAINT `fk_region_site_service_id`
-    FOREIGN KEY (`service_id`)
-    REFERENCES `cenozo`.`service` (`id`)
+  CONSTRAINT `fk_region_site_application_id`
+    FOREIGN KEY (`application_id`)
+    REFERENCES `cenozo`.`application` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_region_site_region_id`
@@ -1057,7 +908,7 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_written_consent` (`partici
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_site`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`participant_site` (`service_id` INT, `participant_id` INT, `site_id` INT);
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_site` (`application_id` INT, `participant_id` INT, `site_id` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`alternate_first_address`
@@ -1067,12 +918,12 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`alternate_first_address` (`alternate_id` IN
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_default_site`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`participant_default_site` (`service_id` INT, `participant_id` INT, `site_id` INT);
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_default_site` (`application_id` INT, `participant_id` INT, `site_id` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`participant_preferred_site`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cenozo`.`participant_preferred_site` (`service_id` INT, `participant_id` INT, `site_id` INT);
+CREATE TABLE IF NOT EXISTS `cenozo`.`participant_preferred_site` (`application_id` INT, `participant_id` INT, `site_id` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `cenozo`.`person_first_address`
@@ -1155,31 +1006,31 @@ DROP VIEW IF EXISTS `cenozo`.`participant_site` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_site`;
 USE `cenozo`;
 CREATE OR REPLACE VIEW `cenozo`.`participant_site` AS
-SELECT service.id AS service_id,
+SELECT application.id AS application_id,
        participant.id AS participant_id,
        IF(
-         ISNULL( service_has_participant.preferred_site_id ),
+         ISNULL( application_has_participant.preferred_site_id ),
          IF(
-           service_has_cohort.grouping = 'jurisdiction',
+           application_has_cohort.grouping = 'jurisdiction',
            jurisdiction.site_id,
            region_site.site_id
          ),
-         service_has_participant.preferred_site_id
+         application_has_participant.preferred_site_id
        ) AS site_id
-FROM service
+FROM application
 CROSS JOIN participant
-JOIN service_has_cohort ON service.id = service_has_cohort.service_id
-AND service_has_cohort.cohort_id = participant.cohort_id
+JOIN application_has_cohort ON application.id = application_has_cohort.application_id
+AND application_has_cohort.cohort_id = participant.cohort_id
 LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
 LEFT JOIN address ON participant_primary_address.address_id = address.id
 LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
-AND service.id = jurisdiction.service_id
+AND application.id = jurisdiction.application_id
 LEFT JOIN region ON address.region_id = region.id
 LEFT JOIN region_site ON region.id = region_site.region_id
-AND service.id = region_site.service_id
-AND IFNULL( participant.language_id, service.language_id ) = region_site.language_id
-LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
-AND service_has_participant.participant_id = participant.id;
+AND application.id = region_site.application_id
+AND IFNULL( participant.language_id, application.language_id ) = region_site.language_id
+LEFT JOIN application_has_participant ON application.id = application_has_participant.application_id
+AND application_has_participant.participant_id = participant.id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`alternate_first_address`
@@ -1199,25 +1050,25 @@ DROP VIEW IF EXISTS `cenozo`.`participant_default_site` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_default_site`;
 USE `cenozo`;
 CREATE OR REPLACE VIEW `cenozo`.`participant_default_site` AS
-SELECT service.id AS service_id,
+SELECT application.id AS application_id,
        participant.id AS participant_id,
        IF(
-         service_has_cohort.grouping = 'jurisdiction',
+         application_has_cohort.grouping = 'jurisdiction',
          jurisdiction.site_id,
          region_site.site_id
        ) AS site_id
-FROM service
+FROM application
 CROSS JOIN participant
-JOIN service_has_cohort ON service.id = service_has_cohort.service_id
-AND service_has_cohort.cohort_id = participant.cohort_id
+JOIN application_has_cohort ON application.id = application_has_cohort.application_id
+AND application_has_cohort.cohort_id = participant.cohort_id
 LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
 LEFT JOIN address ON participant_primary_address.address_id = address.id
 LEFT JOIN jurisdiction ON address.postcode = jurisdiction.postcode
-AND service.id = jurisdiction.service_id
+AND application.id = jurisdiction.application_id
 LEFT JOIN region ON address.region_id = region.id
 LEFT JOIN region_site ON region.id = region_site.region_id
-AND IFNULL( participant.language_id, service.language_id ) = region_site.language_id
-AND service.id = region_site.service_id;
+AND IFNULL( participant.language_id, application.language_id ) = region_site.language_id
+AND application.id = region_site.application_id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`participant_preferred_site`
@@ -1226,15 +1077,15 @@ DROP VIEW IF EXISTS `cenozo`.`participant_preferred_site` ;
 DROP TABLE IF EXISTS `cenozo`.`participant_preferred_site`;
 USE `cenozo`;
 CREATE OR REPLACE VIEW `cenozo`.`participant_preferred_site` AS
-SELECT service.id AS service_id,
+SELECT application.id AS application_id,
        participant.id AS participant_id,
-       service_has_participant.preferred_site_id site_id
-FROM service
+       application_has_participant.preferred_site_id site_id
+FROM application
 CROSS JOIN participant
-JOIN service_has_cohort ON service.id = service_has_cohort.service_id
-AND service_has_cohort.cohort_id = participant.cohort_id
-LEFT JOIN service_has_participant ON service.id = service_has_participant.service_id
-AND service_has_participant.participant_id = participant.id;
+JOIN application_has_cohort ON application.id = application_has_cohort.application_id
+AND application_has_cohort.cohort_id = participant.cohort_id
+LEFT JOIN application_has_participant ON application.id = application_has_participant.application_id
+AND application_has_participant.participant_id = participant.id;
 
 -- -----------------------------------------------------
 -- View `cenozo`.`person_first_address`

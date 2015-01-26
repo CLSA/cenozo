@@ -42,10 +42,10 @@ class cohort_view extends base_view
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'participants', 'constant', 'Participants' );
 
-    // create the service sub-list widget
-    $this->service_list = lib::create( 'ui\widget\service_list', $this->arguments );
-    $this->service_list->set_parent( $this );
-    $this->service_list->set_heading( 'Services With Access To This Cohort' );
+    // create the appointment sub-list widget
+    $this->appointment_list = lib::create( 'ui\widget\appointment_list', $this->arguments );
+    $this->appointment_list->set_parent( $this );
+    $this->appointment_list->set_heading( 'Applications With Access To This Cohort' );
   }
 
   /**
@@ -66,8 +66,8 @@ class cohort_view extends base_view
 
     try
     {
-      $this->service_list->process();
-      $this->set_variable( 'service_list', $this->service_list->get_variables() );
+      $this->appointment_list->process();
+      $this->set_variable( 'appointment_list', $this->appointment_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
           
@@ -75,8 +75,8 @@ class cohort_view extends base_view
 
   /**
    * The cohort list widget.
-   * @var service_list
+   * @var appointment_list
    * @access protected
    */
-  protected $service_list = NULL;
+  protected $appointment_list = NULL;
 }

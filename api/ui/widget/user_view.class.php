@@ -141,7 +141,7 @@ class user_view extends base_view
     $site_restricted_list_class_name = lib::get_class_name( 'ui\widget\site_restricted_list' );
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
-    $modifier->where( 'site.service_id', '=', $session->get_service()->id );
+    $modifier->where( 'site.appointment_id', '=', $session->get_appointment()->id );
     if( !$site_restricted_list_class_name::may_restrict() )
       $modifier->where( 'access.site_id', '=', $session->get_site()->id );
     return $access_class_name::count( $modifier );
@@ -163,7 +163,7 @@ class user_view extends base_view
     $site_restricted_list_class_name = lib::get_class_name( 'ui\widget\site_restricted_list' );
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'user_id', '=', $this->get_record()->id );
-    $modifier->where( 'site.service_id', '=', $session->get_service()->id );
+    $modifier->where( 'site.appointment_id', '=', $session->get_appointment()->id );
     if( !$site_restricted_list_class_name::may_restrict() )
       $modifier->where( 'access.site_id', '=', $session->get_site()->id );
     return $access_class_name::select( $modifier );

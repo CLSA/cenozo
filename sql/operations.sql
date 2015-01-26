@@ -325,39 +325,39 @@ VALUES( "push", "self", "temporary_file", false, "Upload a temporary file to the
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "timezone_calculator", false, "A timezone calculator widget." );
 
--- service
+-- application
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "service", "add", true, "View a form for creating a new service." );
+VALUES( "widget", "application", "add", true, "View a form for creating a new application." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "service", "add_cohort", true, "A form to add a cohort to a service." );
+VALUES( "widget", "application", "add_cohort", true, "A form to add a cohort to a application." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "service", "add_jurisdiction", true, "A form to create a new association between postcode and site for a service." );
+VALUES( "widget", "application", "add_jurisdiction", true, "A form to create a new association between postcode and site for a application." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "service", "add_region_site", true, "A form to create a new association between region and site for a service." );
+VALUES( "widget", "application", "add_region_site", true, "A form to create a new association between region and site for a application." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "service", "add_role", true, "A form to add a role to a service." );
+VALUES( "widget", "application", "add_role", true, "A form to add a role to a application." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "service", "delete", true, "Removes a service from the system." );
+VALUES( "push", "application", "delete", true, "Removes a application from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "service", "delete_cohort", true, "Remove a service's cohort." );
+VALUES( "push", "application", "delete_cohort", true, "Remove a application's cohort." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "service", "delete_jurisdiction", true, "Remove a service's association between postcode and site." );
+VALUES( "push", "application", "delete_jurisdiction", true, "Remove a application's association between postcode and site." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "service", "delete_region_site", true, "Remove a service's association between region and site." );
+VALUES( "push", "application", "delete_region_site", true, "Remove a application's association between region and site." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "service", "delete_role", true, "Remove a service's role." );
+VALUES( "push", "application", "delete_role", true, "Remove a application's role." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "service", "edit", true, "Edits a service's details." );
+VALUES( "push", "application", "edit", true, "Edits a application's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "service", "list", true, "List services in the system." );
+VALUES( "widget", "application", "list", true, "List applications in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "service", "new", true, "Add a new service to the system." );
+VALUES( "push", "application", "new", true, "Add a new application to the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "service", "new_cohort", true, "Add a cohort to a service." );
+VALUES( "push", "application", "new_cohort", true, "Add a cohort to a application." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "service", "new_role", true, "Add a role to a service." );
+VALUES( "push", "application", "new_role", true, "Add a role to a application." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "service", "view", true, "View a service's details." );
+VALUES( "widget", "application", "view", true, "View a application's details." );
 
 -- setting
 INSERT INTO operation( type, subject, name, restricted, description )

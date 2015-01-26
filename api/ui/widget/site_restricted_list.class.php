@@ -83,9 +83,9 @@ abstract class site_restricted_list extends base_list
     // if this list has a parent don't allow restricting (the parent already does)
     if( !is_null( $this->parent ) ) $this->db_restrict_site = NULL;
 
-    // we're restricting to a site, so remove the service column
+    // we're restricting to a site, so remove the appointment column
     if( $this->no_site || !is_null( $this->db_restrict_site ) )
-      $this->remove_column( 'site.service_id' );
+      $this->remove_column( 'site.appointment_id' );
 
     if( static::may_restrict() )
     {
@@ -93,7 +93,7 @@ abstract class site_restricted_list extends base_list
       {
         $site_class_name = lib::get_class_name( 'database\site' );
         $site_mod = lib::create( 'database\modifier' );
-        $site_mod->order( 'service_id' );
+        $site_mod->order( 'appointment_id' );
         $site_mod->order( 'name' );
         $sites = array( -1 => 'No Site' );
         foreach( $site_class_name::select( $site_mod ) as $db_site )
@@ -130,10 +130,10 @@ abstract class site_restricted_list extends base_list
       $site_id = $this->no_site ? NULL : $this->db_restrict_site->id;
       if( $this->extended_site_selection )
       { // extended site selection means we link to the participant_site table
-        // we must link using the current site's service (for mastodon's lists to work correctly)
-        $service_id = lib::create( 'business\session' )->get_site()->service_id;
+        // we must link using the current site's appointment (for mastodon's lists to work correctly)
+        $appointment_id = lib::create( 'business\session' )->get_site()->appointment_id;
         $modifier->where( 'participant_site.site_id', '=', $site_id );
-        $modifier->where( 'participant_site.service_id', '=', $service_id );
+        $modifier->where( 'participant_site.appointment_id', '=', $appointment_id );
       }
       else
       {
@@ -161,10 +161,10 @@ abstract class site_restricted_list extends base_list
       $site_id = $this->no_site ? NULL : $this->db_restrict_site->id;
       if( $this->extended_site_selection )
       { // extended site selection means we link to the participant_site table
-        // we must link using the current site's service (for mastodon's lists to work correctly)
-        $service_id = lib::create( 'business\session' )->get_site()->service_id;
+        // we must link using the current site's appointment (for mastodon's lists to work correctly)
+        $appointment_id = lib::create( 'business\session' )->get_site()->appointment_id;
         $modifier->where( 'participant_site.site_id', '=', $site_id );
-        $modifier->where( 'participant_site.service_id', '=', $service_id );
+        $modifier->where( 'participant_site.appointment_id', '=', $appointment_id );
       }
       else
       {

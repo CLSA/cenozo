@@ -1,6 +1,6 @@
 <?php
 /**
- * service_delete_cohort.class.php
+ * appointment_delete_cohort.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: service delete_cohort
+ * push: appointment delete_cohort
  */
-class service_delete_cohort extends base_record
+class appointment_delete_cohort extends base_record
 {
   /**
    * Constructor.
@@ -22,7 +22,7 @@ class service_delete_cohort extends base_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', 'delete_cohort', $args );
+    parent::__construct( 'appointment', 'delete_cohort', $args );
   }
 
   /**

@@ -15,13 +15,13 @@ use cenozo\lib, cenozo\log;
 class jurisdiction extends record
 {
   /**
-   * Extend parent method by restricting selection to records belonging to this service only
+   * Extend parent method by restricting selection to records belonging to this appointment only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @param boolean $id_only Whether to return a list of primary ids instead of active records
-   * @param boolean $full If true then records will not be restricted by service
+   * @param boolean $full If true then records will not be restricted by appointment
    * @access public
    * @static
    */
@@ -33,18 +33,18 @@ class jurisdiction extends record
       // make sure to only include jurisdictions belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $modifier->where(
-        'jurisdiction.service_id', '=', lib::create( 'business\session' )->get_service()->id );
+        'jurisdiction.appointment_id', '=', lib::create( 'business\session' )->get_appointment()->id );
     }
 
     return parent::select( $modifier, $count, $distinct, $id_only );
   }
 
   /**
-   * Override parent method by restricting returned records to those belonging to this service only
+   * Override parent method by restricting returned records to those belonging to this appointment only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
-   * @param boolean $full If true then records will not be restricted by service
+   * @param boolean $full If true then records will not be restricted by appointment
    * @return database\record
    * @static
    * @access public
@@ -56,8 +56,8 @@ class jurisdiction extends record
     if( !$full )
     {
       if( !is_null( $db_jurisdiction ) &&
-          $db_jurisdiction->service_id !=
-            lib::create( 'business\session' )->get_service()->id ) $db_jurisdiction = NULL;
+          $db_jurisdiction->appointment_id !=
+            lib::create( 'business\session' )->get_appointment()->id ) $db_jurisdiction = NULL;
     }
 
     return $db_jurisdiction;

@@ -65,7 +65,7 @@ class session extends \cenozo\singleton
     // don't initialize more than once
     if( $this->initialized ) return;
 
-    $service_class_name = lib::get_class_name( 'database\service' );
+    $application_class_name = lib::get_class_name( 'database\application' );
 
     $setting_manager = lib::create( 'business\setting_manager' );
 
@@ -78,8 +78,8 @@ class session extends \cenozo\singleton
       sprintf( '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE ),
       $setting_manager->get_setting( 'db', 'prefix' ) );
 
-    // define the application's service
-    $this->service = $service_class_name::get_unique_record( 'name', INSTANCE, true );
+    // define the application's application
+    $this->application = $application_class_name::get_unique_record( 'name', INSTANCE, true );
 
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
@@ -110,8 +110,8 @@ class session extends \cenozo\singleton
     {
       $site_class_name = lib::get_class_name( 'database\site' );
       $this->requested_site = $site_class_name::get_unique_record(
-        array( 'service_id', 'name' ),
-        array( $this->service->id, $site_name ) );
+        array( 'application_id', 'name' ),
+        array( $this->application->id, $site_name ) );
 
       $role_class_name = lib::get_class_name( 'database\role' );
       $this->requested_role = $role_class_name::get_unique_record( 'name', $role_name );
@@ -158,13 +158,13 @@ class session extends \cenozo\singleton
   public function get_site() { return $this->site; }
 
   /**
-   * Get the current service.
+   * Get the current application.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\service
+   * @return database\application
    * @access public
    */
-  public function get_service() { return $this->service; }
+  public function get_application() { return $this->application; }
 
   /**
    * Get the current access.
@@ -363,7 +363,7 @@ class session extends \cenozo\singleton
 
     if( !is_null( $this->user ) )
     {
-      $user_theme = $this->user->get_theme( $this->service );
+      $user_theme = $this->user->get_theme( $this->application );
       if( !is_null( $user_theme ) ) $theme = $user_theme;
     }
 
@@ -379,7 +379,7 @@ class session extends \cenozo\singleton
    */
   public function set_theme( $theme )
   {
-    $this->user->set_theme( $this->service, $theme );
+    $this->user->set_theme( $this->application, $theme );
   }
   
   /**
@@ -755,11 +755,11 @@ class session extends \cenozo\singleton
   private $site = NULL;
 
   /**
-   * The record of the current service.
-   * @var database\service
+   * The record of the current application.
+   * @var database\application
    * @access private
    */
-  private $service = NULL;
+  private $application = NULL;
 
   /**
    * The record of the requested role.

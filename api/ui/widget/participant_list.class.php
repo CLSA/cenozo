@@ -45,7 +45,7 @@ class participant_list extends site_restricted_list
     $this->add_column( 'last_name', 'string', 'Last', true );
     $this->add_column( 'active', 'boolean', 'Active', true );
     $this->add_column( 'source.name', 'string', 'Source', true );
-    if( 1 != $session->get_service()->get_cohort_count() )
+    if( 1 != $session->get_appointment()->get_cohort_count() )
       $this->add_column( 'cohort.name', 'string', 'Cohort', true );
     $this->add_column( 'site', 'string', 'Site', false );
 
@@ -102,7 +102,7 @@ class participant_list extends site_restricted_list
         'site' => $site_name,
         // note count isn't a column, it's used for the note button
         'note_count' => $record->get_note_count() );
-      if( 1 != $session->get_service()->get_cohort_count() )
+      if( 1 != $session->get_appointment()->get_cohort_count() )
         $columns['cohort.name'] = $record->get_cohort()->name;
       $this->add_row( $record->id, $columns );
     }

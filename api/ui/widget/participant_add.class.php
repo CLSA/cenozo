@@ -98,7 +98,7 @@ class participant_add extends base_view
     $sites = array();
     $site_class_name = lib::get_class_name( 'database\site' );
     $site_mod = lib::create( 'database\modifier' );
-    $site_mod->order( 'service_id' );
+    $site_mod->order( 'appointment_id' );
     $site_mod->order( 'name' );
     foreach( $site_class_name::select( $site_mod ) as $db_site ) 
       $sites[$db_site->id] = $db_site->get_full_name();
@@ -114,7 +114,7 @@ class participant_add extends base_view
     $this->set_item( 'gender', key( $genders ), true, $genders );
     $this->set_item( 'date_of_birth', '' );
     $this->set_item( 'language_id',
-      lib::create( 'business\session' )->get_service()->language_id, false, $languages );
+      lib::create( 'business\session' )->get_appointment()->language_id, false, $languages );
     $this->set_item( 'email', '' );
     $this->set_item( 'state_id', '', false, $state_list );
     // this particular entry is filled in by the push/participant_new operation

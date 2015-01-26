@@ -13,33 +13,33 @@
   <script type="text/javascript">
     $( function () {
       
-      // service drop-down changed
-      $( "#{{ widget.full }}__service_id" ).change( function () {
-        populate_site_list( $( "#{{ widget.full }}__service_id" ).val() );
+      // appointment drop-down changed
+      $( "#{{ widget.full }}__appointment_id" ).change( function () {
+        populate_site_list( $( "#{{ widget.full }}__appointment_id" ).val() );
       } );
     
       // populate the list on load
-      populate_site_list( $( "#{{ widget.full }}__service_id" ).val() );
+      populate_site_list( $( "#{{ widget.full }}__appointment_id" ).val() );
 
     } );
 
-    // populate site drop-down with the selected service's sites
-    function populate_site_list( service_id ) {
+    // populate site drop-down with the selected appointment's sites
+    function populate_site_list( appointment_id ) {
       var options = {
-        {% for service in services %}
-          "{{ service.id }}": {
+        {% for appointment in appointments %}
+          "{{ appointment.id }}": {
             "0": "None",
-            {% for site in service.sites %}
+            {% for site in appointment.sites %}
               "{{ site.id }}": "{{ site.name }}",
             {% endfor %}
           },
         {% endfor %}
       };
 
-      // remove all options and replace them with the choosen service's sites
+      // remove all options and replace them with the choosen appointment's sites
       $site_select = $( "#{{ widget.full }}__site_id" );
       $site_select.children().remove();
-      $.each( options[service_id], function( key, value ) {
+      $.each( options[appointment_id], function( key, value ) {
         $site_select.append( $('<option>', { value: key } ).text( value ) );
       } );
     }

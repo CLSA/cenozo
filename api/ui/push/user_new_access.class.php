@@ -39,14 +39,14 @@ class user_new_access extends base_new_access
     $site_id_list = $this->get_argument( 'site_id_list' );
     $role_id_list = $this->get_argument( 'role_id_list' );
 
-    // get a list of which services we are adding access to
-    $service_id_list = array();
+    // get a list of which appointments we are adding access to
+    $appointment_id_list = array();
     foreach( $site_id_list as $site_id )
     {
       $db_site = lib::create( 'database\site', $site_id );
-      $service_id_list[] = $db_site->service_id;
+      $appointment_id_list[] = $db_site->appointment_id;
     }
-    $service_id_list = array_unique( $service_id_list );
+    $appointment_id_list = array_unique( $appointment_id_list );
 
     // are we adding an admin role?
     $role_class_name = lib::get_class_name( 'database\role' );
@@ -54,20 +54,20 @@ class user_new_access extends base_new_access
     foreach( $role_id_list as $role_id )
     {
       if( $role_id == $db_administrator_role->id )
-      { // admin role being added, check the user for admin access to the service
-        foreach( $service_id_list as $service_id )
+      { // admin role being added, check the user for admin access to the appointment
+        foreach( $appointment_id_list as $appointment_id )
         {
           $access_mod = lib::create( 'database\modifier' );
           $access_mod->where( 'access.role_id', '=', $db_administrator_role->id );
-          $access_mod->where( 'site.service_id', '=', $service_id );
+          $access_mod->where( 'site.appointment_id', '=', $appointment_id );
           if( 0 == lib::create( 'business\session' )->get_user()->get_access_count( $access_mod ) )
           {
-            $db_service = lib::create( 'database\service', $service_id );
+            $db_appointment = lib::create( 'database\appointment', $appointment_id );
             throw lib::create( 'exception\notice',
               sprintf( 'You require administrator access to a %s site in order to grant '.
                        'administrator access to any %s site.',
-                       $db_service->name,
-                       $db_service->name ),
+                       $db_appointment->name,
+                       $db_appointment->name ),
               __METHOD__ );
           }
         }

@@ -94,7 +94,7 @@ function ajax_pull( subject, name, args ) {
 }
 
 /**
- * Request a push (write) operation from the web service.
+ * Request a push (write) operation from the application.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string subject The subject of the push.

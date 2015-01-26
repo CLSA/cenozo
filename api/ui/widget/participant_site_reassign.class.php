@@ -38,7 +38,7 @@ class participant_site_reassign extends \cenozo\ui\widget\base_participant_multi
   {
     parent::prepare();
 
-    $this->add_parameter( 'service_id', 'enum', 'Service' );
+    $this->add_parameter( 'appointment_id', 'enum', 'Application' );
     $this->add_parameter( 'site_id', 'enum', 'Preferred Site' );
   }
 
@@ -52,36 +52,36 @@ class participant_site_reassign extends \cenozo\ui\widget\base_participant_multi
   {
     parent::setup();
 
-    $service_class_name = lib::get_class_name( 'database\service' );
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
 
-    // create a list of services with each of that service's sites
-    $service_id = NULL;
-    $service_list = array();
-    $services = array();
-    foreach( $service_class_name::select() as $db_service )
+    // create a list of appointments with each of that appointment's sites
+    $appointment_id = NULL;
+    $appointment_list = array();
+    $appointments = array();
+    foreach( $appointment_class_name::select() as $db_appointment )
     {
-      $service_list[$db_service->id] = $db_service->title;
-      $service = array( 'id' => $db_service->id,
-                        'name' => $db_service->name,
+      $appointment_list[$db_appointment->id] = $db_appointment->title;
+      $appointment = array( 'id' => $db_appointment->id,
+                        'name' => $db_appointment->name,
                         'sites' => array() );
 
       $site_mod = lib::create( 'database\modifier' );
       $site_mod->order( 'name' );
-      foreach( $db_service->get_site_list( $site_mod ) as $db_site )
-        $service['sites'][] = array( 'id' => $db_site->id, 'name' => $db_site->name );
+      foreach( $db_appointment->get_site_list( $site_mod ) as $db_site )
+        $appointment['sites'][] = array( 'id' => $db_site->id, 'name' => $db_site->name );
 
-      if( count( $service['sites'] ) )
+      if( count( $appointment['sites'] ) )
       {
-        $services[] = $service;
-        if( is_null( $service_id ) ) $service_id = $db_service->id;
+        $appointments[] = $appointment;
+        if( is_null( $appointment_id ) ) $appointment_id = $db_appointment->id;
       }
     }
 
-    $this->set_parameter( 'service_id', $service_id, true, $service_list );
+    $this->set_parameter( 'appointment_id', $appointment_id, true, $appointment_list );
     $this->set_parameter( 'site_id', 0, true, array() );
 
-    $service_class_name = lib::get_class_name( 'database\service' );
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
 
-    $this->set_variable( 'services', $services );
+    $this->set_variable( 'appointments', $appointments );
   }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * service.class.php
+ * application.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package cenozo\business
@@ -11,13 +11,13 @@ namespace cenozo;
 use cenozo\lib, cenozo\log;
 
 /**
- * This class is responsible for handling all types of web-service requests to the application.
+ * This class is responsible for handling all types of web requests to the application.
  * Based on the request url and method it responds differently, providing main, widget, pull and
  * push operations.
  * 
  * @package cenozo\business
  */
-final class service
+final class application
 {
   /**
    * Constructor.
@@ -27,14 +27,14 @@ final class service
    */
   public function __construct()
   {
-    // WARNING!  When we construct the service we haven't finished setting up the system yet, so
+    // WARNING!  When we construct the application we haven't finished setting up the system yet, so
     // don't use the log class in this method!
 
     // determine the arguments
     if( 'GET' == $_SERVER['REQUEST_METHOD'] && isset( $_GET ) ) $this->arguments = $_GET;
     else if( 'POST' == $_SERVER['REQUEST_METHOD'] && isset( $_POST ) ) $this->arguments = $_POST;
 
-    // determine the service type
+    // determine the request type
     if( array_key_exists( 'REDIRECT_URL', $_SERVER ) )
     {
       $base_self_path = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) + 1 );
@@ -124,7 +124,7 @@ final class service
   }
 
   /**
-   * Executes the service.
+   * Executes the request.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
@@ -234,16 +234,16 @@ final class service
       else $session->initialize();
 
       // make sure the software and database versions match
-      if( $this->settings['general']['version'] != $session->get_service()->version )
+      if( $this->settings['general']['version'] != $session->get_application()->version )
         throw lib::create( 'exception\notice',
           sprintf(
-            'The software version (%s) does not match the database version (%s).  The service will '.
+            'The software version (%s) does not match the database version (%s).  The application will '.
             'remain unavailable until this problem is corrected by an administrator.',
             $this->settings['general']['version'],
-            $session->get_service()->version ),
+            $session->get_application()->version ),
           __METHOD__ );
 
-      // execute service type-specific operations
+      // execute request type-specific operations
       $method_name = $this->operation_type;
 
       if( lib::in_development_mode() )
@@ -450,7 +450,7 @@ final class service
   }
 
   /**
-   * Creates the operation to be performed by the service request.
+   * Creates the operation to be performed by the request.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return ui\operation
@@ -611,14 +611,14 @@ final class service
   private $settings = array();
 
   /**
-   * The base url of the service request.
+   * The base url of the request.
    * @var string
    * @access private
    */
   private $base_url;
 
   /**
-   * Contains the parts of the url that describe the service request.
+   * Contains the parts of the url that describe the request.
    * @var array
    * @access private
    */

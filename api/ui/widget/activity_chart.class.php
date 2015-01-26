@@ -53,7 +53,7 @@ class activity_chart extends \cenozo\ui\widget
     $db_user = $user_class_name::get_unique_record(
       'name', $setting_manager->get_setting( 'general', 'machine_user' ) );
     $site_mod = lib::create( 'database\modifier' );
-    $site_mod->order( 'service_id' );
+    $site_mod->order( 'appointment_id' );
     $site_mod->order( 'name' );
 
     // start by building the array from the overall usage
@@ -116,7 +116,7 @@ class activity_chart extends \cenozo\ui\widget
         $year_data[$date][] = array_key_exists( $date, $site_usage ) ? $site_usage[$date]/60/60 : 0;
     }
 
-    $this->set_variable( 'service_title', $session->get_service()->title );
+    $this->set_variable( 'appointment_title', $session->get_appointment()->title );
     $this->set_variable( 'month_title', 'Server Activity Over the Last Month (in minutes/day)' );
     $this->set_variable( 'month_columns', $month_columns );
     $this->set_variable( 'month_data', $month_data );

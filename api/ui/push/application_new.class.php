@@ -1,6 +1,6 @@
 <?php
 /**
- * service_new.class.php
+ * appointment_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,11 +10,11 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: service new
+ * push: appointment new
  *
- * Create a new service.
+ * Create a new appointment.
  */
-class service_new extends base_new
+class appointment_new extends base_new
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class service_new extends base_new
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', $args );
+    parent::__construct( 'appointment', $args );
   }
 
   /**
@@ -43,11 +43,11 @@ class service_new extends base_new
     // make sure the name column isn't blank
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
       throw lib::create( 'exception\notice',
-        'The service\'s name cannot be left blank.', __METHOD__ );
+        'The appointment\'s name cannot be left blank.', __METHOD__ );
     // make sure the name column contains letters, numbers and underscores only
     else if( preg_match( '/[^a-zA-Z0-9_]/', $columns['name'] ) )
       throw lib::create( 'exception\notice',
-        'The service\'s name can include letters, numbers and underscores only.', __METHOD__ );
+        'The appointment\'s name can include letters, numbers and underscores only.', __METHOD__ );
   }
 
   /**
@@ -60,7 +60,7 @@ class service_new extends base_new
   {
     parent::setup();
 
-    // create a release event type for the new service
+    // create a release event type for the new appointment
     $db_release_event_type = lib::create( 'database\event_type' );
     $db_release_event_type->save();
     $this->get_record()->release_event_type_id = $db_release_event_type->id;
@@ -76,7 +76,7 @@ class service_new extends base_new
   {
     parent::finish();
 
-    // update the service's event_type
+    // update the appointment's event_type
     $this->get_record()->update_release_event_type();
   }
 }

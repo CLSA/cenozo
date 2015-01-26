@@ -10,7 +10,7 @@ namespace cenozo\business;
 use cenozo\lib, cenozo\log;
 
 /**
- * Manages communication with other cenozo services.
+ * Manages communication with other cenozo applications.
  */
 class cenozo_manager extends \cenozo\factory
 {
@@ -22,7 +22,7 @@ class cenozo_manager extends \cenozo\factory
    */
   protected function __construct( $arguments )
   {
-    // determine whether connecting to cenozo service is enabled
+    // determine whether connecting to the application is enabled
     $url = $arguments[0];
     $this->enabled = !is_null( $url );
     if( $this->enabled ) $this->base_url = $url.'/';
@@ -214,20 +214,20 @@ class cenozo_manager extends \cenozo\factory
     $util_class_name = lib::get_class_name( 'util' );
     
     if( 400 == $code )
-    { // pass on the exception which was thrown by the service
+    { // pass on the exception which was thrown by the application
       $body = $util_class_name::json_decode( $message->body );
       
       $number = preg_replace( '/[^0-9]/', '', $body->error_code );
 
       throw 'Notice' == $body->error_type
          ? lib::create( 'exception\notice', $body->error_message, $number - 400000 )
-         : lib::create( 'exception\cenozo_service',
+         : lib::create( 'exception\cenozo_application',
              $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
     { // A non-cenozo error has happened
       throw lib::create( 'exception\runtime', sprintf(
-        'Unable to connect to Cenozo service at %s (code: %s)',
+        'Unable to connect to Cenozo application at %s (code: %s)',
         $request->getUrl(),
         $code ), __METHOD__ );
     }

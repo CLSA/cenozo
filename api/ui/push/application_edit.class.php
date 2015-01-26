@@ -1,6 +1,6 @@
 <?php
 /**
- * service_edit.class.php
+ * appointment_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,11 +10,11 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: service edit
+ * push: appointment edit
  *
- * Edit a service.
+ * Edit a appointment.
  */
-class service_edit extends base_edit
+class appointment_edit extends base_edit
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class service_edit extends base_edit
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', $args );
+    parent::__construct( 'appointment', $args );
   }
 
   /**
@@ -44,12 +44,12 @@ class service_edit extends base_edit
     {
       if( 0 == strlen( $columns['name'] ) )
         throw lib::create( 'exception\notice',
-          'The service\'s name cannot be left blank.', __METHOD__ );
+          'The appointment\'s name cannot be left blank.', __METHOD__ );
 
       // make sure the name column contains letters, numbers and underscores only
       if( preg_match( '/[^a-zA-Z0-9_]/', $columns['name'] ) )
         throw lib::create( 'exception\notice',
-          'The service\'s name can include letters, numbers and underscores only.', __METHOD__ );
+          'The appointment\'s name can include letters, numbers and underscores only.', __METHOD__ );
     }
   }
 
@@ -63,7 +63,7 @@ class service_edit extends base_edit
   {
     parent::finish();
 
-    // update the service's event_type
+    // update the appointment's event_type
     $this->get_record()->update_release_event_type();
   }
 }

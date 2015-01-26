@@ -15,14 +15,14 @@ use cenozo\lib, cenozo\log;
 class user extends base_access
 {
   /**
-   * Returns the user's theme for a particular service, or NULL if they have not specified one.
+   * Returns the user's theme for a particular appointment, or NULL if they have not specified one.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param service $db_service
+   * @param appointment $db_appointment
    * @return string
    * @access public
    */
-  public function get_theme( $db_service )
+  public function get_theme( $db_appointment )
   {
     if( is_null( $this->id ) )
     {
@@ -33,22 +33,22 @@ class user extends base_access
     $database_class_name = lib::get_class_name( 'database\database' );
 
     return static::db()->get_one( sprintf(
-      'SELECT theme FROM user_has_service '.
+      'SELECT theme FROM user_has_appointment '.
       'WHERE user_id = %s '.
-      'AND service_id = %s',
+      'AND appointment_id = %s',
       $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( $db_service->id ) ) );
+      $database_class_name::format_string( $db_appointment->id ) ) );
   }
 
   /**
-   * Sets the user's theme for a particular service.
+   * Sets the user's theme for a particular appointment.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param service $db_service
+   * @param appointment $db_appointment
    * @param string $theme
    * @access public
    */
-  public function set_theme( $db_service, $theme )
+  public function set_theme( $db_appointment, $theme )
   {
     if( is_null( $this->id ) )
     {
@@ -61,20 +61,20 @@ class user extends base_access
     if( is_null( $theme ) || !$theme )
     { // remove the theme
       static::db()->execute( sprintf(
-        'DELETE FROM user_has_service '.
+        'DELETE FROM user_has_appointment '.
         'WHERE user_id = %s '.
-        'AND service_id = %s',
+        'AND appointment_id = %s',
         $database_class_name::format_string( $this->id ),
-        $database_class_name::format_string( $db_service->id ) ) );
+        $database_class_name::format_string( $db_appointment->id ) ) );
     }
     else
     {
       static::db()->execute( sprintf(
-        'INSERT INTO user_has_service '.
-        'SET user_id = %s, service_id = %s, theme = %s '.
+        'INSERT INTO user_has_appointment '.
+        'SET user_id = %s, appointment_id = %s, theme = %s '.
         'ON DUPLICATE KEY UPDATE theme = VALUES( theme )',
         $database_class_name::format_string( $this->id ),
-        $database_class_name::format_string( $db_service->id ),
+        $database_class_name::format_string( $db_appointment->id ),
         $database_class_name::format_string( $theme ) ) );
     }
   }

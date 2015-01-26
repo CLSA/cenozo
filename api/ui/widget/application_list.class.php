@@ -1,6 +1,6 @@
 <?php
 /**
- * service_list.class.php
+ * appointment_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,21 +10,21 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget service list
+ * widget appointment list
  */
-class service_list extends base_list
+class appointment_list extends base_list
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the service list.
+   * Defines all variables required by the appointment list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', $args );
+    parent::__construct( 'appointment', $args );
   }
 
   /**
@@ -40,7 +40,7 @@ class service_list extends base_list
     
     $this->add_column( 'title', 'string', 'Title', true );
     if( !is_null( $this->parent ) && 'cohort' == $this->parent->get_subject() )
-      $this->add_column( 'service_has_cohort.grouping', 'string', 'Grouping', true );
+      $this->add_column( 'appointment_has_cohort.grouping', 'string', 'Grouping', true );
     $this->add_column( 'version', 'string', 'Version', true );
     $this->add_column( 'sites', 'number', 'Sites', false );
   }
@@ -61,7 +61,7 @@ class service_list extends base_list
                     'version' => $record->version,
                     'sites' => $record->get_site_count() );
       if( !is_null( $this->parent ) && 'cohort' == $this->parent->get_subject() )
-        $row['service_has_cohort.grouping'] =
+        $row['appointment_has_cohort.grouping'] =
           $record->get_cohort_grouping( $this->parent->get_record() );
       $this->add_row( $record->id, $row );
     }

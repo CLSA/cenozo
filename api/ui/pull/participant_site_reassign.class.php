@@ -44,11 +44,11 @@ class participant_site_reassign extends \cenozo\ui\pull\base_participant_multi
     $invalid_count = 0;
     $affected_count = 0;
     
-    $db_service = lib::create( 'database\service', $this->get_argument( 'service_id' ) );
-    $cohort_id_list = $db_service->get_cohort_idlist();
+    $db_appointment = lib::create( 'database\appointment', $this->get_argument( 'appointment_id' ) );
+    $cohort_id_list = $db_appointment->get_cohort_idlist();
     $site_id = $this->get_argument( 'site_id' );
     
-    // count how many participants in the UID list belong to the selected service
+    // count how many participants in the UID list belong to the selected appointment
     $participant_mod = clone $this->modifier;
     $participant_mod->where( 'cohort_id', 'IN', $cohort_id_list );
     $participant_count = $participant_class_name::count( $participant_mod );
@@ -56,8 +56,8 @@ class participant_site_reassign extends \cenozo\ui\pull\base_participant_multi
 
     // count participant's whose effective site will be affected by the operation
     $participant_mod = clone $this->modifier;
-    $participant_mod->where( 'participant_default_site.service_id', '=', $db_service->id );
-    $participant_mod->where( 'participant_preferred_site.service_id', '=', $db_service->id );
+    $participant_mod->where( 'participant_default_site.appointment_id', '=', $db_appointment->id );
+    $participant_mod->where( 'participant_preferred_site.appointment_id', '=', $db_appointment->id );
 
     if( 0 < $site_id )
     { // the new site is different from the preferred, or if there is no preferred then
@@ -76,8 +76,8 @@ class participant_site_reassign extends \cenozo\ui\pull\base_participant_multi
     $affected_count = $participant_class_name::count( $participant_mod );
 
     $this->data = array(
-      'Participants belonging to service' => $participant_count,
-      'Participants not belonging to service' => $invalid_count,
+      'Participants belonging to appointment' => $participant_count,
+      'Participants not belonging to appointment' => $invalid_count,
       'Participants affected by operation' => $affected_count );
   }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * service_delete_jurisdiction.class.php
+ * appointment_delete_jurisdiction.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: service delete_jurisdiction
+ * push: appointment delete_jurisdiction
  */
-class service_delete_jurisdiction extends base_delete_record
+class appointment_delete_jurisdiction extends base_delete_record
 {
   /**
    * Constructor.
@@ -22,6 +22,6 @@ class service_delete_jurisdiction extends base_delete_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', 'jurisdiction', $args );
+    parent::__construct( 'appointment', 'jurisdiction', $args );
   }
 }

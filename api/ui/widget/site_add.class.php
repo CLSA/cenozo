@@ -39,7 +39,7 @@ class site_add extends base_view
     parent::prepare();
 
     // define all columns defining this record
-    $this->add_item( 'service_id', 'enum', 'Service' );
+    $this->add_item( 'appointment_id', 'enum', 'Application' );
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'timezone', 'enum', 'Time Zone' );
     $this->add_item( 'title', 'string', 'Institution' );
@@ -63,15 +63,15 @@ class site_add extends base_view
     parent::setup();
     
     // create enum arrays
-    $service_class_name = lib::get_class_name( 'database\service' );
-    foreach( $service_class_name::select() as $db_service )
-      $service_list[$db_service->id] = $db_service->name;
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    foreach( $appointment_class_name::select() as $db_appointment )
+      $appointment_list[$db_appointment->id] = $db_appointment->name;
     $site_class_name = lib::get_class_name( 'database\site' );
     $timezones = $site_class_name::get_enum_values( 'timezone' );
     $timezones = array_combine( $timezones, $timezones );
 
     // set the view's items
-    $this->set_item( 'service_id', key( $service_list ), true, $service_list );
+    $this->set_item( 'appointment_id', key( $appointment_list ), true, $appointment_list );
     $this->set_item( 'name', '', true );
     $this->set_item( 'timezone', key( $timezones ), true, $timezones );
     $this->set_item( 'title', '' );

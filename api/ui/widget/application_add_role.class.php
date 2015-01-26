@@ -1,6 +1,6 @@
 <?php
 /**
- * service_add_role.class.php
+ * appointment_add_role.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget service add_role
+ * widget appointment add_role
  */
-class service_add_role extends base_add_list
+class appointment_add_role extends base_add_list
 {
   /**
    * Constructor
@@ -25,7 +25,7 @@ class service_add_role extends base_add_list
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', 'role', $args );
+    parent::__construct( 'appointment', 'role', $args );
     $this->set_heading( '' );
   }
 

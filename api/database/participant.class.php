@@ -37,7 +37,7 @@ class participant extends person
   }
 
   /**
-   * Extend parent method by restricting selection to records belonging to this service only
+   * Extend parent method by restricting selection to records belonging to this appointment only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
@@ -49,20 +49,20 @@ class participant extends person
   public static function select(
     $modifier = NULL, $count = false, $distinct = true, $id_only = false )
   {
-    $db_service = lib::create( 'business\session' )->get_service();
-    if( $db_service->release_based )
+    $db_appointment = lib::create( 'business\session' )->get_appointment();
+    if( $db_appointment->release_based )
     {
       // make sure to only include sites belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'service_has_participant.service_id', '=', $db_service->id );
-      $modifier->where( 'service_has_participant.datetime', '!=', NULL );
+      $modifier->where( 'appointment_has_participant.appointment_id', '=', $db_appointment->id );
+      $modifier->where( 'appointment_has_participant.datetime', '!=', NULL );
     }
 
     return parent::select( $modifier, $count, $distinct, $id_only );
   }
 
   /**
-   * Override parent method by restricting returned records to those belonging to this service only
+   * Override parent method by restricting returned records to those belonging to this appointment only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
@@ -72,18 +72,18 @@ class participant extends person
    */
   public static function get_unique_record( $column, $value )
   {
-    $db_service = lib::create( 'business\session' )->get_service();
+    $db_appointment = lib::create( 'business\session' )->get_appointment();
     $db_participant = parent::get_unique_record( $column, $value );
 
-    if( $db_service->release_based )
+    if( $db_appointment->release_based )
     {
       if( !is_null( $db_participant ) )
       { // make sure the participant has been released
         $participant_mod = lib::create( 'database\modifier' );
         $participant_mod->where( 'participant.id', '=', $db_participant->id );
-        $participant_mod->where( 'service_has_participant.service_id', '=', $db_service->id );
-        $participant_mod->where( 'service_has_participant.datetime', '!=', NULL );
-        if( 0 == $db_service->get_participant_count( $participant_mod ) ) $db_participant = NULL;
+        $participant_mod->where( 'appointment_has_participant.appointment_id', '=', $db_appointment->id );
+        $participant_mod->where( 'appointment_has_participant.datetime', '!=', NULL );
+        if( 0 == $db_appointment->get_participant_count( $participant_mod ) ) $db_participant = NULL;
       }
     }
 
@@ -91,7 +91,7 @@ class participant extends person
   }
 
   /**
-   * Make sure to only include participants which this service has access to.
+   * Make sure to only include participants which this appointment has access to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param modifier $modifier A modifier to apply to the list or count.
@@ -110,12 +110,12 @@ class participant extends person
     $distinct = true,
     $id_only = false )
   {
-    if( 'service' == $record_type )
+    if( 'appointment' == $record_type )
     {
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'service_has_participant.service_id', '=',
-                        lib::create( 'business\session' )->get_service()->id );
-      $modifier->where( 'service_has_participant.datetime', '!=', NULL );
+      $modifier->where( 'appointment_has_participant.appointment_id', '=',
+                        lib::create( 'business\session' )->get_appointment()->id );
+      $modifier->where( 'appointment_has_participant.datetime', '!=', NULL );
     }
     return parent::get_record_list(
       $record_type, $modifier, $inverted, $count, $distinct, $id_only );
@@ -251,14 +251,14 @@ class participant extends person
   }
 
   /**
-   * Gets the datetime when the participant was released to a given service, or NULL
+   * Gets the datetime when the participant was released to a given appointment, or NULL
    * if they have not yet been released.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the application's service is used.
+   * @param database\appointment $db_appointment If null then the application's appointment is used.
    * @return datetime object
    * @access public
    */
-  public function get_release_date( $db_service = NULL )
+  public function get_release_date( $db_appointment = NULL )
   {
     // no primary key means no release date
     if( is_null( $this->id ) ) return NULL;
@@ -266,103 +266,103 @@ class participant extends person
     $util_class_name = lib::get_class_name( 'util' );
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
+    if( is_null( $db_appointment ) ) $db_appointment = lib::create( 'business\session' )->get_appointment();
 
     $datetime = static::db()->get_one( sprintf(
       'SELECT datetime '.
-      'FROM service_has_participant '.
-      'WHERE service_id = %s '.
+      'FROM appointment_has_participant '.
+      'WHERE appointment_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $db_appointment->id ),
       $database_class_name::format_string( $this->id ) ) );
 
     return $datetime ? $util_class_name::get_datetime_object( $datetime ) : NULL;
   }
 
   /**
-   * Get the preferred site that the participant belongs to for a given service.
+   * Get the preferred site that the participant belongs to for a given appointment.
    * If the participant does not have a preferred site NULL is returned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the application's service is used.
+   * @param database\appointment $db_appointment If null then the application's appointment is used.
    * @return site
    * @access public
    */
-  public function get_preferred_site( $db_service = NULL )
+  public function get_preferred_site( $db_appointment = NULL )
   {
     // no primary key means no preferred site
     if( is_null( $this->id ) ) return NULL;
 
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
+    if( is_null( $db_appointment ) ) $db_appointment = lib::create( 'business\session' )->get_appointment();
 
     $site_id = static::db()->get_one( sprintf(
       'SELECT site_id '.
       'FROM participant_preferred_site '.
-      'WHERE service_id = %s '.
+      'WHERE appointment_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $db_appointment->id ),
       $database_class_name::format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
 
   /**
-   * Sets the preferred site for a particular service.
+   * Sets the preferred site for a particular appointment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service
+   * @param database\appointment $db_appointment
    * @param database\site $db_site
    * @access public
    */
-  public function set_preferred_site( $db_service, $db_site = NULL )
+  public function set_preferred_site( $db_appointment, $db_site = NULL )
   {
     // no primary key means no preferred site
     if( is_null( $this->id ) ) return NULL;
 
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    // make sure this participant's cohort belongs to the service
+    // make sure this participant's cohort belongs to the appointment
     if( !static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
       'FROM participant '.
-      'JOIN service_has_cohort ON service_has_cohort.cohort_id = participant.cohort_id '.
-      'WHERE service_has_cohort.service_id = %s '.
+      'JOIN appointment_has_cohort ON appointment_has_cohort.cohort_id = participant.cohort_id '.
+      'WHERE appointment_has_cohort.appointment_id = %s '.
       'AND participant.id = %s',
-      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $db_appointment->id ),
       $database_class_name::format_string( $this->id ) ) ) )
       throw lib::create( 'exception\runtime', sprintf(
         'Tried to set preferred %s site for participant %s, '.
         'but %s does not have access to the %s cohort',
-        $db_service->name,
+        $db_appointment->name,
         $this->uid,
-        $db_service->name,
+        $db_appointment->name,
         $this->get_cohort()->name ),
         __METHOD__ );
 
     // we want to add the row (if none exists) or just update the preferred_site_id column
     // if a row already exists
     static::db()->execute( sprintf(
-      'INSERT INTO service_has_participant '.
-      'SET service_id = %s, participant_id = %s, preferred_site_id = %s '.
+      'INSERT INTO appointment_has_participant '.
+      'SET appointment_id = %s, participant_id = %s, preferred_site_id = %s '.
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
-      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $db_appointment->id ),
       $database_class_name::format_string( $this->id ),
       is_null( $db_site ) ? 'NULL' : $database_class_name::format_string( $db_site->id ) ) );
   }
 
   /**
-   * Sets the preferred site of multiple participants for a particular service.
+   * Sets the preferred site of multiple participants for a particular appointment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier
-   * @param database\service $db_service
+   * @param database\appointment $db_appointment
    * @param database\site $db_site
    * @access public
    */
-  public static function multi_set_preferred_site( $modifier, $db_service, $db_site = NULL )
+  public static function multi_set_preferred_site( $modifier, $db_appointment, $db_site = NULL )
   {
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    // make sure all participants' cohorts belongs to the service
+    // make sure all participants' cohorts belongs to the appointment
     $total = static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
       'FROM participant %s',
@@ -370,15 +370,15 @@ class participant extends person
     $with_cohort = static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
       'FROM participant '.
-      'JOIN service_has_cohort ON service_has_cohort.cohort_id = participant.cohort_id %s '.
-      'AND service_has_cohort.service_id = %s',
+      'JOIN appointment_has_cohort ON appointment_has_cohort.cohort_id = participant.cohort_id %s '.
+      'AND appointment_has_cohort.appointment_id = %s',
       $modifier->get_where(),
-      $database_class_name::format_string( $db_service->id ) ) );
+      $database_class_name::format_string( $db_appointment->id ) ) );
     if( $total != $with_cohort )
       throw lib::create( 'exception\runtime', sprintf(
         'Tried to set preferred %s site for %d participants, '.
         'but only %d have access to the %s cohort',
-        $db_service->name,
+        $db_appointment->name,
         $total,
         $with_cohort,
         $this->get_cohort()->name ),
@@ -387,69 +387,69 @@ class participant extends person
     // we want to add the row (if none exists) or just update the preferred_site_id column
     // if a row already exists
     static::db()->execute( sprintf(
-      'INSERT INTO service_has_participant( '.
-        'create_timestamp, service_id, participant_id, preferred_site_id ) '.
+      'INSERT INTO appointment_has_participant( '.
+        'create_timestamp, appointment_id, participant_id, preferred_site_id ) '.
       'SELECT NULL, %s, id, %s '.
       'FROM participant %s '.
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
-      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $db_appointment->id ),
       is_null( $db_site ) ? 'NULL' : $database_class_name::format_string( $db_site->id ),
       $modifier->get_sql() ) );
   }
 
   /**
-   * Get the default site that the participant belongs to for a given service.
-   * This depends on the type of grouping that the participant's cohort uses for each service
+   * Get the default site that the participant belongs to for a given appointment.
+   * This depends on the type of grouping that the participant's cohort uses for each appointment
    * (region or jurisdition)
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the application's service is used.
+   * @param database\appointment $db_appointment If null then the application's appointment is used.
    * @return site
    * @access public
    */
-  public function get_default_site( $db_service = NULL )
+  public function get_default_site( $db_appointment = NULL )
   {
     // no primary key means no default site
     if( is_null( $this->id ) ) return NULL;
 
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
+    if( is_null( $db_appointment ) ) $db_appointment = lib::create( 'business\session' )->get_appointment();
 
     $site_id = static::db()->get_one( sprintf(
       'SELECT site_id '.
       'FROM participant_default_site '.
-      'WHERE service_id = %s '.
+      'WHERE appointment_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $db_appointment->id ),
       $database_class_name::format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
 
   /**
-   * Get the effective site that the participant belongs for a given service.
+   * Get the effective site that the participant belongs for a given appointment.
    * This method returns the participant's preferred site, or if they have no preferred site
    * then it returns their default site.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $db_service If null then the application's service is used.
+   * @param database\appointment $db_appointment If null then the application's appointment is used.
    * @return site
    * @access public
    */
-  public function get_effective_site( $db_service = NULL )
+  public function get_effective_site( $db_appointment = NULL )
   {
     // no primary key means no effective site
     if( is_null( $this->id ) ) return NULL;
 
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    if( is_null( $db_service ) ) $db_service = lib::create( 'business\session' )->get_service();
+    if( is_null( $db_appointment ) ) $db_appointment = lib::create( 'business\session' )->get_appointment();
 
     $site_id = static::db()->get_one( sprintf(
       'SELECT site_id '.
       'FROM participant_site '.
-      'WHERE service_id = %s '.
+      'WHERE appointment_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_service->id ),
+      $database_class_name::format_string( $db_appointment->id ),
       $database_class_name::format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;

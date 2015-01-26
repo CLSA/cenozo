@@ -1,6 +1,6 @@
 <?php
 /**
- * service_add_cohort.class.php
+ * appointment_add_cohort.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget service add_cohort
+ * widget appointment add_cohort
  */
-class service_add_cohort extends base_add_list
+class appointment_add_cohort extends base_add_list
 {
   /**
    * Constructor
@@ -25,7 +25,7 @@ class service_add_cohort extends base_add_list
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', 'cohort', $args );
+    parent::__construct( 'appointment', 'cohort', $args );
     $this->set_heading( '' );
   }
 
@@ -39,10 +39,10 @@ class service_add_cohort extends base_add_list
   {
     parent::setup();
 
-    $service_class_name = lib::get_class_name( 'database\service' );
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
 
     $grouping_list = array();
-    foreach( $service_class_name::get_grouping_types() as $grouping )
+    foreach( $appointment_class_name::get_grouping_types() as $grouping )
       $grouping_list[] = $grouping;
     $this->set_variable( 'grouping_list', $grouping_list );
   }

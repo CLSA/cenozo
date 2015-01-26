@@ -38,10 +38,10 @@ class jurisdiction_add extends base_view
   {
     parent::prepare();
     
-    // specify in the heading which service this jurisdiction belongs to
+    // specify in the heading which appointment this jurisdiction belongs to
     $this->set_heading( 'Add a new association between a postcode and site' );
 
-    $this->add_item( 'service_id', 'hidden' );
+    $this->add_item( 'appointment_id', 'hidden' );
     $this->add_item( 'postcode', 'string', 'Postcode',
       'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.' );
     $this->add_item( 'longitude', 'number', 'Longitude' );
@@ -61,20 +61,20 @@ class jurisdiction_add extends base_view
 
     $site_class_name = lib::get_class_name( 'database\site' );
 
-    $db_service = is_null( $this->parent )
-                ? lib::create( 'business\session' )->get_service()
+    $db_appointment = is_null( $this->parent )
+                ? lib::create( 'business\session' )->get_appointment()
                 : $this->parent->get_record();
 
     // create enum arrays
     $sites = array();
     $site_mod = lib::create( 'database\modifier' );
-    $site_mod->where( 'service_id', '=', $db_service->id );
+    $site_mod->where( 'appointment_id', '=', $db_appointment->id );
     $site_mod->order( 'name' );
     foreach( $site_class_name::select( $site_mod ) as $db_site )
       $sites[$db_site->id] = $db_site->name;
     
     // set the view's items
-    $this->set_item( 'service_id', $db_service->id );
+    $this->set_item( 'appointment_id', $db_appointment->id );
     $this->set_item( 'postcode', '', true );
     $this->set_item( 'longitude', '', true );
     $this->set_item( 'latitude', '', true );

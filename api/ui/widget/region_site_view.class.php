@@ -38,7 +38,7 @@ class region_site_view extends base_view
   {
     parent::prepare();
 
-    $this->add_item( 'service_id', 'hidden', 'Service' );
+    $this->add_item( 'appointment_id', 'hidden', 'Application' );
     $this->add_item( 'region_id', 'enum', 'Region' );
     $this->add_item( 'language_id', 'enum', 'Language' );
     $this->add_item( 'site_id', 'enum', 'Site' );
@@ -68,7 +68,7 @@ class region_site_view extends base_view
 
     $sites = array();
     $site_mod = lib::create( 'database\modifier' );
-    $site_mod->where( 'service_id', '=', $this->get_record()->service_id );
+    $site_mod->where( 'appointment_id', '=', $this->get_record()->appointment_id );
     $site_mod->order( 'name' );
     foreach( $site_class_name::select( $site_mod ) as $db_site )
       $sites[$db_site->id] = $db_site->name;
@@ -81,7 +81,7 @@ class region_site_view extends base_view
       $languages[$db_language->id] = $db_language->name;
     
     // set the view's items
-    $this->set_item( 'service_id', $this->get_record()->service_id );
+    $this->set_item( 'appointment_id', $this->get_record()->appointment_id );
     $this->set_item( 'region_id', $this->get_record()->region_id, true, $regions );
     $this->set_item( 'language_id', $this->get_record()->language_id, true, $languages );
     $this->set_item( 'site_id', $this->get_record()->site_id, true, $sites );

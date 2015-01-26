@@ -1,6 +1,6 @@
 <?php
 /**
- * service_view.class.php
+ * appointment_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget service view
+ * widget appointment view
  */
-class service_view extends base_view
+class appointment_view extends base_view
 {
   /**
    * Constructor
@@ -24,7 +24,7 @@ class service_view extends base_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', 'view', $args );
+    parent::__construct( 'appointment', 'view', $args );
   }
 
   /**
@@ -38,11 +38,11 @@ class service_view extends base_view
   {
     parent::prepare();
 
-    // create an associative array with everything we want to display about the service
+    // create an associative array with everything we want to display about the appointment
     $this->add_item( 'name', 'string', 'Name',
                      'May only contain letters, numbers and underscores.' );
     $this->add_item( 'title', 'string', 'Title',
-                     'A user-friendly name for the service, may contain any characters.' );
+                     'A user-friendly name for the appointment, may contain any characters.' );
     $this->add_item( 'language_id', 'enum', 'Default Language' );
     $this->add_item( 'version', 'string', 'Version' );
     $this->add_item( 'sites', 'constant', 'Sites' );

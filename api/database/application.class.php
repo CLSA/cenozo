@@ -1,6 +1,6 @@
 <?php
 /**
- * service.class.php
+ * appointment.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,18 +10,18 @@ namespace cenozo\database;
 use cenozo\lib, cenozo\log;
 
 /**
- * service: record
+ * appointment: record
  */
-class service extends record
+class appointment extends record
 {
   /**
-   * Extend parent method by restricting selection to records belonging to this service only
+   * Extend parent method by restricting selection to records belonging to this appointment only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @param boolean $id_only Whether to return a list of primary ids instead of active records
-   * @param boolean $full If true then records will not be restricted by service
+   * @param boolean $full If true then records will not be restricted by appointment
    * @access public
    * @static
    */
@@ -30,16 +30,16 @@ class service extends record
   {
     if( !$full )
     {
-      // make sure to only include services belonging to this application
+      // make sure to only include appointments belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'id', '=', lib::create( 'business\session' )->get_service()->id );
+      $modifier->where( 'id', '=', lib::create( 'business\session' )->get_appointment()->id );
     }
 
     return parent::select( $modifier, $count, $distinct, $id_only );
   } 
     
   /** 
-   * Call parent method without restricting records by service.
+   * Call parent method without restricting records by appointment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
@@ -49,20 +49,20 @@ class service extends record
    */
   public static function get_unique_record( $column, $value, $full = false )
   {
-    $db_service = parent::get_unique_record( $column, $value );
+    $db_appointment = parent::get_unique_record( $column, $value );
 
     if( !$full )
     {
-      if( !is_null( $db_service ) &&
-          $db_service->id != lib::create( 'business\session' )->get_service()->id )
-        $db_service = NULL;
+      if( !is_null( $db_appointment ) &&
+          $db_appointment->id != lib::create( 'business\session' )->get_appointment()->id )
+        $db_appointment = NULL;
     }
 
-    return $db_service;
+    return $db_appointment;
   }
 
   /**
-   * Make sure to only include cohorts which this service has access to.
+   * Make sure to only include cohorts which this appointment has access to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param database\modifier $modifier Modifications to the list.
@@ -84,15 +84,15 @@ class service extends record
     if( 'cohort' == $record_type )
     {
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'service_has_cohort.service_id', '=',
-                        lib::create( 'business\session' )->get_service()->id );
+      $modifier->where( 'appointment_has_cohort.appointment_id', '=',
+                        lib::create( 'business\session' )->get_appointment()->id );
     }
     return parent::get_record_list(
       $record_type, $modifier, $inverted, $count, $distinct, $id_only );
   }
 
   /**
-   * Adds one or more cohorts so a service.
+   * Adds one or more cohorts so a appointment.
    * This method effectively overrides the parent add_records() method so that grouping can also
    * be included.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -104,7 +104,7 @@ class service extends record
   {
     parent::add_cohort( $cohort_ids );
 
-    // do nothing if the service has no primary key
+    // do nothing if the appointment has no primary key
     if( is_null( $this->id ) ) return;
 
     $database_class_name = lib::get_class_name( 'database\database' );
@@ -113,9 +113,9 @@ class service extends record
     if( !is_array( $cohort_ids ) ) $cohort_ids = array( $cohort_ids );
 
     static::db()->execute( sprintf(
-      'UPDATE service_has_cohort '.
+      'UPDATE appointment_has_cohort '.
       'SET grouping = %s '.
-      'WHERE service_id = %s '.
+      'WHERE appointment_id = %s '.
       'AND cohort_id IN ( %s )',
       $database_class_name::format_string( $grouping ),
       $database_class_name::format_string( $this->id ),
@@ -123,18 +123,18 @@ class service extends record
   }
 
   /**
-   * Returns the url for this service as defined in the local settings file
+   * Returns the url for this appointment as defined in the local settings file
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_url()
   {
-    // the url will be in a define: <SERVICE_NAME>_URL
+    // the url will be in a define: <APPLICATION_NAME>_URL
     $constant_name = sprintf( '%s_URL', strtoupper( $this->name ) );
     if( !defined( $constant_name ) )
       throw lib::create( 'exception\runtime', sprintf(
-        'Tried to get url for service "%s" but setting ["url"]["%s"] is missing.',
+        'Tried to get url for appointment "%s" but setting ["url"]["%s"] is missing.',
         $this->name,
         strtoupper( $this->name ) ) );
 
@@ -142,7 +142,7 @@ class service extends record
   }
 
   /**
-   * Returns the type of grouping that this service has for a particular cohort.
+   * Returns the type of grouping that this appointment has for a particular cohort.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\cohort $db_cohort
@@ -153,18 +153,18 @@ class service extends record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get cohort gropuing for service with no id.' );
+      log::warning( 'Tried to get cohort gropuing for appointment with no id.' );
       return '';
     }
 
     return static::db()->get_one( sprintf(
-      'SELECT grouping FROM service_has_cohort WHERE service_id = %s AND cohort_id = %s',
+      'SELECT grouping FROM appointment_has_cohort WHERE appointment_id = %s AND cohort_id = %s',
       $this->id,
       $db_cohort->id ) );
   }
 
   /**
-   * Returns an array of all grouping types used by this service
+   * Returns an array of all grouping types used by this appointment
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @access public
@@ -174,14 +174,14 @@ class service extends record
     $database_class_name = lib::get_class_name( 'database\database' );
 
     return static::db()->get_row( sprintf(
-      'SELECT DISTINCT grouping FROM service_has_cohort WHERE service_id = %s',
+      'SELECT DISTINCT grouping FROM appointment_has_cohort WHERE appointment_id = %s',
       $database_class_name::format_string( $this->id ) ) );
   }
 
   /**
-   * Returns an array of all grouping types (from the service_has_cohort.grouping column).
+   * Returns an array of all grouping types (from the appointment_has_cohort.grouping column).
    * 
-   * This method is needed since there is no service_has_cohort active record class to call
+   * This method is needed since there is no appointment_has_cohort active record class to call
    * get_enum_values() on.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name A column name in the record's corresponding table.
@@ -191,7 +191,7 @@ class service extends record
    */
   public static function get_grouping_types()
   {
-    $type = static::db()->get_column_type( 'service_has_cohort', 'grouping' );
+    $type = static::db()->get_column_type( 'appointment_has_cohort', 'grouping' );
     preg_match_all( "/'[^']+'/", $type, $matches );
     $values = array();
     foreach( current( $matches ) as $match ) $values[] = substr( $match, 1, -1 );
@@ -200,9 +200,9 @@ class service extends record
   }
 
   /**
-   * Returns the event-type associated with the releasing of participants to this service
+   * Returns the event-type associated with the releasing of participants to this appointment
    * 
-   * Note that only services which are release-based will have an event-type associated with it.
+   * Note that only appointments which are release-based will have an event-type associated with it.
    * If no event-type exists this method will return NULL.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\event_type
@@ -212,7 +212,7 @@ class service extends record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get release event_type for service with no id.' );
+      log::warning( 'Tried to get release event_type for appointment with no id.' );
       return '';
     }
 

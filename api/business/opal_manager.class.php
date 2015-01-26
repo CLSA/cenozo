@@ -157,9 +157,9 @@ class opal_manager extends \cenozo\factory
     else if( 0 == strlen( $value ) )
       throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
 
-    // if no language is specified then use the service's default
+    // if no language is specified then use the application's default
     if( is_null( $db_language ) )
-      $db_language = lib::create( 'business\session' )->get_service()->get_language();
+      $db_language = lib::create( 'business\session' )->get_application()->get_language();
 
     // NOTE: as a temporary fix to Opal not responding promptly to queries the following
     // variables have been cached into the local database and are to be accessed directly

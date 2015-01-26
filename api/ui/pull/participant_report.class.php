@@ -41,7 +41,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     parent::prepare();
 
     $util_class_name = lib::get_class_name( 'util' );
-    $service_class_name = lib::get_class_name( 'database\service' );
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
     $database_class_name = lib::get_class_name( 'database\database' );
     $session = lib::create( 'business\session' );
 
@@ -72,17 +72,17 @@ class participant_report extends \cenozo\ui\pull\base_report
     // get the list of all site_id arguments
     $site_id_list = array();
     $released_list = array();
-    foreach( $service_class_name::select() as $db_service )
+    foreach( $appointment_class_name::select() as $db_appointment )
     {
-      if( $db_service->get_site_count() )
-      { // don't include services without sites
-        $column_name = $db_service->name.'_include';
-        $site_include[$db_service->id] = $this->get_argument( $column_name );
-        $column_name = $db_service->name.'_site_id';
-        $site_id_list[$db_service->id] = $this->get_argument( $column_name );
-        $column_name = $db_service->name.'_released';
-        $released_list[$db_service->id] =
-          array( 'db_service' => $db_service,
+      if( $db_appointment->get_site_count() )
+      { // don't include appointments without sites
+        $column_name = $db_appointment->name.'_include';
+        $site_include[$db_appointment->id] = $this->get_argument( $column_name );
+        $column_name = $db_appointment->name.'_site_id';
+        $site_id_list[$db_appointment->id] = $this->get_argument( $column_name );
+        $column_name = $db_appointment->name.'_released';
+        $released_list[$db_appointment->id] =
+          array( 'db_appointment' => $db_appointment,
                  'released' => $this->get_argument( $column_name ) );
       }
     }
@@ -120,18 +120,18 @@ class participant_report extends \cenozo\ui\pull\base_report
     }
 
     // create temporary table of last consent
-    $service_class_name::db()->execute(
+    $appointment_class_name::db()->execute(
       'CREATE TEMPORARY TABLE temp_last_consent '.
       'SELECT * FROM participant_last_consent' );
-    $service_class_name::db()->execute(
+    $appointment_class_name::db()->execute(
       'ALTER TABLE temp_last_consent '.
       'ADD INDEX dk_participant_id_consent_id ( participant_id, consent_id )' );
 
     // create temporary table of last written consent
-    $service_class_name::db()->execute(
+    $appointment_class_name::db()->execute(
       'CREATE TEMPORARY TABLE temp_last_written_consent '.
       'SELECT * FROM participant_last_written_consent' );
-    $service_class_name::db()->execute(
+    $appointment_class_name::db()->execute(
       'ALTER TABLE temp_last_written_consent '.
       'ADD INDEX dk_participant_id ( participant_id )' );
 
@@ -178,62 +178,62 @@ class participant_report extends \cenozo\ui\pull\base_report
     if( '' !== $grouping ) $this->modifier->where( 'participant.grouping', '=', $grouping );
     if( '' !== $active ) $this->modifier->where( 'participant.active', '=', $active );
 
-    foreach( $service_class_name::select() as $db_service )
+    foreach( $appointment_class_name::select() as $db_appointment )
     {
-      if( $db_service->get_site_count() && $site_include[$db_service->id] )
+      if( $db_appointment->get_site_count() && $site_include[$db_appointment->id] )
       {
-        $site = sprintf( '%s_site', $db_service->name );
-        $participant_site = sprintf( '%s_ps', $db_service->name );
+        $site = sprintf( '%s_site', $db_appointment->name );
+        $participant_site = sprintf( '%s_ps', $db_appointment->name );
 
         $join_mod = lib::create( 'database\modifier' );
         $join_mod->where( 'participant.id', '=', $participant_site.'.participant_id', false );
-        $join_mod->where( $participant_site.'.service_id', '=', $db_service->id );
+        $join_mod->where( $participant_site.'.appointment_id', '=', $db_appointment->id );
         $this->modifier->left_join( 'participant_site AS '.$participant_site, $join_mod );
         $this->modifier->left_join( 'site AS '.$site, $participant_site.'.site_id', $site.'.id' );
 
         $this->sql_columns .= sprintf( '%s.name AS %s_name, ', $site, $site );
 
         // restrict, if necessary
-        $site_id = $site_id_list[$db_service->id];
+        $site_id = $site_id_list[$db_appointment->id];
         if( '' !== $site_id )
         {
           if( -1 == $site_id )
           {
-            $this->modifier->where( $participant_site.'.service_id', '=', $db_service->id );
+            $this->modifier->where( $participant_site.'.appointment_id', '=', $db_appointment->id );
             $this->modifier->where( $participant_site.'.site_id', '=', NULL );
           }
           else
           {
-            $this->modifier->where( $participant_site.'.service_id', '=', $db_service->id );
+            $this->modifier->where( $participant_site.'.appointment_id', '=', $db_appointment->id );
             $this->modifier->where( $participant_site.'.site_id', '=', $site_id );
           }
         }
       }
     }
 
-    foreach( $released_list as $service_id => $data )
+    foreach( $released_list as $appointment_id => $data )
     {
-      $db_service = $data['db_service'];
+      $db_appointment = $data['db_appointment'];
       $released = $data['released'];
 
       if( '' !== $released )
       {
-        $service_has_participant = sprintf( '%s_shp', $db_service->name );
+        $appointment_has_participant = sprintf( '%s_shp', $db_appointment->name );
         if( $released )
         {
           $join_mod = lib::create( 'database\modifier' );
-          $join_mod->where( 'participant.id', '=', $service_has_participant.'.participant_id', false );
-          $join_mod->where( $service_has_participant.'.service_id', '=', $service_id );
-          $this->modifier->join( 'service_has_participant AS '.$service_has_participant, $join_mod );
-          $this->modifier->where( $service_has_participant.'.datetime', '!=', NULL );
+          $join_mod->where( 'participant.id', '=', $appointment_has_participant.'.participant_id', false );
+          $join_mod->where( $appointment_has_participant.'.appointment_id', '=', $appointment_id );
+          $this->modifier->join( 'appointment_has_participant AS '.$appointment_has_participant, $join_mod );
+          $this->modifier->where( $appointment_has_participant.'.datetime', '!=', NULL );
         }
-        else // not released means the participant may not be in the service_has_participant table
+        else // not released means the participant may not be in the appointment_has_participant table
         {
           $modifier = lib::create( 'database\modifier' );
           $join_mod = lib::create( 'database\modifier' );
-          $join_mod->where( 'participant.id', '=', $service_has_participant.'.participant_id', false );
-          $join_mod->where( $service_has_participant.'.service_id', '=', $service_id );
-          $modifier->join( 'service_has_participant AS '.$service_has_participant, $join_mod );
+          $join_mod->where( 'participant.id', '=', $appointment_has_participant.'.participant_id', false );
+          $join_mod->where( $appointment_has_participant.'.appointment_id', '=', $appointment_id );
+          $modifier->join( 'appointment_has_participant AS '.$appointment_has_participant, $join_mod );
           $modifier->where( 'datetime', '!=', NULL );
 
           $sql = sprintf(
@@ -278,7 +278,7 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     $column =
       sprintf( 'IFNULL( participant.language_id, %s )',
-               $database_class_name::format_string( $session->get_service()->language_id ) );
+               $database_class_name::format_string( $session->get_appointment()->language_id ) );
     if( '' !== $restrict_language_id )
       $this->modifier->where( $column, '=', $restrict_language_id );
     else $this->sql_columns .= $column.' AS language_id, ';

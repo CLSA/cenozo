@@ -39,7 +39,7 @@ class site_view extends base_view
     parent::prepare();
 
     // create an associative array with everything we want to display about the site
-    $this->add_item( 'service_id', 'constant', 'Service' );
+    $this->add_item( 'appointment_id', 'constant', 'Application' );
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'timezone', 'enum', 'Time Zone' );
     $this->add_item( 'title', 'string', 'Institution' );
@@ -92,7 +92,7 @@ class site_view extends base_view
     reset( $regions );
 
     // set the view's items
-    $this->set_item( 'service_id', $record->get_service()->name );
+    $this->set_item( 'appointment_id', $record->get_appointment()->name );
     $this->set_item( 'name', $record->name, true );
     $this->set_item( 'timezone', $record->timezone, true, $timezones );
     $this->set_item( 'title', $this->get_record()->title );

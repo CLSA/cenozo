@@ -1,6 +1,6 @@
 <?php
 /**
- * service_new_cohort.class.php
+ * appointment_delete_role.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,19 +10,19 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: service new_cohort
+ * push: appointment delete_role
  */
-class service_new_cohort extends base_record
+class appointment_delete_role extends base_record
 {
   /**
    * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args Push arguments
-   * @cohort public
+   * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'service', 'new_cohort', $args );
+    parent::__construct( 'appointment', 'delete_role', $args );
   }
 
   /**
@@ -35,8 +35,6 @@ class service_new_cohort extends base_record
   {
     parent::execute();
 
-    $this->get_record()->add_cohort(
-      $this->get_argument( 'id_list' ),
-      $this->get_argument( 'grouping' ) );
+    $this->get_record()->remove_role( $this->get_argument( 'remove_id' ) );
   }
 }

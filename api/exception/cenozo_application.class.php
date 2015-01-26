@@ -1,6 +1,6 @@
 <?php
 /**
- * cenozo_service.class.php
+ * cenozo_application.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,11 +10,11 @@ namespace cenozo\exception;
 use cenozo\lib, cenozo\log;
 
 /**
- * cenozo_service: cenozo service exceptions
+ * cenozo_application: cenozo application exceptions
  * 
  * This exception is used to duplicate an exception received from another cenozo application.
  */
-class cenozo_service extends base_exception
+class cenozo_application extends base_exception
 {
   /**
    * Constructor

@@ -40,12 +40,12 @@ class participant_site_reassign extends \cenozo\ui\push\base_participant_multi
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     $site_id = $this->get_argument( 'site_id' );
-    $db_service = lib::create( 'database\service', $this->get_argument( 'service_id' ) );
+    $db_appointment = lib::create( 'database\appointment', $this->get_argument( 'appointment_id' ) );
     $db_site = $site_id ? lib::create( 'database\site', $site_id ) : NULL;
 
     try
     {
-      $participant_class_name::multi_set_preferred_site( $this->modifier, $db_service, $db_site );
+      $participant_class_name::multi_set_preferred_site( $this->modifier, $db_appointment, $db_site );
     }
     catch( \cenozo\exception\runtime $e )
     {
