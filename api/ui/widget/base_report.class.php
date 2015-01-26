@@ -61,7 +61,7 @@ abstract class base_report extends \cenozo\ui\widget
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
     $collection_class_name = lib::get_class_name( 'database\collection' );
     $language_class_name = lib::get_class_name( 'database\language' );
-    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $application_class_name = lib::get_class_name( 'database\application' );
     $source_class_name = lib::get_class_name( 'database\source' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
@@ -72,7 +72,7 @@ abstract class base_report extends \cenozo\ui\widget
         // if allowed, give them a list of sites to choose from
         $sites = array( 0 => 'All sites' );
         $site_mod = lib::create( 'database\modifier' );
-        $site_mod->order( 'appointment_id' );
+        $site_mod->order( 'application_id' );
         $site_mod->order( 'name' );
         foreach( $site_class_name::select( $site_mod ) as $db_site )
           $sites[$db_site->id] = $db_site->get_full_name();
@@ -148,15 +148,15 @@ abstract class base_report extends \cenozo\ui\widget
       $this->set_parameter( 'restrict_language_id', key( $language_list ), true, $language_list );
     }
 
-    if( $this->restrictions[ 'appointment' ] )
+    if( $this->restrictions[ 'application' ] )
     {
-      $appointment_mod = lib::create( 'database\modifier' );
-      $appointment_mod->order( 'name' );
-      $appointment_list = array( 0 => 'all' );
-      foreach( $appointment_class_name::select( $appointment_mod ) as $db_appointment )
-        $appointment_list[ $db_appointment->id ] = $db_appointment->name;
+      $application_mod = lib::create( 'database\modifier' );
+      $application_mod->order( 'name' );
+      $application_list = array( 0 => 'all' );
+      foreach( $application_class_name::select( $application_mod ) as $db_application )
+        $application_list[ $db_application->id ] = $db_application->name;
       
-      $this->set_parameter( 'restrict_appointment_id', key( $appointment_list ), true, $appointment_list );
+      $this->set_parameter( 'restrict_application_id', key( $application_list ), true, $application_list );
     }
 
     if( $this->restrictions[ 'source' ] )
@@ -255,10 +255,10 @@ abstract class base_report extends \cenozo\ui\widget
       $this->restrictions[ 'language' ] = true;
       $this->add_parameter( 'restrict_language_id', 'enum', 'Language' );
     }
-    else if( 'appointment' == $restriction_type )
+    else if( 'application' == $restriction_type )
     {
-      $this->restrictions[ 'appointment' ] = true;
-      $this->add_parameter( 'restrict_appointment_id', 'enum', 'Application' );
+      $this->restrictions[ 'application' ] = true;
+      $this->add_parameter( 'restrict_application_id', 'enum', 'Application' );
     }
     else if( 'source' == $restriction_type )
     {
@@ -445,7 +445,7 @@ abstract class base_report extends \cenozo\ui\widget
     'collection' => false,
     'grouping' => false,
     'language' => false,
-    'appointment' => false,
+    'application' => false,
     'source' => false,
     'uid_list' => false );
 

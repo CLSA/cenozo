@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_delete_region_site.class.php
+ * application_delete_region_site.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: appointment delete_region_site
+ * push: application delete_region_site
  */
-class appointment_delete_region_site extends base_delete_record
+class application_delete_region_site extends base_delete_record
 {
   /**
    * Constructor.
@@ -22,6 +22,6 @@ class appointment_delete_region_site extends base_delete_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', 'region_site', $args );
+    parent::__construct( 'application', 'region_site', $args );
   }
 }

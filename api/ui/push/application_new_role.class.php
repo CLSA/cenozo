@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_new_role.class.php
+ * application_new_role.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: appointment new_role
+ * push: application new_role
  */
-class appointment_new_role extends base_record
+class application_new_role extends base_record
 {
   /**
    * Constructor.
@@ -22,7 +22,7 @@ class appointment_new_role extends base_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', 'new_role', $args );
+    parent::__construct( 'application', 'new_role', $args );
   }
 
   /**

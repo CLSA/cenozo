@@ -15,13 +15,13 @@ use cenozo\lib, cenozo\log;
 class site extends base_access
 {
   /**
-   * Extend parent method by restricting selection to records belonging to this appointment only
+   * Extend parent method by restricting selection to records belonging to this application only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @param boolean $id_only Whether to return a list of primary ids instead of active records
-   * @param boolean $full If true then records will not be restricted by appointment
+   * @param boolean $full If true then records will not be restricted by application
    * @access public
    * @static
    */
@@ -32,14 +32,14 @@ class site extends base_access
     {
       // make sure to only include sites belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'appointment_id', '=', lib::create( 'business\session' )->get_appointment()->id );
+      $modifier->where( 'application_id', '=', lib::create( 'business\session' )->get_application()->id );
     }
 
     return parent::select( $modifier, $count, $distinct, $id_only );
   }
 
   /**
-   * Call parent method without restricting records by appointment.
+   * Call parent method without restricting records by application.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
@@ -54,7 +54,7 @@ class site extends base_access
     if( !$full )
     {
       if( !is_null( $db_site ) &&
-          $db_site->appointment_id != lib::create( 'business\session' )->get_appointment()->id )
+          $db_site->application_id != lib::create( 'business\session' )->get_application()->id )
         $db_site = NULL;
     }
     

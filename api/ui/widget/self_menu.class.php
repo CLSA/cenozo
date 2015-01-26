@@ -38,8 +38,8 @@ class self_menu extends \cenozo\ui\widget
     $role = lib::create( 'business\session' )->get_role()->name;
     if( 'administrator' != $role ) $this->exclude_list( 'language' );
 
-    // exclude any grouping types which aren't used by the appointment
-    $grouping_list = lib::create( 'business\session' )->get_appointment()->get_grouping_list();
+    // exclude any grouping types which aren't used by the application
+    $grouping_list = lib::create( 'business\session' )->get_application()->get_grouping_list();
     if( !in_array( 'jurisdiction', $grouping_list ) ) $this->exclude_list( 'jurisdiction' );
     if( !in_array( 'region', $grouping_list ) ) $this->exclude_list( 'region_site' );
   }

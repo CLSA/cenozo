@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_add.class.php
+ * application_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget appointment add
+ * widget application add
  */
-class appointment_add extends base_view
+class application_add extends base_view
 {
   /**
    * Constructor
@@ -24,7 +24,7 @@ class appointment_add extends base_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', 'add', $args );
+    parent::__construct( 'application', 'add', $args );
   }
 
   /**
@@ -42,7 +42,7 @@ class appointment_add extends base_view
     $this->add_item( 'name', 'string', 'Name',
                      'May only contain letters, numbers and underscores.' );
     $this->add_item( 'title', 'string', 'Title',
-                     'A user-friendly name for the appointment, may contain any characters.' );
+                     'A user-friendly name for the application, may contain any characters.' );
     $this->add_item( 'language_id', 'enum', 'Default Language' );
     $this->add_item( 'version', 'string', 'Version' );
     $this->add_item( 'release_based', 'boolean', 'Release Based' );

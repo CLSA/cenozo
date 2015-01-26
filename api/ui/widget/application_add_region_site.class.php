@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_add_region_site.class.php
+ * application_add_region_site.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget appointment add_region_site
+ * widget application add_region_site
  */
-class appointment_add_region_site extends base_add_record
+class application_add_region_site extends base_add_record
 {
   /**
    * Constructor
@@ -25,6 +25,6 @@ class appointment_add_region_site extends base_add_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', 'region_site', $args );
+    parent::__construct( 'application', 'region_site', $args );
   }
 }

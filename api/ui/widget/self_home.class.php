@@ -60,7 +60,7 @@ class self_home extends \cenozo\ui\widget
 
     $session = lib::create( 'business\session' );
     $setting_manager = lib::create( 'business\setting_manager' );
-    $db_appointment = $session->get_appointment();
+    $db_application = $session->get_application();
     $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -70,7 +70,7 @@ class self_home extends \cenozo\ui\widget
 
     $this->set_variable( 'title',
       sprintf( 'Welcome to %s version %s',
-               $db_appointment->title,
+               $db_application->title,
                $setting_manager->get_setting( 'general', 'version' ) ) );
     $this->set_variable( 'user_name', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'role_name', $db_role->name );

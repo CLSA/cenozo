@@ -15,13 +15,13 @@ use cenozo\lib, cenozo\log;
 class cohort extends record
 {
   /**
-   * Extend parent method by restricting selection to records belonging to this appointment only
+   * Extend parent method by restricting selection to records belonging to this application only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @param boolean $id_only Whether to return a list of primary ids instead of active records
-   * @param boolean $full If true then records will not be restricted by appointment
+   * @param boolean $full If true then records will not be restricted by application
    * @access public
    * @static
    */
@@ -32,19 +32,19 @@ class cohort extends record
     {
       // make sure to only include cohorts belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'appointment_has_cohort.appointment_id', '=',
-                        lib::create( 'business\session' )->get_appointment()->id );
+      $modifier->where( 'application_has_cohort.application_id', '=',
+                        lib::create( 'business\session' )->get_application()->id );
     }
 
     return parent::select( $modifier, $count, $distinct, $id_only );
   }
 
   /**
-   * Override parent method by restricting returned records to those belonging to this appointment only
+   * Override parent method by restricting returned records to those belonging to this application only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
-   * @param boolean $full If true then records will not be restricted by appointment
+   * @param boolean $full If true then records will not be restricted by application
    * @return database\record
    * @static
    * @access public
@@ -55,18 +55,18 @@ class cohort extends record
 
     if( !$full )
     {
-      $appointment_mod = lib::create( 'database\modifier' );
-      $appointment_mod->where(
-        'appointment_id', '=', lib::create( 'business\session' )->get_appointment()->id );
+      $application_mod = lib::create( 'database\modifier' );
+      $application_mod->where(
+        'application_id', '=', lib::create( 'business\session' )->get_application()->id );
       if( !is_null( $db_cohort ) &&
-          0 == $db_cohort->get_appointment_count( $appointment_mod ) ) $db_cohort = NULL;
+          0 == $db_cohort->get_application_count( $application_mod ) ) $db_cohort = NULL;
     }
 
     return $db_cohort;
   }
 
   /**
-   * Make sure to only include appointments which this cohort has access to.
+   * Make sure to only include applications which this cohort has access to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param modifier $modifier A modifier to apply to the list or count.
@@ -85,11 +85,11 @@ class cohort extends record
     $distinct = true,
     $id_only = false )
   { 
-    if( 'appointment' == $record_type )
+    if( 'application' == $record_type )
     {
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'appointment_has_cohort.appointment_id', '=',
-                        lib::create( 'business\session' )->get_appointment()->id );
+      $modifier->where( 'application_has_cohort.application_id', '=',
+                        lib::create( 'business\session' )->get_application()->id );
     }                   
     return parent::get_record_list(
       $record_type, $modifier, $inverted, $count, $distinct, $id_only );

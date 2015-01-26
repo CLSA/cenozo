@@ -41,7 +41,7 @@ class participant_report extends \cenozo\ui\pull\base_report
     parent::prepare();
 
     $util_class_name = lib::get_class_name( 'util' );
-    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $application_class_name = lib::get_class_name( 'database\application' );
     $database_class_name = lib::get_class_name( 'database\database' );
     $session = lib::create( 'business\session' );
 
@@ -72,17 +72,17 @@ class participant_report extends \cenozo\ui\pull\base_report
     // get the list of all site_id arguments
     $site_id_list = array();
     $released_list = array();
-    foreach( $appointment_class_name::select() as $db_appointment )
+    foreach( $application_class_name::select() as $db_application )
     {
-      if( $db_appointment->get_site_count() )
-      { // don't include appointments without sites
-        $column_name = $db_appointment->name.'_include';
-        $site_include[$db_appointment->id] = $this->get_argument( $column_name );
-        $column_name = $db_appointment->name.'_site_id';
-        $site_id_list[$db_appointment->id] = $this->get_argument( $column_name );
-        $column_name = $db_appointment->name.'_released';
-        $released_list[$db_appointment->id] =
-          array( 'db_appointment' => $db_appointment,
+      if( $db_application->get_site_count() )
+      { // don't include applications without sites
+        $column_name = $db_application->name.'_include';
+        $site_include[$db_application->id] = $this->get_argument( $column_name );
+        $column_name = $db_application->name.'_site_id';
+        $site_id_list[$db_application->id] = $this->get_argument( $column_name );
+        $column_name = $db_application->name.'_released';
+        $released_list[$db_application->id] =
+          array( 'db_application' => $db_application,
                  'released' => $this->get_argument( $column_name ) );
       }
     }
@@ -120,18 +120,18 @@ class participant_report extends \cenozo\ui\pull\base_report
     }
 
     // create temporary table of last consent
-    $appointment_class_name::db()->execute(
+    $application_class_name::db()->execute(
       'CREATE TEMPORARY TABLE temp_last_consent '.
       'SELECT * FROM participant_last_consent' );
-    $appointment_class_name::db()->execute(
+    $application_class_name::db()->execute(
       'ALTER TABLE temp_last_consent '.
       'ADD INDEX dk_participant_id_consent_id ( participant_id, consent_id )' );
 
     // create temporary table of last written consent
-    $appointment_class_name::db()->execute(
+    $application_class_name::db()->execute(
       'CREATE TEMPORARY TABLE temp_last_written_consent '.
       'SELECT * FROM participant_last_written_consent' );
-    $appointment_class_name::db()->execute(
+    $application_class_name::db()->execute(
       'ALTER TABLE temp_last_written_consent '.
       'ADD INDEX dk_participant_id ( participant_id )' );
 
@@ -178,62 +178,62 @@ class participant_report extends \cenozo\ui\pull\base_report
     if( '' !== $grouping ) $this->modifier->where( 'participant.grouping', '=', $grouping );
     if( '' !== $active ) $this->modifier->where( 'participant.active', '=', $active );
 
-    foreach( $appointment_class_name::select() as $db_appointment )
+    foreach( $application_class_name::select() as $db_application )
     {
-      if( $db_appointment->get_site_count() && $site_include[$db_appointment->id] )
+      if( $db_application->get_site_count() && $site_include[$db_application->id] )
       {
-        $site = sprintf( '%s_site', $db_appointment->name );
-        $participant_site = sprintf( '%s_ps', $db_appointment->name );
+        $site = sprintf( '%s_site', $db_application->name );
+        $participant_site = sprintf( '%s_ps', $db_application->name );
 
         $join_mod = lib::create( 'database\modifier' );
         $join_mod->where( 'participant.id', '=', $participant_site.'.participant_id', false );
-        $join_mod->where( $participant_site.'.appointment_id', '=', $db_appointment->id );
+        $join_mod->where( $participant_site.'.application_id', '=', $db_application->id );
         $this->modifier->left_join( 'participant_site AS '.$participant_site, $join_mod );
         $this->modifier->left_join( 'site AS '.$site, $participant_site.'.site_id', $site.'.id' );
 
         $this->sql_columns .= sprintf( '%s.name AS %s_name, ', $site, $site );
 
         // restrict, if necessary
-        $site_id = $site_id_list[$db_appointment->id];
+        $site_id = $site_id_list[$db_application->id];
         if( '' !== $site_id )
         {
           if( -1 == $site_id )
           {
-            $this->modifier->where( $participant_site.'.appointment_id', '=', $db_appointment->id );
+            $this->modifier->where( $participant_site.'.application_id', '=', $db_application->id );
             $this->modifier->where( $participant_site.'.site_id', '=', NULL );
           }
           else
           {
-            $this->modifier->where( $participant_site.'.appointment_id', '=', $db_appointment->id );
+            $this->modifier->where( $participant_site.'.application_id', '=', $db_application->id );
             $this->modifier->where( $participant_site.'.site_id', '=', $site_id );
           }
         }
       }
     }
 
-    foreach( $released_list as $appointment_id => $data )
+    foreach( $released_list as $application_id => $data )
     {
-      $db_appointment = $data['db_appointment'];
+      $db_application = $data['db_application'];
       $released = $data['released'];
 
       if( '' !== $released )
       {
-        $appointment_has_participant = sprintf( '%s_shp', $db_appointment->name );
+        $application_has_participant = sprintf( '%s_shp', $db_application->name );
         if( $released )
         {
           $join_mod = lib::create( 'database\modifier' );
-          $join_mod->where( 'participant.id', '=', $appointment_has_participant.'.participant_id', false );
-          $join_mod->where( $appointment_has_participant.'.appointment_id', '=', $appointment_id );
-          $this->modifier->join( 'appointment_has_participant AS '.$appointment_has_participant, $join_mod );
-          $this->modifier->where( $appointment_has_participant.'.datetime', '!=', NULL );
+          $join_mod->where( 'participant.id', '=', $application_has_participant.'.participant_id', false );
+          $join_mod->where( $application_has_participant.'.application_id', '=', $application_id );
+          $this->modifier->join( 'application_has_participant AS '.$application_has_participant, $join_mod );
+          $this->modifier->where( $application_has_participant.'.datetime', '!=', NULL );
         }
-        else // not released means the participant may not be in the appointment_has_participant table
+        else // not released means the participant may not be in the application_has_participant table
         {
           $modifier = lib::create( 'database\modifier' );
           $join_mod = lib::create( 'database\modifier' );
-          $join_mod->where( 'participant.id', '=', $appointment_has_participant.'.participant_id', false );
-          $join_mod->where( $appointment_has_participant.'.appointment_id', '=', $appointment_id );
-          $modifier->join( 'appointment_has_participant AS '.$appointment_has_participant, $join_mod );
+          $join_mod->where( 'participant.id', '=', $application_has_participant.'.participant_id', false );
+          $join_mod->where( $application_has_participant.'.application_id', '=', $application_id );
+          $modifier->join( 'application_has_participant AS '.$application_has_participant, $join_mod );
           $modifier->where( 'datetime', '!=', NULL );
 
           $sql = sprintf(
@@ -278,7 +278,7 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     $column =
       sprintf( 'IFNULL( participant.language_id, %s )',
-               $database_class_name::format_string( $session->get_appointment()->language_id ) );
+               $database_class_name::format_string( $session->get_application()->language_id ) );
     if( '' !== $restrict_language_id )
       $this->modifier->where( $column, '=', $restrict_language_id );
     else $this->sql_columns .= $column.' AS language_id, ';

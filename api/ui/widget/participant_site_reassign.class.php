@@ -38,7 +38,7 @@ class participant_site_reassign extends \cenozo\ui\widget\base_participant_multi
   {
     parent::prepare();
 
-    $this->add_parameter( 'appointment_id', 'enum', 'Application' );
+    $this->add_parameter( 'application_id', 'enum', 'Application' );
     $this->add_parameter( 'site_id', 'enum', 'Preferred Site' );
   }
 
@@ -52,36 +52,36 @@ class participant_site_reassign extends \cenozo\ui\widget\base_participant_multi
   {
     parent::setup();
 
-    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $application_class_name = lib::get_class_name( 'database\application' );
 
-    // create a list of appointments with each of that appointment's sites
-    $appointment_id = NULL;
-    $appointment_list = array();
-    $appointments = array();
-    foreach( $appointment_class_name::select() as $db_appointment )
+    // create a list of applications with each of that application's sites
+    $application_id = NULL;
+    $application_list = array();
+    $applications = array();
+    foreach( $application_class_name::select() as $db_application )
     {
-      $appointment_list[$db_appointment->id] = $db_appointment->title;
-      $appointment = array( 'id' => $db_appointment->id,
-                        'name' => $db_appointment->name,
+      $application_list[$db_application->id] = $db_application->title;
+      $application = array( 'id' => $db_application->id,
+                        'name' => $db_application->name,
                         'sites' => array() );
 
       $site_mod = lib::create( 'database\modifier' );
       $site_mod->order( 'name' );
-      foreach( $db_appointment->get_site_list( $site_mod ) as $db_site )
-        $appointment['sites'][] = array( 'id' => $db_site->id, 'name' => $db_site->name );
+      foreach( $db_application->get_site_list( $site_mod ) as $db_site )
+        $application['sites'][] = array( 'id' => $db_site->id, 'name' => $db_site->name );
 
-      if( count( $appointment['sites'] ) )
+      if( count( $application['sites'] ) )
       {
-        $appointments[] = $appointment;
-        if( is_null( $appointment_id ) ) $appointment_id = $db_appointment->id;
+        $applications[] = $application;
+        if( is_null( $application_id ) ) $application_id = $db_application->id;
       }
     }
 
-    $this->set_parameter( 'appointment_id', $appointment_id, true, $appointment_list );
+    $this->set_parameter( 'application_id', $application_id, true, $application_list );
     $this->set_parameter( 'site_id', 0, true, array() );
 
-    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $application_class_name = lib::get_class_name( 'database\application' );
 
-    $this->set_variable( 'appointments', $appointments );
+    $this->set_variable( 'applications', $applications );
   }
 }

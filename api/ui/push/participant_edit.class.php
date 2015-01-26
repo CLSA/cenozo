@@ -133,20 +133,20 @@ class participant_edit extends base_edit
   {
     parent::execute();
 
-    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $application_class_name = lib::get_class_name( 'database\application' );
     $record = $this->get_record();
     $columns = $this->get_argument( 'columns', array() );
     
     // look for preferred site column(s)
-    foreach( $appointment_class_name::select() as $db_appointment )
+    foreach( $application_class_name::select() as $db_application )
     {
-      $column_name = $db_appointment->name.'_site_id';
+      $column_name = $db_application->name.'_site_id';
 
       if( array_key_exists( $column_name, $columns ) )
       {
         $site_id = $columns[$column_name];
         $db_site = $site_id ? lib::create( 'database\site', $site_id ) : NULL;
-        $record->set_preferred_site( $db_appointment, $db_site );
+        $record->set_preferred_site( $db_application, $db_site );
       }
     }
 

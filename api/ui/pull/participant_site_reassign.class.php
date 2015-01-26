@@ -44,11 +44,11 @@ class participant_site_reassign extends \cenozo\ui\pull\base_participant_multi
     $invalid_count = 0;
     $affected_count = 0;
     
-    $db_appointment = lib::create( 'database\appointment', $this->get_argument( 'appointment_id' ) );
-    $cohort_id_list = $db_appointment->get_cohort_idlist();
+    $db_application = lib::create( 'database\application', $this->get_argument( 'application_id' ) );
+    $cohort_id_list = $db_application->get_cohort_idlist();
     $site_id = $this->get_argument( 'site_id' );
     
-    // count how many participants in the UID list belong to the selected appointment
+    // count how many participants in the UID list belong to the selected application
     $participant_mod = clone $this->modifier;
     $participant_mod->where( 'cohort_id', 'IN', $cohort_id_list );
     $participant_count = $participant_class_name::count( $participant_mod );
@@ -56,8 +56,8 @@ class participant_site_reassign extends \cenozo\ui\pull\base_participant_multi
 
     // count participant's whose effective site will be affected by the operation
     $participant_mod = clone $this->modifier;
-    $participant_mod->where( 'participant_default_site.appointment_id', '=', $db_appointment->id );
-    $participant_mod->where( 'participant_preferred_site.appointment_id', '=', $db_appointment->id );
+    $participant_mod->where( 'participant_default_site.application_id', '=', $db_application->id );
+    $participant_mod->where( 'participant_preferred_site.application_id', '=', $db_application->id );
 
     if( 0 < $site_id )
     { // the new site is different from the preferred, or if there is no preferred then
@@ -76,8 +76,8 @@ class participant_site_reassign extends \cenozo\ui\pull\base_participant_multi
     $affected_count = $participant_class_name::count( $participant_mod );
 
     $this->data = array(
-      'Participants belonging to appointment' => $participant_count,
-      'Participants not belonging to appointment' => $invalid_count,
+      'Participants belonging to application' => $participant_count,
+      'Participants not belonging to application' => $invalid_count,
       'Participants affected by operation' => $affected_count );
   }
 }

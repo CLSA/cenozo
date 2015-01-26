@@ -39,7 +39,7 @@ class site_list extends base_list
     parent::prepare();
 
     $this->add_column( 'name', 'string', 'Name', true );
-    $this->add_column( 'appointment.name', 'string', 'Application', true );
+    $this->add_column( 'application.name', 'string', 'Application', true );
     $this->add_column( 'users', 'number', 'Users', false );
     $this->add_column( 'last', 'fuzzy', 'Last activity', false );
   }
@@ -63,7 +63,7 @@ class site_list extends base_list
 
       $this->add_row( $record->id,
         array( 'name' => $record->name,
-               'appointment.name' => $record->get_appointment()->name,
+               'application.name' => $record->get_application()->name,
                'users' => $record->get_user_count(),
                'last' => $last ) );
     }

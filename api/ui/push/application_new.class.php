@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_new.class.php
+ * application_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,11 +10,11 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: appointment new
+ * push: application new
  *
- * Create a new appointment.
+ * Create a new application.
  */
-class appointment_new extends base_new
+class application_new extends base_new
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class appointment_new extends base_new
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', $args );
+    parent::__construct( 'application', $args );
   }
 
   /**
@@ -43,11 +43,11 @@ class appointment_new extends base_new
     // make sure the name column isn't blank
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
       throw lib::create( 'exception\notice',
-        'The appointment\'s name cannot be left blank.', __METHOD__ );
+        'The application\'s name cannot be left blank.', __METHOD__ );
     // make sure the name column contains letters, numbers and underscores only
     else if( preg_match( '/[^a-zA-Z0-9_]/', $columns['name'] ) )
       throw lib::create( 'exception\notice',
-        'The appointment\'s name can include letters, numbers and underscores only.', __METHOD__ );
+        'The application\'s name can include letters, numbers and underscores only.', __METHOD__ );
   }
 
   /**
@@ -60,7 +60,7 @@ class appointment_new extends base_new
   {
     parent::setup();
 
-    // create a release event type for the new appointment
+    // create a release event type for the new application
     $db_release_event_type = lib::create( 'database\event_type' );
     $db_release_event_type->save();
     $this->get_record()->release_event_type_id = $db_release_event_type->id;
@@ -76,7 +76,7 @@ class appointment_new extends base_new
   {
     parent::finish();
 
-    // update the appointment's event_type
+    // update the application's event_type
     $this->get_record()->update_release_event_type();
   }
 }

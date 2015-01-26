@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_add_jurisdiction.class.php
+ * application_add_jurisdiction.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\widget;
 use cenozo\lib, cenozo\log;
 
 /**
- * widget appointment add_jurisdiction
+ * widget application add_jurisdiction
  */
-class appointment_add_jurisdiction extends base_add_record
+class application_add_jurisdiction extends base_add_record
 {
   /**
    * Constructor
@@ -25,6 +25,6 @@ class appointment_add_jurisdiction extends base_add_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', 'jurisdiction', $args );
+    parent::__construct( 'application', 'jurisdiction', $args );
   }
 }

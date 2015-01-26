@@ -100,14 +100,14 @@ class user_list extends site_restricted_list
    */
   public function determine_record_count( $modifier = NULL )
   {
-    // only include users who have access to a site and role belonging to this appointment
-    $db_appointment = lib::create( 'business\session' )->get_appointment();
+    // only include users who have access to a site and role belonging to this application
+    $db_application = lib::create( 'business\session' )->get_application();
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'access', 'user.id', 'access.user_id' );
     $modifier->join( 'site', 'access.site_id', 'site.id' );
-    $modifier->where( 'site.appointment_id', '=', $db_appointment->id );
-    $modifier->join( 'appointment_has_role', 'access.role_id', 'appointment_has_role.role_id' );
-    $modifier->where( 'appointment_has_role.appointment_id', '=', $db_appointment->id );
+    $modifier->where( 'site.application_id', '=', $db_application->id );
+    $modifier->join( 'application_has_role', 'access.role_id', 'application_has_role.role_id' );
+    $modifier->where( 'application_has_role.application_id', '=', $db_application->id );
 
     if( !is_null( $this->db_restrict_site ) )
       $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );
@@ -127,14 +127,14 @@ class user_list extends site_restricted_list
    */
   public function determine_record_list( $modifier = NULL )
   {
-    // only include users who have access to a site and role belonging to this appointment
-    $db_appointment = lib::create( 'business\session' )->get_appointment();
+    // only include users who have access to a site and role belonging to this application
+    $db_application = lib::create( 'business\session' )->get_application();
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'access', 'user.id', 'access.user_id' );
     $modifier->join( 'site', 'access.site_id', 'site.id' );
-    $modifier->where( 'site.appointment_id', '=', $db_appointment->id );
-    $modifier->join( 'appointment_has_role', 'access.role_id', 'appointment_has_role.role_id' );
-    $modifier->where( 'appointment_has_role.appointment_id', '=', $db_appointment->id );
+    $modifier->where( 'site.application_id', '=', $db_application->id );
+    $modifier->join( 'application_has_role', 'access.role_id', 'application_has_role.role_id' );
+    $modifier->where( 'application_has_role.application_id', '=', $db_application->id );
 
     if( !is_null( $this->db_restrict_site ) )
       $modifier->where( 'access.site_id', '=', $this->db_restrict_site->id );

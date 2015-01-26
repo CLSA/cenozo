@@ -38,24 +38,24 @@ class participant_report extends \cenozo\ui\widget\base_report
   {
     parent::prepare();
 
-    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $application_class_name = lib::get_class_name( 'database\application' );
 
     $this->add_restriction( 'collection' );
     $this->add_restriction( 'source' );
     $this->add_restriction( 'cohort' );
     $this->add_restriction( 'grouping' );
     $this->add_parameter( 'active', 'boolean', 'Active' );
-    foreach( $appointment_class_name::select() as $db_appointment )
+    foreach( $application_class_name::select() as $db_application )
     {
-      if( $db_appointment->get_site_count() )
-      { // don't include appointments without sites
+      if( $db_application->get_site_count() )
+      { // don't include applications without sites
         $this->add_separator();
         $this->add_parameter(
-          $db_appointment->name.'_include', 'boolean', 'Include '.$db_appointment->title.' Site' );
+          $db_application->name.'_include', 'boolean', 'Include '.$db_application->title.' Site' );
         $this->add_parameter(
-          $db_appointment->name.'_site_id', 'enum', $db_appointment->title.' Site' );
+          $db_application->name.'_site_id', 'enum', $db_application->title.' Site' );
         $this->add_parameter(
-          $db_appointment->name.'_released', 'boolean', 'Released to '.$db_appointment->title );
+          $db_application->name.'_released', 'boolean', 'Released to '.$db_application->title );
       }
     }
     $this->add_separator();
@@ -93,7 +93,7 @@ class participant_report extends \cenozo\ui\widget\base_report
   {
     parent::setup();
 
-    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $application_class_name = lib::get_class_name( 'database\application' );
     $region_class_name = lib::get_class_name( 'database\region' );
     $age_group_class_name = lib::get_class_name( 'database\age_group' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
@@ -133,19 +133,19 @@ class participant_report extends \cenozo\ui\widget\base_report
       $event_type_list[$db_event_type->id] = $db_event_type->name;
 
     $this->set_parameter( 'active', NULL, false );
-    foreach( $appointment_class_name::select() as $db_appointment )
+    foreach( $application_class_name::select() as $db_application )
     {
       $site_mod = lib::create( 'database\modifier' );
       $site_mod->order( 'name' );
       $site_list = array( -1 => 'No Site' );
-      foreach( $db_appointment->get_site_list( $site_mod ) as $db_site )
+      foreach( $db_application->get_site_list( $site_mod ) as $db_site )
         $site_list[$db_site->id] = $db_site->name;
 
       if( 1 < count( $site_list ) )
-      { // don't include appointments without sites
-        $this->set_parameter( $db_appointment->name.'_include', false, true );
-        $this->set_parameter( $db_appointment->name.'_site_id', NULL, false, $site_list );
-        $this->set_parameter( $db_appointment->name.'_released', NULL, false );
+      { // don't include applications without sites
+        $this->set_parameter( $db_application->name.'_include', false, true );
+        $this->set_parameter( $db_application->name.'_site_id', NULL, false, $site_list );
+        $this->set_parameter( $db_application->name.'_released', NULL, false );
       }
     }
     $this->set_parameter( 'region_id', NULL, false, $region_list );

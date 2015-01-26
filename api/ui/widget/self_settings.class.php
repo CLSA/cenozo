@@ -73,7 +73,7 @@ class self_settings extends \cenozo\ui\widget
     foreach( new \DirectoryIterator( JQUERY_UI_THEMES_PATH ) as $file )
       if( !$file->isDot() && $file->isDir() ) $themes[] = $file->getFilename();
 
-    $this->set_variable( 'appointment_title', $session->get_appointment()->title );
+    $this->set_variable( 'application_title', $session->get_application()->title );
     $this->set_variable( 'user', $db_user->first_name.' '.$db_user->last_name );
     $this->set_variable( 'version',
       lib::create( 'business\setting_manager' )->get_setting( 'general', 'version' ) );

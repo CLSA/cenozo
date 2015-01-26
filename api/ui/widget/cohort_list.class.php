@@ -40,9 +40,9 @@ class cohort_list extends base_list
     
     $this->add_column( 'name', 'string', 'Name', true );
     if( !is_null( $this->parent ) &&
-        'appointment' == $this->parent->get_subject() &&
+        'application' == $this->parent->get_subject() &&
         'view' == $this->parent->get_name() )
-      $this->add_column( 'appointment_has_cohort.grouping', 'string', 'Grouping', true );
+      $this->add_column( 'application_has_cohort.grouping', 'string', 'Grouping', true );
     $this->add_column( 'participants', 'number', 'Participants', false );
   }
   
@@ -61,9 +61,9 @@ class cohort_list extends base_list
       $row = array( 'name' => $record->name,
                     'participants' => $record->get_participant_count() );
       if( !is_null( $this->parent ) &&
-          'appointment' == $this->parent->get_subject() &&
+          'application' == $this->parent->get_subject() &&
           'view' == $this->parent->get_name() )
-        $row['appointment_has_cohort.grouping'] =
+        $row['application_has_cohort.grouping'] =
           $this->parent->get_record()->get_cohort_grouping( $record );
       $this->add_row( $record->id, $row );
     }

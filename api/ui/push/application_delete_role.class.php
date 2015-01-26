@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_delete_role.class.php
+ * application_delete_role.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: appointment delete_role
+ * push: application delete_role
  */
-class appointment_delete_role extends base_record
+class application_delete_role extends base_record
 {
   /**
    * Constructor.
@@ -22,7 +22,7 @@ class appointment_delete_role extends base_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', 'delete_role', $args );
+    parent::__construct( 'application', 'delete_role', $args );
   }
 
   /**

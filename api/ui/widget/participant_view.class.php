@@ -48,18 +48,18 @@ class participant_view extends base_view
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'language_id', 'enum', 'Preferred Language' );
 
-    // add an item for default and preferred sites for all appointments the participant's cohort
+    // add an item for default and preferred sites for all applications the participant's cohort
     // belongs to
-    $appointment_list = $this->get_record()->get_cohort()->get_appointment_list();
-    foreach( $appointment_list as $db_appointment )
+    $application_list = $this->get_record()->get_cohort()->get_application_list();
+    foreach( $application_list as $db_application )
     {
-      $title_postfix = 1 < count( $appointment_list ) ? sprintf( ' (%s)', $db_appointment->name ) : '';
+      $title_postfix = 1 < count( $application_list ) ? sprintf( ' (%s)', $db_application->name ) : '';
       $this->add_item(
-        sprintf( '%s_default_site', $db_appointment->name ),
+        sprintf( '%s_default_site', $db_application->name ),
         'constant',
         'Default Site'.$title_postfix );
       $this->add_item(
-        sprintf( '%s_site_id', $db_appointment->name ),
+        sprintf( '%s_site_id', $db_application->name ),
         'enum',
         'Preferred Site'.$title_postfix );
     }
@@ -174,24 +174,24 @@ class participant_view extends base_view
     $this->set_item( 'withdraw_option', $withdraw_option );
     $this->set_item( 'override_quota', $record->override_quota, true );
 
-    // set items for default and preferred sites for all appointments the participant's cohort
+    // set items for default and preferred sites for all applications the participant's cohort
     // belongs to
-    foreach( $this->get_record()->get_cohort()->get_appointment_list() as $db_appointment )
+    foreach( $this->get_record()->get_cohort()->get_application_list() as $db_application )
     {
       $sites = array();
       $site_mod = lib::create( 'database\modifier' );
-      $site_mod->order( 'appointment_id' );
+      $site_mod->order( 'application_id' );
       $site_mod->order( 'name' );
-      foreach( $db_appointment->get_site_list( $site_mod ) as $db_site )
+      foreach( $db_application->get_site_list( $site_mod ) as $db_site )
         $sites[$db_site->id] = $db_site->name;
 
-      $db_default_site = $record->get_default_site( $db_appointment );
+      $db_default_site = $record->get_default_site( $db_application );
       $this->set_item(
-        sprintf( '%s_default_site', $db_appointment->name ),
+        sprintf( '%s_default_site', $db_application->name ),
         is_null( $db_default_site ) ? '(none)' : $db_default_site->name );
-      $db_preferred_site = $record->get_preferred_site( $db_appointment );
+      $db_preferred_site = $record->get_preferred_site( $db_application );
       $this->set_item(
-        sprintf( '%s_site_id', $db_appointment->name ),
+        sprintf( '%s_site_id', $db_application->name ),
         is_null( $db_preferred_site ) ? '' : $db_preferred_site->id, false, $sites );
     }
 

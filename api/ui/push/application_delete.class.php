@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_delete.class.php
+ * application_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace cenozo\ui\push;
 use cenozo\lib, cenozo\log;
 
 /**
- * push: appointment delete
+ * push: application delete
  */
-class appointment_delete extends base_delete
+class application_delete extends base_delete
 {
   /**
    * Constructor.
@@ -22,7 +22,7 @@ class appointment_delete extends base_delete
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', $args );
+    parent::__construct( 'application', $args );
   }
 
   /**
@@ -48,13 +48,13 @@ class appointment_delete extends base_delete
   {
     parent::finish();
 
-    // delete the event_type associated with this appointment (if it is not in use)
+    // delete the event_type associated with this application (if it is not in use)
     if( 0 == $this->db_release_event_type->get_event_count() )
       $this->db_release_event_type->delete();
   }
 
   /**
-   * The appointment's release event-type
+   * The application's release event-type
    * @var database\event_type $db_release_event_type
    * @access protected
    */

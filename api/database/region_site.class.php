@@ -15,13 +15,13 @@ use cenozo\lib, cenozo\log;
 class region_site extends record
 {
   /**
-   * Extend parent method by restricting selection to records belonging to this appointment only
+   * Extend parent method by restricting selection to records belonging to this application only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @param boolean $id_only Whether to return a list of primary ids instead of active records
-   * @param boolean $full If true then records will not be restricted by appointment
+   * @param boolean $full If true then records will not be restricted by application
    * @access public
    * @static
    */
@@ -33,18 +33,18 @@ class region_site extends record
       // make sure to only include region_sites belonging to this application
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $modifier->where(
-        'region_site.appointment_id', '=', lib::create( 'business\session' )->get_appointment()->id );
+        'region_site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
     }
 
     return parent::select( $modifier, $count, $distinct, $id_only );
   }
 
   /**
-   * Override parent method by restricting returned records to those belonging to this appointment only
+   * Override parent method by restricting returned records to those belonging to this application only
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
-   * @param boolean $full If true then records will not be restricted by appointment
+   * @param boolean $full If true then records will not be restricted by application
    * @return database\record
    * @static
    * @access public
@@ -56,8 +56,8 @@ class region_site extends record
     if( !$full )
     {
       if( !is_null( $db_region_site ) &&
-          $db_region_site->appointment_id !=
-            lib::create( 'business\session' )->get_appointment()->id ) $db_region_site = NULL;
+          $db_region_site->application_id !=
+            lib::create( 'business\session' )->get_application()->id ) $db_region_site = NULL;
     }
 
     return $db_region_site;

@@ -38,7 +38,7 @@ class jurisdiction_view extends base_view
   {
     parent::prepare();
 
-    $this->add_item( 'appointment_id', 'hidden', 'Application' );
+    $this->add_item( 'application_id', 'hidden', 'Application' );
     $this->add_item( 'postcode', 'string', 'Postcode' );
     $this->add_item( 'longitude', 'number', 'Longitude' );
     $this->add_item( 'latitude', 'number', 'Latitude' );
@@ -60,13 +60,13 @@ class jurisdiction_view extends base_view
     // create enum arrays
     $sites = array();
     $site_mod = lib::create( 'database\modifier' );
-    $site_mod->where( 'appointment_id', '=', $this->get_record()->appointment_id );
+    $site_mod->where( 'application_id', '=', $this->get_record()->application_id );
     $site_mod->order( 'name' );
     foreach( $site_class_name::select( $site_mod ) as $db_site )
       $sites[$db_site->id] = $db_site->name;
     
     // set the view's items
-    $this->set_item( 'appointment_id', $this->get_record()->appointment_id );
+    $this->set_item( 'application_id', $this->get_record()->application_id );
     $this->set_item( 'postcode', $this->get_record()->postcode, true );
     $this->set_item( 'longitude', $this->get_record()->longitude, true );
     $this->set_item( 'latitude', $this->get_record()->latitude, true );

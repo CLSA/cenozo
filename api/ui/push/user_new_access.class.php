@@ -39,14 +39,14 @@ class user_new_access extends base_new_access
     $site_id_list = $this->get_argument( 'site_id_list' );
     $role_id_list = $this->get_argument( 'role_id_list' );
 
-    // get a list of which appointments we are adding access to
-    $appointment_id_list = array();
+    // get a list of which applications we are adding access to
+    $application_id_list = array();
     foreach( $site_id_list as $site_id )
     {
       $db_site = lib::create( 'database\site', $site_id );
-      $appointment_id_list[] = $db_site->appointment_id;
+      $application_id_list[] = $db_site->application_id;
     }
-    $appointment_id_list = array_unique( $appointment_id_list );
+    $application_id_list = array_unique( $application_id_list );
 
     // are we adding an admin role?
     $role_class_name = lib::get_class_name( 'database\role' );
@@ -54,20 +54,20 @@ class user_new_access extends base_new_access
     foreach( $role_id_list as $role_id )
     {
       if( $role_id == $db_administrator_role->id )
-      { // admin role being added, check the user for admin access to the appointment
-        foreach( $appointment_id_list as $appointment_id )
+      { // admin role being added, check the user for admin access to the application
+        foreach( $application_id_list as $application_id )
         {
           $access_mod = lib::create( 'database\modifier' );
           $access_mod->where( 'access.role_id', '=', $db_administrator_role->id );
-          $access_mod->where( 'site.appointment_id', '=', $appointment_id );
+          $access_mod->where( 'site.application_id', '=', $application_id );
           if( 0 == lib::create( 'business\session' )->get_user()->get_access_count( $access_mod ) )
           {
-            $db_appointment = lib::create( 'database\appointment', $appointment_id );
+            $db_application = lib::create( 'database\application', $application_id );
             throw lib::create( 'exception\notice',
               sprintf( 'You require administrator access to a %s site in order to grant '.
                        'administrator access to any %s site.',
-                       $db_appointment->name,
-                       $db_appointment->name ),
+                       $db_application->name,
+                       $db_application->name ),
               __METHOD__ );
           }
         }
