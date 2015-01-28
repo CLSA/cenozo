@@ -17,6 +17,10 @@ use cenozo\lib, cenozo\log;
  */
 abstract class record extends \cenozo\base_object
 {
+  const OBJECT_FORMAT = 0;
+  const ARRAY_FORMAT = 1;
+  const ID_FORMAT = 2;
+
   /**
    * Constructor
    * 
@@ -388,6 +392,14 @@ abstract class record extends \cenozo\base_object
     
     $this->column_values[$column_name] = $value;
   }
+
+  /**
+   * TODO: document
+   */
+  public function get_column_values()
+  {
+    return $this->column_values;
+  }
   
   /**
    * Magic call method.
@@ -439,7 +451,7 @@ abstract class record extends \cenozo\base_object
     
     // set up regular expressions
     $start = '/^add_|remove_|get_/';
-    $end = '/(_list|_idlist|_count)(_inverted)?$/';
+    $end = '/(_list|_idarray|_idlist|_count)(_inverted)?$/';
     
     // see if the start of the function name is a match
     if( !preg_match( $start, $name, $match ) ) throw $exception;
@@ -486,6 +498,8 @@ abstract class record extends \cenozo\base_object
       else
       { // calling one of: get_<record>_list( $modifier = NULL )
         //                 get_<record>_list_inverted( $modifier = NULL )
+        //                 get_<record>_arraylist( $modifier = NULL )
+        //                 get_<record>_arraylist_inverted( $modifier = NULL )
         //                 get_<record>_idlist( $modifier = NULL )
         //                 get_<record>_idlist_inverted( $modifier = NULL )
         //                 get_<record>_count( $modifier = NULL )
@@ -500,7 +514,15 @@ abstract class record extends \cenozo\base_object
         
         // determine the sub action and whether to invert the result
         $inverted = false;
-        if( 'list' == $sub_action || 'idlist' == $sub_action || 'count' == $sub_action ) {}
+        if( 'list' == $sub_action ||
+            'arraylist' == $sub_action ||
+            'idlist' == $sub_action ||
+            'count' == $sub_action ) {}
+        else if( 'arraylist_inverted' == $sub_action )
+        {
+          $sub_action = 'arraylist';
+          $inverted = true;
+        }
         else if( 'idlist_inverted' == $sub_action )
         {
           $sub_action = 'idlist';
@@ -528,11 +550,17 @@ abstract class record extends \cenozo\base_object
             ? $this->get_record_list( $subject, $modifier, $inverted )
             : $this->get_record_list( $subject, $modifier, $inverted, false, $distinct );
         }
-        if( 'idlist' == $sub_action )
+        else if( 'arraylist' == $sub_action )
         {
           return is_null( $distinct )
-            ? $this->get_record_idlist( $subject, $modifier, $inverted, false, true, true )
-            : $this->get_record_idlist( $subject, $modifier, $inverted, false, $distinct, true );
+            ? $this->get_record_arraylist( $subject, $modifier, $inverted )
+            : $this->get_record_arraylist( $subject, $modifier, $inverted, $distinct );
+        }
+        else if( 'idlist' == $sub_action )
+        {
+          return is_null( $distinct )
+            ? $this->get_record_idlist( $subject, $modifier, $inverted )
+            : $this->get_record_idlist( $subject, $modifier, $inverted, $distinct );
         }
         else if( 'count' == $sub_action )
         {
@@ -593,7 +621,7 @@ abstract class record extends \cenozo\base_object
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param boolean $id_only Whether to return a list of primary ids instead of active records
+   * @param enum $format Whether to return an object, column data or only the record id
    * @return array( record ) | array( int ) | int
    * @access protected
    */
@@ -603,7 +631,7 @@ abstract class record extends \cenozo\base_object
     $inverted = false,
     $count = false,
     $distinct = true,
-    $id_only = false )
+    $format = 0 )
   {
     $table_name = static::get_table_name();
     $primary_key_name = sprintf( '%s.%s', $table_name, static::get_primary_key_name() );
@@ -641,16 +669,34 @@ abstract class record extends \cenozo\base_object
     {
       $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      if( $inverted )
-      {
-        $modifier->where( $column_name, '=', NULL );
-        $modifier->or_where( $column_name, '!=', $primary_key_value );
-      }
-      else $modifier->where( $column_name, '=', $primary_key_value );
 
-      return $count
-        ? $foreign_class_name::count( $modifier )
-        : $foreign_class_name::select( $modifier );
+      if( self::COLUMN_FORMAT == $format )
+      {
+        if( $inverted )
+        {
+          $modifier->left_join( $record_type, $column_name, $primary_key_name );
+          $modifier->having( $column_name, '=', NULL );
+          $modifier->or_having( $column_name, '!=', $primary_key_value );
+        }
+        else
+        {
+          $modifier->join( $record_type, $column_name, $primary_key_name );
+        }
+        $modifier->where( $column_name, '=', $primary_key_value );
+      }
+      else
+      {
+        if( $inverted )
+        {
+          $modifier->where( $column_name, '=', NULL );
+          $modifier->or_where( $column_name, '!=', $primary_key_value );
+        }
+        else $modifier->where( $column_name, '=', $primary_key_value );
+
+        return $count
+          ? $foreign_class_name::count( $modifier )
+          : $foreign_class_name::select( $modifier );
+      }
     }
     else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
@@ -732,7 +778,8 @@ abstract class record extends \cenozo\base_object
                           ? 'SELECT COUNT( %s%s ) FROM %s %s'
                           : 'SELECT %s%s FROM %s %s',
                         $distinct ? 'DISTINCT ' : '',
-                        $foreign_key_name,
+                        !$count && static::ARRAY_FORMAT == $format ?
+                          $record_type.'.*' : $foreign_key_name,
                         $record_type,
                         $modifier->get_sql() );
       }
@@ -745,7 +792,8 @@ abstract class record extends \cenozo\base_object
                           ? 'SELECT COUNT( %s%s ) FROM %s %s'
                           : 'SELECT %s%s FROM %s %s',
                         $distinct ? 'DISTINCT ' : '',
-                        $joining_foreign_key_name,
+                        !$count && static::ARRAY_FORMAT == $format ?
+                          $record_type.'.*' : $joining_foreign_key_name,
                         $table_name,
                         $modifier->get_sql() );
       }
@@ -754,15 +802,31 @@ abstract class record extends \cenozo\base_object
       {
         return intval( static::db()->get_one( $sql ) );
       }
+      else if( static::ARRAY_FORMAT == $format )
+      {
+        $rows = static::db()->get_all( $sql );
+        foreach( $rows as $index => $row )
+        {
+          if( array_key_exists( 'update_timestamp', $row ) ) unset( $rows[$index]['update_timestamp'] );
+          if( array_key_exists( 'create_timestamp', $row ) ) unset( $rows[$index]['create_timestamp'] );
+        }
+        return $rows;
+      }
       else
       {
         $ids = static::db()->get_col( $sql );
-        if( $id_only) return $ids; // requested to return a list of ids only
-
-        // create records from the ids
-        $records = array();
-        foreach( $ids as $id ) $records[] = lib::create( 'database\\'.$record_type, $id );
-        return $records;
+        
+        if( static::ID_FORMAT == $format )
+        {
+          return $ids; // requested to return a list of ids only
+        }
+        else
+        {
+          // create records from the ids
+          $records = array();
+          foreach( $ids as $id ) $records[] = lib::create( 'database\\'.$record_type, $id );
+          return $records;
+        }
       }
     }
     
@@ -772,6 +836,23 @@ abstract class record extends \cenozo\base_object
                $table_name,
                $record_type ) );
     return $count ? 0 : array();
+  }
+
+  /**
+   * Returns an array of column values from the joining record table.
+   * This method is used to select a record's child records in one-to-many or many-to-many
+   * relationships.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @param modifier $modifier A modifier to apply to the count.
+   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
+   * @return int
+   * @access protected
+   */
+  protected function get_record_arraylist(
+    $record_type, $modifier = NULL, $inverted = false, $distinct = true )
+  {
+    return $this->get_record_list( $record_type, $modifier, $inverted, false, $distinct, static::ARRAY_FORMAT );
   }
 
   /**
@@ -788,7 +869,7 @@ abstract class record extends \cenozo\base_object
   protected function get_record_idlist(
     $record_type, $modifier = NULL, $inverted = false, $distinct = true )
   {
-    return $this->get_record_list( $record_type, $modifier, $inverted, false, $distinct, true );
+    return $this->get_record_list( $record_type, $modifier, $inverted, false, $distinct, static::ID_FORMAT );
   }
 
   /**
@@ -1023,13 +1104,13 @@ abstract class record extends \cenozo\base_object
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param boolean $id_only Whether to return a list of primary ids instead of active records
+   * @param enum $format Whether to return an object, column data or only the record id
    * @return array( record ) | int
    * @static
    * @access public
    */
   public static function select(
-    $modifier = NULL, $count = false, $distinct = true, $id_only = false )
+    $modifier = NULL, $count = false, $distinct = true, $format = 0 )
   {
     $class_index = lib::get_class_name( get_called_class(), true );
     $this_table = static::get_table_name();
@@ -1090,7 +1171,7 @@ abstract class record extends \cenozo\base_object
                     $count ? ' COUNT(' : '',
                     $distinct ? 'DISTINCT' : '',
                     $this_table,
-                    static::get_primary_key_name(),
+                    !$count && static::ARRAY_FORMAT == $format ? '*' : static::get_primary_key_name(),
                     $count ? ') ' : '',
                     $this_table,
                     is_null( $modifier ) ? '' : $modifier->get_sql() );
@@ -1099,16 +1180,48 @@ abstract class record extends \cenozo\base_object
     {
       return intval( static::db()->get_one( $sql ) );
     }
-    else
+    else if( static::ARRAY_FORMAT == $format )
+    {
+      $rows = static::db()->get_all( $sql );
+      foreach( $rows as $index => $row )
+      {
+        if( array_key_exists( 'update_timestamp', $row ) ) unset( $rows[$index]['update_timestamp'] );
+        if( array_key_exists( 'create_timestamp', $row ) ) unset( $rows[$index]['create_timestamp'] );
+      }
+      return $rows;
+    }
+    else // return objects or a list of ids
     {
       $id_list = static::db()->get_col( $sql );
-      if( $id_only ) return $id_list;
-
-      // create records from the ids
-      $records = array();
-      foreach( $id_list as $id ) $records[] = new static( $id );
-      return $records;
+      if( static::ID_FORMAT == $format )
+      {
+        return $id_list;
+      }
+      else
+      {
+        // create records from the ids
+        $records = array();
+        foreach( $id_list as $id ) $records[] = new static( $id );
+        return $records;
+      }
     }
+  }
+
+  /**
+   * Select a number of records as an array
+   * 
+   * A convenience method that returns an array of record primary ids.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the selection.
+   * @param boolean $count If true the total number of records instead of a list
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @return array( int )
+   * @static
+   * @access public
+   */
+  public static function arrayselect( $modifier = NULL, $count = false, $distinct = true )
+  {
+    return static::select( $modifier, $count, $distinct, static::ARRAY_FORMAT );
   }
 
   /**
@@ -1125,7 +1238,7 @@ abstract class record extends \cenozo\base_object
    */
   public static function idselect( $modifier = NULL, $count = false, $distinct = true )
   {
-    return static::select( $modifier, $count, $distinct, true );
+    return static::select( $modifier, $count, $distinct, static::ID_FORMAT );
   }
 
   /**

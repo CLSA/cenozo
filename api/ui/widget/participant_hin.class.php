@@ -42,7 +42,7 @@ class participant_hin extends base_view
 
     $this->set_heading( sprintf( 'Health Insurance Number for %s', $this->get_record()->uid ) );
     $db_operation = $operation_class_name::get_operation( 'push', 'participant', 'edit' );
-    $this->set_editable( lib::create( 'business\session' )->is_allowed( $db_operation ) );
+    $this->set_editable( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) );
 
     // we need to manually set the editable state based on whether the user has access to the
     // participant hin push operation

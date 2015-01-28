@@ -59,7 +59,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     // the appropriate operations are available
     if( $this->viewable )
     {
-      $this->viewable = $session->is_allowed(
+      $this->viewable = $session->is_operation_allowed(
         $operation_class_name::get_operation( 'widget', $this->get_subject(), 'view' ) );
     }
 
@@ -67,7 +67,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     {
       $subject = !is_null( $this->parent ) ? $this->parent->get_subject() : $this->get_subject();
       $name = !is_null( $this->parent ) ? 'add_'.$this->get_subject() : 'add';
-      $this->addable = $session->is_allowed(
+      $this->addable = $session->is_operation_allowed(
         $operation_class_name::get_operation( 'widget', $subject, $name ) );
     }
 
@@ -75,7 +75,7 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
     {
       $subject = !is_null( $this->parent ) ? $this->parent->get_subject() : $this->get_subject();
       $name = !is_null( $this->parent ) ? 'delete_'.$this->get_subject() : 'delete';
-      $this->removable = $session->is_allowed(
+      $this->removable = $session->is_operation_allowed(
         $operation_class_name::get_operation( 'push', $subject, $name ) );
     }
   }

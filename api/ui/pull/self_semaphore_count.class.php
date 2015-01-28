@@ -63,7 +63,7 @@ class self_semaphore_count extends \cenozo\ui\pull
         __METHOD__ );
     
     // and that the user is allowed to run it
-    if( !lib::create( 'business\session' )->is_allowed( $this->db_operation ) )
+    if( !lib::create( 'business\session' )->is_operation_allowed( $this->db_operation ) )
       throw lib::create( 'exception\permission', $this->db_operation, __METHOD__ );
   }
 

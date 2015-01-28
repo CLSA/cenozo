@@ -117,7 +117,7 @@ abstract class operation extends \cenozo\base_object
     if( $this->validate_access )
     {
       // throw a permission exception if the user is not allowed to perform this operation
-      if( !lib::create( 'business\session' )->is_allowed( $this->operation_record ) )
+      if( !lib::create( 'business\session' )->is_operation_allowed( $this->operation_record ) )
         throw lib::create( 'exception\permission', $this->operation_record, __METHOD__ );
     }
   }

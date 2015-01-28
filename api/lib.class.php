@@ -26,7 +26,7 @@ final class lib
    * Registers this class with PHP as an autoloader.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $operation_type The type of operation being performe
+   * @param string $operation_type The type of operation being performed
    * @param boolean $development_mode Whether the system is in development mode
    * @static
    * @access public

@@ -51,13 +51,13 @@ abstract class base_view extends base_record implements actionable
       
       if( $this->editable )
       {
-        $this->editable = $session->is_allowed(
+        $this->editable = $session->is_operation_allowed(
           $operation_class_name::get_operation( 'push', $this->get_subject(), 'edit' ) );
       }
 
       if( $this->removable )
       {
-        $this->removable = $session->is_allowed(
+        $this->removable = $session->is_operation_allowed(
           $operation_class_name::get_operation( 'push', $this->get_subject(), 'delete' ) );
       }
 

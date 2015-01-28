@@ -20,13 +20,13 @@ class role extends base_access
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param boolean $id_only Whether to return a list of primary ids instead of active records
+   * @param enum $format Whether to return an object, column data or only the record id
    * @param boolean $full If true then records will not be restricted by application
    * @access public
    * @static
    */
   public static function select(
-    $modifier = NULL, $count = false, $distinct = true, $id_only = false, $full = false )
+    $modifier = NULL, $count = false, $distinct = true, $format = 0, $full = false )
   {
     if( !$full )
     {
@@ -36,7 +36,7 @@ class role extends base_access
                         lib::create( 'business\session' )->get_application()->id );
     }
 
-    return parent::select( $modifier, $count, $distinct, $id_only );
+    return parent::select( $modifier, $count, $distinct, $format );
   }
 
   /**
@@ -73,7 +73,7 @@ class role extends base_access
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param boolean $id_only Whether to return a list of primary ids instead of active records
+   * @param enum $format Whether to return an object, column data or only the record id
    * @return array( record ) | array( int ) | int
    * @access protected
    */
@@ -83,7 +83,7 @@ class role extends base_access
     $inverted = false,
     $count = false,
     $distinct = true,
-    $id_only = false )
+    $format = 0 )
   {
     if( 'application' == $record_type )
     {
@@ -92,7 +92,7 @@ class role extends base_access
                         lib::create( 'business\session' )->get_application()->id );
     }
     return parent::get_record_list(
-      $record_type, $modifier, $inverted, $count, $distinct, $id_only );
+      $record_type, $modifier, $inverted, $count, $distinct, $format );
   }
 
   /**
@@ -113,6 +113,26 @@ class role extends base_access
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation_id', '=', $db_operation->id );
     return 0 < $this->get_operation_count( $modifier );
+  }
+
+  /**
+   * Returns whether the role has access to an operation
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\operation $db_operation
+   * @return bool
+   */
+  public function has_service( $db_service )
+  {
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to determine whether role has service for role with no id.' );
+      return false;
+    }
+
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'service_id', '=', $db_service->id );
+    return 0 < $this->get_service_count( $modifier );
   }
 
   /**

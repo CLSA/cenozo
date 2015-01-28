@@ -246,7 +246,7 @@ class participant_view extends base_view
 
     // add an delink action
     $db_operation = $operation_class_name::get_operation( 'push', 'participant', 'delink' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
     {
       $this->set_variable( 'allow_delink', true );
       $this->add_action( 'delink', 'De-Link', NULL,
@@ -256,7 +256,7 @@ class participant_view extends base_view
 
     // add an hin action
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'hin' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
       $this->add_action( 'hin', 'HIN', $db_operation,
         'Edit the participant\'s health insurance number.' );
   }

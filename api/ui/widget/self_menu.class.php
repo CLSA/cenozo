@@ -116,28 +116,28 @@ class self_menu extends \cenozo\ui\widget
 
     $db_operation =         
       $operation_class_name::get_operation( 'widget', 'participant', 'multiedit' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
       $utilities[] = array( 'heading' => 'Participant Multiedit',
                             'type' => 'widget',
                             'subject' => 'participant',
                             'name' => 'multiedit' );
     $db_operation =         
       $operation_class_name::get_operation( 'widget', 'participant', 'multinote' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
       $utilities[] = array( 'heading' => 'Participant Multinote',
                             'type' => 'widget',
                             'subject' => 'participant',
                             'name' => 'multinote' );
     $db_operation =
       $operation_class_name::get_operation( 'widget', 'participant', 'site_reassign' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
       $utilities[] = array( 'heading' => 'Participant Reassign',
                             'type' => 'widget',
                             'subject' => 'participant',
                             'name' => 'site_reassign' );
     $db_operation =
       $operation_class_name::get_operation( 'widget', 'participant', 'search' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
       $utilities[] = array( 'heading' => 'Participant Search',
                             'type' => 'widget',
                             'subject' => 'participant',

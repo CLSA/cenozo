@@ -344,10 +344,24 @@ class session extends \cenozo\singleton
    * @return boolean
    * @access public
    */
-  public function is_allowed( $operation )
+  public function is_operation_allowed( $operation )
   {
     return !is_null( $operation ) && !is_null( $this->role ) &&
            ( !$operation->restricted || $this->role->has_operation( $operation ) );
+  }
+
+  /**
+   * Return whether the session has permission to perform the given service.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\service $service If null this method returns false.
+   * @return boolean
+   * @access public
+   */
+  public function is_service_allowed( $service )
+  {
+    return !is_null( $service ) && !is_null( $this->role ) &&
+           ( !$service->restricted || $this->role->has_service( $service ) );
   }
 
   /**

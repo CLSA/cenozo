@@ -90,7 +90,7 @@ class user_view extends base_view
 
     // add the reset password action
     $db_operation = $operation_class_name::get_operation( 'push', 'user', 'reset_password' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
     {
       $this->add_action( 'reset_password', 'Reset Password', $db_operation,
         'The user\'s new password will be "password", which they will be promted to change the '.
