@@ -49,17 +49,7 @@ class status extends \cenozo\base_object
    */
   public function get_message()
   {
-    $message = 'Unknown';
-    if( 200 == $this->code ) $message = 'OK';
-    else if( 201 == $this->code ) $message = 'Created';
-    else if( 202 == $this->code ) $message = 'Accepted';
-    else if( 204 == $this->code ) $message = 'No Content';
-    else if( 404 == $this->code ) $message = 'Not Found';
-    else if( 405 == $this->code ) $message = 'Method Not Allowed';
-    else if( 500 == $this->code ) $message = 'Internal Server Error';
-    else if( 501 == $this->code ) $message = 'Not Implemented';
-
-    return $message;
+    return array_key_exists( $this->code, static::$code_list ) ? static::$code_list[$this->code] : 'Unknown';
   }
 
   /**
@@ -74,4 +64,47 @@ class status extends \cenozo\base_object
    * TODO: document
    */
   protected $code;
+
+  protected static $code_list = array(
+    100 => 'Continue',
+    101 => 'Switching Protocols',
+    200 => 'OK',
+    201 => 'Created',
+    202 => 'Accepted',
+    203 => 'Non-Authoritative Information',
+    204 => 'No Content',
+    205 => 'Reset Content',
+    206 => 'Partial Content',
+    300 => 'Multiple Choices',
+    301 => 'Moved Permanently',
+    302 => 'Found',
+    303 => 'See Other',
+    304 => 'Not Modified',
+    305 => 'Use Proxy',
+    306 => '(Unused)',
+    307 => 'Temporary Redirect',
+    400 => 'Bad Request',
+    401 => 'Unauthorized',
+    402 => 'Payment Required',
+    403 => 'Forbidden',
+    404 => 'Not Found',
+    405 => 'Method Not Allowed',
+    406 => 'Not Acceptable',
+    407 => 'Proxy Authentication Required',
+    408 => 'Request Timeout',
+    409 => 'Conflict',
+    410 => 'Gone',
+    411 => 'Length Required',
+    412 => 'Precondition Failed',
+    413 => 'Request Entity Too Large',
+    414 => 'Request-URI Too Long',
+    415 => 'Unsupported Media Type',
+    416 => 'Requested Range Not Satisfiable',
+    417 => 'Expectation Failed',
+    500 => 'Internal Server Error',
+    501 => 'Not Implemented',
+    502 => 'Bad Gateway',
+    503 => 'Service Unavailable',
+    504 => 'Gateway Timeout',
+    505 => 'HTTP Version Not Supported' );
 }

@@ -961,6 +961,121 @@ class modifier extends \cenozo\base_object
     }
   }
 
+  public static function from_json( $json_string )
+  {
+    $modifier = lib::create( 'database\modifier' );
+    $limit = NULL;
+    $offset = NULL;
+
+    $util_class_name = lib::get_class_name( 'util' );
+    $json_object = $util_class_name::json_decode( $json_string );
+    if( is_object( $json_object ) || is_array( $json_object ) )
+    {
+      foreach( (array)$json_object as $key => $value )
+      {
+        if( 'where' == $key )
+        {
+          // convert a single statement to an array with that statement in it
+          if( !is_array( $value ) ) $value = array( $value );
+          
+          if( is_array( $value ) )
+          {
+            foreach( $value as $where )
+            {
+              if( array_key_exists( 'bracket', $where ) )
+              {
+                if( array_key_exists( 'or', $where ) ) $modifier->where_bracket( $where->open, $where->or );
+                else $modifier->where_bracket( $where->open );
+              }
+              else if( array_key_exists( 'column', $where ) &&
+                       array_key_exists( 'operator', $where ) &&
+                       array_key_exists( 'value', $where ) )
+              {
+                // sanitize the operator value
+                $operator = strtoupper( $where->operator );
+                $valid_operator_list = array(
+                  '=', '<=>', '!=', '<>',
+                  '<', '<=', '>', '>=',
+                  'RLIKE', 'NOT RLIKE',
+                  'IN', 'NOT IN',
+                  'LIKE', 'NOT LIKE' );
+                if( in_array( $operator, $valid_operator_list ) )
+                {
+                  if( array_key_exists( 'or', $where ) )
+                    $modifier->where( $where->column, $where->operator, $where->value, $where->or );
+                  else $modifier->where( $where->column, $where->operator, $where->value );
+                }
+                else
+                {
+                  throw lib::create( 'exception\runtime', 'Invalid where operator', __METHOD__ );
+                }
+              }
+              else
+              {
+                throw lib::create( 'exception\runtime', 'Invalid where sub-statement', __METHOD__ );
+              }
+            }
+          }
+          else
+          {
+            throw lib::create( 'exception\runtime', 'Invalid where statement', __METHOD__ );
+          }
+        }
+        else if( 'order' == $key )
+        {
+          // convert a string to an array with that string in it
+          if( is_string( $value ) || is_object( $value ) ) $value = array( $value );
+
+          if( is_array( $value ) )
+          {
+            foreach( $value as $key => $val )
+            {
+              if( is_string( $val ) ) $modifier->order( $val );
+              else if( is_object( $val ) )
+              {
+                $array = (array)$val;
+                $modifier->order( key( $array ), current( $array ) );
+              }
+              else
+              {
+                throw lib::create( 'exception\runtime', 'Invalid order statement', __METHOD__ );
+              }
+            }
+          }
+          else
+          {
+            throw lib::create( 'exception\runtime', 'Invalid order statement', __METHOD__ );
+          }
+        }
+        else if( 'limit' == $key )
+        {
+          if( $util_class_name::string_matches_int( $value ) && 0 < $value ) $limit = $value;
+          else
+          {
+            throw lib::create( 'exception\runtime', 'Invalid limit', __METHOD__ );
+          }
+        }
+        else if( 'offset' == $key )
+        {
+          if( $util_class_name::string_matches_int( $value ) && 0 <= $value ) $offset = $value;
+          else
+          {
+            throw lib::create( 'exception\runtime', 'Invalid offset', __METHOD__ );
+          }
+        }
+      }
+
+      if( !is_null( $limit ) && !is_null( $offset ) ) $modifier->limit( $limit, $offset );
+      else if( !is_null( $limit ) ) $modifier->limit( $limit );
+    }
+    else
+    {
+      throw lib::create( 'exception\runtime', 'Invalid format', __METHOD__ );
+    }
+
+    return $modifier;
+  }
+
   /**
    * Holds all join clauses in an array of associative arrays
    * @var array
