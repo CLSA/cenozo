@@ -112,7 +112,7 @@ class database extends \cenozo\base_object
     $constraint_mod->group( 'column_name' );
     $constraint_mod->order( 'table_name' );
     $constraint_mod->order( 'constraint_name' );
-    $constraint_mod->order( 'column_name' );
+    $constraint_mod->order( 'ordinal_position' );
     
     $rows = $this->get_all(
       sprintf( 'SELECT TABLE_CONSTRAINTS.TABLE_NAME table_name, '.

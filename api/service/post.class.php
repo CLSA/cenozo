@@ -1,6 +1,6 @@
 <?php
 /**
- * pull.class.php
+ * post.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,69 +10,28 @@ namespace cenozo\ui;
 use cenozo\lib, cenozo\log;
 
 /**
- * The base class of all pull operationst.
+ * The base class of all post operations.
  */
-abstract class pull extends operation
+class post extends service
 {
   /**
    * Constructor
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $subject The subject of the operation.
-   * @param string $name The name of the operation.
-   * @param array $args An associative array of arguments to be processed by the pull operation.
+   * @param string $path The URL of the service (not including the base)
+   * @param array $args An associative array of arguments to be processed by the post operation.
    * @access public
    */
-  public function __construct( $subject, $name, $args )
+  public function __construct( $path, $args )
   {
-    parent::__construct( 'pull', $subject, $name, $args );
-  }
-
-  /** 
-   * Processes arguments, preparing them for the operation.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\notice
-   * @access protected
-   */
-  protected function prepare()
-  {
-    // unserialise the argument "modifier" into a modifier object if it exists
-    $modifier = $this->get_argument( 'modifier', NULL );
-    if( !is_null( $modifier ) && is_string( $modifier ) )
-    {
-      $this->modifier = unserialize( $modifier );
-      unset( $this->argument['modifier'] );
-    }
+    parent::__construct( 'DELETE', $path, $args );
   }
 
   /**
-   * This method always returns NULL.  It is meant to return a non-null value when the pull
-   * operation is referencing a file which is to be named.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @abstract
-   * @access public
+   * TODO: document
    */
-  public function get_file_name()
+  protected function execute()
   {
-    return NULL;
+    // TODO: implement whole class
   }
-
-  /**
-   * Returns the type of data provided by this pull operation.
-   * Should either be json or a standard file type (xls, xlsx, html, pdf, csv, and so on)
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @abstract
-   * @access public
-   */
-  abstract public function get_data_type();
-
-  /**
-   * The modifier received with the pull, if one was received
-   * @var database\modifier
-   * @access protected
-   */
-  protected $modifier = NULL;
 }

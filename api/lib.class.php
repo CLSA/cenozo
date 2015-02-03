@@ -230,6 +230,15 @@ final class lib
   }
 
   /**
+   * TODO: document
+   */
+  public static function class_exists( $class_name )
+  {
+    return !is_null( self::get_application_class_path( $class_name ) ) ||
+           !is_null( self::get_framework_class_path( $class_name ) );
+  }
+
+  /**
    * If the application has a file corresponding to the given class name then this method
    * will return the path to that class, or NULL if no such file exists.
    * 

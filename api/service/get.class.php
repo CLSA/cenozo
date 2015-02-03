@@ -18,17 +18,16 @@ class get extends service
    * Constructor
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $subject The subject of the service.
-   * @param string $resource The resource referenced by the request
+   * @param string $path The URL of the service (not including the base)
    * @param array $args An associative array of arguments to be processed by the get service.
    * @access public
    */
-  public function __construct( $subject, $resource = NULL, $args = NULL )
+  public function __construct( $path, $args = NULL )
   {
-    parent::__construct( 'GET', $subject, $resource, $args );
+    parent::__construct( 'GET', $path, $args );
   }
 
-  /** 
+  /**
    * Processes arguments, preparing them for the service.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -38,178 +37,121 @@ class get extends service
   {
     parent::prepare();
 
-    $util_class_name = lib::get_class_name( 'util' );
-    $subject_class_name = lib::get_class_name( 'database\\'.$this->get_subject() );
-    $modifier_class_name = lib::get_class_name( 'database\modifier' );
+    // determine whether we are responding with a list or a single resource
+    $this->single = count( $this->resource_value_list ) == count( $this->collection_name_list );
 
-    if( is_null( $this->resource ) )
-    { // get a list
-      $mod_string = $this->get_argument( 'modifier', NULL );
-      if( !is_null( $mod_string ) )
-      {
-        try
-        {
-          $this->modifier = $modifier_class_name::from_json( $mod_string );
-        }
-        catch( \cenozo\exception\base_exception $e )
-        {
-          $this->status->set_code( 400 );
-        }
-      }
-
-      $this->list = $subject_class_name::arrayselect( $this->modifier );
-    }
-    else if( $util_class_name::string_matches_int( $this->resource ) )
-    { // there is a resource, get the corresponding record
-      try
-      {
-        $this->record = new $subject_class_name( $this->resource );
-      }
-      catch( \cenozo\exception\runtime $e )
-      // ignore runtime exceptions and let the validate function throw an argument exception instead
-      {
-        $this->record = NULL;
-      }
-    }
+    if( $this->single ) $this->process_resource();
+    else $this->process_collection();
   }
 
   /**
-   * TODO
+   * TODO: document
    */
   protected function validate()
   {
     parent::validate();
 
     // if there is a resource, make sure it is valid
-    if( !is_null( $this->resource ) && is_null( $this->record ) ) $this->status->set_code( 404 );
+    if( $this->single && is_null( $this->record ) ) $this->status->set_code( 404 );
   }
 
   /**
-   * TODO
+   * TODO: document
    */
   protected function execute()
   {
     parent::execute();
-    $this->data = is_null( $this->resource ) ? $this->list : $this->record->get_column_values();
+    $this->data = $this->single
+                ? ( !is_null( $this->record ) ? $this->record->get_column_values() : NULL )
+                : $this->list;
   }
 
   /**
-   * TODO
+   * TODO: document
    */
-  protected function decode_modifier()
+  protected function process_collection()
   {
-    $mod_string = $this->get_argument( 'modifier', NULL );
+    $modifier_class_name = lib::get_class_name( 'database\modifier' );
 
+    $subject = $this->collection_name_list[0];
+    $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
+
+    $this->modifier = lib::create( 'database\modifier' );
+    $this->modifier->limit( 100 ); // define maximum response size, should probably be a paramter
+
+    $mod_string = $this->get_argument( 'modifier', NULL );
     if( !is_null( $mod_string ) )
     {
-      $this->modifier = lib::create( 'database\modifier' );
-      $limit = NULL;
-      $offset = NULL;
-
-      $util_class_name = lib::get_class_name( 'util' );
-      foreach( (array)$util_class_name::json_decode( $mod_string ) as $key => $value )
+      try
       {
-        if( 'where' == $key )
-        {
-          if( is_array( $value ) )
-          {
-            foreach( $value as $where )
-            {
-              if( array_key_exists( 'bracket', $where ) )
-              {
-                if( array_key_exists( 'or', $where ) ) $modifier->where_bracket( $where['open'], $where['or'] );
-                else $modifier->where_bracket( $where['open'] );
-              }
-              else if( array_key_exists( 'column', $where ) &&
-                       array_key_exists( 'operator', $where ) &&
-                       array_key_exists( 'value', $where ) )
-              {
-                // sanitize the operator value
-                $operator = strtoupper( $operator );
-                $valid_operator_list = array(
-                  '=', '<=>', '!=', '<>',
-                  '<', '<=', '>', '>=',
-                  'RLIKE', 'NOT RLIKE',
-                  'IN', 'NOT IN',
-                  'LIKE', 'NOT LIKE' );
-                if( in_array( $operator, $valid_operator_list ) )
-                {
-                  if( array_key_exists( 'or', $where ) )
-                    $modifier->where( $where['column'], $where['operator'], $where['value'], $where['or'] );
-                  else $modifier->where( $where['column'], $where['operator'], $where['value'] );
-                }
-                else // invalid where operator
-                {
-                  $this->status->set_code( 400 );
-                }
-              }
-              else // invalid where sub-statement
-              {
-                $this->status->set_code( 400 );
-              }
-            }
-          }
-          else // invalid where statement
-          {
-            $this->status->set_code( 400 );
-          }
-        }
-        else if( 'order' == $key )
-        {
-          // convert a string to an array with that string in it
-          if( is_string( $value ) ) $value = array( $value );
+        $this->modifier = $modifier_class_name::from_json( $mod_string );
+      }
+      catch( \cenozo\exception\base_exception $e )
+      {
+        $this->status->set_code( 400 );
+      }
+    }
 
-          if( is_array( $value ) )
-          {
-            foreach( $value as $key => $val )
-            {
-              if( $util_class_name( string_matches_int( $key ) ) ) $modifier->order( $val );
-              else $modifier->order( $key, $val ); // column_name => sort_descending pair
-            }
-          }
-          else // invalid order statement
-          {
-            $this->status->set_code( 400 );
-          }
-        }
-        else if( 'limit' == $key )
+    $this->list = $record_class_name::arrayselect( $this->modifier );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function process_resource()
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $subject = $this->collection_name_list[0];
+    $identifier = $this->resource_value_list[0];
+
+    $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
+
+    if( $util_class_name::string_matches_int( $identifier ) )
+    { // there is a resource, get the corresponding record
+      try
+      {
+        $this->record = new $record_class_name( $identifier );
+      }
+      // ignore runtime exceptions and let the validate function throw an argument exception instead
+      catch( \cenozo\exception\runtime $e ) {}
+    }
+    else if( false !== strpos( $identifier, '=' ) )
+    { // check unique keys
+      $columns = array();
+      $values = array();
+      foreach( explode( ';', $identifier ) as $part )
+      {
+        $pair = explode( '=', $part );
+        if( 2 == count( $pair ) )
         {
-          if( $util_class_name( string_matches_int( $key ) ) && 0 < $limit ) $limit = $key;
-          else // invalid limit
-          {
-            $this->status->set_code( 400 );
-          }
-        }
-        else if( 'offset' == $key )
-        {
-          if( $util_class_name( string_matches_int( $key ) ) && 0 <= $offset ) $offset = $key;
-          else // invalid offset
-          {
-            $this->status->set_code( 400 );
-          }
+          $columns[] = $pair[0];
+          $values[] = $pair[1];
         }
       }
 
-      if( 400 != $this->status->get_code() )
-      {
-        if( !is_null( $limit ) && !is_null( $offset ) ) $this->modifier->limit( $limit, $offset );
-        else if( !is_null( $limit ) ) $this->modifier->limit( $limit );
-      }
+      if( 0 < count( $columns ) )
+        $this->record = $record_class_name::get_unique_record( $columns, $values );
     }
   }
 
   /**
-   * TODO
+   * TODO: document
+   */
+  protected $single = NULL;
+
+  /**
+   * TODO: document
    */
   protected $list = NULL;
 
   /**
-   * TODO
+   * TODO: document
    */
   protected $record = NULL;
 
   /**
-   * TODO
+   * TODO: document
    */
   protected $modifier = NULL;
 }

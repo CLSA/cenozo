@@ -63,23 +63,10 @@ final class api
     { // remove the front part of the url so we are left with the request only
       $self_path = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) + 1 );
       $this->path = str_replace( $self_path, '', $_SERVER['REDIRECT_URL'] );
-
-      // divide the path into collections and resources
-      foreach( explode( '/', $this->path ) as $index => $part )
-      {
-        if( 0 == $index % 2 ) $this->collection_list[] = $part;
-        else $this->resource_list[] = $part;
-      }
-
-      // remove empty resources from the end of the list
-      if( 0 < count( $this->resource_list ) && 0 == strlen( end( $this->resource_list ) ) )
-        array_pop( $this->resource_list );
     }
-    else // root document means no path, no collections and no resources
+    else // root document means no path
     {
       $this->path = '';
-      $this->collection_list = array();
-      $this->resource_list = array();
     }
 
     // turn on output buffering from here on out
@@ -231,17 +218,31 @@ final class api
       }
 
       // create and process the service
-      $service = lib::create(
-        sprintf( 'service\\%s', strtolower( $this->method ) ),
-        0 == count( $this->collection_list ) ? null : $this->collection_list[0],
-        array_key_exists( 0, $this->resource_list ) ? $this->resource_list[0] : NULL,
-        $this->arguments );
+      $class_name = $this->get_service_class_name();
+
+      if( lib::class_exists( $class_name ) )
+      {
+        $service = lib::create(
+          $class_name,
+          $this->path,
+          $this->arguments );
+      }
+      else // no custom class, just load the generic method base class
+      {
+        $service = lib::create(
+          sprintf( 'service\\%s', strtolower( $this->method ) ),
+          $this->path,
+          $this->arguments );
+      }
+
       $service->process();
+      $status = $service->get_status();
 
       if( lib::in_development_mode() ) $operation_time = microtime( true ) - $time;
     }
     catch( exception\base_exception $e )
     {
+      $status = lib::create( 'service\status', 500 );
       $error_code = $e->get_code();
     
       // log all but notice exceptions
@@ -249,6 +250,7 @@ final class api
     }
     catch( \Exception $e )
     {
+      $status = lib::create( 'service\status', 500 );
       $error_code = class_exists( 'cenozo\util' )
                   ? $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
                   : 0;
@@ -256,12 +258,10 @@ final class api
       if( class_exists( 'cenozo\log' ) ) log::err( 'Last minute '.$e );
     }
     
-    $system_error = is_null( $service ) || is_null( $service->get_status() );
-
     // make sure to fail any active transaction
     if( $session->use_transaction() )
     {
-      if( $system_error ) $session->get_database()->fail_transaction();
+      if( 500 == $status->get_code() ) $session->get_database()->fail_transaction();
       $session->get_database()->complete_transaction();
     }
 
@@ -291,9 +291,6 @@ final class api
     // we can end output buffering now
     ob_end_clean();
 
-    $status = $system_error
-            ? lib::create( 'service\status', 500 )
-            : $service->get_status();
     $status->send_headers();
 
     if( !is_null( $service ) && !is_null( $service->get_data() ) )
@@ -303,6 +300,24 @@ final class api
       header( 'Content-Length: '.strlen( $json_output ) );
       print $json_output;
     }
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function get_service_class_name()
+  {
+    // class name is in the form: service\<COLLECTION1>\<METHOD>
+    // class name is in the form: service\<COLLECTION1>\<COLLECTION2>\<METHOD>
+    // class name is in the form: service\<COLLECTION1>\<COLLECTION2>\<COLLECTION3>\<METHOD> (etc)
+
+    // loop through the path and append all collections (skipping resources)
+    $class_name = 'service';
+    foreach( explode( '/', $this->path ) as $index => $part )
+      if( 0 == $index % 2 ) $class_name .= sprintf( '\%s', $part );
+    $class_name .= sprintf( '\%s', strtolower( $this->method ) );
+
+    return $class_name;
   }
   
   /**
@@ -330,14 +345,4 @@ final class api
    * TODO: document
    */
   private $file = NULL;
-
-  /**
-   * TODO: document
-   */
-  private $collection_list = array();
-
-  /**
-   * TODO: document
-   */
-  private $resource_list = array();
 }

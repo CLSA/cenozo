@@ -25,24 +25,35 @@ abstract class service extends \cenozo\base_object
    * thrown.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $method The request's method (DELETE, GET, PATCH, POST, PUSH)
-   * @param string $subject The subject of the service
-   * @param string $resource The resource referenced by the request
+   * @param string $path The URL of the service (not including the base)
    * @param array $args An associative array of arguments included in the request
    * @access public
    */
-  public function __construct( $method, $subject, $resource = NULL, $args = NULL )
+  public function __construct( $method, $path, $args = NULL )
   {
     // by default all services use transactions
     lib::create( 'business\session' )->set_use_transaction( true );
 
+    $this->process_path( $path );
+
     // build the service record
+    // path needs to have all resources replaced with <id>
+    $path_for_record = '';
+    foreach( $this->collection_name_list as $index => $collection )
+    {
+      $path_for_record .= sprintf( '/%s', $this->collection_name_list[$index] );
+      if( array_key_exists( $index, $this->resource_value_list ) ) $path_for_record .= '/<id>';
+    }
+
+    // trim off the first /
+    $path_for_record = substr( $path_for_record, 1 );
+      
     $service_class_name = lib::get_class_name( 'database\service' );
     $this->service_record =
       $service_class_name::get_unique_record(
-        array( 'method', 'subject', 'resource' ),
-        array( $method, $subject, !is_null( $resource ) ) );
+        array( 'method', 'path' ),
+        array( $method, $path_for_record ) );
     
-    $this->resource = $resource;
     $this->arguments = $args;
     $this->status = NULL;
     $this->data = NULL;
@@ -62,16 +73,6 @@ abstract class service extends \cenozo\base_object
   public function process()
   {
     $util_class_name = lib::get_class_name( 'util' );
-
-    if( !is_object( $this->service_record ) )
-    {
-      $this->status = lib::create( 'service\status', 404 );
-      throw lib::create( 'exception\runtime', 'Request path is not found.', __METHOD__ );
-    }
-    else
-    {
-      $this->status = lib::create( 'service\status', 200 );
-    }
 
     if( self::$debug ) $time['begin'] = $util_class_name::get_elapsed_time();
 
@@ -94,7 +95,7 @@ abstract class service extends \cenozo\base_object
     {
       log::debug( sprintf( '[%s] %s times: (%s) => (%s)',
                            strtoupper( $this->get_method() ),
-                           $this->get_path(),
+                           $this->service_record->path,
                            implode( ', ', array_keys( $time ) ),
                            implode( ', ', array_values( $time ) ) ) );
     }
@@ -104,10 +105,21 @@ abstract class service extends \cenozo\base_object
    * Processes arguments, preparing them for the service.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\notice
+   * @throws exception\runtime
    * @access protected
    */
-  protected function prepare() {}
+  protected function prepare()
+  {
+    if( !is_object( $this->service_record ) )
+    {
+      $this->status = lib::create( 'service\status', 404 );
+      throw lib::create( 'exception\runtime', 'Request path is not found.', __METHOD__ );
+    }
+    else
+    {
+      $this->status = lib::create( 'service\status', 200 );
+    }
+  }
 
   /**
    * Validate the service.  If validation fails this method will throw a notice exception.
@@ -154,38 +166,20 @@ abstract class service extends \cenozo\base_object
   protected function finish() {}
 
   /**
-   * Get the database id of the service.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return int
-   * @access public
+   * TODO: document
    */
-  public function get_id() { return $this->service_record->id; }
-  
-  /**
-   * Get the service's method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_method() { return $this->service_record->method; }
-  
-  /**
-   * Get the subject of service.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_subject() { return $this->service_record->subject; }
-  
-  /**
-   * Get the full name of service (subject_name)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_path()
-  { return $this->service_record->subject.( !is_null( $this->resource ) ? '/'.$this->resource : '' ); }
- 
+  protected function process_path( $path )
+  {
+    $this->collection_name_list = array();
+    $this->resource_value_list = array();
+
+    foreach( explode( '/', $path ) as $index => $part )
+    {
+      if( 0 == $index % 2 ) $this->collection_name_list[] = $part;
+      else $this->resource_value_list[] = $part;
+    }
+  }
+
   /**
    * Get a query argument passed to the service.
    * 
@@ -260,25 +254,11 @@ abstract class service extends \cenozo\base_object
    * @access public
    */
   public static $debug = false;
-  
-  /**
-   * The database record for this service
-   * @var database\record
-   * @access protected
-   */
-  protected $service_record = NULL;
 
   /**
    * TODO: document
    */
   protected $status;
-
-  /**
-   * The url query resource.
-   * @var string
-   * @access protected
-   */
-  protected $resource = NULL;
 
   /**
    * The url query arguments.
@@ -293,6 +273,23 @@ abstract class service extends \cenozo\base_object
    * @access protected
    */
   protected $data = NULL;
+  
+  /**
+   * TODO: document
+   */
+  protected $collection_name_list = NULL;
+
+  /**
+   * TODO: document
+   */
+  protected $resource_value_list = NULL;
+
+  /**
+   * The database record for this service
+   * @var database\service
+   * @access private
+   */
+  private $service_record = NULL;
 
   /**
    * Whether to check if the user's access has permission to perform this service
