@@ -45,24 +45,28 @@ final class api
     else if( 'PATCH' == $this->method )
     {
       $this->arguments =  $_GET;
-      $this->file = json_decode( file_get_contents( 'php://input' ) );
+      $this->file = file_get_contents( 'php://input' );
     }
     else if( 'POST' == $this->method )
     {
       $this->arguments =  $_POST;
-      $this->file = json_decode( file_get_contents( 'php://input' ) );
+      $this->file = file_get_contents( 'php://input' );
     }
     else if( 'PUT' == $this->method )
     {
       $this->arguments = $_GET;
-      $this->file = json_decode( file_get_contents( 'php://input' ) );
+      $this->file = file_get_contents( 'php://input' );
     }
 
     // determine the request path
     if( array_key_exists( 'REDIRECT_URL', $_SERVER ) )
-    { // remove the front part of the url so we are left with the request only
+    {
+      // remove the front part of the url so we are left with the request only
       $self_path = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) + 1 );
       $this->path = str_replace( $self_path, '', $_SERVER['REDIRECT_URL'] );
+
+      // remove any slashes at the end of the path
+      $this->path = rtrim( $this->path, '/' );
     }
     else // root document means no path
     {
@@ -218,22 +222,11 @@ final class api
       }
 
       // create and process the service
-      $class_name = $this->get_service_class_name();
-
-      if( lib::class_exists( $class_name ) )
-      {
-        $service = lib::create(
-          $class_name,
-          $this->path,
-          $this->arguments );
-      }
-      else // no custom class, just load the generic method base class
-      {
-        $service = lib::create(
-          sprintf( 'service\\%s', strtolower( $this->method ) ),
-          $this->path,
-          $this->arguments );
-      }
+      $service = lib::create(
+        $this->get_service_class_name(),
+        $this->path,
+        $this->arguments,
+        $this->file );
 
       $service->process();
       $status = $service->get_status();
@@ -313,9 +306,24 @@ final class api
 
     // loop through the path and append all collections (skipping resources)
     $class_name = 'service';
-    foreach( explode( '/', $this->path ) as $index => $part )
-      if( 0 == $index % 2 ) $class_name .= sprintf( '\%s', $part );
-    $class_name .= sprintf( '\%s', strtolower( $this->method ) );
+
+    $url_parts = explode( '/', $this->path );
+    if( 0 < strlen( $this->path ) )
+    {
+      foreach( $url_parts as $index => $part )
+        if( 0 == $index % 2 ) $class_name .= sprintf( '\%s', $part );
+    }
+    
+    // If the method is GET and we have an odd number of url parts (ie: collection)
+    // then change method to QUERY
+    $effective_method = 'GET' == $this->method && 1 == count( $url_parts ) % 2
+                      ? 'query'
+                      : strtolower( $this->method );
+    $class_name .= sprintf( '\%s', $effective_method );
+
+    // return the generic class if the specific one doesn't exist
+    if( !lib::class_exists( $class_name ) )
+      $class_name = sprintf( 'service\\%s', $effective_method );
 
     return $class_name;
   }
@@ -332,7 +340,7 @@ final class api
    * @var string
    * @access private
    */
-  private $path;
+  private $path = NULL;
 
   /**
    * Contains the request variables.

@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace cenozo\ui;
+namespace cenozo\service;
 use cenozo\lib, cenozo\log;
 
 /**
@@ -32,6 +32,20 @@ class delete extends base_resource
    */
   protected function execute()
   {
-    if( !is_null( $this->record ) ) $this->record->delete();
+    if( !is_null( $this->record ) )
+    {
+      try
+      {
+        $this->record->delete();
+      }
+      catch( \cenozo\exception\database $e )
+      {
+        if( $e->is_constrained() )
+        {
+          $this->status->set_code( 409 );
+        }
+        else throw $e;
+      }
+    }
   }
 }

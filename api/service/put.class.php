@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace cenozo\ui;
+namespace cenozo\service;
 use cenozo\lib, cenozo\log;
 
 /**
@@ -20,11 +20,12 @@ class put extends base_resource
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $path The URL of the service (not including the base)
    * @param array $args An associative array of arguments to be processed by the put operation.
+   * @param string $file The raw file posted by the request
    * @access public
    */
-  public function __construct( $path, $args )
+  public function __construct( $path, $args, $file )
   {
-    parent::__construct( 'PUT', $path, $args );
+    parent::__construct( 'PUT', $path, $args, $file );
   }
 
   /**

@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all resource-based services
  */
-class base_recourse extends service
+class base_resource extends service
 {
   /** 
    * Processes arguments, preparing them for the service.

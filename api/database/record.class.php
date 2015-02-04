@@ -130,7 +130,7 @@ abstract class record extends \cenozo\base_object
 
         if( 0 == count( $row ) )
         {
-          if( static::get_table_name() == $table )
+          if( static::get_table_name() == $table['name'] )
           {
             throw lib::create( 'exception\runtime',
               sprintf( 'Load failed to find record for %s with %s = %d.',

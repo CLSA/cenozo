@@ -47,6 +47,14 @@ class status extends \cenozo\base_object
   /**
    * TODO: document
    */
+  public function set_location( $location )
+  {
+    $this->location = $location;
+  }
+
+  /**
+   * TODO: document
+   */
   public function get_message()
   {
     return array_key_exists( $this->code, static::$code_list ) ? static::$code_list[$this->code] : 'Unknown';
@@ -58,13 +66,22 @@ class status extends \cenozo\base_object
   public function send_headers()
   {
     header( sprintf( 'HTTP/1.1 %s %s', $this->get_code(), $this->get_message() ) );
+    if( $this->location ) header( sprintf( 'Location: %s', $this->location ) );
   }
 
   /**
    * TODO: document
    */
-  protected $code;
+  protected $code = NULL;
 
+  /**
+   * TODO: document
+   */
+  protected $location = NULL;
+
+  /**
+   * TODO: document
+   */
   protected static $code_list = array(
     100 => 'Continue',
     101 => 'Switching Protocols',
