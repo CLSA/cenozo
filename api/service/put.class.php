@@ -34,7 +34,45 @@ class put extends base_resource
   protected function execute()
   {
     if( !is_null( $this->record ) )
-    { // TODO: replace the record
+    {
+      $object = $this->get_file_as_object();
+
+      foreach( $this->record->get_column_names() as $column_name )
+      {
+        if( !property_exists( $object, $column_name ) )
+        { // missing column
+          $this->status->set_code( 400 );
+          break;
+        }
+        else if( 'id' == $column_name )
+        {
+          // DO NOT allow the ID to be changed
+          if( $this->record->id != $object->id )
+          {
+            $this->status->set_code( 400 );
+            break;
+          }
+        }
+        else
+        {
+          $this->record->$column_name = $object->$column_name;
+        }
+      }
+
+      if( 300 > $this->status->get_code() )
+      {
+        try
+        {
+          $this->record->save();
+          $this->status->set_code( 204 );
+        }
+        catch( \cenozo\exception\database $e )
+        {
+          if( $e->is_duplicate_entry() ) $this->status->set_code( 409 );
+          else if( $e->is_missing_data() ) $this->status->set_code( 400 );
+          else throw $e;           
+        }
+      }
     }
   }
 }

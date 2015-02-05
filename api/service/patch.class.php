@@ -34,7 +34,36 @@ class patch extends base_resource
   protected function execute()
   {
     if( !is_null( $this->record ) )
-    { // TODO: patch the record
+    {
+      $object = $this->get_file_as_object();
+      foreach( get_object_vars( $object ) as $key => $value )
+      {
+        try
+        {
+          $this->record->$key = $value;
+          $this->status->set_code( 204 );
+        }
+        catch( \cenozo\exception\argument $e )
+        {
+          // argument exception means the column doesn't exist
+          $this->status->set_code( 400 );
+          break;
+        }
+      }
+
+      if( 300 > $this->status->get_code() )
+      {
+        try
+        {
+          $this->record->save();
+        }
+        catch( \cenozo\exception\database $e )
+        {
+          if( $e->is_duplicate_entry() ) $this->status->set_code( 409 );
+          else if( $e->is_missing_data() ) $this->status->set_code( 400 );
+          else throw $e;           
+        }
+      }
     }
   }
 }

@@ -33,41 +33,38 @@ class post extends service
    */
   protected function execute()
   {
-    $subject = $this->collection_name_list[0];
-
-    $object = $this->get_file_as_object();
-    $record = lib::create( sprintf( 'database\%s', $subject ) );
-
-    foreach( $record->get_column_names() as $column_name )
+    if( 0 < count( $this->collection_name_list ) )
     {
-      if( 'id' != $column_name )
-      {
-        if( property_exists( $object, $column_name ) )
-          $record->$column_name = $object->$column_name;
-      }
-    }
+      $subject = $this->collection_name_list[0];
 
-    try
-    {
-      // save the record, set the data as the new id
-      $record->save();
-      $this->data = (int)$record->id;
+      $object = $this->get_file_as_object();
+      $record = lib::create( sprintf( 'database\%s', $subject ) );
 
-      // set up the status to show a successfully created resource
-      $this->status->set_code( 201 );
-      $this->status->set_location( sprintf( '%s/%d', $subject, $record->id ) );
-    }
-    catch( \cenozo\exception\database $e )
-    {
-      if( $e->is_duplicate_entry() )
+      foreach( $record->get_column_names() as $column_name )
       {
-        $this->status->set_code( 409 );
+        if( 'id' != $column_name )
+        {
+          if( property_exists( $object, $column_name ) )
+            $record->$column_name = $object->$column_name;
+        }
       }
-      else if( $e->is_missing_data() )
+
+      try
       {
-        $this->status->set_code( 400 );
+        // save the record, set the data as the new id
+        $record->save();
+        $this->data = (int)$record->id;
+
+        // set up the status to show a successfully created resource
+        $this->status->set_code( 201 );
+        $this->status->set_location( sprintf( '%s/%d', $subject, $record->id ) );
       }
-      else throw $e;
+      catch( \cenozo\exception\database $e )
+      {
+        if( $e->is_duplicate_entry() ) $this->status->set_code( 409 );
+        else if( $e->is_missing_data() ) $this->status->set_code( 400 );
+        else throw $e;
+      }
     }
   }
 }

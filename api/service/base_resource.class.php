@@ -26,36 +26,39 @@ class base_resource extends service
 
     $util_class_name = lib::get_class_name( 'util' );
 
-    $subject = $this->collection_name_list[0];
-    $identifier = $this->resource_value_list[0];
+    if( 0 < count( $this->collection_name_list ) || 0 < count( $this->resource_value_list ) )
+    {
+      $subject = $this->collection_name_list[0];
+      $identifier = $this->resource_value_list[0];
 
-    $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
+      $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
 
-    if( $util_class_name::string_matches_int( $identifier ) )
-    { // there is a resource, get the corresponding record
-      try
-      {
-        $this->record = new $record_class_name( $identifier );
-      }
-      // ignore runtime exceptions and let the validate function throw an argument exception instead
-      catch( \cenozo\exception\runtime $e ) {}
-    }
-    else if( false !== strpos( $identifier, '=' ) )
-    { // check unique keys
-      $columns = array();
-      $values = array();
-      foreach( explode( ';', $identifier ) as $part )
-      {
-        $pair = explode( '=', $part );
-        if( 2 == count( $pair ) )
+      if( $util_class_name::string_matches_int( $identifier ) )
+      { // there is a resource, get the corresponding record
+        try
         {
-          $columns[] = $pair[0];
-          $values[] = $pair[1];
+          $this->record = new $record_class_name( $identifier );
         }
+        // ignore runtime exceptions and let the validate function throw an argument exception instead
+        catch( \cenozo\exception\runtime $e ) {}
       }
+      else if( false !== strpos( $identifier, '=' ) )
+      { // check unique keys
+        $columns = array();
+        $values = array();
+        foreach( explode( ';', $identifier ) as $part )
+        {
+          $pair = explode( '=', $part );
+          if( 2 == count( $pair ) )
+          {
+            $columns[] = $pair[0];
+            $values[] = $pair[1];
+          }
+        }
 
-      if( 0 < count( $columns ) )
-        $this->record = $record_class_name::get_unique_record( $columns, $values );
+        if( 0 < count( $columns ) )
+          $this->record = $record_class_name::get_unique_record( $columns, $values );
+      }
     }
   }
 
