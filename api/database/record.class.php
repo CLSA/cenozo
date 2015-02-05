@@ -670,7 +670,7 @@ abstract class record extends \cenozo\base_object
       $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
-      if( self::COLUMN_FORMAT == $format )
+      if( self::ARRAY_FORMAT == $format )
       {
         if( $inverted )
         {
