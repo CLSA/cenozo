@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all get (single-resource) services
  */
-class get extends base_resource
+class get extends service
 {
   /**
    * Constructor
@@ -34,11 +34,7 @@ class get extends base_resource
   {
     parent::execute();
 
-    $this->data = !is_null( $this->record ) ? $this->record->get_column_values() : NULL;
+    $record = end( $this->record_list );
+    $this->data = false === $record ? NULL : $record->get_column_values();
   }
-
-  /**
-   * TODO: document
-   */
-  protected $record = NULL;
 }

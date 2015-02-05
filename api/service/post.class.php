@@ -33,9 +33,11 @@ class post extends service
    */
   protected function execute()
   {
-    if( 0 < count( $this->collection_name_list ) )
+    // create a record for the LAST collection
+    $index = count( $this->collection_name_list ) - 1;
+    if( 0 <= $index )
     {
-      $subject = $this->collection_name_list[0];
+      $subject = $this->collection_name_list[$index];
 
       $object = $this->get_file_as_object();
       $record = lib::create( sprintf( 'database\%s', $subject ) );

@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all put operations.
  */
-class put extends base_resource
+class put extends service
 {
   /**
    * Constructor
@@ -33,11 +33,12 @@ class put extends base_resource
    */
   protected function execute()
   {
-    if( !is_null( $this->record ) )
+    $record = end( $this->record_list );
+    if( false !== $record )
     {
       $object = $this->get_file_as_object();
 
-      foreach( $this->record->get_column_names() as $column_name )
+      foreach( $record->get_column_names() as $column_name )
       {
         if( !property_exists( $object, $column_name ) )
         { // missing column
@@ -47,7 +48,7 @@ class put extends base_resource
         else if( 'id' == $column_name )
         {
           // DO NOT allow the ID to be changed
-          if( $this->record->id != $object->id )
+          if( $record->id != $object->id )
           {
             $this->status->set_code( 400 );
             break;
@@ -55,7 +56,7 @@ class put extends base_resource
         }
         else
         {
-          $this->record->$column_name = $object->$column_name;
+          $record->$column_name = $object->$column_name;
         }
       }
 
@@ -63,7 +64,7 @@ class put extends base_resource
       {
         try
         {
-          $this->record->save();
+          $record->save();
           $this->status->set_code( 204 );
         }
         catch( \cenozo\exception\database $e )

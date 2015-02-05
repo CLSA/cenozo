@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all patch operations.
  */
-class patch extends base_resource
+class patch extends service
 {
   /**
    * Constructor
@@ -33,14 +33,15 @@ class patch extends base_resource
    */
   protected function execute()
   {
-    if( !is_null( $this->record ) )
+    $record = end( $this->record_list );
+    if( false !== $record )
     {
       $object = $this->get_file_as_object();
       foreach( get_object_vars( $object ) as $key => $value )
       {
         try
         {
-          $this->record->$key = $value;
+          $record->$key = $value;
           $this->status->set_code( 204 );
         }
         catch( \cenozo\exception\argument $e )
@@ -55,7 +56,7 @@ class patch extends base_resource
       {
         try
         {
-          $this->record->save();
+          $record->save();
         }
         catch( \cenozo\exception\database $e )
         {

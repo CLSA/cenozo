@@ -451,7 +451,7 @@ abstract class record extends \cenozo\base_object
     
     // set up regular expressions
     $start = '/^add_|remove_|get_/';
-    $end = '/(_list|_idarray|_idlist|_count)(_inverted)?$/';
+    $end = '/(_list|_arraylist|_idlist|_count)(_inverted)?$/';
     
     // see if the start of the function name is a match
     if( !preg_match( $start, $name, $match ) ) throw $exception;
@@ -680,7 +680,7 @@ abstract class record extends \cenozo\base_object
         }
         else
         {
-          $modifier->join( $record_type, $column_name, $primary_key_name );
+          $modifier->join( $table_name, $column_name, $primary_key_name );
         }
         $modifier->where( $column_name, '=', $primary_key_value );
       }
@@ -692,11 +692,9 @@ abstract class record extends \cenozo\base_object
           $modifier->or_where( $column_name, '!=', $primary_key_value );
         }
         else $modifier->where( $column_name, '=', $primary_key_value );
-
-        return $count
-          ? $foreign_class_name::count( $modifier )
-          : $foreign_class_name::select( $modifier );
       }
+
+      return $foreign_class_name::select( $modifier, $count, $distinct, $format );
     }
     else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {

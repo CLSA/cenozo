@@ -73,6 +73,42 @@ class person extends has_note
   }
   
   /**
+   * Override get_address_idlist()
+   * 
+   * Since addresses are related to the person table and not the participant or alternate
+   * tables this method allows for direct access to the addresses.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier A modifier to apply to the list
+   * @return array( record )
+   * @access public
+   */
+  public function get_address_idlist( $modifier = NULL )
+  {
+    return 'person' == $this->get_class_name()
+         ? parent::get_address_idlist( $modifier )
+         : $this->get_person()->get_address_idlist( $modifier );
+  }
+  
+  /**
+   * Override get_address_arraylist()
+   * 
+   * Since addresses are related to the person table and not the participant or alternate
+   * tables this method allows for direct access to the addresses.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier A modifier to apply to the list
+   * @return array( record )
+   * @access public
+   */
+  public function get_address_arraylist( $modifier = NULL )
+  {
+    return 'person' == $this->get_class_name()
+         ? parent::get_address_arraylist( $modifier )
+         : $this->get_person()->get_address_arraylist( $modifier );
+  }
+  
+  /**
    * Override get_address_count()
    * 
    * Since addresses are related to the person table and not the participant or alternate
@@ -122,6 +158,42 @@ class person extends has_note
     return 'person' == $this->get_class_name()
          ? parent::get_phone_list( $modifier )
          : $this->get_person()->get_phone_list( $modifier );
+  }
+  
+  /**
+   * Override get_phone_idlist()
+   * 
+   * Since phones are related to the person table and not the participant or alternate
+   * tables this method allows for direct access to the phones.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier A modifier to apply to the list
+   * @return array( record )
+   * @access public
+   */
+  public function get_phone_idlist( $modifier = NULL )
+  {
+    return 'person' == $this->get_class_name()
+         ? parent::get_phone_idlist( $modifier )
+         : $this->get_person()->get_phone_idlist( $modifier );
+  }
+  
+  /**
+   * Override get_phone_arraylist()
+   * 
+   * Since phones are related to the person table and not the participant or alternate
+   * tables this method allows for direct access to the phones.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier A modifier to apply to the list
+   * @return array( record )
+   * @access public
+   */
+  public function get_phone_arraylist( $modifier = NULL )
+  {
+    return 'person' == $this->get_class_name()
+         ? parent::get_phone_arraylist( $modifier )
+         : $this->get_person()->get_phone_arraylist( $modifier );
   }
   
   /**
@@ -190,6 +262,42 @@ class person extends has_note
     $modifier->order( 'sticky', true );
     $modifier->order_desc( 'datetime' );
     return $note_class_name::select( $modifier );
+  }
+
+  /**
+   * Override parent method (since note are related to person)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier
+   * @return array( record )
+   * @access public
+   */
+  public function get_note_idlist( $modifier = NULL )
+  {
+    $person_id = 'person' == $this->get_class_name() ? $this->id : $this->person_id;
+    $note_class_name = lib::get_class_name( 'database\person_note' );
+    if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'person_id', '=', $person_id );
+    $modifier->order( 'sticky', true );
+    $modifier->order_desc( 'datetime' );
+    return $note_class_name::idselect( $modifier );
+  }
+
+  /**
+   * Override parent method (since note are related to person)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier
+   * @return array( record )
+   * @access public
+   */
+  public function get_note_arraylist( $modifier = NULL )
+  {
+    $person_id = 'person' == $this->get_class_name() ? $this->id : $this->person_id;
+    $note_class_name = lib::get_class_name( 'database\person_note' );
+    if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'person_id', '=', $person_id );
+    $modifier->order( 'sticky', true );
+    $modifier->order_desc( 'datetime' );
+    return $note_class_name::arrayselect( $modifier );
   }
 
   /**

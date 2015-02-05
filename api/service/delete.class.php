@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all delete operations.
  */
-class delete extends base_resource
+class delete extends service
 {
   /**
    * Constructor
@@ -32,11 +32,12 @@ class delete extends base_resource
    */
   protected function execute()
   {
-    if( !is_null( $this->record ) )
+    if( 0 < count( $this->record_list ) )
     {
+      $record = last( $this->record_list );
       try
       {
-        $this->record->delete();
+        $record->delete();
       }
       catch( \cenozo\exception\database $e )
       {

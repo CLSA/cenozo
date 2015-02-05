@@ -53,6 +53,46 @@ abstract class has_note extends record
   }
 
   /**
+   * Gets the list of notes associated with this record.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier
+   * @return array( record )
+   * @access public
+   */
+  public function get_note_idlist( $modifier = NULL )
+  {
+    $table_name = static::get_table_name();
+    $subject_key_name = $table_name.'_'.static::get_primary_key_name();
+    $note_class_name = lib::get_class_name( 'database\\'.$table_name.'_note' );
+
+    if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( $subject_key_name, '=', $this->id );
+    $modifier->order( 'sticky', true );
+    $modifier->order_desc( 'datetime' );
+    return $note_class_name::idselect( $modifier );
+  }
+
+  /**
+   * Gets the list of notes associated with this record.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier
+   * @return array( record )
+   * @access public
+   */
+  public function get_note_arraylist( $modifier = NULL )
+  {
+    $table_name = static::get_table_name();
+    $subject_key_name = $table_name.'_'.static::get_primary_key_name();
+    $note_class_name = lib::get_class_name( 'database\\'.$table_name.'_note' );
+
+    if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( $subject_key_name, '=', $this->id );
+    $modifier->order( 'sticky', true );
+    $modifier->order_desc( 'datetime' );
+    return $note_class_name::arrayselect( $modifier );
+  }
+
+  /**
    * Adds a new note to the record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user $db_user

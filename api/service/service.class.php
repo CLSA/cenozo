@@ -42,7 +42,7 @@ abstract class service extends \cenozo\base_object
       // build the service record
       // path needs to have all resources replaced with <id>
       $path_for_record = '';
-      
+
       foreach( $this->collection_name_list as $index => $collection )
       {
         $path_for_record .= sprintf( '/%s', $this->collection_name_list[$index] );
@@ -51,20 +51,20 @@ abstract class service extends \cenozo\base_object
 
       // trim off the first /
       $path_for_record = substr( $path_for_record, 1 );
-      
+
       $service_class_name = lib::get_class_name( 'database\service' );
       $this->service_record =
         $service_class_name::get_unique_record(
           array( 'method', 'path' ),
           array( $method, $path_for_record ) );
     }
-    
+
     $this->arguments = $args;
     $this->file = $file;
     $this->status = NULL;
     $this->data = NULL;
   }
-  
+
   /**
    * Processes the service by doing the following stages:
    * 1. prepare:  processes arguments, preparing them for the service
@@ -88,15 +88,15 @@ abstract class service extends \cenozo\base_object
     if( 300 <= $this->status->get_code() ) return;
     $this->validate();
     if( self::$debug ) $time['validate'] = $util_class_name::get_elapsed_time();
-    
+
     if( 300 <= $this->status->get_code() ) return;
     $this->setup();
     if( self::$debug ) $time['setup'] = $util_class_name::get_elapsed_time();
-    
+
     if( 300 <= $this->status->get_code() ) return;
     $this->execute();
     if( self::$debug ) $time['execute'] = $util_class_name::get_elapsed_time();
-    
+
     if( 300 <= $this->status->get_code() ) return;
     $this->finish();
     if( self::$debug ) $time['finish'] = $util_class_name::get_elapsed_time();
@@ -119,13 +119,43 @@ abstract class service extends \cenozo\base_object
    */
   protected function prepare()
   {
-    if( !is_object( $this->service_record ) )
+    // make sure the service record exists
+    $this->status = lib::create( 'service\status', is_object( $this->service_record ) ? 200 : 404 );
+
+    // go through all collection/resource pairs
+    $last_index = count( $this->collection_name_list ) - 1;
+    foreach( $this->collection_name_list as $index => $collection_name )
     {
-      $this->status = lib::create( 'service\status', 404 );
-    }
-    else
-    {
-      $this->status = lib::create( 'service\status', 200 );
+      if( array_key_exists( $index, $this->resource_value_list ) )
+      {
+        $record = static::get_resource( $this->collection_name_list[$index],
+                                        $this->resource_value_list[$index] );
+
+        if( is_null( $record ) )
+        {
+          $this->status->set_code( 404 );
+          break;
+        }
+        else
+        {
+          // ensure that this resource belongs to the parent record (if there is one)
+          if( 0 < $index )
+          {
+            // get the parent record and test to see if this record is one of its children
+            $parent_record = $this->record_list[$index - 1];
+            $method_name = sprintf( 'get_%s_count', $collection_name );
+            $modifier = lib::create( 'database\modifier' );
+            $modifier->where( 'id', '=', $record->id );
+            if( 0 == $parent_record->$method_name( $modifier ) )
+            {
+              $this->status->set_code( 404 );
+              break;
+            }
+          }
+        }
+        
+        $this->record_list[] = $record;
+      }
     }
   }
 
@@ -186,6 +216,45 @@ abstract class service extends \cenozo\base_object
       if( 0 == $index % 2 ) $this->collection_name_list[] = $part;
       else $this->resource_value_list[] = $part;
     }
+  }
+
+  /**
+   * TODO: document
+   */
+  protected static function get_resource( $collection_name, $resource_value )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $record_class_name = lib::get_class_name( sprintf( 'database\%s', $collection_name ) );
+
+    $record = NULL;
+    if( $util_class_name::string_matches_int( $resource_value ) )
+    { // there is a resource, get the corresponding record
+      try
+      {
+        $record = new $record_class_name( $resource_value );
+      }
+      // ignore runtime exceptions and instead just return a null record
+      catch( \cenozo\exception\runtime $e ) {}
+    }
+    else if( false !== strpos( $resource_value, '=' ) )
+    { // check unique keys
+      $columns = array();
+      $values = array();
+      foreach( explode( ';', $resource_value ) as $part )
+      {
+        $pair = explode( '=', $part );
+        if( 2 == count( $pair ) )
+        {
+          $columns[] = $pair[0];
+          $values[] = $pair[1];
+        }
+      }
+
+      if( 0 < count( $columns ) )
+        $record = $record_class_name::get_unique_record( $columns, $values );
+    }
+
+    return $record;
   }
 
   /**
@@ -329,4 +398,9 @@ abstract class service extends \cenozo\base_object
    * @access private
    */
   private $validate_access = true;
+
+  /**
+   * TODO: document
+   */
+  protected $record_list = array();
 }
