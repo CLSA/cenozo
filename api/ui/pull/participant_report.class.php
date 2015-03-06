@@ -42,8 +42,8 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     $util_class_name = lib::get_class_name( 'util' );
     $service_class_name = lib::get_class_name( 'database\service' );
-    $database_class_name = lib::get_class_name( 'database\database' );
     $session = lib::create( 'business\session' );
+    $db = $session->get_database();
 
     // get the report arguments
     $collection_id = $this->get_argument( 'restrict_collection_id' );
@@ -289,7 +289,7 @@ class participant_report extends \cenozo\ui\pull\base_report
 
     $column =
       sprintf( 'IFNULL( participant.language_id, %s )',
-               $database_class_name::format_string( $session->get_service()->language_id ) );
+               $db->format_string( $session->get_service()->language_id ) );
     if( '' !== $restrict_language_id )
       $this->modifier->where( $column, '=', $restrict_language_id );
     else $this->sql_columns .= $column.' AS language_id, ';

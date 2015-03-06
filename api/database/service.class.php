@@ -117,9 +117,9 @@ class service extends record
       'SET grouping = %s '.
       'WHERE service_id = %s '.
       'AND cohort_id IN ( %s )',
-      $database_class_name::format_string( $grouping ),
-      $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( implode( ',', $cohort_ids ) ) ) );
+      static::db()->format_string( $grouping ),
+      static::db()->format_string( $this->id ),
+      static::db()->format_string( implode( ',', $cohort_ids ) ) ) );
   }
 
   /**
@@ -175,7 +175,7 @@ class service extends record
 
     return static::db()->get_row( sprintf(
       'SELECT DISTINCT grouping FROM service_has_cohort WHERE service_id = %s',
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $this->id ) ) );
   }
 
   /**

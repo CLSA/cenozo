@@ -36,8 +36,8 @@ class user extends base_access
       'SELECT theme FROM user_has_service '.
       'WHERE user_id = %s '.
       'AND service_id = %s',
-      $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( $db_service->id ) ) );
+      static::db()->format_string( $this->id ),
+      static::db()->format_string( $db_service->id ) ) );
   }
 
   /**
@@ -64,8 +64,8 @@ class user extends base_access
         'DELETE FROM user_has_service '.
         'WHERE user_id = %s '.
         'AND service_id = %s',
-        $database_class_name::format_string( $this->id ),
-        $database_class_name::format_string( $db_service->id ) ) );
+        static::db()->format_string( $this->id ),
+        static::db()->format_string( $db_service->id ) ) );
     }
     else
     {
@@ -73,9 +73,9 @@ class user extends base_access
         'INSERT INTO user_has_service '.
         'SET user_id = %s, service_id = %s, theme = %s '.
         'ON DUPLICATE KEY UPDATE theme = VALUES( theme )',
-        $database_class_name::format_string( $this->id ),
-        $database_class_name::format_string( $db_service->id ),
-        $database_class_name::format_string( $theme ) ) );
+        static::db()->format_string( $this->id ),
+        static::db()->format_string( $db_service->id ),
+        static::db()->format_string( $theme ) ) );
     }
   }
 
@@ -127,9 +127,9 @@ class user extends base_access
     {
       if( !$first ) $values .= ', ';
       $values .= sprintf( '(NULL, %s, %s, %s)',
-                       $database_class_name::format_string( $id ),
-                       $database_class_name::format_string( $role_id ),
-                       $database_class_name::format_string( $this->id ) );
+                       static::db()->format_string( $id ),
+                       static::db()->format_string( $role_id ),
+                       static::db()->format_string( $this->id ) );
       $first = false;
     }
 

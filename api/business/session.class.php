@@ -71,7 +71,6 @@ class session extends \cenozo\singleton
 
     // create the database object
     $this->database = lib::create( 'database\database',
-      $setting_manager->get_setting( 'db', 'driver' ),
       $setting_manager->get_setting( 'db', 'server' ),
       $setting_manager->get_setting( 'db', 'username' ),
       $setting_manager->get_setting( 'db', 'password' ),

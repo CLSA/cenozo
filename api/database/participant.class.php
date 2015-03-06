@@ -161,8 +161,8 @@ class participant extends person
                  'WHERE participant_id = %s '.
                  'ORDER BY id DESC '.
                ')',
-               $database_class_name::format_string( $this->id ),
-               $database_class_name::format_string( $this->id ) ) );
+               static::db()->format_string( $this->id ),
+               static::db()->format_string( $this->id ) ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
   }
 
@@ -195,8 +195,8 @@ class participant extends person
                  'AND written = 1 '.
                  'ORDER BY id DESC '.
                ')',
-               $database_class_name::format_string( $this->id ),
-               $database_class_name::format_string( $this->id ) ) );
+               static::db()->format_string( $this->id ),
+               static::db()->format_string( $this->id ) ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
   }
 
@@ -220,7 +220,7 @@ class participant extends person
     // need custom SQL
     $address_id = static::db()->get_one(
       sprintf( 'SELECT address_id FROM participant_primary_address WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
+               static::db()->format_string( $this->id ) ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
   }
 
@@ -246,7 +246,7 @@ class participant extends person
     // need custom SQL
     $address_id = static::db()->get_one(
       sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
+               static::db()->format_string( $this->id ) ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
   }
 
@@ -273,8 +273,8 @@ class participant extends person
       'FROM service_has_participant '.
       'WHERE service_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_service->id ),
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $db_service->id ),
+      static::db()->format_string( $this->id ) ) );
 
     return $datetime ? $util_class_name::get_datetime_object( $datetime ) : NULL;
   }
@@ -301,8 +301,8 @@ class participant extends person
       'FROM participant_preferred_site '.
       'WHERE service_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_service->id ),
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $db_service->id ),
+      static::db()->format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
@@ -328,8 +328,8 @@ class participant extends person
       'JOIN service_has_cohort ON service_has_cohort.cohort_id = participant.cohort_id '.
       'WHERE service_has_cohort.service_id = %s '.
       'AND participant.id = %s',
-      $database_class_name::format_string( $db_service->id ),
-      $database_class_name::format_string( $this->id ) ) ) )
+      static::db()->format_string( $db_service->id ),
+      static::db()->format_string( $this->id ) ) ) )
       throw lib::create( 'exception\runtime', sprintf(
         'Tried to set preferred %s site for participant %s, '.
         'but %s does not have access to the %s cohort',
@@ -345,9 +345,9 @@ class participant extends person
       'INSERT INTO service_has_participant '.
       'SET service_id = %s, participant_id = %s, preferred_site_id = %s '.
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
-      $database_class_name::format_string( $db_service->id ),
-      $database_class_name::format_string( $this->id ),
-      is_null( $db_site ) ? 'NULL' : $database_class_name::format_string( $db_site->id ) ) );
+      static::db()->format_string( $db_service->id ),
+      static::db()->format_string( $this->id ),
+      is_null( $db_site ) ? 'NULL' : static::db()->format_string( $db_site->id ) ) );
   }
 
   /**
@@ -373,7 +373,7 @@ class participant extends person
       'JOIN service_has_cohort ON service_has_cohort.cohort_id = participant.cohort_id %s '.
       'AND service_has_cohort.service_id = %s',
       $modifier->get_where(),
-      $database_class_name::format_string( $db_service->id ) ) );
+      static::db()->format_string( $db_service->id ) ) );
     if( $total != $with_cohort )
       throw lib::create( 'exception\runtime', sprintf(
         'Tried to set preferred %s site for %d participants, '.
@@ -392,8 +392,8 @@ class participant extends person
       'SELECT NULL, %s, id, %s '.
       'FROM participant %s '.
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
-      $database_class_name::format_string( $db_service->id ),
-      is_null( $db_site ) ? 'NULL' : $database_class_name::format_string( $db_site->id ),
+      static::db()->format_string( $db_service->id ),
+      is_null( $db_site ) ? 'NULL' : static::db()->format_string( $db_site->id ),
       $modifier->get_sql() ) );
   }
 
@@ -420,8 +420,8 @@ class participant extends person
       'FROM participant_default_site '.
       'WHERE service_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_service->id ),
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $db_service->id ),
+      static::db()->format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
@@ -449,8 +449,8 @@ class participant extends person
       'FROM participant_site '.
       'WHERE service_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_service->id ),
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $db_service->id ),
+      static::db()->format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
@@ -484,10 +484,10 @@ class participant extends person
         'AND site_id = %s '.
         'AND gender = %s '.
         'AND age_group_id = %s',
-        $database_class_name::format_string( $db_primary_address->region_id ),
-        $database_class_name::format_string( $db_default_site->id ),
-        $database_class_name::format_string( $this->gender ),
-        $database_class_name::format_string( $db_age_group->id ) ) );
+        static::db()->format_string( $db_primary_address->region_id ),
+        static::db()->format_string( $db_default_site->id ),
+        static::db()->format_string( $this->gender ),
+        static::db()->format_string( $db_age_group->id ) ) );
     }
 
     return $quota_id ? lib::create( 'database\quota', $quota_id ) : NULL;
@@ -515,8 +515,8 @@ class participant extends person
       'WHERE participant_id = %s '.
       'AND event_type_id = %s '.
       'ORDER BY datetime',
-      $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( $db_event_type->id ) ) );
+      static::db()->format_string( $this->id ),
+      static::db()->format_string( $db_event_type->id ) ) );
   }
 
   /**
@@ -561,7 +561,7 @@ class participant extends person
       $sql .= sprintf( '%s %s = %s',
                        $first ? 'SET ' : ', ',
                        $column,
-                       $database_class_name::format_string( $value ) );
+                       static::db()->format_string( $value ) );
       $first = false;
     }
 

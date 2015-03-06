@@ -18,6 +18,6 @@ $SETTINGS['path']['APPLICATION'] = '/path/to/my_application';
 // the path to the log file
 $SETTINGS['path']['LOG_FILE'] = $SETTINGS['path']['APPLICATION'].'/log';
 
-// database settings (the driver, server and prefixes are set in the framework's settings)
+// database settings (the server and prefixes are set in the framework's settings)
 $SETTINGS['db']['username'] = 'my_username';
 $SETTINGS['db']['password'] = 'my_password';

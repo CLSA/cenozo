@@ -37,10 +37,11 @@ class participant_status extends \cenozo\ui\pull
   {
     parent::execute();
 
-    $database_class_name = lib::get_class_name( 'database\database' );
+    $session = lib::create( 'business\session' );
+    $db = $session->get_database();
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $service_class_name = lib::get_class_name( 'database\service' );
-    $timezone = lib::create( 'business\session' )->get_site()->timezone;
+    $timezone = $session->get_site()->timezone;
 
     // first create temporary tables with the consent information
     $sql =
@@ -82,7 +83,7 @@ class participant_status extends \cenozo\ui\pull
       $sql .= sprintf(
         'IFNULL( DATE( CONVERT_TZ( %s_event.datetime, %s, "UTC" ) ), "" ) AS %s_release, ',
         $db_service->name,
-        $database_class_name::format_string( $timezone ),
+        $db->format_string( $timezone ),
         $db_service->name );
 
     $sql .=
@@ -101,7 +102,7 @@ class participant_status extends \cenozo\ui\pull
         $db_service->name,
         $db_service->name,
         $db_service->name,
-        $database_class_name::format_string( $db_service->release_event_type_id ) );
+        $db->format_string( $db_service->release_event_type_id ) );
       
     $sql .=
       'LEFT JOIN collection_has_participant '.
