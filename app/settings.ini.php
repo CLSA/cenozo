@@ -42,7 +42,7 @@ $settings['url']['JQUERY_UI'] =
   $settings['url']['JQUERY'].'/ui-'.$settings['version']['JQUERY_UI'];
 $settings['url']['JQUERY_PLUGINS'] = $settings['url']['JQUERY'].'/plugins';
 $settings['path']['JQUERY_UI_THEMES'] =
-  '/var/www/jquery/ui-'.$settings['version']['JQUERY_UI'].'/css';
+  '/var/www/html/jquery/ui-'.$settings['version']['JQUERY_UI'].'/css';
 
 $settings['url']['JQUERY_JS'] = 
   $settings['url']['JQUERY'].'/jquery-'.$settings['version']['JQUERY'].'.min.js';
@@ -87,7 +87,6 @@ $settings['path']['REPORT_CACHE'] = $settings['path']['TEMP'].'/report';
 $settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
 
 // database settings
-$settings['db']['driver'] = 'mysql';
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
 $settings['db']['prefix'] = '';

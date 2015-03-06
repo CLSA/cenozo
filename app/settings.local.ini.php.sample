@@ -26,7 +26,6 @@ $settings['url']['CENOZO'] = sprintf( 'http%s://%s/url/to/cenozo',
 $settings['path']['ADODB'] = '/path/to/adodb';
 
 // database settings (username and password are set in the application's settings)
-$settings['db']['driver'] = 'mysql';
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
 $settings['db']['table_prefix'] = '';

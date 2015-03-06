@@ -105,9 +105,9 @@ class site extends base_access
     {
       if( !$first ) $values .= ', ';
       $values .= sprintf( '(NULL, %s, %s, %s)',
-                       $database_class_name::format_string( $id ),
-                       $database_class_name::format_string( $role_id ),
-                       $database_class_name::format_string( $this->id ) );
+                       static::db()->format_string( $id ),
+                       static::db()->format_string( $role_id ),
+                       static::db()->format_string( $this->id ) );
       $first = false;
     }
 

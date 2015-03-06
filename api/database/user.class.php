@@ -30,14 +30,12 @@ class user extends base_access
       return 0;
     } 
     
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     return static::db()->get_one( sprintf(
       'SELECT theme FROM user_has_application '.
       'WHERE user_id = %s '.
-      'AND application_id = %s',
-      $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( $db_application->id ) ) );
+      'AND service_id = %s',
+      static::db()->format_string( $this->id ),
+      static::db()->format_string( $db_application->id ) ) );
   }
 
   /**
@@ -56,16 +54,14 @@ class user extends base_access
       return;
     } 
     
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     if( is_null( $theme ) || !$theme )
     { // remove the theme
       static::db()->execute( sprintf(
         'DELETE FROM user_has_application '.
         'WHERE user_id = %s '.
-        'AND application_id = %s',
-        $database_class_name::format_string( $this->id ),
-        $database_class_name::format_string( $db_application->id ) ) );
+        'AND service_id = %s',
+        static::db()->format_string( $this->id ),
+        static::db()->format_string( $db_application->id ) ) );
     }
     else
     {
@@ -73,9 +69,9 @@ class user extends base_access
         'INSERT INTO user_has_application '.
         'SET user_id = %s, application_id = %s, theme = %s '.
         'ON DUPLICATE KEY UPDATE theme = VALUES( theme )',
-        $database_class_name::format_string( $this->id ),
-        $database_class_name::format_string( $db_application->id ),
-        $database_class_name::format_string( $theme ) ) );
+        static::db()->format_string( $this->id ),
+        static::db()->format_string( $db_application->id ),
+        static::db()->format_string( $theme ) ) );
     }
   }
 
@@ -119,17 +115,15 @@ class user extends base_access
     if( 0 >= $role_id )
       throw lib::create( 'exception\argument', 'role_id', $role_id, __METHOD__ );
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     $values = '';
     $first = true;
     foreach( $site_id_list as $id )
     {
       if( !$first ) $values .= ', ';
       $values .= sprintf( '(NULL, %s, %s, %s)',
-                       $database_class_name::format_string( $id ),
-                       $database_class_name::format_string( $role_id ),
-                       $database_class_name::format_string( $this->id ) );
+                       static::db()->format_string( $id ),
+                       static::db()->format_string( $role_id ),
+                       static::db()->format_string( $this->id ) );
       $first = false;
     }
 

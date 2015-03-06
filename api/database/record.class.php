@@ -249,7 +249,7 @@ abstract class record extends \cenozo\base_object
           $sets .= sprintf( '%s %s = %s',
                             $first ? '' : ',',
                             $key,
-                            $database_class_name::format_string( $val ) );
+                            static::db()->format_string( $val ) );
 
           $first = false;
         }
@@ -943,8 +943,8 @@ abstract class record extends \cenozo\base_object
       $values .= sprintf( $this->include_timestamps
                           ? '(NULL, %s, %s)'
                           : '(%s, %s)',
-                          $database_class_name::format_string( $primary_key_value ),
-                          $database_class_name::format_string( $foreign_key_value ) );
+                          static::db()->format_string( $primary_key_value ),
+                          static::db()->format_string( $foreign_key_value ) );
       $first = false;
     }
     
@@ -1573,7 +1573,8 @@ abstract class record extends \cenozo\base_object
    */
   public static function db()
   {
-    return lib::create( 'business\session' )->get_database();
+    if( is_null( static::$db ) ) static::$db = lib::create( 'business\session' )->get_database();
+    return static::$db;
   }
 
   /**
@@ -1697,6 +1698,11 @@ abstract class record extends \cenozo\base_object
 
     return $tables;
   }
+
+  /**
+   * TODO: document
+   */
+  protected static $db = null;
 
   /**
    * Determines whether the record is read only (no modifying the database).

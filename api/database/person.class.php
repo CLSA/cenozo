@@ -348,11 +348,11 @@ class person extends has_note
       'SELECT NULL, person.id, %s, %s, %s '.
       'FROM %s '.
       'JOIN person ON %s.person_id = person.id %s',
-      $database_class_name::format_string( $db_user->id ),
-      $database_class_name::format_string(
+      static::db()->format_string( $db_user->id ),
+      static::db()->format_string(
         $util_class_name::to_server_datetime(
           $date_obj->format( 'Y-m-d H:i:s' ) ) ),
-      $database_class_name::format_string( $note ),
+      static::db()->format_string( $note ),
       $table_name,
       $table_name,
       $modifier->get_sql() );

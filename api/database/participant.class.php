@@ -148,8 +148,6 @@ class participant extends person
       return NULL;
     }
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     // need custom SQL
     $consent_id = static::db()->get_one(
       sprintf( 'SELECT id '.
@@ -161,8 +159,8 @@ class participant extends person
                  'WHERE participant_id = %s '.
                  'ORDER BY id DESC '.
                ')',
-               $database_class_name::format_string( $this->id ),
-               $database_class_name::format_string( $this->id ) ) );
+               static::db()->format_string( $this->id ),
+               static::db()->format_string( $this->id ) ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
   }
 
@@ -181,8 +179,6 @@ class participant extends person
       return NULL;
     }
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     // need custom SQL
     $consent_id = static::db()->get_one(
       sprintf( 'SELECT id '.
@@ -195,8 +191,8 @@ class participant extends person
                  'AND written = 1 '.
                  'ORDER BY id DESC '.
                ')',
-               $database_class_name::format_string( $this->id ),
-               $database_class_name::format_string( $this->id ) ) );
+               static::db()->format_string( $this->id ),
+               static::db()->format_string( $this->id ) ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
   }
 
@@ -215,12 +211,10 @@ class participant extends person
       return NULL;
     }
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     // need custom SQL
     $address_id = static::db()->get_one(
       sprintf( 'SELECT address_id FROM participant_primary_address WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
+               static::db()->format_string( $this->id ) ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
   }
 
@@ -241,12 +235,10 @@ class participant extends person
       return NULL;
     }
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     // need custom SQL
     $address_id = static::db()->get_one(
       sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
+               static::db()->format_string( $this->id ) ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
   }
 
@@ -264,7 +256,6 @@ class participant extends person
     if( is_null( $this->id ) ) return NULL;
 
     $util_class_name = lib::get_class_name( 'util' );
-    $database_class_name = lib::get_class_name( 'database\database' );
 
     if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
 
@@ -273,8 +264,8 @@ class participant extends person
       'FROM application_has_participant '.
       'WHERE application_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_application->id ),
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $db_application->id ),
+      static::db()->format_string( $this->id ) ) );
 
     return $datetime ? $util_class_name::get_datetime_object( $datetime ) : NULL;
   }
@@ -292,8 +283,6 @@ class participant extends person
     // no primary key means no preferred site
     if( is_null( $this->id ) ) return NULL;
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
 
     $site_id = static::db()->get_one( sprintf(
@@ -301,8 +290,8 @@ class participant extends person
       'FROM participant_preferred_site '.
       'WHERE application_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_application->id ),
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $db_application->id ),
+      static::db()->format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
@@ -319,8 +308,6 @@ class participant extends person
     // no primary key means no preferred site
     if( is_null( $this->id ) ) return NULL;
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     // make sure this participant's cohort belongs to the application
     if( !static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
@@ -328,8 +315,8 @@ class participant extends person
       'JOIN application_has_cohort ON application_has_cohort.cohort_id = participant.cohort_id '.
       'WHERE application_has_cohort.application_id = %s '.
       'AND participant.id = %s',
-      $database_class_name::format_string( $db_application->id ),
-      $database_class_name::format_string( $this->id ) ) ) )
+      static::db()->format_string( $db_application->id ),
+      static::db()->format_string( $this->id ) ) ) )
       throw lib::create( 'exception\runtime', sprintf(
         'Tried to set preferred %s site for participant %s, '.
         'but %s does not have access to the %s cohort',
@@ -345,9 +332,9 @@ class participant extends person
       'INSERT INTO application_has_participant '.
       'SET application_id = %s, participant_id = %s, preferred_site_id = %s '.
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
-      $database_class_name::format_string( $db_application->id ),
-      $database_class_name::format_string( $this->id ),
-      is_null( $db_site ) ? 'NULL' : $database_class_name::format_string( $db_site->id ) ) );
+      static::db()->format_string( $db_application->id ),
+      static::db()->format_string( $this->id ),
+      is_null( $db_site ) ? 'NULL' : static::db()->format_string( $db_site->id ) ) );
   }
 
   /**
@@ -360,8 +347,6 @@ class participant extends person
    */
   public static function multi_set_preferred_site( $modifier, $db_application, $db_site = NULL )
   {
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     // make sure all participants' cohorts belongs to the application
     $total = static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
@@ -373,7 +358,7 @@ class participant extends person
       'JOIN application_has_cohort ON application_has_cohort.cohort_id = participant.cohort_id %s '.
       'AND application_has_cohort.application_id = %s',
       $modifier->get_where(),
-      $database_class_name::format_string( $db_application->id ) ) );
+      static::db()->format_string( $db_application->id ) ) );
     if( $total != $with_cohort )
       throw lib::create( 'exception\runtime', sprintf(
         'Tried to set preferred %s site for %d participants, '.
@@ -392,8 +377,8 @@ class participant extends person
       'SELECT NULL, %s, id, %s '.
       'FROM participant %s '.
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
-      $database_class_name::format_string( $db_application->id ),
-      is_null( $db_site ) ? 'NULL' : $database_class_name::format_string( $db_site->id ),
+      static::db()->format_string( $db_application->id ),
+      is_null( $db_site ) ? 'NULL' : static::db()->format_string( $db_site->id ),
       $modifier->get_sql() ) );
   }
 
@@ -411,8 +396,6 @@ class participant extends person
     // no primary key means no default site
     if( is_null( $this->id ) ) return NULL;
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
 
     $site_id = static::db()->get_one( sprintf(
@@ -420,8 +403,8 @@ class participant extends person
       'FROM participant_default_site '.
       'WHERE application_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_application->id ),
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $db_application->id ),
+      static::db()->format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
@@ -440,8 +423,6 @@ class participant extends person
     // no primary key means no effective site
     if( is_null( $this->id ) ) return NULL;
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
 
     $site_id = static::db()->get_one( sprintf(
@@ -449,8 +430,8 @@ class participant extends person
       'FROM participant_site '.
       'WHERE application_id = %s '.
       'AND participant_id = %s',
-      $database_class_name::format_string( $db_application->id ),
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $db_application->id ),
+      static::db()->format_string( $this->id ) ) );
 
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
@@ -463,8 +444,6 @@ class participant extends person
    */
   public function get_quota()
   {
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     $db_primary_address = $this->get_primary_address();
     $db_default_site = $this->get_default_site();
     $db_age_group = $this->get_age_group();
@@ -484,10 +463,10 @@ class participant extends person
         'AND site_id = %s '.
         'AND gender = %s '.
         'AND age_group_id = %s',
-        $database_class_name::format_string( $db_primary_address->region_id ),
-        $database_class_name::format_string( $db_default_site->id ),
-        $database_class_name::format_string( $this->gender ),
-        $database_class_name::format_string( $db_age_group->id ) ) );
+        static::db()->format_string( $db_primary_address->region_id ),
+        static::db()->format_string( $db_default_site->id ),
+        static::db()->format_string( $this->gender ),
+        static::db()->format_string( $db_age_group->id ) ) );
     }
 
     return $quota_id ? lib::create( 'database\quota', $quota_id ) : NULL;
@@ -507,16 +486,14 @@ class participant extends person
     // no primary key means no event datetimes
     if( is_null( $this->id ) ) return array();
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     return static::db()->get_col( sprintf(
       'SELECT datetime '.
       'FROM event '.
       'WHERE participant_id = %s '.
       'AND event_type_id = %s '.
       'ORDER BY datetime',
-      $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( $db_event_type->id ) ) );
+      static::db()->format_string( $this->id ),
+      static::db()->format_string( $db_event_type->id ) ) );
   }
 
   /**
@@ -549,8 +526,6 @@ class participant extends person
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw lib::create( 'exception\argument', 'columns', $columns, __METHOD__ );
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     $sql = 'UPDATE participant ';
     $first = true;
     foreach( $columns as $column => $value )
@@ -561,7 +536,7 @@ class participant extends person
       $sql .= sprintf( '%s %s = %s',
                        $first ? 'SET ' : ', ',
                        $column,
-                       $database_class_name::format_string( $value ) );
+                       static::db()->format_string( $value ) );
       $first = false;
     }
 
