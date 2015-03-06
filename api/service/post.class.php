@@ -63,7 +63,11 @@ class post extends service
       }
       catch( \cenozo\exception\database $e )
       {
-        if( $e->is_duplicate_entry() ) $this->status->set_code( 409 );
+        if( $e->is_duplicate_entry() )
+        { // conflict, return offending columns
+          $this->data = $e->get_duplicate_columns( $subject );
+          $this->status->set_code( 409 );
+        }
         else if( $e->is_missing_data() ) $this->status->set_code( 400 );
         else throw $e;
       }

@@ -417,10 +417,12 @@ class util
    */
   public static function send_http_error( $data )
   {
-    \HttpResponse::status( 400 );
-    \HttpResponse::setContentType( 'application/json' ); 
-    \HttpResponse::setData( $data );
-    \HttpResponse::send();
+    lib::create( 'service\status', 400 )->send_headers();
+
+    $json_output = self::json_encode( $data );
+    header( 'Content-Type: application/json' );
+    header( 'Content-Length: '.strlen( $json_output ) );
+    print $json_output;
   }
   
   /**

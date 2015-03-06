@@ -46,6 +46,34 @@ class database extends base_exception
   }
 
   /**
+   * If the exception is a duplicate entry this returns the columns in the unique key
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table_name: The table name must be provided
+   * @return array( string )
+   * @access public
+   */
+  public function get_duplicate_columns( $table_name )
+  {
+    if( !$this->is_duplicate_entry() ) return NULL;
+    
+    $db = lib::create( 'business\session' )->get_database();
+    $column_list = array();
+
+    // error string is in the form: "Duplicate entry 'col1-col2-etc' for key 'key_name'"
+    $matches = array();
+    if( preg_match( "/for key '([^']+)'/", $this->get_raw_message(), $matches ) )
+    {
+      $unique_key_name = $matches[1];
+      $unique_key_list = $db->get_unique_keys( $table_name );
+      if( array_key_exists( $unique_key_name, $unique_key_list ) )
+        $column_list = $unique_key_list[$unique_key_name];
+    }
+
+    return $column_list;
+  }
+
+  /**
    * Returns whether the exception was thrown because of a failed constrained key.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

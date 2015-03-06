@@ -33,7 +33,7 @@ class user extends base_access
     return static::db()->get_one( sprintf(
       'SELECT theme FROM user_has_application '.
       'WHERE user_id = %s '.
-      'AND service_id = %s',
+      'AND application_id = %s',
       static::db()->format_string( $this->id ),
       static::db()->format_string( $db_application->id ) ) );
   }
@@ -59,7 +59,7 @@ class user extends base_access
       static::db()->execute( sprintf(
         'DELETE FROM user_has_application '.
         'WHERE user_id = %s '.
-        'AND service_id = %s',
+        'AND application_id = %s',
         static::db()->format_string( $this->id ),
         static::db()->format_string( $db_application->id ) ) );
     }

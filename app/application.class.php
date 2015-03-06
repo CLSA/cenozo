@@ -80,10 +80,7 @@ final class application
 
       // send the error in json format in an http error header
       $util_class_name = lib::get_class_name( 'util' );
-      \HttpResponse::status( 400 );
-      \HttpResponse::setContentType( 'application/json' );
-      \HttpResponse::setData( $util_class_name::json_encode( $result_array ) );
-      \HttpResponse::send();
+      $util_class_name::send_http_error( $result_array );
       die;
     }
 
@@ -378,7 +375,7 @@ final class application
           'push' == $this->operation_type ||
           'pull' == $this->operation_type && ( !isset( $output['type'] ) || 'json' == $output['type'] ) )
       {
-        $util_class_name::send_http_error( $util_class_name::json_encode( $result_array ) );
+        $util_class_name::send_http_error( $result_array );
       }
       else
       {

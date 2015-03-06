@@ -510,7 +510,7 @@ final class log extends singleton
 
       if( 'main' != lib::get_operation_type() )
       { // send the error in json format in an http error header
-        $util_class_name::send_http_error( $util_class_name::json_encode( $result_array ) );
+        $util_class_name::send_http_error( $result_array );
       }
       else
       { // output the error using the basic php template

@@ -107,8 +107,6 @@ class application extends record
     // do nothing if the application has no primary key
     if( is_null( $this->id ) ) return;
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     // cohort_ids may be a single integer, make sure it is an array
     if( !is_array( $cohort_ids ) ) $cohort_ids = array( $cohort_ids );
 
@@ -117,9 +115,9 @@ class application extends record
       'SET grouping = %s '.
       'WHERE application_id = %s '.
       'AND cohort_id IN ( %s )',
-      $database_class_name::format_string( $grouping ),
-      $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( implode( ',', $cohort_ids ) ) ) );
+      static::db()->format_string( $grouping ),
+      static::db()->format_string( $this->id ),
+      static::db()->format_string( implode( ',', $cohort_ids ) ) ) );
   }
 
   /**
@@ -171,11 +169,9 @@ class application extends record
    */
   public function get_grouping_list()
   {
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     return static::db()->get_row( sprintf(
       'SELECT DISTINCT grouping FROM application_has_cohort WHERE application_id = %s',
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $this->id ) ) );
   }
 
   /**

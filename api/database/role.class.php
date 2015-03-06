@@ -116,7 +116,7 @@ class role extends base_access
   }
 
   /**
-   * Returns whether the role has access to an operation
+   * Returns whether the role has access to a service
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\operation $db_operation
