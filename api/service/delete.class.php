@@ -43,6 +43,7 @@ class delete extends service
       {
         if( $e->is_constrained() )
         {
+          $this->data = $e->get_duplicate_columns( $record->get_class_name() );
           $this->status->set_code( 409 );
         }
         else throw $e;

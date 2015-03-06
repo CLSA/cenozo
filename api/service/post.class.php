@@ -65,7 +65,7 @@ class post extends service
       {
         if( $e->is_duplicate_entry() )
         { // conflict, return offending columns
-          $this->data = $e->get_duplicate_columns( $subject );
+          $this->data = $e->get_duplicate_columns( $record->get_class_name() );
           $this->status->set_code( 409 );
         }
         else if( $e->is_missing_data() ) $this->status->set_code( 400 );
