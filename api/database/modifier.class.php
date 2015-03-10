@@ -380,6 +380,30 @@ class modifier extends \cenozo\base_object
     $this->limit_count = $count;
     $this->limit_offset = $offset;
   }
+
+  /**
+   * Returns the modifier's limit count value (0 if there is no limit)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_limit_count()
+  {
+    return $this->limit_count;
+  }
+  
+  /**
+   * Returns the modifier's limit offset value (0 if there is no limit)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_limit_offset()
+  {
+    return $this->limit_offset;
+  }
   
   /**
    * Returns whether the modifier has a certain table in its join clauses.
