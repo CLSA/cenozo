@@ -360,49 +360,58 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Sets a limit to how many rows are returned.
+   * Sets a limit to how many rows are returned (set to NULL for no limit).
    * 
-   * This method sets the total number of rows and offset to begin selecting by.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $count The number of rows to limit by.
+   * @param int $limit The number of rows to limit by.
+   * @throws exception\argument
+   * @access public
+   */
+  public function limit( $limit )
+  {
+    if( !is_null( $limit ) && 0 > $limit )
+      throw lib::create( 'exception\argument', 'limit', $limit, __METHOD__ );
+
+    $this->limit = $limit;
+  }
+
+  /**
+   * Sets the offset to use when returning rows.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param int $offset The offset to begin the selection.
    * @throws exception\argument
    * @access public
    */
-  public function limit( $count, $offset = 0 )
+  public function offset( $offset = 0 )
   {
-    if( 0 > $count )
-      throw lib::create( 'exception\argument', 'count', $count, __METHOD__ );
+    if( 0 > $offset ) throw lib::create( 'exception\argument', 'offset', $offset, __METHOD__ );
 
-    if( 0 > $offset )
-      throw lib::create( 'exception\argument', 'offset', $offset, __METHOD__ );
-
-    $this->limit_count = $count;
-    $this->limit_offset = $offset;
+    $this->offset = $offset;
   }
 
   /**
-   * Returns the modifier's limit count value (0 if there is no limit)
+   * Returns the modifier's limit count value (NULL if there is no limit)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
-  public function get_limit_count()
+  public function get_limit()
   {
-    return $this->limit_count;
+    return $this->limit;
   }
   
   /**
-   * Returns the modifier's limit offset value (0 if there is no limit)
+   * Returns the modifier's limit offset value (0 if there is no offset)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
-  public function get_limit_offset()
+  public function get_offset()
   {
-    return $this->limit_offset;
+    return $this->offset;
   }
   
   /**
@@ -639,13 +648,14 @@ class modifier extends \cenozo\base_object
    */
   public function get_sql( $appending = false )
   {
-    return sprintf( '%s %s %s %s %s %s',
-                    $appending ? '' : $this->get_join(),
-                    $this->get_where( $appending ),
-                    $this->get_group(),
-                    $this->get_having(),
-                    $this->get_order(),
-                    $this->get_limit() );
+    return sprintf(
+      '%s %s %s %s %s %s',
+      $appending ? '' : $this->get_join(),
+      $this->get_where( $appending ),
+      $this->get_group(),
+      $this->get_having(),
+      $this->get_order(),
+      is_null( $this->limit ) ? '' : sprintf( 'LIMIT %d OFFSET %d', $this->limit, $this->offset ) );
   }
 
   /**
@@ -948,28 +958,6 @@ class modifier extends \cenozo\base_object
   }
   
   /**
-   * Returns an SQL limit statement.
-   * 
-   * This method should only be called by a record class and only after all modifications
-   * have been set.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_limit()
-  {
-    $sql = '';
-    if( 0 < $this->limit_count )
-    {
-      $sql .= sprintf( 'LIMIT %d OFFSET %d',
-                       $this->limit_count,
-                       $this->limit_offset );
-    }
-
-    return $sql;
-  }
-
-  /**
    * Merges another modifier with this one.  Merging only includes join, where, group, having
    * and order items.
    * 
@@ -1093,8 +1081,8 @@ class modifier extends \cenozo\base_object
         }
       }
 
-      if( !is_null( $limit ) && !is_null( $offset ) ) $modifier->limit( $limit, $offset );
-      else if( !is_null( $limit ) ) $modifier->limit( $limit );
+      $modifier->limit( $limit );
+      if( !is_null( $offset ) ) $modifier->offset( $offset );
     }
     else
     {
@@ -1140,16 +1128,16 @@ class modifier extends \cenozo\base_object
   protected $order_list = array();
   
   /**
-   * The row limit value.
+   * The row limit value (null if there is no limit)
    * @var int
    * @access protected
    */
-  protected $limit_count = 0;
+  protected $limit = NULL;
   
   /**
    * The limit offset value.
-   * @var array( column => value )
+   * @var int
    * @access protected
    */
-  protected $limit_offset = 0;
+  protected $offset = 0;
 }

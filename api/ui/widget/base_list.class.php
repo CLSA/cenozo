@@ -232,7 +232,8 @@ abstract class base_list extends \cenozo\ui\widget implements actionable
 
     // apply ordering and paging to sql query
     if( strlen( $this->sort_column ) ) $modifier->order( $this->sort_column, $this->sort_desc );
-    $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
+    $modifier->limit( $this->items_per_page );
+    $modifier->offset( ( $this->page - 1 ) * $this->items_per_page );
 
     // Sort by the subject's id column, descending.
     // We MUST do this since the select which gets this list is using the DISTINCT keyword,

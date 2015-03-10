@@ -246,7 +246,8 @@ class data_manager extends \cenozo\singleton
 
           $modifier = lib::create( 'database\modifier' );
           $modifier->order( 'date' );
-          $modifier->limit( 1, $rank - 1 );
+          $modifier->limit( 1 );
+          $modifier->offset( $rank - 1 );
           $consent_list = $db_participant->get_consent_list( $modifier );
           if( 1 == count( $consent_list ) ) $db_consent = current( $consent_list );
         }

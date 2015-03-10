@@ -1,0 +1,13 @@
+<form name="form"
+      class="form-horizontal"
+      novalidate>
+  <div class="modal-body" ng-transclude></div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger"
+            ng-really-message="Are you sure you want to delete this {{ subject.singular }}?"
+            cn-really-click="cbDelete()">
+      <i class="glyphicon glyphicon-remove-sign" aria-hidden="true"></i> Delete
+    </button>
+    <button type="button" class="btn btn-default btn-primary" data-dismiss="modal">Close</button>
+  </div>
+</form>

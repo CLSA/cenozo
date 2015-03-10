@@ -1,0 +1,21 @@
+<cn-record-view subject="local.subject" cb-delete="cbDelete()">
+  <cn-record-input form="form" subject="user" key="name" title="Name">
+    <input name="name"
+           ng-model="local.cnView.record.name"
+           cn-change="cbPatch( 'name' )"
+           class="form-control"
+           type="text"
+           ng-maxlength="45"
+           placeholder="Name"
+           autocomplete="off"
+           required />
+  </cn-record-input>
+  <cw-record-input form="form" subject="appointment" key="active" title="Active">
+    <select name="active"
+            ng-model="record.active"
+            class="form-control">
+      <option value="1" selected>Yes</option>
+      <option value="0">No</option>
+    </select>
+  </cw-record-input>
+</cn-record-view>

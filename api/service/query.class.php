@@ -38,7 +38,6 @@ class query extends service
     parent::prepare();
 
     $this->modifier = lib::create( 'database\modifier' );
-    $this->modifier->limit( 100 ); // define maximum response size, should probably be a paramter
 
     $mod_string = $this->get_argument( 'modifier', NULL );
     if( !is_null( $mod_string ) )
@@ -53,6 +52,8 @@ class query extends service
         $this->status->set_code( 400 );
       }
     }
+
+    $this->modifier->limit( 100 ); // define maximum response size, should probably be a paramter
   }
 
   /**
@@ -69,12 +70,20 @@ class query extends service
       $subject = $this->collection_name_list[$index];
       $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
       $parent_record = end( $this->record_list );
-      $parent_record_method = sprintf( 'get_%s_arraylist', $subject );
+      $count_modifier = clone $this->modifier;
+      $count_modifier->limit( NULL );
 
       // if we have a parent then select from it, otherwise do a general select
-      $this->data = false === $parent_record
-                  ? $record_class_name::arrayselect( $this->modifier )
-                  : $parent_record->$parent_record_method( $this->modifier );
+      $this->data['limit'] = $this->modifier->get_limit();
+      $this->data['offset'] = $this->modifier->get_offset();
+      $parent_record_method = sprintf( 'get_%s_count', $subject );
+      $this->data['total'] = false === $parent_record
+                           ? $record_class_name::count( $count_modifier )
+                           : $parent_record->$parent_record_method( $count_modifier );
+      $parent_record_method = sprintf( 'get_%s_arraylist', $subject );
+      $this->data['results'] = false === $parent_record
+                             ? $record_class_name::arrayselect( $this->modifier )
+                             : $parent_record->$parent_record_method( $this->modifier );
     }
   }
 

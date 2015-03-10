@@ -1,0 +1,16 @@
+<div class="modal-header">
+  <button type="button" class="close" aria-hidden="true" ng-click="local.cancel()">&times;</button>
+  <h4 class="modal-title">{{ local.title }}</h4>
+</div>
+<div class="modal-body">
+  <label for="value" class="control-label">{{ local.message }}</label>
+  <input name="value"
+         ng-model="value"
+         class="form-control"
+         type="text"
+         required />
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" ng-click="local.cancel()">Cancel</button>
+  <button type="submit" class="btn btn-primary" ng-click="local.ok( value )">OK</button>
+</div>

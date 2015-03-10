@@ -1,1 +1,4 @@
 *.swp
+!.gitkeep
+tmp
+bower_components/

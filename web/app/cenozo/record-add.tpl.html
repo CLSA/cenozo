@@ -1,0 +1,12 @@
+<form name="form"
+      class="form-horizontal"
+      ng-submit="form.$valid && cbSubmit( { record: record } )"
+      novalidate>
+  <div class="modal-body" ng-transclude></div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-primary">
+      <i class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></i> Save
+    </button>
+  </div>
+</form>

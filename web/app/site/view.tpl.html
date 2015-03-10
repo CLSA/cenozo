@@ -1,0 +1,23 @@
+<cn-record-view subject="local.subject" cb-delete="cbDelete()">
+  <cn-record-input form="form" subject="site" key="name" title="Name">
+    <input name="name"
+           ng-model="local.cnView.record.name"
+           cn-change="cbPatch( 'name' )"
+           class="form-control"
+           type="text"
+           ng-minlength="3"
+           ng-maxlength="45"
+           placeholder="Name"
+           autocomplete="off"
+           required />
+  </cn-record-input>
+  <cn-record-input form="form" subject="site" key="timezone" title="Time Zone">
+    <select name="timezone"
+            ng-model="local.cnView.record.timezone"
+            cn-change="cbPatch( 'timezone' )"
+            class="form-control"
+            required>
+      <option ng-repeat="option in local.metadata.timezoneList" value="{{ option }}">{{ option }}</option>
+    </select>
+  </cn-record-input>
+</cn-record-view>

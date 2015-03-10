@@ -1,0 +1,83 @@
+<table class="table table-striped" ng-class="{ 'table-hover': cbView } ">
+  <thead>
+    <tr class="info">
+      <td ng-repeat="column in columnList">
+        <div style="width: auto;">
+        <div class="btn-group" role="group" area-hidden="true">
+          <button class="btn btn-info"
+                  cn-right-click="column.allowRestrict && cbAddRestrict( { column: column.key } )"
+                  ng-click="cbOrderBy( { column: column.key } )">{{ column.title }}
+            <i ng-if="null !== local.order && local.order.column == column.key"
+               class="glyphicon"
+               ng-class="local.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"
+               aria-hidden="true"></i>
+          </button>
+          <button class="btn btn-info"
+                  ng-if="column.allowRestrict"
+                  ng-click="cbAddRestrict( { column: column.key } )">
+            <i class="glyphicon glyphicon-flag" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="text-center text-info full-width" ng-if="column.restrict">
+          <p class="restrict"
+             tooltip="Hint: to remove click the flag, then remove button"
+             tooltip-placement="bottom"
+             tooltip-popup-delay="750">
+            {{ column.restrict.test | cnComparator }}
+            "{{ column.restrict.value }}"
+          </p>
+        </div>
+        </div>
+      </td>
+      <td class="tiny"></td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-show="0 == local.cache.length">
+      <td colspan="{{ columnList.length + 1 }}">
+        There are no {{ subject.plural }} found.
+      </td>
+    </tr>
+    <tr ng-repeat="record in local.cache
+                   | orderBy: local.order.column:local.order.reverse
+                   | limitTo: ( local.cnPagination.currentPage - 1 ) * local.cnPagination.itemsPerPage -
+                              local.cache.length
+                   | limitTo: local.cnPagination.itemsPerPage"
+        ng-click="cbView( { id: record.id } )">
+        <td ng-repeat="column in columnList">
+          <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
+        </td>
+        <td class="tiny">
+          <div>
+            <button class="btn btn-xs btn-danger"
+                    ng-really-message="Are you sure you want to delete this {{ subject.singular }}?"
+                    cn-really-click="cbDelete( { id: record.id } )"
+                    ng-click="$event.stopPropagation()">
+              <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
+            </button>
+          </div>
+        </td>
+    </tr>
+  </tbody>
+  <tfoot ng-if="0 < local.cache.length || cbAdd">
+    <tr class="info">
+      <td colspan="{{ columnList.length + 1 }}">
+        <pagination class="pagination left"
+                    ng-model="local.cnPagination.currentPage"
+                    ng-show="local.cache.length > local.cnPagination.itemsPerPage"
+                    ng-change="local.checkCache()"
+                    max-size="local.cnPagination.showPageLimit"
+                    items-per-page="local.cnPagination.itemsPerPage"
+                    total-items="local.total"
+                    previous-text="&lsaquo;"
+                    next-text="&rsaquo;"></pagination>
+        {{ local.total }} records total
+        <button class="btn btn-default right"
+                ng-if="cbAdd"
+                ng-click="cbAdd()">
+          <i class="glyphicon glyphicon-plus" aria-hidden="true"></i> Add
+        </button>
+      </td>
+    </tr>
+  </tfoot>
+</table>
