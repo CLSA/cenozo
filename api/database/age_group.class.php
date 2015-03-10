@@ -25,6 +25,3 @@ class age_group extends record
     return sprintf( '%d to %d', $this->lower, $this->upper );
   }
 }
-
-// define the lower as the primary unique key
-age_group::set_primary_unique_key( 'uq_lower' );

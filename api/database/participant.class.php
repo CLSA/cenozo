@@ -592,6 +592,3 @@ $address_mod->join(
   'participant_primary_address.address_id',
   'address.id' );
 participant::customize_join( 'address', $address_mod );
-
-// define the uid as the primary unique key
-participant::set_primary_unique_key( 'uq_uid' );
