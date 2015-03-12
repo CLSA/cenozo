@@ -371,24 +371,30 @@ cenozo.directive( 'cnReallyClick', function() {
 /**
  * TODO: document
  */
-cenozo.directive( 'cnRecordAdd', function() {
-  return {
-    templateUrl: window.cenozoUrl + '/app/cenozo/record-add.tpl.html',
-    restrict: 'E',
-    transclude: true,
-    scope: {
-      cbSubmit: '&'
-    },
-    link: function( scope ) {
-      // pass form to next sibling (transclude) scope
-      scope.$$nextSibling.form = scope.form;
-      // pass record from next sibling (transclude) scope to the directive scope
-      scope.record = scope.$$nextSibling.record;
-      // pass form to parent (controller) scope
-      scope.$parent.form = scope.form;
-    }
-  };
-} );
+cenozo.directive( 'cnRecordAdd', [
+  '$window',
+  function( $window ) {
+    return {
+      templateUrl: window.cenozoUrl + '/app/cenozo/record-add.tpl.html',
+      restrict: 'E',
+      transclude: true,
+      scope: {
+        cbBack: '&',
+        cbSubmit: '&'
+      },
+      link: function( scope ) {
+        // pass form to next sibling (transclude) scope
+        scope.$$nextSibling.form = scope.form;
+        // pass record from next sibling (transclude) scope to the directive scope
+        scope.record = scope.$$nextSibling.record;
+        // pass form to parent (controller) scope
+        scope.$parent.form = scope.form;
+        // create the default back callback
+        scope.cbBack = function() { $window.history.back(); };
+      }
+    };
+  }
+] );
 
 /**
  * TODO: document
@@ -475,24 +481,30 @@ cenozo.directive( 'cnRecordList', function() {
 /**
  * TODO: document
  */
-cenozo.directive( 'cnRecordView', function() {
-  return {
-    templateUrl: window.cenozoUrl + '/app/cenozo/record-view.tpl.html',
-    restrict: 'E',
-    transclude: true,
-    scope: {
-      subject: '=',
-      record: '=ngModel',
-      cbDelete: '&'
-    },
-    link: function( scope ) {
-      // pass form to next sibling (transcluded) scope
-      scope.$$nextSibling.form = scope.form;
-      // pass form to parent (controller) scope
-      scope.$parent.form = scope.form;
-    }
-  };
-} );
+cenozo.directive( 'cnRecordView', [
+  '$window',
+  function( $window ) {
+    return {
+      templateUrl: window.cenozoUrl + '/app/cenozo/record-view.tpl.html',
+      restrict: 'E',
+      transclude: true,
+      scope: {
+        subject: '=',
+        record: '=ngModel',
+        cbBack: '&',
+        cbDelete: '&'
+      },
+      link: function( scope ) {
+        // pass form to next sibling (transcluded) scope
+        scope.$$nextSibling.form = scope.form;
+        // pass form to parent (controller) scope
+        scope.$parent.form = scope.form;
+        // create the default back callback
+        scope.cbBack = function() { $window.history.back(); };
+      }
+    };
+  }
+] );
 
 /**
  * TODO: document

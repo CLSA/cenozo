@@ -1,0 +1,71 @@
+'use strict';
+
+try { var participant = angular.module( 'participant' ); }
+catch( err ) { var participant = angular.module( 'participant', [] ); }
+
+/* ######################################################################################################## */
+participant.factory( 'CnParticipantAddFactory', [
+  'CnBaseAddFactory',
+  function( CnBaseAddFactory ) {
+    return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+participant.factory( 'CnParticipantListFactory', [
+  'CnBaseListFactory',
+  function( CnBaseListFactory ) {
+    var object = function( params ) {
+      var base = CnBaseListFactory.instance( params );
+      for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+
+      ////////////////////////////////////
+      // factory customizations start here
+      this.columnList = {
+        id: { title: 'ID' }
+      };
+      this.order = { column: 'id', reverse: false };
+      // factory customizations end here
+      //////////////////////////////////
+
+      cnCopyParams( this, params );
+    };
+
+    object.prototype = CnBaseListFactory.prototype;
+    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+participant.factory( 'CnParticipantViewFactory', [
+  'CnBaseViewFactory',
+  function( CnBaseViewFactory ) {
+    return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+participant.factory( 'CnParticipantSingleton', [
+  'CnBaseSingletonFactory', 'CnParticipantListFactory', 'CnParticipantAddFactory', 'CnParticipantViewFactory', 'CnHttpFactory',
+  function( CnBaseSingletonFactory, CnParticipantListFactory, CnParticipantAddFactory, CnParticipantViewFactory, CnHttpFactory ) {
+    var object = function() {
+      var base = CnBaseSingletonFactory.instance( {
+        subject: 'participant',
+        name: {
+          singular: 'participant',
+          plural: 'participants',
+          possessive: 'participant\'s',
+          pluralPossessive: 'participants\''
+        },
+        cnAdd: CnParticipantAddFactory.instance( { subject: 'participant' } ),
+        cnList: CnParticipantListFactory.instance( { subject: 'participant' } ),
+        cnView: CnParticipantViewFactory.instance( { subject: 'participant' } )
+      } );
+      for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+    };
+
+    object.prototype = CnBaseSingletonFactory.prototype;
+    // don't return a method to create instances, create and return the singleton
+    return new object();
+  }
+] );

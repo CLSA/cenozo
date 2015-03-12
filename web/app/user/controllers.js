@@ -14,16 +14,17 @@ user.controller( 'UserAddCtrl', [
 
 /* ######################################################################################################## */
 user.controller( 'UserListCtrl', [
-  '$scope', 'CnUserSingleton', 'CnModalRestrictFactory',
-  function( $scope, CnUserSingleton, CnModalRestrictFactory ) {
-    CnBaseListCtrl.call( this, $scope, CnUserSingleton, CnModalRestrictFactory );
+  '$scope', '$location', 'CnUserSingleton', 'CnModalRestrictFactory',
+  function( $scope, $location, CnUserSingleton, CnModalRestrictFactory ) {
+    CnBaseListCtrl.call( this, $scope, $location, CnUserSingleton, CnModalRestrictFactory );
   }
 ] );
 
 /* ######################################################################################################## */
 user.controller( 'UserViewCtrl', [
-  '$scope', 'CnUserSingleton',
-  function( $scope, CnUserSingleton ) {
+  '$scope', '$routeParams', 'CnUserSingleton',
+  function( $scope, $routeParams, CnUserSingleton ) {
     CnBaseViewCtrl.call( this, $scope, CnUserSingleton );
+    $scope.local.cnView.load( $routeParams.id );
   }
 ] );

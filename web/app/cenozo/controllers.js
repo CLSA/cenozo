@@ -24,30 +24,30 @@ function CnBaseAddCtrl( $scope, singleton, createRecordFn ) {
             $scope.form[response.data[i]].$invalid = true;
             $scope.form[response.data[i]].$error.conflict = true;
           }
-        } else { window.broken(); }
+        } else { cnFatalError(); }
       }
     );
   }
 }
 
 /* ######################################################################################################## */
-function CnBaseListCtrl( $scope, singleton, modalFactory ) {
+function CnBaseListCtrl( $scope, $location, singleton, modalFactory ) {
   // define scope variables
   $scope.local = singleton;
 
   // define the callbacks
   $scope.cbAdd = function() {
-    $scope.local.cnAdd.show = true;
+    $location.path( '/' + $scope.local.subject + '/add' );
   };
   $scope.cbDelete = function( id ) {
-    $scope.local.cnList.delete( id ).catch( function error( response ) { window.broken(); } );
+    $scope.local.cnList.delete( id ).catch( function error( response ) { cnFatalError(); } );
   };
   $scope.cbOrderBy = function( column ) {
     $scope.local.cnList.orderBy( column );
   };
   $scope.cbAddRestrict = function( column ) {
     var modal = modalFactory.instance( {
-      subject: $scope.local.subject.singular,
+      subject: $scope.local.subject,
       column: $scope.local.cnList.columnList[column].title,
       comparison: $scope.local.cnList.columnList[column].restrict
     } ).show();
@@ -59,12 +59,11 @@ function CnBaseListCtrl( $scope, singleton, modalFactory ) {
     $scope.local.cnList.restrict( column );
   };
   $scope.cbView = function( id ) {
-    $scope.local.view( id );
-    $scope.local.cnView.show = true;
+    $location.path( '/' + $scope.local.subject + '/' + id );
   };
 
   // initialization
-  $scope.local.cnList.load().catch( function exception() { window.broken(); } );
+  $scope.local.cnList.load().catch( function exception() { cnFatalError(); } );
 }
 
 /* ######################################################################################################## */
@@ -75,9 +74,9 @@ function CnBaseViewCtrl( $scope, singleton ) {
   $scope.cbDelete = function() {
     $scope.local.cnList.delete( $scope.local.cnView.record.id ).then(
       function success( response ) { $scope.local.cnView.show = false; },
-      function error( response ) { window.broken(); }
+      function error( response ) { cnFatalError(); }
     );
-  }
+  };
   $scope.cbPatch = function( property ) {
     // send patch to server then edit the cenozo
     var data = {};
@@ -99,9 +98,9 @@ function CnBaseViewCtrl( $scope, singleton ) {
               $scope.form[response.data[i]].$invalid = true;
               $scope.form[response.data[i]].$error.conflict = true;
             }
-          } else { window.broken(); }
+          } else { cnFatalError(); }
         }
       );
     }
-  }
+  };
 }

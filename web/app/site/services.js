@@ -13,8 +13,8 @@ site.factory( 'CnSiteAddFactory', [
 
 /* ######################################################################################################## */
 site.factory( 'CnSiteListFactory', [
-  'CnBaseListFactory', 'Util',
-  function( CnBaseListFactory, Util ) {
+  'CnBaseListFactory',
+  function( CnBaseListFactory ) {
     var object = function( params ) {
       var base = CnBaseListFactory.instance( params );
       for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
@@ -29,7 +29,7 @@ site.factory( 'CnSiteListFactory', [
       // factory customizations end here
       //////////////////////////////////
 
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = CnBaseListFactory.prototype;
@@ -47,15 +47,12 @@ site.factory( 'CnSiteViewFactory', [
 
 /* ######################################################################################################## */
 site.factory( 'CnSiteSingleton', [
-  'CnBaseSingletonFactory',
-  'CnSiteListFactory', 'CnSiteAddFactory', 'CnSiteViewFactory',
-  'CnHttpFactory', 'Util',
-  function( CnBaseSingletonFactory,
-            CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory,
-            CnHttpFactory, Util ) {
+  'CnBaseSingletonFactory', 'CnSiteListFactory', 'CnSiteAddFactory', 'CnSiteViewFactory', 'CnHttpFactory',
+  function( CnBaseSingletonFactory, CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory, CnHttpFactory ) {
     var object = function() {
       var base = CnBaseSingletonFactory.instance( {
-        subject: {
+        subject: 'site',
+        name: {
           singular: 'site',
           plural: 'sites',
           possessive: 'site\'s',
@@ -89,7 +86,7 @@ site.factory( 'CnSiteSingleton', [
             }
           }
         },
-        function error( response ) { window.broken(); }
+        function error( response ) { cnFatalError(); }
       );
     };
 

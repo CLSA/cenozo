@@ -13,8 +13,8 @@ user.factory( 'CnUserAddFactory', [
 
 /* ######################################################################################################## */
 user.factory( 'CnUserListFactory', [
-  'CnBaseListFactory', 'Util',
-  function( CnBaseListFactory, Util ) {
+  'CnBaseListFactory',
+  function( CnBaseListFactory ) {
     var object = function( params ) {
       var base = CnBaseListFactory.instance( params );
       for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
@@ -29,7 +29,7 @@ user.factory( 'CnUserListFactory', [
       // factory customizations end here
       //////////////////////////////////
 
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = CnBaseListFactory.prototype;
@@ -47,15 +47,12 @@ user.factory( 'CnUserViewFactory', [
 
 /* ######################################################################################################## */
 user.factory( 'CnUserSingleton', [
-  'CnBaseSingletonFactory',
-  'CnUserListFactory', 'CnUserAddFactory', 'CnUserViewFactory',
-  'CnHttpFactory', 'Util',
-  function( CnBaseSingletonFactory,
-            CnUserListFactory, CnUserAddFactory, CnUserViewFactory,
-            CnHttpFactory, Util ) {
+  'CnBaseSingletonFactory', 'CnUserListFactory', 'CnUserAddFactory', 'CnUserViewFactory',
+  function( CnBaseSingletonFactory, CnUserListFactory, CnUserAddFactory, CnUserViewFactory ) {
     var object = function() {
       var base = CnBaseSingletonFactory.instance( {
-        subject: {
+        subject: 'user',
+        name: {
           singular: 'user',
           plural: 'users',
           possessive: 'user\'s',

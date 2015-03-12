@@ -1,18 +1,4 @@
-.menu-button {
-  z-index: 100;
-  transform: rotate(90deg);
-  transform-origin: left top 0;
-  position: fixed;
-  top: 30px;
-  left: 32px;
-  height: 35px;
-  width: 10em;
-  box-shadow: 2px -2px 5px #000;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-bottom-left-radius: 0px;
-  border-bottom-right-radius: 0px;
-}
+table { margin-bottom: 0px !important; }
 thead, tfoot { font-weight: bold; }
 thead td, tbody td { text-align: center; }
 tfoot { text-align: center; }
@@ -24,17 +10,22 @@ td.tiny { width: 1px; white-space: nowrap; }
 .restrict { margin: 0px; font-size: 1.2em; }
 .pagination { margin: 0; }
 .input-group { width: 100%; }
-
-/* changes to modals */
-.modal-body { display: block; overflow: auto; }
-.modal-header, .modal-footer { background: #EAEAEA; }
-.modal-header {
+.rounded-top {
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
 }
-.modal-footer {
+.rounded-bottom {
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+}
+.rounded {
+  border-radius: 6px;
+}
+.form-body { padding-top: 1em; }
+.form-footer {
+  padding: 1em;
+  background: #EAEAEA;
+  text-align: right;
 }
 
 /* get rid of input spinners */
@@ -57,18 +48,48 @@ input[type=number] { -moz-appearance: textfield; }
 
 /* used by the ng-view so that animated transitions work correctly */
 .view-frame {
-  margin-top: 0.5em;
   padding-top: 1em;
+  padding-bottom: 1em;
   position: absolute;
   border: 2px solid #DDD;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
-/* used by snap to hide drawer content */
+/* snap content, drawers and toggle buttons */
+.menu-button, .settings-button {
+  z-index: 100;
+  position: fixed;
+  top: 30px;
+  height: 35px;
+  width: 180px;
+  outline: none !important;
+}
+.menu-button {
+  left: 32px;
+  transform: rotate(90deg);
+  transform-origin: left top 0;
+  box-shadow: 2px -2px 5px #000;
+}
+.settings-button {
+  transform: rotate(-90deg);
+  transform-origin: right top 0;
+  right: 32px;
+  box-shadow: -2px -2px 5px #000;
+}
 snap-content {
   background-color: #fff;
   border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
   box-shadow: 2px 0px 5px #000;
+}
+.snap-drawer, accordian-heading { background-color: #EAEAEA; }
+
+/* accordion tweaking */
+.panel { border: 0px; box-shadow: none; }
+.panel-heading { padding: 0px }
+.panel-collapse { background-color: #EAEAEA; }
+.btn-accordion {
+  border: 0px;
+  border-radius: 0px;
+  outline: none !important;
 }

@@ -5,13 +5,12 @@ catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 
 /* ######################################################################################################## */
 cenozo.factory( 'CnBaseAddFactory', [
-  'Util',
-  function( Util ) {
+  '$routeParams',
+  function( $routeParams ) {
     var object = function( params ) {
       if( undefined === params.subject ) throw "Tried to create CnBaseAddFactory without a subject";
       this.subject = null;
-      this.show = false;
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = {};
@@ -25,8 +24,8 @@ cenozo.factory( 'CnBaseAddFactory', [
 
 /* ######################################################################################################## */
 cenozo.factory( 'CnBaseListFactory', [
-  'CnPaginationFactory', 'CnHttpFactory', 'Util',
-  function( CnPaginationFactory, CnHttpFactory, Util ) {
+  'CnPaginationFactory', 'CnHttpFactory',
+  function( CnPaginationFactory, CnHttpFactory ) {
     var object = function( params ) {
       if( undefined === params.subject ) throw "Tried to create CnBaseListFactory without a subject";
       this.subject = null;
@@ -38,7 +37,7 @@ cenozo.factory( 'CnBaseListFactory', [
       this.cnPagination = CnPaginationFactory.instance();
 
       var thisRef = this;
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = {
@@ -46,7 +45,7 @@ cenozo.factory( 'CnBaseListFactory', [
         var thisRef = this;
         // convert Date object to datetime string
         if( undefined !== record.datetime && null !== record.datetime )
-          record.datetime = Util.objectToDatetime( record.datetime );
+          record.datetime = cnObjectToDatetime( record.datetime );
         return CnHttpFactory.instance( {
           subject: this.subject,
           data: record
@@ -93,7 +92,7 @@ cenozo.factory( 'CnBaseListFactory', [
 
       checkCache: function() {
         if( this.cache.length < this.total && this.cnPagination.getMaxIndex() >= this.cache.length )
-          this.load().catch( function exception() { window.broken(); } );
+          this.load().catch( function exception() { cnFatalError(); } );
       },
 
       reload: function() {
@@ -141,7 +140,7 @@ cenozo.factory( 'CnBaseListFactory', [
           // change datetimes to Date object
           response.data.results.forEach( function( element, index, array ) {
             if( undefined !== array[index].datetime && null !== array[index].datetime )
-              array[index].datetime = Util.datetimeToObject( array[index].datetime );
+              array[index].datetime = cnDatetimeToObject( array[index].datetime );
           } );
 
           if( replace ) thisRef.cache = [];
@@ -161,20 +160,27 @@ cenozo.factory( 'CnBaseListFactory', [
 
 /* ######################################################################################################## */
 cenozo.factory( 'CnBaseViewFactory', [
-  'CnHttpFactory', 'Util',
-  function( CnHttpFactory, Util ) {
+  'CnHttpFactory',
+  function( CnHttpFactory ) {
     var object = function( params ) {
       if( undefined === params.subject ) throw "Tried to create CnBaseViewFactory without a subject";
       this.subject = null;
-      this.show = false;
       this.record = {};
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = {
+      load: function( id ) {
+        var thisRef = this;
+        CnHttpFactory.instance( {
+          subject: this.subject
+        } ).get( id ).then( function success( response ) {
+          thisRef.record = response.data;
+        } );
+      },
       patch: function( id, data ) {
         // convert Date object to datetime string
-        if( 'datetime' == data[0] ) data[0] = Util.objectToDatetime( data[0] );
+        if( 'datetime' == data[0] ) data[0] = cnObjectToDatetime( data[0] );
         return CnHttpFactory.instance( {
           subject: this.subject,
           data: data
@@ -190,9 +196,8 @@ cenozo.factory( 'CnBaseViewFactory', [
 ] );
 
 /* ######################################################################################################## */
-cenozo.factory( 'CnBaseSingletonFactory', [
-  'Util',
-  function( Util ) {
+cenozo.factory( 'CnBaseSingletonFactory',
+  function() {
     var object = function( params ) {
       if( undefined === params.subject ) throw "Tried to create CnBaseSingletonFactory without a subject";
       if( undefined === params.cnAdd ) throw "Tried to create CnBaseSingletonFactory without a cnAdd";
@@ -206,7 +211,7 @@ cenozo.factory( 'CnBaseSingletonFactory', [
         pluralPossessive: '(undefined)'
       };
 
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = {
@@ -226,17 +231,17 @@ cenozo.factory( 'CnBaseSingletonFactory', [
       prototype: object.prototype
     };
   }
-] );
+);
 
 /* ######################################################################################################## */
 cenozo.factory( 'CnHttpFactory', [
-  '$http', 'Util',
-  function CnHttpFactory( $http, Util ) {
+  '$http',
+  function CnHttpFactory( $http ) {
     var object = function( params ) {
       if( undefined === params.subject ) throw "Tried to create CnHttpFactory without a subject";
       this.subject = null;
       this.data = {};
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     }
 
     object.prototype = {
@@ -262,12 +267,12 @@ cenozo.factory( 'CnHttpFactory', [
 
 /* ######################################################################################################## */
 cenozo.service( 'CnModalConfirmFactory', [
-  '$modal', 'Util',
-  function( $modal, Util ) {
+  '$modal',
+  function( $modal ) {
     var object = function( params ) {
       this.title = 'Title';
       this.message = 'Message';
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = {
@@ -293,12 +298,12 @@ cenozo.service( 'CnModalConfirmFactory', [
 
 /* ######################################################################################################## */
 cenozo.service( 'CnModalMessageFactory', [
-  '$modal', 'Util',
-  function( $modal, Util ) {
+  '$modal',
+  function( $modal ) {
     var object = function( params ) {
       this.title = 'Title';
       this.message = 'Message';
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = {
@@ -323,14 +328,14 @@ cenozo.service( 'CnModalMessageFactory', [
 
 /* ######################################################################################################## */
 cenozo.service( 'CnModalRestrictFactory', [
-  '$modal', 'Util',
-  function( $modal, Util ) {
+  '$modal',
+  function( $modal ) {
     var object = function( params ) {
       if( undefined === params.column ) throw "Tried to create CnModalRestrictFactory without a column";
       this.subject = null;
       this.column = null;
       this.comparison = { test: '<=>' };
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
 
       if( undefined === this.comparison || null === this.comparison ) this.comparison = { test: '<=>' };
       this.preExisting = undefined !== this.comparison.value;
@@ -360,12 +365,12 @@ cenozo.service( 'CnModalRestrictFactory', [
 
 /* ######################################################################################################## */
 cenozo.service( 'CnModalValueFactory', [
-  '$modal', 'Util',
-  function( $modal, Util ) {
+  '$modal',
+  function( $modal ) {
     var object = function( params ) {
       this.title = 'Title';
       this.message = 'Message';
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = {
@@ -390,15 +395,14 @@ cenozo.service( 'CnModalValueFactory', [
 ] );
 
 /* ######################################################################################################## */
-cenozo.factory( 'CnPaginationFactory', [
-  'Util',
-  function CnPaginationFactory( Util ) {
+cenozo.factory( 'CnPaginationFactory',
+  function CnPaginationFactory() {
     var object = function( params ) {
       this.currentPage = 1;
       this.showPageLimit = 10;
       this.itemsPerPage = 10;
       this.changePage = function() {};
-      Util.copyParams( this, params );
+      cnCopyParams( this, params );
     };
 
     object.prototype = {
@@ -408,39 +412,5 @@ cenozo.factory( 'CnPaginationFactory', [
     };
     
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
-  }
-] );
-
-/* ######################################################################################################## */
-cenozo.service( 'Util',
-  function Util() {
-    this.copyParams = function( object, params ) {
-      for( var property in params ) {
-        if( params.hasOwnProperty( property ) ) {
-          if( null !== params[property] && 'object' === typeof params[property] ) {
-            if( null !== object[property] && 'object' === typeof object[property] ) {
-              // both object and params have same object, so recursively apply
-              this.copyParams( object[property], params[property] );
-            } else object[property] = params[property]; // copy object property
-          } else object[property] = params[property]; // copy non-object property
-        }
-      }
-    }
-
-    this.datetimeToObject = function( datetime ) {
-      return datetime instanceof Date ? datetime : new Date( datetime.replace( / /, 'T' ) + 'Z' );
-    };
-
-    this.objectToDatetime = function( object ) {
-      return object instanceof Date ?  object.toISOString().replace( /\.[0-9]+Z/, 'Z' ) : object;
-    };
-
-    this.toQueryString = function( object ) {
-      var str = [];
-      for( var property in object )
-        if( object.hasOwnProperty( property ) )
-          str.push( encodeURIComponent( property ) + '=' + encodeURIComponent( object[property] ) );
-      return str.join( '&' );
-    };
   }
 );

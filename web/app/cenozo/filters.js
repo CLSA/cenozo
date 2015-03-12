@@ -27,12 +27,12 @@ cenozo.filter( 'cnCheckmark', function() {
 
 /* ######################################################################################################## */
 cenozo.filter( 'cnDatabaseDate', [
-  '$filter', 'Util',
-  function( $filter, Util ) {
+  '$filter',
+  function( $filter ) {
     var dateFilter = $filter( 'date' );
     return function( datetime, format ) {
       return dateFilter(
-        datetime instanceof Date ?  datetime : Util.datetimeToObject( datetime ),
+        datetime instanceof Date ?  datetime : cnDatetimeToObject( datetime ),
         format );
     };
   }

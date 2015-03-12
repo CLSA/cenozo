@@ -23,16 +23,17 @@ site.controller( 'SiteAddCtrl', [
 
 /* ######################################################################################################## */
 site.controller( 'SiteListCtrl', [
-  '$scope', 'CnSiteSingleton', 'CnModalRestrictFactory',
-  function( $scope, CnSiteSingleton, CnModalRestrictFactory ) {
-    CnBaseListCtrl.call( this, $scope, CnSiteSingleton, CnModalRestrictFactory );
+  '$scope', '$location', 'CnSiteSingleton', 'CnModalRestrictFactory',
+  function( $scope, $location, CnSiteSingleton, CnModalRestrictFactory ) {
+    CnBaseListCtrl.call( this, $scope, $location, CnSiteSingleton, CnModalRestrictFactory );
   }
 ] );
 
 /* ######################################################################################################## */
 site.controller( 'SiteViewCtrl', [
-  '$scope', 'CnSiteSingleton',
-  function( $scope, CnSiteSingleton ) {
+  '$scope', '$routeParams', 'CnSiteSingleton',
+  function( $scope, $routeParams, CnSiteSingleton ) {
     CnBaseViewCtrl.call( this, $scope, CnSiteSingleton );
+    $scope.local.cnView.load( $routeParams.id );
   }
 ] );

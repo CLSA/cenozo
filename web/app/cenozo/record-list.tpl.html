@@ -35,7 +35,7 @@
   <tbody>
     <tr ng-show="0 == local.cache.length">
       <td colspan="{{ columnList.length + 1 }}">
-        There are no {{ subject.plural }} found.
+        There are no {{ name.plural }} found.
       </td>
     </tr>
     <tr ng-repeat="record in local.cache
@@ -50,7 +50,7 @@
         <td class="tiny">
           <div>
             <button class="btn btn-xs btn-danger"
-                    ng-really-message="Are you sure you want to delete this {{ subject.singular }}?"
+                    ng-really-message="Are you sure you want to delete this {{ name.singular }}?"
                     cn-really-click="cbDelete( { id: record.id } )"
                     ng-click="$event.stopPropagation()">
               <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
@@ -61,7 +61,7 @@
   </tbody>
   <tfoot ng-if="0 < local.cache.length || cbAdd">
     <tr class="info">
-      <td colspan="{{ columnList.length + 1 }}">
+      <td colspan="{{ columnList.length + 1 }}" class="rounded-bottom">
         <pagination class="pagination left"
                     ng-model="local.cnPagination.currentPage"
                     ng-show="local.cache.length > local.cnPagination.itemsPerPage"
