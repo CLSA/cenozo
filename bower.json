@@ -8,11 +8,14 @@
   "dependencies": {
     "angular": "1.2.x",
     "angular-bootstrap": "0.12.x",
+    "angular-ui-router": "0.2.x",
     "jquery": "~2.1.1",
     "bootstrap": "~3.1.1",
     "snapjs": "latest",
+    "requirejs": "2.1.x",
     "angular-route": "1.2.x",
     "angular-animate": "1.2.x",
-    "angular-snap": "1.8.x"
+    "angular-snap": "1.8.x",
+    "angular-require": "1.0.x"
   }
 }

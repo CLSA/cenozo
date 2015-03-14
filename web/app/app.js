@@ -1,10 +1,11 @@
 'use strict';
 
-window.isBroken = false;
+window.cnIsBroken = false;
+window.cnCachedProviders = {};
 window.cnFatalError = function cnFatalError() {
-  if( !window.isBroken ) {
+  if( !window.cnIsBroken ) {
     alert( 'An error has occurred.  Please reload your web browser and try again.' );
-    window.isBroken = true;
+    window.cnIsBroken = true;
   }
 };
 window.cnCopyParams = function cnCopyParams( object, params ) {
@@ -28,20 +29,25 @@ window.cnObjectToDatetime = function cnObjectToDatetime( object ) {
   return object instanceof Date ?  object.toISOString().replace( /\.[0-9]+Z/, 'Z' ) : object;
 };
 
-window.cnRouteModule = function cnRouteModule( $routeProvider, module ) {
-  if( undefined === $routeProvider ) throw 'cnRouteModule requires 2 parameters';
-  if( undefined === module ) throw 'cnRouteModule requires 2 parameters';
+window.cnRouteModule = function cnRouteModule( $stateProvider, module, base ) {
+  if( undefined === $stateProvider ) throw 'cnRouteModule requires at least 2 parameters';
+  if( undefined === module ) throw 'cnRouteModule requires at least 2 parameters';
+  if( undefined === base ) base = false;
 
-  var Module = cnSnakeToCamel( module, true );
-  $routeProvider.when( '/' + module, {
-    templateUrl: window.cenozoUrl + '/app/' + module + '/list.tpl.html',
-    controller: Module + 'ListCtrl'
-  } ).when( '/' + module + '/add', {
-    templateUrl: window.cenozoUrl + '/app/' + module + '/add.tpl.html',
-    controller: Module + 'AddCtrl'
-  } ).when( '/' + module + '/:id', {
-    templateUrl: window.cenozoUrl + '/app/' + module + '/view.tpl.html',
-    controller: Module + 'ViewCtrl'
+  var baseUrl = 'app/' + module + '/';
+  if( base ) baseUrl = cnCenozoUrl + '/' + baseUrl;
+
+  $stateProvider.state( module, {
+    url: '/' + module,
+    controller: module + 'ListCtrl',
+    templateUrl: baseUrl + 'list.tpl.html',
+    resolve: {
+      data: [ '$q', function( $q ) {
+        var deferred = $q.defer();
+        require( [ baseUrl + 'bootstrap.js' ], function() { deferred.resolve(); } );
+        return deferred.promise;
+      } ]
+    }
   } );
 };
 
@@ -61,34 +67,48 @@ window.cnToQueryString = function cnToQueryString( object ) {
 };
 
 /* ######################################################################################################## */
-var subModuleList = [
-  'activity',
-  'collection',
-  'language',
-  'participant',
-  'quota',
-  'region_site',
-  'setting',
-  'site',
-  'state',
-  'system_message',
-  'user'
-];
-
-var moduleList = [
+var cenozoApp = angular.module( 'cenozoApp', [
   'ui.bootstrap',
-  'ngRoute',
+  'ui.router',
   'snap',
   'cenozo'
-];
-moduleList = moduleList.concat( subModuleList );
-
-var cenozoApp = angular.module( 'cenozoApp', moduleList );
+] );
 
 cenozoApp.config( [
-  '$routeProvider',
-  function( $routeProvider ) {
-    for( var i = 0; i < subModuleList.length; i++ ) cnRouteModule( $routeProvider, subModuleList[i] );
-    $routeProvider.otherwise( { redirectTo: '/site' } );
+  '$controllerProvider', '$compileProvider', '$filterProvider', '$provide',
+  function( $controllerProvider, $compileProvider, $filterProvider, $provide ) {
+    cnCachedProviders.controller = $controllerProvider.register;
+    cnCachedProviders.directive = $compileProvider.directive;
+    cnCachedProviders.filter = $filterProvider.register;
+    cnCachedProviders.factory = $provide.factory;
+    cnCachedProviders.service = $provide.service;
+    cnCachedProviders.provider = $provide.provider;
+    cnCachedProviders.value = $provide.value;
+    cnCachedProviders.constant = $provide.constant;
+    cnCachedProviders.decorator = $provide.decorator;
+  }
+] );
+
+cenozoApp.config( [
+  '$stateProvider', '$urlRouterProvider',
+  function( $stateProvider, $urlRouterProvider ) {
+    $urlRouterProvider.otherwise( '/Site' );
+
+    var subModuleList = [
+      'Activity',
+      'Collection',
+      'Language',
+      'Participant',
+      'Quota',
+      'RegionSite',
+      'Setting',
+      'Site',
+      'State',
+      'SystemMessage',
+      'User'
+    ];
+
+    for( var i = 0; i < subModuleList.length; i++ )
+      cnRouteModule( $stateProvider, subModuleList[i], true );
   }
 ] );

@@ -5,7 +5,6 @@
         <div style="width: auto;">
         <div class="btn-group" role="group" area-hidden="true">
           <button class="btn btn-info"
-                  cn-right-click="column.allowRestrict && cbAddRestrict( { column: column.key } )"
                   ng-click="cbOrderBy( { column: column.key } )">{{ column.title }}
             <i ng-if="null !== local.order && local.order.column == column.key"
                class="glyphicon"

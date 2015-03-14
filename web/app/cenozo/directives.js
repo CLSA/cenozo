@@ -288,7 +288,7 @@ cenozo.directive( 'cnDatetimePickerPopup', function () {
     restrict: 'E',
     replace: true,
     transclude: true,
-    templateUrl: window.cenozoUrl + '/app/cenozo/datetime-picker.tpl.html',
+    templateUrl: cnCenozoUrl + '/app/cenozo/datetime-picker.tpl.html',
     link: function( scope, element ) {
       element.bind( 'click', function( event ) {
         event.preventDefault();
@@ -305,7 +305,7 @@ cenozo.directive( 'cnDatetimePickerPopup', function () {
  */
 cenozo.directive( 'cnModal', function() {
   return {
-    templateUrl: window.cenozoUrl + '/app/cenozo/modal.tpl.html',
+    templateUrl: cnCenozoUrl + '/app/cenozo/modal.tpl.html',
     restrict: 'E',
     transclude: true,
     replace: true,
@@ -375,7 +375,7 @@ cenozo.directive( 'cnRecordAdd', [
   '$window',
   function( $window ) {
     return {
-      templateUrl: window.cenozoUrl + '/app/cenozo/record-add.tpl.html',
+      templateUrl: cnCenozoUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
       transclude: true,
       scope: {
@@ -401,7 +401,7 @@ cenozo.directive( 'cnRecordAdd', [
  */
 cenozo.directive( 'cnRecordInput', function() {
   return {
-    templateUrl: window.cenozoUrl + '/app/cenozo/record-input.tpl.html',
+    templateUrl: cnCenozoUrl + '/app/cenozo/record-input.tpl.html',
     restrict: 'E',
     transclude: true,
     scope: {
@@ -441,7 +441,7 @@ cenozo.directive( 'cnRecordInput', function() {
  */
 cenozo.directive( 'cnRecordList', function() {
   return {
-    templateUrl: window.cenozoUrl + '/app/cenozo/record-list.tpl.html',
+    templateUrl: cnCenozoUrl + '/app/cenozo/record-list.tpl.html',
     restrict: 'E',
     scope: {
       subject: '=',
@@ -485,7 +485,7 @@ cenozo.directive( 'cnRecordView', [
   '$window',
   function( $window ) {
     return {
-      templateUrl: window.cenozoUrl + '/app/cenozo/record-view.tpl.html',
+      templateUrl: cnCenozoUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
       transclude: true,
       scope: {
@@ -505,18 +505,3 @@ cenozo.directive( 'cnRecordView', [
     };
   }
 ] );
-
-/**
- * TODO: document
- */
-cenozo.directive( 'cnRightClick', function( $parse ) {
-  return function( scope, element, attrs ) {
-    var fn = $parse( attrs.cnRightClick );
-    element.bind( 'contextmenu', function( event ) {
-      scope.$apply( function() {
-        event.preventDefault();
-        fn( scope, { $event: event } );
-      } );
-    } );
-  };
-} );

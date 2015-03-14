@@ -4,9 +4,8 @@ try { var cenozo = angular.module( 'cenozo' ); }
 catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 
 /* ######################################################################################################## */
-cenozo.factory( 'CnBaseAddFactory', [
-  '$routeParams',
-  function( $routeParams ) {
+cenozo.factory( 'CnBaseAddFactory',
+  function() {
     var object = function( params ) {
       if( undefined === params.subject ) throw "Tried to create CnBaseAddFactory without a subject";
       this.subject = null;
@@ -20,7 +19,7 @@ cenozo.factory( 'CnBaseAddFactory', [
       prototype: object.prototype
     };
   }
-] );
+);
 
 /* ######################################################################################################## */
 cenozo.factory( 'CnBaseListFactory', [
@@ -282,7 +281,7 @@ cenozo.service( 'CnModalConfirmFactory', [
           backdrop: true,
           keyboard: true,
           modalFade: true,
-          templateUrl: window.cenozoUrl + '/app/cenozo/modal-confirm.tpl.html',
+          templateUrl: cnCenozoUrl + '/app/cenozo/modal-confirm.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.thisRef = thisRef;
             $scope.thisRef.yes = function() { $modalInstance.close( true ); };
@@ -313,7 +312,7 @@ cenozo.service( 'CnModalMessageFactory', [
           backdrop: true,
           keyboard: true,
           modalFade: true,
-          templateUrl: window.cenozoUrl + '/app/cenozo/modal-message.tpl.html',
+          templateUrl: cnCenozoUrl + '/app/cenozo/modal-message.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.thisRef = thisRef;
             $scope.thisRef.close = function() { $modalInstance.dismiss(); };
@@ -348,7 +347,7 @@ cenozo.service( 'CnModalRestrictFactory', [
           backdrop: true,
           keyboard: true,
           modalFade: true,
-          templateUrl: window.cenozoUrl + '/app/cenozo/modal-restrict.tpl.html',
+          templateUrl: cnCenozoUrl + '/app/cenozo/modal-restrict.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = thisRef;
             $scope.local.ok = function( comparison ) { $modalInstance.close( comparison ); };
@@ -380,7 +379,7 @@ cenozo.service( 'CnModalValueFactory', [
           backdrop: true,
           keyboard: true,
           modalFade: true,
-          templateUrl: window.cenozoUrl + '/app/cenozo/modal-value.tpl.html',
+          templateUrl: cnCenozoUrl + '/app/cenozo/modal-value.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = thisRef;
             $scope.local.ok = function( value ) { $modalInstance.close( value ); };
