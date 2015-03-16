@@ -4,7 +4,8 @@ thead td, tbody td { text-align: center; }
 tfoot { text-align: center; }
 td.tiny { width: 1px; white-space: nowrap; }
 .btn { font-weight: bold; }
-.full-width { width: 100%; }
+.full-width { width: 100% !important; }
+.half-width { width: 50% !important; }
 .left { float: left }
 .right { float: right }
 .restrict { margin: 0px; font-size: 1.2em; }
@@ -28,6 +29,13 @@ td.tiny { width: 1px; white-space: nowrap; }
   text-align: right;
 }
 
+/* make sure labels align well in forms */
+label {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-top: 7px;
+}
+
 /* get rid of input spinners */
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
@@ -46,6 +54,16 @@ input[type=number] { -moz-appearance: textfield; }
 .datetime-picker div > table .btn-default { border: 0; }
 .outer-container { margin-top: 0.5em; padding: 0px; }
 
+.top-heading {
+  padding-top: 0.33em;
+  padding-bottom: 0.33em;
+}
+
+.site-title {
+  font-size: 150%;
+  font-weight: bold;
+}
+
 /* used by the ng-view so that animated transitions work correctly */
 .view-frame {
   padding-top: 1em;
@@ -56,25 +74,18 @@ input[type=number] { -moz-appearance: textfield; }
 }
 
 /* snap content, drawers and toggle buttons */
-.menu-button, .settings-button {
+.menu-button {
   z-index: 100;
   position: fixed;
-  top: 30px;
+  top: 50px;
   height: 35px;
   width: 180px;
   outline: none !important;
-}
-.menu-button {
+
   left: 32px;
   transform: rotate(90deg);
   transform-origin: left top 0;
   box-shadow: 2px -2px 5px #000;
-}
-.settings-button {
-  transform: rotate(-90deg);
-  transform-origin: right top 0;
-  right: 32px;
-  box-shadow: -2px -2px 5px #000;
 }
 snap-content {
   background-color: #fff;

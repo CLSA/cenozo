@@ -2,12 +2,14 @@
 
 window.cnIsBroken = false;
 window.cnCachedProviders = {};
+
 window.cnFatalError = function cnFatalError() {
   if( !window.cnIsBroken ) {
     alert( 'An error has occurred.  Please reload your web browser and try again.' );
     window.cnIsBroken = true;
   }
 };
+
 window.cnCopyParams = function cnCopyParams( object, params ) {
   for( var property in params ) {
     if( params.hasOwnProperty( property ) ) {
@@ -29,13 +31,26 @@ window.cnObjectToDatetime = function cnObjectToDatetime( object ) {
   return object instanceof Date ?  object.toISOString().replace( /\.[0-9]+Z/, 'Z' ) : object;
 };
 
-window.cnRouteModule = function cnRouteModule( $stateProvider, module, base ) {
-  if( undefined === $stateProvider ) throw 'cnRouteModule requires at least 2 parameters';
-  if( undefined === module ) throw 'cnRouteModule requires at least 2 parameters';
-  if( undefined === base ) base = false;
+window.cnModuleList = [
+  'Activity',
+  'Collection',
+  'Language',
+  'Participant',
+  'Quota',
+  'RegionSite',
+  'Setting',
+  'Site',
+  'State',
+  'SystemMessage',
+  'User'
+];
+
+window.cnRouteModule = function cnRouteModule( $stateProvider, module ) {
+  if( undefined === $stateProvider ) throw 'cnRouteModule requires exactly 2 parameters';
+  if( undefined === module ) throw 'cnRouteModule requires exactly 2 parameters';
 
   var baseUrl = 'app/' + module + '/';
-  if( base ) baseUrl = cnCenozoUrl + '/' + baseUrl;
+  if( 0 <= cnModuleList.indexOf( module ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
 
   $stateProvider.state( module, {
     url: '/' + module,
@@ -90,25 +105,8 @@ cenozoApp.config( [
 ] );
 
 cenozoApp.config( [
-  '$stateProvider', '$urlRouterProvider',
-  function( $stateProvider, $urlRouterProvider ) {
+  '$urlRouterProvider',
+  function( $urlRouterProvider ) {
     $urlRouterProvider.otherwise( '/Site' );
-
-    var subModuleList = [
-      'Activity',
-      'Collection',
-      'Language',
-      'Participant',
-      'Quota',
-      'RegionSite',
-      'Setting',
-      'Site',
-      'State',
-      'SystemMessage',
-      'User'
-    ];
-
-    for( var i = 0; i < subModuleList.length; i++ )
-      cnRouteModule( $stateProvider, subModuleList[i], true );
   }
 ] );

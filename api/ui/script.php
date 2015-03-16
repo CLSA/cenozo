@@ -44,16 +44,11 @@ var sabretoothApp = angular.module( 'sabretoothApp', [ 'cenozoApp' ] );
 sabretoothApp.config( [
   '$stateProvider',
   function( $stateProvider ) {
-    var subModuleList = [
-      'Assignment',
-      'CedarInstance',
-      'Interview',
-      'OpalInstance',
-      'Qnaire',
-      'Queue'
+    var moduleList = [
+<?php foreach( $lists as $i ) printf( "'%s',\n", $i['sref'] ); ?>
     ];
 
-    for( var i = 0; i < subModuleList.length; i++ ) cnRouteModule( $stateProvider, subModuleList[i] );
+    for( var i = 0; i < moduleList.length; i++ ) cnRouteModule( $stateProvider, moduleList[i] );
   }
 ] );
 

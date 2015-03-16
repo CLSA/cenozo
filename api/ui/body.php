@@ -37,16 +37,47 @@
              snap-close>{{ item.title }}</a>
         </div>
       </accordion-group>
-    </accordian>
-  </div>
-  <div class="snap-drawer snap-drawer-right">
-    This is where the settings content will go
+    </accordion>
   </div>
 </div>
 
 <snap-content snap-opt-tap-to-close="true" snap-opt-min-drag-distance="10000">
   <button snap-toggle="left" class="btn btn-primary menu-button rounded-top">Menu</button>
-  <button snap-toggle="right" class="btn btn-primary settings-button rounded-top">Settings</button>
+  <div class="container-fluid bg-info top-heading">
+    <div class="row">
+      <div class="col-xs-3 site-title">
+        <?php printf( '%s version %s', ucwords( APPLICATION ), $version ); ?>
+      </div>
+      <div class="col-xs-6">
+      </div>
+      <div class="col-xs-3">
+        <div class="btn-group full-width">
+        <div class="btn-group half-width" dropdown>
+          <button type="button" class="btn btn-info dropdown-toggle full-width" dropdown-toggle>
+            Site 1 <i class="caret"></i>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#">Site 2</a></li>
+            <li><a href="#">Site 3</a></li>
+            <li><a href="#">Site 4</a></li>
+            <li><a href="#">Site 5</a></li>
+          </ul>
+        </div>
+        <div class="btn-group half-width" dropdown>
+          <button type="button" class="btn btn-info dropdown-toggle full-width" dropdown-toggle>
+            Role 1 <i class="caret"></i>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#">Role 2</a></li>
+            <li><a href="#">Role 3</a></li>
+            <li><a href="#">Role 4</a></li>
+            <li><a href="#">Role 5</a></li>
+          </ul>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="container outer-container" data-snap-ignore="true">
     <div ui-view class="container view-frame"></div>
   </div>

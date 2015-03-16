@@ -2,7 +2,6 @@
   <thead>
     <tr class="info">
       <td ng-repeat="column in columnList">
-        <div style="width: auto;">
         <div class="btn-group" role="group" area-hidden="true">
           <button class="btn btn-info"
                   ng-click="cbOrderBy( { column: column.key } )">{{ column.title }}
@@ -25,7 +24,6 @@
             {{ column.restrict.test | cnComparator }}
             "{{ column.restrict.value }}"
           </p>
-        </div>
         </div>
       </td>
       <td class="tiny"></td>

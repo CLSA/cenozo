@@ -40,6 +40,8 @@ class ui extends \cenozo\base_object
    */
   public function get_interface( $error = NULL )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     $interface = '';
     if( is_null( $error ) )
     {
@@ -49,6 +51,7 @@ class ui extends \cenozo\base_object
       $script = ob_get_clean();
 
       // build the body
+      $version = $setting_manager->get_setting( 'general', 'version' );
       ob_start();
       include( dirname( __FILE__ ).'/body.php' );
       $body = ob_get_clean();
