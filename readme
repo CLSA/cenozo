@@ -1,36 +1,23 @@
 Cenozo
 ======
 
-A PHP framework used to build participant-based web applications which tightly
-integrate with one another.  See GitHub projects Sabretooth, Beartooth and
-Mastodon for examples of web applications using this framework.
-
-See doc/install.readme for install instructions.
+A PHP/Angular framework used to build participant-based web applications which tightly
+integrate with one another.  See GitHub projects Sabretooth, Beartooth, Cedar and Mastodon
+for examples of web applications using this framework.
 
 api/
   This is where the programming interface belongs.
   This includes all packages, classes, functions, settings, etc.
 
-app/
-  These files are needed to drive the application but are not part of the API.
-
 aux/
   Any auxiliary files which are needed by the software go here.
 
 doc/
-  All documentation for Cenozo is found here including the apigen generated API
-  documentation and design documents.
-
-sample/
-  Includes all files necessary to create a Cenozo application.
+  The apigen generated API documentation and design documents.
 
 sql/
   This is where all sql needed to install the application belongs.
   This includes database schemas, default data, etc.
-
-tpl/
-  This is where display templates belong.
-  This includes twig templates, javascript, etc.
 
 web/
   This is the public web directory that a web server links to.

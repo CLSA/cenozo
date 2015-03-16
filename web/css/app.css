@@ -93,3 +93,15 @@ snap-content {
   border-radius: 0px;
   outline: none !important;
 }
+
+/* modal tweaking */
+.modal-body { display: block; overflow: auto; }
+.modal-header, .modal-footer { background: #EAEAEA; }
+.modal-header {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+.modal-footer {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}

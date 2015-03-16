@@ -14,4 +14,4 @@ if( 1 != $argc )
 
 print preg_replace( '/^.+ = \'(.*)\';$/',
                     '\\1',
-                    exec( 'grep cenozo_version app/settings.ini.php' ) )."\n";
+                    exec( 'grep cenozo_version settings.ini.php' ) )."\n";

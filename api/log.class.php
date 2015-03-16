@@ -485,14 +485,6 @@ final class log extends singleton
     {
       log::emerg( $message );
 
-      // When this function is called due to a fatal error it will die afterwards so we cannot
-      // throw an exception.  Instead we can build the exception and emulate what is done in
-      // the service class.
-      $result_array = array(
-        'error_type' => ucfirst( $e->get_type() ),
-        'error_code' => $e->get_code(),
-        'error_message' => '' );
-
       // try and set the current operations error code, if possible
       $class_name = lib::get_class_name( 'business\session' );
       if( class_exists( $class_name ) && $class_name::exists() )
@@ -508,14 +500,11 @@ final class log extends singleton
         $session->set_error_code( $e->get_code() );
       }
 
-      if( 'main' != lib::get_operation_type() )
-      { // send the error in json format in an http error header
-        $util_class_name::send_http_error( $result_array );
-      }
-      else
-      { // output the error using the basic php template
-        include CENOZO_PATH.'/app/error.php';
-      }
+      $title = ucwords( $e->get_type() ).' Error!';
+      $notice = 'There was an error while trying to communicate with the server.<br>'.
+                'Please notify a superior with the error code.';
+      $code = $e->get_code();
+      include CENOZO_PATH.'/api/error.php';
       exit;
     }
     else if( E_COMPILE_WARNING == $level ||
