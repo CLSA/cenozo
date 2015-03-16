@@ -1,20 +1,21 @@
-'use strict';
+define( [], function() {
 
-try { var region_site = angular.module( 'region_site' ); }
-catch( err ) { var region_site = angular.module( 'region_site', [] ); }
+  'use strict';
 
-/* ######################################################################################################## */
-region_site.directive( 'cnRegionSiteAdd', function () {
-  return {
-    templateUrl: 'app/region_site/add.tpl.html',
-    restrict: 'E'
-  };
-} );
+  /* ######################################################################################################## */
+  cnCachedProviders.directive( 'cnRegionSiteAdd', function () {
+    return {
+      templateUrl: 'app/RegionSite/add.tpl.html',
+      restrict: 'E'
+    };
+  } );
 
-/* ######################################################################################################## */
-region_site.directive( 'cnRegionSiteView', function () {
-  return {
-    templateUrl: 'app/region_site/view.tpl.html',
-    restrict: 'E'
-  };
+  /* ######################################################################################################## */
+  cnCachedProviders.directive( 'cnRegionSiteView', function () {
+    return {
+      templateUrl: 'app/RegionSite/view.tpl.html',
+      restrict: 'E'
+    };
+  } );
+
 } );

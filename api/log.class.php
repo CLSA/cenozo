@@ -504,7 +504,7 @@ final class log extends singleton
       $notice = 'There was an error while trying to communicate with the server.<br>'.
                 'Please notify a superior with the error code.';
       $code = $e->get_code();
-      include CENOZO_PATH.'/api/error.php';
+      include CENOZO_PATH.'/api/ui/error.php';
       exit;
     }
     else if( E_COMPILE_WARNING == $level ||

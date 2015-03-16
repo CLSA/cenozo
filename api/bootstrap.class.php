@@ -170,7 +170,8 @@ final class bootstrap
   private function launch_ui()
   {
     $util_class_name = lib::get_class_name( 'util' );
-    $error_type = NULL;
+    $ui = lib::create( 'ui\ui' );
+    $error = NULL;
 
     try
     {
@@ -199,28 +200,31 @@ final class bootstrap
     }
     catch( exception\base_exception $e )
     {
-      $error_type = $e->get_type();
-      $title = strcasecmp( 'notice', $error_type )
-             ? 'Please Note:' : ucwords( $error_type ).' Error!';
-      $message = 0 < strlen( $e->get_raw_message() )
-              ? $e->get_raw_message()
-              : 'There was an error while trying to communicate with the server.<br>'.
-                'Please notify a superior with the error code.';
-      $code = ucfirst( $type ).$e->get_code();
+      $error = array(
+        'title' => strcasecmp( 'notice', $e->get_type() )
+          ? 'Please Note:'
+          : ucwords( $e->get_type() ).' Error!',
+        'message' => 0 < strlen( $e->get_raw_message() ) 
+          ? $e->get_raw_message()
+          : 'There was an error while trying to communicate with the server.<br>'.
+            'Please notify a superior with the error code.',
+        'code' => sprintf( '%s.%s', strtoupper( substr( $e->get_type(), 0, 1 ) ), $e->get_code() )
+      );
     }
     catch( \Exception $e )
     {
-      $error_type = 'system';
-      $title = 'System Error!';
-      $message = 0 < strlen( $e->getMessage() )
-              ? $e->getMessage()
-              : 'There was an error while trying to communicate with the server.<br>'.
-                'Please notify a superior with the error code.';
-      $code = $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO );
+      $error = array(
+        'title' => 'System Error!',
+        'message' => 0 < strlen( $e->getMessage() )
+          ? $e->getMessage()
+          : 'There was an error while trying to communicate with the server.<br>'.
+            'Please notify a superior with the error code.',
+        'code' => $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
+      );
     }
 
     ob_end_clean();
-    include( is_null( $error_type ) ? CENOZO_API_PATH.'/interface.php' : dirname( __FILE__ ).'/error.php' );
+    print $ui->get_interface( $error );
   }
 
   /**

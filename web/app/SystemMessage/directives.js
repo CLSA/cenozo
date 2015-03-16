@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnSystemMessageAdd', function () {
     return {
-      templateUrl: 'app/system_message/add.tpl.html',
+      templateUrl: 'app/SystemMessage/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnSystemMessageView', function () {
     return {
-      templateUrl: 'app/system_message/view.tpl.html',
+      templateUrl: 'app/SystemMessage/view.tpl.html',
       restrict: 'E'
     };
   } );
