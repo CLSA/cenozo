@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" ng-app="sabretoothApp">
+<html lang="en" ng-app="cenozoApp">
 <head>
   <meta charset="utf-8">
   <title>Sabretooth</title>

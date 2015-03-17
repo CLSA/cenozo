@@ -1,5 +1,5 @@
 <div class="span-drawers">
-  <div class="snap-drawer snap-drawer-left" ng-controller="StMenuCtrl">
+  <div class="snap-drawer snap-drawer-left" ng-controller="CnMenuCtrl">
     <accordion close-others="true">
       <accordion-group ng-init="isOpen = true" is-open="isOpen">
         <accordion-heading>
@@ -43,42 +43,19 @@
 
 <snap-content snap-opt-tap-to-close="true" snap-opt-min-drag-distance="10000">
   <button snap-toggle="left" class="btn btn-primary menu-button rounded-top">Menu</button>
-  <div class="container-fluid bg-info top-heading">
+  <div class="container-fluid bg-info body-heading">
     <div class="row">
-      <div class="col-xs-3 site-title">
+      <div class="col-xs-4 site-title">
         <?php printf( '%s version %s', ucwords( APPLICATION ), $version ); ?>
       </div>
-      <div class="col-xs-6">
+      <div class="col-xs-4">
       </div>
-      <div class="col-xs-3">
-        <div class="btn-group full-width">
-        <div class="btn-group half-width" dropdown>
-          <button type="button" class="btn btn-info dropdown-toggle full-width" dropdown-toggle>
-            Site 1 <i class="caret"></i>
-          </button>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="#">Site 2</a></li>
-            <li><a href="#">Site 3</a></li>
-            <li><a href="#">Site 4</a></li>
-            <li><a href="#">Site 5</a></li>
-          </ul>
-        </div>
-        <div class="btn-group half-width" dropdown>
-          <button type="button" class="btn btn-info dropdown-toggle full-width" dropdown-toggle>
-            Role 1 <i class="caret"></i>
-          </button>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="#">Role 2</a></li>
-            <li><a href="#">Role 3</a></li>
-            <li><a href="#">Role 4</a></li>
-            <li><a href="#">Role 5</a></li>
-          </ul>
-        </div>
-        </div>
+      <div class="col-xs-4">
+        <cn-site-role-picker></cn-site-role-picker>
       </div>
     </div>
   </div>
-  <div class="container outer-container" data-snap-ignore="true">
+  <div class="container body-view">
     <div ui-view class="container view-frame"></div>
   </div>
 </snap-content>

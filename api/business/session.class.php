@@ -46,18 +46,18 @@ class session extends \cenozo\singleton
    * 
    * This method should be called immediately after initial construct of the session.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $site_name The name of a site to act under.  If null then a session
-   *                variable will be used to determine the current site, or if not such session
-   *               variable exists then a site which the user has access to will be selected
-   *               automatically.
-   * @param string $role_name The name of a role to act under.  If null then a session
-   *               variable will be used to determine the current role, or if not such session
-   *               variable exists then a role which the user has access to will be selected
-   *               automatically.
+   * @param int/string $site The id or name of a site to act under.  If null then a session
+   *                   variable will be used to determine the current site, or if not such session
+   *                   variable exists then a site which the user has access to will be selected
+   *                   automatically.
+   * @param int/string $role The id or name of a role to act under.  If null then a session
+   *                   variable will be used to determine the current role, or if not such session
+   *                   variable exists then a role which the user has access to will be selected
+   *                   automatically.
    * @throws exception\permission
    * @access public
    */
-  public function initialize( $site_name = NULL, $role_name = NULL )
+  public function initialize( $site = NULL, $role = NULL )
   {
     // don't initialize more than once
     if( $this->initialized ) return;
@@ -82,7 +82,7 @@ class session extends \cenozo\singleton
 
     $user_class_name = lib::get_class_name( 'database\user' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
-    $this->process_requested_site_and_role( $site_name, $role_name );
+    $this->process_requested_site_and_role( $site, $role );
     $this->set_user( $user_class_name::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
       throw lib::create( 'exception\permission',
@@ -95,22 +95,38 @@ class session extends \cenozo\singleton
    * Processes requested site and role and sets the session appropriately.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $site_name
-   * @param string $role_name
+   * @param int/string $site
+   * @param int/string $role
    * @access protected
    */
-  protected function process_requested_site_and_role( $site_name, $role_name )
+  protected function process_requested_site_and_role( $site, $role )
   {
     // try and use the requested site and role, if necessary
-    if( !is_null( $site_name ) && !is_null( $role_name ) )
+    if( !is_null( $site ) && !is_null( $role ) )
     {
-      $site_class_name = lib::get_class_name( 'database\site' );
-      $this->requested_site = $site_class_name::get_unique_record(
-        array( 'application_id', 'name' ),
-        array( $this->application->id, $site_name ) );
+      $util_class_name = lib::get_class_name( 'util' );
 
-      $role_class_name = lib::get_class_name( 'database\role' );
-      $this->requested_role = $role_class_name::get_unique_record( 'name', $role_name );
+      if( $util_class_name::string_matches_int( $site ) )
+      {
+        $this->requested_site = lib::create( 'database\site', $site );
+      }
+      else
+      {
+        $site_class_name = lib::get_class_name( 'database\site' );
+        $this->requested_site = $site_class_name::get_unique_record(
+          array( 'application_id', 'name' ),
+          array( $this->application->id, $site ) );
+      }
+
+      if( $util_class_name::string_matches_int( $role ) )
+      {
+        $this->requested_role = lib::create( 'database\role', $role );
+      }
+      else
+      {
+        $role_class_name = lib::get_class_name( 'database\role' );
+        $this->requested_role = $role_class_name::get_unique_record( 'name', $role );
+      }
     }
   }
 

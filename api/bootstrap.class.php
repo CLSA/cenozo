@@ -181,7 +181,9 @@ final class bootstrap
           'Sorry, the system is currently offline for maintenance. '.
           'Please check with an administrator or try again at a later time.', __METHOD__ );
 
-      $this->session->initialize();
+      $this->session->initialize(
+        array_key_exists( 'site', $this->arguments ) ? $this->arguments['site'] : NULL,
+        array_key_exists( 'role', $this->arguments ) ? $this->arguments['role'] : NULL );
 
       // make sure the software and database versions match
       if( $this->settings['general']['version'] != $this->session->get_application()->version )

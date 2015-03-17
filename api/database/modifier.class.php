@@ -977,6 +977,48 @@ class modifier extends \cenozo\base_object
     }
   }
 
+  /**
+   * JSON-based modifier expected in the form:
+   * {
+   *   where:
+   *   [
+   *     {
+   *       bracket: true,
+   *       open: true
+   *     },
+   *     {
+   *       column:   <column>
+   *       operator: =,!=,<,>,LIKE,NOT LIKE,etc
+   *       value:    <value>
+   *     },
+   *     {
+   *       bracket: true,
+   *       open: false
+   *     },
+   *     {
+   *       bracket: true,
+   *       open: true,
+   *       or: true
+   *     },
+   *     {
+   *       column:   <column>
+   *       operator: =|!=|<|>|LIKE|NOT LIKE|etc
+   *       value:    <value>
+   *     },
+   *     {
+   *       bracket: true,
+   *       open: false
+   *     }
+   *   ],
+   *   order:
+   *   [
+   *     <column>,
+   *     { <column>: true|false (whether to sort descending) }
+   *   ],
+   *   limit: N,
+   *   offset: N
+   * }
+   */
   public static function from_json( $json_string )
   {
     $modifier = lib::create( 'database\modifier' );
@@ -994,47 +1036,40 @@ class modifier extends \cenozo\base_object
           // convert a single statement to an array with that statement in it
           if( !is_array( $value ) ) $value = array( $value );
           
-          if( is_array( $value ) )
+          foreach( $value as $where )
           {
-            foreach( $value as $where )
+            if( array_key_exists( 'bracket', $where ) )
             {
-              if( array_key_exists( 'bracket', $where ) )
+              if( array_key_exists( 'or', $where ) ) $modifier->where_bracket( $where->open, $where->or );
+              else $modifier->where_bracket( $where->open );
+            }
+            else if( array_key_exists( 'column', $where ) &&
+                     array_key_exists( 'operator', $where ) &&
+                     array_key_exists( 'value', $where ) )
+            {
+              // sanitize the operator value
+              $operator = strtoupper( $where->operator );
+              $valid_operator_list = array(
+                '=', '<=>', '!=', '<>',
+                '<', '<=', '>', '>=',
+                'RLIKE', 'NOT RLIKE',
+                'IN', 'NOT IN',
+                'LIKE', 'NOT LIKE' );
+              if( in_array( $operator, $valid_operator_list ) )
               {
-                if( array_key_exists( 'or', $where ) ) $modifier->where_bracket( $where->open, $where->or );
-                else $modifier->where_bracket( $where->open );
-              }
-              else if( array_key_exists( 'column', $where ) &&
-                       array_key_exists( 'operator', $where ) &&
-                       array_key_exists( 'value', $where ) )
-              {
-                // sanitize the operator value
-                $operator = strtoupper( $where->operator );
-                $valid_operator_list = array(
-                  '=', '<=>', '!=', '<>',
-                  '<', '<=', '>', '>=',
-                  'RLIKE', 'NOT RLIKE',
-                  'IN', 'NOT IN',
-                  'LIKE', 'NOT LIKE' );
-                if( in_array( $operator, $valid_operator_list ) )
-                {
-                  if( array_key_exists( 'or', $where ) )
-                    $modifier->where( $where->column, $where->operator, $where->value, $where->or );
-                  else $modifier->where( $where->column, $where->operator, $where->value );
-                }
-                else
-                {
-                  throw lib::create( 'exception\runtime', 'Invalid where operator', __METHOD__ );
-                }
+                if( array_key_exists( 'or', $where ) )
+                  $modifier->where( $where->column, $where->operator, $where->value, $where->or );
+                else $modifier->where( $where->column, $where->operator, $where->value );
               }
               else
               {
-                throw lib::create( 'exception\runtime', 'Invalid where sub-statement', __METHOD__ );
+                throw lib::create( 'exception\runtime', 'Invalid where operator', __METHOD__ );
               }
             }
-          }
-          else
-          {
-            throw lib::create( 'exception\runtime', 'Invalid where statement', __METHOD__ );
+            else
+            {
+              throw lib::create( 'exception\runtime', 'Invalid where sub-statement', __METHOD__ );
+            }
           }
         }
         else if( 'order' == $key )
@@ -1042,25 +1077,18 @@ class modifier extends \cenozo\base_object
           // convert a string to an array with that string in it
           if( is_string( $value ) || is_object( $value ) ) $value = array( $value );
 
-          if( is_array( $value ) )
+          foreach( $value as $val )
           {
-            foreach( $value as $key => $val )
+            if( is_string( $val ) ) $modifier->order( $val );
+            else if( is_object( $val ) )
             {
-              if( is_string( $val ) ) $modifier->order( $val );
-              else if( is_object( $val ) )
-              {
-                $array = (array)$val;
-                $modifier->order( key( $array ), current( $array ) );
-              }
-              else
-              {
-                throw lib::create( 'exception\runtime', 'Invalid order statement', __METHOD__ );
-              }
+              $array = (array)$val;
+              $modifier->order( key( $array ), current( $array ) );
             }
-          }
-          else
-          {
-            throw lib::create( 'exception\runtime', 'Invalid order statement', __METHOD__ );
+            else
+            {
+              throw lib::create( 'exception\runtime', 'Invalid order statement', __METHOD__ );
+            }
           }
         }
         else if( 'limit' == $key )

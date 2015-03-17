@@ -62,3 +62,12 @@ cenozo.filter( 'cnPercent', function() {
     return input + "%";
   };
 } );
+
+/* ######################################################################################################## */
+cenozo.filter( 'cnUCWords', function() {
+  return function( input ) {
+    if( undefined !== input )
+      input = input.replace( /(?:^|\s)\S/g, function( a ) { return a.toUpperCase(); } );
+    return input;
+  };
+} );

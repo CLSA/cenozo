@@ -505,3 +505,29 @@ cenozo.directive( 'cnRecordView', [
     };
   }
 ] );
+
+/**
+ * TODO: document
+ */
+cenozo.directive( 'cnSiteRolePicker', [
+  'CnStateSingleton',
+  function( CnStateSingleton ) {
+    return {
+      templateUrl: cnCenozoUrl + '/app/cenozo/site-role-picker.tpl.html',
+      restrict: 'E',
+      transclude: true,
+      link: function( scope ) {
+        CnStateSingleton.promise.then( function() {
+          scope.site = CnStateSingleton.site;
+          scope.role = CnStateSingleton.role;
+          scope.siteList = CnStateSingleton.siteList;
+
+          // pre-select the role list
+          for( var i = 0; i < scope.siteList.length; i++ )
+            if( scope.site.id == scope.siteList[i].id )
+              scope.roleList = scope.siteList[i].roleList;
+        } );
+      }
+    };
+  }
+] );

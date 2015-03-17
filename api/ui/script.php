@@ -39,9 +39,9 @@ $reports = array(
 ?>
 'use strict';
 
-var sabretoothApp = angular.module( 'sabretoothApp', [ 'cenozoApp' ] );
+var cenozoApp = angular.module( 'cenozoApp' );
 
-sabretoothApp.config( [
+cenozoApp.config( [
   '$stateProvider',
   function( $stateProvider ) {
     var moduleList = [
@@ -52,9 +52,9 @@ sabretoothApp.config( [
   }
 ] );
 
-sabretoothApp.controller( 'StMenuCtrl', [
-  '$scope', '$state', '$location', 'CnHttpFactory',
-  function( $scope, $state, $location, CnHttpFactory ) {
+cenozoApp.controller( 'CnMenuCtrl', [
+  '$scope', '$state', '$location',
+  function( $scope, $state, $location ) {
     $scope.isCurrentState = function isCurrentState( state ) { return $state.is( state ); };
 
     $scope.lists = [
