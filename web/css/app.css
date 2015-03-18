@@ -11,23 +11,13 @@ td.tiny { width: 1px; white-space: nowrap; }
 .restrict { margin: 0px; font-size: 1.2em; }
 .pagination { margin: 0; }
 .input-group { width: 100%; }
-.rounded-top {
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-}
-.rounded-bottom {
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
-}
-.rounded {
-  border-radius: 6px;
-}
 .form-body { padding-top: 1em; }
-.form-footer {
-  padding: 1em;
-  background: #EAEAEA;
-  text-align: right;
-}
+.form-footer { padding: 1em; background: #EAEAEA; text-align: right; }
+.rounded, .rounded-top, .rounded-bottom, .rounded-left, .rounded-right { border-radius: 6px !important; }
+.rounded-top { border-bottom-left-radius: 0px !important; border-bottom-right-radius: 0px !important; }
+.rounded-bottom { border-top-left-radius: 0px !important; border-top-right-radius: 0px !important; }
+.rounded-left { border-top-right-radius: 0px !important; border-bottom-right-radius: 0px !important; }
+.rounded-right { border-top-left-radius: 0px !important; border-bottom-left-radius: 0px !important; }
 
 /* make sure labels align well in forms */
 label {
@@ -52,37 +42,37 @@ input[type=number] { -moz-appearance: textfield; }
 
 /* needed by bootstrap-ui-datetime-picker */
 .datetime-picker div > table .btn-default { border: 0; }
-.body-heading { padding-top: 0.33em; padding-bottom: 0.33em; min-width: 754px; }
+.body-heading { padding-top: 0.33em; padding-bottom: 0.33em; min-width: 750px; }
 .body-view { margin-top: 0.5em; padding: 0px; }
+.body-heading .row { margin-left: 10px; }
 
 .site-title {
   font-size: 130%;
   font-weight: bold;
+  top: 3px;
 }
 
 /* used by the ng-view so that animated transitions work correctly */
 .view-frame {
-  padding-top: 1em;
-  padding-bottom: 1em;
+  padding-top: 10px;
+  padding-bottom: 10px;
   position: absolute;
-  border: 2px solid #DDD;
-  border-radius: 6px;
-  min-width: 720px;
+  min-width: 750px;
+  width: 100%;
 }
 
 /* snap content, drawers and toggle buttons */
 .menu-button {
   z-index: 100;
   position: fixed;
-  top: 50px;
-  height: 35px;
-  width: 180px;
+  top: 0px;
+  height: 40px;
+  width: 42px;
   outline: none !important;
 
-  left: 32px;
+  left: 35px;
   transform: rotate(90deg);
   transform-origin: left top 0;
-  box-shadow: 2px -2px 5px #000;
 }
 snap-content {
   background-color: #fff;

@@ -13,7 +13,6 @@
     "bootstrap": "~3.1.1",
     "snapjs": "latest",
     "requirejs": "2.1.x",
-    "angular-route": "1.2.x",
     "angular-animate": "1.2.x",
     "angular-snap": "1.8.x",
     "angular-require": "1.0.x"

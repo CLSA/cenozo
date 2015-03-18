@@ -6,7 +6,6 @@
   <link rel="stylesheet" href="<?php print CENOZO_URL; ?>/bower_components/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print CENOZO_URL; ?>/bower_components/angular-snap/angular-snap.css">
   <link rel="stylesheet" href="<?php print CENOZO_URL; ?>/css/app.css">
-  <link rel="stylesheet" href="<?php print CENOZO_URL; ?>/css/animations.css">
 
   <script>window.cnCenozoUrl = "<?php print CENOZO_URL; ?>";</script>
   <script src="<?php print CENOZO_URL; ?>/bower_components/jquery/dist/jquery.js"></script>

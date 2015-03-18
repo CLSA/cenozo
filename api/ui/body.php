@@ -42,7 +42,9 @@
 </div>
 
 <snap-content snap-opt-tap-to-close="true" snap-opt-min-drag-distance="10000">
-  <button snap-toggle="left" class="btn btn-primary menu-button rounded-top">Menu</button>
+  <button snap-toggle="left" class="btn btn-primary menu-button rounded-top">
+    <i class="glyphicon glyphicon-align-justify" aria-hidden="true"></i>
+  </button>
   <div class="container-fluid bg-info body-heading">
     <div class="row">
       <div class="col-xs-4 site-title">
@@ -55,7 +57,7 @@
       </div>
     </div>
   </div>
-  <div class="container body-view">
-    <div ui-view class="container view-frame"></div>
+  <div class="body-view">
+    <div ui-view class="container-fluid view-frame"></div>
   </div>
 </snap-content>
