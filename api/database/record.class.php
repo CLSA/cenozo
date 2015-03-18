@@ -1131,35 +1131,25 @@ abstract class record extends \cenozo\base_object
             // don't add joins that already exist
             !$modifier->has_join( $table ) )
         {
-          // check to see if we have a predefined join for this table
-          if( array_key_exists( $class_index, self::$custom_join_list ) &&
-              array_key_exists( $table, self::$custom_join_list[$class_index] ) )
+          // check to see if we have a foreign key for this table and join if we do
+          $foreign_key_name = $table.'_id';
+          if( static::column_exists( $foreign_key_name ) )
           {
-            // merge the defined join modifier
-            $modifier->merge( self::$custom_join_list[$class_index][$table] );
+            $table_class_name = lib::get_class_name( 'database\\'.$table );
+            // add the table to the list to select and join it in the modifier
+            $modifier->cross_join(
+              $table,
+              sprintf( '%s.%s', $this_table, $foreign_key_name ),
+              sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
           }
-          else
+          // check to see if the foreign table has this table as a foreign key
+          else if( static::db()->column_exists( $table, $this_table.'_id' ) )
           {
-            // check to see if we have a foreign key for this table and join if we do
-            $foreign_key_name = $table.'_id';
-            if( static::column_exists( $foreign_key_name ) )
-            {
-              $table_class_name = lib::get_class_name( 'database\\'.$table );
-              // add the table to the list to select and join it in the modifier
-              $modifier->cross_join(
-                $table,
-                sprintf( '%s.%s', $this_table, $foreign_key_name ),
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
-            }
-            // check to see if the foreign table has this table as a foreign key
-            else if( static::db()->column_exists( $table, $this_table.'_id' ) )
-            {
-              // add the table to the list to select and join it in the modifier
-              $modifier->cross_join(
-                $table,
-                sprintf( '%s.%s_id', $table, $this_table ),
-                sprintf( '%s.%s', $this_table, static::get_primary_key_name() ) );
-            }
+            // add the table to the list to select and join it in the modifier
+            $modifier->cross_join(
+              $table,
+              sprintf( '%s.%s_id', $table, $this_table ),
+              sprintf( '%s.%s', $this_table, static::get_primary_key_name() ) );
           }
         }
       }
@@ -1287,6 +1277,7 @@ abstract class record extends \cenozo\base_object
     {
       if( count( $columns ) == count( $unique_key ) )
       {
+        sort( $unique_key );
         reset( $unique_key );
         foreach( $columns as $col => $val )
         {
@@ -1450,30 +1441,6 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * Add a customized join definition between this and another table.
-   * 
-   * Joins are automatically created when tables have direct 1-to-1, 1-to-N or N-to-N
-   * relationships.  Use this method to define extra joins such as those that span multiple
-   * tables.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $table The name of the table to join to.
-   * @param database\modifier $modifier The modifier necessary to join the table.
-   * @param boolean $override Whether to replace an existing join to the table.
-   * @static
-   * @access public
-   */
-  public static function customize_join( $table, $modifier, $override = false )
-  {
-    $class_index = lib::get_class_name( get_called_class(), true );
-    if( !array_key_exists( $class_index, self::$custom_join_list ) )
-      self::$custom_join_list[$class_index] = array();
-
-    if( !array_key_exists( $table, self::$custom_join_list[$class_index] ) || $override )
-      self::$custom_join_list[$class_index][$table] = $modifier;
-  }
-
-  /**
    * A list of tables which extend this record's data.  This is to be used by extending classes
    * of a record defined in the framework.  For instance, to add address details to the user
    * record a new table, user_address, is created with a column "user_id" as a primary key which
@@ -1587,15 +1554,6 @@ abstract class record extends \cenozo\base_object
    * @access private
    */
   private static $primary_unique_key_list = array();
-
-  /**
-   * An associative array containing all of the custom joins.  The key is the name of the table
-   * being joined and the value a modifier object which defines the join.
-   * @var array( database\modifier )
-   * @static
-   * @access private
-   */
-  private static $custom_join_list = array();
 
   /**
    * A list of tables which extend this record's data.  See add_extending_table() for more details.

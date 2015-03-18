@@ -158,56 +158,6 @@ cenozo.factory( 'CnBaseListFactory', [
 ] );
 
 /* ######################################################################################################## */
-cenozo.factory( 'CnStateSingleton', [
-  'CnHttpFactory',
-  function( CnHttpFactory ) {
-    var object = function() {
-      this.promise = null;
-      this.application = {};
-      this.user = {};
-      this.site = {};
-      this.role = {};
-      this.siteList = [];
-
-      // get the application, user, site and role details
-      var thisRef = this;
-      this.promise = CnHttpFactory.instance( {
-        subject: 'self'
-      } ).query().then( function success( response ) {
-        thisRef.application = response.data.results[0].application;
-        thisRef.user = response.data.results[0].user;
-        thisRef.site = response.data.results[0].site;
-        thisRef.role = response.data.results[0].role;
-
-        // chain a second http request into the promise
-        return CnHttpFactory.instance( {
-          subject: 'access',
-          data: { self: true }
-        } ).query().then( function success( response ) {
-          for( var i = 0; i < response.data.results.length; i++ ) {
-            var access = response.data.results[i];
-
-            // get the site's index
-            var index = 0;
-            for( ; index < thisRef.siteList.length; index++ )
-              if( access.site_id == thisRef.siteList[index].id ) break;
-
-            // if the site isn't found, add it to the list
-            if( thisRef.siteList.length == index )
-              thisRef.siteList.push( { id: access.site_id, name: access.site_name, roleList: [] } );
-
-            // now add the role to the site's role list
-            thisRef.siteList[index].roleList.push( { id: access.role_id, name: access.role_name } );
-          }
-        } );
-      } ).catch( function exception() { cnFatalError(); } );
-    };
-    
-    return new object();
-  }
-] );
-
-/* ######################################################################################################## */
 cenozo.factory( 'CnBaseViewFactory', [
   'CnHttpFactory',
   function( CnHttpFactory ) {
@@ -463,3 +413,65 @@ cenozo.factory( 'CnPaginationFactory',
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
   }
 );
+
+/* ######################################################################################################## */
+cenozo.factory( 'CnStateSingleton', [
+  'CnHttpFactory',
+  function( CnHttpFactory ) {
+    var object = function() {
+      this.promise = null;
+      this.application = {};
+      this.user = {};
+      this.site = {};
+      this.role = {};
+      this.siteList = [];
+
+      // get the application, user, site and role details
+      var thisRef = this;
+      this.promise = CnHttpFactory.instance( {
+        subject: 'self'
+      } ).get().then( function success( response ) {
+        thisRef.application = response.data.application;
+        thisRef.user = response.data.user;
+        thisRef.site = response.data.site;
+        thisRef.role = response.data.role;
+
+        // chain a second http request into the promise
+        return CnHttpFactory.instance( {
+          subject: 'access',
+          data: { self: true }
+        } ).query().then( function success( response ) {
+          for( var i = 0; i < response.data.results.length; i++ ) {
+            var access = response.data.results[i];
+
+            // get the site's index
+            var index = 0;
+            for( ; index < thisRef.siteList.length; index++ )
+              if( access.site_id == thisRef.siteList[index].id ) break;
+
+            // if the site isn't found, add it to the list
+            if( thisRef.siteList.length == index )
+              thisRef.siteList.push( { id: access.site_id, name: access.site_name, roleList: [] } );
+
+            // now add the role to the site's role list
+            thisRef.siteList[index].roleList.push( {
+              id: access.role_id,
+              name: access.role_name,
+              datetime: null === access.datetime ? null : cnDatetimeToObject( access.datetime )
+            } );
+          }
+        } );
+      } ).catch( function exception() { cnFatalError(); } );
+
+      this.setSite = function setSite( id ) {
+        return CnHttpFactory.instance( { subject: 'self', data: { site: { id: id } } } ).patch( 0 );
+      };
+
+      this.setRole = function setRole( id ) {
+        return CnHttpFactory.instance( { subject: 'self', data: { site: { id: id } } } ).patch( 0 );
+      };
+    };
+    
+    return new object();
+  }
+] );

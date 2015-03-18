@@ -19,7 +19,6 @@ class consent extends record
    * withdraw letter has been set
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\permission
    * @access public
    */
   public function save()

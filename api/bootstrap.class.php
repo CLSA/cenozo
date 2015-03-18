@@ -181,9 +181,7 @@ final class bootstrap
           'Sorry, the system is currently offline for maintenance. '.
           'Please check with an administrator or try again at a later time.', __METHOD__ );
 
-      $this->session->initialize(
-        array_key_exists( 'site', $this->arguments ) ? $this->arguments['site'] : NULL,
-        array_key_exists( 'role', $this->arguments ) ? $this->arguments['role'] : NULL );
+      $this->session->initialize();
 
       // make sure the software and database versions match
       if( $this->settings['general']['version'] != $this->session->get_application()->version )
@@ -302,8 +300,6 @@ final class bootstrap
       $this->session->get_database()->complete_transaction();
     }
 
-    $this->session->set_error_code( $error_code );
-
     ob_end_clean();
     $status->send_headers();
 
@@ -401,13 +397,6 @@ final class bootstrap
    * @access private
    */
   private $arguments = NULL;
-
-  /**
-   * The session object
-   * @var business\session
-   * @access private
-   */
-  private $session = NULL;
 
   /**
    * The file sent by PATCH/POST/PUT requests

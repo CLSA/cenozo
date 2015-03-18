@@ -5,7 +5,9 @@
       <i class="caret"></i>
     </button>
     <ul class="dropdown-menu" role="menu">
-      <li ng-repeat="s in siteList"><a href="?site_id={{ s.id }}">{{ s.name }}</a></li>
+      <li ng-repeat="s in siteList">
+        <a ng-click="cbSetSite( s.id )">{{ s.name }}</a>
+      </li>
     </ul>
   </div>
   <div class="btn-group half-width" dropdown>
@@ -14,7 +16,9 @@
       <i class="caret"></i>
     </button>
     <ul class="dropdown-menu" role="menu">
-      <li ng-repeat="r in roleList"><a href="?role_id={{ r.id }}">{{ r.name | cnUCWords }}</a></li>
+      <li ng-repeat="r in roleList">
+        <a ng-click="cbSetRole( r.id )">{{ r.name | cnUCWords }}</a>
+      </li>
     </ul>
   </div>
 </div>

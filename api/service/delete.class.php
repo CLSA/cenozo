@@ -32,6 +32,8 @@ class delete extends service
    */
   protected function execute()
   {
+    parent::execute();
+
     if( 0 < count( $this->record_list ) )
     {
       $record = last( $this->record_list );

@@ -33,6 +33,8 @@ class post extends service
    */
   protected function execute()
   {
+    parent::execute();
+
     // create a record for the LAST collection
     $index = count( $this->collection_name_list ) - 1;
     if( 0 <= $index )

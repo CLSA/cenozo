@@ -65,12 +65,9 @@ class access extends record
    */
   public function save()
   {
-    $operation_class_name = lib::get_class_name( 'database\operation' );
     $db_access_role = lib::create( 'database\role', $this->role_id );
     if( $db_access_role->tier > lib::create( 'business\session' )->get_role()->tier )
-      throw lib::create( 'exception\permission',
-        // fake the operation
-        $operation_class_name::get_operation( 'push', 'user', 'new_access' ), __METHOD__ );
+      throw lib::create( 'exception\permission', 'Access modification', __METHOD__ );
 
     parent::save();
   }
@@ -84,11 +81,8 @@ class access extends record
    */
   public function delete()
   {
-    $operation_class_name = lib::get_class_name( 'database\operation' );
     if( $this->get_role()->tier > lib::create( 'business\session' )->get_role()->tier )
-      throw lib::create( 'exception\permission',
-        // fake the operation
-        $operation_class_name::get_operation( 'push', 'access', 'delete' ), __METHOD__ );
+      throw lib::create( 'exception\permission', 'Access removal', __METHOD__ );
 
     parent::delete();
   }

@@ -580,15 +580,3 @@ class participant extends person
     return static::db()->get_one( 'SELECT COUNT(*) FROM unique_identifier_pool' );
   }
 }
-
-// define the join to the address table
-$address_mod = lib::create( 'database\modifier' );
-$address_mod->join(
-  'participant_primary_address',
-  'participant.id',
-  'participant_primary_address.participant_id' );
-$address_mod->join(
-  'address',
-  'participant_primary_address.address_id',
-  'address.id' );
-participant::customize_join( 'address', $address_mod );

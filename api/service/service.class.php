@@ -173,7 +173,7 @@ abstract class service extends \cenozo\base_object
       if( !lib::create( 'business\session' )->is_service_allowed( $this->service_record ) )
       {
         $this->status = lib::create( 'service\status', 404 );
-        throw lib::create( 'exception\runtime', 'Request path is not allowed.', __METHOD__ );
+        throw lib::create( 'exception\permission', $this->service_record, __METHOD__ );
       }
     }
   }

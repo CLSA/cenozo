@@ -47,12 +47,22 @@
   </button>
   <div class="container-fluid bg-info body-heading">
     <div class="row">
-      <div class="col-xs-4 site-title">
-        <?php printf( '%s version %s', ucwords( APPLICATION ), $version ); ?>
+      <div class="col-xs-3 body-heading-title">
+        <cn-application-title></cn-application-title>
       </div>
-      <div class="col-xs-4">
+      <div class="col-xs-5 body-heading-shortcuts">
+        <i class="glyphicon glyphicon-time" aria-hidden="true"></i>
+        <cn-clock></cn-clock>
+        <div class="btn-group">
+          <button class="btn btn-default" tooltip="Edit Profile" tooltip-placement="bottom">
+            <i class="glyphicon glyphicon-edit" aria-hidden="true"></i>
+          </button>
+          <button class="btn btn-default" tooltip="Logout" tooltip-placement="bottom">
+            <i class="glyphicon glyphicon-off" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>
-      <div class="col-xs-4">
+      <div class="col-xs-4 body-heading-state">
         <cn-site-role-picker></cn-site-role-picker>
       </div>
     </div>

@@ -19,29 +19,24 @@ class permission extends base_exception
   /**
    * Constructor
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\operation $db_operation The associated operation.
+   * @param database\service $db_service The associated service.
    * @param string|int $context The exceptions context, either a function name or error code.
    * @param exception $previous The previous exception used for the exception chaining.
    * @access public
    */
-  public function __construct( $db_operation, $context, $previous = NULL )
+  public function __construct( $action, $context, $previous = NULL )
   {
-    $this->operation = $db_operation;
-    $message = is_null( $db_operation ) ||
-               !is_object( $db_operation ) ||
-               !is_a( $db_operation, 'cenozo\database\operation' )
-             ? 'operation (unknown) denied'
-             : sprintf( 'operation "%s %s %s" denied.',
-                        $db_operation->type,
-                        $db_operation->subject,
-                        $db_operation->name );
+    $message = 'Unknown action denied';
+    if( is_string( $action ) )
+    {
+      $message = sprintf( '%s denied', $action );
+    }
+    else if( is_object( $action ) && is_a( $action, 'cenozo\database\service' ) )
+    {
+      $db_service = $action;
+      $message = sprintf( 'service %s:%s denied', $db_service->method, $db_service->path );
+    }
+
     parent::__construct( $message, $context, $previous );
   }
-
-  /**
-   * The operation which was denied
-   * @var database\site
-   * @access protected
-   */
-  protected $operation = NULL;
 }

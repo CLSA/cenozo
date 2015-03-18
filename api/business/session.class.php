@@ -36,9 +36,6 @@ class session extends \cenozo\singleton
     // set error reporting
     error_reporting(
       $setting_manager->get_setting( 'general', 'development_mode' ) ? E_ALL | E_STRICT : E_ALL );
-    
-    // make sure pull actions don't time out
-    if( 'pull' == lib::get_operation_type() ) set_time_limit( 0 );
   }
   
   /**
@@ -46,18 +43,10 @@ class session extends \cenozo\singleton
    * 
    * This method should be called immediately after initial construct of the session.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int/string $site The id or name of a site to act under.  If null then a session
-   *                   variable will be used to determine the current site, or if not such session
-   *                   variable exists then a site which the user has access to will be selected
-   *                   automatically.
-   * @param int/string $role The id or name of a role to act under.  If null then a session
-   *                   variable will be used to determine the current role, or if not such session
-   *                   variable exists then a role which the user has access to will be selected
-   *                   automatically.
    * @throws exception\permission
    * @access public
    */
-  public function initialize( $site = NULL, $role = NULL )
+  public function initialize()
   {
     // don't initialize more than once
     if( $this->initialized ) return;
@@ -75,59 +64,25 @@ class session extends \cenozo\singleton
       $setting_manager->get_setting( 'db', 'prefix' ) );
 
     // define the application's application
-    $this->application = $application_class_name::get_unique_record( 'name', INSTANCE, true );
+    $this->db_application = $application_class_name::get_unique_record( 'name', INSTANCE, true );
+    if( is_null( $this->db_application ) )
+      throw lib::create( 'exception\runtime',
+        'Failed to find application record in database, please check general/instance_name '.
+        'setting in application\'s settings.local.ini.php file',
+        __METHOD__ );
 
-    // determine the user (setting the user will also set the site and role)
+    // determine the user (and from it, the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
 
     $user_class_name = lib::get_class_name( 'database\user' );
-    $operation_class_name = lib::get_class_name( 'database\operation' );
-    $this->process_requested_site_and_role( $site, $role );
     $this->set_user( $user_class_name::get_unique_record( 'name', $user_name ) );
-    if( NULL == $this->user )
-      throw lib::create( 'exception\permission',
-        $operation_class_name::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
+    if( is_null( $this->db_user ) )
+      throw lib::create( 'exception\notice',
+        'Your account does not exist.<br>'.
+        'Please contact an account administrator to gain access to the system.',
+        __METHOD__ );
 
     $this->initialized = true;
-  }
-
-  /**
-   * Processes requested site and role and sets the session appropriately.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int/string $site
-   * @param int/string $role
-   * @access protected
-   */
-  protected function process_requested_site_and_role( $site, $role )
-  {
-    // try and use the requested site and role, if necessary
-    if( !is_null( $site ) && !is_null( $role ) )
-    {
-      $util_class_name = lib::get_class_name( 'util' );
-
-      if( $util_class_name::string_matches_int( $site ) )
-      {
-        $this->requested_site = lib::create( 'database\site', $site );
-      }
-      else
-      {
-        $site_class_name = lib::get_class_name( 'database\site' );
-        $this->requested_site = $site_class_name::get_unique_record(
-          array( 'application_id', 'name' ),
-          array( $this->application->id, $site ) );
-      }
-
-      if( $util_class_name::string_matches_int( $role ) )
-      {
-        $this->requested_role = lib::create( 'database\role', $role );
-      }
-      else
-      {
-        $role_class_name = lib::get_class_name( 'database\role' );
-        $this->requested_role = $role_class_name::get_unique_record( 'name', $role );
-      }
-    }
   }
 
   /**
@@ -143,13 +98,22 @@ class session extends \cenozo\singleton
   }
 
   /**
+   * Get the current application.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\application
+   * @access public
+   */
+  public function get_application() { return $this->db_application; }
+
+  /**
    * Get the current role.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\role
    * @access public
    */
-  public function get_role() { return $this->role; }
+  public function get_role() { return $this->db_role; }
 
   /**
    * Get the current user.
@@ -158,7 +122,7 @@ class session extends \cenozo\singleton
    * @return database\user
    * @access public
    */
-  public function get_user() { return $this->user; }
+  public function get_user() { return $this->db_user; }
 
   /**
    * Get the current site.
@@ -167,87 +131,66 @@ class session extends \cenozo\singleton
    * @return database\site
    * @access public
    */
-  public function get_site() { return $this->site; }
+  public function get_site() { return $this->db_site; }
 
   /**
-   * Get the current application.
+   * Change the user's active site and role
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\application
-   * @access public
-   */
-  public function get_application() { return $this->application; }
-
-  /**
-   * Get the current access.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\access
-   * @access public
-   */
-  public function get_access()
-  {
-    if( is_null( $this->access ) )
-    {
-      $access_class_name = lib::get_class_name( 'database\access' );
-      $this->access = $access_class_name::get_unique_record(
-        array( 'user_id', 'site_id', 'role_id' ),
-        array( $this->user->id, $this->site->id, $this->role->id ) );
-    }
-
-    return $this->access;
-  }
-
-  /**
-   * Set the current site and role.
-   * 
-   * If the user does not have the proper access then nothing is changed.  
+   * Will return whether the user has access to the site/role pair
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\site $db_site
    * @param database\role $db_role
-   * @param boolean $session Whether to store the site/role in the session.
-   * @throws exception\permission
    * @access public
    */
-  public function set_site_and_role( $db_site, $db_role, $session = true )
+  public function set_site_and_role( $db_site = NULL, $db_role = NULL )
   {
-    if( is_null( $db_site ) || is_null( $db_role ) )
-    {
-      $this->site = NULL;
-      $this->role = NULL;
-      if( $session )
-      {
-        unset( $_SESSION['current_site_id'] );
-        unset( $_SESSION['current_role_id'] );
-      }
-    }
-    else
-    {
-      // verify that the user has the right access
-      if( $this->user->has_access( $db_site, $db_role ) )
-      {
-        $this->site = $db_site;
-        $this->role = $db_role;
+    if( !is_null( $db_site ) && !is_a( $db_site, lib::get_class_name( 'database\site' ) ) )
+      throw lib::create( 'exception\argument', 'db_site', $db_site, __METHOD__ );
+    if( !is_null( $db_role ) && !is_a( $db_role, lib::get_class_name( 'database\role' ) ) )
+      throw lib::create( 'exception\argument', 'db_role', $db_role, __METHOD__ );
 
-        if( !isset( $_SESSION['current_site_id'] ) ||
-            $_SESSION['current_site_id'] != $this->site->id ||
-            !isset( $_SESSION['current_role_id'] ) ||
-            $_SESSION['current_role_id'] != $this->role->id )
+    $has_access = false;
+    if( !is_null( $this->db_user ) )
+    {
+      $access_class_name = lib::get_class_name( 'database\access' );
+      $util_class_name = lib::get_class_name( 'util' );
+
+      // automatically determine site or role if either is not provided
+      if( is_null( $db_site ) || is_null( $db_role ) )
+      {
+        // find the most recent access restricted to the given site/role (if any)
+        $access_mod = lib::create( 'database\modifier' );
+        $access_mod->join( 'site', 'access.site_id', 'site.id' );
+        $access_mod->where( 'site.application_id', '=', $this->db_application->id );
+        $access_mod->order_desc( 'datetime' );
+        $access_mod->limit( 1 );
+        if( !is_null( $db_site ) ) $access_mod->where( 'site_id', '=', $db_site->id );
+        if( !is_null( $db_role ) ) $access_mod->where( 'role_id', '=', $db_role->id );
+        $db_access = current( $this->db_user->get_access_list( $access_mod ) );
+        if( !is_null( $db_access ) )
         {
-          if( $session )
-          {
-            $_SESSION['current_site_id'] = $this->site->id;
-            $_SESSION['current_role_id'] = $this->role->id;
-          }
+          $db_site = $db_access->get_site();
+          $db_role = $db_access->get_role();
         }
       }
-      else
+
+      // may not have resolved a site/role pair, so double check
+      if( !is_null( $db_site ) && !is_null( $db_role ) )
       {
-        $operation_class_name = lib::get_class_name( 'database\operation' );
-        throw lib::create( 'exception\permission',
-          $operation_class_name::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
+        $has_access = $this->db_user->has_access( $db_site, $db_role );
+        if( $has_access )
+        {
+          $this->db_site = $db_site;
+          $this->db_role = $db_role;
+          $this->db_access = $access_class_name::get_unique_record(
+            array( 'user_id', 'site_id', 'role_id' ),
+            array( $this->db_user->id, $this->db_site->id, $this->db_role->id ) );
+          $this->db_access->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+        }
       }
     }
+
+    return $has_access;
   }
 
   /**
@@ -256,109 +199,23 @@ class session extends \cenozo\singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user $db_user
    * @throws exception\notice
+   * @throws exception\permission
    * @access public
    */
   public function set_user( $db_user )
   {
-    $this->user = $db_user;
+    $this->db_user = $db_user;
 
-    // Determine the site and role
-    if( is_null( $this->user ) )
-    {
-      $this->set_site_and_role( NULL, NULL );
-    }
-    else if( !$this->user->active )
+    if( !$this->db_user->active )
     {
       throw lib::create( 'exception\notice',
         'Your account has been deactivated.<br>'.
-        'Please contact a superior to regain access to the system.', __METHOD__ );
+        'Please contact your account administrator to regain access to the system.', __METHOD__ );
     }
-    else
-    {
-      // do not use set functions or we will loose cookies
-      $this->site = NULL;
-      $this->role = NULL;
 
-      // see if there is a request for a specific site and role
-      if( !is_null( $this->requested_site ) && !is_null( $this->requested_role ) )
-      {
-        $this->set_site_and_role( $this->requested_site, $this->requested_role, false );
-      }
-      // see if we already have the current site stored in the php session
-      else if( isset( $_SESSION['current_site_id'] ) && isset( $_SESSION['current_role_id'] ) )
-      {
-        try
-        {
-          $this->set_site_and_role(
-            lib::create( 'database\site', $_SESSION['current_site_id'] ),
-            lib::create( 'database\role', $_SESSION['current_role_id'] ) );
-        }
-        // ignore permission errors and try the code below to find access for this user
-        catch( \cenozo\exception\permission $e )
-        {
-          // no need to log this interaction
-        }
-      }
-      
-      // we still don't have a site and role, we need to pick them
-      if( is_null( $this->site ) || is_null( $this->role ) )
-      {
-        $db_site = NULL;
-        $db_role = NULL;
-
-        $site_list = $this->user->get_site_list();
-        if( 0 == count( $site_list ) )
-          throw lib::create( 'exception\notice',
-            'Your account does not have access to any site.<br>'.
-            'Please contact a superior to be granted access to a site.', __METHOD__ );
-        
-        // if the user has logged in before, use whatever site/role they last used
-        $activity_mod = lib::create( 'database\modifier' );
-        $activity_mod->where( 'activity.user_id', '=', $this->user->id );
-        $activity_mod->order_desc( 'datetime' );
-        $activity_mod->limit( 1 );
-        $activity_class_name = lib::get_class_name( 'database\activity' );
-        $db_activity = current( $activity_class_name::select( $activity_mod ) );
-        if( $db_activity )
-        {
-          // make sure the user still has access to the site/role
-          $role_mod = lib::create( 'database\modifier' );
-          $role_mod->where( 'access.site_id', '=', $db_activity->site_id );
-          $role_mod->where( 'access.role_id', '=', $db_activity->role_id );
-          $db_role = current( $this->user->get_role_list( $role_mod ) );
-          
-          // only bother setting the site if the access exists
-          if( $db_role ) $db_site = lib::create( 'database\site', $db_activity->site_id );
-        }
-
-        // if we still don't have a site/role then load the first one we can find
-        if( !$db_role || !$db_site ) 
-        {
-          $db_site = current( $site_list );
-          $role_mod = lib::create( 'database\modifier' );
-          $role_mod->where( 'access.site_id', '=', $db_site->id );
-          $db_role = current( $this->user->get_role_list( $role_mod ) );
-        }
-
-        $this->set_site_and_role( $db_site, $db_role );
-      }
-    }
+    $this->set_site_and_role();
   }
   
-  /**
-   * Return whether the session has permission to perform the given operation.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\operation $operation If null this method returns false.
-   * @return boolean
-   * @access public
-   */
-  public function is_operation_allowed( $operation )
-  {
-    return !is_null( $operation ) && !is_null( $this->role ) &&
-           ( !$operation->restricted || $this->role->has_operation( $operation ) );
-  }
-
   /**
    * Return whether the session has permission to perform the given service.
    * 
@@ -369,92 +226,8 @@ class session extends \cenozo\singleton
    */
   public function is_service_allowed( $service )
   {
-    return !is_null( $service ) && !is_null( $this->role ) &&
-           ( !$service->restricted || $this->role->has_service( $service ) );
-  }
-
-  /**
-   * Get the name of the current jquery-ui theme.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_theme()
-  {
-    $theme = lib::create( 'business\setting_manager' )->get_setting( 'interface', 'default_theme' );
-
-    if( !is_null( $this->user ) )
-    {
-      $user_theme = $this->user->get_theme( $this->application );
-      if( !is_null( $user_theme ) ) $theme = $user_theme;
-    }
-
-    return $theme;
-  }
-
-  /**
-   * Set the current jquery-ui theme.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $theme
-   * @access public
-   */
-  public function set_theme( $theme )
-  {
-    $this->user->set_theme( $this->application, $theme );
-  }
-  
-  /**
-   * Define the operation being performed.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param ui\operation $operation
-   * @access public
-   */
-  public function set_operation( $operation, $arguments )
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-
-    // make sure we have an activity
-    if( is_null( $this->activity ) )
-    {
-      $this->activity = lib::create( 'database\activity' );
-      $this->activity->user_id = $this->user->id;
-      $this->activity->site_id = $this->site->id;
-      $this->activity->role_id = $this->role->id;
-    }
-
-    // add the operation to the activity and save it
-    $this->activity->operation_id = $operation->get_id();
-    $this->activity->query = in_array( $operation->get_full_name(), $this->censored_operation_list )
-                           ? '(censored)'
-                           : serialize( $arguments );
-    $this->activity->elapsed = $util_class_name::get_elapsed_time();
-    $this->activity->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
-    $this->activity->save();
-  }
-
-  /**
-   * Define the error code for the current operation.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $error_code;
-   * @access public
-   */
-  public function set_error_code( $error_code )
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-
-    // make sure we have an activity
-    if( !is_null( $this->activity ) )
-    {
-      // add the operation to the activity and save it
-      $this->activity->error_code = $error_code;
-      $this->activity->elapsed = $util_class_name::get_elapsed_time();
-      $this->activity->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
-      $this->activity->save();
-    }
+    return !is_null( $service ) && !is_null( $this->db_role ) &&
+           ( !$service->restricted || $this->db_role->has_service( $service ) );
   }
 
   /**
@@ -494,13 +267,6 @@ class session extends \cenozo\singleton
   }
 
   /**
-   * A list of all operations who's query values are to be censored when writing to the activity log
-   * @var array
-   * @access protected
-   */
-  protected $censored_operation_list = array( 'self_set_password', 'user_set_password' );
-
-  /**
    * Whether the session has been initialized
    * @var boolean
    * @access private
@@ -519,28 +285,28 @@ class session extends \cenozo\singleton
    * @var database\user
    * @access private
    */
-  private $user = NULL;
+  private $db_user = NULL;
 
   /**
    * The record of the current role.
    * @var database\role
    * @access private
    */
-  private $role = NULL;
+  private $db_role = NULL;
 
   /**
    * The record of the current site.
    * @var database\site
    * @access private
    */
-  private $site = NULL;
+  private $db_site = NULL;
 
   /**
    * The record of the current application.
    * @var database\application
    * @access private
    */
-  private $application = NULL;
+  private $db_application = NULL;
 
   /**
    * The record of the requested role.
@@ -555,20 +321,6 @@ class session extends \cenozo\singleton
    * @access private
    */
   protected $requested_site = NULL;
-
-  /**
-   * The record of the current access (determined the first time get_access() is called)
-   * @var database\access
-   * @access private
-   */
-  private $access = NULL;
-
-  /**
-   * The activity associated with the current operation.
-   * @var database\activity
-   * @access private
-   */
-  private $activity = NULL;
 
   /**
    * Whether a database transaction needs to be performed during this session.

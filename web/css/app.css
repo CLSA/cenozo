@@ -45,12 +45,9 @@ input[type=number] { -moz-appearance: textfield; }
 .body-heading { padding-top: 0.33em; padding-bottom: 0.33em; min-width: 750px; }
 .body-view { margin-top: 0.5em; padding: 0px; }
 .body-heading .row { margin-left: 10px; }
-
-.site-title {
-  font-size: 130%;
-  font-weight: bold;
-  top: 3px;
-}
+.body-heading-title { font-size: 120%; font-weight: bold; top: 4px; }
+.body-heading-shortcuts { text-align: center; }
+.body-heading-state {}
 
 /* used by the ng-view so that animated transitions work correctly */
 .view-frame {

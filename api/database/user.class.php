@@ -15,67 +15,6 @@ use cenozo\lib, cenozo\log;
 class user extends base_access
 {
   /**
-   * Returns the user's theme for a particular application, or NULL if they have not specified one.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param application $db_application
-   * @return string
-   * @access public
-   */
-  public function get_theme( $db_application )
-  {
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to get theme for user with no id.' );
-      return 0;
-    } 
-    
-    return static::db()->get_one( sprintf(
-      'SELECT theme FROM user_has_application '.
-      'WHERE user_id = %s '.
-      'AND application_id = %s',
-      static::db()->format_string( $this->id ),
-      static::db()->format_string( $db_application->id ) ) );
-  }
-
-  /**
-   * Sets the user's theme for a particular application.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param application $db_application
-   * @param string $theme
-   * @access public
-   */
-  public function set_theme( $db_application, $theme )
-  {
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to set theme for user with no id.' );
-      return;
-    } 
-    
-    if( is_null( $theme ) || !$theme )
-    { // remove the theme
-      static::db()->execute( sprintf(
-        'DELETE FROM user_has_application '.
-        'WHERE user_id = %s '.
-        'AND application_id = %s',
-        static::db()->format_string( $this->id ),
-        static::db()->format_string( $db_application->id ) ) );
-    }
-    else
-    {
-      static::db()->execute( sprintf(
-        'INSERT INTO user_has_application '.
-        'SET user_id = %s, application_id = %s, theme = %s '.
-        'ON DUPLICATE KEY UPDATE theme = VALUES( theme )',
-        static::db()->format_string( $this->id ),
-        static::db()->format_string( $db_application->id ),
-        static::db()->format_string( $theme ) ) );
-    }
-  }
-
-   /**
    * Returns whether the user has the role for the given site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

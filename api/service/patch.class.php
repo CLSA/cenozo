@@ -33,6 +33,8 @@ class patch extends service
    */
   protected function execute()
   {
+    parent::execute();
+
     $record = end( $this->record_list );
     if( false !== $record )
     {

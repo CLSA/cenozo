@@ -10,6 +10,27 @@ catch( err ) {
 }
 
 /**
+ * TODO: document
+ */
+cenozo.directive( 'cnApplicationTitle', [
+  'CnStateSingleton',
+  function( CnStateSingleton ) {
+    return {
+      template: '{{ application.title }} {{ application.version }}',
+      restrict: 'E',
+      transclude: true,
+      scope: true,
+      link: function( scope ) {
+        var cnState = CnStateSingleton;
+        cnState.promise.then( function() {
+          scope.application = cnState.application;
+        } );
+      }
+    };
+  }
+] );
+
+/**
  * Like ngChange but will only trigger after loosing focus of the element (instead of any change)
  * if the parent element is an INPUT of type other than checkbox or radio, otherwise it is identical
  * to the standard ngChange directive.
@@ -38,6 +59,37 @@ cenozo.directive( 'cnChange', function() {
     }
   };
 } );
+
+/**
+ * TODO: document
+ */
+cenozo.directive( 'cnClock', [
+  'CnStateSingleton', '$interval',
+  function( CnStateSingleton, $interval ) {
+    return {
+      restrict: 'E',
+      transclude: true,
+      scope: true,
+      link: function( scope, element, attrs ) {
+        var cnState = CnStateSingleton;
+
+        cnState.promise.then( function() {
+          function updateTime() {
+            var nowObj = new Date();
+            nowObj.setTime( nowObj.getTime() + cnState.site.timezoneOffset * 1000 );
+            var hours = ( nowObj.getUTCHours() < 10 ? '0' : '' ) + nowObj.getUTCHours();
+            var minutes = ( nowObj.getUTCMinutes() < 10 ? '0' : '' ) + nowObj.getUTCMinutes();
+            element.text( hours + ':' + minutes + ' ' + cnState.site.timezoneName );
+          }
+
+          updateTime();
+          var promise = $interval( updateTime, 10000 );
+          element.on( '$destroy', function() { $interval.cancel( promise ); } );
+        } );
+      }
+    };
+  }
+] );
 
 /**
  * An interface to select date and time
@@ -510,23 +562,33 @@ cenozo.directive( 'cnRecordView', [
  * TODO: document
  */
 cenozo.directive( 'cnSiteRolePicker', [
-  'CnStateSingleton',
-  function( CnStateSingleton ) {
+  '$window', 'CnStateSingleton',
+  function( $window, CnStateSingleton ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/site-role-picker.tpl.html',
       restrict: 'E',
       transclude: true,
+      scope: true,
       link: function( scope ) {
-        CnStateSingleton.promise.then( function() {
-          scope.site = CnStateSingleton.site;
-          scope.role = CnStateSingleton.role;
-          scope.siteList = CnStateSingleton.siteList;
+        var cnState = CnStateSingleton;
+        cnState.promise.then( function() {
+          scope.site = cnState.site;
+          scope.role = cnState.role;
+          scope.siteList = cnState.siteList;
 
           // pre-select the role list
           for( var i = 0; i < scope.siteList.length; i++ )
             if( scope.site.id == scope.siteList[i].id )
               scope.roleList = scope.siteList[i].roleList;
         } );
+
+        scope.cbSetSite = function( id ) {
+          cnState.setSite( id ).then( function() { $window.location.reload(); } );
+        }
+
+        scope.cbSetRole = function( id ) {
+          cnState.setRole( id ).then( function() { $window.location.reload(); } );
+        }
       }
     };
   }
