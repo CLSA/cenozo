@@ -1170,6 +1170,10 @@ abstract class record extends \cenozo\base_object
     }
     else if( static::ARRAY_FORMAT == $format )
     {
+      // add column from the modifier's joins
+      $join_columns = $modifier->get_join_columns();
+      if( 0 < strlen( $join_columns ) ) $sql = str_replace( '*', '*, '.$join_columns, $sql );
+
       $rows = static::db()->get_all( $sql );
       foreach( $rows as $index => $row )
       {

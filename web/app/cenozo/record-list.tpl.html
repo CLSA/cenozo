@@ -3,14 +3,14 @@
     <tr class="info">
       <td ng-repeat="column in columnList">
         <div class="btn-group" role="group" area-hidden="true">
-          <button class="btn btn-info"
+          <button class="btn btn-narrow btn-info"
                   ng-click="cbOrderBy( { column: column.key } )">{{ column.title }}
             <i ng-if="null !== local.order && local.order.column == column.key"
                class="glyphicon"
                ng-class="local.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"
                aria-hidden="true"></i>
           </button>
-          <button class="btn btn-info"
+          <button class="btn btn-narrow btn-info"
                   ng-if="column.allowRestrict"
                   ng-click="cbAddRestrict( { column: column.key } )">
             <i class="glyphicon glyphicon-flag" aria-hidden="true"></i>
@@ -18,7 +18,7 @@
         </div>
         <div class="text-center text-info full-width" ng-if="column.restrict">
           <p class="restrict"
-             tooltip="Hint: to remove click the flag, then remove button"
+             tooltip="To remove click the flag, then remove button"
              tooltip-placement="bottom"
              tooltip-popup-delay="750">
             {{ column.restrict.test | cnComparator }}

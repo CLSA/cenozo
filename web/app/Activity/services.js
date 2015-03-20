@@ -21,9 +21,16 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          'user__name': { title: 'User' },
+          'site__name': { title: 'Site' },
+          'role__name': { title: 'Role' },
+          'service__method': { title: 'Method' },
+          'service__path': { title: 'Path' },
+          'elapsed': { title: 'Elapsed' },
+          'status': { title: 'Status' },
+          'datetime': { title: 'Date & Time', filter: 'date:"MMM d, y HH:mm"' }
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'datetime', reverse: true };
         // factory customizations end here
         //////////////////////////////////
 

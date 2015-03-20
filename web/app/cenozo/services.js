@@ -107,21 +107,63 @@ cenozo.factory( 'CnBaseListFactory', [
           offset: replace ? 0 : this.cache.length
         };
 
-        // set up the restrictions
-        var where = [];
+        // set up the joins and restrictions
+        var joinList = [];
+        var whereList = [];
         for( var key in this.columnList ) {
+          var dotIndex = key.indexOf( '__' );
+          if( 0 <= dotIndex ) {
+            var lastJoin = null;
+            var parentTable = this.subject;
+            var keyParts = key.split( '__' );
+            for( var k = 0; k < keyParts.length; k++ ) {
+              if( k == keyParts.length - 1 ) {
+                // add this column to the last join
+                var column = keyParts[k];
+                if( undefined === lastJoin.columns ) lastJoin.columns = [];
+                lastJoin.columns.push( column );
+              } else { // part of table list
+                var table = keyParts[k];
+                var onleft = parentTable + '.' + table + '_id';
+                var onright = table + '.id';
+
+                // see if the join to this table already exists
+                var join = null;
+                for( var j = 0; j < joinList.length; j++ ) {
+                  if( joinList[j].table == table &&
+                      joinList[j].onleft == onleft &&
+                      joinList[j].onright == onright ) {
+                    // simply add the column
+                    join = joinList[j];
+                    break;
+                  }
+                }
+
+                // if the join wasn't found then add it to the list
+                if( null === join ) {
+                  join = { table: table, onleft: onleft, onright: onright };
+                  joinList.push( join );
+                }
+
+                var lastJoin = join;
+                var parentTable = table;
+              }
+            }
+          }
+
           if( undefined !== this.columnList[key].restrict && null !== this.columnList[key].restrict ) {
             var test = this.columnList[key].restrict.test;
             var value = this.columnList[key].restrict.value;
             if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
-            where.push( {
+            whereList.push( {
               column: key,
               operator: test,
               value: value
             } );
           }
         }
-        if( 0 < where.length ) data.modifier.where = where;
+        if( 0 < joinList.length ) data.modifier.join = joinList;
+        if( 0 < whereList.length ) data.modifier.where = whereList;
 
         // set up the offset and sorting
         if( null !== this.order ) {

@@ -24,13 +24,15 @@ class modifier extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to join to.
    * @param modifier $modifier The modifier containing a where statement that defines how the
-   *                           join is made.
+   *        join is made.
    * @param string $type The type of join to use.  May be blank or include inner, cross, straight,
-   *                     left, left outer, right or right outer
+   *        left, left outer, right or right outer
+   * @param array(string) $columns An array of column names in the adjoined table which should be
+   *        added to select statements using this modifier
    * @throws exception\argument
    * @access public
    */
-  public function join_modifier( $table, $modifier, $type = '' )
+  public function join_modifier( $table, $modifier, $type = '', $columns = array() )
   {
     $type = strtoupper( $type );
 
@@ -58,7 +60,8 @@ class modifier extends \cenozo\base_object
 
     $this->join_list[] = array( 'table' => $table,
                                 'modifier' => $modifier,
-                                'type' => strtoupper( $type ) );
+                                'type' => strtoupper( $type ),
+                                'columns' => $columns );
   }
 
   /**
@@ -72,11 +75,11 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function join( $table, $on_left, $on_right, $type = '' )
+  public function join( $table, $on_left, $on_right, $type = '', $columns = array() )
   {
     $on_mod = new static();
     $on_mod->where( $on_left, '=', $on_right, false );
-    $this->join_modifier( $table, $on_mod, $type );
+    $this->join_modifier( $table, $on_mod, $type, $columns );
   }
 
   /**
@@ -88,9 +91,9 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function left_join_modifier( $table, $modifier )
+  public function left_join_modifier( $table, $modifier, $columns = array() )
   {
-    $this->join_modifier( $table, $modifier, 'left' );
+    $this->join_modifier( $table, $modifier, 'left', $columns );
   }
 
   /**
@@ -101,9 +104,9 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function left_join( $table, $on_left, $on_right )
+  public function left_join( $table, $on_left, $on_right, $columns = array() )
   {
-    $this->join( $table, $on_left, $on_right, 'left' );
+    $this->join( $table, $on_left, $on_right, 'left', $columns );
   }
 
   /**
@@ -115,9 +118,9 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function right_join_modifier( $table, $modifier )
+  public function right_join_modifier( $table, $modifier, $columns = array() )
   {
-    $this->join_modifier( $table, $modifier, 'right' );
+    $this->join_modifier( $table, $modifier, 'right', $columns );
   }
 
   /**
@@ -128,9 +131,9 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function right_join( $table, $on_left, $on_right )
+  public function right_join( $table, $on_left, $on_right, $columns = array() )
   {
-    $this->join( $table, $on_left, $on_right, 'right' );
+    $this->join( $table, $on_left, $on_right, 'right', $columns );
   }
 
   /**
@@ -140,9 +143,9 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function cross_join_modifier( $table, $modifier = NULL )
+  public function cross_join_modifier( $table, $modifier = NULL, $columns = array() )
   {
-    $this->join( $table, $modifier, 'cross' );
+    $this->join( $table, $modifier, 'cross', $columns );
   }
 
   /**
@@ -153,9 +156,9 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function cross_join( $table, $on_left, $on_right )
+  public function cross_join( $table, $on_left, $on_right, $columns = array() )
   {
-    $this->join( $table, $on_left, $on_right, 'cross' );
+    $this->join( $table, $on_left, $on_right, 'cross', $columns );
   }
 
   /**
@@ -165,9 +168,9 @@ class modifier extends \cenozo\base_object
    * @throws exception\argument
    * @access public
    */
-  public function inner_join( $table, $modifier = NULL )
+  public function inner_join( $table, $modifier = NULL, $columns = array() )
   {
-    $this->join( $table, $modifier, 'inner' );
+    $this->join( $table, $modifier, 'inner', $columns );
   }
 
   /**
@@ -687,6 +690,36 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Returns additional SQL columns to select from all join statements
+   * 
+   * This method should only be called by a record class and only after all modifications
+   * have been set.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_join_columns()
+  {
+    $first = true;
+    $sql = '';
+    foreach( $this->join_list as $join )
+    {
+      foreach( $join['columns'] as $column )
+      {
+        $sql .= sprintf( '%s%s.%s AS `%s__%s`',
+                         $first ? '' : ', ',
+                         $join['table'],
+                         $column,
+                         $join['table'],
+                         $column );
+        if( $first ) $first = false;
+      }
+    }
+
+    return $sql;
+  }
+
+  /**
    * Returns an SQL where statement.
    * 
    * This method should only be called by a record class and only after all modifications
@@ -1031,6 +1064,27 @@ class modifier extends \cenozo\base_object
     {
       foreach( (array)$json_object as $key => $value )
       {
+        if( 'join' == $key )
+        {
+          // convert a single statement to an array with that statement in it
+          if( !is_array( $value ) ) $value = array( $value );
+          
+          foreach( $value as $join )
+          {
+            if( array_key_exists( 'table', $join ) &&
+                array_key_exists( 'onleft', $join ) &&
+                array_key_exists( 'onright', $join ) )
+            {
+              if( !array_key_exists( 'type', $join ) ) $join->type = 'cross';
+              if( !array_key_exists( 'columns', $join ) ) $join->columns = NULL;
+              $modifier->join( $join->table, $join->onleft, $join->onright, $join->type, $join->columns );
+            }
+            else
+            {
+              throw lib::create( 'exception\runtime', 'Invalid join sub-statement', __METHOD__ );
+            }
+          }
+        }
         if( 'where' == $key )
         {
           // convert a single statement to an array with that statement in it
