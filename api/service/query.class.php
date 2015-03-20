@@ -63,6 +63,8 @@ class query extends service
   {
     parent::execute();
 
+    $session = lib::create( 'business\session' );
+
     // get the list of the LAST collection
     $index = count( $this->collection_name_list ) -1;
     if( 0 <= $index )
@@ -70,6 +72,22 @@ class query extends service
       $subject = $this->collection_name_list[$index];
       $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
       $parent_record = end( $this->record_list );
+
+      // restrict some roles when subject is related to a site
+      if( !$session->get_role()->all_sites )
+      {
+        $db_site = $session->get_site();
+        if( 'site' == $subject )
+        {
+          $this->modifier->where( 'id', '=', $db_site->id );
+        }
+        else
+        {
+          if( $record_class_name::column_exists( 'site_id' ) )
+            $this->modifier->where( 'site_id', '=', $db_site->id );
+        }
+      }
+
       $count_modifier = clone $this->modifier;
       $count_modifier->limit( NULL );
 

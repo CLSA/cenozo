@@ -32,7 +32,8 @@ abstract class service extends \cenozo\base_object
   public function __construct( $method, $path, $args = NULL, $file = NULL )
   {
     // by default all services use transactions
-    lib::create( 'business\session' )->set_use_transaction( true );
+    $session = lib::create( 'business\session' );
+    $session->set_use_transaction( true );
 
     if( 0 < strlen( $path ) )
     {
@@ -67,7 +68,6 @@ abstract class service extends \cenozo\base_object
         in_array( $this->service_record->method, array( 'DELETE', 'PATCH', 'POST', 'PUT' ) ) )
     {
       $util_class_name = lib::get_class_name( 'util' );
-      $session = lib::create( 'business\session' );
       $this->db_activity = lib::create( 'database\activity' );
       $this->db_activity->user_id = $session->get_user()->id;
       $this->db_activity->site_id = $session->get_site()->id;
@@ -240,6 +240,8 @@ abstract class service extends \cenozo\base_object
    */
   protected function get_resource( $index )
   {
+    $session = lib::create( 'business\session' );
+
     $record = NULL;
 
     if( array_key_exists( $index, $this->collection_name_list ) &&
@@ -286,6 +288,21 @@ abstract class service extends \cenozo\base_object
           }
           
           $record = $record_class_name::get_unique_record( $columns, $values );
+        }
+      }
+
+      // restrict some roles when resource is related to a site
+      if( !$session->get_role()->all_sites )
+      {
+        $db_site = $session->get_site();
+        if( 'site' == $collection_name )
+        {
+          if( $db_site->id != $record->id ) $this->status->set_code( 403 );
+        }
+        else
+        {
+          if( $record_class_name::column_exists( 'site_id' ) && $record->site_id != $db_site->id )
+            $this->status->set_code( 403 );
         }
       }
     }
