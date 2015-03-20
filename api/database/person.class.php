@@ -10,7 +10,7 @@ namespace cenozo\database;
 use cenozo\lib, cenozo\log;
 
 /**
- * A base class for all records which have a one-to-one relationship to `person`
+ * A base class for all records which have a one-to-one relationship to person
  */
 class person extends has_note
 {

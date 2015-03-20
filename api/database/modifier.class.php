@@ -706,7 +706,7 @@ class modifier extends \cenozo\base_object
     {
       foreach( $join['columns'] as $column )
       {
-        $sql .= sprintf( '%s%s.%s AS `%s__%s`',
+        $sql .= sprintf( '%s%s.%s AS %s__%s',
                          $first ? '' : ', ',
                          $join['table'],
                          $column,
@@ -1013,7 +1013,16 @@ class modifier extends \cenozo\base_object
   /**
    * JSON-based modifier expected in the form:
    * {
-   *   where:
+   *   join:
+   *   [
+   *     {
+   *       table:   <table>
+   *       onleft:  <column>
+   *       onright: <column>
+   *       columns: [ <optional list of columns to select> ]
+   *     }
+   *   ],
+   *   having|where:
    *   [
    *     {
    *       bracket: true,
@@ -1085,24 +1094,25 @@ class modifier extends \cenozo\base_object
             }
           }
         }
-        if( 'where' == $key )
+        if( 'having' == $key || 'where' == $key )
         {
           // convert a single statement to an array with that statement in it
           if( !is_array( $value ) ) $value = array( $value );
           
-          foreach( $value as $where )
+          foreach( $value as $condition )
           {
-            if( array_key_exists( 'bracket', $where ) )
+            if( array_key_exists( 'bracket', $condition ) )
             {
-              if( array_key_exists( 'or', $where ) ) $modifier->where_bracket( $where->open, $where->or );
-              else $modifier->where_bracket( $where->open );
+              $or = array_key_exists( 'or', $condition ) ? $condition->or : false;
+              $method = sprintf( '%s_bracket', $key );
+              $modifier->$method( $condition->open, $or );
             }
-            else if( array_key_exists( 'column', $where ) &&
-                     array_key_exists( 'operator', $where ) &&
-                     array_key_exists( 'value', $where ) )
+            else if( array_key_exists( 'column', $condition ) &&
+                     array_key_exists( 'operator', $condition ) &&
+                     array_key_exists( 'value', $condition ) )
             {
               // sanitize the operator value
-              $operator = strtoupper( $where->operator );
+              $operator = strtoupper( $condition->operator );
               $valid_operator_list = array(
                 '=', '<=>', '!=', '<>',
                 '<', '<=', '>', '>=',
@@ -1111,18 +1121,20 @@ class modifier extends \cenozo\base_object
                 'LIKE', 'NOT LIKE' );
               if( in_array( $operator, $valid_operator_list ) )
               {
-                if( array_key_exists( 'or', $where ) )
-                  $modifier->where( $where->column, $where->operator, $where->value, $where->or );
-                else $modifier->where( $where->column, $where->operator, $where->value );
+                $or = array_key_exists( 'or', $condition ) ? $condition->or : false;
+                // here $key is either where or having (using it as a method call)
+                $modifier->$key( $condition->column, $condition->operator, $condition->value, true, $or );
               }
               else
               {
-                throw lib::create( 'exception\runtime', 'Invalid where operator', __METHOD__ );
+                throw lib::create( 'exception\runtime',
+                  sprintf( 'Invalid %s operator', $key ), __METHOD__ );
               }
             }
             else
             {
-              throw lib::create( 'exception\runtime', 'Invalid where sub-statement', __METHOD__ );
+              throw lib::create( 'exception\runtime',
+                sprintf( 'Invalid %s sub-statement', $key ), __METHOD__ );
             }
           }
         }

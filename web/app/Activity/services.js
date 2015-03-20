@@ -3,14 +3,6 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnActivityAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnActivityListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
@@ -38,22 +30,16 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
+      delete object.prototype.add;
+      delete object.prototype.delete;
       return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnActivityViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnActivitySingleton', [
-    'CnBaseSingletonFactory', 'CnActivityListFactory', 'CnActivityAddFactory', 'CnActivityViewFactory',
-    function( CnBaseSingletonFactory, CnActivityListFactory, CnActivityAddFactory, CnActivityViewFactory ) {
+    'CnBaseSingletonFactory', 'CnActivityListFactory',
+    function( CnBaseSingletonFactory, CnActivityListFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'activity',
@@ -63,9 +49,7 @@ define( [], function() {
             possessive: 'activity\'s',
             pluralPossessive: 'activitys\''
           },
-          cnAdd: CnActivityAddFactory.instance( { subject: 'activity' } ),
-          cnList: CnActivityListFactory.instance( { subject: 'activity' } ),
-          cnView: CnActivityViewFactory.instance( { subject: 'activity' } )
+          cnList: CnActivityListFactory.instance( { subject: 'activity' } )
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

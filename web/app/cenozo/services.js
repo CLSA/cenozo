@@ -111,8 +111,7 @@ cenozo.factory( 'CnBaseListFactory', [
         var joinList = [];
         var whereList = [];
         for( var key in this.columnList ) {
-          var dotIndex = key.indexOf( '__' );
-          if( 0 <= dotIndex ) {
+          if( 0 <= key.indexOf( '__' ) ) {
             var lastJoin = null;
             var parentTable = this.subject;
             var keyParts = key.split( '__' );
@@ -155,8 +154,8 @@ cenozo.factory( 'CnBaseListFactory', [
             var test = this.columnList[key].restrict.test;
             var value = this.columnList[key].restrict.value;
             if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
-            whereList.push( {
-              column: key,
+            whereList.push( { 
+              column: key.replace( '__', '.' ),
               operator: test,
               value: value
             } );
@@ -241,9 +240,6 @@ cenozo.factory( 'CnBaseSingletonFactory',
   function() {
     var object = function( params ) {
       if( undefined === params.subject ) throw 'Tried to create CnBaseSingletonFactory without a subject';
-      if( undefined === params.cnAdd ) throw 'Tried to create CnBaseSingletonFactory without a cnAdd';
-      if( undefined === params.cnList ) throw 'Tried to create CnBaseSingletonFactory without a cnList';
-      if( undefined === params.cnView ) throw 'Tried to create CnBaseSingletonFactory without a cnView';
 
       this.subject = {
         singular: '(undefined)',

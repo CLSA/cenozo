@@ -26,7 +26,7 @@
           </p>
         </div>
       </td>
-      <td class="tiny"></td>
+      <td class="tiny" ng-if="cbDelete"></td>
     </tr>
   </thead>
   <tbody>
@@ -44,7 +44,7 @@
         <td ng-repeat="column in columnList">
           <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
         </td>
-        <td class="tiny">
+        <td class="tiny" ng-if="cbDelete">
           <div>
             <button class="btn btn-xs btn-danger"
                     ng-really-message="Are you sure you want to delete this {{ name.singular }}?"
