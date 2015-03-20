@@ -210,6 +210,9 @@ final class bootstrap
             'Please notify a superior with the error code.',
         'code' => sprintf( '%s.%s', strtoupper( substr( $e->get_type(), 0, 1 ) ), $e->get_code() )
       );
+    
+      // log all but notice exceptions
+      if( 'notice' != $e->get_type() ) log::err( ucwords( $e->get_type() ).' '.$e );
     }
     catch( \Exception $e )
     {
@@ -221,6 +224,8 @@ final class bootstrap
             'Please notify a superior with the error code.',
         'code' => $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
       );
+    
+      if( class_exists( 'cenozo\log' ) ) log::err( 'Last minute '.$e );
     }
 
     ob_end_clean();

@@ -163,6 +163,7 @@ class session extends \cenozo\singleton
         $access_mod->join( 'site', 'access.site_id', 'site.id' );
         $access_mod->where( 'site.application_id', '=', $this->db_application->id );
         $access_mod->order_desc( 'datetime' );
+        $access_mod->order_desc( 'microtime' );
         $access_mod->limit( 1 );
         if( !is_null( $db_site ) ) $access_mod->where( 'site_id', '=', $db_site->id );
         if( !is_null( $db_role ) ) $access_mod->where( 'role_id', '=', $db_role->id );
@@ -180,12 +181,15 @@ class session extends \cenozo\singleton
         $has_access = $this->db_user->has_access( $db_site, $db_role );
         if( $has_access )
         {
+          $microtime = microtime();
           $this->db_site = $db_site;
           $this->db_role = $db_role;
           $this->db_access = $access_class_name::get_unique_record(
             array( 'user_id', 'site_id', 'role_id' ),
             array( $this->db_user->id, $this->db_site->id, $this->db_role->id ) );
           $this->db_access->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+          $this->db_access->microtime = substr( $microtime, 0, strpos( $microtime, ' ' ) );
+          $this->db_access->save();
         }
       }
     }

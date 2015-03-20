@@ -45,8 +45,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnStateSingleton', [
-    'CnBaseSingletonFactory', 'CnStateListFactory', 'CnStateAddFactory', 'CnStateViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnStateListFactory, CnStateAddFactory, CnStateViewFactory, CnHttpFactory ) {
+    'CnBaseSingletonFactory', 'CnStateListFactory', 'CnStateAddFactory', 'CnStateViewFactory',
+    function( CnBaseSingletonFactory, CnStateListFactory, CnStateAddFactory, CnStateViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'state',

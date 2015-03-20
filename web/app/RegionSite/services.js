@@ -46,8 +46,8 @@ region_site.factory( 'CnRegionSiteViewFactory', [
 
 /* ######################################################################################################## */
 region_site.factory( 'CnRegionSiteSingleton', [
-  'CnBaseSingletonFactory', 'CnRegionSiteListFactory', 'CnRegionSiteAddFactory', 'CnRegionSiteViewFactory', 'CnHttpFactory',
-  function( CnBaseSingletonFactory, CnRegionSiteListFactory, CnRegionSiteAddFactory, CnRegionSiteViewFactory, CnHttpFactory ) {
+  'CnBaseSingletonFactory', 'CnRegionSiteListFactory', 'CnRegionSiteAddFactory', 'CnRegionSiteViewFactory',
+  function( CnBaseSingletonFactory, CnRegionSiteListFactory, CnRegionSiteAddFactory, CnRegionSiteViewFactory ) {
     var object = function() {
       var base = CnBaseSingletonFactory.instance( {
         subject: 'region_site',

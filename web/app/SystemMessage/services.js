@@ -45,8 +45,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnSystemMessageSingleton', [
-    'CnBaseSingletonFactory', 'CnSystemMessageListFactory', 'CnSystemMessageAddFactory', 'CnSystemMessageViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnSystemMessageListFactory, CnSystemMessageAddFactory, CnSystemMessageViewFactory, CnHttpFactory ) {
+    'CnBaseSingletonFactory', 'CnSystemMessageListFactory', 'CnSystemMessageAddFactory', 'CnSystemMessageViewFactory',
+    function( CnBaseSingletonFactory, CnSystemMessageListFactory, CnSystemMessageAddFactory, CnSystemMessageViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'system_message',

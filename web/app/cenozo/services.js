@@ -46,7 +46,7 @@ cenozo.factory( 'CnBaseListFactory', [
         if( undefined !== record.datetime && null !== record.datetime )
           record.datetime = cnObjectToDatetime( record.datetime );
         return CnHttpFactory.instance( {
-          subject: this.subject,
+          path: this.subject,
           data: record
         } ).post().then( function success( response ) {
           record.id = response.data;
@@ -58,8 +58,8 @@ cenozo.factory( 'CnBaseListFactory', [
       delete: function( id ) {
         var thisRef = this;
         return CnHttpFactory.instance( {
-          subject: this.subject
-        } ).delete( id ).then( function success( response ) {
+          path: this.subject + '/' + id
+        } ).delete().then( function success( response ) {
           for( var i = 0; i < thisRef.cache.length; i++ ) {
             if( thisRef.cache[i].id == id ) {
               thisRef.total--;
@@ -133,7 +133,7 @@ cenozo.factory( 'CnBaseListFactory', [
 
         var thisRef = this;
         return CnHttpFactory.instance( {
-          subject: this.subject,
+          path: this.subject,
           data: data
         } ).query().then( function success( response ) {
           // change datetimes to Date object
@@ -172,8 +172,8 @@ cenozo.factory( 'CnBaseViewFactory', [
       load: function( id ) {
         var thisRef = this;
         CnHttpFactory.instance( {
-          subject: this.subject
-        } ).get( id ).then( function success( response ) {
+          path: this.subject + '/' + id
+        } ).get().then( function success( response ) {
           thisRef.record = response.data;
         } );
       },
@@ -181,9 +181,9 @@ cenozo.factory( 'CnBaseViewFactory', [
         // convert Date object to datetime string
         if( 'datetime' == data[0] ) data[0] = cnObjectToDatetime( data[0] );
         return CnHttpFactory.instance( {
-          subject: this.subject,
+          path: this.subject + '/' + id,
           data: data
-        } ).patch( id );
+        } ).patch();
       }
     };
 
@@ -237,8 +237,8 @@ cenozo.factory( 'CnHttpFactory', [
   '$http',
   function CnHttpFactory( $http ) {
     var object = function( params ) {
-      if( undefined === params.subject ) throw 'Tried to create CnHttpFactory without a subject';
-      this.subject = null;
+      if( undefined === params.path ) throw 'Tried to create CnHttpFactory without a path';
+      this.path = null;
       this.data = {};
       cnCopyParams( this, params );
     }
@@ -252,12 +252,12 @@ cenozo.factory( 'CnHttpFactory', [
         }
         return $http( object );
       },
-      post: function() { return this.http( 'POST', 'api/' + this.subject ); },
-      metadata: function() { this.data.metadata = true; return this.query( this.subject ); },
-      query: function() { return this.http( 'GET', 'api/' + this.subject ); },
-      get: function( id ) { return this.http( 'GET', 'api/' + this.subject + '/' + id ); },
-      patch: function( id ) { return this.http( 'PATCH', 'api/' + this.subject + '/' + id ); },
-      delete: function( id ) { return this.http( 'DELETE', 'api/' + this.subject + '/' + id ); }
+      post: function() { return this.http( 'POST', 'api/' + this.path ); },
+      metadata: function() { this.data.metadata = true; return this.query( this.path ); },
+      query: function() { return this.http( 'GET', 'api/' + this.path ); },
+      get: function() { return this.http( 'GET', 'api/' + this.path ); },
+      patch: function() { return this.http( 'PATCH', 'api/' + this.path ); },
+      delete: function() { return this.http( 'DELETE', 'api/' + this.path ); }
     };
     
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
@@ -429,7 +429,7 @@ cenozo.factory( 'CnStateSingleton', [
       // get the application, user, site and role details
       var thisRef = this;
       this.promise = CnHttpFactory.instance( {
-        subject: 'self'
+        path: 'self/0'
       } ).get().then( function success( response ) {
         thisRef.application = response.data.application;
         thisRef.user = response.data.user;
@@ -438,8 +438,7 @@ cenozo.factory( 'CnStateSingleton', [
 
         // chain a second http request into the promise
         return CnHttpFactory.instance( {
-          subject: 'access',
-          data: { self: true }
+          path: 'access'
         } ).query().then( function success( response ) {
           for( var i = 0; i < response.data.results.length; i++ ) {
             var access = response.data.results[i];
@@ -456,19 +455,24 @@ cenozo.factory( 'CnStateSingleton', [
             // now add the role to the site's role list
             thisRef.siteList[index].roleList.push( {
               id: access.role_id,
-              name: access.role_name,
-              datetime: null === access.datetime ? null : cnDatetimeToObject( access.datetime )
+              name: access.role_name
             } );
           }
         } );
       } ).catch( function exception() { cnFatalError(); } );
 
       this.setSite = function setSite( id ) {
-        return CnHttpFactory.instance( { subject: 'self', data: { site: { id: id } } } ).patch( 0 );
+        return CnHttpFactory.instance( {
+          path: 'self/0',
+          data: { site: { id: id } }
+        } ).patch();
       };
 
       this.setRole = function setRole( id ) {
-        return CnHttpFactory.instance( { subject: 'self', data: { site: { id: id } } } ).patch( 0 );
+        return CnHttpFactory.instance( {
+          path: 'self/0',
+          data: { role: { id: id } }
+        } ).patch();
       };
     };
     

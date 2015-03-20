@@ -94,25 +94,28 @@ class patch extends \cenozo\service\service
         }
         else if( 'site' == $key || 'role' == $key )
         {
-          if( is_object( $value ) )
+          $site_class_name = lib::get_class_name( 'database\site' );
+          $role_class_name = lib::get_class_name( 'database\role' );
+
+          $db_site = 'site' == $key
+                   ? $site_class_name::get_unique_record( $column, $value )
+                   : NULL;
+          $db_role = 'role' == $key
+                   ? $role_class_name::get_unique_record( $column, $value )
+                   : NULL;
+
+          $success = false;
+          if( !is_null( $db_site ) || !is_null( $db_role ) )
           {
-            $value = (array) $value;
-            $site_class_name = lib::get_class_name( 'database\site' );
-            $role_class_name = lib::get_class_name( 'database\role' );
-
-            $db_site = 'site' == $value
-                     ? $site_class_name::get_unique_record( $column, $value )
-                     : NULL;
-            $db_role = 'role' == $value
-                     ? $role_class_name::get_unique_record( $column, $value )
-                     : NULL;
-
-            $success = false;
-            if( !is_null( $db_site ) || !is_null( $db_role ) )
-              $success = $session->set_site_and_role( $db_site, $db_role );
-
-            $this->status->set_code( $success ? 204 : 403 );
+            $success = $session->set_site_and_role( $db_site, $db_role );
+            if( $success )
+            { // update the activity to reflect the new site/role pair
+              $this->db_activity->site_id = $session->get_site()->id;
+              $this->db_activity->role_id = $session->get_role()->id;
+            }
           }
+
+          $this->status->set_code( $success ? 204 : 403 );
         }
       }
       else

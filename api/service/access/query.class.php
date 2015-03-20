@@ -37,16 +37,13 @@ class query extends \cenozo\service\query
   {
     parent::prepare();
 
-    if( $this->get_argument( 'self', false ) )
-    {
-      // restrict to the current user's access to the current application
-      $this->modifier->where(
-        'user_id', '=', lib::create( 'business\session' )->get_user()->id );
-      $this->modifier->where(
-        'site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
-      $this->modifier->order( 'site.name' );
-      $this->modifier->order( 'role.name' );
-    }
+    // restrict to the current user's access to the current application
+    $this->modifier->where(
+      'user_id', '=', lib::create( 'business\session' )->get_user()->id );
+    $this->modifier->where(
+      'site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
+    $this->modifier->order( 'site.name' );
+    $this->modifier->order( 'role.name' );
   }
 
   /**
@@ -56,23 +53,21 @@ class query extends \cenozo\service\query
   {
     parent::execute();
 
-    if( $this->get_argument( 'self', false ) )
-    { // add names of sites and roles
-      $site_class_name = lib::get_class_name( 'database\site' );
-      $role_class_name = lib::get_class_name( 'database\role' );
-      
-      // create lookup arrays
-      $site_list = array();
-      foreach( $site_class_name::arrayselect() as $row ) $site_list[$row['id']] = $row['name'];
-      $role_list = array();
-      foreach( $role_class_name::arrayselect() as $row ) $role_list[$row['id']] = $row['name'];
+    // add names of sites and roles
+    $site_class_name = lib::get_class_name( 'database\site' );
+    $role_class_name = lib::get_class_name( 'database\role' );
+    
+    // create lookup arrays
+    $site_list = array();
+    foreach( $site_class_name::arrayselect() as $row ) $site_list[$row['id']] = $row['name'];
+    $role_list = array();
+    foreach( $role_class_name::arrayselect() as $row ) $role_list[$row['id']] = $row['name'];
 
-      foreach( $this->data['results'] as $index => $row )
-      {
-        unset( $this->data['results'][$index]['user_id'] );
-        $this->data['results'][$index]['site_name'] = $site_list[$row['site_id']];
-        $this->data['results'][$index]['role_name'] = $role_list[$row['role_id']];
-      }
+    foreach( $this->data['results'] as $index => $row )
+    {
+      unset( $this->data['results'][$index]['user_id'] );
+      $this->data['results'][$index]['site_name'] = $site_list[$row['site_id']];
+      $this->data['results'][$index]['role_name'] = $role_list[$row['role_id']];
     }
   }
 }

@@ -45,8 +45,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnQuotaSingleton', [
-    'CnBaseSingletonFactory', 'CnQuotaListFactory', 'CnQuotaAddFactory', 'CnQuotaViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnQuotaListFactory, CnQuotaAddFactory, CnQuotaViewFactory, CnHttpFactory ) {
+    'CnBaseSingletonFactory', 'CnQuotaListFactory', 'CnQuotaAddFactory', 'CnQuotaViewFactory',
+    function( CnBaseSingletonFactory, CnQuotaListFactory, CnQuotaAddFactory, CnQuotaViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'quota',

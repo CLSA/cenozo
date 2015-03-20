@@ -3,7 +3,7 @@ DELIMITER //
 CREATE PROCEDURE patch_access()
   BEGIN
 
-    SELECT "Adding datetime column to access table" AS "";
+    SELECT "Adding datetime and microtime columns to access table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
@@ -14,7 +14,9 @@ CREATE PROCEDURE patch_access()
     IF @test = 0 THEN
       -- add column
       ALTER TABLE access
-      ADD COLUMN datetime DATETIME NULL COMMENT "The last time the access was used";
+      ADD COLUMN datetime DATETIME NULL COMMENT "The last time the access was used",
+      ADD COLUMN microtime DOUBLE NULL COMMENT "The last time the access was used",
+      ADD INDEX dk_datetime_microtime( datetime DESC, microtime DESC );
     END IF;
 
   END //

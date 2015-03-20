@@ -70,7 +70,7 @@ define( [], function() {
         // populate the timezone
         var thisRef = this;
         CnHttpFactory.instance( {
-          subject: 'site'
+          path: 'site'
         } ).metadata().then(
           function success( response ) {
             var total = response.data.length;

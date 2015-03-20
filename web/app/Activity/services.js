@@ -3,7 +3,7 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnCollectionAddFactory', [
+  cnCachedProviders.factory( 'CnActivityAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
@@ -11,7 +11,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnCollectionListFactory', [
+  cnCachedProviders.factory( 'CnActivityListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( params ) {
@@ -36,7 +36,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnCollectionViewFactory', [
+  cnCachedProviders.factory( 'CnActivityViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
@@ -44,21 +44,21 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnCollectionSingleton', [
-    'CnBaseSingletonFactory', 'CnCollectionListFactory', 'CnCollectionAddFactory', 'CnCollectionViewFactory',
-    function( CnBaseSingletonFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
+  cnCachedProviders.factory( 'CnActivitySingleton', [
+    'CnBaseSingletonFactory', 'CnActivityListFactory', 'CnActivityAddFactory', 'CnActivityViewFactory',
+    function( CnBaseSingletonFactory, CnActivityListFactory, CnActivityAddFactory, CnActivityViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'collection',
+          subject: 'activity',
           name: {
-            singular: 'collection',
-            plural: 'collections',
-            possessive: 'collection\'s',
-            pluralPossessive: 'collections\''
+            singular: 'activity',
+            plural: 'activitys',
+            possessive: 'activity\'s',
+            pluralPossessive: 'activitys\''
           },
-          cnAdd: CnCollectionAddFactory.instance( { subject: 'collection' } ),
-          cnList: CnCollectionListFactory.instance( { subject: 'collection' } ),
-          cnView: CnCollectionViewFactory.instance( { subject: 'collection' } )
+          cnAdd: CnActivityAddFactory.instance( { subject: 'activity' } ),
+          cnList: CnActivityListFactory.instance( { subject: 'activity' } ),
+          cnView: CnActivityViewFactory.instance( { subject: 'activity' } )
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

@@ -45,8 +45,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnLanguageSingleton', [
-    'CnBaseSingletonFactory', 'CnLanguageListFactory', 'CnLanguageAddFactory', 'CnLanguageViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnLanguageListFactory, CnLanguageAddFactory, CnLanguageViewFactory, CnHttpFactory ) {
+    'CnBaseSingletonFactory', 'CnLanguageListFactory', 'CnLanguageAddFactory', 'CnLanguageViewFactory',
+    function( CnBaseSingletonFactory, CnLanguageListFactory, CnLanguageAddFactory, CnLanguageViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'language',
