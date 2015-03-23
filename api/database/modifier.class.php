@@ -583,82 +583,96 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Changes the column name of all where statements of a given name
+   * Removes all join statements to a particular table
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $old The name of the column to change
-   * @param string $new The name to change the column to
+   * @param string $table Which table to remove all joins to
    * @access public
    */
-  public function change_where_column( $old, $new )
+  public function remove_join( $table )
+  {
+    foreach( $this->join_list as $index => $join )
+      if( array_key_exists( 'table', $join ) && $table == $join['table'] )
+        unset( $this->join_list[$index] );
+  }
+
+  /**
+   * Removes all where statements affecting a particular column
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column Which column to remove all where statements from the modifier
+   * @access public
+   */
+  public function remove_where( $column )
   {
     foreach( $this->where_list as $index => $where )
-      if( array_key_exists( 'column', $where ) && $old == $where['column'] )
-         $this->where_list[$index]['column'] = $new;
+      if( array_key_exists( 'column', $where ) && $column == $where['column'] )
+        unset( $this->where_list[$index] );
   }
 
   /**
-   * Changes the column name of all group statements of a given name
+   * Removes all group statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $old The name of the column to change
-   * @param string $new The name to change the column to
+   * @param string $column Which column to remove all where statements from the modifier
    * @access public
    */
-  public function change_group_column( $old, $new )
+  public function remove_group( $column )
   {
     foreach( $this->group_list as $index => $group )
-      if( $old == $group ) $this->group_list[$index] = $new;
+      if( $column == $group )
+        unset( $this->group_list[$index] );
   }
 
   /**
-   * Changes the column name of all having statements of a given name
+   * Removes all having statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $old The name of the column to change
-   * @param string $new The name to change the column to
+   * @param string $column Which column to remove all where statements from the modifier
    * @access public
    */
-  public function change_having_column( $old, $new )
+  public function remove_having( $column )
   {
     foreach( $this->having_list as $index => $having )
-      if( array_key_exists( 'column', $having ) && $old == $having['column'] )
-         $this->having_list[$index]['column'] = $new;
+      if( array_key_exists( 'column', $having ) && $column == $having['column'] )
+         unset( $this->having_list[$index] );
   }
 
   /**
-   * Changes the column name of all order statements of a given name
+   * Removes all order statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $old The name of the column to change
-   * @param string $new The name to change the column to
+   * @param string $column Which column to remove all where statements from the modifier
    * @access public
    */
-  public function change_order_column( $old, $new )
+  public function remove_order( $column )
   {
-    $keys = array_keys( $this->order_list );
-    foreach( $keys as $index => $key ) if( $old == $key ) $keys[$index] = $new;
-    $this->order_list = array_combine( $keys, array_values( $this->order_list ) );
+    if( array_key_exists( $column, $this->order_list ) )
+      unset( $this->order_list[$column] );
   }
 
   /**
    * Returns the modifier as an SQL statement (same as calling each individual get_*() method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $appending Whether this modifier is being appended to an existing where clause
+   * @param boolean $count Whether the modifier is to be used for a single-value COUNT query
    * @return string
    * @access public
    */
-  public function get_sql( $appending = false )
+  public function get_sql( $count = false )
   {
-    return sprintf(
-      '%s %s %s %s %s %s',
-      $appending ? '' : $this->get_join(),
-      $this->get_where( $appending ),
-      $this->get_group(),
-      $this->get_having(),
-      $this->get_order(),
-      is_null( $this->limit ) ? '' : sprintf( 'LIMIT %d OFFSET %d', $this->limit, $this->offset ) );
+    $sql = $this->get_join();
+    if( $where = $this->get_where() ) $sql .= sprintf( ' WHERE %s', $where );
+    if( !$count )
+    {
+      if( $group = $this->get_group() ) $sql .= sprintf( ' GROUP BY %s', $group );
+      if( $having = $this->get_having() ) $sql .= sprintf( ' HAVING %s', $having );
+      if( $order = $this->get_order() ) $sql .= sprintf( ' ORDER BY %s', $order );
+      if( !is_null( $this->limit ) )
+        $sql .= sprintf( ' LIMIT %d OFFSET %d', $this->limit, $this->offset );
+    }
+
+    return $sql;
   }
 
   /**
@@ -706,12 +720,16 @@ class modifier extends \cenozo\base_object
     {
       foreach( $join['columns'] as $column )
       {
-        $sql .= sprintf( '%s%s.%s AS %s__%s',
+        $column_name = is_array( $column )
+                     ? key( $column )
+                     : sprintf( '%s.%s', $join['table'], $column );
+        $column_as = is_array( $column )
+                   ? current( $column )
+                   : sprintf( '%s__%s', $join['table'], $column );
+        $sql .= sprintf( '%s%s AS %s',
                          $first ? '' : ', ',
-                         $join['table'],
-                         $column,
-                         $join['table'],
-                         $column );
+                         $column_name,
+                         $column_as );
         if( $first ) $first = false;
       }
     }
@@ -725,11 +743,10 @@ class modifier extends \cenozo\base_object
    * This method should only be called by a record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $appending Whether this modifier is being appended to an existing where clause
    * @return string
    * @access public
    */
-  public function get_where( $appending = false )
+  public function get_where()
   {
     $db = lib::create( 'business\session' )->get_database();
 
@@ -820,14 +837,13 @@ class modifier extends \cenozo\base_object
       }
       
       $logic_type = $where['or'] ? ' OR' : ' AND';
-      if( ( !$first_item || $appending ) &&
-          ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
+      if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
       $sql .= ' '.$statement;
       $first_item = false;
       $last_open_bracket = '(' == $statement;
     }
 
-    return ( $appending || 0 == strlen( $sql ) ? '' : 'WHERE ' ).$sql;
+    return $sql;
   }
   
   /**
@@ -845,8 +861,8 @@ class modifier extends \cenozo\base_object
     $first = true;
     foreach( $this->group_list as $column )
     {
-      $sql .= sprintf( '%s %s',
-                       $first ? 'GROUP BY' : ',',
+      $sql .= sprintf( '%s%s',
+                       $first ? '' : ', ',
                        $column );
       $first = false;
     }
@@ -860,11 +876,10 @@ class modifier extends \cenozo\base_object
    * This method should only be called by a record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $appending Whether this modifier is being appended to an existing having clause
    * @return string
    * @access public
    */
-  public function get_having( $appending = false )
+  public function get_having()
   {
     $db = lib::create( 'business\session' )->get_database();
 
@@ -955,14 +970,13 @@ class modifier extends \cenozo\base_object
       }
       
       $logic_type = $having['or'] ? ' OR' : ' AND';
-      if( ( !$first_item || $appending ) &&
-          ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
+      if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
       $sql .= ' '.$statement;
       $first_item = false;
       $last_open_bracket = '(' == $statement;
     }
 
-    return ( $appending || 0 == strlen( $sql ) ? '' : 'HAVING ' ).$sql;
+    return $sql;
   }
   
   /**
@@ -980,8 +994,8 @@ class modifier extends \cenozo\base_object
     $first = true;
     foreach( $this->order_list as $column => $value )
     {
-      $sql .= sprintf( '%s %s %s',
-                       $first ? 'ORDER BY' : ',',
+      $sql .= sprintf( '%s%s %s',
+                       $first ? '' : ', ',
                        $column,
                        $value ? 'DESC' : '' );
       $first = false;
@@ -1019,7 +1033,10 @@ class modifier extends \cenozo\base_object
    *       table:   <table>
    *       onleft:  <column>
    *       onright: <column>
-   *       columns: [ <optional list of columns to select> ]
+   *       columns: [ (note that the table name will be preappended to the column names)
+             <column1>,
+             <column2>,
+             { <column3>: <column-as-string> }
    *     }
    *   ],
    *   having|where:
@@ -1085,7 +1102,13 @@ class modifier extends \cenozo\base_object
                 array_key_exists( 'onright', $join ) )
             {
               if( !array_key_exists( 'type', $join ) ) $join->type = 'cross';
-              if( !array_key_exists( 'columns', $join ) ) $join->columns = NULL;
+              if( array_key_exists( 'columns', $join ) )
+              { // convert objects to associative arrays
+                foreach( $join->columns as $index => $column )
+                  if( is_object( $column ) )
+                    $join->columns[$index] = (array) $column;
+              }
+              else $join->columns = array();
               $modifier->join( $join->table, $join->onleft, $join->onright, $join->type, $join->columns );
             }
             else

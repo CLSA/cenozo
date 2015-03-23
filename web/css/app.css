@@ -101,3 +101,11 @@ snap-content {
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
 }
+
+.loader {
+  padding: 3em;
+  height: 16px;
+  background-image: url( ../img/loading.gif );
+  background-repeat: no-repeat;
+  background-position: center center;
+}

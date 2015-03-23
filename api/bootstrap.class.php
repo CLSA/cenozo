@@ -115,11 +115,11 @@ final class bootstrap
     {
       if( 'TEMP' == $key )
       { // create the temp directory if it doesn't already exist
-        if( !is_dir( $path ) ) mkdir( $path );
+        if( !is_dir( $path ) ) mkdir( $path, 0755, true );
       }
       else if( false !== strpos( $path, $this->settings['path']['TEMP'] ) )
       { // create paths which are in the temp directory
-        if( !is_dir( $path ) ) mkdir( $path );
+        if( !is_dir( $path ) ) mkdir( $path, 0755, true );
       }
       else if( 'COOKIE' != $key &&
                'TEMPLATE_CACHE' != $key &&

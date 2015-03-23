@@ -34,6 +34,7 @@ cenozo.factory( 'CnBaseListFactory', [
       this.data = {};
       this.cache = [];
       this.cnPagination = CnPaginationFactory.instance();
+      this.loading = false;
 
       var thisRef = this;
       cnCopyParams( this, params );
@@ -111,14 +112,17 @@ cenozo.factory( 'CnBaseListFactory', [
         var joinList = [];
         var whereList = [];
         for( var key in this.columnList ) {
-          if( 0 <= key.indexOf( '__' ) ) {
+          if( this.columnList[key].join ) {
             var lastJoin = null;
             var parentTable = this.subject;
-            var keyParts = key.split( '__' );
+            var keyParts = this.columnList[key].column.split( '.' );
             for( var k = 0; k < keyParts.length; k++ ) {
               if( k == keyParts.length - 1 ) {
                 // add this column to the last join
-                var column = keyParts[k];
+                var column = {};
+                var columnName = keyParts[k-1] + '.' + keyParts[k];
+                var columnAs = key;
+                column[columnName] = columnAs;
                 if( undefined === lastJoin.columns ) lastJoin.columns = [];
                 lastJoin.columns.push( column );
               } else { // part of table list
@@ -132,7 +136,6 @@ cenozo.factory( 'CnBaseListFactory', [
                   if( joinList[j].table == table &&
                       joinList[j].onleft == onleft &&
                       joinList[j].onright == onright ) {
-                    // simply add the column
                     join = joinList[j];
                     break;
                   }
@@ -154,8 +157,12 @@ cenozo.factory( 'CnBaseListFactory', [
             var test = this.columnList[key].restrict.test;
             var value = this.columnList[key].restrict.value;
             if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
+            var keyParts = this.columnList[key].column.split( '.' );
+            var column = this.columnList[key].column;
+            var len = keyParts.length;
+            if( 2 < len ) column = keyParts[len-2] + '.' + keyParts[len-1];
             whereList.push( { 
-              column: key.replace( '__', '.' ),
+              column: column,
               operator: test,
               value: value
             } );
@@ -166,12 +173,16 @@ cenozo.factory( 'CnBaseListFactory', [
 
         // set up the offset and sorting
         if( null !== this.order ) {
+          // add the table prefix to the column if there isn't already a prefix
+          var column = this.order.column;
+          if( 0 > this.order.column.indexOf( '.' ) ) column = this.subject + '.' + column;
           data.modifier.order = {};
-          data.modifier.order[this.order.column] = this.order.reverse;
+          data.modifier.order[column] = this.order.reverse;
         }
 
         data.modifier = JSON.stringify( data.modifier );
 
+        this.loading = true;
         var thisRef = this;
         return CnHttpFactory.instance( {
           path: this.subject,
@@ -179,13 +190,16 @@ cenozo.factory( 'CnBaseListFactory', [
         } ).query().then( function success( response ) {
           // change datetimes to Date object
           response.data.results.forEach( function( element, index, array ) {
-            if( undefined !== array[index].datetime && null !== array[index].datetime )
-              array[index].datetime = cnDatetimeToObject( array[index].datetime );
+            for( var key in array[index] )
+              if( 0 <= key.indexOf( 'date' ) && null !== array[index][key] )
+                array[index][key] = cnDatetimeToObject( array[index][key] );
           } );
 
           if( replace ) thisRef.cache = [];
           thisRef.cache = thisRef.cache.concat( response.data.results );
           thisRef.total = response.data.total;
+        } ).finally( function done() {
+          thisRef.loading = false;
         } );
       },
 

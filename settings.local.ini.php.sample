@@ -22,9 +22,6 @@ $settings['url']['CENOZO'] = sprintf( 'http%s://%s/url/to/cenozo',
                                           'on' == $_SERVER["HTTPS"] ? 's' : '',
                                           $_SERVER["HTTP_HOST"] );
 
-// the location of libraries
-$settings['path']['ADODB'] = '/path/to/adodb';
-
 // database settings (username and password are set in the application's settings)
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';

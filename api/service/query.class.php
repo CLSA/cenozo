@@ -37,7 +37,32 @@ class query extends service
   {
     parent::prepare();
 
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     $this->modifier = lib::create( 'database\modifier' );
+
+    // restrict some roles when subject is related to a site
+    $index = count( $this->collection_name_list ) -1;
+    if( 0 <= $index )
+    {
+      $subject = $this->collection_name_list[$index];
+      $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
+      $session = lib::create( 'business\session' );
+
+      if( !$session->get_role()->all_sites )
+      {
+        $db_site = $session->get_site();
+        if( 'site' == $subject )
+        {
+          $this->modifier->where( 'id', '=', $db_site->id );
+        }
+        else
+        {
+          if( $record_class_name::column_exists( 'site_id' ) )
+            $this->modifier->where( 'site_id', '=', $db_site->id );
+        }
+      }
+    }
 
     $mod_string = $this->get_argument( 'modifier', NULL );
     if( !is_null( $mod_string ) )
@@ -53,7 +78,7 @@ class query extends service
       }
     }
 
-    $this->modifier->limit( 100 ); // define maximum response size, should probably be a paramter
+    $this->modifier->limit( $setting_manager->get_setting( 'db', 'query_limit' ) );
   }
 
   /**
@@ -63,8 +88,6 @@ class query extends service
   {
     parent::execute();
 
-    $session = lib::create( 'business\session' );
-
     // get the list of the LAST collection
     $index = count( $this->collection_name_list ) -1;
     if( 0 <= $index )
@@ -72,21 +95,6 @@ class query extends service
       $subject = $this->collection_name_list[$index];
       $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
       $parent_record = end( $this->record_list );
-
-      // restrict some roles when subject is related to a site
-      if( !$session->get_role()->all_sites )
-      {
-        $db_site = $session->get_site();
-        if( 'site' == $subject )
-        {
-          $this->modifier->where( 'id', '=', $db_site->id );
-        }
-        else
-        {
-          if( $record_class_name::column_exists( 'site_id' ) )
-            $this->modifier->where( 'site_id', '=', $db_site->id );
-        }
-      }
 
       $count_modifier = clone $this->modifier;
       $count_modifier->limit( NULL );

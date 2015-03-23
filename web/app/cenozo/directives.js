@@ -526,6 +526,10 @@ cenozo.directive( 'cnRecordList', function() {
           scope.columnList.push( column );
         }
       }
+
+      // get the total number of columns in the table
+      scope.numColumns = scope.columnList.length;
+      if( scope.cbAdd ) scope.numColumns++;
     }
   };
 } );

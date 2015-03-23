@@ -26,23 +26,14 @@ class setting_manager extends \cenozo\singleton
     $static_settings = $arguments[0];
 
     // copy the setting one category at a time, ignore any unknown categories
-    $categories = array( 'db',
-                         'general',
-                         'interface',
-                         'ldap',
-                         'opal',
-                         'path',
-                         'url',
-                         'version' );
-
+    $categories = array( 'db', 'general', 'ldap', 'opal', 'path', 'url' );
     foreach( $categories as $category )
     {
       // make sure the category exists
       if( !array_key_exists( $category, $static_settings ) )
-      {
         throw lib::create( 'exception\argument',
           'static_settings['.$category.']', NULL, __METHOD__ );
-      }
+
       $this->static_settings[$category] = $static_settings[$category];
     }
   }

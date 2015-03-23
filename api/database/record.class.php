@@ -779,7 +779,7 @@ abstract class record extends \cenozo\base_object
                         !$count && static::ARRAY_FORMAT == $format ?
                           $record_type.'.*' : $foreign_key_name,
                         $record_type,
-                        $modifier->get_sql() );
+                        $modifier->get_sql( $count ) );
       }
       else
       { // no inversion, just select the records from the joining table
@@ -793,7 +793,7 @@ abstract class record extends \cenozo\base_object
                         !$count && static::ARRAY_FORMAT == $format ?
                           $record_type.'.*' : $joining_foreign_key_name,
                         $table_name,
-                        $modifier->get_sql() );
+                        $modifier->get_sql( $count ) );
       }
       
       if( $count )
@@ -1162,7 +1162,7 @@ abstract class record extends \cenozo\base_object
                     !$count && static::ARRAY_FORMAT == $format ? '*' : static::get_primary_key_name(),
                     $count ? ') ' : '',
                     $this_table,
-                    is_null( $modifier ) ? '' : $modifier->get_sql() );
+                    is_null( $modifier ) ? '' : $modifier->get_sql( $count ) );
 
     if( $count )
     {

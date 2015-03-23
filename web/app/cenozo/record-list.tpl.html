@@ -30,12 +30,18 @@
     </tr>
   </thead>
   <tbody>
-    <tr ng-show="0 == local.cache.length">
-      <td colspan="{{ columnList.length + 1 }}">
+    <tr ng-if="local.loading">
+      <td colspan="{{ numColumns }}" style="background-color: #FFF">
+        <div class="loader" tooltip="Loading..."></div>
+      </td>
+    </tr>
+    <tr ng-if="!local.loading && 0 == local.cache.length">
+      <td colspan="{{ numColumns }}">
         There are no {{ name.plural }} found.
       </td>
     </tr>
-    <tr ng-repeat="record in local.cache
+    <tr ng-if="!local.loading"
+        ng-repeat="record in local.cache
                    | orderBy: local.order.column:local.order.reverse
                    | limitTo: ( local.cnPagination.currentPage - 1 ) * local.cnPagination.itemsPerPage -
                               local.cache.length
@@ -58,7 +64,7 @@
   </tbody>
   <tfoot ng-if="0 < local.cache.length || cbAdd">
     <tr class="info">
-      <td colspan="{{ columnList.length + 1 }}" class="rounded-bottom">
+      <td colspan="{{ numColumns }}" class="rounded-bottom">
         <pagination class="pagination left"
                     ng-model="local.cnPagination.currentPage"
                     ng-show="local.cache.length > local.cnPagination.itemsPerPage"

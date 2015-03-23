@@ -73,6 +73,7 @@ abstract class service extends \cenozo\base_object
       $this->db_activity->site_id = $session->get_site()->id;
       $this->db_activity->role_id = $session->get_role()->id;
       $this->db_activity->service_id = $this->service_record->id;
+      $this->db_activity->path = $path;
       $this->db_activity->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
       $this->db_activity->save();
     }
