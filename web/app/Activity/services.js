@@ -13,14 +13,40 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          user__name: { title: 'User' },
-          site__name: { title: 'Site' },
-          role__name: { title: 'Role' },
-          service__method: { title: 'Method' },
-          path: { title: 'Path' },
-          elapsed: { title: 'Elapsed' },
-          status: { title: 'Status' },
-          datetime: { title: 'Date & Time', filter: 'date:"MMM d, y HH:mm"' }
+          user: {
+            column: 'user.name',
+            join: true,
+            title: 'User'
+          },
+          site: {
+            column: 'site.name',
+            join: true,
+            title: 'Site'
+          },
+          role: {
+            column: 'role.name',
+            join: true,
+            title: 'Role'
+          },
+          method: {
+            column: 'service.method',
+            join: true,
+            title: 'Method'
+          },
+          path: {
+            title: 'Path'
+          },
+          elapsed: {
+            title: 'Elapsed'
+          },
+          status: {
+            title: 'Status'
+          },
+          datetime: {
+            title: 'Date & Time',
+            filter: 'date:"MMM d,
+            y HH:mm"'
+          }
         };
         this.order = { column: 'datetime', reverse: true };
         // factory customizations end here

@@ -71,12 +71,14 @@ class setting_manager extends \cenozo\singleton
       $db_setting = $setting_class_name::get_setting( $category, $name );
       if( !is_null( $db_setting ) )
       {
+        $select = lib::create( 'database\select' );
+        $select->add_column( 'value' );
         $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'setting_value.site_id', '=', $db_site->id );
-        $setting_value_list = $db_setting->get_setting_value_list( $modifier );
+        $setting_value_list = $db_setting->get_setting_value_list( $select, $modifier );
         
         $string_value = count( $setting_value_list )
-                      ? $setting_value_list[0]->value
+                      ? $setting_value_list[0]['value']
                       : $db_setting->value;
         if( 'boolean' == $db_setting->type ) $value = "true" == $string_value;
         else if( 'integer' == $db_setting->type ) $value = intval( $string_value );

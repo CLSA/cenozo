@@ -38,16 +38,8 @@ class participant extends person
 
   /**
    * Extend parent method by restricting selection to records belonging to this application only
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param enum $format Whether to return an object, column data or only the record id
-   * @access public
-   * @static
    */
-  public static function select(
-    $modifier = NULL, $count = false, $distinct = true, $format = 0 )
+  public static function select( $select = NULL, $modifier = NULL, $return_alternate = '' )
   {
     $db_application = lib::create( 'business\session' )->get_application();
     if( $db_application->release_based )
@@ -58,7 +50,7 @@ class participant extends person
       $modifier->where( 'application_has_participant.datetime', '!=', NULL );
     }
 
-    return parent::select( $modifier, $count, $distinct, $format );
+    return parent::select( $select, $modifier, $return_alternate );
   }
 
   /**
@@ -92,23 +84,8 @@ class participant extends person
 
   /**
    * Make sure to only include participants which this application has access to.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the list or count.
-   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
-   * @param boolean $count If true then this method returns the count instead of list of records.
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param enum $format Whether to return an object, column data or only the record id
-   * @return array( record ) | array( int ) | int
-   * @access protected
    */
-  public function get_record_list(
-    $record_type,
-    $modifier = NULL,
-    $inverted = false,
-    $count = false,
-    $distinct = true,
-    $format = 0 )
+  public function get_record_list( $record_type, $select = NULL, $modifier = NULL, $return_alternate = '' )
   {
     if( 'application' == $record_type )
     {
@@ -117,8 +94,7 @@ class participant extends person
                         lib::create( 'business\session' )->get_application()->id );
       $modifier->where( 'application_has_participant.datetime', '!=', NULL );
     }
-    return parent::get_record_list(
-      $record_type, $modifier, $inverted, $count, $distinct, $format );
+    return parent::get_record_list( $record_type, $select, $modifier, $return_alternate );
   }
 
   /**
@@ -129,7 +105,7 @@ class participant extends person
    */
   public function get_hin()
   {
-    $hin_list = $this->get_hin_list();
+    $hin_list = $this->get_hin_object_list();
     return count( $hin_list ) ? current( $hin_list ) : NULL;
   }
 
@@ -470,30 +446,6 @@ class participant extends person
     }
 
     return $quota_id ? lib::create( 'database\quota', $quota_id ) : NULL;
-  }
-
-  /**
-   * Returns an array of all dates for this participant where a particular event type occurred
-   * (in ascending order).
-   * If the event type has never occurred then an empty array is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\event_type $db_event_type
-   * @return array
-   * @access public
-   */
-  public function get_event_datetime_list( $db_event_type )
-  {
-    // no primary key means no event datetimes
-    if( is_null( $this->id ) ) return array();
-
-    return static::db()->get_col( sprintf(
-      'SELECT datetime '.
-      'FROM event '.
-      'WHERE participant_id = %s '.
-      'AND event_type_id = %s '.
-      'ORDER BY datetime',
-      static::db()->format_string( $this->id ),
-      static::db()->format_string( $db_event_type->id ) ) );
   }
 
   /**

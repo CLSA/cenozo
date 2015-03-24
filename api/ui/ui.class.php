@@ -61,21 +61,29 @@ class ui extends \cenozo\base_object
       $site_name = $session->get_site()->name;
       $role_name = $session->get_role()->name;
 
-      $site_list = array();
+      $site_select = lib::create( 'database\select' );
+      $site_select->from( 'site' );
+      $site_select->add_column( 'id' );
+      $site_select->add_column( 'name' );
       $site_mod = lib::create( 'database\modifier' );
       $site_mod->join( 'access', 'site.id', 'access.site_id' );
       $site_mod->where( 'access.user_id', '=', $db_user->id );
       $site_mod->order( 'site.name' );
       $sites = array();
-      foreach( $site_class_name::arrayselect( $site_mod ) as $site )
+      $site_list = array();
+      foreach( $site_class_name::select( $site_select, $site_mod ) as $site )
         $site_list[ $site['id'] ] = $site['name'];
   
+      $role_select = lib::create( 'database\select' );
+      $role_select->from( 'role' );
+      $role_select->add_column( 'id' );
+      $role_select->add_column( 'name' );
       $role_mod = lib::create( 'database\modifier' );
       $role_mod->join( 'access', 'role.id', 'access.role_id' );
       $role_mod->where( 'access.user_id', '=', $db_user->id );
       $role_mod->order( 'role.name' );
       $role_list = array();
-      foreach( $role_class_name::arrayselect( $role_mod ) as $role )
+      foreach( $role_class_name::select( $role_select, $role_mod ) as $role )
         $role_list[ $role['id'] ] = $role['name'];
 
       ob_start();

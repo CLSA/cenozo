@@ -167,7 +167,7 @@ class session extends \cenozo\singleton
         $access_mod->limit( 1 );
         if( !is_null( $db_site ) ) $access_mod->where( 'site_id', '=', $db_site->id );
         if( !is_null( $db_role ) ) $access_mod->where( 'role_id', '=', $db_role->id );
-        $db_access = current( $this->db_user->get_access_list( $access_mod ) );
+        $db_access = current( $this->db_user->get_access_object_list( $access_mod ) );
         if( !is_null( $db_access ) )
         {
           $db_site = $db_access->get_site();

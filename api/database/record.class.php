@@ -17,10 +17,6 @@ use cenozo\lib, cenozo\log;
  */
 abstract class record extends \cenozo\base_object
 {
-  const OBJECT_FORMAT = 0;
-  const ARRAY_FORMAT = 1;
-  const ID_FORMAT = 2;
-
   /**
    * Constructor
    * 
@@ -225,7 +221,7 @@ abstract class record extends \cenozo\base_object
       $sets = '';
       $first = true;
       
-      if( $this->include_timestamps && static::get_table_name() == $table['name'] )
+      if( $this->write_timestamps && static::get_table_name() == $table['name'] )
       {
         // add the create_timestamp column if this is a new record
         if( is_null( $table['columns'][$table['key']] ) )
@@ -394,7 +390,11 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns all column values in the record as an associative array
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
    */
   public function get_column_values()
   {
@@ -418,21 +418,12 @@ abstract class record extends \cenozo\base_object
    * @method array get_<record>() Returns the record with foreign keys referencing the <record>
    *               table.  For instance, if a record has a foreign key "other_id", then
    *               get_other() will return the "other" record with the id equal to other_id.
-   * @method array get_record_list() Returns an array of records from the joining <record> table
-   *               given the provided modifier.  If a record has a joining "has" table then
-   *               calling get_other_list() will return an array of "other" records which are
-   *               linked in the joining table, and get_other_count() will return the number of
-   *               "other" recrods found in the joining table.
-   * @method array get_<record>_list_inverted() This is the same as the non-inverted method but it
-   *               returns all items which are NOT linked to the joining table.
-   * @method array get_<record>_id_list() Returns an array of primary ids from the joining <record>
-                   table.
-   * @method array get_<record>_id_list_inverted() This is the same as the non-inverted method but
-   *               returns all ids which are NOT linked to the joining table.
+   * @method array get_<record>_list() Returns an array of records (as associative arrays) from the
+   *               joining <record> table given the provided modifier.
+   * @method array get_<record>_object_list() Returns an array of records (as objects) from the
+   *               joining <record> table given the provided modifier.
    * @method int get_<record>_count() Returns the number of records in the joining <record> table
    *             given the provided modifier.
-   * @method int get_<record>_count_inverted() This is the same as the non-inverted method but it
-   *             returns the number of records NOT in the joining table.
    * @method null add_<record>() Given an array of ids, this method adds associations between the
    *              current and foreign <record> by adding rows into the joining "has" table.
    * @method null remove_<record>() Given an id, this method removes the association between the
@@ -441,27 +432,30 @@ abstract class record extends \cenozo\base_object
    */
   public function __call( $name, $args )
   {
-    // create an exception which will be thrown if anything bad happens
-    $exception = lib::create( 'exception\runtime',
-      sprintf( 'Call to undefined function: %s::%s().',
-               get_called_class(),
-               $name ), __METHOD__ );
-
     $return_value = NULL;
     
     // set up regular expressions
     $start = '/^add_|remove_|get_/';
-    $end = '/(_list|_arraylist|_idlist|_count)(_inverted)?$/';
+    $end = '/(_list|_object_list|_count)$/';
     
     // see if the start of the function name is a match
-    if( !preg_match( $start, $name, $match ) ) throw $exception;
+    if( !preg_match( $start, $name, $match ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Call to undefined function: %s::%s()',
+                 get_called_class(),
+                 $name ), __METHOD__ );
+
     $action = substr( $match[0], 0, -1 ); // remove underscore
 
     // now get the subject by removing the start and end of the function name
     $subject = preg_replace( array( $start, $end ), '', $name );
     
     // make sure the foreign table exists
-    if( !static::db()->table_exists( $subject ) ) throw $exception;
+    if( !static::db()->table_exists( $subject ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Call to undefined function: %s::%s() (foreign table does not exist)',
+                 get_called_class(),
+                 $name ), __METHOD__ );
     
     if( 'add' == $action )
     { // calling: add_<record>( $ids )
@@ -492,87 +486,69 @@ abstract class record extends \cenozo\base_object
       {
         // calling: get_<record>()
         // make sure this table has the correct foreign key
-        if( !static::column_exists( $subject.'_id' ) ) throw $exception;
+        if( !static::column_exists( $subject.'_id' ) )
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Call to undefined function: %s::%s() (foreign key not found)',
+                     get_called_class(),
+                     $name ), __METHOD__ );
         return $this->get_record( $subject );
       }
       else
-      { // calling one of: get_<record>_list( $modifier = NULL )
-        //                 get_<record>_list_inverted( $modifier = NULL )
-        //                 get_<record>_arraylist( $modifier = NULL )
-        //                 get_<record>_arraylist_inverted( $modifier = NULL )
-        //                 get_<record>_idlist( $modifier = NULL )
-        //                 get_<record>_idlist_inverted( $modifier = NULL )
-        //                 get_<record>_count( $modifier = NULL )
-        //                 get_<record>_count_inverted( $modifier = NULL )
-  
-        // if there is an argument, make sure it is a modifier
-        if( 0 < count( $args ) &&
-            !is_null( $args[0] ) &&
-            is_object( $args[0] ) &&
-            'cenozo\database\modifier' != get_class( $args[0] ) )
-          throw lib::create( 'exception\argument', 'args', $args, __METHOD );
-        
-        // determine the sub action and whether to invert the result
-        $inverted = false;
-        if( 'list' == $sub_action ||
-            'arraylist' == $sub_action ||
-            'idlist' == $sub_action ||
-            'count' == $sub_action ) {}
-        else if( 'arraylist_inverted' == $sub_action )
-        {
-          $sub_action = 'arraylist';
-          $inverted = true;
-        }
-        else if( 'idlist_inverted' == $sub_action )
-        {
-          $sub_action = 'idlist';
-          $inverted = true;
-        }
-        else if( 'list_inverted' == $sub_action )
-        {
-          $sub_action = 'list';
-          $inverted = true;
-        }
-        else if( 'count_inverted' == $sub_action )
-        {
-          $sub_action = 'count';
-          $inverted = true;
-        }
-        else throw $exception;
-        
-        // execute the function
-        $modifier = 0 == count( $args ) ? NULL : $args[0];
-        $distinct = 1 >= count( $args ) ? NULL : $args[1];
-
+      {
         if( 'list' == $sub_action )
-        {
-          return is_null( $distinct )
-            ? $this->get_record_list( $subject, $modifier, $inverted )
-            : $this->get_record_list( $subject, $modifier, $inverted, false, $distinct );
+        { // calling: get_<record>_list( $select = NULL, $modifier = NULL )
+          if( 0 < count( $args ) && !is_null( $args[0] ) )
+          {
+            if( !is_a( $args[0], lib::get_class_name( 'database\select' ) ) )
+              throw lib::create( 'exception\argument', 'args[0]', $args[0], __METHOD__ );
+            $select = $args[0];
+          }
+          if( 1 < count( $args ) && !is_null( $args[1] ) )
+          {
+            if( !is_a( $args[1], lib::get_class_name( 'database\modifier' ) ) )
+              throw lib::create( 'exception\argument', 'args[1]', $args[1], __METHOD__ );
+            $modifier = $args[1];
+          }
+
+          return $this->get_record_list( $subject, $select, $modifier );
         }
-        else if( 'arraylist' == $sub_action )
-        {
-          return is_null( $distinct )
-            ? $this->get_record_arraylist( $subject, $modifier, $inverted )
-            : $this->get_record_arraylist( $subject, $modifier, $inverted, $distinct );
-        }
-        else if( 'idlist' == $sub_action )
-        {
-          return is_null( $distinct )
-            ? $this->get_record_idlist( $subject, $modifier, $inverted )
-            : $this->get_record_idlist( $subject, $modifier, $inverted, $distinct );
+        else if( 'object_list' == $sub_action )
+        { // calling: get_<record>_object_list( $modifier = NULL )
+          if( 0 < count( $args ) && !is_null( $args[0] ) )
+          {
+            if( !is_a( $args[0], lib::get_class_name( 'database\modifier' ) ) )
+              throw lib::create( 'exception\argument', 'args[0]', $args[0], __METHOD__ );
+            $modifier = $args[0];
+          }
+
+          return $this->get_record_object_list( $subject, $modifier );
         }
         else if( 'count' == $sub_action )
+        { // calling: get_<record>_count( $modifier = NULL )
+          if( 0 < count( $args ) && !is_null( $args[0] ) )
+          {
+            if( !is_a( $args[0], lib::get_class_name( 'database\modifier' ) ) )
+              throw lib::create( 'exception\argument', 'args[0]', $args[0], __METHOD__ );
+            $modifier = $args[0];
+          }
+
+          return $this->get_record_count( $subject, $modifier );
+        }
+        else
         {
-          return is_null( $distinct )
-            ? $this->get_record_count( $subject, $modifier, $inverted )
-            : $this->get_record_count( $subject, $modifier, $inverted, $distinct );
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Call to undefined function: %s::%s() (invalid sub-action)',
+                     get_called_class(),
+                     $name ), __METHOD__ );
         }
       }
     }
 
     // if we get here then something went wrong
-    throw $exception;
+    throw lib::create( 'exception\runtime',
+      sprintf( 'Call to undefined function: %s::%s() (failed to recoginize method)',
+               get_called_class(),
+               $name ), __METHOD__ );
   }
   
   /**
@@ -604,35 +580,28 @@ abstract class record extends \cenozo\base_object
     // create the record using the foreign key
     $record = NULL;
     if( !is_null( $this->column_values[$foreign_key_name] ) )
-    {
       $record = lib::create( 'database\\'.$record_type, $this->column_values[$foreign_key_name] );
-    }
 
     return $record;
   }
 
   /**
-   * Returns an array of records (or primary keys of those records) from the joining record table.
+   * Returns an array of records (as arrays or objects) from the joining record table.
    * This method is used to select a record's child records in one-to-many or many-to-many
    * relationships.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the list or count.
-   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
-   * @param boolean $count If true then this method returns the count instead of list of records.
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param enum $format Whether to return an object, column data or only the record id
-   * @return array( record ) | array( int ) | int
+   * @param database\select $select Which columns to select
+   * @param database\modifier $modifier A modifier to apply to the list
+   * @param boolean $return_alternate One of "object" or "count" to return objects or a count total
+   * @return array( associative or array ) | int
    * @access protected
    */
-  public function get_record_list(
-    $record_type,
-    $modifier = NULL,
-    $inverted = false,
-    $count = false,
-    $distinct = true,
-    $format = 0 )
+  protected function get_record_list( $record_type, $select = NULL, $modifier = NULL, $return_alternate = '' )
   {
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+
     $table_name = static::get_table_name();
     $primary_key_name = sprintf( '%s.%s', $table_name, static::get_primary_key_name() );
     $foreign_class_name = lib::get_class_name( 'database\\'.$record_type );
@@ -642,9 +611,11 @@ abstract class record extends \cenozo\base_object
     if( is_null( $primary_key_value ) )
     { 
       log::warning( 'Tried to query record with no id.' );
-      return $count ? 0 : array();
+      return array();
     }
       
+    $return_value = 'count' == $return_alternate ? 0 : array();
+
     // this method varies depending on the relationship type
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $relationship = static::get_relationship( $record_type );
@@ -654,7 +625,6 @@ abstract class record extends \cenozo\base_object
         sprintf( 'Tried to get a %s list from a %s, but there is no relationship between the two.',
                  $record_type,
                  $table_name ) );
-      return $count ? 0 : array();
     }
     else if( $relationship_class_name::ONE_TO_ONE == $relationship )
     {
@@ -663,228 +633,75 @@ abstract class record extends \cenozo\base_object
                  'one-to-one relationship between the two.',
                  $record_type,
                  $table_name ) );
-      return $count ? 0 : array();
     }
-    else if( $relationship_class_name::ONE_TO_MANY == $relationship )
+    else if( $relationship_class_name::ONE_TO_MANY == $relationship ||
+             $relationship_class_name::MANY_TO_MANY == $relationship )
     {
-      $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-
-      if( self::ARRAY_FORMAT == $format )
+      if( $relationship_class_name::ONE_TO_MANY == $relationship )
       {
-        if( $inverted )
-        {
-          $modifier->left_join( $record_type, $column_name, $primary_key_name );
-          $modifier->having( $column_name, '=', NULL );
-          $modifier->or_having( $column_name, '!=', $primary_key_value );
-        }
-        else
-        {
-          $modifier->join( $table_name, $column_name, $primary_key_name );
-        }
+        $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
+        $modifier->join( $table_name, $column_name, $primary_key_name );
         $modifier->where( $column_name, '=', $primary_key_value );
       }
-      else
+      else // MANY_TO_MANY
       {
-        if( $inverted )
-        {
-          $modifier->where( $column_name, '=', NULL );
-          $modifier->or_where( $column_name, '!=', $primary_key_value );
-        }
-        else $modifier->where( $column_name, '=', $primary_key_value );
-      }
-
-      return $foreign_class_name::select( $modifier, $count, $distinct, $format );
-    }
-    else if( $relationship_class_name::MANY_TO_MANY == $relationship )
-    {
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $joining_table_name = static::get_joining_table_name( $record_type );
-
-      // check to see if the modifier is sorting a value in a foreign table
-      $table_list = array( $table_name, $joining_table_name, $record_type );
-      if( !is_null( $modifier ) )
-      {
-        // build an array of all foreign tables in the modifier
-        $columns = $modifier->get_where_columns();
-        $columns = array_merge( $columns, $modifier->get_order_columns() );
-        $tables = array();
-        foreach( $columns as $index => $column ) $tables[] = strstr( $column, '.', true );
-        $tables = array_unique( $tables, SORT_STRING );
-
-        foreach( $tables as $table )
-        {
-          if( $table && 0 < strlen( $table ) &&
-              // skip joins which are done below
-              !in_array( $table, $table_list ) &&
-              // check to see if the joined table has a foreign key for this table and join if it
-              // does but make sure not to do this check for N-to-N joining tables
-              false === strpos( $table, '_has_' ) &&
-              // don't add joins that already exist
-              !$modifier->has_join( $table ) )
-          {
-            $foreign_key_name = $table.'_id';
-            $table_class_name = lib::get_class_name( 'database\\'.$table );
-            if( static::db()->column_exists( $record_type, $foreign_key_name ) )
-            {
-              $modifier->cross_join(
-                $table, 
-                sprintf( '%s.%s', $record_type, $foreign_key_name ),
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
-            }
-            // check to see if the joining table has this table as a foreign key
-            else if( static::db()->column_exists( $joining_table_name, $foreign_key_name ) )
-            {
-              $modifier->where(
-                $table,
-                sprintf( '%s.%s', $joining_table_name, $foreign_key_name ),
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
-            }
-            // check to see if the origin table has this table as a foreign key
-            else if( static::column_exists( $foreign_key_name ) )
-            {
-              $modifier->where(
-                $table,
-                sprintf( '%s.%s', $table_name, $foreign_key_name ),
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
-            }
-          }
-        }
-      }
-
-      $foreign_key_name =
-        sprintf( '%s.%s', $record_type, $foreign_class_name::get_primary_key_name() );
-      $joining_primary_key_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
-      $joining_foreign_key_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
-  
-      if( $inverted )
-      { // we need to invert the list
-        // first create SQL to match all records in the joining table
-        $sub_modifier = lib::create( 'database\modifier' );
-        $sub_modifier->cross_join( $joining_table_name, $primary_key_name, $joining_primary_key_name );
-        $sub_modifier->cross_join( $record_type, $joining_foreign_key_name, $foreign_key_name );
-        $sub_modifier->where( $primary_key_name, '=', $primary_key_value );
-        $sub_select_sql =
-          sprintf( 'SELECT %s FROM %s %s',
-                   $joining_foreign_key_name,
-                   $table_name,
-                   $sub_modifier->get_sql() );
-  
-        // now create SQL that gets all primary ids that are NOT in that list
-        $modifier->where( $foreign_key_name, 'NOT IN', $sub_select_sql, false );
-        $sql = sprintf( $count
-                          ? 'SELECT COUNT( %s%s ) FROM %s %s'
-                          : 'SELECT %s%s FROM %s %s',
-                        $distinct ? 'DISTINCT ' : '',
-                        !$count && static::ARRAY_FORMAT == $format ?
-                          $record_type.'.*' : $foreign_key_name,
-                        $record_type,
-                        $modifier->get_sql( $count ) );
-      }
-      else
-      { // no inversion, just select the records from the joining table
+        $joining_table_name = static::get_joining_table_name( $record_type );
+        $foreign_key_name = sprintf( '%s.%s', $record_type, $foreign_class_name::get_primary_key_name() );
+        $joining_primary_key_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
+        $joining_foreign_key_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
+    
         $modifier->cross_join( $joining_table_name, $primary_key_name, $joining_primary_key_name );
         $modifier->cross_join( $record_type, $joining_foreign_key_name, $foreign_key_name );
         $modifier->where( $primary_key_name, '=', $primary_key_value );
-        $sql = sprintf( $count
-                          ? 'SELECT COUNT( %s%s ) FROM %s %s'
-                          : 'SELECT %s%s FROM %s %s',
-                        $distinct ? 'DISTINCT ' : '',
-                        !$count && static::ARRAY_FORMAT == $format ?
-                          $record_type.'.*' : $joining_foreign_key_name,
-                        $table_name,
-                        $modifier->get_sql( $count ) );
       }
-      
-      if( $count )
+
+      if( 'count' == $return_alternate )
       {
-        return intval( static::db()->get_one( $sql ) );
-      }
-      else if( static::ARRAY_FORMAT == $format )
-      {
-        $rows = static::db()->get_all( $sql );
-        foreach( $rows as $index => $row )
-        {
-          if( array_key_exists( 'update_timestamp', $row ) ) unset( $rows[$index]['update_timestamp'] );
-          if( array_key_exists( 'create_timestamp', $row ) ) unset( $rows[$index]['create_timestamp'] );
-        }
-        return $rows;
+        $return_value = $foreign_class_name::count( $modifier );
       }
       else
       {
-        $ids = static::db()->get_col( $sql );
-        
-        if( static::ID_FORMAT == $format )
-        {
-          return $ids; // requested to return a list of ids only
-        }
-        else
-        {
-          // create records from the ids
-          $records = array();
-          foreach( $ids as $id ) $records[] = lib::create( 'database\\'.$record_type, $id );
-          return $records;
-        }
+        $return_value = 'object' == $return_alternate
+                      ? $foreign_class_name::select_objects( $modifier )
+                      : $foreign_class_name::select( $select, $modifier );
       }
+
     }
-    
-    // if we get here then the relationship type is unknown
-    log::crit(
-      sprintf( 'Record %s has an unknown relationship to %s.',
-               $table_name,
-               $record_type ) );
-    return $count ? 0 : array();
+    else
+    {
+      // if we get here then the relationship type is unknown
+      log::crit( sprintf( 'Record %s has an unknown relationship to %s.', $table_name, $record_type ) );
+    }
+
+    return $return_value;
   }
 
   /**
-   * Returns an array of column values from the joining record table.
-   * This method is used to select a record's child records in one-to-many or many-to-many
-   * relationships.
+   * 
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the count.
-   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
-   * @return int
+   * @param database\modifier $modifier A modifier to apply to the list
+   * @return array( record )
    * @access protected
    */
-  protected function get_record_arraylist(
-    $record_type, $modifier = NULL, $inverted = false, $distinct = true )
+  public function get_record_object_list( $record_type, $modifier = NULL )
   {
-    return $this->get_record_list( $record_type, $modifier, $inverted, false, $distinct, static::ARRAY_FORMAT );
+    return $this->get_record_list( $record_type, NULL, $modifier, 'object' );
   }
 
   /**
-   * Returns an array of primary keys from the joining record table.
-   * This method is used to select a record's child records in one-to-many or many-to-many
-   * relationships.
+   * 
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the count.
-   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
-   * @return int
+   * @param database\modifier $modifier A modifier to apply to the list or count.
+   * @return associative array
    * @access protected
    */
-  protected function get_record_idlist(
-    $record_type, $modifier = NULL, $inverted = false, $distinct = true )
+  public function get_record_count( $record_type, $modifier = NULL )
   {
-    return $this->get_record_list( $record_type, $modifier, $inverted, false, $distinct, static::ID_FORMAT );
-  }
-
-  /**
-   * Returns the number of records in the joining record table.
-   * This method is used to count a record's child records in one-to-many or many-to-many
-   * relationships.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the count.
-   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
-   * @return int
-   * @access protected
-   */
-  protected function get_record_count(
-    $record_type, $modifier = NULL, $inverted = false, $distinct = true )
-  {
-    return $this->get_record_list( $record_type, $modifier, $inverted, true, $distinct );
+    return $this->get_record_list( $record_type, NULL, $modifier, 'count' );
   }
 
   /**
@@ -940,7 +757,7 @@ abstract class record extends \cenozo\base_object
     foreach( $ids as $foreign_key_value )
     {
       if( !$first ) $values .= ', ';
-      $values .= sprintf( $this->include_timestamps
+      $values .= sprintf( $this->write_timestamps
                           ? '(NULL, %s, %s)'
                           : '(%s, %s)',
                           static::db()->format_string( $primary_key_value ),
@@ -949,7 +766,7 @@ abstract class record extends \cenozo\base_object
     }
     
     static::db()->execute(
-      sprintf( $this->include_timestamps
+      sprintf( $this->write_timestamps
                ? 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
                : 'INSERT INTO %s (%s_id, %s_id) VALUES %s',
                $joining_table_name,
@@ -1090,162 +907,88 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * Select a number of records.
+   * Selects a number of records as array data
    * 
-   * This method returns an array of records.
-   * The modifier may include any columns from tables which this record has a foreign key
-   * relationship with.  To sort by such columns make sure to include the table name along with
-   * the column name (for instance 'table.column') as the sort column value.
-   * Be careful when calling this method.  Based on the modifier object a record is created for
-   * every row being selected, so selecting a very large number of rows (100+) isn't a good idea.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param enum $format Whether to return an object, column data or only the record id
-   * @return array( record ) | int
+   * @param database\select $select Defines which columns to select
+   * @param database\modifier $modifier Modifications to the selection
+   * @return associative array
    * @static
    * @access public
    */
-  public static function select(
-    $modifier = NULL, $count = false, $distinct = true, $format = 0 )
+  public static function select( $select = NULL, $modifier = NULL, $return_alternate = '' )
   {
-    $class_index = lib::get_class_name( get_called_class(), true );
-    $this_table = static::get_table_name();
-    
-    // check to see if the modifier is sorting a value in a foreign table
-    if( !is_null( $modifier ) )
-    {
-      // build an array of all foreign tables in the modifier
-      $columns = $modifier->get_where_columns();
-      $columns = array_merge( $columns, $modifier->get_order_columns() );
-      $tables = array();
-      foreach( $columns as $index => $column ) $tables[] = strstr( $column, '.', true );
-      $tables = array_unique( $tables, SORT_STRING );
+    if( !is_null( $select ) && !is_a( $select, lib::get_class_name( 'database\select' ) ) )
+      throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
+    if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
+      throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
 
-      foreach( $tables as $table )
+    $return_value = 'count' == $return_alternate ? 0 : array();
+
+    // create the select statement one isn't provided
+    if( is_null( $select ) )
+    {
+      $select = lib::create( 'database\select' );
+      if( 'count' == $return_alternate )
       {
-        if( $table && 0 < strlen( $table ) &&
-            // don't join this table to itself
-            $table != $this_table &&
-            // don't add joins that already exist
-            !$modifier->has_join( $table ) )
-        {
-          // check to see if we have a foreign key for this table and join if we do
-          $foreign_key_name = $table.'_id';
-          if( static::column_exists( $foreign_key_name ) )
-          {
-            $table_class_name = lib::get_class_name( 'database\\'.$table );
-            // add the table to the list to select and join it in the modifier
-            $modifier->cross_join(
-              $table,
-              sprintf( '%s.%s', $this_table, $foreign_key_name ),
-              sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
-          }
-          // check to see if the foreign table has this table as a foreign key
-          else if( static::db()->column_exists( $table, $this_table.'_id' ) )
-          {
-            // add the table to the list to select and join it in the modifier
-            $modifier->cross_join(
-              $table,
-              sprintf( '%s.%s_id', $table, $this_table ),
-              sprintf( '%s.%s', $this_table, static::get_primary_key_name() ) );
-          }
-        }
+        $select->add_column( 'COUNT(*)', 'total' );
       }
-    }
-    
-    $sql = sprintf( 'SELECT%s %s %s.%s %sFROM %s %s',
-                    $count ? ' COUNT(' : '',
-                    $distinct ? 'DISTINCT' : '',
-                    $this_table,
-                    !$count && static::ARRAY_FORMAT == $format ? '*' : static::get_primary_key_name(),
-                    $count ? ') ' : '',
-                    $this_table,
-                    is_null( $modifier ) ? '' : $modifier->get_sql( $count ) );
-
-    if( $count )
-    {
-      return intval( static::db()->get_one( $sql ) );
-    }
-    else if( static::ARRAY_FORMAT == $format )
-    {
-      // add column from the modifier's joins
-      $join_columns = $modifier->get_join_columns();
-      if( 0 < strlen( $join_columns ) ) $sql = str_replace( '*', '*, '.$join_columns, $sql );
-
-      $rows = static::db()->get_all( $sql );
-      foreach( $rows as $index => $row )
+      else if( 'object' == $return_alternate )
       {
-        if( array_key_exists( 'update_timestamp', $row ) ) unset( $rows[$index]['update_timestamp'] );
-        if( array_key_exists( 'create_timestamp', $row ) ) unset( $rows[$index]['create_timestamp'] );
-      }
-      return $rows;
-    }
-    else // return objects or a list of ids
-    {
-      $id_list = static::db()->get_col( $sql );
-      if( static::ID_FORMAT == $format )
-      {
-        return $id_list;
+        $select->add_column( static::get_primary_key_name() );
       }
       else
       {
-        // create records from the ids
-        $records = array();
-        foreach( $id_list as $id ) $records[] = new static( $id );
-        return $records;
+        $select->add_all_table_columns();
       }
     }
+    if( is_null( $select->get_table_name() ) ) $select->from( static::get_table_name() );
+
+    $sql = sprintf( '%s %s',
+                    $select->get_sql(),
+                    is_null( $modifier ) ? '' : $modifier->get_sql() );
+    $return_value = static::db()->get_all( $sql );
+
+    if( 'count' == $return_alternate )
+    { // make sure the count is an integer
+      $return_value = intval( $return_value );
+    }
+    else if( 'object' == $return_alternate )
+    { // convert ids to records
+      $records = array();
+      foreach( $return_value as $row ) $records[] = new static( $row['id'] );
+      $return_value = $records;
+    }
+
+    return $return_value;
   }
 
   /**
-   * Select a number of records as an array
+   * Selects a number of records and returns them as an array of active record objects
    * 
-   * A convenience method that returns an array of record primary ids.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @return array( int )
+   * @return array( record )
    * @static
    * @access public
    */
-  public static function arrayselect( $modifier = NULL, $count = false, $distinct = true )
+  public static function select_objects( $modifier = NULL )
   {
-    return static::select( $modifier, $count, $distinct, static::ARRAY_FORMAT );
+    return static::select( NULL, $modifier, 'object' );
   }
 
   /**
-   * Select a number of record ids.
+   * Count the total number of rows in the table
    * 
-   * A convenience method that returns an array of record primary ids.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @return array( int )
-   * @static
-   * @access public
-   */
-  public static function idselect( $modifier = NULL, $count = false, $distinct = true )
-  {
-    return static::select( $modifier, $count, $distinct, static::ID_FORMAT );
-  }
-
-  /**
-   * Count the total number of rows in the table.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the count.
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @return int
    * @static
    * @access public
    */
-  public static function count( $modifier = NULL, $distinct = true )
+  public static function count( $modifier = NULL )
   {
-    return static::select( $modifier, true, $distinct );
+    return static::select( NULL, $modifier, 'count' );
   }
 
   /**
@@ -1269,13 +1012,8 @@ abstract class record extends \cenozo\base_object
     
     // create an associative array from the column/value arguments and sort
     if( is_array( $column ) && is_array( $value ) )
-    {
       foreach( $column as $index => $col ) $columns[$col] = $value[$index];
-    }
-    else
-    {
-      $columns[$column] = $value;
-    }
+    else $columns[$column] = $value;
     ksort( $columns );
 
     // make sure the column(s) complete a unique key
@@ -1305,16 +1043,14 @@ abstract class record extends \cenozo\base_object
     }
     else
     {
+      $select = lib::create( 'database\select' );
+      $select->from( static::get_table_name() );
+      $select->add_column( static::get_primary_key_name() );
       $modifier = lib::create( 'database\modifier' );
       foreach( $columns as $col => $val ) $modifier->where( $col, '=', $val );
 
       // this returns null if no records are found
-      $id = static::db()->get_one(
-        sprintf( 'SELECT %s FROM %s %s',
-                 static::get_primary_key_name(),
-                 static::get_table_name(),
-                 $modifier->get_sql() ) );
-
+      $id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
       if( !is_null( $id ) ) $record = new static( $id );
     }
 
@@ -1544,7 +1280,7 @@ abstract class record extends \cenozo\base_object
    * @static
    * @access protected
    */
-  protected $include_timestamps = true;
+  protected $write_timestamps = true;
 
   /**
    * The name of the table's primary key column.

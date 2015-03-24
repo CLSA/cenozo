@@ -56,68 +56,26 @@ class person extends has_note
 
   /**
    * Override get_address_list()
-   * 
-   * Since addresses are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to the addresses.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier A modifier to apply to the list
-   * @return array( record )
-   * @access public
    */
-  public function get_address_list( $modifier = NULL )
+  public function get_address_list( $select = NULL, $modifier = NULL )
   {
     return 'person' == $this->get_class_name()
-         ? parent::get_address_list( $modifier )
-         : $this->get_person()->get_address_list( $modifier );
+         ? parent::get_address_list( $select, $modifier )
+         : $this->get_person()->get_address_list( $select, $modifier );
   }
   
   /**
-   * Override get_address_idlist()
-   * 
-   * Since addresses are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to the addresses.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier A modifier to apply to the list
-   * @return array( record )
-   * @access public
+   * Override get_address_object_list()
    */
-  public function get_address_idlist( $modifier = NULL )
+  public function get_address_object_list( $modifier = NULL )
   {
     return 'person' == $this->get_class_name()
-         ? parent::get_address_idlist( $modifier )
-         : $this->get_person()->get_address_idlist( $modifier );
-  }
-  
-  /**
-   * Override get_address_arraylist()
-   * 
-   * Since addresses are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to the addresses.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier A modifier to apply to the list
-   * @return array( record )
-   * @access public
-   */
-  public function get_address_arraylist( $modifier = NULL )
-  {
-    return 'person' == $this->get_class_name()
-         ? parent::get_address_arraylist( $modifier )
-         : $this->get_person()->get_address_arraylist( $modifier );
+         ? parent::get_address_object_list( $modifier )
+         : $this->get_person()->get_address_object_list( $modifier );
   }
   
   /**
    * Override get_address_count()
-   * 
-   * Since addresses are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to the addresses.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier A modifier to apply to the count
-   * @return array( record )
-   * @access public
    */
   public function get_address_count( $modifier = NULL )
   {
@@ -128,13 +86,6 @@ class person extends has_note
   
   /**
    * Override remove_address()
-   * 
-   * Since addresses are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to remove addresses.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param integer $id The id of the address to remove.
-   * @access public
    */
   public function remove_address( $id )
   {
@@ -144,68 +95,26 @@ class person extends has_note
 
   /**
    * Override get_phone_list()
-   * 
-   * Since phones are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to the phones.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier A modifier to apply to the list
-   * @return array( record )
-   * @access public
    */
-  public function get_phone_list( $modifier = NULL )
+  public function get_phone_list( $select = NULL, $modifier = NULL )
   {
     return 'person' == $this->get_class_name()
-         ? parent::get_phone_list( $modifier )
-         : $this->get_person()->get_phone_list( $modifier );
+         ? parent::get_phone_list( $select, $modifier )
+         : $this->get_person()->get_phone_list( $select, $modifier );
   }
   
   /**
-   * Override get_phone_idlist()
-   * 
-   * Since phones are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to the phones.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier A modifier to apply to the list
-   * @return array( record )
-   * @access public
+   * Override get_phone_object_list()
    */
-  public function get_phone_idlist( $modifier = NULL )
+  public function get_phone_object_list( $modifier = NULL )
   {
     return 'person' == $this->get_class_name()
-         ? parent::get_phone_idlist( $modifier )
-         : $this->get_person()->get_phone_idlist( $modifier );
-  }
-  
-  /**
-   * Override get_phone_arraylist()
-   * 
-   * Since phones are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to the phones.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier A modifier to apply to the list
-   * @return array( record )
-   * @access public
-   */
-  public function get_phone_arraylist( $modifier = NULL )
-  {
-    return 'person' == $this->get_class_name()
-         ? parent::get_phone_arraylist( $modifier )
-         : $this->get_person()->get_phone_arraylist( $modifier );
+         ? parent::get_phone_object_list( $modifier )
+         : $this->get_person()->get_phone_object_list( $modifier );
   }
   
   /**
    * Override get_phone_count()
-   * 
-   * Since phones are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to the phones.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier A modifier to apply to the count
-   * @return array( record )
-   * @access public
    */
   public function get_phone_count( $modifier = NULL )
   {
@@ -215,14 +124,7 @@ class person extends has_note
   }
 
   /**
-   * Override remove_phone()
-   * 
-   * Since phones are related to the person table and not the participant or alternate
-   * tables this method allows for direct access to remove phones.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param integer $id The id of the phone to remove.
-   * @access public
+   * Override remove_phone method (since phone is related to person)
    */
   public function remove_phone( $id )
   {
@@ -231,11 +133,7 @@ class person extends has_note
   }
 
   /**
-   * Override parent method (since note are related to person)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier
-   * @return int
-   * @access public
+   * Override parent method (since note is related to person)
    */
   public function get_note_count( $modifier = NULL )
   {
@@ -248,12 +146,8 @@ class person extends has_note
 
   /**
    * Override parent method (since note are related to person)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier
-   * @return array( record )
-   * @access public
    */
-  public function get_note_list( $modifier = NULL )
+  public function get_note_list( $select = NULL, $modifier = NULL )
   {
     $person_id = 'person' == $this->get_class_name() ? $this->id : $this->person_id;
     $note_class_name = lib::get_class_name( 'database\person_note' );
@@ -261,17 +155,13 @@ class person extends has_note
     $modifier->where( 'person_id', '=', $person_id );
     $modifier->order( 'sticky', true );
     $modifier->order_desc( 'datetime' );
-    return $note_class_name::select( $modifier );
+    return $note_class_name::select( $select, $modifier );
   }
 
   /**
    * Override parent method (since note are related to person)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier
-   * @return array( record )
-   * @access public
    */
-  public function get_note_idlist( $modifier = NULL )
+  public function get_note_object_list( $modifier = NULL )
   {
     $person_id = 'person' == $this->get_class_name() ? $this->id : $this->person_id;
     $note_class_name = lib::get_class_name( 'database\person_note' );
@@ -279,33 +169,11 @@ class person extends has_note
     $modifier->where( 'person_id', '=', $person_id );
     $modifier->order( 'sticky', true );
     $modifier->order_desc( 'datetime' );
-    return $note_class_name::idselect( $modifier );
-  }
-
-  /**
-   * Override parent method (since note are related to person)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param modifier $modifier
-   * @return array( record )
-   * @access public
-   */
-  public function get_note_arraylist( $modifier = NULL )
-  {
-    $person_id = 'person' == $this->get_class_name() ? $this->id : $this->person_id;
-    $note_class_name = lib::get_class_name( 'database\person_note' );
-    if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'person_id', '=', $person_id );
-    $modifier->order( 'sticky', true );
-    $modifier->order_desc( 'datetime' );
-    return $note_class_name::arrayselect( $modifier );
+    return $note_class_name::select_objects( $modifier );
   }
 
   /**
    * Override parent method (since all extending class notes are related to the person table)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param user $user
-   * @param string $note
-   * @access public
    */
   public function add_note( $user, $note )
   {
@@ -322,12 +190,6 @@ class person extends has_note
 
   /**
    * Override parent method (since all extending class notes are related to the person table)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier
-   * @param database\user $db_user
-   * @param string $note
-   * @static
-   * @access public
    */
   public static function multinote( $modifier, $db_user, $note )
   {
@@ -361,11 +223,6 @@ class person extends has_note
 
   /**
    * Override parent method (since note are related to person)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param integer $id
-   * @return note record
-   * @static
-   * @access public
    */
   public static function get_note( $id = NULL )
   {

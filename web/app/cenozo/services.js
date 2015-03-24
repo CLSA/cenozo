@@ -115,18 +115,14 @@ cenozo.factory( 'CnBaseListFactory', [
           if( this.columnList[key].join ) {
             var lastJoin = null;
             var parentTable = this.subject;
-            var keyParts = this.columnList[key].column.split( '.' );
-            for( var k = 0; k < keyParts.length; k++ ) {
-              if( k == keyParts.length - 1 ) {
+            var columnParts = this.columnList[key].column.split( '.' );
+            for( var k = 0; k < columnParts.length; k++ ) {
+              if( k == columnParts.length - 1 ) {
                 // add this column to the last join
-                var column = {};
-                var columnName = keyParts[k-1] + '.' + keyParts[k];
-                var columnAs = key;
-                column[columnName] = columnAs;
                 if( undefined === lastJoin.columns ) lastJoin.columns = [];
-                lastJoin.columns.push( column );
+                lastJoin.columns.push( columnParts[k-1] + '.' + columnParts[k] + ' AS ' + key );
               } else { // part of table list
-                var table = keyParts[k];
+                var table = columnParts[k];
                 var onleft = parentTable + '.' + table + '_id';
                 var onright = table + '.id';
 
@@ -157,10 +153,16 @@ cenozo.factory( 'CnBaseListFactory', [
             var test = this.columnList[key].restrict.test;
             var value = this.columnList[key].restrict.value;
             if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
-            var keyParts = this.columnList[key].column.split( '.' );
-            var column = this.columnList[key].column;
-            var len = keyParts.length;
-            if( 2 < len ) column = keyParts[len-2] + '.' + keyParts[len-1];
+            
+            // determine the column name
+            var column = key;
+            if( undefined !== this.columnList[key].column ) {
+              var columnParts = this.columnList[key].column.split( '.' );
+              var len = columnParts.length;
+              column = this.columnList[key].column;
+              if( 2 < len ) column = columnParts[len-2] + '.' + columnParts[len-1];
+            }
+
             whereList.push( { 
               column: column,
               operator: test,
@@ -175,7 +177,6 @@ cenozo.factory( 'CnBaseListFactory', [
         if( null !== this.order ) {
           // add the table prefix to the column if there isn't already a prefix
           var column = this.order.column;
-          if( 0 > this.order.column.indexOf( '.' ) ) column = this.subject + '.' + column;
           data.modifier.order = {};
           data.modifier.order[column] = this.order.reverse;
         }

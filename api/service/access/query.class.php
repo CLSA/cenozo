@@ -38,8 +38,10 @@ class query extends \cenozo\service\query
     parent::prepare();
 
     // restrict to the current user's access to the current application
+    $this->modifier->join( 'site', 'access.site_id', 'site.id' );
+    $this->modifier->join( 'role', 'access.role_id', 'role.id' );
     $this->modifier->where(
-      'user_id', '=', lib::create( 'business\session' )->get_user()->id );
+      'access.user_id', '=', lib::create( 'business\session' )->get_user()->id );
     $this->modifier->where(
       'site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
     $this->modifier->order( 'site.name' );
@@ -61,10 +63,17 @@ class query extends \cenozo\service\query
     $role_class_name = lib::get_class_name( 'database\role' );
     
     // create lookup arrays
+    $site_select = lib::create( 'database\select' );
+    $site_select->add_column( 'id' );
+    $site_select->add_column( 'name' );
     $site_list = array();
-    foreach( $site_class_name::arrayselect() as $row ) $site_list[$row['id']] = $row['name'];
+    foreach( $site_class_name::select( $site_select ) as $row ) $site_list[$row['id']] = $row['name'];
+
+    $role_select = lib::create( 'database\select' );
+    $role_select->add_column( 'id' );
+    $role_select->add_column( 'name' );
     $role_list = array();
-    foreach( $role_class_name::arrayselect() as $row ) $role_list[$row['id']] = $row['name'];
+    foreach( $role_class_name::select( $role_select ) as $row ) $role_list[$row['id']] = $row['name'];
 
     foreach( $this->data['results'] as $index => $row )
     {

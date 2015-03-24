@@ -39,6 +39,8 @@ class query extends service
 
     $setting_manager = lib::create( 'business\setting_manager' );
 
+    $this->select = lib::create( 'database\select' );
+    $this->select->add_all_table_columns();
     $this->modifier = lib::create( 'database\modifier' );
 
     // restrict some roles when subject is related to a site
@@ -106,12 +108,17 @@ class query extends service
       $this->data['total'] = false === $parent_record
                            ? $record_class_name::count( $count_modifier )
                            : $parent_record->$parent_record_method( $count_modifier );
-      $parent_record_method = sprintf( 'get_%s_arraylist', $subject );
+      $parent_record_method = sprintf( 'get_%s_list', $subject );
       $this->data['results'] = false === $parent_record
-                             ? $record_class_name::arrayselect( $this->modifier )
-                             : $parent_record->$parent_record_method( $this->modifier );
+                             ? $record_class_name::select( $this->select, $this->modifier )
+                             : $parent_record->$parent_record_method( $this->select, $this->modifier );
     }
   }
+
+  /**
+   * TODO: document
+   */
+  protected $select = NULL;
 
   /**
    * TODO: document
