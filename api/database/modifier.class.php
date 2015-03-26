@@ -27,10 +27,11 @@ class modifier extends \cenozo\base_object
    *        join is made.
    * @param string $type The type of join to use.  May be blank or include inner, cross, straight,
    *        left, left outer, right or right outer
+   * @param string $alias The alias of the table (optional)
    * @throws exception\argument
    * @access public
    */
-  public function join_modifier( $table, $modifier, $type = '' )
+  public function join_modifier( $table, $modifier, $type = '', $alias = NULL )
   {
     $type = strtoupper( $type );
 
@@ -56,9 +57,11 @@ class modifier extends \cenozo\base_object
     if( !is_string( $table) || !in_array( $type, $valid_types ) )
       throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
 
-    $this->join_list[] = array( 'table' => $table,
-                                'modifier' => $modifier,
-                                'type' => strtoupper( $type ) );
+    // index the join under the table's alias (or the table name if there is none)
+    if( is_null( $alias ) ) $alias = $table;
+    $this->join_list[$alias] = array( 'table' => $table,
+                                      'modifier' => $modifier,
+                                      'type' => strtoupper( $type ) );
   }
 
   /**
@@ -69,28 +72,15 @@ class modifier extends \cenozo\base_object
    * @param string $on_right The right column of the join rule.
    * @param string $type The type of join to use.  May be blank or include inner, cross, straight,
    *                     left, left outer, right or right outer
+   * @param string $alias The alias of the table (optional)
    * @throws exception\argument
    * @access public
    */
-  public function join( $table, $on_left, $on_right, $type = '' )
+  public function join( $table, $on_left, $on_right, $type = '', $alias = NULL )
   {
     $on_mod = new static();
     $on_mod->where( $on_left, '=', $on_right, false );
-    $this->join_modifier( $table, $on_mod, $type );
-  }
-
-  /**
-   * A convenience left join method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $table The table to join to.
-   * @param modifier $modifier The modifier containing a where statement that defines how the
-   *                           join is made.
-   * @throws exception\argument
-   * @access public
-   */
-  public function left_join_modifier( $table, $modifier )
-  {
-    $this->join_modifier( $table, $modifier, 'left' );
+    $this->join_modifier( $table, $on_mod, $type, $alias );
   }
 
   /**
@@ -98,26 +88,13 @@ class modifier extends \cenozo\base_object
    * @param string $table The table to join to.
    * @param string $on_left The left column of the join rule.
    * @param string $on_right The right column of the join rule.
+   * @param string $alias The alias of the table (optional)
    * @throws exception\argument
    * @access public
    */
-  public function left_join( $table, $on_left, $on_right )
+  public function left_join( $table, $on_left, $on_right, $alias = NULL )
   {
-    $this->join( $table, $on_left, $on_right, 'left' );
-  }
-
-  /**
-   * A convenience right join method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $table The table to join to.
-   * @param modifier $modifier The modifier containing a where statement that defines how the
-   *                           join is made.
-   * @throws exception\argument
-   * @access public
-   */
-  public function right_join_modifier( $table, $modifier )
-  {
-    $this->join_modifier( $table, $modifier, 'right' );
+    $this->join( $table, $on_left, $on_right, 'left', $alias );
   }
 
   /**
@@ -125,24 +102,13 @@ class modifier extends \cenozo\base_object
    * @param string $table The table to join to.
    * @param string $on_left The left column of the join rule.
    * @param string $on_right The right column of the join rule.
+   * @param string $alias The alias of the table (optional)
    * @throws exception\argument
    * @access public
    */
-  public function right_join( $table, $on_left, $on_right )
+  public function right_join( $table, $on_left, $on_right, $alias = NULL )
   {
-    $this->join( $table, $on_left, $on_right, 'right' );
-  }
-
-  /**
-   * A convenience cross join method.
-   * @param string $table The table to join to.
-   * @param modifier $modifier Unlike other join types this can be left NULL
-   * @throws exception\argument
-   * @access public
-   */
-  public function cross_join_modifier( $table, $modifier = NULL )
-  {
-    $this->join( $table, $modifier, 'cross' );
+    $this->join( $table, $on_left, $on_right, 'right', $alias );
   }
 
   /**
@@ -150,24 +116,26 @@ class modifier extends \cenozo\base_object
    * @param string $table The table to join to.
    * @param string $on_left The left column of the join rule.
    * @param string $on_right The right column of the join rule.
+   * @param string $alias The alias of the table (optional)
    * @throws exception\argument
    * @access public
    */
-  public function cross_join( $table, $on_left, $on_right )
+  public function cross_join( $table, $on_left, $on_right, $alias = NULL )
   {
-    $this->join( $table, $on_left, $on_right, 'cross' );
+    $this->join( $table, $on_left, $on_right, 'cross', $alias );
   }
 
   /**
    * A convenience inner join method.
    * @param string $table The table to join to.
    * @param modifier $modifier Unlike other join types this can be left NULL
+   * @param string $alias The alias of the table (optional)
    * @throws exception\argument
    * @access public
    */
-  public function inner_join( $table, $modifier = NULL )
+  public function inner_join( $table, $modifier = NULL, $alias = NULL )
   {
-    $this->join( $table, $modifier, 'inner' );
+    $this->join( $table, $modifier, 'inner', $alias );
   }
 
   /**
@@ -415,7 +383,7 @@ class modifier extends \cenozo\base_object
   }
   
   /**
-   * Returns whether the modifier has a certain table in its join clauses.
+   * Returns whether the modifier has a certain table (or alias) in its join clauses.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to search for.
    * @return boolean
@@ -423,10 +391,7 @@ class modifier extends \cenozo\base_object
    */
   public function has_join( $table )
   {
-    foreach( $this->join_list as $join )
-      if( array_key_exists( 'table', $join ) &&
-          $table == $join['table'] ) return true;
-    return false;
+    return array_key_exists( $table, $this->join_list );
   }
 
   /**
@@ -580,7 +545,7 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Removes all join statements to a particular table
+   * Removes all join statements to a particular table (or alias)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table Which table to remove all joins to
@@ -588,9 +553,7 @@ class modifier extends \cenozo\base_object
    */
   public function remove_join( $table )
   {
-    foreach( $this->join_list as $index => $join )
-      if( array_key_exists( 'table', $join ) && $table == $join['table'] )
-        unset( $this->join_list[$index] );
+    unset( $this->join_list[$table] );
   }
 
   /**
@@ -660,10 +623,10 @@ class modifier extends \cenozo\base_object
   {
     $sql = $this->get_join();
     if( $where = $this->get_where() ) $sql .= sprintf( ' WHERE %s', $where );
+    if( $group = $this->get_group() ) $sql .= sprintf( ' GROUP BY %s', $group );
+    if( $having = $this->get_having() ) $sql .= sprintf( ' HAVING %s', $having );
     if( !$count )
     {
-      if( $group = $this->get_group() ) $sql .= sprintf( ' GROUP BY %s', $group );
-      if( $having = $this->get_having() ) $sql .= sprintf( ' HAVING %s', $having );
       if( $order = $this->get_order() ) $sql .= sprintf( ' ORDER BY %s', $order );
       if( !is_null( $this->limit ) )
         $sql .= sprintf( ' LIMIT %d OFFSET %d', $this->limit, $this->offset );
@@ -684,17 +647,13 @@ class modifier extends \cenozo\base_object
   public function get_join()
   {
     $sql = '';
-    foreach( $this->join_list as $join )
+    foreach( $this->join_list as $alias => $join )
     {
       $type = sprintf( '%s%sJOIN', $join['type'], 'STRAIGHT' == $join['type'] ? '_' : ' ' );
-      $on_clause = $join['modifier']->get_where( true );
-      // remove the " AND " at the beginning of the appended where clause
-      $on_clause = preg_replace( '/^ AND /', '', $on_clause );
-
-      $sql .= sprintf( '%s %s ON %s ',
-                       $type,
-                       $join['table'],
-                       $on_clause );
+      $on_clause = $join['modifier']->get_where();
+      $table = $join['table'];
+      if( $alias != $join['table'] ) $table .= ' AS '.$alias;
+      $sql .= sprintf( '%s %s ON %s ', $type, $table, $on_clause );
     }
 
     return $sql;
@@ -1047,11 +1006,11 @@ class modifier extends \cenozo\base_object
     $json_object = $util_class_name::json_decode( $json_string );
     if( is_object( $json_object ) || is_array( $json_object ) )
     {
-      foreach( (array)$json_object as $key => $value )
+      foreach( (array) $json_object as $key => $value )
       {
         if( 'join' == $key )
         {
-          // convert a single statement to an array with that statement in it
+          // convert a statement into an array (for single arguments or objects)
           if( !is_array( $value ) ) $value = array( $value );
           
           foreach( $value as $join )
@@ -1063,13 +1022,10 @@ class modifier extends \cenozo\base_object
               if( !array_key_exists( 'type', $join ) ) $join->type = 'cross';
               $modifier->join( $join->table, $join->onleft, $join->onright, $join->type );
             }
-            else
-            {
-              throw lib::create( 'exception\runtime', 'Invalid join sub-statement', __METHOD__ );
-            }
+            else throw lib::create( 'exception\runtime', 'Invalid join sub-statement', __METHOD__ );
           }
         }
-        if( 'having' == $key || 'where' == $key )
+        else if( 'having' == $key || 'where' == $key )
         {
           // convert a single statement to an array with that statement in it
           if( !is_array( $value ) ) $value = array( $value );
@@ -1100,17 +1056,11 @@ class modifier extends \cenozo\base_object
                 // here $key is either where or having (using it as a method call)
                 $modifier->$key( $condition->column, $condition->operator, $condition->value, true, $or );
               }
-              else
-              {
-                throw lib::create( 'exception\runtime',
-                  sprintf( 'Invalid %s operator', $key ), __METHOD__ );
-              }
+              else throw lib::create( 'exception\runtime',
+                sprintf( 'Invalid %s operator', $key ), __METHOD__ );
             }
-            else
-            {
-              throw lib::create( 'exception\runtime',
-                sprintf( 'Invalid %s sub-statement', $key ), __METHOD__ );
-            }
+            else throw lib::create( 'exception\runtime',
+              sprintf( 'Invalid %s sub-statement', $key ), __METHOD__ );
           }
         }
         else if( 'order' == $key )
@@ -1123,40 +1073,28 @@ class modifier extends \cenozo\base_object
             if( is_string( $val ) ) $modifier->order( $val );
             else if( is_object( $val ) )
             {
-              $array = (array)$val;
+              $array = (array) $val;
               $modifier->order( key( $array ), current( $array ) );
             }
-            else
-            {
-              throw lib::create( 'exception\runtime', 'Invalid order statement', __METHOD__ );
-            }
+            else throw lib::create( 'exception\runtime', 'Invalid order statement', __METHOD__ );
           }
         }
         else if( 'limit' == $key )
         {
           if( $util_class_name::string_matches_int( $value ) && 0 < $value ) $limit = $value;
-          else
-          {
-            throw lib::create( 'exception\runtime', 'Invalid limit', __METHOD__ );
-          }
+          else throw lib::create( 'exception\runtime', 'Invalid limit', __METHOD__ );
         }
         else if( 'offset' == $key )
         {
           if( $util_class_name::string_matches_int( $value ) && 0 <= $value ) $offset = $value;
-          else
-          {
-            throw lib::create( 'exception\runtime', 'Invalid offset', __METHOD__ );
-          }
+          else throw lib::create( 'exception\runtime', 'Invalid offset', __METHOD__ );
         }
       }
 
       $modifier->limit( $limit );
       if( !is_null( $offset ) ) $modifier->offset( $offset );
     }
-    else
-    {
-      throw lib::create( 'exception\runtime', 'Invalid format', __METHOD__ );
-    }
+    else throw lib::create( 'exception\runtime', 'Invalid format', __METHOD__ );
 
     return $modifier;
   }

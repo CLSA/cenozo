@@ -24,11 +24,10 @@ class database extends \cenozo\base_object
    * @param string $username The username to connect with.
    * @param string $password The password to connect with.
    * @param string $database The name of the database.
-   * @param string $prefix The prefix to add before every table name.
    * @throws exception\runtime
    * @access public
    */
-  public function __construct( $server, $username, $password, $database, $prefix )
+  public function __construct( $server, $username, $password, $database )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
 
@@ -36,7 +35,6 @@ class database extends \cenozo\base_object
     $this->username = $username;
     $this->password = $password;
     $this->name = $database;
-    $this->prefix = $prefix;
     
     // set up the database connection
     $this->connection = new \mysqli( $this->server, $this->username, $this->password, $this->name );
@@ -188,14 +186,6 @@ class database extends \cenozo\base_object
   public function get_name() { return $this->name; }
 
   /**
-   * Get's the prefix of the database.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_prefix() { return $this->prefix; }
-
-  /**
    * Determines whether a particular table exists.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
@@ -204,7 +194,6 @@ class database extends \cenozo\base_object
    */
   public function table_exists( $table_name )
   {
-    $table_name = $this->prefix.$table_name;
     return array_key_exists( $table_name, $this->tables );
   }
 
@@ -218,7 +207,6 @@ class database extends \cenozo\base_object
    */
   public function column_exists( $table_name, $column_name )
   {
-    $table_name = $this->prefix.$table_name;
     return array_key_exists( $table_name, $this->tables ) &&
            array_key_exists( $column_name, $this->tables[$table_name]['columns'] );
   }
@@ -237,7 +225,6 @@ class database extends \cenozo\base_object
         sprintf( 'Tried to get column names for table "%s" which doesn\'t exist.',
                  $table_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return array_keys( $this->tables[$table_name]['columns'] );
   }
 
@@ -257,7 +244,6 @@ class database extends \cenozo\base_object
                  $table_name,
                  $column_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return $this->tables[$table_name]['columns'][$column_name]['type'];
   }
   
@@ -277,7 +263,6 @@ class database extends \cenozo\base_object
                  $table_name,
                  $column_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return $this->tables[$table_name]['columns'][$column_name]['data_type'];
   }
   
@@ -297,7 +282,6 @@ class database extends \cenozo\base_object
                  $table_name,
                  $column_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return $this->tables[$table_name]['columns'][$column_name]['key'];
   }
   
@@ -317,7 +301,6 @@ class database extends \cenozo\base_object
                  $table_name,
                  $column_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return $this->tables[$table_name]['columns'][$column_name]['default'];
   }
   
@@ -336,7 +319,6 @@ class database extends \cenozo\base_object
         sprintf( 'Tried to get unique keys for table "%s" which doesn\'t exist.', $table_name ),
         __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return array_key_exists( $table_name, $this->tables )
          ? $this->tables[$table_name]['constraints']
          : array();
@@ -356,7 +338,6 @@ class database extends \cenozo\base_object
         sprintf( 'Tried to get primary key for table "%s" which doesn\'t exist.', $table_name ),
         __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return array_key_exists( $table_name, $this->tables )
          ? $this->tables[$table_name]['primary']
          : array();
@@ -865,11 +846,4 @@ class database extends \cenozo\base_object
    * @access private
    */
   private $name;
-
-  /**
-   * The table name prefix.
-   * @var string
-   * @access private
-   */
-  private $prefix;
 }

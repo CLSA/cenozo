@@ -58,10 +58,11 @@ class select extends \cenozo\base_object
    * @param string $table The table to select the column from
    * @param string $column The column to select
    * @param string $alias The optional alias for the column
+   * @param boolean $table_prefix Whether to prefix the column with the table name
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function add_table_column( $table, $column, $alias = NULL )
+  public function add_table_column( $table, $column, $alias = NULL, $table_prefix = true )
   {
     // sanitize
     if( is_null( $column ) || 0 == strlen( $column ) )
@@ -72,7 +73,7 @@ class select extends \cenozo\base_object
     if( is_null( $table ) ) $table = '';
     if( is_null( $alias ) ) $alias = $column;
     if( !array_key_exists( $table, $this->column_list ) ) $this->column_list[$table] = array();
-    $this->column_list[$table][$alias] = $column;
+    $this->column_list[$table][$alias] = array( 'column' => $column, 'table_prefix' => $table_prefix );
   }
 
   /**
@@ -93,12 +94,13 @@ class select extends \cenozo\base_object
    * 
    * @param string $column The column to select
    * @param string $alias The optional alias for the column
+   * @param boolean $table_prefix Whether to prefix the column with the table name
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function add_column( $column, $alias = NULL )
+  public function add_column( $column, $alias = NULL, $table_prefix = true )
   {
-    $this->add_table_column( NULL, $column, $alias );
+    $this->add_table_column( NULL, $column, $alias, $table_prefix );
   }
 
   /**
@@ -172,6 +174,18 @@ class select extends \cenozo\base_object
   }
 
   /**
+   * Returns whether columns have been added to the select or not
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function has_columns()
+  {
+    return 0 < count( $this->column_list );
+  }
+
+  /**
    * Returns the select statement based on this object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -190,21 +204,99 @@ class select extends \cenozo\base_object
     $columns = array();
     foreach( $this->column_list as $table => $column_details )
     {
-      // add the table prefix (if possible)
-      $base_column = 0 == strlen( $table ) ? $main_table : $table;
-      $base_column .= '.';
+      // table prefix
+      $table_prefix = 0 == strlen( $table ) ? $main_table : $table;
+      $table_prefix .= '.';
 
       // now add the alias or table.column to the list of columns
-      foreach( $column_details as $alias => $column_name )
-        $columns[] = $alias == $column_name
-                   ? $base_column.$column_name
-                   : sprintf( '%s AS %s', $column_name, $alias );
+      foreach( $column_details as $alias => $item )
+      {
+        $column = sprintf( '%s%s', $item['table_prefix'] ? $table_prefix : '', $item['column'] );
+        if( $alias != $item['column'] ) $column = sprintf( '%s AS %s', $column, $alias );
+        $columns[] = $column;
+      }
     }
 
     $table = is_null( $this->table_alias )
            ? $this->table_name
            : sprintf( '%s AS %s', $this->table_name, $this->table_alias );
     return sprintf( 'SELECT %s FROM %s', join( ',', $columns ), $table );
+  }
+
+  /**
+   * JSON-based select expected in the form:
+   * {
+   *   from: <table_name>
+   *   OR
+   *   from:
+   *   {
+   *     table: <table_name>
+   *     alias: <table_alias>
+   *   }
+   *   column:
+   *   [
+   *     <column_name>,
+   *     {
+   *       table: <table_name> (optional)
+   *       column: <column_name>
+   *       alias: <column_alias> (optional)
+   *       table_prefix: true|false (optional)
+   *     },
+   *   ],
+   * }
+   */
+  public static function from_json( $json_string )
+  {
+    $select = lib::create( 'database\select' );
+
+    $util_class_name = lib::get_class_name( 'util' );
+    $json_object = $util_class_name::json_decode( $json_string );
+    if( is_object( $json_object ) || is_array( $json_object ) )
+    {
+      foreach( (array) $json_object as $key => $value )
+      {
+        if( 'from' == $key )
+        {
+          if( is_array( $value ) )
+          {
+            if( array_key_exists( 'table', $value ) )
+            {
+              $this->from( $value['table'], array_key_exists( 'alias', $value ) ? $value['alias'] : NULL );
+            }
+            else throw lib::create( 'exception\runtime', 'Invalid from statement', __METHOD__ );
+          }
+          else if( is_string( $value ) ) $this->from( $value );
+          else throw lib::create( 'exception\runtime', 'Invalid from statement', __METHOD__ );
+        }
+        else if( 'column' == $key )
+        {
+          // convert a statement into an array (for single arguments or objects)
+          if( !is_array( $value ) ) $value = array( $value );
+          
+          foreach( $value as $column )
+          {
+            if( is_object( $column ) ) $column = (array) $column;
+            if( is_array( $column ) )
+            {
+              if( array_key_exists( 'column', $column ) )
+              {
+                $select->add_table_column(
+                  array_key_exists( 'table', $column ) ? $column['table'] : NULL,
+                  $column['column'],
+                  array_key_exists( 'alias', $column ) ? $column['alias'] : NULL,
+                  array_key_exists( 'table_prefix', $column ) ? $column['table_prefix'] : true );
+              }
+              else throw lib::create( 'exception\runtime', 'Invalid column sub-statement', __METHOD__ );
+            }
+            else if( is_string( $value ) ) $this->add_column( $value );
+            else throw lib::create( 'exception\runtime', 'Invalid column sub-statement', __METHOD__ );
+          }
+        }
+      }
+    }
+    else throw lib::create( 'exception\runtime', 'Invalid format', __METHOD__ );
+
+    return $select;
   }
 
   /**

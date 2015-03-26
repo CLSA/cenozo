@@ -1,22 +1,56 @@
 <?php
 $lists = array(
-  array( 'sref' => 'Activity', 'title' => 'Activities' ),
-  array( 'sref' => 'Assignment', 'title' => 'Assignments' ),
-  array( 'sref' => 'CedarInstance', 'title' => 'Cedar Instances' ),
-  array( 'sref' => 'Collection', 'title' => 'Collections' ),
-  array( 'sref' => 'Interview', 'title' => 'Interviews' ),
-  array( 'sref' => 'Language', 'title' => 'Languages' ),
-  array( 'sref' => 'OpalInstance', 'title' => 'Opal Instances' ),
-  array( 'sref' => 'Participant', 'title' => 'Participants' ),
-  array( 'sref' => 'Qnaire', 'title' => 'Questionnaires' ),
-  array( 'sref' => 'Queue', 'title' => 'Queues' ),
-  array( 'sref' => 'Quota', 'title' => 'Quotas' ),
-  array( 'sref' => 'RegionSite', 'title' => 'Region Sites' ),
-  array( 'sref' => 'Setting', 'title' => 'Settings' ),
-  array( 'sref' => 'Site', 'title' => 'Sites' ),
-  array( 'sref' => 'State', 'title' => 'States' ),
-  array( 'sref' => 'SystemMessage', 'title' => 'System Messages' ),
-  array( 'sref' => 'User', 'title' => 'Users' ) );
+  array( 'sref' => 'activity',
+         'title' => 'Activities',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'assignment',
+         'title' => 'Assignments',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'cedar_instance',
+         'title' => 'Cedar Instances',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'collection',
+         'title' => 'Collections',
+         'actions' => array( 'add', 'list', 'view' ) ),
+  array( 'sref' => 'interview',
+         'title' => 'Interviews',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'language',
+         'title' => 'Languages',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'opal_instance',
+         'title' => 'Opal Instances',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'participant',
+         'title' => 'Participants',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'qnaire',
+         'title' => 'Questionnaires',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'queue',
+         'title' => 'Queues',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'quota',
+         'title' => 'Quotas',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'region_site',
+         'title' => 'Region Sites',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'setting',
+         'title' => 'Settings',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'site',
+         'title' => 'Sites',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'state',
+         'title' => 'States',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'system_message',
+         'title' => 'System Messages',
+         'actions' => array( 'list' ) ),
+  array( 'sref' => 'user',
+         'title' => 'Users',
+         'actions' => array( 'list' ) ) );
 
 $utilities = array(
   array( 'sref' => 'ParticipantMultiedit', 'title' => 'Participant Multiedit' ),
@@ -45,9 +79,8 @@ cenozoApp.config( [
   '$stateProvider',
   function( $stateProvider ) {
     var moduleList = [
-<?php foreach( $lists as $i ) printf( "'%s',\n", $i['sref'] ); ?>
+<?php foreach( $lists as $i ) printf( "{ name: '%s', actions: ['%s'] },\n", $i['sref'], join( "','", $i['actions'] ) ); ?>
     ];
-
     for( var i = 0; i < moduleList.length; i++ ) cnRouteModule( $stateProvider, moduleList[i] );
   }
 ] );
@@ -58,7 +91,7 @@ cenozoApp.controller( 'CnMenuCtrl', [
     $scope.isCurrentState = function isCurrentState( state ) { return $state.is( state ); };
 
     $scope.lists = [
-<?php foreach( $lists as $i ) printf( "{ sref: '%s', title: '%s' },\n", $i['sref'], $i['title'] ); ?>
+<?php foreach( $lists as $i ) printf( "{ sref: '%s.list', title: '%s' },\n", $i['sref'], $i['title'] ); ?>
     ];
 
     $scope.utilities = [

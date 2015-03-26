@@ -60,8 +60,7 @@ class session extends \cenozo\singleton
       $setting_manager->get_setting( 'db', 'server' ),
       $setting_manager->get_setting( 'db', 'username' ),
       $setting_manager->get_setting( 'db', 'password' ),
-      sprintf( '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE ),
-      $setting_manager->get_setting( 'db', 'prefix' ) );
+      sprintf( '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE ) );
 
     // define the application's application
     $this->db_application = $application_class_name::get_unique_record( 'name', INSTANCE, true );

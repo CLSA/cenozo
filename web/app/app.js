@@ -32,30 +32,30 @@ window.cnObjectToDatetime = function cnObjectToDatetime( object ) {
 };
 
 window.cnModuleList = [
-  'Activity',
-  'Collection',
-  'Language',
-  'Participant',
-  'Quota',
-  'RegionSite',
-  'Setting',
-  'Site',
-  'State',
-  'SystemMessage',
-  'User'
+  'activity',
+  'collection',
+  'language',
+  'participant',
+  'quota',
+  'region_site',
+  'setting',
+  'site',
+  'state',
+  'system_message',
+  'user'
 ];
 
 window.cnRouteModule = function cnRouteModule( $stateProvider, module ) {
   if( undefined === $stateProvider ) throw 'cnRouteModule requires exactly 2 parameters';
   if( undefined === module ) throw 'cnRouteModule requires exactly 2 parameters';
 
-  var baseUrl = 'app/' + module + '/';
-  if( 0 <= cnModuleList.indexOf( module ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
+  var baseUrl = 'app/' + module.name + '/';
+  if( 0 <= cnModuleList.indexOf( module.name ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
 
-  $stateProvider.state( module, {
-    url: '/' + module,
-    controller: module + 'ListCtrl',
-    templateUrl: baseUrl + 'list.tpl.html',
+  $stateProvider.state( module.name, {
+    abstract: true,
+    url: '/' + module.name,
+    template: '<div ui-view></div>',
     resolve: {
       data: [ '$q', function( $q ) {
         var deferred = $q.defer();
@@ -64,13 +64,33 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, module ) {
       } ]
     }
   } );
+
+  for( var i = 0; i < module.actions.length; i++ ) {
+    // determine the state
+    var action = module.actions[i];
+    var state = module.name + '.' + action;
+    var url = '/' + action;
+    if( 'view' == action ) url += '/{id}';
+    var controller = cnSnakeToCamel( module.name + '_' + action + '_ctrl', true );
+    var templateUrl = baseUrl + action + '.tpl.html';
+
+    $stateProvider.state( state, {
+      url: url,
+      controller: controller,
+      templateUrl: templateUrl
+    } );
+  }
 };
 
-window.cnSnakeToCamel = function cnSnakeToCamel( inputString, capitolizeFirst ) {
-  if( undefined === capitolizeFirst ) capitolizeFirst = false;
-  var outputString = inputString.replace( /(\_\w)/g, function( m ){ return m[1].toUpperCase(); } );
-  if( capitolizeFirst ) outputString = outputString.charAt(0).toUpperCase() + outputString.slice(1);
-  return outputString;
+window.cnSnakeToCamel = function cnSnakeToCamel( input, first ) {
+  if( undefined === first ) first = false;
+  var output = input.replace( /(\_\w)/g, function( m ){ return m[1].toUpperCase(); } );
+  if( first ) output = output.charAt(0).toUpperCase() + output.slice(1);
+  return output;
+};
+
+window.cnCamelToSnake = function cnCamelToSnake( input ) {
+  return input.replace( /([A-Z])/g, function( $1 ){ return '_'+$1.toLowerCase(); } ).replace( /^_/, '' );
 };
 
 window.cnToQueryString = function cnToQueryString( object ) {
@@ -107,6 +127,6 @@ cenozoApp.config( [
 cenozoApp.config( [
   '$urlRouterProvider',
   function( $urlRouterProvider ) {
-    $urlRouterProvider.otherwise( '/Site' );
+    $urlRouterProvider.otherwise( '/collection/list' );
   }
 ] );

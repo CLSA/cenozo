@@ -108,21 +108,28 @@ cenozo.factory( 'CnBaseListFactory', [
           offset: replace ? 0 : this.cache.length
         };
 
-        // set up the joins and restrictions
+        // set up the select, join and where list based on the column list
+        var selectList = [];
         var joinList = [];
         var whereList = [];
         for( var key in this.columnList ) {
-          if( this.columnList[key].join ) {
-            var lastJoin = null;
-            var parentTable = this.subject;
-            var columnParts = this.columnList[key].column.split( '.' );
-            for( var k = 0; k < columnParts.length; k++ ) {
-              if( k == columnParts.length - 1 ) {
-                // add this column to the last join
-                if( undefined === lastJoin.columns ) lastJoin.columns = [];
-                lastJoin.columns.push( columnParts[k-1] + '.' + columnParts[k] + ' AS ' + key );
-              } else { // part of table list
-                var table = columnParts[k];
+          var lastJoin = null;
+          var parentTable = this.subject;
+          var columnParts = undefined === this.columnList[key].column
+                          ? [ key ]
+                          : this.columnList[key].column.split( '.' );
+          for( var k = 0; k < columnParts.length; k++ ) {
+            if( k == columnParts.length - 1 ) {
+              // add this column to the select list
+              var select = { column: columnParts[k], alias: key };
+              if( 0 < k ) select.table = columnParts[k-1];
+              else select.table_prefix = false;
+              selectList.push( select );
+            } else { // part of table list
+              var table = columnParts[k];
+
+              // don't join a table to itself
+              if( table !== parentTable ) {
                 var onleft = parentTable + '.' + table + '_id';
                 var onright = table + '.id';
 
@@ -170,6 +177,7 @@ cenozo.factory( 'CnBaseListFactory', [
             } );
           }
         }
+        if( 0 < selectList.length ) data.select = { column: selectList };
         if( 0 < joinList.length ) data.modifier.join = joinList;
         if( 0 < whereList.length ) data.modifier.where = whereList;
 
@@ -294,7 +302,7 @@ cenozo.factory( 'CnHttpFactory', [
       this.path = null;
       this.data = {};
       cnCopyParams( this, params );
-    }
+    };
 
     object.prototype = {
       http: function( method, url ) {

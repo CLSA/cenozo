@@ -15,25 +15,22 @@ define( [], function() {
         this.columnList = {
           user: {
             column: 'user.name',
-            join: true,
             title: 'User'
           },
           site: {
             column: 'site.name',
-            join: true,
             title: 'Site'
           },
           role: {
             column: 'role.name',
-            join: true,
             title: 'Role'
           },
           method: {
             column: 'service.method',
-            join: true,
             title: 'Method'
           },
           path: {
+            column: 'activity.path',
             title: 'Path'
           },
           elapsed: {
@@ -44,8 +41,7 @@ define( [], function() {
           },
           datetime: {
             title: 'Date & Time',
-            filter: 'date:"MMM d,
-            y HH:mm"'
+            filter: 'date:"MMM d, y HH:mm:ss"'
           }
         };
         this.order = { column: 'datetime', reverse: true };

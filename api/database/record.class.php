@@ -650,8 +650,11 @@ abstract class record extends \cenozo\base_object
         $joining_primary_key_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
         $joining_foreign_key_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
     
-        $modifier->cross_join( $joining_table_name, $primary_key_name, $joining_primary_key_name );
-        $modifier->cross_join( $record_type, $joining_foreign_key_name, $foreign_key_name );
+        $modifier->cross_join( $joining_table_name, $foreign_key_name, $joining_foreign_key_name );
+        $modifier->cross_join( $table_name, $joining_primary_key_name, $primary_key_name );
+// TODO: remove the following if everything works
+//        $modifier->cross_join( $joining_table_name, $primary_key_name, $joining_primary_key_name );
+//        $modifier->cross_join( $record_type, $joining_foreign_key_name, $foreign_key_name );
         $modifier->where( $primary_key_name, '=', $primary_key_value );
       }
 
@@ -931,7 +934,7 @@ abstract class record extends \cenozo\base_object
       $select = lib::create( 'database\select' );
       if( 'count' == $return_alternate )
       {
-        $select->add_column( 'COUNT(*)', 'total' );
+        $select->add_column( 'COUNT(*)', 'total', false );
       }
       else if( 'object' == $return_alternate )
       {
@@ -942,22 +945,33 @@ abstract class record extends \cenozo\base_object
         $select->add_all_table_columns();
       }
     }
+
+    // select this table if one hasn't been selected yet
     if( is_null( $select->get_table_name() ) ) $select->from( static::get_table_name() );
 
-    $sql = sprintf( '%s %s',
-                    $select->get_sql(),
-                    is_null( $modifier ) ? '' : $modifier->get_sql() );
-    $return_value = static::db()->get_all( $sql );
-
     if( 'count' == $return_alternate )
-    { // make sure the count is an integer
-      $return_value = intval( $return_value );
+    {
+      $sql = sprintf( '%s %s',
+                      $select->get_sql(),
+                      is_null( $modifier ) ? '' : $modifier->get_sql( true ) );
+
+      // if the modifier has a group statement then we want the number of returned rows
+      $return_value = 0 < count( $modifier->get_group_columns() )
+                    ? count( static::db()->get_all( $sql ) )
+                    : intval( static::db()->get_one( $sql ) );
     }
-    else if( 'object' == $return_alternate )
-    { // convert ids to records
-      $records = array();
-      foreach( $return_value as $row ) $records[] = new static( $row['id'] );
-      $return_value = $records;
+    else
+    {
+      $sql = sprintf( '%s %s',
+                      $select->get_sql(),
+                      is_null( $modifier ) ? '' : $modifier->get_sql() );
+      $return_value = static::db()->get_all( $sql );
+      if( 'object' == $return_alternate )
+      { // convert ids to records
+        $records = array();
+        foreach( $return_value as $row ) $records[] = new static( $row['id'] );
+        $return_value = $records;
+      }
     }
 
     return $return_value;
@@ -1066,10 +1080,8 @@ abstract class record extends \cenozo\base_object
    */
   public static function get_table_name()
   {
-    // Table and class names (without namespaces) should always be identical (with the exception
-    // of the table prefix
-    $prefix = static::db()->get_prefix();
-    return $prefix.substr( strrchr( get_called_class(), '\\' ), 1 );
+    // Table and class names (without namespaces) should always be identical
+    return substr( strrchr( get_called_class(), '\\' ), 1 );
   }
   
   /**
@@ -1206,7 +1218,6 @@ abstract class record extends \cenozo\base_object
 
   /**
    * Returns an array of all extending tables, or an empty array if there are no extending tables.
-   * Note, these names do not include the table_ prefix
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @static

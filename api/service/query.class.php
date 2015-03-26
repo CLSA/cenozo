@@ -39,8 +39,6 @@ class query extends service
 
     $setting_manager = lib::create( 'business\setting_manager' );
 
-    $this->select = lib::create( 'database\select' );
-    $this->select->add_all_table_columns();
     $this->modifier = lib::create( 'database\modifier' );
 
     // restrict some roles when subject is related to a site
@@ -66,6 +64,25 @@ class query extends service
       }
     }
 
+    // set up the select
+    $sel_string = $this->get_argument( 'select', NULL );
+    if( is_null( $sel_string ) ) $this->select = lib::create( 'database\select' );
+    else
+    {
+      try
+      {
+        $select_class_name = lib::get_class_name( 'database\select' );
+        $this->select = $select_class_name::from_json( $sel_string );
+      }
+      catch( \cenozo\exception\base_exception $e )
+      {
+        $this->status->set_code( 400 );
+      }
+    }
+
+    $this->select->add_column( 'id' );
+
+    // set up the modifier
     $mod_string = $this->get_argument( 'modifier', NULL );
     if( !is_null( $mod_string ) )
     {
@@ -98,20 +115,20 @@ class query extends service
       $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
       $parent_record = end( $this->record_list );
 
-      $count_modifier = clone $this->modifier;
-      $count_modifier->limit( NULL );
-
       // if we have a parent then select from it, otherwise do a general select
+      $parent_record_method = sprintf( 'get_%s_count', $subject );
+      $total = false === $parent_record
+             ? $record_class_name::count( $this->modifier )
+             : $parent_record->$parent_record_method( $this->modifier );
+      $parent_record_method = sprintf( 'get_%s_list', $subject );
+      $results = false === $parent_record
+               ? $record_class_name::select( $this->select, $this->modifier )
+               : $parent_record->$parent_record_method( $this->select, $this->modifier );
+
       $this->data['limit'] = $this->modifier->get_limit();
       $this->data['offset'] = $this->modifier->get_offset();
-      $parent_record_method = sprintf( 'get_%s_count', $subject );
-      $this->data['total'] = false === $parent_record
-                           ? $record_class_name::count( $count_modifier )
-                           : $parent_record->$parent_record_method( $count_modifier );
-      $parent_record_method = sprintf( 'get_%s_list', $subject );
-      $this->data['results'] = false === $parent_record
-                             ? $record_class_name::select( $this->select, $this->modifier )
-                             : $parent_record->$parent_record_method( $this->select, $this->modifier );
+      $this->data['total'] = $total;
+      $this->data['results'] = $results;
     }
   }
 

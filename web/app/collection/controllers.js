@@ -13,9 +13,9 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionListCtrl', [
-    '$scope', '$location', 'CnCollectionSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnCollectionSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnCollectionSingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnCollectionSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnCollectionSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnCollectionSingleton, CnModalRestrictFactory );
     }
   ] );
 

@@ -33,15 +33,13 @@ function CnBaseAddCtrl( $scope, singleton, createRecordFn ) {
 }
 
 /* ######################################################################################################## */
-function CnBaseListCtrl( $scope, $location, singleton, modalFactory ) {
+function CnBaseListCtrl( $scope, $state, singleton, modalFactory ) {
   // define scope variables
   $scope.local = singleton;
 
   // define the callbacks
-  if( undefined !== $scope.cnAdd ) {
-    $scope.cbAdd = function() {
-      $location.path( '/' + $scope.local.subject + '/add' );
-    };
+  if( undefined !== $scope.local.cnAdd ) {
+    $scope.cbAdd = function() { $state.go( '^.add' ); };
   }
   
   if( undefined !== $scope.local.cnList.delete ) {
@@ -75,10 +73,8 @@ function CnBaseListCtrl( $scope, $location, singleton, modalFactory ) {
     };
   }
 
-  if( undefined !== $scope.cnView ) {
-    $scope.cbView = function( id ) {
-      $location.path( '/' + $scope.local.subject + '/' + id );
-    };
+  if( undefined !== $scope.local.cnView ) {
+    $scope.cbView = function( id ) { $state.go( '^.view', { id: id } ); };
   }
 
   // initialization

@@ -1,47 +1,48 @@
-<div class="modal-header">
-  <button type="button" class="close" aria-hidden="true" ng-click="local.cancel()">&times;</button>
-  <h4 class="modal-title">Restrict listing</h4>
-</div>
-<div class="modal-body">
-  <p class="text-info">
-    Provide how you wish to restrict the <em>{{ local.subject }}</em> listing
-    based on the <em>{{ local.column }}</em> column:
-  </p>
-  <hr />
-  <div class="form-group">
-    <label for="comparison" class="col-sm-3 control-label">Comparison</label>
-    <div class="col-sm-9">
-      <select name="comparison" ng-model="local.comparison.test" class="form-control">
-        <option value="&lt;=&gt;">is</option>
-        <option value="&lt;&gt;">is not</option>
-        <option value="like">is like</option>
-        <option value="not like">is not like</option>
-        <option value="&gt;">greater than</option>
-        <option value="&gt;=">greater or equal to</option>
-        <option value="&lt;">lesser than</option>
-        <option value="&lt;=">lesser or equal to</option>
-      </select>
+<form ng-submit="local.ok( local.comparison )">
+  <div class="modal-header">
+    <button type="button" class="close" aria-hidden="true" ng-click="local.cancel()">&times;</button>
+    <h4 class="modal-title">Restrict listing</h4>
+  </div>
+  <div class="modal-body">
+    <p class="text-info">
+      Provide how you wish to restrict the <em>{{ local.subject }}</em> listing
+      based on the <em>{{ local.column }}</em> column:
+    </p>
+    <hr />
+    <div class="form-group">
+      <label for="comparison" class="col-sm-3 control-label">Comparison</label>
+      <div class="col-sm-9">
+        <select name="comparison" ng-model="local.comparison.test" class="form-control">
+          <option value="&lt;=&gt;">is</option>
+          <option value="&lt;&gt;">is not</option>
+          <option value="like">is like</option>
+          <option value="not like">is not like</option>
+          <option value="&gt;">greater than</option>
+          <option value="&gt;=">greater or equal to</option>
+          <option value="&lt;">less than</option>
+          <option value="&lt;=">less or equal to</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="value" class="col-sm-3 control-label">Value</label>
+      <div class="col-sm-9">
+        <input name="value"
+               ng-model="local.comparison.value"
+               class="form-control"
+               type="text"
+               placeholder="restriction value"
+               required />
+      </div>
     </div>
   </div>
-  <div class="form-group">
-    <label for="value" class="col-sm-3 control-label">Value</label>
-    <div class="col-sm-9">
-      <input name="value"
-             ng-model="local.comparison.value"
-             class="form-control"
-             type="text"
-             placeholder="restriction value"
-             required />
-    </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-if="!local.preExisting"
+            ng-click="local.cancel()">Cancel</button>
+    <button type="button" class="btn btn-default"
+            ng-if="local.preExisting"
+            ng-click="local.remove()">Remove</button>
+    <button type="submit" class="btn btn-primary">OK</button>
   </div>
-</div>
-<div class="modal-footer">
-  <button type="button" class="btn btn-default"
-          ng-if="!local.preExisting"
-          ng-click="local.cancel()">Cancel</button>
-  <button type="button" class="btn btn-default"
-          ng-if="local.preExisting"
-          ng-click="local.remove()">Remove</button>
-  <button type="submit" class="btn btn-primary"
-          ng-click="local.ok( local.comparison )">OK</button>
-</div>
+</form>
