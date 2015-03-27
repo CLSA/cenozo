@@ -22,7 +22,16 @@ define( [], function() {
         // factory customizations start here
         this.columnList = {
           name: { title: 'Name' },
-          version: { title: 'Version' }
+          active: {
+            title: 'Active',
+            filter: 'cnYesNo'
+          },
+          first_name: { title: 'First' },
+          last_name: { title: 'Last' },
+          last_datetime: {
+            title: 'Last Activity',
+            filter: 'date:"MMM d, y HH:mm"'
+          }
         };
         this.order = { column: 'name', reverse: false };
         // factory customizations end here

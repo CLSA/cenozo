@@ -37,6 +37,13 @@ class query extends \cenozo\service\query
   {
     parent::prepare();
 
+    // only select the site and role's id and name
+    $this->select->remove_column(); // remove all columns
+    $this->select->add_column( 'site_id' );
+    $this->select->add_table_column( 'site', 'name', 'site_name' );
+    $this->select->add_column( 'role_id' );
+    $this->select->add_table_column( 'role', 'name', 'role_name' );
+
     // restrict to the current user's access to the current application
     $this->modifier->join( 'site', 'access.site_id', 'site.id' );
     $this->modifier->join( 'role', 'access.role_id', 'role.id' );
@@ -49,37 +56,5 @@ class query extends \cenozo\service\query
 
     // remove restricting to the current site only
     $this->modifier->remove_where( 'site_id' );
-  }
-
-  /**
-   * TODO: document
-   */
-  protected function execute()
-  {
-    parent::execute();
-
-    // add names of sites and roles
-    $site_class_name = lib::get_class_name( 'database\site' );
-    $role_class_name = lib::get_class_name( 'database\role' );
-    
-    // create lookup arrays
-    $site_select = lib::create( 'database\select' );
-    $site_select->add_column( 'id' );
-    $site_select->add_column( 'name' );
-    $site_list = array();
-    foreach( $site_class_name::select( $site_select ) as $row ) $site_list[$row['id']] = $row['name'];
-
-    $role_select = lib::create( 'database\select' );
-    $role_select->add_column( 'id' );
-    $role_select->add_column( 'name' );
-    $role_list = array();
-    foreach( $role_class_name::select( $role_select ) as $row ) $role_list[$row['id']] = $row['name'];
-
-    foreach( $this->data['results'] as $index => $row )
-    {
-      unset( $this->data['results'][$index]['user_id'] );
-      $this->data['results'][$index]['site_name'] = $site_list[$row['site_id']];
-      $this->data['results'][$index]['role_name'] = $role_list[$row['role_id']];
-    }
   }
 }

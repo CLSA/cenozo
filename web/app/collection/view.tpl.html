@@ -1,12 +1,41 @@
 <div class="container-fluid bg-primary rounded-top"><h4>Viewing Collection Details</h4></div>
 <cn-record-view subject="local.subject" cb-delete="cbDelete()">
-  <cn-record-input form="form" subject="collection" key="id" title="ID">
-    <input name="id"
-           ng-model="record.id"
+  <cn-record-input form="form" subject="collection" key="name" title="Name">
+    <input name="name"
+           tooltip="May only contain letters, numbers and underscores."
+           ng-model="local.cnView.record.name"
+           cn-change="cbPatch( 'name' )"
            class="form-control"
            type="text"
-           placeholder="ID"
            autocomplete="off"
-           required /></div>
+           required /></input>
+  </cn-record-input>
+  <cn-record-input form="form" subject="collection" key="active" title="Active">
+    <select name="active"
+            tooltip="Inactive collections will not show as options in reports or to external applications."
+            ng-model="local.cnView.record.active"
+            cn-change="cbPatch( 'active' )"
+            class="form-control">
+      <option value="1">Yes</option>
+      <option value="0">No</option>
+    </select>
+  </cn-record-input>
+  <cn-record-input form="form" subject="collection" key="locked" title="Locked">
+    <select name="locked"
+            tooltip="If locked then only users in the access list will be able to make changes to the collection."
+            ng-model="local.cnView.record.locked"
+            cn-change="cbPatch( 'locked' )"
+            class="form-control">
+      <option value="1">Yes</option>
+      <option value="0">No</option>
+    </select>
+  </cn-record-input>
+  <cn-record-input form="form" subject="collection" key="description" title="Description">
+    <textarea name="description"
+              ng-model="local.cnView.record.description"
+              cn-change="cbPatch( 'description' )"
+              class="form-control"
+              type="text"
+              /></textarea>
   </cn-record-input>
 </cn-record-view>

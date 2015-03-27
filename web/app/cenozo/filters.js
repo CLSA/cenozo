@@ -71,3 +71,11 @@ cenozo.filter( 'cnUCWords', function() {
     return input;
   };
 } );
+
+/* ######################################################################################################## */
+cenozo.filter( 'cnYesNo', function() {
+  return function( input ) {
+    if( "boolean" != typeof input ) input = 0 != input;
+    return input ? 'yes' : 'no';
+  };
+} );

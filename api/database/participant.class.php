@@ -45,9 +45,13 @@ class participant extends person
     if( $db_application->release_based )
     {
       // make sure to only include sites belonging to this application
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
+      $join_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+      $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
+
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'application_has_participant.application_id', '=', $db_application->id );
-      $modifier->where( 'application_has_participant.datetime', '!=', NULL );
+      $modifier->join_modifier( 'application_has_participant', $join_mod );
     }
 
     return parent::select( $select, $modifier, $return_alternate );

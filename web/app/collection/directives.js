@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnCollectionAdd', function () {
     return {
-      templateUrl: 'app/Collection/add.tpl.html',
+      templateUrl: 'app/collection/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnCollectionView', function () {
     return {
-      templateUrl: 'app/Collection/view.tpl.html',
+      templateUrl: 'app/collection/view.tpl.html',
       restrict: 'E'
     };
   } );

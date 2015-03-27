@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnQuotaAdd', function () {
     return {
-      templateUrl: 'app/Quota/add.tpl.html',
+      templateUrl: 'app/quota/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnQuotaView', function () {
     return {
-      templateUrl: 'app/Quota/view.tpl.html',
+      templateUrl: 'app/quota/view.tpl.html',
       restrict: 'E'
     };
   } );

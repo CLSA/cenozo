@@ -57,7 +57,7 @@ class select extends \cenozo\base_object
    * Note that this will overwrite any existing column with the same parameters.
    * @param string $table The table to select the column from
    * @param string $column The column to select
-   * @param string $alias The optional alias for the column
+   * @param string $alias The optional alias for the column (must be unique)
    * @param boolean $table_prefix Whether to prefix the column with the table name
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
@@ -72,6 +72,12 @@ class select extends \cenozo\base_object
 
     if( is_null( $table ) ) $table = '';
     if( is_null( $alias ) ) $alias = $column;
+
+    // remove any other column with the same alias
+    foreach( $this->column_list as $t => $c )
+      foreach( $c as $a => $details )
+        if( $a == $alias ) unset( $this->column_list[$t][$a] );
+
     if( !array_key_exists( $table, $this->column_list ) ) $this->column_list[$table] = array();
     $this->column_list[$table][$alias] = array( 'column' => $column, 'table_prefix' => $table_prefix );
   }
@@ -183,6 +189,34 @@ class select extends \cenozo\base_object
   public function has_columns()
   {
     return 0 < count( $this->column_list );
+  }
+
+  /**
+   * Returns whether a column from a particular table has been added to the select or not
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table The table to search for
+   * @param string $column The column (or alias) to search for (optional)
+   * @return boolean
+   * @access public
+   */
+  public function has_table_column( $table, $column = NULL )
+  {
+    return array_key_exists( $table, $this->column_list ) &&
+           ( is_null( $column ) || array_key_exists( $column, $this->column_list[$table] ) );
+  }
+
+  /**
+   * Returns whether any columns from a particular table have been added to the select or not
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table The table to search for
+   * @return boolean
+   * @access public
+   */
+  public function has_table_columns( $table )
+  {
+    return $this->has_table_column( $table );
   }
 
   /**

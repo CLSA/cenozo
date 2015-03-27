@@ -199,9 +199,15 @@ cenozo.factory( 'CnBaseListFactory', [
         } ).query().then( function success( response ) {
           // change datetimes to Date object
           response.data.results.forEach( function( element, index, array ) {
-            for( var key in array[index] )
-              if( 0 <= key.indexOf( 'date' ) && null !== array[index][key] )
-                array[index][key] = cnDatetimeToObject( array[index][key] );
+            for( var key in array[index] ) {
+              if( null !== array[index][key] ) {
+                if( 0 <= key.regexIndexOf( /^date|[^a-z|\Wdate|_date]/ ) )
+                  array[index][key] = cnDatetimeToObject( array[index][key] );
+                else if( 0 <= key.regexIndexOf( /^rank|\Wrank|_rank/ ) ||
+                         0 <= key.regexIndexOf( /^count|\Wcount|_count/ ) )
+                  array[index][key] = parseInt( array[index][key] );
+              }
+            }
           } );
 
           if( replace ) thisRef.cache = [];
@@ -476,7 +482,7 @@ cenozo.factory( 'CnPaginationFactory',
 );
 
 /* ######################################################################################################## */
-cenozo.factory( 'CnStateSingleton', [
+cenozo.factory( 'CnAppSingleton', [
   'CnHttpFactory',
   function( CnHttpFactory ) {
     var object = function() {

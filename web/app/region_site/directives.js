@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnRegionSiteAdd', function () {
     return {
-      templateUrl: 'app/RegionSite/add.tpl.html',
+      templateUrl: 'app/region_site/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnRegionSiteView', function () {
     return {
-      templateUrl: 'app/RegionSite/view.tpl.html',
+      templateUrl: 'app/region_site/view.tpl.html',
       restrict: 'E'
     };
   } );

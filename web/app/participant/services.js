@@ -21,9 +21,29 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          uid: { title: 'UID' },
+          first: {
+            column: 'participant.first_name',
+            title: 'First'
+          },
+          last: {
+            column: 'participant.last_name',
+            title: 'Last'
+          },
+          active: {
+            title: 'Active',
+            filter: 'cnYesNo'
+          },
+          source: {
+            column: 'source.name',
+            title: 'Source'
+          },
+          site: {
+            column: 'site.name',
+            title: 'Site'
+          },
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'uid', reverse: false };
         // factory customizations end here
         //////////////////////////////////
 

@@ -21,9 +21,11 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          name: { title: 'Name' },
+          rank: { title: 'Rank' },
+          participant_count: { title: 'Participants' }
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'rank', reverse: false };
         // factory customizations end here
         //////////////////////////////////
 

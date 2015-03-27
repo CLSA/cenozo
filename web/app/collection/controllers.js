@@ -4,10 +4,9 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionAddCtrl', [
-    '$scope', 'CnCollectionSingleton',
-    function( $scope, CnCollectionSingleton ) {
-      // use base class to create controller
-      CnBaseAddCtrl.call( this, $scope, CnCollectionSingleton );
+    '$scope', '$state', 'CnCollectionSingleton',
+    function( $scope, $state, CnCollectionSingleton ) {
+      CnBaseAddCtrl.call( this, $scope, $state, CnCollectionSingleton );
     }
   ] );
 
@@ -21,9 +20,9 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionViewCtrl', [
-    '$scope', '$stateParams', 'CnCollectionSingleton',
-    function( $scope, $stateParams, CnCollectionSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnCollectionSingleton );
+    '$scope', '$state', '$stateParams', 'CnCollectionSingleton',
+    function( $scope, $state, $stateParams, CnCollectionSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnCollectionSingleton );
       $scope.local.cnView.load( $stateParams.id );
     }
   ] );

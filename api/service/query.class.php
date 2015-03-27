@@ -66,13 +66,18 @@ class query extends service
 
     // set up the select
     $sel_string = $this->get_argument( 'select', NULL );
-    if( is_null( $sel_string ) ) $this->select = lib::create( 'database\select' );
+    if( is_null( $sel_string ) )
+    {
+      $this->select = lib::create( 'database\select' );
+      $this->select->add_all_table_columns();
+    }
     else
     {
       try
       {
         $select_class_name = lib::get_class_name( 'database\select' );
         $this->select = $select_class_name::from_json( $sel_string );
+        $this->select->add_column( 'id' ); // make sure id is in the select list
       }
       catch( \cenozo\exception\base_exception $e )
       {
@@ -80,7 +85,6 @@ class query extends service
       }
     }
 
-    $this->select->add_column( 'id' );
 
     // set up the modifier
     $mod_string = $this->get_argument( 'modifier', NULL );

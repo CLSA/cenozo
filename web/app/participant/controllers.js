@@ -4,26 +4,25 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ParticipantAddCtrl', [
-    '$scope', 'CnParticipantSingleton',
-    function( $scope, CnParticipantSingleton ) {
-      // use base class to create controller
-      CnBaseAddCtrl.call( this, $scope, CnParticipantSingleton );
+    '$scope', '$state', 'CnParticipantSingleton',
+    function( $scope, $state, CnParticipantSingleton ) {
+      CnBaseAddCtrl.call( this, $scope, $state, CnParticipantSingleton );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ParticipantListCtrl', [
-    '$scope', '$location', 'CnParticipantSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnParticipantSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnParticipantSingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnParticipantSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnParticipantSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnParticipantSingleton, CnModalRestrictFactory );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ParticipantViewCtrl', [
-    '$scope', '$stateParams', 'CnParticipantSingleton',
-    function( $scope, $stateParams, CnParticipantSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnParticipantSingleton );
+    '$scope', '$state', '$stateParams', 'CnParticipantSingleton',
+    function( $scope, $state, $stateParams, CnParticipantSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnParticipantSingleton );
       $scope.local.cnView.load( $stateParams.id );
     }
   ] );

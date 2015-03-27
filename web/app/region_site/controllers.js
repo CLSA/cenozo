@@ -1,30 +1,30 @@
-'use strict';
+define( [], function() {
 
-try { var region_site = angular.module( 'region_site' ); }
-catch( err ) { var region_site = angular.module( 'region_site', [] ); }
+  'use strict';
 
-/* ######################################################################################################## */
-region_site.controller( 'RegionSiteAddCtrl', [
-  '$scope', 'CnRegionSiteSingleton',
-  function( $scope, CnRegionSiteSingleton ) {
-    // use base class to create controller
-    CnBaseAddCtrl.call( this, $scope, CnRegionSiteSingleton );
-  }
-] );
+  /* ######################################################################################################## */
+  cnCachedProviders.controller( 'RegionSiteAddCtrl', [
+    '$scope', '$state', 'CnRegionSiteSingleton',
+    function( $scope, $state, CnRegionSiteSingleton ) {
+      CnBaseAddCtrl.call( this, $scope, CnRegionSiteSingleton );
+    }
+  ] );
 
-/* ######################################################################################################## */
-region_site.controller( 'RegionSiteListCtrl', [
-  '$scope', '$location', 'CnRegionSiteSingleton', 'CnModalRestrictFactory',
-  function( $scope, $location, CnRegionSiteSingleton, CnModalRestrictFactory ) {
-    CnBaseListCtrl.call( this, $scope, $location, CnRegionSiteSingleton, CnModalRestrictFactory );
-  }
-] );
+  /* ######################################################################################################## */
+  cnCachedProviders.controller( 'RegionSiteListCtrl', [
+    '$scope', '$state', 'CnRegionSiteSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnRegionSiteSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnRegionSiteSingleton, CnModalRestrictFactory );
+    }
+  ] );
 
-/* ######################################################################################################## */
-region_site.controller( 'RegionSiteViewCtrl', [
-  '$scope', '$stateParams', 'CnRegionSiteSingleton',
-  function( $scope, $stateParams, CnRegionSiteSingleton ) {
-    CnBaseViewCtrl.call( this, $scope, CnRegionSiteSingleton );
-    $scope.local.cnView.load( $stateParams.id );
-  }
-] );
+  /* ######################################################################################################## */
+  cnCachedProviders.controller( 'RegionSiteViewCtrl', [
+    '$scope', '$state', '$stateParams', 'CnRegionSiteSingleton',
+    function( $scope, $state, $stateParams, CnRegionSiteSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnRegionSiteSingleton );
+      $scope.local.cnView.load( $stateParams.id );
+    }
+  ] );
+
+} );

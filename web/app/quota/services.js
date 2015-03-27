@@ -21,9 +21,19 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          site: {
+            column: 'site.name',
+            title: 'Site'
+          },
+          region: {
+            column: 'region.name',
+            title: 'Region'
+          },
+          gender: { title: 'Gender' },
+          age_group_range: { title: 'Age Group' },
+          population: { title: 'Population' }
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'site', reverse: false };
         // factory customizations end here
         //////////////////////////////////
 

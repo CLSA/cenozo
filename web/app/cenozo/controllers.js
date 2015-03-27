@@ -1,7 +1,7 @@
 'use strict';
 
 /* ######################################################################################################## */
-function CnBaseAddCtrl( $scope, singleton, createRecordFn ) {
+function CnBaseAddCtrl( $scope, $state, singleton, createRecordFn ) {
   // initialization function
   if( undefined === createRecordFn ) createRecordFn = function() { return {}; };
 
@@ -17,6 +17,7 @@ function CnBaseAddCtrl( $scope, singleton, createRecordFn ) {
           $scope.record = createRecordFn();
           $scope.form.$setPristine();
           $scope.local.cnAdd.show = false;
+          $state.go( $scope.local.subject + '.list' );
         },
         function error( response ) {
           if( 409 == response.status ) {
@@ -82,7 +83,7 @@ function CnBaseListCtrl( $scope, $state, singleton, modalFactory ) {
 }
 
 /* ######################################################################################################## */
-function CnBaseViewCtrl( $scope, singleton ) {
+function CnBaseViewCtrl( $scope, $state, singleton ) {
   // define scope variables
   $scope.local = singleton;
 

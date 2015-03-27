@@ -59,6 +59,10 @@ class modifier extends \cenozo\base_object
 
     // index the join under the table's alias (or the table name if there is none)
     if( is_null( $alias ) ) $alias = $table;
+
+    // replace existing joins (because order matters)
+    if( array_key_exists( $alias, $this->join_list ) ) unset( $this->join_list[$alias] );
+
     $this->join_list[$alias] = array( 'table' => $table,
                                       'modifier' => $modifier,
                                       'type' => strtoupper( $type ) );

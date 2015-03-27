@@ -13,17 +13,17 @@ catch( err ) {
  * TODO: document
  */
 cenozo.directive( 'cnApplicationTitle', [
-  'CnStateSingleton',
-  function( CnStateSingleton ) {
+  'CnAppSingleton',
+  function( CnAppSingleton ) {
     return {
       template: '{{ application.title }} {{ application.version }}',
       restrict: 'E',
       transclude: true,
       scope: true,
       link: function( scope ) {
-        var cnState = CnStateSingleton;
-        cnState.promise.then( function() {
-          scope.application = cnState.application;
+        var cnApp = CnAppSingleton;
+        cnApp.promise.then( function() {
+          scope.application = cnApp.application;
         } );
       }
     };
@@ -64,22 +64,21 @@ cenozo.directive( 'cnChange', function() {
  * TODO: document
  */
 cenozo.directive( 'cnClock', [
-  'CnStateSingleton', '$interval',
-  function( CnStateSingleton, $interval ) {
+  'CnAppSingleton', '$interval',
+  function( CnAppSingleton, $interval ) {
     return {
       restrict: 'E',
       transclude: true,
       scope: true,
       link: function( scope, element, attrs ) {
-        var cnState = CnStateSingleton;
-
-        cnState.promise.then( function() {
+        var cnApp = CnAppSingleton;
+        cnApp.promise.then( function() {
           function updateTime() {
             var nowObj = new Date();
-            nowObj.setTime( nowObj.getTime() + cnState.site.timezoneOffset * 1000 );
+            nowObj.setTime( nowObj.getTime() + cnApp.site.timezoneOffset * 1000 );
             var hours = ( nowObj.getUTCHours() < 10 ? '0' : '' ) + nowObj.getUTCHours();
             var minutes = ( nowObj.getUTCMinutes() < 10 ? '0' : '' ) + nowObj.getUTCMinutes();
-            element.text( hours + ':' + minutes + ' ' + cnState.site.timezoneName );
+            element.text( hours + ':' + minutes + ' ' + cnApp.site.timezoneName );
           }
 
           updateTime();
@@ -566,19 +565,19 @@ cenozo.directive( 'cnRecordView', [
  * TODO: document
  */
 cenozo.directive( 'cnSiteRolePicker', [
-  '$window', 'CnStateSingleton',
-  function( $window, CnStateSingleton ) {
+  '$window', 'CnAppSingleton',
+  function( $window, CnAppSingleton ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/site-role-picker.tpl.html',
       restrict: 'E',
       transclude: true,
       scope: true,
       link: function( scope ) {
-        var cnState = CnStateSingleton;
-        cnState.promise.then( function() {
-          scope.site = cnState.site;
-          scope.role = cnState.role;
-          scope.siteList = cnState.siteList;
+        var cnApp = CnAppSingleton;
+        cnApp.promise.then( function() {
+          scope.site = cnApp.site;
+          scope.role = cnApp.role;
+          scope.siteList = cnApp.siteList;
 
           // pre-select the role list
           for( var i = 0; i < scope.siteList.length; i++ )
@@ -587,11 +586,11 @@ cenozo.directive( 'cnSiteRolePicker', [
         } );
 
         scope.cbSetSite = function( id ) {
-          cnState.setSite( id ).then( function() { $window.location.reload(); } );
+          cnApp.setSite( id ).then( function() { $window.location.reload(); } );
         }
 
         scope.cbSetRole = function( id ) {
-          cnState.setRole( id ).then( function() { $window.location.reload(); } );
+          cnApp.setRole( id ).then( function() { $window.location.reload(); } );
         }
       }
     };

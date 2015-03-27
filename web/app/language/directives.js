@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnLanguageAdd', function () {
     return {
-      templateUrl: 'app/Language/add.tpl.html',
+      templateUrl: 'app/language/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnLanguageView', function () {
     return {
-      templateUrl: 'app/Language/view.tpl.html',
+      templateUrl: 'app/language/view.tpl.html',
       restrict: 'E'
     };
   } );

@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace cenozo\service\collection;
+namespace cenozo\service\state;
 use cenozo\lib, cenozo\log;
 
 /**
@@ -27,11 +27,10 @@ class query extends \cenozo\service\query
     // add the total number of participants
     if( $this->select->has_table_column( '', 'participant_count' ) )
     {
-      $this->modifier->left_join( 'collection_has_participant',
-        'collection.id', 'collection_has_participant.collection_id' );
-      $this->modifier->group( 'collection.id' );
+      $this->modifier->left_join( 'participant', 'state.id', 'participant.state_id' );
+      $this->modifier->group( 'state.id' );
       $this->select->add_column(
-        'IF( collection_has_participant.collection_id IS NULL, 0, COUNT(*) )', 'participant_count', false );
+        'IF( participant.state_id IS NULL, 0, COUNT(*) )', 'participant_count', false );
     }
   }
 }

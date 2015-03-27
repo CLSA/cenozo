@@ -4,35 +4,25 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'SiteAddCtrl', [
-    '$scope', 'CnSiteSingleton',
-    function( $scope, CnSiteSingleton ) {
-      // use base class to create controller
-      CnBaseAddCtrl.call(
-        this,
-        $scope,
-        CnSiteSingleton,
-        function createSiteRecord() {
-          return {
-            timezone: $scope.local.metadata.timezoneList[0]
-          };
-        }
-      );
+    '$scope', '$state', 'CnSiteSingleton',
+    function( $scope, $state, CnSiteSingleton ) {
+      CnBaseAddCtrl.call( this, $scope, CnSiteSingleton );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'SiteListCtrl', [
-    '$scope', '$location', 'CnSiteSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnSiteSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnSiteSingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnSiteSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnSiteSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnSiteSingleton, CnModalRestrictFactory );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'SiteViewCtrl', [
-    '$scope', '$stateParams', 'CnSiteSingleton',
-    function( $scope, $stateParams, CnSiteSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnSiteSingleton );
+    '$scope', '$state', '$stateParams', 'CnSiteSingleton',
+    function( $scope, $state, $stateParams, CnSiteSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnSiteSingleton );
       $scope.local.cnView.load( $stateParams.id );
     }
   ] );

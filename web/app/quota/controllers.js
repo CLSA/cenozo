@@ -4,26 +4,25 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QuotaAddCtrl', [
-    '$scope', 'CnQuotaSingleton',
-    function( $scope, CnQuotaSingleton ) {
-      // use base class to create controller
+    '$scope', '$state', 'CnQuotaSingleton',
+    function( $scope, $state, CnQuotaSingleton ) {
       CnBaseAddCtrl.call( this, $scope, CnQuotaSingleton );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QuotaListCtrl', [
-    '$scope', '$location', 'CnQuotaSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnQuotaSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnQuotaSingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnQuotaSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnQuotaSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnQuotaSingleton, CnModalRestrictFactory );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QuotaViewCtrl', [
-    '$scope', '$stateParams', 'CnQuotaSingleton',
-    function( $scope, $stateParams, CnQuotaSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnQuotaSingleton );
+    '$scope', '$state', '$stateParams', 'CnQuotaSingleton',
+    function( $scope, $state, $stateParams, CnQuotaSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnQuotaSingleton );
       $scope.local.cnView.load( $stateParams.id );
     }
   ] );

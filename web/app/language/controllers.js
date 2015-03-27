@@ -4,26 +4,25 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'LanguageAddCtrl', [
-    '$scope', 'CnLanguageSingleton',
-    function( $scope, CnLanguageSingleton ) {
-      // use base class to create controller
+    '$scope', '$state', 'CnLanguageSingleton',
+    function( $scope, $state, CnLanguageSingleton ) {
       CnBaseAddCtrl.call( this, $scope, CnLanguageSingleton );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'LanguageListCtrl', [
-    '$scope', '$location', 'CnLanguageSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnLanguageSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnLanguageSingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnLanguageSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnLanguageSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnLanguageSingleton, CnModalRestrictFactory );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'LanguageViewCtrl', [
-    '$scope', '$stateParams', 'CnLanguageSingleton',
-    function( $scope, $stateParams, CnLanguageSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnLanguageSingleton );
+    '$scope', '$state', '$stateParams', 'CnLanguageSingleton',
+    function( $scope, $state, $stateParams, CnLanguageSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnLanguageSingleton );
       $scope.local.cnView.load( $stateParams.id );
     }
   ] );

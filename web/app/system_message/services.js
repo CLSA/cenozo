@@ -21,9 +21,20 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          site: {
+            column: 'site.name',
+            title: 'Site'
+          },
+          role: {
+            column: 'role.name',
+            title: 'Role'
+          },
+          title: {
+            column: 'system_message.title',
+            title: 'Title'
+          }
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'title', reverse: false };
         // factory customizations end here
         //////////////////////////////////
 

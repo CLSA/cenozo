@@ -4,9 +4,9 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ActivityListCtrl', [
-    '$scope', '$location', 'CnActivitySingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnActivitySingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnActivitySingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnActivitySingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnActivitySingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnActivitySingleton, CnModalRestrictFactory );
     }
   ] );
 

@@ -71,7 +71,7 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, module ) {
     var state = module.name + '.' + action;
     var url = '/' + action;
     if( 'view' == action ) url += '/{id}';
-    var controller = cnSnakeToCamel( module.name + '_' + action + '_ctrl', true );
+    var controller = ( module.name + '_' + action + '_ctrl' ).snakeToCamel( true );
     var templateUrl = baseUrl + action + '.tpl.html';
 
     $stateProvider.state( state, {
@@ -82,15 +82,20 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, module ) {
   }
 };
 
-window.cnSnakeToCamel = function cnSnakeToCamel( input, first ) {
+String.prototype.regexIndexOf = function( regex, startpos ) {
+  var indexOf = this.substring( startpos || 0 ).search( regex );
+  return indexOf >= 0 ? indexOf + ( startpos || 0 ) : indexOf;
+}
+
+String.prototype.snakeToCamel = function cnSnakeToCamel( first ) {
   if( undefined === first ) first = false;
-  var output = input.replace( /(\_\w)/g, function( m ){ return m[1].toUpperCase(); } );
+  var output = this.replace( /(\_\w)/g, function( m ){ return m[1].toUpperCase(); } );
   if( first ) output = output.charAt(0).toUpperCase() + output.slice(1);
   return output;
 };
 
-window.cnCamelToSnake = function cnCamelToSnake( input ) {
-  return input.replace( /([A-Z])/g, function( $1 ){ return '_'+$1.toLowerCase(); } ).replace( /^_/, '' );
+String.prototype.camelToSnake = function cnCamelToSnake() {
+  return this.replace( /([A-Z])/g, function( $1 ){ return '_'+$1.toLowerCase(); } ).replace( /^_/, '' );
 };
 
 window.cnToQueryString = function cnToQueryString( object ) {

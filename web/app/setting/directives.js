@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnSettingAdd', function () {
     return {
-      templateUrl: 'app/Setting/add.tpl.html',
+      templateUrl: 'app/setting/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnSettingView', function () {
     return {
-      templateUrl: 'app/Setting/view.tpl.html',
+      templateUrl: 'app/setting/view.tpl.html',
       restrict: 'E'
     };
   } );
