@@ -423,8 +423,8 @@ cenozo.directive( 'cnReallyClick', function() {
  * TODO: document
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$window',
-  function( $window ) {
+  '$state',
+  function( $state ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -441,7 +441,7 @@ cenozo.directive( 'cnRecordAdd', [
         // pass form to parent (controller) scope
         scope.$parent.form = scope.form;
         // create the default back callback
-        scope.cbBack = function() { $window.history.back(); };
+        scope.cbBack = function() { $state.go( '^.list' ); };
       }
     };
   }
@@ -537,8 +537,8 @@ cenozo.directive( 'cnRecordList', function() {
  * TODO: document
  */
 cenozo.directive( 'cnRecordView', [
-  '$window',
-  function( $window ) {
+  '$state',
+  function( $state ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
@@ -555,7 +555,7 @@ cenozo.directive( 'cnRecordView', [
         // pass form to parent (controller) scope
         scope.$parent.form = scope.form;
         // create the default back callback
-        scope.cbBack = function() { $window.history.back(); };
+        scope.cbBack = function() { $state.go( '^.list' ); };
       }
     };
   }

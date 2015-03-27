@@ -31,7 +31,7 @@ cenozo.factory( 'CnBaseListFactory', [
       this.columnList = {};
       this.total = 0;
       this.order = {};
-      this.data = {};
+      this.listPath = null;
       this.cache = [];
       this.cnPagination = CnPaginationFactory.instance();
       this.loading = false;
@@ -70,10 +70,6 @@ cenozo.factory( 'CnBaseListFactory', [
         } );
       },
 
-      getApiPath: function() {
-        return this.subject;
-      },
-
       orderBy: function( column ) {
         if( null === this.order || column != this.order.column ) {
           this.order = { column: column, reverse: false };
@@ -100,17 +96,12 @@ cenozo.factory( 'CnBaseListFactory', [
       },
 
       reload: function() {
-        return this.load( this.data, true );
+        return this.load( this.listPath, true );
       },
 
-      load: function( data, replace ) {
-        if( undefined === data ) data = {};
+      load: function( path, replace ) {
         if( undefined === replace ) replace = false;
-        this.data = JSON.parse( JSON.stringify( data ) ); // cache the data parameter
-
-        data.modifier = {
-          offset: replace ? 0 : this.cache.length
-        };
+        this.listPath = undefined === path || null === path ? this.subject : path;
 
         // set up the select, join and where list based on the column list
         var selectList = [];
@@ -181,6 +172,8 @@ cenozo.factory( 'CnBaseListFactory', [
             } );
           }
         }
+
+        var data = { modifier: { offset: replace ? 0 : this.cache.length } };
         if( 0 < selectList.length ) data.select = { column: selectList };
         if( 0 < joinList.length ) data.modifier.join = joinList;
         if( 0 < whereList.length ) data.modifier.where = whereList;
@@ -198,7 +191,7 @@ cenozo.factory( 'CnBaseListFactory', [
         this.loading = true;
         var thisRef = this;
         return CnHttpFactory.instance( {
-          path: this.getApiPath(),
+          path: this.listPath,
           data: data
         } ).query().then( function success( response ) {
           // change datetimes to Date object

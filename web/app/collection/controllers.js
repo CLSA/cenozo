@@ -20,8 +20,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnCollectionSingleton',
-    function( $scope, $state, $stateParams, CnCollectionSingleton ) {
+    '$scope', '$state', '$stateParams', 'CnCollectionSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, $stateParams, CnCollectionSingleton, CnModalRestrictFactory ) {
       CnBaseViewCtrl.call( this, $scope, $state, CnCollectionSingleton );
       $scope.local.cnView.load( $stateParams.id );
 
@@ -30,7 +30,7 @@ define( [], function() {
       };
 
       $scope.cbAddRestrictParticipant = function( column ) {
-        var modal = modalFactory.instance( {
+        var modal = CnModalRestrictFactory.instance( {
           subject: 'participant',
           column: $scope.local.cnView.cnParticipantList.columnList[column].title,
           comparison: $scope.local.cnView.cnParticipantList.columnList[column].restrict

@@ -60,12 +60,10 @@ define( [
         // factory customizations start here
         var thisRef = this;
         this.cnParticipantList = CnParticipantListFactory.instance( { subject: 'participant' } );
-        this.cnParticipantList.getApiPath = function() {
-          return 'collection/' + thisRef.record.id + '/participant';
-        };
         this.load = function load( id ) {
+          thisRef.cnParticipantList.cache = [];
           CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnParticipantList.load();
+            thisRef.cnParticipantList.load( 'collection/' + thisRef.record.id + '/participant' );
           } );
         };
         // factory customizations end here
