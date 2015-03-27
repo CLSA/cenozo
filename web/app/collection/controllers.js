@@ -24,6 +24,37 @@ define( [], function() {
     function( $scope, $state, $stateParams, CnCollectionSingleton ) {
       CnBaseViewCtrl.call( this, $scope, $state, CnCollectionSingleton );
       $scope.local.cnView.load( $stateParams.id );
+
+      $scope.cbAddParticipant = function() {
+        concole.log( 'TODO' );
+      };
+
+      $scope.cbAddRestrictParticipant = function( column ) {
+        var modal = modalFactory.instance( {
+          subject: 'participant',
+          column: $scope.local.cnView.cnParticipantList.columnList[column].title,
+          comparison: $scope.local.cnView.cnParticipantList.columnList[column].restrict
+        } ).show();
+        modal.result.then( function( comparison ) {
+          $scope.local.cnView.cnParticipantList.restrict( column, comparison );
+        } );
+      };
+
+      $scope.cbDeleteParticipant = function( id ) {
+        concole.log( 'TODO' );
+      };
+
+      $scope.cbDeleteRestrictParticipant = function( column ) {
+        $scope.local.cnView.cnParticipantList.restrict( column );
+      };
+
+      $scope.cbOrderByParticipant = function( column ) {
+        $scope.local.cnView.cnParticipantList.orderBy( column );
+      };
+
+      $scope.cbViewParticipant = function( id ) {
+        $state.go( '^.^.participant.view', { id: id } );
+      };
     }
   ] );
 

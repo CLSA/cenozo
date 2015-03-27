@@ -1,4 +1,8 @@
-define( [], function() {
+define( [
+  cnCenozoUrl + '/app/participant/controllers.js',
+  cnCenozoUrl + '/app/participant/directives.js',
+  cnCenozoUrl + '/app/participant/services.js'
+], function() {
 
   'use strict';
 
@@ -46,9 +50,32 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnCollectionViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+    'CnBaseViewFactory', 'CnParticipantListFactory',
+    function( CnBaseViewFactory, CnParticipantListFactory ) {
+      var object = function( params ) {
+        var base = CnBaseViewFactory.instance( params );
+        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+
+        ////////////////////////////////////
+        // factory customizations start here
+        var thisRef = this;
+        this.cnParticipantList = CnParticipantListFactory.instance( { subject: 'participant' } );
+        this.cnParticipantList.getApiPath = function() {
+          return 'collection/' + thisRef.record.id + '/participant';
+        };
+        this.load = function load( id ) {
+          CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
+            thisRef.cnParticipantList.load();
+          } );
+        };
+        // factory customizations end here
+        //////////////////////////////////
+
+        cnCopyParams( this, params );
+      }
+
+      object.prototype = CnBaseViewFactory.prototype;
+      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
     }
   ] );
 

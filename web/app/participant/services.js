@@ -21,7 +21,10 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          uid: { title: 'UID' },
+          uid: {
+            column: 'participant.uid',
+            title: 'UID'
+          },
           first: {
             column: 'participant.first_name',
             title: 'First'
@@ -31,6 +34,7 @@ define( [], function() {
             title: 'Last'
           },
           active: {
+            column: 'participant.active',
             title: 'Active',
             filter: 'cnYesNo'
           },
@@ -41,7 +45,7 @@ define( [], function() {
           site: {
             column: 'site.name',
             title: 'Site'
-          },
+          }
         };
         this.order = { column: 'uid', reverse: false };
         // factory customizations end here

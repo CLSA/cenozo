@@ -70,6 +70,10 @@ cenozo.factory( 'CnBaseListFactory', [
         } );
       },
 
+      getApiPath: function() {
+        return this.subject;
+      },
+
       orderBy: function( column ) {
         if( null === this.order || column != this.order.column ) {
           this.order = { column: column, reverse: false };
@@ -194,7 +198,7 @@ cenozo.factory( 'CnBaseListFactory', [
         this.loading = true;
         var thisRef = this;
         return CnHttpFactory.instance( {
-          path: this.subject,
+          path: this.getApiPath(),
           data: data
         } ).query().then( function success( response ) {
           // change datetimes to Date object
@@ -241,7 +245,7 @@ cenozo.factory( 'CnBaseViewFactory', [
     object.prototype = {
       load: function( id ) {
         var thisRef = this;
-        CnHttpFactory.instance( {
+        return CnHttpFactory.instance( {
           path: this.subject + '/' + id
         } ).get().then( function success( response ) {
           thisRef.record = response.data;

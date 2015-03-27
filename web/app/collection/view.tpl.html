@@ -39,3 +39,13 @@
               /></textarea>
   </cn-record-input>
 </cn-record-view>
+<div class="vertical-spacer"></div>
+<div class="container-fluid bg-primary rounded-top"><h4>Collection Participants</h4></div>
+<cn-record-list subject="participant"
+                local="local.cnView.cnParticipantList"
+                cb-add="cbAddParticipant()"
+                cb-add-restrict="cbAddRestrictParticipant( column )"
+                cb-delete="cbDeleteParticipant( id )"
+                cb-delete-restrict="cbDeleteRestrictParticipant( column )"
+                cb-order-by="cbOrderByParticipant( column )"
+                cb-view="cbViewParticipant( id )"></cn-record-list>
