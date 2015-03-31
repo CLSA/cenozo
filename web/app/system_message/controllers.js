@@ -4,26 +4,31 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'SystemMessageAddCtrl', [
-    '$scope', '$state', 'CnSystemMessageSingleton',
-    function( $scope, $state, CnSystemMessageSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, CnSystemMessageSingleton );
+    '$scope', 'CnSystemMessageSingleton',
+    function( $scope, CnSystemMessageSingleton ) {
+      $scope.cnAdd = CnSystemMessageSingleton.cnAdd;
+      $scope.cnList = CnSystemMessageSingleton.cnList;
+      $scope.record = {};
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'SystemMessageListCtrl', [
-    '$scope', '$state', 'CnSystemMessageSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnSystemMessageSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnSystemMessageSingleton, CnModalRestrictFactory );
+    '$scope', 'CnSystemMessageSingleton',
+    function( $scope, CnSystemMessageSingleton ) {
+      $scope.cnList = CnSystemMessageSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'SystemMessageViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnSystemMessageSingleton',
-    function( $scope, $state, $stateParams, CnSystemMessageSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnSystemMessageSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnSystemMessageSingleton',
+    function( $stateParams, $scope, CnSystemMessageSingleton ) {
+      $scope.cnList = CnSystemMessageSingleton.cnList;
+      $scope.cnView = CnSystemMessageSingleton.cnView;
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

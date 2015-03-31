@@ -36,29 +36,36 @@ cenozo.directive( 'cnApplicationTitle', [
  * to the standard ngChange directive.
  * @attr self
  */
-cenozo.directive( 'cnChange', function() {
-  return {
-    restrict: 'A',
-    require: 'ngModel',
-    link: function( scope, element, attrs, ctrl ) {
-      if( 'checkbox' === attrs.type ||
-          'radio' === attrs.type ||
-          'SELECT' === element[0].tagName ) {
-        ctrl.$viewChangeListeners.push( function() {
-          scope.$eval( attrs.cnChange );
-        } );
-      } else {
-        var oldValue = null;
-        element.bind( 'focus', function() {
-          scope.$timeout( function() { oldValue = element.val(); } );
-        } );
-        element.bind( 'blur', function() {
-          scope.$apply( function() { if( element.val() != oldValue ) scope.$eval( attrs.cnChange ); } );
-        } );
+cenozo.directive( 'cnChange', [
+  '$timeout',
+  function( $timeout ) {
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      link: function( scope, element, attrs, ctrl ) {
+        if( 'checkbox' === attrs.type ||
+            'radio' === attrs.type ||
+            'SELECT' === element[0].tagName ) {
+          ctrl.$viewChangeListeners.push( function() {
+            scope.$eval( attrs.cnChange );
+          } );
+        } else {
+          var oldValue = null;
+          element.bind( 'focus', function() {
+            $timeout( function() { oldValue = element.val(); } );
+          } );
+          element.bind( 'blur', function() {
+            scope.$apply( function() {
+              if( element.val() != oldValue ) {
+                scope.$eval( attrs.cnChange );
+              }
+            } );
+          } );
+        }
       }
-    }
-  };
-} );
+    };
+  }
+] );
 
 /**
  * TODO: document
@@ -430,18 +437,34 @@ cenozo.directive( 'cnRecordAdd', [
       restrict: 'E',
       transclude: true,
       scope: {
-        cbBack: '&',
-        cbSubmit: '&'
+        form: '=',
+        addModel: '=',
+        listModel: '='
+      },
+      controller: function( $scope ) {
+        $scope.back = function() { $state.go( '^.list' ); };
+        $scope.submit = function() {
+          $scope.listModel.add( $scope.record ).then(
+            function success( response ) { 
+              $scope.record = $scope.addModel.createRecord();
+              $scope.form.$setPristine();
+              $state.go( $scope.listModel.subject + '.list' );
+            },
+            function error( response ) { 
+              if( 409 == response.status ) { 
+                // report which inputs are included in the conflict
+                for( var i = 0; i < response.data.length; i++ ) { 
+                  $scope.form[response.data[i]].$invalid = true;
+                  $scope.form[response.data[i]].$error.conflict = true;
+                }
+              } else { cnFatalError(); }
+            }
+          );  
+        };
       },
       link: function( scope ) {
-        // pass form to next sibling (transclude) scope
-        scope.$$nextSibling.form = scope.form;
-        // pass record from next sibling (transclude) scope to the directive scope
-        scope.record = scope.$$nextSibling.record;
-        // pass form to parent (controller) scope
         scope.$parent.form = scope.form;
-        // create the default back callback
-        scope.cbBack = function() { $state.go( '^.list' ); };
+        scope.record = scope.$parent.record;
       }
     };
   }
@@ -457,14 +480,11 @@ cenozo.directive( 'cnRecordInput', function() {
     transclude: true,
     scope: {
       form: '=',
-      subject: '@',
       key: '@',
-      title: '@'
+      title: '@',
+      help: '@'
     },
     link: function( scope, element, attrs, ctrl, transclude ) {
-      // pass form to next sibling (transclude) scope
-      scope.$$nextSibling.form = scope.form;
-      
       transclude( scope, function( clone ) {
         // determine whether the transcluded markup has an input
         var hasInput = false;
@@ -482,56 +502,78 @@ cenozo.directive( 'cnRecordInput', function() {
         }
         scope.hasInput = hasInput;
       } );
-    },
-
+    }
   };
 } );
 
 /**
  * TODO: document
  */
-cenozo.directive( 'cnRecordList', function() {
-  return {
-    templateUrl: cnCenozoUrl + '/app/cenozo/record-list.tpl.html',
-    restrict: 'E',
-    scope: {
-      subject: '=',
-      local: '=',
-      removeColumns: '@',
-      cbAdd: '&',
-      cbAddRestrict: '&',
-      cbDelete: '&',
-      cbDeleteRestrict: '&',
-      cbOrderBy: '&',
-      cbView: '&'
-    },
-    link: function( scope, element, attrs ) {
-      // if a callback isn't provided, make it false so it doesn't show
-      if( undefined === attrs.cbAdd ) scope.cbAdd = false;
-      if( undefined === attrs.cbAddRestrict ) scope.cbAddRestrict = false;
-      if( undefined === attrs.cbDelete ) scope.cbDelete = false;
-      if( undefined === attrs.cbDeleteRestrict ) scope.cbDeleteRestrict = false;
-      if( undefined === attrs.cbOrderBy ) scope.cbOrderBy = false;
-      if( undefined === attrs.cbView ) scope.cbView = false;
-
-      // convert the columnList into an array
-      var removeColumns = undefined === attrs.removeColumns ? [] : attrs.removeColumns.split( ' ' );
-      scope.columnList = [];
-      for( var key in scope.local.columnList ) {
-        if( 0 > removeColumns.indexOf( key ) ) {
-          var column = scope.local.columnList[key];
-          if( undefined === column.allowRestrict ) column.allowRestrict = true;
-          column.key = key;
-          scope.columnList.push( column );
+cenozo.directive( 'cnRecordList', [
+  '$state', 'CnModalRestrictFactory',
+  function( $state, CnModalRestrictFactory ) {
+    return {
+      templateUrl: cnCenozoUrl + '/app/cenozo/record-list.tpl.html',
+      restrict: 'E',
+      scope: {
+        listModel: '=',
+        removeColumns: '@'
+      },
+      controller: function( $scope ) {
+        if( $scope.listModel.addEnabled ) {
+          $scope.addRecord = function() { $state.go( '^.add' ); };
         }
-      }
 
-      // get the total number of columns in the table
-      scope.numColumns = scope.columnList.length;
-      if( scope.cbAdd ) scope.numColumns++;
-    }
-  };
-} );
+        if( $scope.listModel.deleteEnabled ) {
+          $scope.deleteRecord = function( id ) {
+            $scope.listModel.delete( id ).catch( function error( response ) { cnFatalError(); } );
+          };
+        }
+
+        if( $scope.listModel.selectEnabled ) {
+          $scope.toggleSelectMode = function() { $scope.listModel.selectMode = !$scope.listModel.selectMode; };
+          $scope.selectRecord = function( id ) {
+            if( $scope.listModel.selectMode ) {
+              console.log( 'TODO select ' + id );
+            }
+          };
+        } else if( $scope.listModel.viewEnabled ) {
+          $scope.selectRecord = function( id ) { $state.go( '^.view', { id: id } ); };
+        }
+      },
+      link: function( scope, element, attrs ) {
+        if( undefined !== scope.listModel.restrict ) {
+          scope.addRestrict = function( column ) {
+            var modal = CnModalRestrictFactory.instance( {
+              subject: scope.listModel.subject,
+              column: scope.listModel.columnList[column].title,
+              comparison: scope.listModel.columnList[column].restrict
+            } ).show();
+            modal.result.then( function( comparison ) {
+              scope.listModel.restrict( column, comparison );
+            } );
+          };
+        }
+
+        // convert the columnList into an array
+        var removeColumns = undefined === attrs.removeColumns ? [] : attrs.removeColumns.split( ' ' );
+        scope.columnList = [];
+        for( var key in scope.listModel.columnList ) {
+          if( 0 > removeColumns.indexOf( key ) ) {
+            var column = scope.listModel.columnList[key];
+            if( undefined === column.allowRestrict ) column.allowRestrict = true;
+            column.key = key;
+            scope.columnList.push( column );
+          }
+        }
+
+        // get the total number of columns in the table
+        scope.numColumns = scope.columnList.length;
+        if( scope.listModel.deleteEnabled ) scope.numColumns++;
+      }
+    };
+  }
+] );
 
 /**
  * TODO: document
@@ -544,18 +586,22 @@ cenozo.directive( 'cnRecordView', [
       restrict: 'E',
       transclude: true,
       scope: {
-        subject: '=',
-        record: '=ngModel',
-        cbBack: '&',
-        cbDelete: '&'
+        form: '=',
+        listModel: '=',
+        viewModel: '='
+      },
+      controller: function( $scope ) {
+        $scope.back = function() { $state.go( '^.list' ); };
+
+        $scope.delete = function() {
+          scope.listModel.delete( scope.viewModel.record.id ).then(
+            function success( response ) { $state.go( scope.listModel.subject + '.list' ); },
+            function error( response ) { cnFatalError(); }
+          );
+        };
       },
       link: function( scope ) {
-        // pass form to next sibling (transcluded) scope
-        scope.$$nextSibling.form = scope.form;
-        // pass form to parent (controller) scope
         scope.$parent.form = scope.form;
-        // create the default back callback
-        scope.cbBack = function() { $state.go( '^.list' ); };
       }
     };
   }
@@ -572,6 +618,15 @@ cenozo.directive( 'cnSiteRolePicker', [
       restrict: 'E',
       transclude: true,
       scope: true,
+      controller: function( $scope ) {
+        $scope.cbSetSite = function( id ) {
+          cnApp.setSite( id ).then( function() { $window.location.reload(); } );
+        }
+
+        $scope.cbSetRole = function( id ) {
+          cnApp.setRole( id ).then( function() { $window.location.reload(); } );
+        }
+      },
       link: function( scope ) {
         var cnApp = CnAppSingleton;
         cnApp.promise.then( function() {
@@ -584,14 +639,6 @@ cenozo.directive( 'cnSiteRolePicker', [
             if( scope.site.id == scope.siteList[i].id )
               scope.roleList = scope.siteList[i].roleList;
         } );
-
-        scope.cbSetSite = function( id ) {
-          cnApp.setSite( id ).then( function() { $window.location.reload(); } );
-        }
-
-        scope.cbSetRole = function( id ) {
-          cnApp.setRole( id ).then( function() { $window.location.reload(); } );
-        }
       }
     };
   }

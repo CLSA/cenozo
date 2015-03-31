@@ -1,22 +1,24 @@
 <div class="container-fluid bg-primary rounded-top"><h4>Viewing User Details</h4></div>
-<cn-record-view subject="local.subject" cb-delete="cbDelete()">
-  <cn-record-input form="form" subject="user" key="name" title="Name">
-    <input name="name"
-           ng-model="local.cnView.record.name"
-           cn-change="cbPatch( 'name' )"
-           class="form-control"
-           type="text"
-           ng-maxlength="45"
-           placeholder="Name"
-           autocomplete="off"
-           required />
-  </cn-record-input>
-  <cn-record-input form="form" subject="user" key="active" title="Active">
-    <select name="active"
-            ng-model="record.active"
-            class="form-control">
-      <option value="1" selected>Yes</option>
-      <option value="0">No</option>
-    </select>
-  </cn-record-input>
-</cn-record-view>
+<form name="form" class="form-horizontal" novalidate>
+  <cn-record-view form="form" list-model="cnList" view-model="cnView">
+    <cn-record-input form="form" key="name" title="Name">
+      <input name="name"
+             ng-model="local.cnView.record.name"
+             cn-change="cbPatch( 'name' )"
+             class="form-control"
+             type="text"
+             ng-maxlength="45"
+             placeholder="Name"
+             autocomplete="off"
+             required />
+    </cn-record-input>
+    <cn-record-input form="form" key="active" title="Active">
+      <select name="active"
+              ng-model="record.active"
+              class="form-control">
+        <option value="1" selected>Yes</option>
+        <option value="0">No</option>
+      </select>
+    </cn-record-input>
+  </cn-record-view>
+</form>

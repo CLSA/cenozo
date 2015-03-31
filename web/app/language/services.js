@@ -24,6 +24,7 @@ define( [], function() {
           name: { title: 'Name' },
           code: { title: 'Code' },
           active: {
+            column: 'language.active',
             title: 'Active',
             filter: 'cnYesNo'
           },

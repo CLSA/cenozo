@@ -1,12 +1,14 @@
 <div class="container-fluid bg-primary rounded-top"><h4>Viewing Region Site Details</h4></div>
-<cn-record-view subject="local.subject" cb-delete="cbDelete()">
-  <cn-record-input form="form" subject="region_site" key="id" title="ID">
-    <input name="id"
-           ng-model="record.id"
-           class="form-control"
-           type="text"
-           placeholder="ID"
-           autocomplete="off"
-           required /></div>
-  </cn-record-input>
-</cn-record-view>
+<form name="form" class="form-horizontal" novalidate>
+  <cn-record-view form="form" list-model="cnList" view-model="cnView">
+    <cn-record-input form="form" key="id" title="ID">
+      <input name="id"
+             ng-model="record.id"
+             class="form-control"
+             type="text"
+             placeholder="ID"
+             autocomplete="off"
+             required /></div>
+    </cn-record-input>
+  </cn-record-view>
+</form>

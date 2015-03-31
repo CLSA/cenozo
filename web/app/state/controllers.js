@@ -4,26 +4,31 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'StateAddCtrl', [
-    '$scope', '$state', 'CnStateSingleton',
-    function( $scope, $state, CnStateSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, CnStateSingleton );
+    '$scope', 'CnStateSingleton',
+    function( $scope, CnStateSingleton ) {
+      $scope.cnAdd = CnStateSingleton.cnAdd;
+      $scope.cnList = CnStateSingleton.cnList;
+      $scope.record = {};
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'StateListCtrl', [
-    '$scope', '$state', 'CnStateSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnStateSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnStateSingleton, CnModalRestrictFactory );
+    '$scope', 'CnStateSingleton',
+    function( $scope, CnStateSingleton ) {
+      $scope.cnList = CnStateSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'StateViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnStateSingleton',
-    function( $scope, $state, $stateParams, CnStateSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnStateSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnStateSingleton',
+    function( $stateParams, $scope, CnStateSingleton ) {
+      $scope.cnList = CnStateSingleton.cnList;
+      $scope.cnView = CnStateSingleton.cnView;
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

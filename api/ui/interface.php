@@ -19,7 +19,6 @@
   <script src="<?php print LIB_URL; ?>/angular-snap/angular-snap.js"></script>
 
   <script src="<?php print APP_URL; ?>/cenozo/animations.js"></script>
-  <script src="<?php print APP_URL; ?>/cenozo/controllers.js"></script>
   <script src="<?php print APP_URL; ?>/cenozo/directives.js"></script>
   <script src="<?php print APP_URL; ?>/cenozo/filters.js"></script>
   <script src="<?php print APP_URL; ?>/cenozo/services.js"></script>

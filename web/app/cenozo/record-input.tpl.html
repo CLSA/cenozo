@@ -1,6 +1,6 @@
 <div class="form-group"
      ng-class="{ 'has-feedback has-error': ( form[key].$dirty || !hasInput ) && form[key].$invalid }">
-  <label for="{{ key }}" class="col-sm-3 control-label">{{ title }}</label>
+  <label for="{{ key }}" class="col-sm-3 control-label" tooltip="{{ help }}">{{ title }}</label>
   <div class="col-sm-9">
     <div class="input-group"
          ng-class="{ 'has-feedback has-error': ( form[key].$dirty || !hasInput ) && form[key].$invalid }"
@@ -16,7 +16,7 @@
       Must be a number
     </span>
     <span class="help-block" ng-if="( form[key].$dirty || !hasInput ) && form[key].$error.conflict">
-      Conflicts with existing {{ subject }}
+      Conflicts with existing record
     </span>
   </div>
 </div>

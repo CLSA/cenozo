@@ -4,26 +4,31 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ParticipantAddCtrl', [
-    '$scope', '$state', 'CnParticipantSingleton',
-    function( $scope, $state, CnParticipantSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, $state, CnParticipantSingleton );
+    '$scope', 'CnParticipantSingleton',
+    function( $scope, CnParticipantSingleton ) {
+      $scope.cnAdd = CnParticipantSingleton.cnAdd;
+      $scope.cnList = CnParticipantSingleton.cnList;
+      $scope.record = {};
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ParticipantListCtrl', [
-    '$scope', '$state', 'CnParticipantSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnParticipantSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnParticipantSingleton, CnModalRestrictFactory );
+    '$scope', 'CnParticipantSingleton',
+    function( $scope, CnParticipantSingleton ) {
+      $scope.cnList = CnParticipantSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ParticipantViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnParticipantSingleton',
-    function( $scope, $state, $stateParams, CnParticipantSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnParticipantSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnParticipantSingleton',
+    function( $stateParams, $scope, CnParticipantSingleton ) {
+      $scope.cnList = CnParticipantSingleton.cnList;
+      $scope.cnView = CnParticipantSingleton.cnView;
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

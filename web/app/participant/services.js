@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'participant';
+  var moduleNames = {
+    singular: 'participant',
+    plural: 'participants',
+    possessive: 'participant\'s',
+    pluralPossessive: 'participants\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnParticipantAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -55,7 +68,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -63,7 +81,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnParticipantViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -73,16 +96,11 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnParticipantListFactory, CnParticipantAddFactory, CnParticipantViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'participant',
-          name: {
-            singular: 'participant',
-            plural: 'participants',
-            possessive: 'participant\'s',
-            pluralPossessive: 'participants\''
-          },
-          cnAdd: CnParticipantAddFactory.instance( { subject: 'participant' } ),
-          cnList: CnParticipantListFactory.instance( { subject: 'participant' } ),
-          cnView: CnParticipantViewFactory.instance( { subject: 'participant' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnParticipantAddFactory.instance(),
+          cnList: CnParticipantListFactory.instance(),
+          cnView: CnParticipantViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

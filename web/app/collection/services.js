@@ -6,11 +6,52 @@ define( [
 
   'use strict';
 
+  var moduleSubject = 'collection';
+  var moduleNames = {
+    singular: 'collection',
+    plural: 'collections',
+    possessive: 'collection\'s',
+    pluralPossessive: 'collections\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnCollectionAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+    'CnBaseAddFactory', 'CnHttpFactory',
+    function( CnBaseAddFactory, CnHttpFactory ) {
+      var object = function( params ) {
+        var base = CnBaseAddFactory.instance( params );
+        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+
+        ////////////////////////////////////
+        // factory customizations start here
+        var thisRef = this;
+        CnHttpFactory.instance( {
+          path: 'collection'
+        } ).head().then(
+          function success( response ) {
+            var metadata = JSON.parse( response.headers( 'Columns' ) );
+            thisRef.createRecord = function() {
+              return {
+                active: metadata.active.default,
+                locked: metadata.locked.default
+              };
+            };
+          },
+          function error( response ) { cnFatalError(); }
+        );
+        // factory customizations end here
+        //////////////////////////////////
+
+        cnCopyParams( this, params );
+      };
+
+      object.prototype = CnBaseAddFactory.prototype;
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -44,7 +85,12 @@ define( [
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -59,10 +105,11 @@ define( [
         ////////////////////////////////////
         // factory customizations start here
         var thisRef = this;
-        this.cnParticipantList = CnParticipantListFactory.instance( { subject: 'participant' } );
+        this.cnParticipantList = CnParticipantListFactory.instance();
+        this.cnParticipantList.enableSelect( true );
         this.load = function load( id ) {
           thisRef.cnParticipantList.cache = [];
-          CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
+          return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
             thisRef.cnParticipantList.load( 'collection/' + thisRef.record.id + '/participant' );
           } );
         };
@@ -73,7 +120,12 @@ define( [
       }
 
       object.prototype = CnBaseViewFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -83,18 +135,17 @@ define( [
     function( CnBaseSingletonFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'collection',
-          name: {
-            singular: 'collection',
-            plural: 'collections',
-            possessive: 'collection\'s',
-            pluralPossessive: 'collections\''
-          },
-          cnAdd: CnCollectionAddFactory.instance( { subject: 'collection' } ),
-          cnList: CnCollectionListFactory.instance( { subject: 'collection' } ),
-          cnView: CnCollectionViewFactory.instance( { subject: 'collection' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnCollectionAddFactory.instance(),
+          cnList: CnCollectionListFactory.instance(),
+          cnView: CnCollectionViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+
+        this.cnList.enableAdd( true );
+        this.cnList.enableDelete( true );
+        this.cnList.enableView( true );
       };
 
       object.prototype = CnBaseSingletonFactory.prototype;

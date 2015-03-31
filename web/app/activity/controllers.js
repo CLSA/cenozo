@@ -4,9 +4,10 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ActivityListCtrl', [
-    '$scope', '$state', 'CnActivitySingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnActivitySingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnActivitySingleton, CnModalRestrictFactory );
+    '$scope', 'CnActivitySingleton',
+    function( $scope, CnActivitySingleton ) {
+      $scope.cnList = CnActivitySingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 

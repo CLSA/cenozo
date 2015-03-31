@@ -52,8 +52,6 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      delete object.prototype.add;
-      delete object.prototype.delete;
       return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
     }
   ] );

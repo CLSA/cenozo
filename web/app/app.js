@@ -106,6 +106,32 @@ window.cnToQueryString = function cnToQueryString( object ) {
   return str.join( '&' );
 };
 
+window.cnPatch = function( $scope ) {
+  return function( property ) {
+    var data = {}; 
+    data[property] = $scope.cnView.record[property];
+    $scope.cnView.patch( $scope.cnView.record.id, data ).then(
+      function success( response ) { 
+        for( var i = 0; i < $scope.form.length; i++ ) { 
+          if( $scope.form[i].$error.conflict ) { 
+            $scope.form[i].$invalid = false;
+            $scope.form[i].$error.conflict = false;
+          }
+        }
+      },
+      function error( response ) { 
+        if( 409 == response.status ) { 
+          // report which inputs are included in the conflict
+          for( var i = 0; i < response.data.length; i++ ) { 
+            $scope.form[response.data[i]].$invalid = true;
+            $scope.form[response.data[i]].$error.conflict = true;
+          }
+        } else { cnFatalError(); }
+      }
+    );
+  };
+};
+
 /* ######################################################################################################## */
 var cenozoApp = angular.module( 'cenozoApp', [
   'ui.bootstrap',

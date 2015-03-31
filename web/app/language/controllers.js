@@ -4,26 +4,31 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'LanguageAddCtrl', [
-    '$scope', '$state', 'CnLanguageSingleton',
-    function( $scope, $state, CnLanguageSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, CnLanguageSingleton );
+    '$scope', 'CnLanguageSingleton',
+    function( $scope, CnLanguageSingleton ) {
+      $scope.cnAdd = CnLanguageSingleton.cnAdd;
+      $scope.cnList = CnLanguageSingleton.cnList;
+      $scope.record = {};
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'LanguageListCtrl', [
-    '$scope', '$state', 'CnLanguageSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnLanguageSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnLanguageSingleton, CnModalRestrictFactory );
+    '$scope', 'CnLanguageSingleton',
+    function( $scope, CnLanguageSingleton ) {
+      $scope.cnList = CnLanguageSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'LanguageViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnLanguageSingleton',
-    function( $scope, $state, $stateParams, CnLanguageSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnLanguageSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnLanguageSingleton',
+    function( $stateParams, $scope, CnLanguageSingleton ) {
+      $scope.cnList = CnLanguageSingleton.cnList;
+      $scope.cnView = CnLanguageSingleton.cnView;
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

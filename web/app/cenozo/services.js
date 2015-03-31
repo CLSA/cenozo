@@ -8,7 +8,17 @@ cenozo.factory( 'CnBaseAddFactory',
   function() {
     var object = function( params ) {
       if( undefined === params.subject ) throw 'Tried to create CnBaseAddFactory without a subject';
+      if( undefined === params.name ) throw 'Tried to create CnBaseAddFactory without a name';
+
       this.subject = null;
+      this.name = {
+        singular: '(undefined)',
+        plural: '(undefined)',
+        possessive: '(undefined)',
+        pluralPossessive: '(undefined)'
+      };
+      this.createRecord = function() { return {}; };
+
       cnCopyParams( this, params );
     };
 
@@ -27,7 +37,15 @@ cenozo.factory( 'CnBaseListFactory', [
   function( CnPaginationFactory, CnHttpFactory ) {
     var object = function( params ) {
       if( undefined === params.subject ) throw 'Tried to create CnBaseListFactory without a subject';
+      if( undefined === params.name ) throw 'Tried to create CnBaseListFactory without a name';
+
       this.subject = null;
+      this.name = {
+        singular: '(undefined)',
+        plural: '(undefined)',
+        possessive: '(undefined)',
+        pluralPossessive: '(undefined)'
+      };
       this.columnList = {};
       this.total = 0;
       this.order = {};
@@ -36,38 +54,81 @@ cenozo.factory( 'CnBaseListFactory', [
       this.cnPagination = CnPaginationFactory.instance();
       this.loading = false;
 
+      this.addEnabled = false;
+      this.deleteEnabled = false;
+      this.selectEnabled = false;
+      this.viewEnabled = false;
+
       var thisRef = this;
       cnCopyParams( this, params );
     };
 
     object.prototype = {
-      add: function( record ) {
-        var thisRef = this;
-        // convert Date object to datetime string
-        if( undefined !== record.datetime && null !== record.datetime )
-          record.datetime = cnObjectToDatetime( record.datetime );
-        return CnHttpFactory.instance( {
-          path: this.subject,
-          data: record
-        } ).post().then( function success( response ) {
-          record.id = response.data;
-          thisRef.cache.unshift( record );
-          thisRef.total++;
-        } );
+      enableAdd: function( enable ) {
+        if( enable != this.addEnabled ) {
+          this.addEnabled = enable;
+          if( enable ) {
+            this.add = function( record ) {
+              var thisRef = this;
+              // convert Date object to datetime string
+              if( undefined !== record.datetime && null !== record.datetime )
+                record.datetime = cnObjectToDatetime( record.datetime );
+              return CnHttpFactory.instance( {
+                path: this.subject,
+                data: record
+              } ).post().then( function success( response ) {
+                record.id = response.data;
+                thisRef.cache.unshift( record );
+                thisRef.total++;
+              } );
+            };
+          } else {
+            delete this.add;
+          }
+        }
       },
 
-      delete: function( id ) {
-        var thisRef = this;
-        return CnHttpFactory.instance( {
-          path: this.subject + '/' + id
-        } ).delete().then( function success( response ) {
-          for( var i = 0; i < thisRef.cache.length; i++ ) {
-            if( thisRef.cache[i].id == id ) {
-              thisRef.total--;
-              return thisRef.cache.splice( i, 1 );
-            }
+      enableDelete: function( enable ) {
+        if( enable != this.deleteEnabled ) {
+          this.deleteEnabled = enable;
+          if( enable ) {
+            this.delete = function( id ) {
+              var thisRef = this;
+              return CnHttpFactory.instance( {
+                path: this.subject + '/' + id
+              } ).delete().then( function success( response ) {
+                for( var i = 0; i < thisRef.cache.length; i++ ) {
+                  if( thisRef.cache[i].id == id ) {
+                    thisRef.total--;
+                    return thisRef.cache.splice( i, 1 );
+                  }
+                }
+              } );
+            };
+          } else {
+            delete this.delete;
           }
-        } );
+        }
+      },
+
+      enableSelect: function( enable ) {
+        if( enable != this.selectEnabled ) {
+          this.selectEnabled = enable;
+          if( enable ) {
+            this.selectMode = false;
+          } else {
+            delete this.selectMode;
+          }
+        }
+      },
+
+      enableView: function( enable ) {
+        if( enable != this.viewEnabled ) {
+          this.viewEnabled = enable;
+          if( enable ) {
+          } else {
+          }
+        }
       },
 
       orderBy: function( column ) {
@@ -195,7 +256,7 @@ cenozo.factory( 'CnBaseListFactory', [
           data: data
         } ).query().then( function success( response ) {
           // change datetimes to Date object
-          response.data.results.forEach( function( element, index, array ) {
+          response.data.forEach( function( element, index, array ) {
             for( var key in array[index] ) {
               if( null !== array[index][key] ) {
                 if( 0 <= key.regexIndexOf( /^date|[^a-z|\Wdate|_date]/ ) )
@@ -208,8 +269,8 @@ cenozo.factory( 'CnBaseListFactory', [
           } );
 
           if( replace ) thisRef.cache = [];
-          thisRef.cache = thisRef.cache.concat( response.data.results );
-          thisRef.total = response.data.total;
+          thisRef.cache = thisRef.cache.concat( response.data );
+          thisRef.total = response.headers( 'Total' );
         } ).finally( function done() {
           thisRef.loading = false;
         } );
@@ -230,8 +291,17 @@ cenozo.factory( 'CnBaseViewFactory', [
   function( CnHttpFactory ) {
     var object = function( params ) {
       if( undefined === params.subject ) throw 'Tried to create CnBaseViewFactory without a subject';
+      if( undefined === params.name ) throw 'Tried to create CnBaseViewFactory without a name';
+
       this.subject = null;
+      this.name = {
+        singular: '(undefined)',
+        plural: '(undefined)',
+        possessive: '(undefined)',
+        pluralPossessive: '(undefined)'
+      };
       this.record = {};
+
       cnCopyParams( this, params );
     };
 
@@ -266,8 +336,10 @@ cenozo.factory( 'CnBaseSingletonFactory',
   function() {
     var object = function( params ) {
       if( undefined === params.subject ) throw 'Tried to create CnBaseSingletonFactory without a subject';
+      if( undefined === params.name ) throw 'Tried to create CnBaseSingletonFactory without a name';
 
-      this.subject = {
+      this.subject = null;
+      this.name = {
         singular: '(undefined)',
         plural: '(undefined)',
         possessive: '(undefined)',
@@ -316,12 +388,13 @@ cenozo.factory( 'CnHttpFactory', [
         }
         return $http( object );
       },
-      post: function() { return this.http( 'POST', 'api/' + this.path ); },
-      metadata: function() { this.data.metadata = true; return this.query( this.path ); },
-      query: function() { return this.http( 'GET', 'api/' + this.path ); },
+
+      delete: function() { return this.http( 'DELETE', 'api/' + this.path ); },
       get: function() { return this.http( 'GET', 'api/' + this.path ); },
+      head: function() { return this.http( 'HEAD', 'api/' + this.path ); },
       patch: function() { return this.http( 'PATCH', 'api/' + this.path ); },
-      delete: function() { return this.http( 'DELETE', 'api/' + this.path ); }
+      post: function() { return this.http( 'POST', 'api/' + this.path ); },
+      query: function() { return this.http( 'GET', 'api/' + this.path ); }
     };
     
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
@@ -504,8 +577,8 @@ cenozo.factory( 'CnAppSingleton', [
         return CnHttpFactory.instance( {
           path: 'access'
         } ).query().then( function success( response ) {
-          for( var i = 0; i < response.data.results.length; i++ ) {
-            var access = response.data.results[i];
+          for( var i = 0; i < response.data.length; i++ ) {
+            var access = response.data[i];
 
             // get the site's index
             var index = 0;

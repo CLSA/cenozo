@@ -4,26 +4,31 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'RegionSiteAddCtrl', [
-    '$scope', '$state', 'CnRegionSiteSingleton',
-    function( $scope, $state, CnRegionSiteSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, CnRegionSiteSingleton );
+    '$scope', 'CnRegionSiteSingleton',
+    function( $scope, CnRegionSiteSingleton ) {
+      $scope.cnAdd = CnRegionSiteSingleton.cnAdd;
+      $scope.cnList = CnRegionSiteSingleton.cnList;
+      $scope.record = {};
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'RegionSiteListCtrl', [
-    '$scope', '$state', 'CnRegionSiteSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnRegionSiteSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnRegionSiteSingleton, CnModalRestrictFactory );
+    '$scope', 'CnRegionSiteSingleton',
+    function( $scope, CnRegionSiteSingleton ) {
+      $scope.cnList = CnRegionSiteSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'RegionSiteViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnRegionSiteSingleton',
-    function( $scope, $state, $stateParams, CnRegionSiteSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnRegionSiteSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnRegionSiteSingleton',
+    function( $stateParams, $scope, CnRegionSiteSingleton ) {
+      $scope.cnList = CnRegionSiteSingleton.cnList;
+      $scope.cnView = CnRegionSiteSingleton.cnView;
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

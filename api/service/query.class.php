@@ -121,6 +121,7 @@ class query extends service
 
       // if we have a parent then select from it, otherwise do a general select
       $parent_record_method = sprintf( 'get_%s_count', $subject );
+      $details = $record_class_name::db()->get_column_details( $subject );
       $total = false === $parent_record
              ? $record_class_name::count( $this->modifier )
              : $parent_record->$parent_record_method( $this->modifier );
@@ -129,10 +130,11 @@ class query extends service
                ? $record_class_name::select( $this->select, $this->modifier )
                : $parent_record->$parent_record_method( $this->select, $this->modifier );
 
-      $this->data['limit'] = $this->modifier->get_limit();
-      $this->data['offset'] = $this->modifier->get_offset();
-      $this->data['total'] = $total;
-      $this->data['results'] = $results;
+      $this->headers['Columns'] = $details;
+      $this->headers['Limit'] = $this->modifier->get_limit();
+      $this->headers['Offset'] = $this->modifier->get_offset();
+      $this->headers['Total'] = $total;
+      $this->data = $results;
     }
   }
 

@@ -42,6 +42,7 @@ final class bootstrap
     }
     else if( 'HEAD' == $this->method )
     {
+      $this->arguments = $_GET;
     }
     else if( 'PATCH' == $this->method )
     {
@@ -308,12 +309,18 @@ final class bootstrap
     ob_end_clean();
     $status->send_headers();
 
-    if( !is_null( $service ) && !is_null( $service->get_data() ) )
+    if( !is_null( $service ) )
     {
-      $json_output = $util_class_name::json_encode( $service->get_data() );
-      header( 'Content-Type: application/json' );
-      header( 'Content-Length: '.strlen( $json_output ) );
-      print $json_output;
+      foreach( $service->get_headers() as $name => $header )
+        header( sprintf( '%s: %s', $name, $util_class_name::json_encode( $header ) ) );
+
+      if( 'HEAD' != $this->method && !is_null( $service->get_data() ) )
+      {
+        $json_output = $util_class_name::json_encode( $service->get_data() );
+        header( 'Content-Type: application/json' );
+        header( 'Content-Length: '.strlen( $json_output ) );
+        print $json_output;
+      }
     }
   }
   

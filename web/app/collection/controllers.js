@@ -4,57 +4,31 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionAddCtrl', [
-    '$scope', '$state', 'CnCollectionSingleton',
-    function( $scope, $state, CnCollectionSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, $state, CnCollectionSingleton );
+    '$scope', 'CnCollectionSingleton',
+    function( $scope, CnCollectionSingleton ) {
+      $scope.cnAdd = CnCollectionSingleton.cnAdd;
+      $scope.cnList = CnCollectionSingleton.cnList;
+      $scope.record = $scope.cnAdd.createRecord();
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionListCtrl', [
-    '$scope', '$state', 'CnCollectionSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnCollectionSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnCollectionSingleton, CnModalRestrictFactory );
+    '$scope', 'CnCollectionSingleton',
+    function( $scope, CnCollectionSingleton ) {
+      $scope.cnList = CnCollectionSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnCollectionSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, $stateParams, CnCollectionSingleton, CnModalRestrictFactory ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnCollectionSingleton );
-      $scope.local.cnView.load( $stateParams.id );
-
-      $scope.cbAddParticipant = function() {
-        concole.log( 'TODO' );
-      };
-
-      $scope.cbAddRestrictParticipant = function( column ) {
-        var modal = CnModalRestrictFactory.instance( {
-          subject: 'participant',
-          column: $scope.local.cnView.cnParticipantList.columnList[column].title,
-          comparison: $scope.local.cnView.cnParticipantList.columnList[column].restrict
-        } ).show();
-        modal.result.then( function( comparison ) {
-          $scope.local.cnView.cnParticipantList.restrict( column, comparison );
-        } );
-      };
-
-      $scope.cbDeleteParticipant = function( id ) {
-        concole.log( 'TODO' );
-      };
-
-      $scope.cbDeleteRestrictParticipant = function( column ) {
-        $scope.local.cnView.cnParticipantList.restrict( column );
-      };
-
-      $scope.cbOrderByParticipant = function( column ) {
-        $scope.local.cnView.cnParticipantList.orderBy( column );
-      };
-
-      $scope.cbViewParticipant = function( id ) {
-        $state.go( '^.^.participant.view', { id: id } );
-      };
+    '$stateParams', '$scope', 'CnCollectionSingleton',
+    function( $stateParams, $scope, CnCollectionSingleton ) {
+      $scope.cnList = CnCollectionSingleton.cnList;
+      $scope.cnView = CnCollectionSingleton.cnView;
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

@@ -286,6 +286,23 @@ class database extends \cenozo\base_object
   }
   
   /**
+   * Returns an associative list of all columns that have a default value
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table_name The name of the table to check for.
+   * @return string
+   * @access public
+   */
+  public function get_column_details( $table_name )
+  {
+    if( !$this->table_exists( $table_name ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Tried to get unique keys for table "%s" which doesn\'t exist.', $table_name ),
+        __METHOD__ );
+
+    return $this->tables[$table_name]['columns'];
+  }
+  
+  /**
    * Returns a column's default.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.

@@ -1,51 +1,46 @@
 <div class="container-fluid bg-primary rounded-top"><h4>Viewing Collection Details</h4></div>
-<cn-record-view subject="local.subject" cb-delete="cbDelete()">
-  <cn-record-input form="form" subject="collection" key="name" title="Name">
-    <input name="name"
-           tooltip="May only contain letters, numbers and underscores."
-           ng-model="local.cnView.record.name"
-           cn-change="cbPatch( 'name' )"
-           class="form-control"
-           type="text"
-           autocomplete="off"
-           required /></input>
-  </cn-record-input>
-  <cn-record-input form="form" subject="collection" key="active" title="Active">
-    <select name="active"
-            tooltip="Inactive collections will not show as options in reports or to external applications."
-            ng-model="local.cnView.record.active"
-            cn-change="cbPatch( 'active' )"
-            class="form-control">
-      <option value="1">Yes</option>
-      <option value="0">No</option>
-    </select>
-  </cn-record-input>
-  <cn-record-input form="form" subject="collection" key="locked" title="Locked">
-    <select name="locked"
-            tooltip="If locked then only users in the access list will be able to make changes to the collection."
-            ng-model="local.cnView.record.locked"
-            cn-change="cbPatch( 'locked' )"
-            class="form-control">
-      <option value="1">Yes</option>
-      <option value="0">No</option>
-    </select>
-  </cn-record-input>
-  <cn-record-input form="form" subject="collection" key="description" title="Description">
-    <textarea name="description"
-              ng-model="local.cnView.record.description"
-              cn-change="cbPatch( 'description' )"
-              class="form-control"
-              type="text"
-              /></textarea>
-  </cn-record-input>
-</cn-record-view>
+<form name="form" class="form-horizontal" novalidate>
+  <cn-record-view form="form" list-model="cnList" view-model="cnView">
+    <cn-record-input form="form" key="name" title="Name"
+      help="May only contain letters, numbers and underscores.">
+      <input name="name"
+             ng-model="cnView.record.name"
+             cn-change="patch( 'name' )"
+             class="form-control"
+             type="text"
+             autocomplete="off"
+             required /></input>
+    </cn-record-input>
+    <cn-record-input form="form" key="active" title="Active"
+      help="Inactive collections will not show as options in reports or to external applications.">
+      <select name="active"
+              ng-model="cnView.record.active"
+              cn-change="patch( 'active' )"
+              class="form-control">
+        <option value="1">Yes</option>
+        <option value="0">No</option>
+      </select>
+    </cn-record-input>
+    <cn-record-input form="form" key="locked" title="Locked"
+      help="If locked then only users in the access list will be able to make changes to the collection.">
+      <select name="locked"
+              ng-model="cnView.record.locked"
+              cn-change="patch( 'locked' )"
+              class="form-control">
+        <option value="1">Yes</option>
+        <option value="0">No</option>
+      </select>
+    </cn-record-input>
+    <cn-record-input form="form" key="description" title="Description">
+      <textarea name="description"
+                ng-model="cnView.record.description"
+                cn-change="patch( 'description' )"
+                class="form-control"
+                type="text"
+                /></textarea>
+    </cn-record-input>
+  </cn-record-view>
+</form>
 <div class="vertical-spacer"></div>
 <div class="container-fluid bg-primary rounded-top"><h4>Collection Participants</h4></div>
-<cn-record-list subject="participant"
-                local="local.cnView.cnParticipantList"
-                cb-add="cbAddParticipant()"
-                cb-add-restrict="cbAddRestrictParticipant( column )"
-                cb-delete="cbDeleteParticipant( id )"
-                cb-delete-restrict="cbDeleteRestrictParticipant( column )"
-                cb-order-by="cbOrderByParticipant( column )"
-                cb-view="cbViewParticipant( id )"></cn-record-list>
+<cn-record-list list-model="cnView.cnParticipantList"></cn-record-list>

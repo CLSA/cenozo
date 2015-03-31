@@ -1,18 +1,18 @@
-<table class="table table-striped" ng-class="{ 'table-hover': cbView } ">
+<table class="table table-striped" ng-class="{ 'table-hover': listModel.viewEnabled } ">
   <thead>
     <tr class="info">
       <td ng-repeat="column in columnList">
         <div class="btn-group" role="group" area-hidden="true">
           <button class="btn btn-narrow btn-info"
-                  ng-click="cbOrderBy( { column: column.key } )">{{ column.title }}
-            <i ng-if="null !== local.order && local.order.column == column.key"
+                  ng-click="listModel.orderBy( column.key )">{{ column.title }}
+            <i ng-if="null !== listModel.order && listModel.order.column == column.key"
                class="glyphicon"
-               ng-class="local.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"
+               ng-class="listModel.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"
                aria-hidden="true"></i>
           </button>
           <button class="btn btn-narrow btn-info"
                   ng-if="column.allowRestrict"
-                  ng-click="cbAddRestrict( { column: column.key } )">
+                  ng-click="addRestrict( column.key )">
             <i class="glyphicon glyphicon-flag" aria-hidden="true"></i>
           </button>
         </div>
@@ -26,35 +26,35 @@
           </p>
         </div>
       </td>
-      <td class="tiny" ng-if="cbDelete"></td>
+      <td class="tiny" ng-if="listModel.deleteEnabled"></td>
     </tr>
   </thead>
   <tbody>
-    <tr ng-if="local.loading">
+    <tr ng-if="listModel.loading">
       <td colspan="{{ numColumns }}" style="background-color: #FFF">
         <div class="loader" tooltip="Loading..."></div>
       </td>
     </tr>
-    <tr ng-if="!local.loading && 0 == local.cache.length">
+    <tr ng-if="!listModel.loading && 0 == listModel.cache.length">
       <td colspan="{{ numColumns }}">
-        There are no {{ name.plural }} found.
+        There are no {{ listModel.name.plural }} found.
       </td>
     </tr>
-    <tr ng-if="!local.loading"
-        ng-repeat="record in local.cache
-                   | orderBy: local.order.column:local.order.reverse
-                   | limitTo: ( local.cnPagination.currentPage - 1 ) * local.cnPagination.itemsPerPage -
-                              local.cache.length
-                   | limitTo: local.cnPagination.itemsPerPage"
-        ng-click="cbView( { id: record.id } )">
+    <tr ng-if="!listModel.loading"
+        ng-repeat="record in listModel.cache
+                   | orderBy: listModel.order.column:listModel.order.reverse
+                   | limitTo: ( listModel.cnPagination.currentPage - 1 ) * listModel.cnPagination.itemsPerPage -
+                              listModel.cache.length
+                   | limitTo: listModel.cnPagination.itemsPerPage"
+        ng-click="selectRecord( record.id )">
         <td ng-repeat="column in columnList">
           <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
         </td>
-        <td class="tiny" ng-if="cbDelete">
+        <td class="tiny" ng-if="listModel.deleteEnabled">
           <div>
             <button class="btn btn-xs btn-danger"
-                    ng-really-message="Are you sure you want to delete this {{ name.singular }}?"
-                    cn-really-click="cbDelete( { id: record.id } )"
+                    ng-really-message="Are you sure you want to delete this {{ listModel.name.singular }}?"
+                    cn-really-click="deleteRecord( record.id )"
                     ng-click="$event.stopPropagation()">
               <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
             </button>
@@ -62,23 +62,28 @@
         </td>
     </tr>
   </tbody>
-  <tfoot ng-if="0 < local.cache.length || cbAdd">
+  <tfoot ng-if="0 < listModel.cache.length || listModel.addEnabled || listModel.selectEnabled">
     <tr class="info">
       <td colspan="{{ numColumns }}" class="rounded-bottom">
         <pagination class="pagination left"
-                    ng-model="local.cnPagination.currentPage"
-                    ng-show="local.cache.length > local.cnPagination.itemsPerPage"
-                    ng-change="local.checkCache()"
-                    max-size="local.cnPagination.showPageLimit"
-                    items-per-page="local.cnPagination.itemsPerPage"
-                    total-items="local.total"
+                    ng-model="listModel.cnPagination.currentPage"
+                    ng-show="listModel.cache.length > listModel.cnPagination.itemsPerPage"
+                    ng-change="listModel.checkCache()"
+                    max-size="listModel.cnPagination.showPageLimit"
+                    items-per-page="listModel.cnPagination.itemsPerPage"
+                    total-items="listModel.total"
                     previous-text="&lsaquo;"
                     next-text="&rsaquo;"></pagination>
-        {{ local.total }} records total
+        {{ listModel.total }} records total
         <button class="btn btn-default right"
-                ng-if="cbAdd"
-                ng-click="cbAdd()">
+                ng-if="listModel.addEnabled"
+                ng-click="addRecord()">
           <i class="glyphicon glyphicon-plus" aria-hidden="true"></i> Add
+        </button>
+        <button class="btn btn-default right"
+                ng-if="listModel.selectEnabled"
+                ng-click="toggleSelectMode()">
+          <i class="glyphicon glyphicon-check" aria-hidden="true"></i> Select
         </button>
       </td>
     </tr>
