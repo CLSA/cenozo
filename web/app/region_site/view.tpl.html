@@ -1,14 +1,11 @@
-<div class="container-fluid bg-primary rounded-top"><h4>Viewing Region Site Details</h4></div>
-<form name="form" class="form-horizontal" novalidate>
-  <cn-record-view form="form" list-model="cnList" view-model="cnView">
-    <cn-record-input form="form" key="id" title="ID">
-      <input name="id"
-             ng-model="record.id"
-             class="form-control"
-             type="text"
-             placeholder="ID"
-             autocomplete="off"
-             required /></div>
-    </cn-record-input>
-  </cn-record-view>
-</form>
+<cn-record-view list-model="cnList" view-model="cnView">
+  <cn-record-input form="form" key="id" title="ID">
+    <input name="id"
+           ng-model="record.id"
+           class="form-control"
+           type="text"
+           placeholder="ID"
+           autocomplete="off"
+           required /></div>
+  </cn-record-input>
+</cn-record-view>

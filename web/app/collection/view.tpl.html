@@ -1,4 +1,3 @@
-<div class="container-fluid bg-primary rounded-top"><h4>Viewing Collection Details</h4></div>
 <cn-record-view list-model="cnList" view-model="cnView">
   <cn-record-input form="form" key="name" title="Name"
     help="May only contain letters, numbers and underscores.">
@@ -41,9 +40,7 @@
 </cn-record-view>
 
 <div class="vertical-spacer"></div>
-<div class="container-fluid bg-primary rounded-top"><h4>Collection Participants</h4></div>
-<cn-record-list list-model="cnView.cnParticipantList"></cn-record-list>
+<cn-record-list heading="Collection Participants" list-model="cnView.cnParticipantList"></cn-record-list>
 
 <div class="vertical-spacer"></div>
-<div class="container-fluid bg-primary rounded-top"><h4>User Access List</h4></div>
-<cn-record-list list-model="cnView.cnUserList"></cn-record-list>
+<cn-record-list heading="User Access List" list-model="cnView.cnUserList"></cn-record-list>

@@ -1,23 +1,20 @@
-<div class="container-fluid bg-primary rounded-top"><h4>Create A New User</h4></div>
-<form name="form" class="form-horizontal" novalidate>
-  <cn-record-add form="form" list-model="cnList" add-model="cnAdd">
-    <cn-record-input form="form" key="name" title="Name">
-      <input name="name"
-             ng-model="record.name"
-             class="form-control"
-             type="text"
-             ng-maxlength="45"
-             placeholder="Name"
-             autocomplete="off"
-             required /></div>
-    </cn-record-input>
-    <cn record-input form="form" key="active" title="Active">
-      <select name="active"
-              ng-model="record.active"
-              class="form-control">
-        <option value="1" selected>Yes</option>
-        <option value="0">No</option>
-      </select>
-    </cn-record-input>
-  </cn-record-add>
-</form>
+<cn-record-add list-model="cnList" add-model="cnAdd">
+  <cn-record-input form="form" key="name" title="Name">
+    <input name="name"
+           ng-model="record.name"
+           class="form-control"
+           type="text"
+           ng-maxlength="45"
+           placeholder="Name"
+           autocomplete="off"
+           required /></div>
+  </cn-record-input>
+  <cn record-input form="form" key="active" title="Active">
+    <select name="active"
+            ng-model="record.active"
+            class="form-control">
+      <option value="1" selected>Yes</option>
+      <option value="0">No</option>
+    </select>
+  </cn-record-input>
+</cn-record-add>

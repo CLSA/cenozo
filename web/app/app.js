@@ -89,14 +89,18 @@ String.prototype.regexIndexOf = function( regex, startpos ) {
 
 String.prototype.snakeToCamel = function cnSnakeToCamel( first ) {
   if( undefined === first ) first = false;
-  var output = this.replace( /(\_\w)/g, function( m ){ return m[1].toUpperCase(); } );
+  var output = this.replace( /(\_\w)/g, function( $1 ) { return $1[1].toUpperCase(); } );
   if( first ) output = output.charAt(0).toUpperCase() + output.slice(1);
   return output;
 };
 
 String.prototype.camelToSnake = function cnCamelToSnake() {
-  return this.replace( /([A-Z])/g, function( $1 ){ return '_'+$1.toLowerCase(); } ).replace( /^_/, '' );
+  return this.replace( /([A-Z])/g, function( $1 ) { return '_'+$1.toLowerCase(); } ).replace( /^_/, '' );
 };
+
+String.prototype.ucWords = function() {
+  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return $1.toUpperCase(); } ); 
+}
 
 window.cnToQueryString = function cnToQueryString( object ) {
   var str = [];

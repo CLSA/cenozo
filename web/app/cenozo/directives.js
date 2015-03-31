@@ -364,13 +364,12 @@ cenozo.directive( 'cnDatetimePickerPopup', function () {
 cenozo.directive( 'cnModal', function() {
   return {
     templateUrl: cnCenozoUrl + '/app/cenozo/modal.tpl.html',
+    heading: '@',
     restrict: 'E',
     transclude: true,
     replace: true,
     scope: true,
     link: function( scope, element, attrs ) {
-      scope.heading = attrs.heading;
-
       scope.$watch( attrs.visible, function( value ) {
         $(element).modal( value == true ? 'show' : 'hide' );
       } );
@@ -461,7 +460,11 @@ cenozo.directive( 'cnRecordAdd', [
           );  
         };
       },
-      link: function( scope ) {
+      link: function( scope, element, attrs ) {
+        scope.heading = undefined === attrs.heading
+                      ? 'Creating A ' + scope.listModel.name.singular.ucWords()
+                      : attrs.heading;
+
         scope.$parent.form = scope.form;
         scope.record = scope.$parent.record;
       }
@@ -541,6 +544,10 @@ cenozo.directive( 'cnRecordList', [
         }
       },
       link: function( scope, element, attrs ) {
+        scope.heading = undefined === attrs.heading
+                      ? scope.listModel.name.singular.ucWords() + ' List'
+                      : attrs.heading;
+
         if( undefined !== scope.listModel.restrict ) {
           scope.addRestrict = function( column ) {
             var modal = CnModalRestrictFactory.instance( {
@@ -555,7 +562,7 @@ cenozo.directive( 'cnRecordList', [
         }
 
         // convert the columnList into an array
-        var removeColumns = undefined === attrs.removeColumns ? [] : attrs.removeColumns.split( ' ' );
+        var removeColumns = undefined === scope.removeColumns ? [] : scope.removeColumns.split( ' ' );
         scope.columnList = [];
         for( var key in scope.listModel.columnList ) {
           if( 0 > removeColumns.indexOf( key ) ) {
@@ -598,7 +605,11 @@ cenozo.directive( 'cnRecordView', [
           );
         };
       },
-      link: function( scope ) {
+      link: function( scope, element, attrs ) {
+        scope.heading = undefined === attrs.heading
+                      ? scope.listModel.name.singular.ucWords() + ' Details'
+                      : attrs.heading;
+
         scope.$parent.form = scope.form;
       }
     };

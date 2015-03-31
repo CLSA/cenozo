@@ -1,26 +1,23 @@
-<div class="container-fluid bg-primary rounded-top"><h4>Viewing Site Details</h4></div>
-<form name="form" class="form-horizontal" novalidate>
-  <cn-record-view form="form" list-model="cnList" view-model="cnView">
-    <cn-record-input form="form" key="name" title="Name">
-      <input name="name"
-             ng-model="local.cnView.record.name"
-             cn-change="cbPatch( 'name' )"
-             class="form-control"
-             type="text"
-             ng-minlength="3"
-             ng-maxlength="45"
-             placeholder="Name"
-             autocomplete="off"
-             required />
-    </cn-record-input>
-    <cn-record-input form="form" key="timezone" title="Time Zone">
-      <select name="timezone"
-              ng-model="local.cnView.record.timezone"
-              cn-change="cbPatch( 'timezone' )"
-              class="form-control"
-              required>
-        <option ng-repeat="option in local.metadata.timezoneList" value="{{ option }}">{{ option }}</option>
-      </select>
-    </cn-record-input>
-  </cn-record-view>
-</form>
+<cn-record-view list-model="cnList" view-model="cnView">
+  <cn-record-input form="form" key="name" title="Name">
+    <input name="name"
+           ng-model="local.cnView.record.name"
+           cn-change="cbPatch( 'name' )"
+           class="form-control"
+           type="text"
+           ng-minlength="3"
+           ng-maxlength="45"
+           placeholder="Name"
+           autocomplete="off"
+           required />
+  </cn-record-input>
+  <cn-record-input form="form" key="timezone" title="Time Zone">
+    <select name="timezone"
+            ng-model="local.cnView.record.timezone"
+            cn-change="cbPatch( 'timezone' )"
+            class="form-control"
+            required>
+      <option ng-repeat="option in local.metadata.timezoneList" value="{{ option }}">{{ option }}</option>
+    </select>
+  </cn-record-input>
+</cn-record-view>
