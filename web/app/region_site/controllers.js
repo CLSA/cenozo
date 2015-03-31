@@ -8,7 +8,7 @@ define( [], function() {
     function( $scope, CnRegionSiteSingleton ) {
       $scope.cnAdd = CnRegionSiteSingleton.cnAdd;
       $scope.cnList = CnRegionSiteSingleton.cnList;
-      $scope.record = {};
+      $scope.record = $scope.cnAdd.createRecord();
     }
   ] );
 

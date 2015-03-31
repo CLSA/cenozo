@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'region_site';
+  var moduleNames = {
+    singular: 'region site',
+    plural: 'region sites',
+    possessive: 'region site\'s',
+    pluralPossessive: 'region sites\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnRegionSiteAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -42,7 +55,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -50,7 +68,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnRegionSiteViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -60,16 +83,11 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnRegionSiteListFactory, CnRegionSiteAddFactory, CnRegionSiteViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'region_site',
-          name: {
-            singular: 'region site',
-            plural: 'region sites',
-            possessive: 'region site\'s',
-            pluralPossessive: 'region sites\''
-          },
-          cnAdd: CnRegionSiteAddFactory.instance( { subject: 'region_site' } ),
-          cnList: CnRegionSiteListFactory.instance( { subject: 'region_site' } ),
-          cnView: CnRegionSiteViewFactory.instance( { subject: 'region_site' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnRegionSiteAddFactory.instance(),
+          cnList: CnRegionSiteListFactory.instance(),
+          cnView: CnRegionSiteViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

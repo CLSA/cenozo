@@ -437,7 +437,6 @@ cenozo.directive( 'cnRecordAdd', [
       restrict: 'E',
       transclude: true,
       scope: {
-        form: '=',
         addModel: '=',
         listModel: '='
       },
@@ -586,7 +585,6 @@ cenozo.directive( 'cnRecordView', [
       restrict: 'E',
       transclude: true,
       scope: {
-        form: '=',
         listModel: '=',
         viewModel: '='
       },
@@ -594,8 +592,8 @@ cenozo.directive( 'cnRecordView', [
         $scope.back = function() { $state.go( '^.list' ); };
 
         $scope.delete = function() {
-          scope.listModel.delete( scope.viewModel.record.id ).then(
-            function success( response ) { $state.go( scope.listModel.subject + '.list' ); },
+          $scope.listModel.delete( $scope.viewModel.record.id ).then(
+            function success( response ) { $state.go( $scope.listModel.subject + '.list' ); },
             function error( response ) { cnFatalError(); }
           );
         };

@@ -1,39 +1,37 @@
 <div class="container-fluid bg-primary rounded-top"><h4>Create A New Collection</h4></div>
-<form name="form" class="form-horizontal" novalidate>
-  <cn-record-add form="form" list-model="cnList" add-model="cnAdd">
-    <cn-record-input form="form" key="name" title="Name"
-      help="May only contain letters, numbers and underscores.">
-      <input name="name"
-             ng-model="record.name"
-             class="form-control"
-             type="text"
-             autocomplete="off"
-             required /></input>
-    </cn-record-input>
-    <cn-record-input form="form" key="active" title="Active"
-       help="Inactive collections will not show as options in reports or to external applications.">
-      <select name="active"
-              ng-model="record.active"
-              class="form-control">
-        <option value="1">Yes</option>
-        <option value="0">No</option>
-      </select>
-    </cn-record-input>
-    <cn-record-input form="form" key="locked" title="Locked"
-       help="If locked then only users in the access list will be able to make changes to the collection.">
-      <select name="locked"
-              ng-model="record.locked"
-              class="form-control">
-        <option value="1">Yes</option>
-        <option value="0">No</option>
-      </select>
-    </cn-record-input>
-    <cn-record-input form="form" key="description" title="Description">
-      <textarea name="description"
-                ng-model="record.description"
-                class="form-control"
-                type="text"
-                /></textarea>
-    </cn-record-input>
-  </cn-record-add>
-</form>
+<cn-record-add list-model="cnList" add-model="cnAdd">
+  <cn-record-input form="form" key="name" title="Name"
+    help="May only contain letters, numbers and underscores.">
+    <input name="name"
+           ng-model="record.name"
+           class="form-control"
+           type="text"
+           autocomplete="off"
+           required /></input>
+  </cn-record-input>
+  <cn-record-input form="form" key="active" title="Active"
+     help="Inactive collections will not show as options in reports or to external applications.">
+    <select name="active"
+            ng-model="record.active"
+            class="form-control">
+      <option value="1">Yes</option>
+      <option value="0">No</option>
+    </select>
+  </cn-record-input>
+  <cn-record-input form="form" key="locked" title="Locked"
+     help="If locked then only users in the access list will be able to make changes to the collection.">
+    <select name="locked"
+            ng-model="record.locked"
+            class="form-control">
+      <option value="1">Yes</option>
+      <option value="0">No</option>
+    </select>
+  </cn-record-input>
+  <cn-record-input form="form" key="description" title="Description">
+    <textarea name="description"
+              ng-model="record.description"
+              class="form-control"
+              type="text"
+              /></textarea>
+  </cn-record-input>
+</cn-record-add>

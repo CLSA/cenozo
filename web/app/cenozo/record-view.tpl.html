@@ -1,9 +1,11 @@
-<div class="form-body" ng-transclude></div>
-<div class="form-footer rounded-bottom">
-  <button type="button" class="btn btn-danger"
-          ng-really-message="Are you sure you want to delete this {{ viewModel.subject }}?"
-          cn-really-click="delete()">
-    <i class="glyphicon glyphicon-remove-sign" aria-hidden="true"></i> Delete
-  </button>
-  <button type="button" class="btn btn-default btn-primary" ng-click="back()">Back</button>
-</div>
+<form name="form" class="form-horizontal" novalidate>
+  <div class="form-body" ng-transclude></div>
+  <div class="form-footer rounded-bottom">
+    <button type="button" class="btn btn-danger"
+            ng-really-message="Are you sure you want to delete this {{ viewModel.subject }}?"
+            cn-really-click="delete()">
+      <i class="glyphicon glyphicon-remove-sign" aria-hidden="true"></i> Delete
+    </button>
+    <button type="button" class="btn btn-default btn-primary" ng-click="back()">Back</button>
+  </div> 
+</form>

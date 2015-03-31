@@ -2,6 +2,14 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'activity';
+  var moduleNames = {
+    singular: 'activity',
+    plural: 'activities',
+    possessive: 'activity\'s',
+    pluralPossessive: 'activities\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnActivityListFactory', [
     'CnBaseListFactory',
@@ -52,7 +60,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -62,14 +75,9 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnActivityListFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'activity',
-          name: {
-            singular: 'activity',
-            plural: 'activitys',
-            possessive: 'activity\'s',
-            pluralPossessive: 'activitys\''
-          },
-          cnList: CnActivityListFactory.instance( { subject: 'activity' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnList: CnActivityListFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

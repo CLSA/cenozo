@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'site';
+  var moduleNames = {
+    singular: 'site',
+    plural: 'sites',
+    possessive: 'site\'s',
+    pluralPossessive: 'sites\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnSiteAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -36,7 +49,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -44,7 +62,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnSiteViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -54,43 +77,13 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory, CnHttpFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'site',
-          name: {
-            singular: 'site',
-            plural: 'sites',
-            possessive: 'site\'s',
-            pluralPossessive: 'sites\''
-          },
-          cnAdd: CnSiteAddFactory.instance( { subject: 'site' } ),
-          cnList: CnSiteListFactory.instance( { subject: 'site' } ),
-          cnView: CnSiteViewFactory.instance( { subject: 'site' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnSiteAddFactory.instance(),
+          cnList: CnSiteListFactory.instance(),
+          cnView: CnSiteViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-
-        this.metadata = {
-          timezoneList: []
-        };
-
-        // populate the timezone
-        var thisRef = this;
-        CnHttpFactory.instance( {
-          path: 'site'
-        } ).metadata().then(
-          function success( response ) {
-            var total = response.data.length;
-            for( var index = 0; index < total; index++ ) {
-              var column = response.data[index];
-              if( "timezone" == column.COLUMN_NAME ) {
-                thisRef.metadata.timezoneList =
-                  column.COLUMN_TYPE.
-                    replace( /^enum\(['"]/i, '' ).
-                    replace( /['"]\)$/, '' ).
-                    split( "','" );
-              }
-            }
-          },
-          function error( response ) { cnFatalError(); }
-        );
       };
 
       object.prototype = CnBaseSingletonFactory.prototype;

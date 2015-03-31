@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'user';
+  var moduleNames = {
+    singular: 'user',
+    plural: 'users',
+    possessive: 'user\'s',
+    pluralPossessive: 'users\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnUserAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -21,13 +34,23 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          name: { title: 'Name' },
+          name: {
+            column: 'user.name',
+            title: 'Name'
+          },
           active: {
+            column: 'user.active',
             title: 'Active',
             filter: 'cnYesNo'
           },
-          first_name: { title: 'First' },
-          last_name: { title: 'Last' },
+          first_name: {
+            column: 'user.first_name',
+            title: 'First'
+          },
+          last_name: {
+            column: 'user.last_name',
+            title: 'Last'
+          },
           last_datetime: {
             title: 'Last Activity',
             filter: 'date:"MMM d, y HH:mm"'
@@ -41,7 +64,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -49,7 +77,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnUserViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -59,16 +92,11 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnUserListFactory, CnUserAddFactory, CnUserViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'user',
-          name: {
-            singular: 'user',
-            plural: 'users',
-            possessive: 'user\'s',
-            pluralPossessive: 'users\''
-          },
-          cnAdd: CnUserAddFactory.instance( { subject: 'user' } ),
-          cnList: CnUserListFactory.instance( { subject: 'user' } ),
-          cnView: CnUserViewFactory.instance( { subject: 'user' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnUserAddFactory.instance(),
+          cnList: CnUserListFactory.instance(),
+          cnView: CnUserViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

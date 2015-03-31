@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'quota';
+  var moduleNames = {
+    singular: 'quota',
+    plural: 'quotas',
+    possessive: 'quota\'s',
+    pluralPossessive: 'quotas\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnQuotaAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -41,7 +54,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -49,7 +67,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnQuotaViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -59,16 +82,11 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnQuotaListFactory, CnQuotaAddFactory, CnQuotaViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'quota',
-          name: {
-            singular: 'quota',
-            plural: 'quotas',
-            possessive: 'quota\'s',
-            pluralPossessive: 'quotas\''
-          },
-          cnAdd: CnQuotaAddFactory.instance( { subject: 'quota' } ),
-          cnList: CnQuotaListFactory.instance( { subject: 'quota' } ),
-          cnView: CnQuotaViewFactory.instance( { subject: 'quota' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnQuotaAddFactory.instance(),
+          cnList: CnQuotaListFactory.instance(),
+          cnView: CnQuotaViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

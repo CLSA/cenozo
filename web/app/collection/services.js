@@ -1,7 +1,10 @@
 define( [
   cnCenozoUrl + '/app/participant/controllers.js',
   cnCenozoUrl + '/app/participant/directives.js',
-  cnCenozoUrl + '/app/participant/services.js'
+  cnCenozoUrl + '/app/participant/services.js',
+  cnCenozoUrl + '/app/user/controllers.js',
+  cnCenozoUrl + '/app/user/directives.js',
+  cnCenozoUrl + '/app/user/services.js'
 ], function() {
 
   'use strict';
@@ -96,8 +99,8 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnCollectionViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantListFactory',
-    function( CnBaseViewFactory, CnParticipantListFactory ) {
+    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnUserListFactory',
+    function( CnBaseViewFactory, CnParticipantListFactory, CnUserListFactory ) {
       var object = function( params ) {
         var base = CnBaseViewFactory.instance( params );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
@@ -107,10 +110,14 @@ define( [
         var thisRef = this;
         this.cnParticipantList = CnParticipantListFactory.instance();
         this.cnParticipantList.enableSelect( true );
+        this.cnUserList = CnUserListFactory.instance();
+        this.cnUserList.enableSelect( true );
         this.load = function load( id ) {
           thisRef.cnParticipantList.cache = [];
+          thisRef.cnUserList.cache = [];
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
             thisRef.cnParticipantList.load( 'collection/' + thisRef.record.id + '/participant' );
+            thisRef.cnUserList.load( 'collection/' + thisRef.record.id + '/user' );
           } );
         };
         // factory customizations end here

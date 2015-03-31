@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'state';
+  var moduleNames = {
+    singular: 'state',
+    plural: 'states',
+    possessive: 'state\'s',
+    pluralPossessive: 'states\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnStateAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -33,7 +46,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -41,7 +59,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnStateViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -51,16 +74,11 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnStateListFactory, CnStateAddFactory, CnStateViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'state',
-          name: {
-            singular: 'state',
-            plural: 'states',
-            possessive: 'state\'s',
-            pluralPossessive: 'states\''
-          },
-          cnAdd: CnStateAddFactory.instance( { subject: 'state' } ),
-          cnList: CnStateListFactory.instance( { subject: 'state' } ),
-          cnView: CnStateViewFactory.instance( { subject: 'state' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnStateAddFactory.instance(),
+          cnList: CnStateListFactory.instance(),
+          cnView: CnStateViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };
