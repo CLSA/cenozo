@@ -78,7 +78,8 @@ define( [
             title: 'Locked',
             filter: 'cnYesNo'
           },
-          participant_count: { title: 'Participants' }
+          participant_count: { title: 'Participants' },
+          user_count: { title: 'Users' }
         };
         this.order = { column: 'name', reverse: false };
         // factory customizations end here

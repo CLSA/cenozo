@@ -10,23 +10,10 @@ namespace cenozo\service\access;
 use cenozo\lib, cenozo\log;
 
 /**
- * Extends the base class to provide a "self" method for returning the current user's access only
+ * Extends the base class query class
  */
 class query extends \cenozo\service\query
 {
-  /**
-   * Constructor
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $path The URL of the service (not including the base)
-   * @param array $args An associative array of arguments to be processed by the service.
-   * @access public
-   */
-  public function __construct( $path, $args = NULL )
-  {
-    parent::__construct( $path, $args );
-  }
-
   /**
    * Processes arguments, preparing them for the service.
    * 

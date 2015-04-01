@@ -213,7 +213,8 @@ final class bootstrap
       );
     
       // log all but notice exceptions
-      if( 'notice' != $e->get_type() ) log::err( ucwords( $e->get_type() ).' '.$e );
+      if( 'notice' != $e->get_type() )
+        log::err( sprintf( "When loading main UI:\n%s %s", ucwords( $e->get_type() ), $e ) );
     }
     catch( \Exception $e )
     {
@@ -226,7 +227,8 @@ final class bootstrap
         'code' => $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
       );
     
-      if( class_exists( 'cenozo\log' ) ) log::err( 'Last minute '.$e );
+      if( class_exists( 'cenozo\log' ) )
+        log::err( sprintf( "When loading mainUI:\nLast minute %s", $e ) );
     }
 
     ob_end_clean();
@@ -287,7 +289,12 @@ final class bootstrap
       $error_code = $e->get_code();
     
       // log all but notice exceptions
-      if( 'notice' != $e->get_type() ) log::err( ucwords( $e->get_type() ).' '.$e );
+      if( 'notice' != $e->get_type() )
+        log::err( sprintf( "For service \"%s:%s\":\n%s %s",
+                           $this->method,
+                           $this->path,
+                           ucwords( $e->get_type() ),
+                           $e ) );
     }
     catch( \Exception $e )
     {
@@ -296,7 +303,10 @@ final class bootstrap
                   ? $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
                   : 0;
     
-      if( class_exists( 'cenozo\log' ) ) log::err( 'Last minute '.$e );
+      if( class_exists( 'cenozo\log' ) )
+        log::err( sprintf( "For service \"%s\":\nLast minute %s",
+                           $this->path,
+                           $e ) );
     }
     
     // make sure to fail any active transaction

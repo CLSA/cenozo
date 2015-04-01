@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace cenozo\service\site;
+namespace cenozo\service\role;
 use cenozo\lib, cenozo\log;
 
 /**
@@ -26,37 +26,37 @@ class query extends \cenozo\service\query
    */
   protected static function add_global_modifications( $select, $modifier )
   {
-    // add the total number of roles
-    if( $select->has_table_column( '', 'role_count' ) )
+    // add the total number of sites
+    if( $select->has_table_column( '', 'site_count' ) )
     {
-      $site_join_role =
-        'SELECT site_id, COUNT(*) AS role_count '.
+      $role_join_site =
+        'SELECT role_id, COUNT(*) AS site_count '.
         'FROM access '.
-        'GROUP BY site_id';
+        'GROUP BY role_id';
       $modifier->left_join(
-        sprintf( '( %s ) AS site_join_role', $site_join_role ),
-        'site.id',
-        'site_join_role.site_id' );
-      $select->add_column( 'IFNULL( role_count, 0 )', 'role_count', false );
+        sprintf( '( %s ) AS role_join_site', $role_join_site ),
+        'role.id',
+        'role_join_site.role_id' );
+      $select->add_column( 'IFNULL( site_count, 0 )', 'site_count', false );
     }
 
     // add the total number of users
     if( $select->has_table_column( '', 'user_count' ) )
     {
-      $site_join_user =
-        'SELECT site_id, COUNT(*) AS user_count '.
+      $role_join_user =
+        'SELECT role_id, COUNT(*) AS user_count '.
         'FROM access '.
-        'GROUP BY site_id';
+        'GROUP BY role_id';
       $modifier->left_join(
-        sprintf( '( %s ) AS site_join_user', $site_join_user ),
-        'site.id',
-        'site_join_user.site_id' );
+        sprintf( '( %s ) AS role_join_user', $role_join_user ),
+        'role.id',
+        'role_join_user.role_id' );
       $select->add_column( 'IFNULL( user_count, 0 )', 'user_count', false );
     }
 
-    // link to the site's last activity and add the activity's datetime
-    $modifier->left_join( 'site_last_activity', 'site.id', 'site_last_activity.site_id' );
-    $modifier->left_join( 'activity', 'site_last_activity.activity_id', 'last_activity.id', 'last_activity' );
+    // link to the role's last activity and add the activity's datetime
+    $modifier->left_join( 'role_last_activity', 'role.id', 'role_last_activity.role_id' );
+    $modifier->left_join( 'activity', 'role_last_activity.activity_id', 'last_activity.id', 'last_activity' );
     $select->add_table_column( 'last_activity', 'datetime', 'last_datetime' );
   }
 }

@@ -135,7 +135,6 @@ abstract class service extends \cenozo\base_object
     $this->status = lib::create( 'service\status', is_object( $this->service_record ) ? 200 : 404 );
 
     // go through all collection/resource pairs
-    $last_index = count( $this->collection_name_list ) - 1;
     foreach( $this->collection_name_list as $index => $collection_name )
     {
       if( array_key_exists( $index, $this->resource_value_list ) )

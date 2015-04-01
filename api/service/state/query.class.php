@@ -10,27 +10,34 @@ namespace cenozo\service\state;
 use cenozo\lib, cenozo\log;
 
 /**
- * The base class of all query (collection-based get) services
+ * Extends the base class query class
  */
 class query extends \cenozo\service\query
 {
   /**
-   * Processes arguments, preparing them for the service.
+   * Applies changes to select and modifier objects for all queries which have this
+   * subject as its leaf-collection
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\select $select The query's select object to modify
+   * @param database\modifier $modifier The query's modifier object to modify
    * @access protected
+   * @static
    */
-  protected function prepare()
+  protected static function add_global_modifications( $select, $modifier )
   {
-    parent::prepare();
-
     // add the total number of participants
-    if( $this->select->has_table_column( '', 'participant_count' ) )
+    if( $select->has_table_column( '', 'participant_count' ) )
     {
-      $this->modifier->left_join( 'participant', 'state.id', 'participant.state_id' );
-      $this->modifier->group( 'state.id' );
-      $this->select->add_column(
-        'IF( participant.state_id IS NULL, 0, COUNT(*) )', 'participant_count', false );
+      $state_join_participant =
+        'SELECT state_id, COUNT(*) AS participant_count '.
+        'FROM participant '.
+        'GROUP BY state_id';
+      $modifier->left_join(
+        sprintf( '( %s ) AS state_join_participant', $state_join_participant ),
+        'state.id',
+        'state_join_participant.state_id' );
+      $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
     }
   }
 }
