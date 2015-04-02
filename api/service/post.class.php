@@ -35,43 +35,64 @@ class post extends service
   {
     parent::execute();
 
-    // create a record for the LAST collection
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
+      
     $index = count( $this->collection_name_list ) - 1;
     if( 0 <= $index )
     {
-      $subject = $this->collection_name_list[$index];
-
-      $object = $this->get_file_as_object();
-      $record = lib::create( sprintf( 'database\%s', $subject ) );
-
-      foreach( $record->get_column_names() as $column_name )
+      $parent_record = end( $this->record_list );
+      $leaf_subject = $this->collection_name_list[$index];
+      if( !is_null( $parent_record ) &&
+          $relationship_class_name::MANY_TO_MANY == $parent_record::get_relationship( $leaf_subject ) )
       {
-        if( 'id' != $column_name )
+        $id = $this->get_file_as_object();
+        if( !is_int( $id ) && !is_array( $id ) )
         {
-          if( property_exists( $object, $column_name ) )
+          $this->status->set_code( 400 );
+        }
+        else
+        {
+          $method = sprintf( 'add_%s', $leaf_subject );
+          $parent_record->$method( $id );
+          $this->status->set_code( 201 );
+        }
+      }
+      else
+      {
+        // create a record for the LAST collection
+        $object = $this->get_file_as_object();
+        $record = lib::create( sprintf( 'database\%s', $leaf_subject ) );
+
+        if( !is_null( $parent_record ) )
+        { // add the parent relationship
+          $parent_column = sprintf( '%s_id', $parent_record::get_table_name() );
+          $record->$parent_column = $parent_record->id;
+        }
+
+        foreach( $record->get_column_names() as $column_name )
+          if( 'id' != $column_name && property_exists( $object, $column_name ) )
             $record->$column_name = $object->$column_name;
-        }
-      }
 
-      try
-      {
-        // save the record, set the data as the new id
-        $record->save();
-        $this->data = (int)$record->id;
+        try
+        {
+          // save the record, set the data as the new id
+          $record->save();
+          $this->data = (int)$record->id;
 
-        // set up the status to show a successfully created resource
-        $this->status->set_code( 201 );
-        $this->status->set_location( sprintf( '%s/%d', $subject, $record->id ) );
-      }
-      catch( \cenozo\exception\database $e )
-      {
-        if( $e->is_duplicate_entry() )
-        { // conflict, return offending columns
-          $this->data = $e->get_duplicate_columns( $record->get_class_name() );
-          $this->status->set_code( 409 );
+          // set up the status to show a successfully created resource
+          $this->status->set_code( 201 );
+          $this->status->set_location( sprintf( '%s/%d', $leaf_subject, $record->id ) );
         }
-        else if( $e->is_missing_data() ) $this->status->set_code( 400 );
-        else throw $e;
+        catch( \cenozo\exception\database $e )
+        {
+          if( $e->is_duplicate_entry() )
+          { // conflict, return offending columns
+            $this->data = $e->get_duplicate_columns( $record->get_class_name() );
+            $this->status->set_code( 409 );
+          }
+          else if( $e->is_missing_data() ) $this->status->set_code( 400 );
+          else throw $e;
+        }
       }
     }
   }

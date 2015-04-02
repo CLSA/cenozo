@@ -116,8 +116,25 @@ cenozo.factory( 'CnBaseListFactory', [
           this.selectEnabled = enable;
           if( enable ) {
             this.selectMode = false;
+            this.toggleSelectMode = function() {
+              this.selectMode = !this.selectMode;
+              this.reload();
+            };
+            this.select = function( record ) {
+              var promise = null;
+              return record.selected ?
+                CnHttpFactory.instance( {
+                  path: this.listPath + '/' + record.id
+                } ).delete().then( function success( response ) { record.selected = 0; }) :
+                CnHttpFactory.instance( {
+                  path: this.listPath,
+                  data: record.id
+                } ).post().then( function success( response ) { record.selected = 1; });
+            };
           } else {
             delete this.selectMode;
+            delete this.toggleSelectMode;
+            delete this.select;
           }
         }
       },
@@ -238,6 +255,7 @@ cenozo.factory( 'CnBaseListFactory', [
         if( 0 < selectList.length ) data.select = { column: selectList };
         if( 0 < joinList.length ) data.modifier.join = joinList;
         if( 0 < whereList.length ) data.modifier.where = whereList;
+        if( this.selectEnabled && this.selectMode ) data.select_mode = 1;
 
         // set up the offset and sorting
         if( null !== this.order ) {
@@ -262,7 +280,8 @@ cenozo.factory( 'CnBaseListFactory', [
                 if( 0 <= key.regexIndexOf( /^date|[^a-z|\Wdate|_date]/ ) )
                   array[index][key] = cnDatetimeToObject( array[index][key] );
                 else if( 0 <= key.regexIndexOf( /^rank|\Wrank|_rank/ ) ||
-                         0 <= key.regexIndexOf( /^count|\Wcount|_count/ ) )
+                         0 <= key.regexIndexOf( /^count|\Wcount|_count/ ) ||
+                         0 <= key.regexIndexOf( /^selected|\Wselected|_selected/ ) )
                   array[index][key] = parseInt( array[index][key] );
               }
             }

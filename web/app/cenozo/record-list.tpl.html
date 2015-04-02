@@ -1,5 +1,6 @@
 <div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
-<table class="table table-striped" ng-class="{ 'table-hover': listModel.viewEnabled } ">
+<table class="table"
+       ng-class="{ 'table-hover':listModel.viewEnabled||listModel.selectMode, 'table-striped':!listModel.selectMode } ">
   <thead>
     <tr class="info">
       <td ng-repeat="column in columnList">
@@ -47,7 +48,8 @@
                    | limitTo: ( listModel.cnPagination.currentPage - 1 ) * listModel.cnPagination.itemsPerPage -
                               listModel.cache.length
                    | limitTo: listModel.cnPagination.itemsPerPage"
-        ng-click="selectRecord( record.id )">
+        ng-click="selectRecord( record )"
+        ng-class="{ success:listModel.selectMode&&record.selected }">
         <td ng-repeat="column in columnList">
           <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
         </td>
@@ -83,8 +85,11 @@
         </button>
         <button class="btn btn-default right"
                 ng-if="listModel.selectEnabled"
-                ng-click="toggleSelectMode()">
-          <i class="glyphicon glyphicon-check" aria-hidden="true"></i> Select
+                ng-class="listModel.selectMode ? 'btn-primary' : 'btn-default'"
+                ng-click="listModel.toggleSelectMode()">
+          <i class="glyphicon glyphicon-edit"
+             ng-class="listModel.selectMode ? 'glyphicon-check' : 'glyphicon-edit'"
+             aria-hidden="true"></i> {{ listModel.selectMode ? 'Done' : 'Select' }}
         </button>
       </td>
     </tr>

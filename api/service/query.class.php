@@ -38,6 +38,10 @@ class query extends service
     parent::prepare();
 
     $setting_manager = lib::create( 'business\setting_manager' );
+        
+    $select_class_name = lib::get_class_name( 'database\select' );
+    $modifier_class_name = lib::get_class_name( 'database\modifier' );
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
 
     // set up the select
     $sel_string = $this->get_argument( 'select', NULL );
@@ -50,7 +54,6 @@ class query extends service
     {
       try
       {
-        $select_class_name = lib::get_class_name( 'database\select' );
         $this->select = $select_class_name::from_json( $sel_string );
         $this->select->add_column( 'id' ); // make sure id is in the select list
       }
@@ -66,7 +69,6 @@ class query extends service
     {
       try
       {
-        $modifier_class_name = lib::get_class_name( 'database\modifier' );
         $this->modifier = $modifier_class_name::from_json( $mod_string );
       }
       catch( \cenozo\exception\base_exception $e )
@@ -86,6 +88,30 @@ class query extends service
       {
         $query_class_name = lib::get_class_name( $query_string );
         $query_class_name::add_global_modifications( $this->select, $this->modifier );
+      }
+
+      // process "selected" mode
+      $selected_mode = $this->get_argument( 'select_mode', false );
+      if( $selected_mode )
+      {
+        $parent_record = end( $this->record_list );
+        if( $relationship_class_name::MANY_TO_MANY != $parent_record::get_relationship( $leaf_subject ) )
+        { // must have table1/<id>/table2 where table1 N-to-N table2
+          $this->status->set_code( 406 );
+        }
+        else
+        {
+          // create a sub-query identifying selected records
+          $table_name = $parent_record::get_joining_table_name( $leaf_subject );
+          $select = lib::create( 'database\select' );
+          $select->from( $table_name );
+          $select->add_column( 'COUNT(*)', 'total', false );
+          $modifier = lib::create( 'database\modifier' );
+          $modifier->where( sprintf( '%s_id', $parent_record::get_table_name() ), '=', $parent_record->id );
+          $modifier->where( sprintf( '%s_id', $leaf_subject ), '=', sprintf( '%s.id', $leaf_subject ), false );
+          $sub_query = sprintf( '( %s %s )', $select->get_sql(), $modifier->get_sql() );
+          $this->select->add_column( $sub_query, 'selected', false ); 
+        }
       }
     }
 
@@ -107,16 +133,21 @@ class query extends service
       $record_class_name = lib::get_class_name( sprintf( 'database\%s', $leaf_subject ) );
       $parent_record = end( $this->record_list );
 
-      // if we have a parent then select from it, otherwise do a general select
-      $parent_record_method = sprintf( 'get_%s_count', $leaf_subject );
+      $count_modifier = clone $this->modifier;
+      if( false === $parent_record || $this->get_argument( 'select_mode', false ) )
+      { // if we have a parent then select from it, or if we are in "selected" mode
+        $total = $record_class_name::count( $count_modifier );
+        $results = $record_class_name::select( $this->select, $this->modifier );
+      }
+      else
+      {
+        $parent_record_method = sprintf( 'get_%s_count', $leaf_subject );
+        $total = $parent_record->$parent_record_method( $count_modifier );
+        $parent_record_method = sprintf( 'get_%s_list', $leaf_subject );
+        $results = $parent_record->$parent_record_method( $this->select, $this->modifier );
+      }
+
       $details = $record_class_name::db()->get_column_details( $leaf_subject );
-      $total = false === $parent_record
-             ? $record_class_name::count( $this->modifier )
-             : $parent_record->$parent_record_method( $this->modifier );
-      $parent_record_method = sprintf( 'get_%s_list', $leaf_subject );
-      $results = false === $parent_record
-               ? $record_class_name::select( $this->select, $this->modifier )
-               : $parent_record->$parent_record_method( $this->select, $this->modifier );
 
       $this->headers['Columns'] = $details;
       $this->headers['Limit'] = $this->modifier->get_limit();

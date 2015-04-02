@@ -155,7 +155,7 @@ abstract class service extends \cenozo\base_object
             $parent_record = $this->record_list[$index - 1];
             $method_name = sprintf( 'get_%s_count', $collection_name );
             $modifier = lib::create( 'database\modifier' );
-            $modifier->where( 'id', '=', $record->id );
+            $modifier->where( sprintf( '%s.id', $record::get_table_name() ), '=', $record->id );
             if( 0 == $parent_record->$method_name( $modifier ) )
             {
               $this->status->set_code( 404 );

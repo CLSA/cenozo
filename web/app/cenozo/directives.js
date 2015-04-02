@@ -533,14 +533,13 @@ cenozo.directive( 'cnRecordList', [
         }
 
         if( $scope.listModel.selectEnabled ) {
-          $scope.toggleSelectMode = function() { $scope.listModel.selectMode = !$scope.listModel.selectMode; };
-          $scope.selectRecord = function( id ) {
+          $scope.selectRecord = function( record ) {
             if( $scope.listModel.selectMode ) {
-              console.log( 'TODO select ' + id );
+              $scope.listModel.select( record ).catch( function error( response ) { cnFatalError(); } );
             }
           };
         } else if( $scope.listModel.viewEnabled ) {
-          $scope.selectRecord = function( id ) { $state.go( '^.view', { id: id } ); };
+          $scope.selectRecord = function( record ) { $state.go( '^.view', { id: record.id } ); };
         }
       },
       link: function( scope, element, attrs ) {

@@ -459,8 +459,10 @@ abstract class record extends \cenozo\base_object
     
     if( 'add' == $action )
     { // calling: add_<record>( $ids )
-      // make sure the first argument is a non-empty array of ids
-      if( 1 != count( $args ) || !is_array( $args[0] ) || 0 == count( $args[0] ) )
+      // make sure the first argument is an integer or non-empty array of ids
+      if( 1 != count( $args ) ||
+          is_object( $args[0] ) ||
+          ( is_array( $args[0] ) && 0 < count( $args[0] ) ) )
         throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $ids = $args[0];
@@ -469,8 +471,10 @@ abstract class record extends \cenozo\base_object
     }
     else if( 'remove' == $action )
     { // calling: remove_<record>( $ids )
-      // make sure the first argument is a non-empty array of ids
-      if( 1 != count( $args ) || 0 >= $args[0] )
+      // make sure the first argument is an integer or non-empty array of ids
+      if( 1 != count( $args ) ||
+          is_object( $args[0] ) ||
+          ( is_array( $args[0] ) && 0 < count( $args[0] ) ) )
         throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $id = $args[0];
@@ -652,9 +656,6 @@ abstract class record extends \cenozo\base_object
     
         $modifier->cross_join( $joining_table_name, $foreign_key_name, $joining_foreign_key_name );
         $modifier->cross_join( $table_name, $joining_primary_key_name, $primary_key_name );
-// TODO: remove the following if everything works
-//        $modifier->cross_join( $joining_table_name, $primary_key_name, $joining_primary_key_name );
-//        $modifier->cross_join( $record_type, $joining_foreign_key_name, $foreign_key_name );
         $modifier->where( $primary_key_name, '=', $primary_key_value );
       }
 
@@ -859,9 +860,9 @@ abstract class record extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @static
-   * @access protected
+   * @access public
    */
-  protected static function get_joining_table_name( $record_type )
+  public static function get_joining_table_name( $record_type )
   {
     // the joining table may be <table>_has_<foreign_table> or <foreign>_has_<table>
     $table_name = static::get_table_name();
