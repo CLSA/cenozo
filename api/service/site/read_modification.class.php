@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * Extends the base class query class
  */
-class query extends \cenozo\service\query
+class read_modification extends \cenozo\base_object
 {
   /**
    * Applies changes to select and modifier objects for all queries which have this
@@ -21,10 +21,10 @@ class query extends \cenozo\service\query
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select $select The query's select object to modify
    * @param database\modifier $modifier The query's modifier object to modify
-   * @access protected
+   * @access public
    * @static
    */
-  protected static function add_global_modifications( $select, $modifier )
+  public static function apply( $select, $modifier )
   {
     // add the total number of roles
     if( $select->has_table_column( '', 'role_count' ) )

@@ -72,19 +72,14 @@ class read extends service
       $method = strtolower( $this->service_record->method );
       if( 'get' == $method && is_null( $this->get_leaf_record() ) ) $method = 'query';
 
-      $service_class = sprintf( 'service\%s\%s', $leaf_subject, $method );
-      if( lib::class_exists( $service_class ) )
+      $modification_class = sprintf( 'service\%s\read_modification', $leaf_subject, $method );
+      if( lib::class_exists( $modification_class ) )
       {
-        $class_name = lib::get_class_name( $service_class );
-        $class_name::add_global_modifications( $this->select, $this->modifier );
+        $class_name = lib::get_class_name( $modification_class );
+        $class_name::apply( $this->select, $this->modifier );
       }
     }
   }
-
-  /**
-   * TODO: document
-   */
-  protected static function add_global_modifications( $select, $modifier ) {}
 
   /**
    * TODO: document
