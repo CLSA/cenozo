@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all head services
  */
-class head extends service
+class head extends read
 {
   /**
    * Constructor

@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all post operations.
  */
-class post extends service
+class post extends write
 {
   /**
    * Constructor
@@ -37,11 +37,10 @@ class post extends service
 
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
       
-    $index = count( $this->collection_name_list ) - 1;
-    if( 0 <= $index )
+    $leaf_subject = $this->get_leaf_subject();
+    if( !is_null( $leaf_subject ) )
     {
-      $parent_record = end( $this->record_list );
-      $leaf_subject = $this->collection_name_list[$index];
+      $parent_record = $this->get_parent_record();
       if( !is_null( $parent_record ) &&
           $relationship_class_name::MANY_TO_MANY == $parent_record::get_relationship( $leaf_subject ) )
       {

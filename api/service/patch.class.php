@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all patch operations.
  */
-class patch extends service
+class patch extends write
 {
   /**
    * Constructor
@@ -35,15 +35,15 @@ class patch extends service
   {
     parent::execute();
 
-    $record = end( $this->record_list );
-    if( false !== $record )
+    $leaf_record = $this->get_leaf_record();
+    if( !is_null( $leaf_record ) )
     {
       $object = $this->get_file_as_object();
       foreach( get_object_vars( $object ) as $key => $value )
       {
         try
         {
-          $record->$key = $value;
+          $leaf_record->$key = $value;
           $this->status->set_code( 204 );
         }
         catch( \cenozo\exception\argument $e )
@@ -58,13 +58,13 @@ class patch extends service
       {
         try
         {
-          $record->save();
+          $leaf_record->save();
         }
         catch( \cenozo\exception\database $e )
         {
           if( $e->is_duplicate_entry() )
           {
-            $this->data = $e->get_duplicate_columns( $record->get_class_name() );
+            $this->data = $e->get_duplicate_columns( $leaf_record->get_class_name() );
             $this->status->set_code( 409 );
           }
           else if( $e->is_missing_data() ) $this->status->set_code( 400 );

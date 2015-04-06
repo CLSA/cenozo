@@ -55,6 +55,6 @@ class get extends \cenozo\service\service
    */
   public function execute()
   {
-    $this->data = end( $this->record_list );
+    $this->data = $this->get_leaf_record();
   }
 }

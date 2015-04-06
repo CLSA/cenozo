@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all delete operations.
  */
-class delete extends service
+class delete extends write
 {
   /**
    * Constructor
@@ -36,35 +36,33 @@ class delete extends service
 
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
 
-    $index = count( $this->collection_name_list ) - 1;
-    if( 0 <= $index )
+    $leaf_record = $this->get_leaf_record();
+    $leaf_subject = $this->get_leaf_subject();
+    if( !is_null( $leaf_subject ) )
     {
+      $parent_record = $this->get_parent_record();
       $many_to_many = false;
-      if( 0 < $index )
+      if( !is_null( $parent_record ) )
       { // check for n-to-n relationships between parent and child
-        $parent_record = $this->record_list[$index-1];
-        $leaf_subject = $this->collection_name_list[$index];
         if( $relationship_class_name::MANY_TO_MANY == $parent_record::get_relationship( $leaf_subject ) )
         {
-          $child_record = $this->record_list[$index];
           $method = sprintf( 'remove_%s', $leaf_subject );
-          $parent_record->$method( $child_record->id );
+          $parent_record->$method( $leaf_record->id );
           $many_to_many = true;
         }
       }
 
       if( !$many_to_many )
       {
-        $record = $this->record_list[$index];
         try
         {
-          $record->delete();
+          $leaf_record->delete();
         }
         catch( \cenozo\exception\database $e )
         {
           if( $e->is_constrained() )
           {
-            $this->data = $e->get_duplicate_columns( $record->get_class_name() );
+            $this->data = $e->get_duplicate_columns( $leaf_record->get_class_name() );
             $this->status->set_code( 409 );
           }
           else throw $e;

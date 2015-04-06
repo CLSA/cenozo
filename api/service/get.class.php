@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * The base class of all get (single-resource) services
  */
-class get extends service
+class get extends read
 {
   /**
    * Constructor
@@ -34,7 +34,7 @@ class get extends service
   {
     parent::execute();
 
-    $record = end( $this->record_list );
-    $this->data = false === $record ? NULL : $record->get_column_values();
+    $leaf_record = $this->get_leaf_record();
+    $this->data = is_null( $leaf_record ) ? NULL : $leaf_record->get_column_values();
   }
 }

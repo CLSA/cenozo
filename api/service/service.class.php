@@ -116,7 +116,7 @@ abstract class service extends \cenozo\base_object
     if( self::$debug )
     {
       log::debug( sprintf( '[%s] %s times: (%s) => (%s)',
-                           strtoupper( $this->get_method() ),
+                           strtoupper( $this->service_record->method ),
                            $this->service_record->path,
                            implode( ', ', array_keys( $time ) ),
                            implode( ', ', array_values( $time ) ) ) );
@@ -152,7 +152,7 @@ abstract class service extends \cenozo\base_object
           if( 0 < $index )
           {
             // get the parent record and test to see if this record is one of its children
-            $parent_record = $this->record_list[$index - 1];
+            $parent_record = $this->get_resource( $index - 1 );
             $method_name = sprintf( 'get_%s_count', $collection_name );
             $modifier = lib::create( 'database\modifier' );
             $modifier->where( sprintf( '%s.id', $record::get_table_name() ), '=', $record->id );
@@ -163,8 +163,6 @@ abstract class service extends \cenozo\base_object
             }
           }
         }
-        
-        $this->record_list[] = $record;
       }
     }
   }
@@ -238,74 +236,115 @@ abstract class service extends \cenozo\base_object
    */
   protected function get_resource( $index )
   {
-    $session = lib::create( 'business\session' );
-
-    $record = NULL;
-
-    if( array_key_exists( $index, $this->collection_name_list ) &&
-        array_key_exists( $index, $this->resource_value_list ) )
+    if( !array_key_exists( $index, $this->resource_cache ) )
     {
-      $collection_name = $this->collection_name_list[$index];
-      $resource_value = $this->resource_value_list[$index];
+      $session = lib::create( 'business\session' );
 
-      $util_class_name = lib::get_class_name( 'util' );
-      $record_class_name = lib::get_class_name( sprintf( 'database\%s', $collection_name ) );
+      $record = NULL;
 
-      if( $util_class_name::string_matches_int( $resource_value ) )
-      { // there is a resource, get the corresponding record
-        try
-        {
-          $record = new $record_class_name( $resource_value );
-        }
-        // ignore runtime exceptions and instead just return a null record
-        catch( \cenozo\exception\runtime $e ) {}
-      }
-      else if( false !== strpos( $resource_value, '=' ) )
-      { // check unique keys
-        $columns = array();
-        $values = array();
-        foreach( explode( ';', $resource_value ) as $part )
-        {
-          $pair = explode( '=', $part );
-          if( 2 == count( $pair ) )
-          {
-            $columns[] = $pair[0];
-            $values[] = $pair[1];
-          }
-        }
-
-        if( 0 < count( $columns ) )
-        {
-          $parent_index = $index - 1;
-          if( 0 <= $parent_index )
-          {
-            // add the parent ID to the unique key
-            $parent_record = $this->record_list[$parent_index];
-            $columns[] = sprintf( '%s_id', $parent_record->get_class_name() );
-            $values[] = $parent_record->id;
-          }
-          
-          $record = $record_class_name::get_unique_record( $columns, $values );
-        }
-      }
-
-      // restrict some roles when resource is related to a site
-      if( !$session->get_role()->all_sites )
+      if( array_key_exists( $index, $this->collection_name_list ) &&
+          array_key_exists( $index, $this->resource_value_list ) )
       {
-        $db_site = $session->get_site();
-        if( 'site' == $collection_name )
-        {
-          if( $db_site->id != $record->id ) $this->status->set_code( 403 );
+        $collection_name = $this->collection_name_list[$index];
+        $resource_value = $this->resource_value_list[$index];
+
+        $util_class_name = lib::get_class_name( 'util' );
+        $record_class_name = lib::get_class_name( sprintf( 'database\%s', $collection_name ) );
+
+        if( $util_class_name::string_matches_int( $resource_value ) )
+        { // there is a resource, get the corresponding record
+          try
+          {
+            $record = new $record_class_name( $resource_value );
+          }
+          // ignore runtime exceptions and instead just return a null record
+          catch( \cenozo\exception\runtime $e ) {}
         }
-        else
+        else if( false !== strpos( $resource_value, '=' ) )
+        { // check unique keys
+          $columns = array();
+          $values = array();
+          foreach( explode( ';', $resource_value ) as $part )
+          {
+            $pair = explode( '=', $part );
+            if( 2 == count( $pair ) )
+            {
+              $columns[] = $pair[0];
+              $values[] = $pair[1];
+            }
+          }
+
+          if( 0 < count( $columns ) )
+          {
+            $parent_index = $index - 1;
+            if( 0 <= $parent_index )
+            {
+              // add the parent ID to the unique key
+              $parent_record = $this->get_resource( $parent_index );
+              $columns[] = sprintf( '%s_id', $parent_record->get_class_name() );
+              $values[] = $parent_record->id;
+            }
+            
+            $record = $record_class_name::get_unique_record( $columns, $values );
+          }
+        }
+
+        // restrict some roles when resource is related to a site
+        if( !$session->get_role()->all_sites )
         {
-          if( $record_class_name::column_exists( 'site_id' ) && $record->site_id != $db_site->id )
-            $this->status->set_code( 403 );
+          $db_site = $session->get_site();
+          if( 'site' == $collection_name )
+          {
+            if( $db_site->id != $record->id ) $this->status->set_code( 403 );
+          }
+          else
+          {
+            if( $record_class_name::column_exists( 'site_id' ) && $record->site_id != $db_site->id )
+              $this->status->set_code( 403 );
+          }
         }
       }
+
+      $this->resource_cache[$index] = $record;
     }
 
-    return $record;
+    return $this->resource_cache[$index];
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function get_parent_subject()
+  {
+    $count = count( $this->collection_name_list );
+    return 1 < $count ? $this->collection_name_list[$count - 2] : NULL;
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function get_parent_record()
+  {
+    $count = count( $this->collection_name_list );
+    return 1 < $count ? $this->get_resource( $count - 2 ) : NULL;
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function get_leaf_subject()
+  {
+    $count = count( $this->collection_name_list );
+    return 0 < $count ? $this->collection_name_list[$count - 1] : NULL;
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function get_leaf_record()
+  {
+    $count = count( $this->collection_name_list );
+    return 0 < $count ? $this->get_resource( $count - 1 ) : NULL;
   }
 
   /**
@@ -459,11 +498,16 @@ abstract class service extends \cenozo\base_object
   protected $resource_value_list = NULL;
 
   /**
+   * TODO: document
+   */
+  private $resource_cache = array();
+
+  /**
    * The database record for this service
    * @var database\service
-   * @access private
+   * @access protected
    */
-  private $service_record = NULL;
+  protected $service_record = NULL;
 
   /**
    * Whether to check if the user's access has permission to perform this service
@@ -471,9 +515,4 @@ abstract class service extends \cenozo\base_object
    * @access private
    */
   private $validate_access = true;
-
-  /**
-   * TODO: document
-   */
-  protected $record_list = array();
 }
