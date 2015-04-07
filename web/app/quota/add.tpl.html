@@ -1,10 +1,38 @@
 <cn-record-add list-model="cnList" add-model="cnAdd">
-  <cn-record-input form="form" key="id" title="ID">
-    <input name="id"
-           ng-model="record.id"
+  <cn-record-input form="form" key="site_id" title="">
+    <select name="site_id"
+            ng-model="record.site_id"
+            class="form-control">
+      <option ng-repeat="id, name in siteList" value="{{ id }}">{{ name }}</option>
+    </select>
+  </cn-record-input>
+  <cn-record-input form="form" key="region_id" title="">
+    <select name="region_id"
+            ng-model="record.region_id"
+            class="form-control">
+      <option ng-repeat="id, name in regionList" value="{{ id }}">{{ name }}</option>
+    </select>
+  </cn-record-input>
+  <cn-record-input form="form" key="gender" title="">
+    <select name="gender"
+            ng-model="record.gender"
+            class="form-control">
+      <option ng-repeat="id, name in genderList" value="{{ id }}">{{ name }}</option>
+    </select>
+  </cn-record-input>
+  <cn-record-input form="form" key="age_group_id" title="">
+    <select name="age_group_id"
+            ng-model="record.age_group_id"
+            class="form-control">
+      <option ng-repeat="id, name in age_groupList" value="{{ id }}">{{ name }}</option>
+    </select>
+  </cn-record-input>
+  <cn-record-input form="form" key="XX" title="">
+    <input name="XX"
+           ng-model="record.XX"
            class="form-control"
-           type="text"
-           placeholder="ID"
+           type="number"
+           min="0"
            autocomplete="off"
            required /></div>
   </cn-record-input>

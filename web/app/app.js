@@ -13,12 +13,15 @@ window.cnFatalError = function cnFatalError() {
 window.cnCopyParams = function cnCopyParams( object, params ) {
   for( var property in params ) {
     if( params.hasOwnProperty( property ) ) {
+      object[property] = params[property]; // copy non-object property
+      /* TODO: this may not be necessary, removing it for now
       if( null !== params[property] && 'object' === typeof params[property] ) {
         if( null !== object[property] && 'object' === typeof object[property] ) {
           // both object and params have same object, so recursively apply
           window.cnCopyParams( object[property], params[property] );
         } else object[property] = params[property]; // copy object property
       } else object[property] = params[property]; // copy non-object property
+      */
     }
   }
 }
@@ -108,32 +111,6 @@ window.cnToQueryString = function cnToQueryString( object ) {
     if( object.hasOwnProperty( property ) )
       str.push( encodeURIComponent( property ) + '=' + encodeURIComponent( object[property] ) );
   return str.join( '&' );
-};
-
-window.cnPatch = function( $scope ) {
-  return function( property ) {
-    var data = {}; 
-    data[property] = $scope.cnView.record[property];
-    $scope.cnView.patch( $scope.cnView.record.id, data ).then(
-      function success( response ) { 
-        for( var i = 0; i < $scope.form.length; i++ ) { 
-          if( $scope.form[i].$error.conflict ) { 
-            $scope.form[i].$invalid = false;
-            $scope.form[i].$error.conflict = false;
-          }
-        }
-      },
-      function error( response ) { 
-        if( 409 == response.status ) { 
-          // report which inputs are included in the conflict
-          for( var i = 0; i < response.data.length; i++ ) { 
-            $scope.form[response.data[i]].$invalid = true;
-            $scope.form[response.data[i]].$error.conflict = true;
-          }
-        } else { cnFatalError(); }
-      }
-    );
-  };
 };
 
 /* ######################################################################################################## */

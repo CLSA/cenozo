@@ -11,19 +11,6 @@ define( [], function() {
   };
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnSettingAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        return CnBaseAddFactory.instance( params );
-      } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnSettingListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
@@ -71,17 +58,18 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnSettingSingleton', [
-    'CnBaseSingletonFactory', 'CnSettingListFactory', 'CnSettingAddFactory', 'CnSettingViewFactory',
-    function( CnBaseSingletonFactory, CnSettingListFactory, CnSettingAddFactory, CnSettingViewFactory ) {
+    'CnBaseSingletonFactory', 'CnSettingListFactory', 'CnSettingViewFactory',
+    function( CnBaseSingletonFactory, CnSettingListFactory, CnSettingViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: moduleSubject,
           name: moduleNames,
-          cnAdd: CnSettingAddFactory.instance(),
-          cnList: CnSettingListFactory.instance(),
-          cnView: CnSettingViewFactory.instance()
+          cnList: CnSettingListFactory.instance( { parentModel: this } ),
+          cnView: CnSettingViewFactory.instance( { parentModel: this } )
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+
+        this.cnList.enableView( true );
       };
 
       object.prototype = CnBaseSingletonFactory.prototype;

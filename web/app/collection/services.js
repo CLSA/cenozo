@@ -108,11 +108,35 @@ define( [
 
         ////////////////////////////////////
         // factory customizations start here
-        var thisRef = this;
-        this.cnParticipantList = CnParticipantListFactory.instance();
+        this.inputList = {
+          name: {
+            title: 'Name',
+            type: 'string',
+            required: true
+          },
+          active: {
+            title: 'Active',
+            type: 'boolean',
+            required: true,
+            help: 'Inactive collections will not show as options in reports or to external applications'
+          },
+          locked: {
+            title: 'Locked',
+            type: 'boolean',
+            required: true,
+            help: 'If locked then only users in the access list will be able to make changes to the collection'
+          },
+          description: {
+            title: 'Description',
+            type: 'text',
+            required: false
+          }
+        };
+        this.cnParticipantList = CnParticipantListFactory.instance( { parentModel: this } );
         this.cnParticipantList.enableSelect( true );
-        this.cnUserList = CnUserListFactory.instance();
+        this.cnUserList = CnUserListFactory.instance( { parentModel: this } );
         this.cnUserList.enableSelect( true );
+        var thisRef = this;
         this.load = function load( id ) {
           thisRef.cnParticipantList.cache = [];
           thisRef.cnUserList.cache = [];
@@ -145,9 +169,9 @@ define( [
         var base = CnBaseSingletonFactory.instance( {
           subject: moduleSubject,
           name: moduleNames,
-          cnAdd: CnCollectionAddFactory.instance(),
-          cnList: CnCollectionListFactory.instance(),
-          cnView: CnCollectionViewFactory.instance()
+          cnAdd: CnCollectionAddFactory.instance( { parentModel: this } ),
+          cnList: CnCollectionListFactory.instance( { parentModel: this } ),
+          cnView: CnCollectionViewFactory.instance( { parentModel: this } )
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
 

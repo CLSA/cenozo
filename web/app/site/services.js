@@ -79,11 +79,15 @@ define( [], function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: moduleSubject,
           name: moduleNames,
-          cnAdd: CnSiteAddFactory.instance(),
-          cnList: CnSiteListFactory.instance(),
-          cnView: CnSiteViewFactory.instance()
+          cnAdd: CnSiteAddFactory.instance( { parentModel: this } ),
+          cnList: CnSiteListFactory.instance( { parentModel: this } ),
+          cnView: CnSiteViewFactory.instance( { parentModel: this } )
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+
+        this.cnList.enableAdd( true );
+        this.cnList.enableDelete( true );
+        this.cnList.enableView( true );
       };
 
       object.prototype = CnBaseSingletonFactory.prototype;

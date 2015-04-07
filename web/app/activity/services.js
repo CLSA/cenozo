@@ -77,7 +77,7 @@ define( [], function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: moduleSubject,
           name: moduleNames,
-          cnList: CnActivityListFactory.instance()
+          cnList: CnActivityListFactory.instance( { parentModel: this } )
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

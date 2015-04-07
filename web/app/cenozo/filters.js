@@ -39,22 +39,25 @@ cenozo.filter( 'cnDatabaseDate', [
 ] );
 
 /* ######################################################################################################## */
-cenozo.filter( 'cnMetaFilter', function( $filter ) {
-  return function( value, filterStr ) {
-    if( undefined !== filterStr && 0 < filterStr.length ) {
-      // convert string into array deliminating by : (but not inside double quotes)
-      var args = [].concat.apply( [], filterStr.split( '"' ).map(
-        function( v, i ) {
-          return i%2 ? v : v.split( ':' )
-        }
-      ) ).filter( Boolean );
+cenozo.filter( 'cnMetaFilter', [
+  '$filter',
+  function( $filter ) {
+    return function( value, filterStr ) {
+      if( undefined !== filterStr && 0 < filterStr.length ) {
+        // convert string into array deliminating by : (but not inside double quotes)
+        var args = [].concat.apply( [], filterStr.split( '"' ).map(
+          function( v, i ) {
+            return i%2 ? v : v.split( ':' )
+          }
+        ) ).filter( Boolean );
 
-      var filter = $filter( args.shift() );
-      args.unshift( value );
-      return filter.apply( null, args );
-    } else return value;
-  };
-} );
+        var filter = $filter( args.shift() );
+        args.unshift( value );
+        return filter.apply( null, args );
+      } else return value;
+    };
+  }
+] );
 
 /* ######################################################################################################## */
 cenozo.filter( 'cnPercent', function() {

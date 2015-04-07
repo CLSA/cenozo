@@ -3,16 +3,6 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'LanguageAddCtrl', [
-    '$scope', 'CnLanguageSingleton',
-    function( $scope, CnLanguageSingleton ) {
-      $scope.cnAdd = CnLanguageSingleton.cnAdd;
-      $scope.cnList = CnLanguageSingleton.cnList;
-      $scope.record = $scope.cnAdd.createRecord();
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cnCachedProviders.controller( 'LanguageListCtrl', [
     '$scope', 'CnLanguageSingleton',
     function( $scope, CnLanguageSingleton ) {
@@ -28,7 +18,6 @@ define( [], function() {
       $scope.cnList = CnLanguageSingleton.cnList;
       $scope.cnView = CnLanguageSingleton.cnView;
       $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
-      $scope.patch = cnPatch( $scope );
     }
   ] );
 

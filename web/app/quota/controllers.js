@@ -28,7 +28,6 @@ define( [], function() {
       $scope.cnList = CnQuotaSingleton.cnList;
       $scope.cnView = CnQuotaSingleton.cnView;
       $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
-      $scope.patch = cnPatch( $scope );
     }
   ] );
 

@@ -82,10 +82,10 @@ cenozo.directive( 'cnClock', [
         cnApp.promise.then( function() {
           function updateTime() {
             var nowObj = new Date();
-            nowObj.setTime( nowObj.getTime() + cnApp.site.timezoneOffset * 1000 );
+            nowObj.setTime( nowObj.getTime() + cnApp.site.timezone_offset * 1000 );
             var hours = ( nowObj.getUTCHours() < 10 ? '0' : '' ) + nowObj.getUTCHours();
             var minutes = ( nowObj.getUTCMinutes() < 10 ? '0' : '' ) + nowObj.getUTCMinutes();
-            element.text( hours + ':' + minutes + ' ' + cnApp.site.timezoneName );
+            element.text( hours + ':' + minutes + ' ' + cnApp.site.timezone_name );
           }
 
           updateTime();
@@ -589,18 +589,69 @@ cenozo.directive( 'cnRecordView', [
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
-      transclude: true,
       scope: {
         listModel: '=',
         viewModel: '='
       },
       controller: function( $scope ) {
+        // convert integers/floats AFTER they are loaded
+        $scope.$watch( 'viewModel.record', function() {
+          for( var key in $scope.viewModel.inputList )
+            if( 'integer' == $scope.viewModel.inputList[key].type ) {
+              $scope.viewModel.record[key] = parseInt( $scope.viewModel.record[key] );
+            } else if( 'float' == $scope.viewModel.inputList[key].type ) {
+              $scope.viewModel.record[key] = parseFloat( $scope.viewModel.record[key] );
+            }
+        } );
         $scope.back = function() { $state.go( '^.list' ); };
 
         $scope.delete = function() {
           $scope.listModel.delete( $scope.viewModel.record.id ).then(
             function success( response ) { $state.go( $scope.listModel.subject + '.list' ); },
             function error( response ) { cnFatalError(); }
+          );
+        };
+
+        $scope.patch = function( property ) {
+          var data = {};
+          data[property] = $scope.viewModel.record[property];
+          $scope.viewModel.patch( $scope.viewModel.record.id, data ).then(
+            function success( response ) { 
+              var scope = angular.element(
+                angular.element( document.querySelector( '#' + property ) ) ).scope();
+              var scope2 = angular.element(
+                angular.element( document.querySelector( '.input-group' ) ) ).scope();
+              // if a conflict has been resolved then clear it throughout the form
+              var currentItem = scope.$parent.innerForm.name;
+              if( currentItem.$error.conflict ) {
+                var sibling = scope.$parent.$parent.$$childHead;
+                while( null !== sibling ) {
+                  var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
+                  if( siblingItem.$error.conflict ) { 
+                    siblingItem.$dirty = false;
+                    siblingItem.$invalid = false;
+                    siblingItem.$error.conflict = false;
+                  }
+                  sibling = sibling.$$nextSibling;
+                }
+              }
+
+              // now clean up this property's form elements
+              currentItem.$error = {};
+            },
+            function error( response ) { 
+              if( 409 == response.status ) { 
+                // report which inputs are included in the conflict
+                for( var i = 0; i < response.data.length; i++ ) { 
+                  var item = angular.element(
+                    angular.element( document.querySelector( '#' + response.data[i] ) ) ).
+                      scope().$parent.innerForm.name;
+                  item.$dirty = true;
+                  item.$invalid = true;
+                  item.$error.conflict = true;
+                }
+              } else { cnFatalError(); }
+            }
           );
         };
       },
@@ -610,6 +661,22 @@ cenozo.directive( 'cnRecordView', [
                       : attrs.heading;
 
         scope.$parent.form = scope.form;
+
+        // convert the inputList into an array
+        scope.inputList = [];
+        for( var key in scope.viewModel.inputList ) {
+          var input = scope.viewModel.inputList[key];
+          input.key = key;
+          if( 'enum' == input.type ) {
+            input.enum = scope.viewModel.parentModel.metadata[input.enumKey];
+          } else if( 'boolean' == input.type ) {
+            input.enum = [
+              { value: '1', name: 'Yes' },
+              { value: '0', name: 'No' }
+            ];
+          }
+          scope.inputList.push( input );
+        }
       }
     };
   }

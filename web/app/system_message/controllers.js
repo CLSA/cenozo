@@ -28,7 +28,6 @@ define( [], function() {
       $scope.cnList = CnSystemMessageSingleton.cnList;
       $scope.cnView = CnSystemMessageSingleton.cnView;
       $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
-      $scope.patch = cnPatch( $scope );
     }
   ] );
 

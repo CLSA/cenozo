@@ -1,46 +1,5 @@
-<cn-record-view list-model="cnList" view-model="cnView">
-  <cn-record-input form="form" key="name" title="Name"
-    help="May only contain letters, numbers and underscores.">
-    <input name="name"
-           ng-model="cnView.record.name"
-           cn-change="patch( 'name' )"
-           class="form-control"
-           type="text"
-           autocomplete="off"
-           required /></input>
-  </cn-record-input>
-  <cn-record-input form="form" key="active" title="Active"
-    help="Inactive collections will not show as options in reports or to external applications.">
-    <select name="active"
-            ng-model="cnView.record.active"
-            cn-change="patch( 'active' )"
-            class="form-control">
-      <option value="1">Yes</option>
-      <option value="0">No</option>
-    </select>
-  </cn-record-input>
-  <cn-record-input form="form" key="locked" title="Locked"
-    help="If locked then only users in the access list will be able to make changes to the collection.">
-    <select name="locked"
-            ng-model="cnView.record.locked"
-            cn-change="patch( 'locked' )"
-            class="form-control">
-      <option value="1">Yes</option>
-      <option value="0">No</option>
-    </select>
-  </cn-record-input>
-  <cn-record-input form="form" key="description" title="Description">
-    <textarea name="description"
-              ng-model="cnView.record.description"
-              cn-change="patch( 'description' )"
-              class="form-control"
-              type="text"
-              /></textarea>
-  </cn-record-input>
-</cn-record-view>
-
+<cn-record-view list-model="cnList" view-model="cnView"></cn-record-view>
 <div class="vertical-spacer"></div>
 <cn-record-list heading="Collection Participants" list-model="cnView.cnParticipantList"></cn-record-list>
-
 <div class="vertical-spacer"></div>
 <cn-record-list heading="User Access List" list-model="cnView.cnUserList"></cn-record-list>

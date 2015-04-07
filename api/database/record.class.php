@@ -393,12 +393,27 @@ abstract class record extends \cenozo\base_object
    * Returns all column values in the record as an associative array
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\select $select Defines which columns to return
+   * @param database\modifier $modifier Modifications used to access columns
    * @return array
    * @access public
    */
-  public function get_column_values()
+  public function get_column_values( $select = NULL, $modifier = NULL )
   {
-    return $this->column_values;
+    $columns = array();
+    if( is_null( $select ) )
+    {
+      $columns = $this->column_values;
+    }
+    else
+    {
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $modifier->where( sprintf( '%s.id', $this->get_table_name() ), '=', $this->id );
+      $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
+      $columns = static::db()->get_row( $sql );
+    }
+  
+    return $columns;
   }
   
   /**

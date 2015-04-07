@@ -7,6 +7,7 @@ catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 cenozo.factory( 'CnBaseAddFactory',
   function() {
     var object = function( params ) {
+      if( undefined === params.parentModel ) throw 'Tried to create CnBaseListFactory without a parent model';
       if( undefined === params.subject ) throw 'Tried to create CnBaseAddFactory without a subject';
       if( undefined === params.name ) throw 'Tried to create CnBaseAddFactory without a name';
 
@@ -36,9 +37,11 @@ cenozo.factory( 'CnBaseListFactory', [
   'CnPaginationFactory', 'CnHttpFactory',
   function( CnPaginationFactory, CnHttpFactory ) {
     var object = function( params ) {
+      if( undefined === params.parentModel ) throw 'Tried to create CnBaseListFactory without a parent model';
       if( undefined === params.subject ) throw 'Tried to create CnBaseListFactory without a subject';
       if( undefined === params.name ) throw 'Tried to create CnBaseListFactory without a name';
 
+      this.parentModel = null;
       this.subject = null;
       this.name = {
         singular: '(undefined)',
@@ -180,6 +183,7 @@ cenozo.factory( 'CnBaseListFactory', [
       load: function( path, replace ) {
         if( undefined === replace ) replace = false;
         this.listPath = undefined === path || null === path ? this.subject : path;
+        if( replace ) this.cache = [];
 
         // set up the select, join and where list based on the column list
         var selectList = [];
@@ -287,7 +291,6 @@ cenozo.factory( 'CnBaseListFactory', [
             }
           } );
 
-          if( replace ) thisRef.cache = [];
           thisRef.cache = thisRef.cache.concat( response.data );
           thisRef.total = response.headers( 'Total' );
         } ).finally( function done() {
@@ -309,6 +312,7 @@ cenozo.factory( 'CnBaseViewFactory', [
   'CnHttpFactory',
   function( CnHttpFactory ) {
     var object = function( params ) {
+      if( undefined === params.parentModel ) throw 'Tried to create CnBaseListFactory without a parent model';
       if( undefined === params.subject ) throw 'Tried to create CnBaseViewFactory without a subject';
       if( undefined === params.name ) throw 'Tried to create CnBaseViewFactory without a name';
 
@@ -326,20 +330,89 @@ cenozo.factory( 'CnBaseViewFactory', [
 
     object.prototype = {
       load: function( id ) {
+        // set up the select and join list based on the column list
+        this.record = {};
+        var selectList = [];
+        var joinList = [];
+        for( var key in this.inputList ) {
+          var lastJoin = null;
+          var parentTable = this.subject;
+          var columnParts = undefined === this.inputList[key].column
+                          ? [ key ]
+                          : this.inputList[key].column.split( '.' );
+          for( var k = 0; k < columnParts.length; k++ ) {
+            if( k == columnParts.length - 1 ) {
+              // add this column to the select list
+              var select = { column: columnParts[k], alias: key };
+              if( 0 < k ) select.table = columnParts[k-1];
+              else select.table_prefix = false;
+              selectList.push( select );
+            } else { // part of table list
+              var table = columnParts[k];
+
+              // don't join a table to itself
+              if( table !== parentTable ) {
+                var onleft = parentTable + '.' + table + '_id';
+                var onright = table + '.id';
+
+                // see if the join to this table already exists
+                var join = null;
+                for( var j = 0; j < joinList.length; j++ ) {
+                  if( joinList[j].table == table &&
+                      joinList[j].onleft == onleft &&
+                      joinList[j].onright == onright ) {
+                    join = joinList[j];
+                    break;
+                  }
+                }
+
+                // if the join wasn't found then add it to the list
+                if( null === join ) {
+                  join = { table: table, onleft: onleft, onright: onright };
+                  joinList.push( join );
+                }
+
+                var lastJoin = join;
+                var parentTable = table;
+              }
+            }
+          }
+        }
+
+        var data = {};
+        if( 0 < selectList.length ) data.select = { column: selectList };
+        if( 0 < joinList.length ) data.modifier.join = joinList;
+
         var thisRef = this;
         return CnHttpFactory.instance( {
-          path: this.subject + '/' + id
+          path: this.subject + '/' + id,
+          data: data
         } ).get().then( function success( response ) {
           thisRef.record = response.data;
         } );
       },
       patch: function( id, data ) {
-        // convert Date object to datetime string
-        if( 'datetime' == data[0] ) data[0] = cnObjectToDatetime( data[0] );
+        // TODO: convert Date object to datetime string
+        /*
+        for( var property in data ) {
+          if( property.regexIndexOf( /^datetime|\Wdatetime\|_datetime/ ) )
+            data[property] = cnObjectToDatetime( data[0] );
+        }
+        */
+
+        var thisRef = this;
         return CnHttpFactory.instance( {
           path: this.subject + '/' + id,
           data: data
-        } ).patch();
+        } ).patch().then( function success() {
+          if( undefined !== thisRef.parentModel.cnList ) {
+            // find and update this record in the list
+            var record = thisRef.parentModel.cnList.cache.find( // by id
+              function( element, index, array ) { return id == element.id; }
+            );
+            if( undefined !== record ) for( var property in data ) record[property] = data[property];
+          }
+        } );
       }
     };
 

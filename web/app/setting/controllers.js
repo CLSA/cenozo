@@ -3,16 +3,6 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'SettingAddCtrl', [
-    '$scope', 'CnSettingSingleton',
-    function( $scope, CnSettingSingleton ) {
-      $scope.cnAdd = CnSettingSingleton.cnAdd;
-      $scope.cnList = CnSettingSingleton.cnList;
-      $scope.record = $scope.cnAdd.createRecord();
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cnCachedProviders.controller( 'SettingListCtrl', [
     '$scope', 'CnSettingSingleton',
     function( $scope, CnSettingSingleton ) {
@@ -28,7 +18,6 @@ define( [], function() {
       $scope.cnList = CnSettingSingleton.cnList;
       $scope.cnView = CnSettingSingleton.cnView;
       $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
-      $scope.patch = cnPatch( $scope );
     }
   ] );
 

@@ -322,7 +322,7 @@ class select extends \cenozo\base_object
               }
               else throw lib::create( 'exception\runtime', 'Invalid column sub-statement', __METHOD__ );
             }
-            else if( is_string( $value ) ) $this->add_column( $value );
+            else if( is_string( $column ) ) $select->add_column( $column );
             else throw lib::create( 'exception\runtime', 'Invalid column sub-statement', __METHOD__ );
           }
         }

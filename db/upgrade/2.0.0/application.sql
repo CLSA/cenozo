@@ -26,6 +26,10 @@ CREATE PROCEDURE patch_application()
       ADD CONSTRAINT fk_application_release_event_type_id
       FOREIGN KEY (language_id) REFERENCES language (id)
       ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+      ALTER TABLE application
+      ADD COLUMN country VARCHAR(45) NOT NULL;
+      UPDATE application SET country = 'Canada';
     END IF;
 
   END //

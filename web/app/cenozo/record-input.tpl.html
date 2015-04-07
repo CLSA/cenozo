@@ -1,22 +1,24 @@
-<div class="form-group"
-     ng-class="{ 'has-feedback has-error': ( form[key].$dirty || !hasInput ) && form[key].$invalid }">
-  <label for="{{ key }}" class="col-sm-3 control-label" tooltip="{{ help }}">{{ title }}</label>
-  <div class="col-sm-9">
-    <div class="input-group"
-         ng-class="{ 'has-feedback has-error': ( form[key].$dirty || !hasInput ) && form[key].$invalid }"
-         ng-transclude>
+<ng-form name="innerForm">
+  <div class="form-group"
+       ng-class="{ 'has-feedback has-error': ( innerForm.name.$dirty || !hasInput ) && innerForm.name.$invalid }">
+    <label for="name" class="col-sm-3 control-label" tooltip="{{ help }}">{{ title }}</label>
+    <div class="col-sm-9">
+      <div class="input-group"
+           ng-class="{ 'has-feedback has-error': ( innerForm.name.$dirty || !hasInput ) && innerForm.name.$invalid }"
+           ng-transclude>
+      </div>
+      <span class="help-block" ng-if="( innerForm.name.$dirty || !hasInput ) && innerForm.name.$error.required">
+        Cannot be blank
+      </span>
+      <span class="help-block" ng-if="( innerForm.name.$dirty || !hasInput ) && innerForm.name.$error.minlength">
+        Isn't long enough
+      </span>
+      <span class="help-block" ng-if="( innerForm.name.$dirty || !hasInput ) && innerForm.name.$error.number">
+        Must be a number
+      </span>
+      <span class="help-block" ng-if="( innerForm.name.$dirty || !hasInput ) && innerForm.name.$error.conflict">
+        Conflicts with existing record
+      </span>
     </div>
-    <span class="help-block" ng-if="( form[key].$dirty || !hasInput ) && form[key].$error.required">
-      Cannot be blank
-    </span>
-    <span class="help-block" ng-if="( form[key].$dirty || !hasInput ) && form[key].$error.minlength">
-      Isn't long enough
-    </span>
-    <span class="help-block" ng-if="( form[key].$dirty || !hasInput ) && form[key].$error.number">
-      Must be a number
-    </span>
-    <span class="help-block" ng-if="( form[key].$dirty || !hasInput ) && form[key].$error.conflict">
-      Conflicts with existing record
-    </span>
   </div>
-</div>
+</ng-form>

@@ -69,10 +69,8 @@ class read extends service
     $leaf_subject = $this->get_leaf_subject();
     if( !is_null( $leaf_subject ) )
     {
-      $method = strtolower( $this->service_record->method );
-      if( 'get' == $method && is_null( $this->get_leaf_record() ) ) $method = 'query';
-
-      $modification_class = sprintf( 'service\%s\read_modification', $leaf_subject, $method );
+      $this->select->from( $leaf_subject );
+      $modification_class = sprintf( 'service\%s\read_modification', $leaf_subject );
       if( lib::class_exists( $modification_class ) )
       {
         $class_name = lib::get_class_name( $modification_class );

@@ -35,16 +35,39 @@ class get extends \cenozo\service\service
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
 
+    $application_sel = lib::create( 'database\select' );
+    $application_sel->from( 'application' );
+    $application_sel->add_column( 'id' );
+    $application_sel->add_column( 'name' );
+    $application_sel->add_column( 'title' );
+    $application_sel->add_column( 'version' );
+    $application_sel->add_column( 'country' );
+
+    $role_sel = lib::create( 'database\select' );
+    $role_sel->from( 'role' );
+    $role_sel->add_column( 'id' );
+    $role_sel->add_column( 'name' );
+
+    $site_sel = lib::create( 'database\select' );
+    $site_sel->from( 'site' );
+    $site_sel->add_column( 'id' );
+    $site_sel->add_column( 'name' );
+
+    $user_sel = lib::create( 'database\select' );
+    $user_sel->from( 'user' );
+    $user_sel->add_column( 'id' );
+    $user_sel->add_column( 'name' );
+
     $pseudo_record = array(
-      'application' => $session->get_application()->get_column_values(),
-      'user' => $session->get_user()->get_column_values(),
-      'site' => $session->get_site()->get_column_values(),
-      'role' => $session->get_role()->get_column_values() );
+      'application' => $session->get_application()->get_column_values( $application_sel ),
+      'role' => $session->get_role()->get_column_values( $role_sel ),
+      'site' => $session->get_site()->get_column_values( $site_sel ),
+      'user' => $session->get_user()->get_column_values( $user_sel ) );
 
     // add timezone information to help poor featureless javascript
     $datetime_obj = $util_class_name::get_datetime_object();
-    $pseudo_record['site']['timezoneName'] = $datetime_obj->format( 'T' );
-    $pseudo_record['site']['timezoneOffset'] =
+    $pseudo_record['site']['timezone_name'] = $datetime_obj->format( 'T' );
+    $pseudo_record['site']['timezone_offset'] =
       $util_class_name::get_timezone_object()->getOffset( $datetime_obj );
 
     return $pseudo_record;
