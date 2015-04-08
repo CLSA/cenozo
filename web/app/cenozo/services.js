@@ -470,16 +470,6 @@ cenozo.factory( 'CnBaseSingletonFactory', [
             }
           }
         } );
-
-        object.view = function view( id ) {
-          for( var i = 0; i < this.cnList.cache.length; i++ ) {
-            if( this.cnList.cache[i].id == id ) {
-              this.cnView.record = this.cnList.cache[i];
-              return true;
-            }
-          }
-          return false;
-        };
       }
     };
   }

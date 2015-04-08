@@ -497,6 +497,7 @@ cenozo.directive( 'cnRecordAdd', [
         scope.$parent.$watch( 'record', function( record ) { scope.record = record; } );
 
         // watch for changes in metadata (created asynchronously by the service)
+        // TODO: can this be moved to the service? (along with viewModel...)
         scope.$watch( 'addModel.parentModel.metadata', function( metadata ) {
           if( undefined !== metadata ) {
             for( var key in metadata ) {
@@ -705,23 +706,43 @@ cenozo.directive( 'cnRecordView', [
                       ? scope.listModel.name.singular.ucWords() + ' Details'
                       : attrs.heading;
 
-        scope.$parent.form = scope.form;
+        //scope.$parent.form = scope.form;
 
-        // convert the inputList into an array
         scope.inputList = [];
         for( var key in scope.viewModel.inputList ) {
           var input = scope.viewModel.inputList[key];
           input.key = key;
           if( 'enum' == input.type ) {
-            input.enumList = scope.viewModel.parentModel.metadata[input.key].enumList;
           } else if( 'boolean' == input.type ) {
             input.enumList = [
+              { value: undefined, name: '(Select Yes or No)' },
               { value: '1', name: 'Yes' },
               { value: '0', name: 'No' }
             ];
           }
           scope.inputList.push( input );
         }
+
+        // watch for changes in the record (created asynchronously by the service)
+        scope.$parent.$watch( 'record', function( record ) { scope.record = record; } );
+
+        // watch for changes in metadata (created asynchronously by the service)
+        // TODO: can this be moved to the service? (along with addModel...)
+        scope.$watch( 'viewModel.parentModel.metadata', function( metadata ) {
+          if( undefined !== metadata ) {
+            for( var key in metadata ) {
+              if( undefined !== metadata[key].enumList ) {
+                var input = scope.inputList.find( // by key
+                  function( item, index, array ) { return key == item.key }
+                );
+                if( undefined === input.enumList ) {
+                  input.enumList = metadata[key].enumList;
+                  input.enumList.unshift( { value: undefined, name: '(Select a ' + input.title + ')' } );
+                }
+              }
+            }
+          }
+        }, true );
       }
     };
   }
