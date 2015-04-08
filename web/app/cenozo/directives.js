@@ -692,6 +692,17 @@ cenozo.directive( 'cnRecordView', [
         };
       },
       link: function( scope, element, attrs ) {
+        // turn off any sub-list model currently in select mode whenever leaving a view model
+        scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
+          if( '.view' == fromState.name.substr( fromState.name.length - 5 ) ) {
+            var viewModel = event.currentScope.$parent.cnView;
+            if( undefined !== viewModel )
+              for( var property in viewModel )
+                if( 'object' == typeof viewModel[property] && true === viewModel[property].selectMode )
+                  viewModel[property].toggleSelectMode();
+          }
+        } );
+
         scope.heading = undefined === attrs.heading
                       ? scope.listModel.name.singular.ucWords() + ' Details'
                       : attrs.heading;
