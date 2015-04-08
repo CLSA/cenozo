@@ -730,11 +730,11 @@ cenozo.directive( 'cnRecordView', [
 /**
  * TODO: document
  */
-cenozo.directive( 'cnSiteRolePicker', [
+cenozo.directive( 'cnSiteRoleSwitcher', [
   '$window', 'CnAppSingleton',
   function( $window, CnAppSingleton ) {
     return {
-      templateUrl: cnCenozoUrl + '/app/cenozo/site-role-picker.tpl.html',
+      templateUrl: cnCenozoUrl + '/app/cenozo/site-role-switcher.tpl.html',
       restrict: 'E',
       transclude: true,
       scope: true,

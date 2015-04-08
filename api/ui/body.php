@@ -63,7 +63,7 @@
         </div>
       </div>
       <div class="col-xs-4 body-heading-state">
-        <cn-site-role-picker></cn-site-role-picker>
+        <cn-site-role-switcher></cn-site-role-switcher>
       </div>
     </div>
   </div>
