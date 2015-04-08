@@ -442,22 +442,37 @@ cenozo.directive( 'cnRecordAdd', [
       controller: function( $scope ) {
         $scope.back = function() { $state.go( '^.list' ); };
         $scope.submit = function() {
-          $scope.listModel.add( $scope.record ).then(
-            function success( response ) { 
-              $scope.record = $scope.addModel.createRecord();
-              $scope.form.$setPristine();
-              $state.go( $scope.listModel.subject + '.list' );
-            },
-            function error( response ) { 
-              if( 409 == response.status ) { 
-                // report which inputs are included in the conflict
-                for( var i = 0; i < response.data.length; i++ ) { 
-                  $scope.form[response.data[i]].$invalid = true;
-                  $scope.form[response.data[i]].$error.conflict = true;
-                }
-              } else { cnFatalError(); }
+          if( !$scope.form.$valid ) {
+            // dirty all inputs so we can find the problem
+            var scope = angular.element(
+              angular.element( document.querySelector( 'form' ) ) ).scope().$$childHead;
+            while( null !== scope ) {
+              var item = scope.$$childHead.$$nextSibling.$parent.innerForm.name;
+              item.$dirty = true;
+              scope = scope.$$nextSibling;
             }
-          );  
+          } else {
+            $scope.listModel.add( $scope.$parent.record ).then(
+              function success( response ) { 
+                $scope.$parent.record = $scope.addModel.createRecord();
+                $scope.form.$setPristine();
+                $state.go( $scope.listModel.subject + '.list' );
+              },
+              function error( response ) { 
+                if( 409 == response.status ) { 
+                  // report which inputs are included in the conflict
+                  for( var i = 0; i < response.data.length; i++ ) { 
+                    var item = angular.element(
+                      angular.element( document.querySelector( '#' + response.data[i] ) ) ).
+                        scope().$parent.innerForm.name;
+                    item.$dirty = true;
+                    item.$invalid = true;
+                    item.$error.conflict = true;
+                  }
+                } else { cnFatalError(); }
+              }
+            );  
+          }
         };
       },
       link: function( scope, element, attrs ) {
@@ -465,8 +480,26 @@ cenozo.directive( 'cnRecordAdd', [
                       ? 'Creating A ' + scope.listModel.name.singular.ucWords()
                       : attrs.heading;
 
-        scope.$parent.form = scope.form;
-        scope.record = scope.$parent.record;
+        scope.$parent.$watch( 'record', function( value ) { scope.record = value; } );
+//        scope.$parent.form = scope.form; TODO if not needed
+
+        // convert the inputList into an array
+        scope.inputList = [];
+        for( var key in scope.addModel.inputList ) {
+          var input = scope.addModel.inputList[key];
+          input.key = key;
+          if( 'enum' == input.type ) {
+            input.enum = scope.addModel.parentModel.metadata[input.enumKey];
+            input.enum.unshift( { value: undefined, name: '(Select a ' + input.title + ')' } );
+          } else if( 'boolean' == input.type ) {
+            input.enum = [
+              { value: undefined, name: '(Select Yes or No)' },
+              { value: '1', name: 'Yes' },
+              { value: '0', name: 'No' }
+            ];
+          }
+          scope.inputList.push( input );
+        }
       }
     };
   }
@@ -594,15 +627,6 @@ cenozo.directive( 'cnRecordView', [
         viewModel: '='
       },
       controller: function( $scope ) {
-        // convert integers/floats AFTER they are loaded
-        $scope.$watch( 'viewModel.record', function() {
-          for( var key in $scope.viewModel.inputList )
-            if( 'integer' == $scope.viewModel.inputList[key].type ) {
-              $scope.viewModel.record[key] = parseInt( $scope.viewModel.record[key] );
-            } else if( 'float' == $scope.viewModel.inputList[key].type ) {
-              $scope.viewModel.record[key] = parseFloat( $scope.viewModel.record[key] );
-            }
-        } );
         $scope.back = function() { $state.go( '^.list' ); };
 
         $scope.delete = function() {
@@ -619,8 +643,6 @@ cenozo.directive( 'cnRecordView', [
             function success( response ) { 
               var scope = angular.element(
                 angular.element( document.querySelector( '#' + property ) ) ).scope();
-              var scope2 = angular.element(
-                angular.element( document.querySelector( '.input-group' ) ) ).scope();
               // if a conflict has been resolved then clear it throughout the form
               var currentItem = scope.$parent.innerForm.name;
               if( currentItem.$error.conflict ) {

@@ -7,9 +7,10 @@ catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 cenozo.factory( 'CnBaseAddFactory',
   function() {
     var object = function( params ) {
-      if( undefined === params.parentModel ) throw 'Tried to create CnBaseListFactory without a parent model';
+      if( undefined === params.parentModel ) throw 'Tried to create CnBaseAddFactory without a parent model';
       if( undefined === params.subject ) throw 'Tried to create CnBaseAddFactory without a subject';
       if( undefined === params.name ) throw 'Tried to create CnBaseAddFactory without a name';
+      if( undefined === params.inputList ) throw 'Tried to create CnBaseAddFactory without an input list';
 
       this.subject = null;
       this.name = {
@@ -18,6 +19,7 @@ cenozo.factory( 'CnBaseAddFactory',
         possessive: '(undefined)',
         pluralPossessive: '(undefined)'
       };
+      this.inputList = [];
       this.createRecord = function() { return {}; };
 
       cnCopyParams( this, params );
@@ -312,9 +314,10 @@ cenozo.factory( 'CnBaseViewFactory', [
   'CnHttpFactory',
   function( CnHttpFactory ) {
     var object = function( params ) {
-      if( undefined === params.parentModel ) throw 'Tried to create CnBaseListFactory without a parent model';
+      if( undefined === params.parentModel ) throw 'Tried to create CnBaseViewFactory without a parent model';
       if( undefined === params.subject ) throw 'Tried to create CnBaseViewFactory without a subject';
       if( undefined === params.name ) throw 'Tried to create CnBaseViewFactory without a name';
+      if( undefined === params.inputList ) throw 'Tried to create CnBaseViewFactory without an input list';
 
       this.subject = null;
       this.name = {
@@ -323,6 +326,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         possessive: '(undefined)',
         pluralPossessive: '(undefined)'
       };
+      this.inputList = [];
       this.record = {};
 
       cnCopyParams( this, params );

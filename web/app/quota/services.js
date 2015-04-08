@@ -9,6 +9,37 @@ define( [], function() {
     possessive: 'quota\'s',
     pluralPossessive: 'quotas\''
   };
+  var inputList = {
+    site_id: {
+      title: 'Site',
+      type: 'enum',
+      enumKey: 'siteList',
+      required: true
+    },
+    region_id: {
+      title: 'Region',
+      type: 'enum',
+      enumKey: 'regionList',
+      required: true
+    },
+    gender: {
+      title: 'Sex',
+      type: 'enum',
+      enumKey: 'genderList',
+      required: true
+    },
+    age_group_id: {
+      title: 'Age Group',
+      type: 'enum',
+      enumKey: 'ageGroupList',
+      required: true
+    },
+    population: {
+      title: 'Population',
+      type: 'string',
+      required: true
+    }
+  };
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnQuotaAddFactory', [
@@ -18,6 +49,7 @@ define( [], function() {
         if( undefined === params ) params = {};
         params.subject = moduleSubject;
         params.name = moduleNames;
+        params.inputList = inputList;
         return CnBaseAddFactory.instance( params );
       } };
     }
@@ -67,55 +99,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnQuotaViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var object = function( params ) {
-        var base = CnBaseViewFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-
-        ////////////////////////////////////
-        // factory customizations start here
-        this.inputList = {
-          site_id: {
-            title: 'Site',
-            type: 'enum',
-            enumKey: 'siteList',
-            required: true
-          },
-          region_id: {
-            title: 'Region',
-            type: 'enum',
-            enumKey: 'regionList',
-            required: true
-          },
-          gender: {
-            title: 'Sex',
-            type: 'enum',
-            enumKey: 'genderList',
-            required: true
-          },
-          age_group_id: {
-            title: 'Age Group',
-            type: 'enum',
-            enumKey: 'ageGroupList',
-            required: true
-          },
-          population: {
-            title: 'Population',
-            type: 'integer',
-            required: true
-          }
-        };
-        // factory customizations end here
-        //////////////////////////////////
-
-        cnCopyParams( this, params );
-      }
-
-      object.prototype = CnBaseViewFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
         params.subject = moduleSubject;
         params.name = moduleNames;
-        return new object( params );
+        params.inputList = inputList;
+        return CnBaseViewFactory.instance( params );
       } };
     }
   ] );
@@ -151,7 +140,7 @@ define( [], function() {
         };
         var thisRef = this;
 
-        CnHttpFactory.instance( {
+        this.promise = CnHttpFactory.instance( {
           path: 'age_group',
           data: {
             select: { column: [ 'id', 'lower', 'upper' ] },

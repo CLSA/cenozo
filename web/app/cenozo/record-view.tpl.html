@@ -19,17 +19,6 @@
                    autocomplete="off"
                    ng-readonly="input.constant"
                    ng-required="input.required"></input>
-            <input ng-if="'integer' == input.type"
-                   ng-attr-id="{{ input.key }}"
-                   name="name"
-                   ng-model="viewModel.record[input.key]"
-                   cn-change="patch( input.key )"
-                   class="form-control"
-                   type="number"
-                   pattern="\d*"
-                   autocomplete="off"
-                   ng-readonly="input.constant"
-                   ng-required="input.required"></input>
             <select ng-if="'boolean' == input.type || 'enum' == input.type"
                     ng-attr-id="{{ input.key }}"
                     name="name"
