@@ -22,6 +22,14 @@ $settings['url']['CENOZO'] = sprintf( 'http%s://%s/patrick/cenozo',
                                           'on' == $_SERVER["HTTPS"] ? 's' : '',
                                           $_SERVER["HTTP_HOST"] );
 
+// the path and url of Limesurvey
+$settings['path']['LIMESURVEY'] = '/home/patrick/public_html/limesurvey';
+$settings['url']['LIMESURVEY'] = '../limesurvey';
+
+// the credentials for the machine user
+$settings['general']['machine_user'] = 'mastodon';
+$settings['general']['machine_password'] = '1qaz2wsx';
+
 // database settings (username and password are set in the application's settings)
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = 'patrick_';
@@ -42,3 +50,15 @@ $settings['opal']['server'] = 'opal.clsa-elcv.ca';
 $settings['opal']['port'] = 8843;
 $settings['opal']['username'] = 'cenozo';
 $settings['opal']['password'] = 'l0n6AGO9';
+
+// the Asterisk AJAM url, username and password
+$settings['voip']['enabled'] = false;
+$settings['voip']['url'] = 'http://localhost:8088/mxml';
+$settings['voip']['username'] = 'cenozo';
+$settings['voip']['password'] = '1qaz2wsx';
+$settings['voip']['prefix'] = '00';
+
+// the base directory to write monitored calls
+// (must be an absolute path that the asterisk server's user has access to)
+$settings['path']['VOIP_MONITOR'] = '';
+$settings['url']['VOIP_MONITOR'] = 'monitor';

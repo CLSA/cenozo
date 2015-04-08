@@ -42,6 +42,17 @@ $settings['path']['TEMP'] =
 $settings['path']['REPORT_CACHE'] = $settings['path']['TEMP'].'/report';
 $settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
 
+// the url of limesurvey
+$settings['path']['LIMESURVEY'] = '/var/www/limesurvey';
+$settings['url']['LIMESURVEY'] = '../limesurvey';
+
+// the location of the Shift8 Asterisk library
+$settings['path']['SHIFT8'] = '/usr/local/lib/shift8';
+
+// the credentials for the machine user
+$settings['general']['machine_user'] = 'machine';
+$settings['general']['machine_password'] = 'password';
+
 // database settings
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
@@ -63,3 +74,14 @@ $settings['opal']['server'] = 'localhost';
 $settings['opal']['port'] = 8843;
 $settings['opal']['username'] = '';
 $settings['opal']['password'] = '';
+
+// voip settings
+$settings['voip']['enabled'] = false;
+$settings['voip']['url'] = 'http://localhost:8088/mxml';
+$settings['voip']['username'] = '';
+$settings['voip']['password'] = '';
+$settings['voip']['prefix'] = '';
+$settings['voip']['xor_key'] = '';
+// the directory to write recorded calls
+// (must be an absolute path that the asterisk server's user has access to)
+$settings['path']['VOIP_MONITOR'] = '/var/local/sabretooth/monitor';

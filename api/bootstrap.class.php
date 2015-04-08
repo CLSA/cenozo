@@ -125,6 +125,7 @@ final class bootstrap
       else if( 'COOKIE' != $key &&
                'TEMPLATE_CACHE' != $key &&
                'REPORT_CACHE' != $key &&
+               'VOIP_MONITOR' != $key &&
                !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
       {
         die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
