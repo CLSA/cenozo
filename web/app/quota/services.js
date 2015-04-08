@@ -113,15 +113,13 @@ define( [], function() {
     function( CnBaseSingletonFactory,
               CnQuotaListFactory, CnQuotaAddFactory, CnQuotaViewFactory,
               CnHttpFactory, CnAppSingleton ) {
-      var object = function() {
-        var base = CnBaseSingletonFactory.instance( {
-          subject: moduleSubject,
-          name: moduleNames,
-          cnAdd: CnQuotaAddFactory.instance( { parentModel: this } ),
-          cnList: CnQuotaListFactory.instance( { parentModel: this } ),
-          cnView: CnQuotaViewFactory.instance( { parentModel: this } )
-        } );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+      return new ( function() {
+        this.subject = moduleSubject;
+        CnBaseSingletonFactory.apply( this );
+        this.name = moduleNames;
+        this.cnAdd = CnQuotaAddFactory.instance( { parentModel: this } );
+        this.cnList = CnQuotaListFactory.instance( { parentModel: this } );
+        this.cnView = CnQuotaViewFactory.instance( { parentModel: this } );
 
         this.cnList.enableAdd( true );
         this.cnList.enableDelete( true );
@@ -129,9 +127,7 @@ define( [], function() {
 
         // populate the foreign-key enumerations
         var thisRef = this;
-        this.promise = this.promise.then( function() {
-          // need to copy the metadata from the base object
-          thisRef.metadata = base.metadata;
+        this.promise.then( function() {
           CnHttpFactory.instance( {
             path: 'age_group',
             data: {
@@ -187,11 +183,7 @@ define( [], function() {
             } );
           } ).catch( function exception() { cnFatalError(); } )
         } );
-      };
-
-      object.prototype = CnBaseSingletonFactory.prototype;
-      // don't return a method to create instances, create and return the singleton
-      return new object();
+      } );
     }
   ] );
 

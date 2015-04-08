@@ -4,6 +4,7 @@ try { var cenozo = angular.module( 'cenozo' ); }
 catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 
 /* ######################################################################################################## */
+// TODO: replace with "apply" model as in base singleton factory? (no params processed here)
 cenozo.factory( 'CnBaseAddFactory',
   function() {
     var object = function( params ) {
@@ -20,9 +21,19 @@ cenozo.factory( 'CnBaseAddFactory',
         pluralPossessive: '(undefined)'
       };
       this.inputList = [];
-      this.createRecord = function() { return {}; };
 
       cnCopyParams( this, params );
+
+      var thisRef = this;
+      this.parentModel.promise.then( function() {
+        thisRef.createRecord = function() {
+          var record = {};
+          for( var column in thisRef.parentModel.metadata )
+            if( null !== thisRef.parentModel.metadata[column].default )
+              record[column] = thisRef.parentModel.metadata[column].default;
+          return record;
+        };
+      } );
     };
 
     object.prototype = {};
@@ -35,6 +46,7 @@ cenozo.factory( 'CnBaseAddFactory',
 );
 
 /* ######################################################################################################## */
+// TODO: replace with "apply" model as in base singleton factory? (no params processed here)
 cenozo.factory( 'CnBaseListFactory', [
   'CnPaginationFactory', 'CnHttpFactory',
   function( CnPaginationFactory, CnHttpFactory ) {
@@ -309,6 +321,7 @@ cenozo.factory( 'CnBaseListFactory', [
 ] );
 
 /* ######################################################################################################## */
+// TODO: replace with "apply" model as in base singleton factory? (no params processed here)
 cenozo.factory( 'CnBaseViewFactory', [
   'CnHttpFactory',
   function( CnHttpFactory ) {
@@ -430,60 +443,44 @@ cenozo.factory( 'CnBaseViewFactory', [
 cenozo.factory( 'CnBaseSingletonFactory', [
   'CnHttpFactory',
   function( CnHttpFactory ) {
-    var object = function( params ) {
-      if( undefined === params.subject ) throw 'Tried to create CnBaseSingletonFactory without a subject';
-      if( undefined === params.name ) throw 'Tried to create CnBaseSingletonFactory without a name';
+    return {
+      apply: function( object ) {
+        if( undefined === object ) throw 'Tried to apply CnBaseSingletonFactory without a base object';
+        if( undefined === object.subject ) throw 'Tried to apply CnBaseSingletonFactory without a subject';
 
-      this.subject = null;
-      this.name = {
-        singular: '(undefined)',
-        plural: '(undefined)',
-        possessive: '(undefined)',
-        pluralPossessive: '(undefined)'
-      };
-
-      // get metadata
-      var thisRef = this;
-      this.promise = CnHttpFactory.instance( {
-        path: params.subject
-      } ).head().then( function( response ) {
-        var metadata = JSON.parse( response.headers( 'Columns' ) );
-        thisRef.metadata = metadata;
-        for( var column in metadata ) {
-          // parse out the enum values
-          if( 'enum' == metadata[column].data_type ) {
-            thisRef.metadata[column].enumList = [];
-            var enumList = metadata[column].type.replace( /^enum\(['"]/i, '' )
-                                                .replace( /['"]\)$/, '' )
-                                                .split( "','" );
-            for( var i = 0; i < enumList.length; i++ ) {
-              thisRef.metadata[column].enumList.push( {
-                value: enumList[i],
-                name: enumList[i]
-              } );
+        // get metadata
+        object.promise = CnHttpFactory.instance( {
+          path: object.subject
+        } ).head().then( function( response ) {
+          var metadata = JSON.parse( response.headers( 'Columns' ) );
+          object.metadata = metadata;
+          for( var column in metadata ) {
+            // parse out the enum values
+            if( 'enum' == metadata[column].data_type ) {
+              object.metadata[column].enumList = [];
+              var enumList = metadata[column].type.replace( /^enum\(['"]/i, '' )
+                                                  .replace( /['"]\)$/, '' )
+                                                  .split( "','" );
+              for( var i = 0; i < enumList.length; i++ ) {
+                object.metadata[column].enumList.push( {
+                  value: enumList[i],
+                  name: enumList[i]
+                } );
+              }
             }
           }
-        }
-      } );
+        } );
 
-      cnCopyParams( this, params );
-    };
-
-    object.prototype = {
-      view: function( id ) {
-        for( var i = 0; i < this.cnList.cache.length; i++ ) {
-          if( this.cnList.cache[i].id == id ) {
-            this.cnView.record = this.cnList.cache[i];
-            return true;
+        object.view = function view( id ) {
+          for( var i = 0; i < this.cnList.cache.length; i++ ) {
+            if( this.cnList.cache[i].id == id ) {
+              this.cnView.record = this.cnList.cache[i];
+              return true;
+            }
           }
-        }
-        return false;
+          return false;
+        };
       }
-    };
-
-    return {
-      instance: function( params ) { return new object( undefined === params ? {} : params ); },
-      prototype: object.prototype
     };
   }
 ] );

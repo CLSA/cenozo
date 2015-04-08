@@ -46,7 +46,7 @@ class read_modification extends \cenozo\base_object
       $collection_join_user =
         'SELECT collection_id, COUNT(*) AS user_count '.
         'FROM user_has_collection '.
-        'GROUP BY user_id';
+        'GROUP BY collection_id';
       $modifier->left_join(
         sprintf( '( %s ) AS collection_join_user', $collection_join_user ),
         'collection.id',

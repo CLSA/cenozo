@@ -46,40 +46,12 @@ define( [
   cnCachedProviders.factory( 'CnCollectionAddFactory', [
     'CnBaseAddFactory', 'CnHttpFactory',
     function( CnBaseAddFactory, CnHttpFactory ) {
-      var object = function( params ) {
-        var base = CnBaseAddFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-
-        ////////////////////////////////////
-        // factory customizations start here
-        var thisRef = this;
-        CnHttpFactory.instance( {
-          path: 'collection'
-        } ).head().then(
-          function success( response ) {
-            var metadata = JSON.parse( response.headers( 'Columns' ) );
-            thisRef.createRecord = function() {
-              return {
-                active: metadata.active.default,
-                locked: metadata.locked.default
-              };
-            };
-          },
-          function error( response ) { cnFatalError(); }
-        );
-        // factory customizations end here
-        //////////////////////////////////
-
-        cnCopyParams( this, params );
-      };
-
-      object.prototype = CnBaseAddFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
         params.subject = moduleSubject;
         params.name = moduleNames;
         params.inputList = inputList;
-        return new object( params );
+        return CnBaseAddFactory.instance( params );
       } };
     }
   ] );
@@ -168,24 +140,18 @@ define( [
   cnCachedProviders.factory( 'CnCollectionSingleton', [
     'CnBaseSingletonFactory', 'CnCollectionListFactory', 'CnCollectionAddFactory', 'CnCollectionViewFactory',
     function( CnBaseSingletonFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
-      var object = function() {
-        var base = CnBaseSingletonFactory.instance( {
-          subject: moduleSubject,
-          name: moduleNames,
-          cnAdd: CnCollectionAddFactory.instance( { parentModel: this } ),
-          cnList: CnCollectionListFactory.instance( { parentModel: this } ),
-          cnView: CnCollectionViewFactory.instance( { parentModel: this } )
-        } );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+      return new ( function() {
+        this.subject = moduleSubject;
+        CnBaseSingletonFactory.apply( this );
+        this.name = moduleNames;
+        this.cnAdd = CnCollectionAddFactory.instance( { parentModel: this } );
+        this.cnList = CnCollectionListFactory.instance( { parentModel: this } );
+        this.cnView = CnCollectionViewFactory.instance( { parentModel: this } );
 
         this.cnList.enableAdd( true );
         this.cnList.enableDelete( true );
         this.cnList.enableView( true );
-      };
-
-      object.prototype = CnBaseSingletonFactory.prototype;
-      // don't return a method to create instances, create and return the singleton
-      return new object();
+      } );
     }
   ] );
 
