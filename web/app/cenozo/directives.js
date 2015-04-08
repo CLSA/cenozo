@@ -21,9 +21,8 @@ cenozo.directive( 'cnApplicationTitle', [
       transclude: true,
       scope: true,
       link: function( scope ) {
-        var cnApp = CnAppSingleton;
-        cnApp.promise.then( function() {
-          scope.application = cnApp.application;
+        CnAppSingleton.promise.then( function() {
+          scope.application = CnAppSingleton.application;
         } );
       }
     };
@@ -78,14 +77,13 @@ cenozo.directive( 'cnClock', [
       transclude: true,
       scope: true,
       link: function( scope, element, attrs ) {
-        var cnApp = CnAppSingleton;
-        cnApp.promise.then( function() {
+        CnAppSingleton.promise.then( function() {
           function updateTime() {
             var nowObj = new Date();
-            nowObj.setTime( nowObj.getTime() + cnApp.site.timezone_offset * 1000 );
+            nowObj.setTime( nowObj.getTime() + CnAppSingleton.site.timezone_offset * 1000 );
             var hours = ( nowObj.getUTCHours() < 10 ? '0' : '' ) + nowObj.getUTCHours();
             var minutes = ( nowObj.getUTCMinutes() < 10 ? '0' : '' ) + nowObj.getUTCMinutes();
-            element.text( hours + ':' + minutes + ' ' + cnApp.site.timezone_name );
+            element.text( hours + ':' + minutes + ' ' + CnAppSingleton.site.timezone_name );
           }
 
           updateTime();
@@ -219,8 +217,8 @@ cenozo.directive( 'cnDatetimePicker', [
           }
         } );
 
-        if( attrs.cbDateDisabled ) {
-          datepickerEl.attr( 'date-disabled', 'cbDateDisabled( { date: date, mode: mode } )' );
+        if( attrs.dateDisabled ) {
+          datepickerEl.attr( 'date-disabled', 'dateDisabled( { date: date, mode: mode } )' );
         }
 
         function parseDate( viewValue ) {
@@ -741,20 +739,19 @@ cenozo.directive( 'cnSiteRolePicker', [
       transclude: true,
       scope: true,
       controller: function( $scope ) {
-        $scope.cbSetSite = function( id ) {
-          cnApp.setSite( id ).then( function() { $window.location.reload(); } );
+        $scope.setSite = function( id ) {
+          CnAppSingleton.setSite( id ).then( function() { $window.location.reload(); } );
         }
 
-        $scope.cbSetRole = function( id ) {
-          cnApp.setRole( id ).then( function() { $window.location.reload(); } );
+        $scope.setRole = function( id ) {
+          CnAppSingleton.setRole( id ).then( function() { $window.location.reload(); } );
         }
       },
       link: function( scope ) {
-        var cnApp = CnAppSingleton;
-        cnApp.promise.then( function() {
-          scope.site = cnApp.site;
-          scope.role = cnApp.role;
-          scope.siteList = cnApp.siteList;
+        CnAppSingleton.promise.then( function() {
+          scope.site = CnAppSingleton.site;
+          scope.role = CnAppSingleton.role;
+          scope.siteList = CnAppSingleton.siteList;
 
           // pre-select the role list
           for( var i = 0; i < scope.siteList.length; i++ )
