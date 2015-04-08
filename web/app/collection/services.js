@@ -16,6 +16,31 @@ define( [
     possessive: 'collection\'s',
     pluralPossessive: 'collections\''
   };
+  var inputList = {
+    name: {
+      title: 'Name',
+      type: 'string',
+      required: true,
+      help: 'May only contain letters, numbers and underscores'
+    },
+    active: {
+      title: 'Active',
+      type: 'boolean',
+      required: true,
+      help: 'Inactive collections will not show as options in reports or to external applications'
+    },
+    locked: {
+      title: 'Locked',
+      type: 'boolean',
+      required: true,
+      help: 'If locked then only users in the access list will be able to make changes to the collection'
+    },
+    description: {
+      title: 'Description',
+      type: 'text',
+      required: false
+    }
+  };
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnCollectionAddFactory', [
@@ -53,6 +78,7 @@ define( [
         if( undefined === params ) params = {};
         params.subject = moduleSubject;
         params.name = moduleNames;
+        params.inputList = inputList;
         return new object( params );
       } };
     }
@@ -108,30 +134,6 @@ define( [
 
         ////////////////////////////////////
         // factory customizations start here
-        this.inputList = {
-          name: {
-            title: 'Name',
-            type: 'string',
-            required: true
-          },
-          active: {
-            title: 'Active',
-            type: 'boolean',
-            required: true,
-            help: 'Inactive collections will not show as options in reports or to external applications'
-          },
-          locked: {
-            title: 'Locked',
-            type: 'boolean',
-            required: true,
-            help: 'If locked then only users in the access list will be able to make changes to the collection'
-          },
-          description: {
-            title: 'Description',
-            type: 'text',
-            required: false
-          }
-        };
         this.cnParticipantList = CnParticipantListFactory.instance( { parentModel: this } );
         this.cnParticipantList.enableSelect( true );
         this.cnUserList = CnUserListFactory.instance( { parentModel: this } );
@@ -156,6 +158,7 @@ define( [
         if( undefined === params ) params = {};
         params.subject = moduleSubject;
         params.name = moduleNames;
+        params.inputList = inputList;
         return new object( params );
       } };
     }

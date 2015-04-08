@@ -126,7 +126,6 @@ cenozo.factory( 'CnBaseListFactory', [
               this.reload();
             };
             this.select = function( record ) {
-              var promise = null;
               return record.selected ?
                 CnHttpFactory.instance( {
                   path: this.listPath + '/' + record.id
@@ -412,7 +411,7 @@ cenozo.factory( 'CnBaseViewFactory', [
           if( undefined !== thisRef.parentModel.cnList ) {
             // find and update this record in the list
             var record = thisRef.parentModel.cnList.cache.find( // by id
-              function( element, index, array ) { return id == element.id; }
+              function( item, index, array ) { return id == item.id; }
             );
             if( undefined !== record ) for( var property in data ) record[property] = data[property];
           }
@@ -428,8 +427,9 @@ cenozo.factory( 'CnBaseViewFactory', [
 ] );
 
 /* ######################################################################################################## */
-cenozo.factory( 'CnBaseSingletonFactory',
-  function() {
+cenozo.factory( 'CnBaseSingletonFactory', [
+  'CnHttpFactory',
+  function( CnHttpFactory ) {
     var object = function( params ) {
       if( undefined === params.subject ) throw 'Tried to create CnBaseSingletonFactory without a subject';
       if( undefined === params.name ) throw 'Tried to create CnBaseSingletonFactory without a name';
@@ -441,6 +441,30 @@ cenozo.factory( 'CnBaseSingletonFactory',
         possessive: '(undefined)',
         pluralPossessive: '(undefined)'
       };
+
+      // get metadata
+      var thisRef = this;
+      this.promise = CnHttpFactory.instance( {
+        path: params.subject
+      } ).head().then( function( response ) {
+        var metadata = JSON.parse( response.headers( 'Columns' ) );
+        thisRef.metadata = metadata;
+        for( var column in metadata ) {
+          // parse out the enum values
+          if( 'enum' == metadata[column].data_type ) {
+            thisRef.metadata[column].enumList = [];
+            var enumList = metadata[column].type.replace( /^enum\(['"]/i, '' )
+                                                .replace( /['"]\)$/, '' )
+                                                .split( "','" );
+            for( var i = 0; i < enumList.length; i++ ) {
+              thisRef.metadata[column].enumList.push( {
+                value: enumList[i],
+                name: enumList[i]
+              } );
+            }
+          }
+        }
+      } );
 
       cnCopyParams( this, params );
     };
@@ -462,7 +486,7 @@ cenozo.factory( 'CnBaseSingletonFactory',
       prototype: object.prototype
     };
   }
-);
+] );
 
 /* ######################################################################################################## */
 cenozo.factory( 'CnHttpFactory', [

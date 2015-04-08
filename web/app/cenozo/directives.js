@@ -480,19 +480,13 @@ cenozo.directive( 'cnRecordAdd', [
                       ? 'Creating A ' + scope.listModel.name.singular.ucWords()
                       : attrs.heading;
 
-        scope.$parent.$watch( 'record', function( value ) { scope.record = value; } );
-//        scope.$parent.form = scope.form; TODO if not needed
-
-        // convert the inputList into an array
         scope.inputList = [];
         for( var key in scope.addModel.inputList ) {
           var input = scope.addModel.inputList[key];
           input.key = key;
           if( 'enum' == input.type ) {
-            input.enum = scope.addModel.parentModel.metadata[input.enumKey];
-            input.enum.unshift( { value: undefined, name: '(Select a ' + input.title + ')' } );
           } else if( 'boolean' == input.type ) {
-            input.enum = [
+            input.enumList = [
               { value: undefined, name: '(Select Yes or No)' },
               { value: '1', name: 'Yes' },
               { value: '0', name: 'No' }
@@ -500,6 +494,26 @@ cenozo.directive( 'cnRecordAdd', [
           }
           scope.inputList.push( input );
         }
+
+        // watch for changes in the record (created asynchronously by the service)
+        scope.$parent.$watch( 'record', function( record ) { scope.record = record; } );
+
+        // watch for changes in metadata (created asynchronously by the service)
+        scope.$watch( 'addModel.parentModel.metadata', function( metadata ) {
+          if( undefined !== metadata ) {
+            for( var key in metadata ) {
+              if( undefined !== metadata[key].enumList ) {
+                var input = scope.inputList.find( // by key
+                  function( item, index, array ) { return key == item.key }
+                );
+                if( undefined === input.enumList ) {
+                  input.enumList = metadata[key].enumList;
+                  input.enumList.unshift( { value: undefined, name: '(Select a ' + input.title + ')' } );
+                }
+              }
+            }
+          }
+        }, true );
       }
     };
   }
@@ -690,9 +704,9 @@ cenozo.directive( 'cnRecordView', [
           var input = scope.viewModel.inputList[key];
           input.key = key;
           if( 'enum' == input.type ) {
-            input.enum = scope.viewModel.parentModel.metadata[input.enumKey];
+            input.enumList = scope.viewModel.parentModel.metadata[input.key].enumList;
           } else if( 'boolean' == input.type ) {
-            input.enum = [
+            input.enumList = [
               { value: '1', name: 'Yes' },
               { value: '0', name: 'No' }
             ];

@@ -22,7 +22,7 @@
             <select ng-if="'boolean' == input.type || 'enum' == input.type"
                     ng-attr-id="{{ input.key }}"
                     name="name"
-                    ng-options="item.value as item.name for item in input.enum"
+                    ng-options="item.value as item.name for item in input.enumList"
                     ng-model="viewModel.record[input.key]"
                     cn-change="patch( input.key )"
                     class="form-control"

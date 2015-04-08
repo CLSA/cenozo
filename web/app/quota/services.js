@@ -13,25 +13,21 @@ define( [], function() {
     site_id: {
       title: 'Site',
       type: 'enum',
-      enumKey: 'siteList',
       required: true
     },
     region_id: {
       title: 'Region',
       type: 'enum',
-      enumKey: 'regionList',
       required: true
     },
     gender: {
       title: 'Sex',
       type: 'enum',
-      enumKey: 'genderList',
       required: true
     },
     age_group_id: {
       title: 'Age Group',
       type: 'enum',
-      enumKey: 'ageGroupList',
       required: true
     },
     population: {
@@ -131,81 +127,66 @@ define( [], function() {
         this.cnList.enableDelete( true );
         this.cnList.enableView( true );
 
-        // populate the enumerations
-        this.metadata = {
-          ageGroupList: [],
-          genderList: [],
-          regionList: [],
-          siteList: []
-        };
+        // populate the foreign-key enumerations
         var thisRef = this;
-
-        this.promise = CnHttpFactory.instance( {
-          path: 'age_group',
-          data: {
-            select: { column: [ 'id', 'lower', 'upper' ] },
-            modifier: { order: { lower: false } }
-          }
-        } ).query().then( function success( response ) {
-          for( var i = 0; i < response.data.length; i++ ) {
-            thisRef.metadata.ageGroupList.push( {
-              value: response.data[i].id,
-              name: response.data[i].lower + ' to ' + response.data[i].upper
-            } );
-          }
-        } ).then( function() {
-          return CnHttpFactory.instance( {
-            path: moduleSubject
-          } ).head().then( function success( response ) {
-            var metadata = JSON.parse( response.headers( 'Columns' ) ).gender.type.
-              replace( /^enum\(['"]/i, '' ).
-              replace( /['"]\)$/, '' ).
-              split( "','" );
-            for( var i = 0; i < metadata.length; i++ ) {
-              thisRef.metadata.genderList.push( {
-                value: metadata[i],
-                name: metadata[i]
+        this.promise = this.promise.then( function() {
+          // need to copy the metadata from the base object
+          thisRef.metadata = base.metadata;
+          CnHttpFactory.instance( {
+            path: 'age_group',
+            data: {
+              select: { column: [ 'id', 'lower', 'upper' ] },
+              modifier: { order: { lower: false } }
+            }
+          } ).query().then( function success( response ) {
+            thisRef.metadata.age_group_id.enumList = [];
+            for( var i = 0; i < response.data.length; i++ ) {
+              thisRef.metadata.age_group_id.enumList.push( {
+                value: response.data[i].id,
+                name: response.data[i].lower + ' to ' + response.data[i].upper
               } );
             }
-          } );
-        } ).then( function() {
-          return CnHttpFactory.instance( {
-            path: 'region',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: {
-                where: {
-                  column: 'country',
-                  operator: '=',
-                  value: CnAppSingleton.application.country
-                },
-                order: 'name'
+          } ).then( function() {
+            return CnHttpFactory.instance( {
+              path: 'region',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: {
+                  where: {
+                    column: 'country',
+                    operator: '=',
+                    value: CnAppSingleton.application.country
+                  },
+                  order: 'name'
+                }
               }
-            }
-          } ).query().then( function success( response ) {
-            for( var i = 0; i < response.data.length; i++ ) {
-              thisRef.metadata.regionList.push( {
-                value: response.data[i].id,
-                name: response.data[i].name
-              } );
-            }
-          } );
-        } ).then( function() {
-          return CnHttpFactory.instance( {
-            path: 'application/' + CnAppSingleton.application.id + '/site',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name' }
-            }
-          } ).query().then( function success( response ) {
-            for( var i = 0; i < response.data.length; i++ ) {
-              thisRef.metadata.siteList.push( {
-                value: response.data[i].id,
-                name: response.data[i].name
-              } );
-            }
-          } );
-        } ).catch( function exception() { cnFatalError(); } )
+            } ).query().then( function success( response ) {
+              thisRef.metadata.region_id.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                thisRef.metadata.region_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].name
+                } );
+              }
+            } );
+          } ).then( function() {
+            return CnHttpFactory.instance( {
+              path: 'application/' + CnAppSingleton.application.id + '/site',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name' }
+              }
+            } ).query().then( function success( response ) {
+              thisRef.metadata.site_id.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                thisRef.metadata.site_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].name
+                } );
+              }
+            } );
+          } ).catch( function exception() { cnFatalError(); } )
+        } );
       };
 
       object.prototype = CnBaseSingletonFactory.prototype;
