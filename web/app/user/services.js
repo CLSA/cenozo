@@ -9,6 +9,33 @@ define( [], function() {
     possessive: 'user\'s',
     pluralPossessive: 'users\''
   };
+  var inputList = {
+    name: {
+      title: 'Username',
+      type: 'string',
+      required: true
+    },
+    password: {
+      title: 'Password', /* TODO: necessary for a non-user-input? */
+      type: 'string',
+      required: false
+    },
+    first_name: {
+      title: 'First Name',
+      type: 'string',
+      required: true
+    },
+    last_name: {
+      title: 'Last Name',
+      type: 'string',
+      required: true
+    },
+    active: {
+      title: 'Active',
+      type: 'bolean',
+      required: true
+    }
+  };
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnUserAddFactory', [

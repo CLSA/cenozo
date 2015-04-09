@@ -10,7 +10,7 @@ catch( err ) {
 }
 
 /**
- * TODO: document
+ * Prints the application title and version
  */
 cenozo.directive( 'cnApplicationTitle', [
   'CnAppSingleton',
@@ -67,7 +67,8 @@ cenozo.directive( 'cnChange', [
 ] );
 
 /**
- * TODO: document
+ * Displays a clock including hours, minutes and timezone (based on the timezone of the site
+ * that the user is currently logged into).
  */
 cenozo.directive( 'cnClock', [
   'CnAppSingleton', '$interval',
@@ -424,7 +425,9 @@ cenozo.directive( 'cnReallyClick', function() {
 } );
 
 /**
- * TODO: document
+ * A form for filling out a new record's details
+ * @attr addModel: An instance of the record's add model
+ * @attr listModel: An instance of the record's list (parent to the add model)
  */
 cenozo.directive( 'cnRecordAdd', [
   '$state',
@@ -497,7 +500,6 @@ cenozo.directive( 'cnRecordAdd', [
         scope.$parent.$watch( 'record', function( record ) { scope.record = record; } );
 
         // watch for changes in metadata (created asynchronously by the service)
-        // TODO: can this be moved to the service? (along with viewModel...)
         scope.$watch( 'addModel.parentModel.metadata', function( metadata ) {
           if( undefined !== metadata ) {
             for( var key in metadata ) {
@@ -519,43 +521,9 @@ cenozo.directive( 'cnRecordAdd', [
 ] );
 
 /**
- * TODO: document
- */
-cenozo.directive( 'cnRecordInput', function() {
-  return {
-    templateUrl: cnCenozoUrl + '/app/cenozo/record-input.tpl.html',
-    restrict: 'E',
-    transclude: true,
-    scope: {
-      form: '=',
-      key: '@',
-      title: '@',
-      help: '@'
-    },
-    link: function( scope, element, attrs, ctrl, transclude ) {
-      transclude( scope, function( clone ) {
-        // determine whether the transcluded markup has an input
-        var hasInput = false;
-        for( var i = 0; i < clone.length; i++ ) {
-          if( 'INPUT' == clone[i].tagName ) {
-            hasInput = true;
-            break;
-          }
-          else if( undefined !== clone[i].tagName ) {
-            if( 0 < clone[i].getElementsByTagName( 'INPUT' ).length ) {
-              hasInput = true;
-              break;
-            }
-          }
-        }
-        scope.hasInput = hasInput;
-      } );
-    }
-  };
-} );
-
-/**
- * TODO: document
+ * A listing of records
+ * @attr listModel: An instance of the record's list (parent to the add model)
+ * @attr removeColumns: An array of columns (by key) to remove from the default list
  */
 cenozo.directive( 'cnRecordList', [
   '$state', 'CnModalRestrictFactory',
@@ -627,7 +595,9 @@ cenozo.directive( 'cnRecordList', [
 ] );
 
 /**
- * TODO: document
+ * A form for editing an existing record's details
+ * @attr viewModel: An instance of the record's view model
+ * @attr listModel: An instance of the record's list (parent to the view model)
  */
 cenozo.directive( 'cnRecordView', [
   '$state',
@@ -727,7 +697,6 @@ cenozo.directive( 'cnRecordView', [
         scope.$parent.$watch( 'record', function( record ) { scope.record = record; } );
 
         // watch for changes in metadata (created asynchronously by the service)
-        // TODO: can this be moved to the service? (along with addModel...)
         scope.$watch( 'viewModel.parentModel.metadata', function( metadata ) {
           if( undefined !== metadata ) {
             for( var key in metadata ) {
@@ -749,7 +718,7 @@ cenozo.directive( 'cnRecordView', [
 ] );
 
 /**
- * TODO: document
+ * Site and role drop-downs which will switch the user's current role
  */
 cenozo.directive( 'cnSiteRoleSwitcher', [
   '$window', 'CnAppSingleton',
