@@ -230,7 +230,13 @@ final class lib
   }
 
   /**
-   * TODO: document
+   * Returns whether or not a class exists in either the application or framework
+   * 
+   * @author Patrick D. Emond <emondpd@mcmaster.ca>
+   * @param string $class_name The name of the class including namespace
+   * @return boolean
+   * @access public
+   * @static
    */
   public static function class_exists( $class_name )
   {

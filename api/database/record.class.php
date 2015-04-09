@@ -1281,7 +1281,10 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * An instance to the database object the record belongs to
+   * @var database\database
+   * @access protected
+   * @static
    */
   protected static $db = null;
 

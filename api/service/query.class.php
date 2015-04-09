@@ -15,12 +15,7 @@ use cenozo\lib, cenozo\log;
 class query extends read
 {
   /**
-   * Constructor
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $path The URL of the service (not including the base)
-   * @param array $args An associative array of arguments to be processed by the service.
-   * @access public
+   * Extends parent constructor
    */
   public function __construct( $path, $args = NULL )
   {
@@ -28,10 +23,7 @@ class query extends read
   }
 
   /**
-   * Processes arguments, preparing them for the service.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * Extends parent method
    */
   protected function prepare()
   {
@@ -72,7 +64,7 @@ class query extends read
   }
 
   /**
-   * TODO: document
+   * Extends parent method
    */
   protected function execute()
   {

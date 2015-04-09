@@ -15,7 +15,12 @@ use cenozo\lib, cenozo\log;
 class status extends \cenozo\base_object
 {
   /**
-   * TODO: document
+   * Constructor
+   * 
+   * @author Patrick D. Emond <emondpd@mcmaster.ca>
+   * @param integer $code The HTTP response code 
+   * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+   * @access public
    */
   public function __construct( $code )
   {
@@ -23,7 +28,12 @@ class status extends \cenozo\base_object
   }
   
   /**
-   * TODO: document
+   * Returns the status' current code
+   * 
+   * @author Patrick D. Emond <emondpd@mcmaster.ca>
+   * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+   * @return integer
+   * @access public
    */
   public function get_code()
   {
@@ -31,7 +41,12 @@ class status extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Sets the status' response code
+   * 
+   * @author Patrick D. Emond <emondpd@mcmaster.ca>
+   * @param integer $code
+   * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+   * @access public
    */
   public function set_code( $code )
   {
@@ -45,7 +60,11 @@ class status extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Sets the value to send as the location header
+   * 
+   * @author Patrick D. Emond <emondpd@mcmaster.ca>
+   * @param string $location
+   * @access public
    */
   public function set_location( $location )
   {
@@ -53,7 +72,11 @@ class status extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the status message (code + code description)
+   * 
+   * @author Patrick D. Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
    */
   public function get_message()
   {
@@ -61,7 +84,10 @@ class status extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Sends http headers using the status' message (code + code description) and the location header, if set
+   * 
+   * @author Patrick D. Emond <emondpd@mcmaster.ca>
+   * @access public
    */
   public function send_headers()
   {
@@ -70,17 +96,24 @@ class status extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * The HTTP response code (must be one of the keys in the static $code_list array)
+   * @var integer
+   * @access protected
    */
   protected $code = NULL;
 
   /**
-   * TODO: document
+   * The location string to add to response headers (may be null)
+   * @var string
+   * @access protected
    */
   protected $location = NULL;
 
   /**
-   * TODO: document
+   * A list of all HTTP status codes
+   * @var array( integer => string )
+   * @access protected
+   * @static
    */
   protected static $code_list = array(
     100 => 'Continue',

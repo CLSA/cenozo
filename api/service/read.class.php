@@ -15,10 +15,7 @@ use cenozo\lib, cenozo\log;
 class read extends service
 {
   /**
-   * Processes arguments, preparing them for the service.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * Extends parent method
    */
   protected function prepare()
   {
@@ -80,12 +77,16 @@ class read extends service
   }
 
   /**
-   * TODO: document
+   * The select used to process this read service
+   * @var database\select
+   * @access protected
    */
   protected $select = NULL;
 
   /**
-   * TODO: document
+   * The modifier used to process this read service
+   * @var database\modifier
+   * @access protected
    */
   protected $modifier = NULL;
 }

@@ -217,7 +217,11 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Converts the service's path into a a list of collection and resource names
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $path
+   * @access protected
    */
   protected function process_path( $path )
   {
@@ -232,7 +236,18 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the resource for a particular index
+   * 
+   * The index is based on the service's path.  Every other item in the path identifies a
+   * resource either by ID or some other set of key/value pair(s).  For instance, for the
+   * path /collection/1/participant/2 the first resource would be a collection for ID 1
+   * and the second a participant for ID 2.  Null is returned if there is no resource for
+   * the given index.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $index
+   * @return database\record
+   * @access protected
    */
   protected function get_resource( $index )
   {
@@ -312,7 +327,11 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the subject of the second-to-last collection (based on the service's path)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string If there is no parent subject then NULL is returned
+   * @access protected
    */
   protected function get_parent_subject()
   {
@@ -321,7 +340,11 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the resource of the second-to-last collection (based on the service's path)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string If there is no parent subject then NULL is returned
+   * @access protected
    */
   protected function get_parent_record()
   {
@@ -330,7 +353,11 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the subject of the last collection (based on the service's path)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string If there is no leaf subject then NULL is returned
+   * @access protected
    */
   protected function get_leaf_subject()
   {
@@ -339,7 +366,11 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the resource of the last collection (based on the service's path)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string If there is no leaf subject then NULL is returned
+   * @access protected
    */
   protected function get_leaf_record()
   {
@@ -348,7 +379,10 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the file provided to the service decoded as a JSON string
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function get_file_as_object()
   {
@@ -357,7 +391,10 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the file provided to the service (unchanged)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function get_file_as_raw()
   {
@@ -448,7 +485,9 @@ abstract class service extends \cenozo\base_object
   public static $debug = false;
 
   /**
-   * TODO: document
+   * The status object returned in response to the service request
+   * @var service\status
+   * @access protected
    */
   protected $status = NULL;
 
@@ -488,17 +527,24 @@ abstract class service extends \cenozo\base_object
   protected $data = NULL;
   
   /**
-   * TODO: document
+   * A list of all collection names based on the service's path
+   * @var array( string )
+   * @access protected
    */
   protected $collection_name_list = NULL;
 
   /**
-   * TODO: document
+   * A list of all resource lookup values based on the service's path (may be an id or some other
+   * set of key/value pair(s)
+   * @var array( string )
+   * @access protected
    */
   protected $resource_value_list = NULL;
 
   /**
-   * TODO: document
+   * 
+   * @var array( database\record )
+   * @access private
    */
   private $resource_cache = array();
 

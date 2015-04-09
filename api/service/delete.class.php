@@ -15,12 +15,7 @@ use cenozo\lib, cenozo\log;
 class delete extends write
 {
   /**
-   * Constructor
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $path The URL of the service (not including the base)
-   * @param array $args An associative array of arguments to be processed by the delete operation.
-   * @access public
+   * Extends parent constructor
    */
   public function __construct( $path, $args )
   {
@@ -28,7 +23,7 @@ class delete extends write
   }
 
   /**
-   * TODO: document
+   * Extends parent method
    */
   protected function execute()
   {

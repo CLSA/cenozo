@@ -368,7 +368,11 @@ final class bootstrap
   }
 
   /**
-   * TODO: document
+   * Returns the name of the service class based on the request path
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access protected
    */
   protected function get_service_class_name()
   {
