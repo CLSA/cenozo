@@ -42,7 +42,7 @@
 </div>
 
 <snap-content snap-opt-tap-to-close="true" snap-opt-disable="'right'" snap-opt-hyperextensible="false">
-  <button snap-toggle="left" class="btn btn-primary menu-button rounded-top">
+  <button snap-toggle="left" class="btn btn-primary menu-button rounded-right">
     <i class="glyphicon glyphicon-align-justify" aria-hidden="true"></i>
   </button>
   <div snap-dragger class="container-fluid bg-info body-heading">

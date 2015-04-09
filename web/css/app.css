@@ -68,13 +68,11 @@ input[type=number] { -moz-appearance: textfield; }
   z-index: 100;
   position: fixed;
   top: 0px;
-  height: 40px;
-  width: 42px;
+  height: 42px;
+  width: 40px;
   outline: none !important;
 
-  left: 35px;
-  transform: rotate(90deg);
-  transform-origin: left top 0;
+  left: -5px;
 }
 snap-content {
   background-color: #fff;
