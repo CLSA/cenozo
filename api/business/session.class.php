@@ -154,6 +154,8 @@ class session extends \cenozo\singleton
       $access_class_name = lib::get_class_name( 'database\access' );
       $util_class_name = lib::get_class_name( 'util' );
 
+      $db_access = NULL;
+
       // automatically determine site or role if either is not provided
       if( is_null( $db_site ) || is_null( $db_role ) )
       {
@@ -183,12 +185,13 @@ class session extends \cenozo\singleton
           $microtime = microtime();
           $this->db_site = $db_site;
           $this->db_role = $db_role;
-          $this->db_access = $access_class_name::get_unique_record(
-            array( 'user_id', 'site_id', 'role_id' ),
-            array( $this->db_user->id, $this->db_site->id, $this->db_role->id ) );
-          $this->db_access->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
-          $this->db_access->microtime = substr( $microtime, 0, strpos( $microtime, ' ' ) );
-          $this->db_access->save();
+          if( is_null( $db_access ) )
+            $db_access = $access_class_name::get_unique_record(
+              array( 'user_id', 'site_id', 'role_id' ),
+              array( $this->db_user->id, $this->db_site->id, $this->db_role->id ) );
+          $db_access->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+          $db_access->microtime = substr( $microtime, 0, strpos( $microtime, ' ' ) );
+          $db_access->save();
         }
       }
     }
