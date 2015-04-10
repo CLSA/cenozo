@@ -1,46 +1,14 @@
 define( [
+  cnCenozoUrl + '/app/collection/module.js',
   cnCenozoUrl + '/app/participant/controllers.js',
   cnCenozoUrl + '/app/participant/directives.js',
   cnCenozoUrl + '/app/participant/services.js',
   cnCenozoUrl + '/app/user/controllers.js',
   cnCenozoUrl + '/app/user/directives.js',
   cnCenozoUrl + '/app/user/services.js'
-], function() {
+], function( module ) {
 
   'use strict';
-
-  var moduleSubject = 'collection';
-  var moduleNames = {
-    singular: 'collection',
-    plural: 'collections',
-    possessive: 'collection\'s',
-    pluralPossessive: 'collections\''
-  };
-  var inputList = {
-    name: {
-      title: 'Name',
-      type: 'string',
-      required: true,
-      help: 'May only contain letters, numbers and underscores'
-    },
-    active: {
-      title: 'Active',
-      type: 'boolean',
-      required: true,
-      help: 'Inactive collections will not show as options in reports or to external applications'
-    },
-    locked: {
-      title: 'Locked',
-      type: 'boolean',
-      required: true,
-      help: 'If locked then only users in the access list will be able to make changes to the collection'
-    },
-    description: {
-      title: 'Description',
-      type: 'text',
-      required: false
-    }
-  };
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnCollectionAddFactory', [
@@ -48,9 +16,9 @@ define( [
     function( CnBaseAddFactory, CnHttpFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        params.inputList = inputList;
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
         return CnBaseAddFactory.instance( params );
       } };
     }
@@ -60,38 +28,13 @@ define( [
   cnCachedProviders.factory( 'CnCollectionListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      var object = function( params ) {
-        var base = CnBaseListFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-
-        ////////////////////////////////////
-        // factory customizations start here
-        this.columnList = {
-          name: { title: 'Name' },
-          active: {
-            title: 'Active',
-            filter: 'cnYesNo'
-          },
-          locked: {
-            title: 'Locked',
-            filter: 'cnYesNo'
-          },
-          participant_count: { title: 'Participants' },
-          user_count: { title: 'Users' }
-        };
-        this.order = { column: 'name', reverse: false };
-        // factory customizations end here
-        //////////////////////////////////
-
-        cnCopyParams( this, params );
-      };
-
-      object.prototype = CnBaseListFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        return new object( params );
+        params.subject = module.subject;
+        params.name = module.name;
+        params.columnList = module.columnList;
+        params.order = module.defaultOrder;
+        return CnBaseListFactory.instance( params );
       } };
     }
   ] );
@@ -128,9 +71,9 @@ define( [
       object.prototype = CnBaseViewFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        params.inputList = inputList;
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
         return new object( params );
       } };
     }
@@ -141,9 +84,9 @@ define( [
     'CnBaseSingletonFactory', 'CnCollectionListFactory', 'CnCollectionAddFactory', 'CnCollectionViewFactory',
     function( CnBaseSingletonFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
       return new ( function() {
-        this.subject = moduleSubject;
+        this.subject = module.subject;
         CnBaseSingletonFactory.apply( this );
-        this.name = moduleNames;
+        this.name = module.name;
         this.cnAdd = CnCollectionAddFactory.instance( { parentModel: this } );
         this.cnList = CnCollectionListFactory.instance( { parentModel: this } );
         this.cnView = CnCollectionViewFactory.instance( { parentModel: this } );

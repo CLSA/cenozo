@@ -1,41 +1,8 @@
-define( [], function() {
+define( [
+  cnCenozoUrl + '/app/quota/module.js'
+], function( module ) {
 
   'use strict';
-
-  var moduleSubject = 'quota';
-  var moduleNames = {
-    singular: 'quota',
-    plural: 'quotas',
-    possessive: 'quota\'s',
-    pluralPossessive: 'quotas\''
-  };
-  var inputList = {
-    site_id: {
-      title: 'Site',
-      type: 'enum',
-      required: true
-    },
-    region_id: {
-      title: 'Region',
-      type: 'enum',
-      required: true
-    },
-    gender: {
-      title: 'Sex',
-      type: 'enum',
-      required: true
-    },
-    age_group_id: {
-      title: 'Age Group',
-      type: 'enum',
-      required: true
-    },
-    population: {
-      title: 'Population',
-      type: 'string',
-      required: true
-    }
-  };
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnQuotaAddFactory', [
@@ -43,9 +10,9 @@ define( [], function() {
     function( CnBaseAddFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        params.inputList = inputList;
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
         return CnBaseAddFactory.instance( params );
       } };
     }
@@ -55,38 +22,13 @@ define( [], function() {
   cnCachedProviders.factory( 'CnQuotaListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      var object = function( params ) {
-        var base = CnBaseListFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-
-        ////////////////////////////////////
-        // factory customizations start here
-        this.columnList = {
-          site: {
-            column: 'site.name',
-            title: 'Site'
-          },
-          region: {
-            column: 'region.name',
-            title: 'Region'
-          },
-          gender: { title: 'Gender' },
-          age_group_range: { title: 'Age Group' },
-          population: { title: 'Population' }
-        };
-        this.order = { column: 'site', reverse: false };
-        // factory customizations end here
-        //////////////////////////////////
-
-        cnCopyParams( this, params );
-      };
-
-      object.prototype = CnBaseListFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        return new object( params );
+        params.subject = module.subject;
+        params.name = module.name;
+        params.columnList = module.columnList;
+        params.order = module.defaultOrder;
+        return CnBaseListFactory.instance( params );
       } };
     }
   ] );
@@ -97,9 +39,9 @@ define( [], function() {
     function( CnBaseViewFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        params.inputList = inputList;
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
         return CnBaseViewFactory.instance( params );
       } };
     }
@@ -114,9 +56,9 @@ define( [], function() {
               CnQuotaListFactory, CnQuotaAddFactory, CnQuotaViewFactory,
               CnHttpFactory, CnAppSingleton ) {
       return new ( function() {
-        this.subject = moduleSubject;
+        this.subject = module.subject;
         CnBaseSingletonFactory.apply( this );
-        this.name = moduleNames;
+        this.name = module.name;
         this.cnAdd = CnQuotaAddFactory.instance( { parentModel: this } );
         this.cnList = CnQuotaListFactory.instance( { parentModel: this } );
         this.cnView = CnQuotaViewFactory.instance( { parentModel: this } );

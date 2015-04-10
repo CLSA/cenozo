@@ -27,36 +27,29 @@ class read_modification extends \cenozo\base_object
   public static function apply( $select, $modifier )
   {
     // add the total number of roles
-    if( $select->has_table_column( '', 'role_count' ) )
+    if( $select->has_table_column( '', 'role_count' ) ||
+        $select->has_table_column( '', 'user_count' ) ||
+        $select->has_table_column( '', 'last_access_datetime' ) )
     {
-      $user_join_role =
-        'SELECT user_id, COUNT(*) AS role_count '.
+      $user_join_access =
+        'SELECT user_id, '.
+               'COUNT( DISTINCT role_id ) AS role_count, '.
+               'COUNT( DISTINCT site_id ) AS site_count, '.
+               'MAX( datetime ) AS last_access_datetime '.
         'FROM access '.
-        'GROUP BY user_id';
+        'GROUP BY user_id ';
       $modifier->left_join(
-        sprintf( '( %s ) AS user_join_role', $user_join_role ),
+        sprintf( '( %s ) AS user_join_access', $user_join_access ),
         'user.id',
-        'user_join_role.user_id' );
-      $select->add_column( 'IFNULL( role_count, 0 )', 'role_count', false );
-    }
+        'user_join_access.user_id' );
 
-    // add the total number of sites
-    if( $select->has_table_column( '', 'site_count' ) )
-    {
-      $user_join_site =
-        'SELECT user_id, COUNT(*) AS site_count '.
-        'FROM access '.
-        'GROUP BY user_id';
-      $modifier->left_join(
-        sprintf( '( %s ) AS user_join_site', $user_join_site ),
-        'user.id',
-        'user_join_site.user_id' );
-      $select->add_column( 'IFNULL( site_count, 0 )', 'site_count', false );
+      // override columns so that we can fake these columns being in the user table
+      if( $select->has_table_column( '', 'role_count' ) )
+        $select->add_column( 'IFNULL( role_count, 0 )', 'role_count', false );
+      if( $select->has_table_column( '', 'site_count' ) )
+        $select->add_column( 'IFNULL( site_count, 0 )', 'site_count', false );
+      if( $select->has_table_column( '', 'last_access_datetime' ) )
+        $select->add_column( 'user_join_access.last_access_datetime', 'last_access_datetime', false );
     }
-
-    // link to the user's last activity and add the activity's datetime
-    $modifier->left_join( 'user_last_activity', 'user.id', 'user_last_activity.user_id' );
-    $modifier->left_join( 'activity', 'user_last_activity.activity_id', 'last_activity.id', 'last_activity' );
-    $select->add_table_column( 'last_activity', 'datetime', 'last_datetime' );
   }
 }

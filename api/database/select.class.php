@@ -227,13 +227,19 @@ class select extends \cenozo\base_object
    */
   public function get_sql()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     if( 0 == strlen( $this->table_name ) )
       throw lib::create( 'exception\runtime',
         'Tried to get SQL from select before table "from" value is set', __METHOD__ );
 
     // figure out which table to select from
     $main_table = is_null( $this->table_alias ) ? $this->table_name : $this->table_alias;
-    
+
+    // determine the site's timezone offset
+    $interval = sprintf( 'INTERVAL %d SECOND',
+                         $util_class_name::get_datetime_object()->getOffset() );
+
     // figure out the columns
     $columns = array();
     foreach( $this->column_list as $table => $column_details )
@@ -246,7 +252,15 @@ class select extends \cenozo\base_object
       foreach( $column_details as $alias => $item )
       {
         $column = sprintf( '%s%s', $item['table_prefix'] ? $table_prefix : '', $item['column'] );
-        if( $alias != $item['column'] ) $column = sprintf( '%s AS %s', $column, $alias );
+        // convert from UTC to site time
+        if( false !== strpos( $item['column'], 'datetime' ) )
+          $column = sprintf( '%s + %s', $column, $interval );
+        else if( false !== strpos( $item['column'], 'time' ) )
+          $column = sprintf( 'TIME( CURDATE() + INTERVAL TIME_TO_SEC( %s ) SECOND + %s )',
+                             $column,
+                             $interval );
+        // add the alias
+        $column = sprintf( '%s AS %s', $column, $alias );
         $columns[] = $column;
       }
     }

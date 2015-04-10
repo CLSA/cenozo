@@ -1,14 +1,8 @@
-define( [], function() {
+define( [
+  cnCenozoUrl + '/app/state/module.js'
+], function( module ) {
 
   'use strict';
-
-  var moduleSubject = 'state';
-  var moduleNames = {
-    singular: 'state',
-    plural: 'states',
-    possessive: 'state\'s',
-    pluralPossessive: 'states\''
-  };
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnStateAddFactory', [
@@ -16,8 +10,9 @@ define( [], function() {
     function( CnBaseAddFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
         return CnBaseAddFactory.instance( params );
       } };
     }
@@ -27,30 +22,13 @@ define( [], function() {
   cnCachedProviders.factory( 'CnStateListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      var object = function( params ) {
-        var base = CnBaseListFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-
-        ////////////////////////////////////
-        // factory customizations start here
-        this.columnList = {
-          name: { title: 'Name' },
-          rank: { title: 'Rank' },
-          participant_count: { title: 'Participants' }
-        };
-        this.order = { column: 'rank', reverse: false };
-        // factory customizations end here
-        //////////////////////////////////
-
-        cnCopyParams( this, params );
-      };
-
-      object.prototype = CnBaseListFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        return new object( params );
+        params.subject = module.subject;
+        params.name = module.name;
+        params.columnList = module.columnList;
+        params.order = module.defaultOrder;
+        return CnBaseListFactory.instance( params );
       } };
     }
   ] );
@@ -61,8 +39,9 @@ define( [], function() {
     function( CnBaseViewFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
         return CnBaseViewFactory.instance( params );
       } };
     }
@@ -72,24 +51,18 @@ define( [], function() {
   cnCachedProviders.factory( 'CnStateSingleton', [
     'CnBaseSingletonFactory', 'CnStateListFactory', 'CnStateAddFactory', 'CnStateViewFactory',
     function( CnBaseSingletonFactory, CnStateListFactory, CnStateAddFactory, CnStateViewFactory ) {
-      var object = function() {
-        var base = CnBaseSingletonFactory.instance( {
-          subject: moduleSubject,
-          name: moduleNames,
-          cnAdd: CnStateAddFactory.instance( { parentModel: this } ),
-          cnList: CnStateListFactory.instance( { parentModel: this } ),
-          cnView: CnStateViewFactory.instance( { parentModel: this } )
-        } );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+      return new ( function() {
+        this.subject = module.subject;
+        CnBaseSingletonFactory.apply( this );
+        this.name = module.name;
+        this.cnAdd = CnStateAddFactory.instance( { parentModel: this } );
+        this.cnList = CnStateListFactory.instance( { parentModel: this } );
+        this.cnView = CnStateViewFactory.instance( { parentModel: this } );
 
         this.cnList.enableAdd( true );
         this.cnList.enableDelete( true );
         this.cnList.enableView( true );
-      };
-
-      object.prototype = CnBaseSingletonFactory.prototype;
-      // don't return a method to create instances, create and return the singleton
-      return new object();
+      } );
     }
   ] );
 

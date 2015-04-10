@@ -1,41 +1,8 @@
-define( [], function() {
+define( [
+  cnCenozoUrl + '/app/user/module.js'
+], function( module ) {
 
   'use strict';
-
-  var moduleSubject = 'user';
-  var moduleNames = {
-    singular: 'user',
-    plural: 'users',
-    possessive: 'user\'s',
-    pluralPossessive: 'users\''
-  };
-  var inputList = {
-    name: {
-      title: 'Username',
-      type: 'string',
-      required: true
-    },
-    password: {
-      title: 'Password', /* TODO: necessary for a non-user-input? */
-      type: 'string',
-      required: false
-    },
-    first_name: {
-      title: 'First Name',
-      type: 'string',
-      required: true
-    },
-    last_name: {
-      title: 'Last Name',
-      type: 'string',
-      required: true
-    },
-    active: {
-      title: 'Active',
-      type: 'bolean',
-      required: true
-    }
-  };
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnUserAddFactory', [
@@ -43,8 +10,9 @@ define( [], function() {
     function( CnBaseAddFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
         return CnBaseAddFactory.instance( params );
       } };
     }
@@ -54,48 +22,13 @@ define( [], function() {
   cnCachedProviders.factory( 'CnUserListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      var object = function( params ) {
-        var base = CnBaseListFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-
-        ////////////////////////////////////
-        // factory customizations start here
-        this.columnList = {
-          name: {
-            column: 'user.name',
-            title: 'Name'
-          },
-          active: {
-            column: 'user.active',
-            title: 'Active',
-            filter: 'cnYesNo'
-          },
-          first_name: {
-            column: 'user.first_name',
-            title: 'First'
-          },
-          last_name: {
-            column: 'user.last_name',
-            title: 'Last'
-          },
-          last_datetime: {
-            title: 'Last Activity',
-            filter: 'date:"MMM d, y HH:mm"'
-          }
-        };
-        this.order = { column: 'name', reverse: false };
-        // factory customizations end here
-        //////////////////////////////////
-
-        cnCopyParams( this, params );
-      };
-
-      object.prototype = CnBaseListFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        return new object( params );
+        params.subject = module.subject;
+        params.name = module.name;
+        params.columnList = module.columnList;
+        params.order = module.defaultOrder;
+        return CnBaseListFactory.instance( params );
       } };
     }
   ] );
@@ -106,8 +39,9 @@ define( [], function() {
     function( CnBaseViewFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
         return CnBaseViewFactory.instance( params );
       } };
     }
@@ -117,24 +51,18 @@ define( [], function() {
   cnCachedProviders.factory( 'CnUserSingleton', [
     'CnBaseSingletonFactory', 'CnUserListFactory', 'CnUserAddFactory', 'CnUserViewFactory',
     function( CnBaseSingletonFactory, CnUserListFactory, CnUserAddFactory, CnUserViewFactory ) {
-      var object = function() {
-        var base = CnBaseSingletonFactory.instance( {
-          subject: moduleSubject,
-          name: moduleNames,
-          cnAdd: CnUserAddFactory.instance( { parentModel: this } ),
-          cnList: CnUserListFactory.instance( { parentModel: this } ),
-          cnView: CnUserViewFactory.instance( { parentModel: this } )
-        } );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+      return new ( function() {
+        this.subject = module.subject;
+        CnBaseSingletonFactory.apply( this );
+        this.name = module.name;
+        this.cnAdd = CnUserAddFactory.instance( { parentModel: this } );
+        this.cnList = CnUserListFactory.instance( { parentModel: this } );
+        this.cnView = CnUserViewFactory.instance( { parentModel: this } );
 
         this.cnList.enableAdd( true );
         this.cnList.enableDelete( true );
         this.cnList.enableView( true );
-      };
-
-      object.prototype = CnBaseSingletonFactory.prototype;
-      // don't return a method to create instances, create and return the singleton
-      return new object();
+      } );
     }
   ] );
 
