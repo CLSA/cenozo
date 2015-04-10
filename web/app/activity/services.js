@@ -33,26 +33,16 @@ define( [], function() {
             column: 'role.name',
             title: 'Role'
           },
-          method: {
-            column: 'service.method',
-            title: 'Method'
+          start_datetime: {
+            title: 'Start',
+            filter: 'date:"MMM d, y HH:mm:ss"'
           },
-          path: {
-            column: 'activity.path',
-            title: 'Path'
-          },
-          elapsed: {
-            title: 'Elapsed'
-          },
-          status: {
-            title: 'Status'
-          },
-          datetime: {
-            title: 'Date & Time',
+          end_datetime: {
+            title: 'End',
             filter: 'date:"MMM d, y HH:mm:ss"'
           }
         };
-        this.order = { column: 'datetime', reverse: true };
+        this.order = { column: 'start_datetime', reverse: true };
         // factory customizations end here
         //////////////////////////////////
 
@@ -73,18 +63,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnActivitySingleton', [
     'CnBaseSingletonFactory', 'CnActivityListFactory',
     function( CnBaseSingletonFactory, CnActivityListFactory ) {
-      var object = function() {
-        var base = CnBaseSingletonFactory.instance( {
-          subject: moduleSubject,
-          name: moduleNames,
-          cnList: CnActivityListFactory.instance( { parentModel: this } )
-        } );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-      };
-
-      object.prototype = CnBaseSingletonFactory.prototype;
-      // don't return a method to create instances, create and return the singleton
-      return new object();
+      return new ( function() {
+        this.subject = moduleSubject;
+        CnBaseSingletonFactory.apply( this );
+        this.name = moduleNames;
+        this.cnList = CnActivityListFactory.instance( { parentModel: this } );
+      } );
     }
   ] );
 

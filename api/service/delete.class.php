@@ -60,7 +60,11 @@ class delete extends write
             $this->data = $e->get_duplicate_columns( $leaf_record->get_class_name() );
             $this->status->set_code( 409 );
           }
-          else throw $e;
+          else
+          {
+            $this->status->set_code( 500 );
+            throw $e;
+          }
         }
       }
     }

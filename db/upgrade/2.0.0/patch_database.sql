@@ -3,6 +3,7 @@
 SET AUTOCOMMIT=0;
 
 SOURCE access.sql
+SOURCE activity.sql
 SOURCE application.sql
 SOURCE application_has_participant.sql
 SOURCE application_has_cohort.sql

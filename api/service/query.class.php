@@ -42,7 +42,7 @@ class query extends read
         $parent_record = $this->get_parent_record();
         if( $relationship_class_name::MANY_TO_MANY != $parent_record::get_relationship( $leaf_subject ) )
         { // must have table1/<id>/table2 where table1 N-to-N table2
-          $this->status->set_code( 406 );
+          $this->status->set_code( 400 );
         }
         else
         {

@@ -36,6 +36,8 @@ class session extends \cenozo\singleton
     // set error reporting
     error_reporting(
       $setting_manager->get_setting( 'general', 'development_mode' ) ? E_ALL | E_STRICT : E_ALL );
+
+    $this->state = 'created';
   }
   
   /**
@@ -48,10 +50,13 @@ class session extends \cenozo\singleton
    */
   public function initialize()
   {
-    // don't initialize more than once
-    if( $this->initialized ) return;
+    // only initialize once and after construction only
+    if( 'created' != $this->state ) return;
 
     $application_class_name = lib::get_class_name( 'database\application' );
+    $user_class_name = lib::get_class_name( 'database\user' );
+    $activity_class_name = lib::get_class_name( 'database\activity' );
+    $util_class_name = lib::get_class_name( 'util' );
 
     $setting_manager = lib::create( 'business\setting_manager' );
 
@@ -73,7 +78,6 @@ class session extends \cenozo\singleton
     // determine the user (and from it, the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
 
-    $user_class_name = lib::get_class_name( 'database\user' );
     $this->set_user( $user_class_name::get_unique_record( 'name', $user_name ) );
     if( is_null( $this->db_user ) )
       throw lib::create( 'exception\notice',
@@ -81,7 +85,44 @@ class session extends \cenozo\singleton
         'Please contact an account administrator to gain access to the system.',
         __METHOD__ );
 
-    $this->initialized = true;
+    // close any lapsed activity
+    $activity_class_name::close_lapsed();
+
+    // create a new activity if there isn't already one open
+    $activity_mod = lib::create( 'database\modifier' );
+    $activity_mod->where( 'user_id', '=', $this->db_user->id );
+    $activity_mod->where( 'site_id', '=', $this->db_site->id );
+    $activity_mod->where( 'role_id', '=', $this->db_role->id );
+    $activity_mod->where( 'end_datetime', '=', NULL );
+    if( 0 == $this->db_user->get_activity_count( $activity_mod ) )
+    {
+      $db_activity = lib::create( 'database\activity' );
+      $db_activity->user_id = $this->db_user->id;
+      $db_activity->site_id = $this->db_site->id;
+      $db_activity->role_id = $this->db_role->id;
+      $db_activity->start_datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $db_activity->save();
+    }
+
+    // update the access with the current time
+    $this->mark_access_time();
+
+    $this->state = 'initialized';
+  }
+  
+  /**
+   * Ends the session.
+   * 
+   * This method should be called after the operation is performed
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function shutdown()
+  {
+    // only shutdown after initialization
+    if( 'initialized' != $this->state ) return;
+
+    $this->state = 'shutdown';
   }
 
   /**
@@ -91,10 +132,7 @@ class session extends \cenozo\singleton
    * @return database
    * @access public
    */
-  public function get_database()
-  {
-    return $this->database;
-  }
+  public function get_database() { return $this->database; }
 
   /**
    * Get the current application.
@@ -143,6 +181,9 @@ class session extends \cenozo\singleton
    */
   public function set_site_and_role( $db_site = NULL, $db_role = NULL )
   {
+    // only perform if not shut down
+    if( $this->is_shutdown() ) return;
+
     if( !is_null( $db_site ) && !is_a( $db_site, lib::get_class_name( 'database\site' ) ) )
       throw lib::create( 'exception\argument', 'db_site', $db_site, __METHOD__ );
     if( !is_null( $db_role ) && !is_a( $db_role, lib::get_class_name( 'database\role' ) ) )
@@ -153,8 +194,6 @@ class session extends \cenozo\singleton
     {
       $access_class_name = lib::get_class_name( 'database\access' );
       $util_class_name = lib::get_class_name( 'util' );
-
-      $db_access = NULL;
 
       // automatically determine site or role if either is not provided
       if( is_null( $db_site ) || is_null( $db_role ) )
@@ -168,11 +207,11 @@ class session extends \cenozo\singleton
         $access_mod->limit( 1 );
         if( !is_null( $db_site ) ) $access_mod->where( 'site_id', '=', $db_site->id );
         if( !is_null( $db_role ) ) $access_mod->where( 'role_id', '=', $db_role->id );
-        $db_access = current( $this->db_user->get_access_object_list( $access_mod ) );
-        if( !is_null( $db_access ) )
+        $this->db_access = current( $this->db_user->get_access_object_list( $access_mod ) );
+        if( !is_null( $this->db_access ) )
         {
-          $db_site = $db_access->get_site();
-          $db_role = $db_access->get_role();
+          $db_site = $this->db_access->get_site();
+          $db_role = $this->db_access->get_role();
         }
       }
 
@@ -182,16 +221,12 @@ class session extends \cenozo\singleton
         $has_access = $this->db_user->has_access( $db_site, $db_role );
         if( $has_access )
         {
-          $microtime = microtime();
           $this->db_site = $db_site;
           $this->db_role = $db_role;
-          if( is_null( $db_access ) )
-            $db_access = $access_class_name::get_unique_record(
+          if( is_null( $this->db_access ) )
+            $this->db_access = $access_class_name::get_unique_record(
               array( 'user_id', 'site_id', 'role_id' ),
               array( $this->db_user->id, $this->db_site->id, $this->db_role->id ) );
-          $db_access->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
-          $db_access->microtime = substr( $microtime, 0, strpos( $microtime, ' ' ) );
-          $db_access->save();
         }
       }
     }
@@ -210,8 +245,10 @@ class session extends \cenozo\singleton
    */
   public function set_user( $db_user )
   {
-    $this->db_user = $db_user;
+    // only perform if not shut down
+    if( $this->is_shutdown() ) return;
 
+    $this->db_user = $db_user;
     if( !$this->db_user->active )
     {
       throw lib::create( 'exception\notice',
@@ -222,6 +259,24 @@ class session extends \cenozo\singleton
     $this->set_site_and_role();
   }
   
+  /**
+   * Updates the access record with the current time
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function mark_access_time()
+  {
+    if( !is_null( $this->db_access ) )
+    {
+      $util_class_name = lib::get_class_name( 'util' );
+      $microtime = microtime();
+      $this->db_access->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $this->db_access->microtime = substr( $microtime, 0, strpos( $microtime, ' ' ) );
+      $this->db_access->save();
+    }
+  }
+
   /**
    * Return whether the session has permission to perform the given service.
    * 
@@ -243,10 +298,7 @@ class session extends \cenozo\singleton
    * @return boolean
    * @access public
    */
-  public function use_transaction()
-  {
-    return $this->transaction;
-  }
+  public function use_transaction() { return $this->transaction; }
 
   /**
    * Set whether to use a database transaction.
@@ -255,10 +307,7 @@ class session extends \cenozo\singleton
    * @param boolean $transaction
    * @access public
    */
-  public function set_use_transaction( $use )
-  {
-    $this->transaction = $use;
-  }
+  public function set_use_transaction( $use ) { $this->transaction = $use; }
 
   /**
    * Returns whether the session has been initialized or not.
@@ -267,17 +316,23 @@ class session extends \cenozo\singleton
    * @return boolean
    * @access public
    */
-  public function is_initialized()
-  {
-    return $this->initialized;
-  }
+  public function is_initialized() { return 'initialized' == $this->state; }
 
   /**
-   * Whether the session has been initialized
-   * @var boolean
+   * Returns whether the session has been shutdown or not.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_shutdown() { return 'shutdown' == $this->state; }
+
+  /**
+   * Which state the session is in (one of 'created', 'initialized' or 'shutdown')
+   * @var string 
    * @access private
    */
-  private $initialized = false;
+  private $state = NULL;
 
   /**
    * The application's database object.
@@ -307,6 +362,12 @@ class session extends \cenozo\singleton
    */
   private $db_site = NULL;
 
+  /**
+   * The qualified access record for the current user/site/role
+   * @var database\access
+   * @access private
+   */
+   private $db_access = NULL;
   /**
    * The record of the current application.
    * @var database\application

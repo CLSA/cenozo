@@ -156,11 +156,14 @@ final class bootstrap
     lib::create( 'log' );
     $this->session = lib::create( 'business\session', $this->settings );
 
+    // the session is initialized in the launch methods
     if( 'ui' == $launch ) $this->launch_ui();
     else if( 'api' == $launch ) $this->launch_api();
     else die(
       'The application is not set up properly.  Please check the launch type sent to the '.
       'initialize() method and make sure it is either "ui" or "api".' );
+
+    $this->session->shutdown();
   }
 
   /**
@@ -332,6 +335,9 @@ final class bootstrap
         header( 'Content-Length: '.strlen( $json_output ) );
         print $json_output;
       }
+
+      // close the services writelog, if needed
+      $service->close_writelog();
     }
   }
   

@@ -84,7 +84,11 @@ class patch extends \cenozo\service\service
                 $this->status->set_code( 409 );
               }
               else if( $e->is_missing_data() ) $this->status->set_code( 400 );
-              else throw $e;
+              else
+              {
+                $this->status->set_code( 500 );
+                throw $e;
+              }
             }
           }
           else if( 'password' == $column )
@@ -109,9 +113,10 @@ class patch extends \cenozo\service\service
           {
             $success = $session->set_site_and_role( $db_site, $db_role );
             if( $success )
-            { // update the activity to reflect the new site/role pair
-              $this->db_activity->site_id = $session->get_site()->id;
-              $this->db_activity->role_id = $session->get_role()->id;
+            { // mark the access time and update the writelog to reflect the new site/role pair
+              $session->mark_access_time();
+              $this->db_writelog->site_id = $session->get_site()->id;
+              $this->db_writelog->role_id = $session->get_role()->id;
             }
           }
 

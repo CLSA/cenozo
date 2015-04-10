@@ -21,6 +21,9 @@ $settings['general']['maintenance_mode'] = false;
 // always leave as false when running as production server
 $settings['general']['development_mode'] = false;
 
+// how much inactivity before activity logs are considered closed (in mysql interval format)
+$settings['general']['activity_timeout'] = '1 HOUR';
+
 // cenozo's sub-directory urls
 $settings['url']['APP'] = $this->settings['url']['CENOZO'].'/app';
 $settings['url']['CSS'] = $this->settings['url']['CENOZO'].'/css';

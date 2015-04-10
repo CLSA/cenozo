@@ -62,7 +62,11 @@ class patch extends write
             $this->status->set_code( 409 );
           }
           else if( $e->is_missing_data() ) $this->status->set_code( 400 );
-          else throw $e;           
+          else
+          {
+            $this->status->set_code( 500 );
+            throw $e;
+          }
         }
       }
     }
