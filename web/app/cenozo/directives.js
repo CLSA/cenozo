@@ -80,11 +80,9 @@ cenozo.directive( 'cnClock', [
       link: function( scope, element, attrs ) {
         CnAppSingleton.promise.then( function() {
           function updateTime() {
-            var nowObj = new Date();
-            nowObj.setTime( nowObj.getTime() + CnAppSingleton.site.timezone_offset * 1000 );
-            var hours = ( nowObj.getUTCHours() < 10 ? '0' : '' ) + nowObj.getUTCHours();
-            var minutes = ( nowObj.getUTCMinutes() < 10 ? '0' : '' ) + nowObj.getUTCMinutes();
-            element.text( hours + ':' + minutes + ' ' + CnAppSingleton.site.timezone_name );
+            var now = moment();
+            now.tz( CnAppSingleton.site.timezone );
+            element.text( now.format( 'HH:mm z' ) );
           }
 
           updateTime();

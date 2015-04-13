@@ -8,7 +8,6 @@ define( [
   cnCachedProviders.factory( 'CnActivityListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      object.prototype = CnBaseListFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
         params.subject = module.subject;

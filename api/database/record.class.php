@@ -400,6 +400,11 @@ abstract class record extends \cenozo\base_object
    */
   public function get_column_values( $select = NULL, $modifier = NULL )
   {
+    if( !is_null( $select ) && !is_a( $select, lib::get_class_name( 'database\select' ) ) )
+      throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
+    if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
+      throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
+
     $columns = array();
     if( is_null( $select ) )
     {
@@ -516,42 +521,22 @@ abstract class record extends \cenozo\base_object
       {
         if( 'list' == $sub_action )
         { // calling: get_<record>_list( $select = NULL, $modifier = NULL )
-          if( 0 < count( $args ) && !is_null( $args[0] ) )
-          {
-            if( !is_a( $args[0], lib::get_class_name( 'database\select' ) ) )
-              throw lib::create( 'exception\argument', 'args[0]', $args[0], __METHOD__ );
-            $select = $args[0];
-          }
-          if( 1 < count( $args ) && !is_null( $args[1] ) )
-          {
-            if( !is_a( $args[1], lib::get_class_name( 'database\modifier' ) ) )
-              throw lib::create( 'exception\argument', 'args[1]', $args[1], __METHOD__ );
-            $modifier = $args[1];
-          }
-
-          return $this->get_record_list( $subject, $select, $modifier );
+          return $this->get_record_list(
+            $subject,
+            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL,
+            1 < count( $args ) && !is_null( $args[1] ) ? $args[1] : NULL );
         }
         else if( 'object_list' == $sub_action )
         { // calling: get_<record>_object_list( $modifier = NULL )
-          if( 0 < count( $args ) && !is_null( $args[0] ) )
-          {
-            if( !is_a( $args[0], lib::get_class_name( 'database\modifier' ) ) )
-              throw lib::create( 'exception\argument', 'args[0]', $args[0], __METHOD__ );
-            $modifier = $args[0];
-          }
-
-          return $this->get_record_object_list( $subject, $modifier );
+          return $this->get_record_object_list(
+            $subject,
+            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL );
         }
         else if( 'count' == $sub_action )
         { // calling: get_<record>_count( $modifier = NULL )
-          if( 0 < count( $args ) && !is_null( $args[0] ) )
-          {
-            if( !is_a( $args[0], lib::get_class_name( 'database\modifier' ) ) )
-              throw lib::create( 'exception\argument', 'args[0]', $args[0], __METHOD__ );
-            $modifier = $args[0];
-          }
-
-          return $this->get_record_count( $subject, $modifier );
+          return $this->get_record_count(
+            $subject,
+            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL );
         }
         else
         {
@@ -619,6 +604,15 @@ abstract class record extends \cenozo\base_object
    */
   protected function get_record_list( $record_type, $select = NULL, $modifier = NULL, $return_alternate = '' )
   {
+    if( !is_string( $record_type ) || 0 == strlen( $record_type ) )
+      throw lib::create( 'exception\argument', 'record_type', $record_type, __METHOD__ );
+    if( !is_null( $select ) && !is_a( $select, lib::get_class_name( 'database\select' ) ) )
+      throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
+    if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
+      throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
+    if( !is_string( $return_alternate ) )
+      throw lib::create( 'exception\argument', 'return_alternate', $return_alternate, __METHOD__ );
+
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
     $table_name = static::get_table_name();

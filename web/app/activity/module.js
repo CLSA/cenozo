@@ -24,11 +24,11 @@ define( {
     },
     start_datetime: {
       title: 'Start',
-      filter: 'date:"MMM d, y HH:mm:ss"'
+      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm:ss"'
     },
     end_datetime: {
       title: 'End',
-      filter: 'date:"MMM d, y HH:mm:ss"'
+      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm:ss"'
     }
   },
   defaultOrder: {

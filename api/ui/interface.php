@@ -10,6 +10,8 @@
   <script>window.cnCenozoUrl = "<?php print CENOZO_URL; ?>";</script>
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.js"></script>
+  <script src="<?php print LIB_URL; ?>/moment/moment.js"></script>
+  <script src="<?php print LIB_URL; ?>/moment-timezone/builds/moment-timezone-with-data-2010-2020.js"></script>
   <script src="<?php print LIB_URL; ?>/snapjs/snap.js"></script>
   <script src="<?php print LIB_URL; ?>/angular/angular.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-bootstrap/ui-bootstrap.js"></script>

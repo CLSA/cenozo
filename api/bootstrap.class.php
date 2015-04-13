@@ -71,6 +71,14 @@ final class bootstrap
   public function initialize( $launch )
   {
     // WARNING!  Do not use the log class in this method!
+    if( array_key_exists( 'logout', $this->arguments ) )
+    {
+      header( sprintf( 'Location: %s://none:none@%s%s',
+                       'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' ),
+                       $_SERVER['HTTP_HOST'],
+                       $_SERVER['REQUEST_URI'] ) );
+      exit;
+    }
 
     // determine the request path
     if( array_key_exists( 'REDIRECT_URL', $_SERVER ) )

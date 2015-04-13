@@ -54,12 +54,12 @@
         <i class="glyphicon glyphicon-time" aria-hidden="true"></i>
         <cn-clock></cn-clock>
         <div class="btn-group">
-          <button class="btn btn-default" tooltip="Edit Profile" tooltip-placement="bottom">
-            <i class="glyphicon glyphicon-edit" aria-hidden="true"></i>
-          </button>
-          <button class="btn btn-default" tooltip="Logout" tooltip-placement="bottom">
+          <a ui-sref="home" class="btn btn-default" tooltip="Go to home screen" tooltip-placement="bottom">
+            <i class="glyphicon glyphicon-home" aria-hidden="true"></i>
+          </a>
+          <a href="?logout" class="btn btn-default" tooltip="Logout" tooltip-placement="bottom">
             <i class="glyphicon glyphicon-off" aria-hidden="true"></i>
-          </button>
+          </a>
         </div>
       </div>
       <div class="col-xs-4 body-heading-state">

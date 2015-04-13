@@ -52,23 +52,34 @@ class get extends \cenozo\service\service
     $site_sel->from( 'site' );
     $site_sel->add_column( 'id' );
     $site_sel->add_column( 'name' );
+    $site_sel->add_column( 'timezone' );
 
     $user_sel = lib::create( 'database\select' );
     $user_sel->from( 'user' );
     $user_sel->add_column( 'id' );
     $user_sel->add_column( 'name' );
+    $user_sel->add_column( 'first_name' );
+    $user_sel->add_column( 'last_name' );
+
+    $activity_sel = lib::create( 'database\select' );
+    $activity_sel->add_column( 'start_datetime' );
+    $activity_sel->add_column( 'end_datetime' );
+    $activity_sel->add_table_column( 'site', 'name', 'site_name' );
+    $activity_sel->add_table_column( 'role', 'name', 'role_name' );
+    $activity_mod = lib::create( 'database\modifier' );
+    $activity_mod->join( 'site', 'activity.site_id', 'site.id' );
+    $activity_mod->join( 'role', 'activity.role_id', 'role.id' );
+    $activity_mod->where( 'end_datetime', '!=', NULL );
+    $activity_mod->order_desc( 'start_datetime' );
+    $activity_mod->limit( 1 );
+    $activity_list = $session->get_user()->get_activity_list( $activity_sel, $activity_mod );
 
     $pseudo_record = array(
       'application' => $session->get_application()->get_column_values( $application_sel ),
       'role' => $session->get_role()->get_column_values( $role_sel ),
       'site' => $session->get_site()->get_column_values( $site_sel ),
-      'user' => $session->get_user()->get_column_values( $user_sel ) );
-
-    // add timezone information to help poor featureless javascript
-    $datetime_obj = $util_class_name::get_datetime_object();
-    $pseudo_record['site']['timezone_name'] = $datetime_obj->format( 'T' );
-    $pseudo_record['site']['timezone_offset'] =
-      $util_class_name::get_timezone_object()->getOffset( $datetime_obj );
+      'user' => $session->get_user()->get_column_values( $user_sel ),
+      'last_activity' => current( $activity_list ) );
 
     return $pseudo_record;
   }

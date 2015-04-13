@@ -26,19 +26,6 @@ cenozo.filter( 'cnCheckmark', function() {
 } );
 
 /* ######################################################################################################## */
-cenozo.filter( 'cnDatabaseDate', [
-  '$filter',
-  function( $filter ) {
-    var dateFilter = $filter( 'date' );
-    return function( datetime, format ) {
-      return dateFilter(
-        datetime instanceof Date ?  datetime : cnDatetimeToObject( datetime ),
-        format );
-    };
-  }
-] );
-
-/* ######################################################################################################## */
 cenozo.filter( 'cnMetaFilter', [
   '$filter',
   function( $filter ) {
@@ -55,6 +42,24 @@ cenozo.filter( 'cnMetaFilter', [
         args.unshift( value );
         return filter.apply( null, args );
       } else return value;
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+cenozo.filter( 'cnMomentDate', [
+  'CnAppSingleton',
+  function( CnAppSingleton ) {
+    return function( input, format ) {
+      var output = input;
+      if( undefined !== input &&
+          null !== input &&
+          'object' === typeof input &&
+          undefined !== input.format ) {
+        output = input.tz( CnAppSingleton.site.timezone ).format( format );
+      }
+
+      return output;
     };
   }
 ] );

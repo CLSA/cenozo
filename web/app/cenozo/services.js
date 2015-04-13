@@ -4,6 +4,72 @@ try { var cenozo = angular.module( 'cenozo' ); }
 catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 
 /* ######################################################################################################## */
+cenozo.factory( 'CnAppSingleton', [
+  'CnHttpFactory',
+  function( CnHttpFactory ) {
+    return new ( function() {
+      this.promise = null;
+      this.application = {};
+      this.user = {};
+      this.site = {};
+      this.role = {};
+      this.siteList = [];
+
+      // get the application, user, site and role details
+      var thisRef = this;
+      this.promise = CnHttpFactory.instance( {
+        path: 'self/0'
+      } ).get().then( function success( response ) {
+        thisRef.application = response.data.application;
+        thisRef.user = response.data.user;
+        thisRef.site = response.data.site;
+        thisRef.role = response.data.role;
+        thisRef.last_activity = response.data.last_activity;
+        cnConvertFromDatabaseRecord( thisRef.last_activity );
+
+        // chain a second http request into the promise
+        return CnHttpFactory.instance( {
+          path: 'access'
+        } ).query().then( function success( response ) {
+          for( var i = 0; i < response.data.length; i++ ) {
+            var access = response.data[i];
+
+            // get the site's index
+            var index = 0;
+            for( ; index < thisRef.siteList.length; index++ )
+              if( access.site_id == thisRef.siteList[index].id ) break;
+
+            // if the site isn't found, add it to the list
+            if( thisRef.siteList.length == index )
+              thisRef.siteList.push( { id: access.site_id, name: access.site_name, roleList: [] } );
+
+            // now add the role to the site's role list
+            thisRef.siteList[index].roleList.push( {
+              id: access.role_id,
+              name: access.role_name
+            } );
+          }
+        } );
+      } ).catch( function exception() { cnFatalError(); } );
+
+      this.setSite = function setSite( id ) {
+        return CnHttpFactory.instance( {
+          path: 'self/0',
+          data: { site: { id: id } }
+        } ).patch();
+      };
+
+      this.setRole = function setRole( id ) {
+        return CnHttpFactory.instance( {
+          path: 'self/0',
+          data: { role: { id: id } }
+        } ).patch();
+      };
+    } );
+  }
+] );
+
+/* ######################################################################################################## */
 // TODO: replace with "apply" model as in base singleton factory? (no params processed here)
 cenozo.factory( 'CnBaseAddFactory',
   function() {
@@ -87,9 +153,7 @@ cenozo.factory( 'CnBaseListFactory', [
           if( enable ) {
             this.add = function( record ) {
               var thisRef = this;
-              // convert Date object to datetime string
-              if( undefined !== record.datetime && null !== record.datetime )
-                record.datetime = cnObjectToDatetime( record.datetime );
+              cnConvertDatabaseRecord( record );
               return CnHttpFactory.instance( {
                 path: this.subject,
                 data: record
@@ -290,20 +354,6 @@ cenozo.factory( 'CnBaseListFactory', [
           path: this.listPath,
           data: data
         } ).query().then( function success( response ) {
-          // change datetimes to Date object
-          response.data.forEach( function( element, index, array ) {
-            for( var key in array[index] ) {
-              if( null !== array[index][key] ) {
-                if( 0 <= key.regexIndexOf( /^date|[^a-z|\Wdate|_date]/ ) )
-                  array[index][key] = cnDatetimeToObject( array[index][key] );
-                else if( 0 <= key.regexIndexOf( /^rank|\Wrank|_rank/ ) ||
-                         0 <= key.regexIndexOf( /^count|\Wcount|_count/ ) ||
-                         0 <= key.regexIndexOf( /^selected|\Wselected|_selected/ ) )
-                  array[index][key] = parseInt( array[index][key] );
-              }
-            }
-          } );
-
           thisRef.cache = thisRef.cache.concat( response.data );
           thisRef.total = response.headers( 'Total' );
         } ).finally( function done() {
@@ -408,14 +458,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         } );
       },
       patch: function( id, data ) {
-        // TODO: convert Date object to datetime string
-        /*
-        for( var property in data ) {
-          if( property.regexIndexOf( /^datetime|\Wdatetime\|_datetime/ ) )
-            data[property] = cnObjectToDatetime( data[0] );
-        }
-        */
-
+        cnConvertToDatabaseRecord( data );
         var thisRef = this;
         return CnHttpFactory.instance( {
           path: this.subject + '/' + id,
@@ -426,7 +469,7 @@ cenozo.factory( 'CnBaseViewFactory', [
             var record = thisRef.parentModel.cnList.cache.find( // by id
               function( item, index, array ) { return id == item.id; }
             );
-            if( undefined !== record ) for( var property in data ) record[property] = data[property];
+            if( undefined !== record ) for( var key in data ) record[key] = data[key];
           }
         } );
       }
@@ -657,69 +700,3 @@ cenozo.factory( 'CnPaginationFactory',
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
   }
 );
-
-/* ######################################################################################################## */
-cenozo.factory( 'CnAppSingleton', [
-  'CnHttpFactory',
-  function( CnHttpFactory ) {
-    var object = function() {
-      this.promise = null;
-      this.application = {};
-      this.user = {};
-      this.site = {};
-      this.role = {};
-      this.siteList = [];
-
-      // get the application, user, site and role details
-      var thisRef = this;
-      this.promise = CnHttpFactory.instance( {
-        path: 'self/0'
-      } ).get().then( function success( response ) {
-        thisRef.application = response.data.application;
-        thisRef.user = response.data.user;
-        thisRef.site = response.data.site;
-        thisRef.role = response.data.role;
-
-        // chain a second http request into the promise
-        return CnHttpFactory.instance( {
-          path: 'access'
-        } ).query().then( function success( response ) {
-          for( var i = 0; i < response.data.length; i++ ) {
-            var access = response.data[i];
-
-            // get the site's index
-            var index = 0;
-            for( ; index < thisRef.siteList.length; index++ )
-              if( access.site_id == thisRef.siteList[index].id ) break;
-
-            // if the site isn't found, add it to the list
-            if( thisRef.siteList.length == index )
-              thisRef.siteList.push( { id: access.site_id, name: access.site_name, roleList: [] } );
-
-            // now add the role to the site's role list
-            thisRef.siteList[index].roleList.push( {
-              id: access.role_id,
-              name: access.role_name
-            } );
-          }
-        } );
-      } ).catch( function exception() { cnFatalError(); } );
-
-      this.setSite = function setSite( id ) {
-        return CnHttpFactory.instance( {
-          path: 'self/0',
-          data: { site: { id: id } }
-        } ).patch();
-      };
-
-      this.setRole = function setRole( id ) {
-        return CnHttpFactory.instance( {
-          path: 'self/0',
-          data: { role: { id: id } }
-        } ).patch();
-      };
-    };
-    
-    return new object();
-  }
-] );

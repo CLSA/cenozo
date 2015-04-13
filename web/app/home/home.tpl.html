@@ -1,0 +1,33 @@
+<div class="container-fluid">
+  <h3 class="text-primary">Welcome to {{ model.application.title }} version {{ model.application.version }}</h3>
+  <div class="container-fluid">
+    You are currently logged on as
+    <strong>{{ model.user.first_name }} {{ model.user.last_name }}</strong>
+    under the role of
+    <strong>{{ model.role.name }}</strong>
+    for the
+    <strong>{{ model.site.name }}</strong>
+    site.<br>
+    <span class="text-warning">
+      Use of another account other than your own is prohibited.
+      If this is not you please <a href="?logout">click here</a> to log in 
+    </span>
+  </div>
+  <div class="vertical-spacer"></div>
+  <div class="container-fluid">
+    You were last logged in from
+    <strong>{{ model.last_activity.start_datetime | cnMomentDate:"MMM D, YYYY @ HH:mm z" }}</strong>
+    until
+    <strong>{{ model.last_activity.end_datetime | cnMomentDate:"MMM D, YYYY @ HH:mm z" }}</strong>
+    under the role of 
+    <strong>{{ model.last_activity.role_name }}</strong>
+    for the
+    <strong>{{ model.last_activity.site_name }}</strong>
+    site.
+  </div>
+  <div class="vertical-spacer"></div>
+  <h3 class="text-primary">System Status</h3>
+  <div class="container-fluid">
+    There are currently X active users, X of which are logged into your current site.
+  </div>
+</div>

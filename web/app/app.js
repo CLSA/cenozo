@@ -1,5 +1,7 @@
 'use strict';
 
+moment.tz.setDefault( 'UTC' );
+
 window.cnIsBroken = false;
 window.cnCachedProviders = {};
 
@@ -24,14 +26,26 @@ window.cnCopyParams = function cnCopyParams( object, params ) {
       */
     }
   }
-}
-
-window.cnDatetimeToObject = function cnDatetimeToObject( datetime ) {
-  return datetime instanceof Date ? datetime : new Date( datetime.replace( / /, 'T' ) + 'Z' );
 };
 
-window.cnObjectToDatetime = function cnObjectToDatetime( object ) {
-  return object instanceof Date ?  object.toISOString().replace( /\.[0-9]+Z/, 'Z' ) : object;
+window.cnConvertFromDatabaseRecord = function cnConvertFromDatabaseRecord( object ) {
+  for( var prop in object ) {
+    if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
+      object[prop] = null === object[prop] ? null : moment( object[prop] );
+    } else if( 0 <= prop.regexIndexOf( /^count|_count/ ) ||
+               0 <= prop.regexIndexOf( /^selected|_selected/ ) ||
+               0 <= prop.regexIndexOf( /^rank|_rank/ ) ) {
+      object[prop] = parseInt( object[prop] );
+    }
+  }
+};
+
+window.cnConvertToDatabaseRecord = function cnConvertToDatabaseRecord( object ) {
+  for( var prop in object ) {
+    if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
+      object[prop] = null === object[prop] ? '' : object[prop].format( 'YYYY-MM-DD HH:mm:ss' );
+    }
+  }
 };
 
 window.cnModuleList = [
@@ -137,8 +151,45 @@ cenozoApp.config( [
 ] );
 
 cenozoApp.config( [
-  '$urlRouterProvider',
-  function( $urlRouterProvider ) {
-    $urlRouterProvider.otherwise( '/collection/list' );
+  '$stateProvider', '$urlRouterProvider', '$httpProvider',
+  function( $stateProvider, $urlRouterProvider, $httpProvider ) {
+    // add the home state
+    var baseUrl = cnCenozoUrl + '/app/home/';
+    $stateProvider.state( 'home', {
+      url: '/',
+      controller: 'HomeCtrl',
+      templateUrl: baseUrl + 'home.tpl.html',
+      resolve: {
+        data: [ '$q', function( $q ) {
+          var deferred = $q.defer();
+          require( [ baseUrl + 'bootstrap.js' ], function() { deferred.resolve(); } );
+          return deferred.promise;
+        } ]
+      }
+    } );
+
+    // make home the default state
+    $urlRouterProvider.otherwise( '/' );
+
+    // intercept http data to convert to/from server/client data formats
+    $httpProvider.interceptors.push( function() {
+      return {
+        request: function( request ) {
+          return request;
+        },
+        response: function( response ) {
+          if( 'api\/' == response.config.url.substring( 0, 4 ) ) {
+            if( Array === response.data.constructor ) {
+              for( var i = 0; i < response.data.length; i++ ) {
+                cnConvertFromDatabaseRecord( response.data[i] );
+              }
+            } else {
+              cnConvertFromDatabaseRecord( response.data );
+            }
+          }
+          return response;
+        }
+      };
+    } );
   }
 ] );
