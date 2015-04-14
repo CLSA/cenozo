@@ -90,7 +90,6 @@ class database extends \cenozo\base_object
 
     $constraint_mod = lib::create( 'database\modifier' );
     $constraint_mod->where( 'TABLE_CONSTRAINTS.TABLE_SCHEMA', 'IN', $schema_list, false );
-    $constraint_mod->where( 'KEY_COLUMN_USAGE.TABLE_SCHEMA', 'IN', $schema_list, false );
     $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', '"UNIQUE"', false );
     $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'KEY_COLUMN_USAGE.CONSTRAINT_NAME', false );
     $constraint_mod->group( 'table_name' );
@@ -620,6 +619,60 @@ class database extends \cenozo\base_object
     
     return 0 == strlen( $string ) ?
       'NULL' : sprintf( '"%s"', $this->connection->real_escape_string( $string ) );
+  }
+  
+  /**
+   * Returns the datetime string formatted for database queries.
+   * 
+   * The returned value will be put in double quotes unless the input is null in which case NULL
+   * is returned.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|DateTime $datetime The string or DateTime object to format for use in a query.
+   * @return string
+   * @access public
+   */
+  public function format_datetime( $datetime )
+  {
+    // convert string to datetime object
+    if( is_string( $datetime ) && 0 < strlen( $datetime ) )
+      $datetime = $util_class_name::get_datetime_object( $datetime );
+    return $datetime instanceof \DateTime ? '"'.$datetime->format( 'Y-m-d H:i:s' ).'"' : 'NULL';
+  }
+  
+  /**
+   * Returns the date string formatted for database queries.
+   * 
+   * The returned value will be put in double quotes unless the input is null in which case NULL
+   * is returned.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|DateTime $date The string or DateTime object to format for use in a query.
+   * @return string
+   * @access public
+   */
+  public function format_date( $date )
+  {
+    // convert string to date object
+    if( is_string( $date ) && 0 < strlen( $date ) )
+      $date = $util_class_name::get_date_object( $date );
+    return $date instanceof \DateTime ? '"'.$date->format( 'Y-m-d' ).'"' : 'NULL';
+  }
+  
+  /**
+   * Returns the time string formatted for database queries.
+   * 
+   * The returned value will be put in double quotes unless the input is null in which case NULL
+   * is returned.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|DateTime $time The string or DateTime object to format for use in a query.
+   * @return string
+   * @access public
+   */
+  public function format_time( $time )
+  {
+    // convert string to time object
+    if( is_string( $time ) && 0 < strlen( $time ) )
+      $time = $util_class_name::get_time_object( $time );
+    return $time instanceof \DateTime ? '"'.$time->format( 'H:i:s' ).'"' : 'NULL';
   }
   
   /**

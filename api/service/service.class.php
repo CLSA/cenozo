@@ -72,7 +72,7 @@ abstract class service extends \cenozo\base_object
       $this->db_writelog->role_id = $session->get_role()->id;
       $this->db_writelog->service_id = $this->service_record->id;
       $this->db_writelog->path = $path;
-      $this->db_writelog->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $this->db_writelog->datetime = $util_class_name::get_datetime_object();
       $this->db_writelog->save();
     }
   }

@@ -248,7 +248,7 @@ class select extends \cenozo\base_object
         $column = sprintf( '%s%s', $item['table_prefix'] ? $table_prefix : '', $item['column'] );
         // convert datetimes to ISO 8601 format
         if( false !== strpos( $item['column'], 'datetime' ) )
-          $column = sprintf( 'DATE_FORMAT( %s, "%%Y-%%m-%%dT%%TZ" )', $column );
+          $column = sprintf( 'DATE_FORMAT( %s, "%s" )', $column, '%Y-%m-%dT%T+00:00' );
         // add the alias
         $column = sprintf( '%s AS %s', $column, $alias );
         $columns[] = $column;

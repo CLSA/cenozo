@@ -98,45 +98,4 @@ class site extends base_access
     $db_access = lib::create( 'database\access', $access_id );
     $db_access->delete();
   }
-
-  /**
-   * Converts a datetime string to the site's local time.
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $datetime A date string in any valid PHP date time format
-   * @param string $format The format to return the date/time in (default 'Y-m-d H:i:s')
-   * @param boolean $server Whether to convert to the server's instead of the user's timezone
-   * @return string
-   * @access public
-   */
-  public function to_site_datetime( $datetime, $format = 'Y-m-d H:i:s', $server = false )
-  {
-    if( is_null( $datetime ) || !is_string( $datetime ) ) return $datetime;
-
-    $util_class_name = lib::get_class_name( 'util' );
-    $datetime_obj = new \DateTime( $datetime, new \DateTimeZone( $this->timezone ) );
-    $datetime_obj->setTimeZone( $util_class_name::get_timezone_object( $server ) );
-    return $datetime_obj->format( $format );
-  }
-
-  /**
-   * Determines the difference in hours between the user's timezone and the site's timezone
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return float (NULL if it is not possible to get the time difference)
-   * @access public
-   */
-  public function get_time_diff()
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-
-    // create a datetime object using this site's timezone
-    $site_datetime_obj =
-      new \DateTime( NULL, $util_class_name::get_timezone_object( false, $this ) );
-
-    // get the user's and site's timezone differential from UTC
-    $user_offset = $util_class_name::get_datetime_object()->getOffset() / 3600;
-    $site_offset = $site_datetime_obj->getOffset() / 3600;
-
-    return $site_offset - $user_offset;
-  }
 }

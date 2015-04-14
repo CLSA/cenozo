@@ -692,8 +692,9 @@ class modifier extends \cenozo\base_object
       }
       else
       {
-        $convert_time = $database_class_name::is_time_column( $where['column'] );
-        $convert_datetime = $database_class_name::is_datetime_column( $where['column'] );
+        $is_datetime = $database_class_name::is_datetime_column( $where['column'] );
+        $is_date = $database_class_name::is_date_column( $where['column'] );
+        $is_time = $database_class_name::is_time_column( $where['column'] );
 
         if( 'IN' == $where['operator'] || 'NOT IN' == $where['operator'] )
         {
@@ -704,11 +705,10 @@ class modifier extends \cenozo\base_object
             {
               if( $where['format'] )
               {
-                if( $convert_time )
-                  $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-                else if( $convert_datetime )
-                  $value = $util_class_name::to_server_datetime( $value );
-                $value = $db->format_string( $value );
+                if( $is_datetime ) $value = $db->format_datetime( $value );
+                else if( $is_date ) $value = $db->format_date( $value );
+                else if( $is_time ) $value = $db->format_time( $value );
+                else $value = $db->format_string( $value );
               }
 
               $statement .= $first_value
@@ -724,9 +724,10 @@ class modifier extends \cenozo\base_object
             $value = $where['value'];
             if( $where['format'] )
             {
-              if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-              else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
-              $value = $db->format_string( $value );
+              if( $is_datetime ) $value = $db->format_datetime( $value );
+              else if( $is_date ) $value = $db->format_date( $value );
+              else if( $is_time ) $value = $db->format_time( $value );
+              else $value = $db->format_string( $value );
             }
 
             $statement = sprintf( '%s %s( %s )',
@@ -740,11 +741,12 @@ class modifier extends \cenozo\base_object
           $value = $where['value'];
           if( $where['format'] )
           {
-            if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-            else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
-            $value = $db->format_string( $value );
+            if( $is_datetime ) $value = $db->format_datetime( $value );
+            else if( $is_date ) $value = $db->format_date( $value );
+            else if( $is_time ) $value = $db->format_time( $value );
+            else $value = $db->format_string( $value );
           }
-          
+
           if( 'NULL' == $value )
           {
             if( '=' == $where['operator'] ) $statement = $where['column'].' IS NULL';
@@ -825,8 +827,7 @@ class modifier extends \cenozo\base_object
       }
       else
       {
-        $convert_time = $database_class_name::is_time_column( $having['column'] );
-        $convert_datetime = $database_class_name::is_datetime_column( $having['column'] );
+        $is_datetime = $database_class_name::is_datetime_column( $having['column'] );
 
         if( 'IN' == $having['operator'] || 'NOT IN' == $having['operator'] )
         {
@@ -837,11 +838,10 @@ class modifier extends \cenozo\base_object
             {
               if( $having['format'] )
               {
-                if( $convert_time )
-                  $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-                else if( $convert_datetime )
-                  $value = $util_class_name::to_server_datetime( $value );
-                $value = $db->format_string( $value );
+                if( $is_datetime ) $value = $db->format_datetime( $value );
+                else if( $is_date ) $value = $db->format_date( $value );
+                else if( $is_time ) $value = $db->format_time( $value );
+                else $value = $db->format_string( $value );
               }
 
               $statement .= $first_value
@@ -857,9 +857,10 @@ class modifier extends \cenozo\base_object
             $value = $having['value'];
             if( $having['format'] )
             {
-              if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-              else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
-              $value = $db->format_string( $value );
+              if( $is_datetime ) $value = $db->format_datetime( $value );
+              else if( $is_date ) $value = $db->format_date( $value );
+              else if( $is_time ) $value = $db->format_time( $value );
+              else $value = $db->format_string( $value );
             }
 
             $statement = sprintf( '%s %s( %s )',
@@ -873,11 +874,12 @@ class modifier extends \cenozo\base_object
           $value = $having['value'];
           if( $having['format'] )
           {
-            if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-            else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
-            $value = $db->format_string( $value );
+            if( $is_datetime ) $value = $db->format_datetime( $value );
+            else if( $is_date ) $value = $db->format_date( $value );
+            else if( $is_time ) $value = $db->format_time( $value );
+            else $value = $db->format_string( $value );
           }
-          
+
           if( 'NULL' == $value )
           {
             if( '=' == $having['operator'] ) $statement = $having['column'].' IS NULL';

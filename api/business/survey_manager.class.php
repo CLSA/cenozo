@@ -376,63 +376,6 @@ class survey_manager extends \cenozo\singleton
              ? $data_manager->get_participant_value( $db_participant, $key )
              : $data_manager->get_value( $key );
     }
-    else if( 'age' == $key )
-    {
-      // if this is the participant's first assignment copy the date of birth from Opal
-      // (if it exists)
-      if( is_null( $db_interview ) )
-        throw lib::create( 'exception\runtime',
-          sprintf( 'Can\'t provide survey attribute "%s" without an interview record', $key ),
-          __METHOD__ );
-
-      $phase_mod = lib::create( 'database\modifier' );
-      $phase_mod->where( 'rank', '=', 1 );
-      if( 0 < $db_interview->get_qnaire()->get_phase_count( $phase_mod ) &&
-          1 == $db_interview->get_assignment_count() )
-      {
-        $setting_manager = lib::create( 'business\setting_manager' );
-        $opal_url = $setting_manager->get_setting( 'opal', 'server' );
-        $opal_manager = lib::create( 'business\opal_manager', $opal_url );
-        
-        if( $opal_manager->get_enabled() )
-        {
-          try
-          {
-            $db_cohort = $db_cohort = $db_participant->get_cohort();
-            $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
-            $table = 'comprehensive' == $db_cohort->name
-                   ? 'InHome_Id'
-                   : 'Tracking Baseline Main Script';
-            $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
-            $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
-            
-            if( $dob )
-            { // only write the date of birth if there is one
-              try
-              {
-                $dob_obj = $util_class_name::get_datetime_object( $dob );
-                if( 1965 >= intval( $dob_obj->format( 'Y' ) ) )
-                { // only accept dates of birth on or before 1965
-                  $db_participant->date_of_birth = $dob;
-                  $db_participant->save();
-                }
-              }
-              catch( \Exception $e ) {} 
-            }
-          }
-          catch( \cenozo\exception\base_exception $e )
-          {
-            // ignore argument exceptions (data not found in Opal) and report the rest
-            if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
-          }
-        }
-      }
-
-      $value = strlen( $db_participant->date_of_birth )
-                  ? $util_class_name::get_interval(
-                      $util_class_name::get_datetime_object( $db_participant->date_of_birth ) )->y
-                  : '';
-    }
     else if( 'provided data' == $key )
     {
       $event_type_class_name = lib::get_class_name( 'database\event_type' );

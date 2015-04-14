@@ -35,34 +35,6 @@ class address extends has_rank
   }
 
   /**
-   * Determines the difference in hours between the user's timezone and the address's timezone
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return float (NULL if it is not possible to get the time difference)
-   * @access public
-   */
-  public function get_time_diff()
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-
-    // get the user's timezone differential from UTC
-    $user_offset = $util_class_name::get_datetime_object()->getOffset() / 3600;
-
-    // determine if we are currently under daylight savings
-    $summer_offset = $util_class_name::get_datetime_object( '2000-07-01' )->getOffset() / 3600;
-    $under_daylight_savings = $user_offset == $summer_offset;
-
-    if( !is_null( $this->timezone_offset ) && !is_null( $this->daylight_savings ) )
-    {
-      $offset = $this->timezone_offset;
-      if( $under_daylight_savings && $this->daylight_savings ) $offset += 1;
-      return $offset - $user_offset;
-    }
-
-    // if we get here then there is no way to get the time difference
-    return NULL;
-  }
-
-  /**
    * Determines if the address is valid by making sure all address-based manditory fields
    * are filled and checking for postcode-region mismatches.
    * @author Patrick Emond <emondpd@mcmaster.ca>

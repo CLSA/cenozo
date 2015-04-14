@@ -54,8 +54,7 @@ abstract class record extends \cenozo\base_object
         if( 'start_datetime' == $name ||
             ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) )
         {
-          $date_obj = $util_class_name::get_datetime_object();
-          $table['columns'][$name] = $date_obj->format( 'Y-m-d H:i:s' );
+          $table['columns'][$name] = $util_class_name::get_datetime_object();
         }
         else
         {
@@ -143,16 +142,23 @@ abstract class record extends \cenozo\base_object
         }
         else
         {
-          // convert any date, time or datetime columns
           foreach( $row as $key => $val )
           {
             if( array_key_exists( $key, $table['columns'] ) )
             {
-              if( $database_class_name::is_time_column( $key ) )
-                $table['columns'][$key] = $util_class_name::from_server_datetime( $val, 'H:i:s' );
-              else if( $database_class_name::is_datetime_column( $key ) )
-                $table['columns'][$key] = $util_class_name::from_server_datetime( $val );
-              else $table['columns'][$key] = $val;
+              // convert any date, time or datetime columns to datetime objects
+              if( $database_class_name::is_datetime_column( $key ) ||
+                  $database_class_name::is_date_column( $key ) ||
+                  $database_class_name::is_time_column( $key ) )
+              {
+                $table['columns'][$key] = !$val // null, 0 or empty string
+                                        ? NULL
+                                        : $util_class_name::get_datetime_object( $val );
+              }
+              else
+              {
+                $table['columns'][$key] = $val;
+              }
             }
           }
         }
@@ -185,38 +191,6 @@ abstract class record extends \cenozo\base_object
 
     foreach( $this->get_working_table_list() as $table )
     {
-      // if we have start and end time or datetime columns (which can't be null), make sure the end
-      // time comes after start time
-      if( static::db()->column_exists( $table['name'], 'start_time' ) &&
-          static::db()->column_exists( $table['name'], 'end_time' ) &&
-          !is_null( static::db()->get_column_default( $table['name'], 'end_time' ) ) )
-      {
-        $start_obj = $util_class_name::get_datetime_object( $table['columns']['start_time'] );
-        $end_obj = $util_class_name::get_datetime_object( $table['columns']['end_time'] );
-        $interval = $start_obj->diff( $end_obj );
-        if( 0 != $interval->invert ||
-          ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
-        {
-          throw lib::create( 'exception\runtime',
-            'Tried to set end time which is not after the start time.', __METHOD__ );
-        }
-      }
-      else if(
-        static::db()->column_exists( $table['name'], 'start_datetime' ) &&
-        static::db()->column_exists( $table['name'], 'end_datetime' ) &&
-        !is_null( static::db()->get_column_default( $table['name'], 'end_datetime' ) ) )
-      {
-        $start_obj = $util_class_name::get_datetime_object( $table['columns']['start_datetime'] );
-        $end_obj = $util_class_name::get_datetime_object( $table['columns']['end_datetime'] );
-        $interval = $start_obj->diff( $end_obj );
-        if( 0 != $interval->invert ||
-          ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
-        {
-          throw lib::create( 'exception\runtime',
-            'Tried to set end datetime which is not after the start datetime.', __METHOD__ );
-        }
-      }
-
       // building the SET list since it is identical for inserts and updates
       $sets = '';
       $first = true;
@@ -236,16 +210,16 @@ abstract class record extends \cenozo\base_object
       {
         if( static::get_table_name() != $table['name'] || $table['key'] != $key )
         {
-          // convert any time or datetime columns
-          if( $database_class_name::is_time_column( $key ) )
-            $val = $util_class_name::to_server_datetime( $val, 'H:i:s' );
-          else if( $database_class_name::is_datetime_column( $key ) )
-            $val = $util_class_name::to_server_datetime( $val );
+          // convert from datetime object to mysql-valid datetime string
+          if( $database_class_name::is_datetime_column( $key ) )
+            $val = static::db()->format_datetime( $val );
+          else if( $database_class_name::is_date_column( $key ) )
+            $val = static::db()->format_date( $val );
+          else if( $database_class_name::is_time_column( $key ) )
+            $val = static::db()->format_time( $val );
+          else $val = static::db()->format_string( $val );
           
-          $sets .= sprintf( '%s %s = %s',
-                            $first ? '' : ',',
-                            $key,
-                            static::db()->format_string( $val ) );
+          $sets .= sprintf( '%s %s = %s', $first ? '' : ',', $key, $val );
 
           $first = false;
         }
@@ -1096,7 +1070,7 @@ abstract class record extends \cenozo\base_object
   
   /**
    * Returns an array of column names for this table.  Any columns in the database by the name
-   * 'timestamp' are always ignored and left out of the active record.
+   * 'update_timestamp' or 'create_timestamp' are always ignored and left out of the active record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @access public

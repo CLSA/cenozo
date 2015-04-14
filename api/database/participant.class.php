@@ -31,7 +31,7 @@ class participant extends person
     if( 'email' == $column_name && $old_email != $this->email )
     {
       $util_class_name = lib::get_class_name( 'util' );
-      $this->email_datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $this->email_datetime = $util_class_name::get_datetime_object();
       $this->email_old = $old_email;
     }
   }
@@ -220,34 +220,6 @@ class participant extends person
       sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
                static::db()->format_string( $this->id ) ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
-  }
-
-  /**
-   * Gets the datetime when the participant was released to a given application, or NULL
-   * if they have not yet been released.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\application $db_application If null then the application's application is used.
-   * @return datetime object
-   * @access public
-   */
-  public function get_release_date( $db_application = NULL )
-  {
-    // no primary key means no release date
-    if( is_null( $this->id ) ) return NULL;
-
-    $util_class_name = lib::get_class_name( 'util' );
-
-    if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
-
-    $datetime = static::db()->get_one( sprintf(
-      'SELECT datetime '.
-      'FROM application_has_participant '.
-      'WHERE application_id = %s '.
-      'AND participant_id = %s',
-      static::db()->format_string( $db_application->id ),
-      static::db()->format_string( $this->id ) ) );
-
-    return $datetime ? $util_class_name::get_datetime_object( $datetime ) : NULL;
   }
 
   /**

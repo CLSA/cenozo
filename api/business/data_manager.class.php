@@ -389,12 +389,9 @@ class data_manager extends \cenozo\singleton
       if( 'age()' == $column )
       {
         // participant.participant.age() or participant.age()
-        $value = '';
-        if( 0 < strlen( $db_participant->date_of_birth ) )
-        {
-          $value = $util_class_name::get_interval(
-            $util_class_name::get_datetime_object( $db_participant->date_of_birth ) )->y;
-        }
+        $value = is_null( $db_participant->date_of_birth )
+               ? ''
+               : $util_class_name::get_interval( $db_participant->date_of_birth )->y;
       }
       else
       {

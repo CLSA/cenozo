@@ -68,7 +68,7 @@ class session extends \cenozo\singleton
       sprintf( '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE ) );
 
     // define the application's application
-    $this->db_application = $application_class_name::get_unique_record( 'name', INSTANCE, true );
+    $this->db_application = $application_class_name::get_unique_record( 'name', INSTANCE );
     if( is_null( $this->db_application ) )
       throw lib::create( 'exception\runtime',
         'Failed to find application record in database, please check general/instance_name '.
@@ -100,7 +100,7 @@ class session extends \cenozo\singleton
       $db_activity->user_id = $this->db_user->id;
       $db_activity->site_id = $this->db_site->id;
       $db_activity->role_id = $this->db_role->id;
-      $db_activity->start_datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $db_activity->start_datetime = $util_class_name::get_datetime_object();
       $db_activity->save();
     }
 
@@ -271,7 +271,7 @@ class session extends \cenozo\singleton
     {
       $util_class_name = lib::get_class_name( 'util' );
       $microtime = microtime();
-      $this->db_access->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $this->db_access->datetime = $util_class_name::get_datetime_object();
       $this->db_access->microtime = substr( $microtime, 0, strpos( $microtime, ' ' ) );
       $this->db_access->save();
     }

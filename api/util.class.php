@@ -126,15 +126,15 @@ class util
    * Returns a DateTimeZone object for the user's current site's timezone
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $server Whether to return the session's or server's timezone
+   * @param boolean $sitetime Whether to return the session's timezone or UTC
    * @param database\site $db_site Override the session's site with another.
    * @return DateTimeZone
    * @access public
    */
-  public static function get_timezone_object( $server = false, $db_site = NULL )
+  public static function get_timezone_object( $sitetime = false, $db_site = NULL )
   {
     if( is_null( $db_site ) ) $db_site = lib::create( 'business\session' )->get_site();
-    return new \DateTimeZone( $server || !$db_site ? 'UTC' : $db_site->timezone );
+    return new \DateTimeZone( !$sitetime || !$db_site ? 'UTC' : $db_site->timezone );
   }
 
   /**
@@ -142,108 +142,13 @@ class util
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $datetime A date string in any valid PHP date time format.
-   * @param boolean $server Whether to return the datetime in the session's or server's timezone
+   * @param boolean $sitetime Whether to return the datetime in the session's timezone or UTC
    * @return DateTime
    * @access public
    */
-  public static function get_datetime_object( $datetime = NULL, $server = false )
+  public static function get_datetime_object( $datetime = NULL, $sitetime = false )
   {
-    return new \DateTime( $datetime, self::get_timezone_object( $server ) );
-  }
-
-  /**
-   * Converts the server's date/time to a user's date/time
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $datetime A date string in any valid PHP date time format.
-   * @param string $format The format to return the date/time in (default 'Y-m-d H:i:s')
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function from_server_datetime( $datetime, $format = 'Y-m-d H:i:s' )
-  {
-    if( is_null( $datetime ) || !is_string( $datetime ) ) return $datetime;
-
-    $datetime_obj = self::get_datetime_object( $datetime, true ); // server's timezone
-    $datetime_obj->setTimeZone( self::get_timezone_object() );
-    return $datetime_obj->format( $format );
-  }
-
-  /**
-   * Converts a user's date to server date.
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $datetime A date string in any valid PHP date time format.
-   * @param string $format The format to return the date/time in (default 'Y-m-d H:i:s')
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function to_server_datetime( $datetime, $format = 'Y-m-d H:i:s' )
-  {
-    if( is_null( $datetime ) || !is_string( $datetime ) ) return $datetime;
-
-    $datetime_obj = self::get_datetime_object( $datetime );
-    $datetime_obj->setTimeZone( self::get_timezone_object( true ) );
-    return $datetime_obj->format( $format );
-  }
-
-  /**
-   * Returns the date and time as a user-friendly string.
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $datetime A date string in any valid PHP date time format.
-   * @param boolean $include_seconds Whether to include the seconds in the output
-   * @param string $invalid What to return if the input is invalid.
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function get_formatted_datetime(
-    $datetime, $include_seconds = true, $invalid = 'unknown' )
-  {
-    if( is_null( $datetime ) || !is_string( $datetime ) ) return $invalid;
-
-    $time_obj = self::get_datetime_object( $datetime );
-    return $time_obj->format( 'Y-m-d '.( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' ) );
-  }
-
-  /**
-   * Returns the date as a user-friendly string.
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in any valid PHP date time format.
-   * @param string $invalid What to return if the input is invalid.
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function get_formatted_date( $date, $invalid = 'unknown' )
-  {
-    if( is_null( $date ) || !is_string( $date ) ) return $invalid;
-
-    $datetime_obj = self::get_datetime_object( $date );
-    return $datetime_obj->format( 'D, F jS, Y' );
-  }
-
-  /**
-   * Returns the time as a user-friendly string.
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $time A time string in any valid PHP date time format.
-   * @param boolean $include_seconds Whether to include the seconds in the output
-   * @param string $invalid What to return if the input is invalid.
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function get_formatted_time( $time, $include_seconds = true, $invalid = 'unknown' )
-  {
-    if( is_null( $time ) || !is_string( $time ) ) return $invalid;
-
-    $time_obj = self::get_datetime_object( $time );
-    return $time_obj->format( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' );
+    return new \DateTime( $datetime, self::get_timezone_object( $sitetime ) );
   }
 
   /**
@@ -262,92 +167,6 @@ class util
     $datetime_obj = is_object( $date ) ? $date : self::get_datetime_object( $date );
     $date2_obj = is_object( $date2 ) ? $date2 : self::get_datetime_object( $date2 );
     return $datetime_obj->diff( $date2_obj );
-  }
-
-  /**
-   * Returns a fuzzy description of how long ago a certain date occured.
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $datetime A datetime string in any valid PHP date time format.
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function get_fuzzy_period_ago( $datetime )
-  {
-    if( is_null( $datetime ) || !is_string( $datetime ) ) return 'never';
-    
-    $interval = self::get_interval( $datetime );
-    
-    if( 0 != $interval->invert )
-    {
-      $result = 'in the future';
-    }
-    else if( 1 > $interval->i && 0 == $interval->h && 0 == $interval->days )
-    {
-      $result = 'seconds ago';
-    }
-    else if( 1 > $interval->h && 0 == $interval->days )
-    {
-      $result = 'minutes ago';
-    }
-    else if( 1 > $interval->d && 0 == $interval->days )
-    {
-      $result = 'hours ago';
-    }
-    else if( 1 == $interval->days )
-    {
-      $result = 'yesterday';
-    }
-    else if( 7 > $interval->days )
-    {
-      $datetime_obj = self::get_datetime_object( $datetime );
-      $result = 'last '.$datetime_obj->format( 'l' );
-    }
-    else if( 1 > $interval->m && 0 == $interval->y )
-    {
-      $result = 'weeks ago';
-    }
-    else if( 1 > $interval->y )
-    {
-      $datetime_obj = self::get_datetime_object( $datetime );
-      $result = 'last '.$datetime_obj->format( 'F' );
-    }
-    else
-    {
-      $result = 'years ago';
-    }
-
-    return $result;
-  }
-  
-  /**
-   * Attempts to convert a word into its plural form.
-   * 
-   * Warning: this method by no means returns the correct answer in every case.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $word
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function pluralize( $word )
-  {
-    // special cases
-    if( 'access' == $word ) return $word;
-    
-    if( 'y' == substr( $word, -1 ) )
-    { // likely, any word ending in 'y' has 'ies' at the end of the plural word
-      return substr( $word, 0, -1 ).'ies';
-    }
-    
-    if( 's' == substr( $word, -1 ) )
-    { // likely, any word ending in an 's' has 'es' at the end of the plural word
-      return $word.'es';
-    }
-    
-    // if there is no rule for this word then we hope that adding an 's' at the end is sufficient
-    return $word.'s';
   }
 
   /**
@@ -406,25 +225,6 @@ class util
     return preg_replace( '/^([0-9]+)([0-9]{3})/', '$1.$2', $number );
   }
 
-  /**
-   * Sends an HTTP error status along with the specified data.
-   * Warning, calling this method will cause the process to exit.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $data The data to send along with the error.
-   * @static
-   * @access public
-   */
-  public static function send_http_error( $data )
-  {
-    lib::create( 'service\status', 400 )->send_headers();
-
-    $json_output = self::json_encode( $data );
-    header( 'Content-Type: application/json' );
-    header( 'Content-Length: '.strlen( $json_output ) );
-    print $json_output;
-  }
-  
   /**
    * Encodes a string using a SHA1 hash.
    * 

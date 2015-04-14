@@ -82,13 +82,12 @@ abstract class has_note extends record
   public function add_note( $db_user, $note )
   {
     $util_class_name = lib::get_class_name( 'util' );
-    $date_obj = $util_class_name::get_datetime_object();
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
     $db_note = lib::create( 'database\\'.$table_name.'_note' );
     $db_note->user_id = $db_user->id;
     $db_note->$subject_key_name = $this->id;
-    $db_note->datetime = $date_obj->format( 'Y-m-d H:i:s' );
+    $db_note->datetime = $util_class_name::get_datetime_object();
     $db_note->note = $note;
     $db_note->save();
   }
@@ -113,7 +112,6 @@ abstract class has_note extends record
     $database_class_name = lib::get_class_name( 'database\database' );
     $util_class_name = lib::get_class_name( 'util' );
 
-    $date_obj = $util_class_name::get_datetime_object();
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
     
@@ -124,9 +122,7 @@ abstract class has_note extends record
       $table_name,
       $subject_key_name,
       static::db()->format_string( $db_user->id ),
-      static::db()->format_string(
-        $util_class_name::to_server_datetime(
-          $date_obj->format( 'Y-m-d H:i:s' ) ) ),
+      static::db()->format_string( $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' ) ),
       static::db()->format_string( $note ),
       $table_name,
       $modifier->get_sql() );

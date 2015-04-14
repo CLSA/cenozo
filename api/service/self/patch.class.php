@@ -42,12 +42,6 @@ class patch extends \cenozo\service\service
       'site' => $session->get_site()->get_column_values(),
       'role' => $session->get_role()->get_column_values() );
 
-    // add timezone information to help poor featureless javascript
-    $datetime_obj = $util_class_name::get_datetime_object();
-    $pseudo_record['site']['timezoneName'] = $datetime_obj->format( 'T' );
-    $pseudo_record['site']['timezoneOffset'] =
-      $util_class_name::get_timezone_object()->getOffset( $datetime_obj );
-
     return $pseudo_record;
   }
 

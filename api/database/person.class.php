@@ -178,12 +178,11 @@ class person extends has_note
   public function add_note( $user, $note )
   {
     $util_class_name = lib::get_class_name( 'util' );
-    $date_obj = $util_class_name::get_datetime_object();
     $person_id = 'person' == $this->get_class_name() ? $this->id : $this->person_id;
     $db_note = lib::create( 'database\person_note' );
     $db_note->user_id = $user->id;
     $db_note->person_id = $person_id;
-    $db_note->datetime = $date_obj->format( 'Y-m-d H:i:s' );
+    $db_note->datetime = $util_class_name::get_datetime_object();
     $db_note->note = $note;
     $db_note->save();
   }
@@ -202,7 +201,6 @@ class person extends has_note
     $database_class_name = lib::get_class_name( 'database\database' );
     $util_class_name = lib::get_class_name( 'util' );
 
-    $date_obj = $util_class_name::get_datetime_object();
     $table_name = static::get_table_name();
     
     $sql = sprintf(
@@ -211,9 +209,7 @@ class person extends has_note
       'FROM %s '.
       'JOIN person ON %s.person_id = person.id %s',
       static::db()->format_string( $db_user->id ),
-      static::db()->format_string(
-        $util_class_name::to_server_datetime(
-          $date_obj->format( 'Y-m-d H:i:s' ) ) ),
+      static::db()->format_string( $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' ) ),
       static::db()->format_string( $note ),
       $table_name,
       $table_name,
