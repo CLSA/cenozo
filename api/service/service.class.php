@@ -35,46 +35,12 @@ abstract class service extends \cenozo\base_object
     $session = lib::create( 'business\session' );
     $session->set_use_transaction( true );
 
-    if( 0 < strlen( $path ) )
-    {
-      $this->process_path( $path );
-
-      // build the service record
-      // path needs to have all resources replaced with <id>
-      $path_for_record = '';
-
-      foreach( $this->collection_name_list as $index => $collection )
-      {
-        $path_for_record .= sprintf( '/%s', $this->collection_name_list[$index] );
-        if( array_key_exists( $index, $this->resource_value_list ) ) $path_for_record .= '/<id>';
-      }
-
-      // trim off the first /
-      $path_for_record = substr( $path_for_record, 1 );
-
-      $service_class_name = lib::get_class_name( 'database\service' );
-      $this->service_record =
-        $service_class_name::get_unique_record(
-          array( 'method', 'path' ),
-          array( $method, $path_for_record ) );
-    }
-
+    $this->process_path( $path );
+    $this->status = lib::create( 'service\status', self::is_method( $method ) ? 200 : 405 );
+    $this->path = $path;
+    $this->method = strtoupper( $method );
     $this->arguments = $args;
     $this->file = $file;
-
-    if( !is_null( $this->service_record ) && 
-        in_array( $this->service_record->method, array( 'DELETE', 'PATCH', 'POST', 'PUT' ) ) )
-    {
-      $util_class_name = lib::get_class_name( 'util' );
-      $this->db_writelog = lib::create( 'database\writelog' );
-      $this->db_writelog->user_id = $session->get_user()->id;
-      $this->db_writelog->site_id = $session->get_site()->id;
-      $this->db_writelog->role_id = $session->get_role()->id;
-      $this->db_writelog->service_id = $this->service_record->id;
-      $this->db_writelog->path = $path;
-      $this->db_writelog->datetime = $util_class_name::get_datetime_object();
-      $this->db_writelog->save();
-    }
   }
 
   /**
@@ -94,6 +60,7 @@ abstract class service extends \cenozo\base_object
 
     if( self::$debug ) $time['begin'] = $util_class_name::get_elapsed_time();
 
+    if( 300 <= $this->status->get_code() ) return;
     $this->prepare();
     if( self::$debug ) $time['prepare'] = $util_class_name::get_elapsed_time();
 
@@ -116,8 +83,8 @@ abstract class service extends \cenozo\base_object
     if( self::$debug )
     {
       log::debug( sprintf( '[%s] %s times: (%s) => (%s)',
-                           strtoupper( $this->service_record->method ),
-                           $this->service_record->path,
+                           $this->method,
+                           $this->path,
                            implode( ', ', array_keys( $time ) ),
                            implode( ', ', array_values( $time ) ) ) );
     }
@@ -131,8 +98,8 @@ abstract class service extends \cenozo\base_object
    */
   protected function prepare()
   {
-    // make sure the service record exists
-    $this->status = lib::create( 'service\status', is_object( $this->service_record ) ? 200 : 404 );
+    $util_class_name = lib::get_class_name( 'util' );
+    $session = lib::create( 'business\session' );
 
     // go through all collection/resource pairs
     foreach( $this->collection_name_list as $index => $collection_name )
@@ -165,21 +132,48 @@ abstract class service extends \cenozo\base_object
         }
       }
     }
+
+    if( 404 != $this->status->get_code() && self::is_write_method( $this->method ) )
+    { // record to the write log if the method is of write type
+      $this->db_writelog = lib::create( 'database\writelog' );
+      $this->db_writelog->user_id = $session->get_user()->id;
+      $this->db_writelog->site_id = $session->get_site()->id;
+      $this->db_writelog->role_id = $session->get_role()->id;
+      $this->db_writelog->method = $this->method;
+      $this->db_writelog->path = $this->path;
+      $this->db_writelog->datetime = $util_class_name::get_datetime_object();
+      $this->db_writelog->save();
+    }
   }
 
   /**
    * Validate the service.  If validation fails the service's return status will be set to 403
    * 
+   * Validation works by checking each collection/resource pair and making sure the current role
+   * has access to it.  For non-leaf pairs the method "GET" is checked.  For the leaf pair the
+   * service's method is used instead.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function validate()
   {
+    $service_class_name = lib::get_class_name( 'database\service' );
+    $session = lib::create( 'business\session' );
+
     if( $this->validate_access )
     {
-      // return a status of 403 if the service isn't allowed
-      if( !lib::create( 'business\session' )->is_service_allowed( $this->service_record ) )
-        $this->status = lib::create( 'service\status', 403 );
+      // check access for each collection/resource pair
+      foreach( $this->collection_name_list as $index => $collection_name )
+      {
+        // TODONEXT: how to we handle eg: POST collection/1/user to add a user to a collection?
+        $method = $index === count( $this->collection_name_list ) - 1 ? $this->method : 'GET';
+        if( 'HEAD' == $method ) $method = 'GET'; // HEAD access is based on GET access
+        $db_service = $service_class_name::get_unique_record(
+          array( 'method', 'subject', 'resource' ),
+          array( $method, $collection_name, array_key_exists( $index, $this->resource_value_list ) ) );
+        if( is_null( $db_service ) || !$session->is_service_allowed( $db_service ) )
+          $this->status->set_code( 403 );
+      }
     }
   }
 
@@ -236,10 +230,13 @@ abstract class service extends \cenozo\base_object
     $this->collection_name_list = array();
     $this->resource_value_list = array();
 
-    foreach( explode( '/', $path ) as $index => $part )
+    if( 0 < strlen( $path ) )
     {
-      if( 0 == $index % 2 ) $this->collection_name_list[] = $part;
-      else $this->resource_value_list[] = $part;
+      foreach( explode( '/', $path ) as $index => $part )
+      {
+        if( 0 == $index % 2 ) $this->collection_name_list[] = $part;
+        else $this->resource_value_list[] = $part;
+      }
     }
   }
 
@@ -488,6 +485,48 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
+   * Returns whether or not a method is valid
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param $method string
+   * @return boolean
+   * @access protected
+   * @static
+   */
+  protected static function is_method( $method )
+  {
+    $method = strtoupper( $method );
+    return array_key_exists( $method, self::$method_list );
+  }
+  
+  /**
+   * Returns whether or not a method is valid and read-based
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param $method string
+   * @return boolean
+   * @access protected
+   * @static
+   */
+  protected static function is_read_method( $method )
+  {
+    $method = strtoupper( $method );
+    return array_key_exists( $method, self::$method_list ) && !self::$method_list[$method];
+  }
+  
+  /**
+   * Returns whether or not a method is valid and write-based
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param $method string
+   * @return boolean
+   * @access protected
+   * @static
+   */
+  protected static function is_write_method( $method )
+  {
+    $method = strtoupper( $method );
+    return array_key_exists( $method, self::$method_list ) && !self::$method_list[$method];
+  }
+
+  /**
    * When set to true all service processes will report elapsed times to the debug log
    * @var boolean
    * @static
@@ -501,6 +540,20 @@ abstract class service extends \cenozo\base_object
    * @access protected
    */
   protected $status = NULL;
+
+  /**
+   * The path of the service
+   * @var string
+   * @access private
+   */
+  private $path = NULL; 
+
+  /**
+   * The method used for the service
+   * @var string
+   * @access private
+   */
+  private $method = NULL; 
 
   /**
    * The url query arguments.
@@ -572,4 +625,18 @@ abstract class service extends \cenozo\base_object
    * @access private
    */
   private $validate_access = true;
+
+  /**
+   * A list of all valid methods (as keys) and whether they are write services (as value)
+   * @var array( string => boolean )
+   * @access private
+   * @static
+   */
+  private static $method_list = array(
+    'DELETE' => true,
+    'GET' => false,
+    'HEAD' => false,
+    'PATCH' => true,
+    'POST' => true,
+    'PUT' => true );
 }
