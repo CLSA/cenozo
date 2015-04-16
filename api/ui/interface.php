@@ -5,6 +5,7 @@
   <title>Sabretooth</title>
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-snap/angular-snap.css">
+
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/app.css">
 
   <script>window.cnCenozoUrl = "<?php print CENOZO_URL; ?>";</script>

@@ -24,8 +24,7 @@ cenozo.factory( 'CnAppSingleton', [
         thisRef.user = response.data.user;
         thisRef.site = response.data.site;
         thisRef.role = response.data.role;
-        thisRef.last_activity = response.data.last_activity;
-        cnConvertFromDatabaseRecord( thisRef.last_activity );
+        cnConvertFromDatabaseRecord( thisRef.user.last_activity );
 
         // chain a second http request into the promise
         return CnHttpFactory.instance( {
@@ -142,7 +141,6 @@ cenozo.factory( 'CnBaseListFactory', [
       this.selectEnabled = false;
       this.viewEnabled = false;
 
-      var thisRef = this;
       cnCopyParams( this, params );
     };
 
@@ -153,7 +151,7 @@ cenozo.factory( 'CnBaseListFactory', [
           if( enable ) {
             this.add = function( record ) {
               var thisRef = this;
-              cnConvertDatabaseRecord( record );
+              cnConvertToDatabaseRecord( record );
               return CnHttpFactory.instance( {
                 path: this.subject,
                 data: record
@@ -570,11 +568,11 @@ cenozo.service( 'CnModalConfirmFactory', [
           modalFade: true,
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-confirm.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.thisRef = thisRef;
-            $scope.thisRef.yes = function() { $modalInstance.close( true ); };
-            $scope.thisRef.no = function() { $modalInstance.close( false ); };
+            $scope.local = thisRef;
+            $scope.local.yes = function() { $modalInstance.close( true ); };
+            $scope.local.no = function() { $modalInstance.close( false ); };
           }
-        } );
+        } ).result;
       }
     };
 
@@ -601,8 +599,8 @@ cenozo.service( 'CnModalMessageFactory', [
           modalFade: true,
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-message.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.thisRef = thisRef;
-            $scope.thisRef.close = function() { $modalInstance.dismiss(); };
+            $scope.local = thisRef;
+            $scope.local.close = function() { $modalInstance.dismiss(); };
           }
         } );
       }
@@ -618,9 +616,9 @@ cenozo.service( 'CnModalRestrictFactory', [
   function( $modal ) {
     var object = function( params ) {
       if( undefined === params.column ) throw 'Tried to create CnModalRestrictFactory without a column';
-      this.subject = null;
+      this.name = null;
       this.column = null;
-      this.comparison = { test: '<=>' };
+      this.comparison = null;
       cnCopyParams( this, params );
 
       if( undefined === this.comparison || null === this.comparison ) this.comparison = { test: '<=>' };
@@ -640,6 +638,34 @@ cenozo.service( 'CnModalRestrictFactory', [
             $scope.local.ok = function( comparison ) { $modalInstance.close( comparison ); };
             $scope.local.remove = function() { $modalInstance.close( null ); };
             $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
+          }
+        } ).result;
+      }
+    };
+
+    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+cenozo.service( 'CnModalTimezoneCalculatorFactory', [
+  '$modal',
+  function( $modal ) {
+    var object = function( params ) {
+      cnCopyParams( this, params );
+    };
+
+    object.prototype = {
+      show: function() {
+        var thisRef = this;
+        return $modal.open( {
+          backdrop: 'static',
+          keyboard: true,
+          modalFade: false,
+          templateUrl: cnCenozoUrl + '/app/cenozo/modal-timezone-calculator.tpl.html',
+          controller: function( $scope, $modalInstance ) {
+            $scope.local = thisRef;
+            $scope.local.close = function() { $modalInstance.close(); };
           }
         } );
       }

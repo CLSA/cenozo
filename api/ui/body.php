@@ -51,16 +51,8 @@
         <cn-application-title></cn-application-title>
       </div>
       <div class="col-xs-5 body-heading-shortcuts">
-        <i class="glyphicon glyphicon-time" aria-hidden="true"></i>
         <cn-clock></cn-clock>
-        <div class="btn-group">
-          <a ui-sref="home" class="btn btn-default" tooltip="Go to home screen" tooltip-placement="bottom">
-            <i class="glyphicon glyphicon-home" aria-hidden="true"></i>
-          </a>
-          <a href="?logout" class="btn btn-default" tooltip="Logout" tooltip-placement="bottom">
-            <i class="glyphicon glyphicon-off" aria-hidden="true"></i>
-          </a>
-        </div>
+        <cn-toolbelt></cn-toolbelt>
       </div>
       <div class="col-xs-4 body-heading-state">
         <cn-site-role-switcher></cn-site-role-switcher>

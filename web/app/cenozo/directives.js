@@ -54,7 +54,7 @@ cenozo.directive( 'cnChange', [
             $timeout( function() { oldValue = element.val(); } );
           } );
           element.bind( 'blur', function() {
-            scope.$apply( function() {
+            scope.$evalAsync( function() {
               if( element.val() != oldValue ) {
                 scope.$eval( attrs.cnChange );
               }
@@ -354,73 +354,34 @@ cenozo.directive( 'cnDatetimePickerPopup', function () {
 } );
 
 /**
- * Creates a modal which can be opened based on the "visible" attribute
- * @attr heading
- * @attr visible
- */
-cenozo.directive( 'cnModal', function() {
-  return {
-    templateUrl: cnCenozoUrl + '/app/cenozo/modal.tpl.html',
-    heading: '@',
-    restrict: 'E',
-    transclude: true,
-    replace: true,
-    scope: true,
-    link: function( scope, element, attrs ) {
-      scope.$watch( attrs.visible, function( value ) {
-        $(element).modal( value == true ? 'show' : 'hide' );
-      } );
-
-      $(element).on( 'shown.bs.modal', function() {
-        // visible attribute might be in dot notation, so apply recursively
-        scope.$apply( function() {
-          attrs.visible.split( '.' ).reduce(
-            function( obj, i ) {
-              if( typeof obj[i] != "object" ) obj[i] = true;
-              return obj[i];
-            },
-            scope.$parent
-          );
-        } );
-      } );
-
-      $(element).on( 'hidden.bs.modal', function() {
-        // visible attribute might be in dot notation, so apply recursively
-        scope.$apply( function() {
-          attrs.visible.split( '.' ).reduce(
-            function( obj, i ) {
-              if( typeof obj[i] != "object" ) obj[i] = false;
-              return obj[i];
-            },
-            scope.$parent
-          );
-        } );
-      } );
-    }
-  };
-} );
-
-/**
  * A generic confirmation for risky actions.
- * @attr ng-really-message: The message to popup before proceeding
+ * @attr cn-really-message: The message to popup before proceeding
  * @attr cn-really-click: Callback function to call when action is confirmed
- * @attr ng-do-not-click: Callback function to call when action is cancelled
+ * @attr cn-do-not-click: Callback function to call when action is cancelled
  */
-cenozo.directive( 'cnReallyClick', function() {
-  return {
-    restrict: 'A',
-    link: function( scope, element, attrs ) {
-      element.bind( 'click', function() {
-        var message = attrs.ngReallyMessage;
-        if( message && confirm( message ) ) {
-          scope.$apply( attrs.cnReallyClick );
-        } else {
-          scope.$apply( attrs.ngDoNotClick );
-        }
-      } );
+cenozo.directive( 'cnReallyClick', [
+  'CnModalConfirmFactory',
+  function( CnModalConfirmFactory ) {
+    return {
+      restrict: 'A',
+      link: function( scope, element, attrs ) {
+        element.bind( 'click', function() {
+          var message = attrs.cnReallyMessage;
+          CnModalConfirmFactory.instance( {
+            title: 'Confirm Delete',
+            message: message
+          } ).show().then( function( response ) {
+            if( response ) {
+              if( attrs.cnReallyClick ) scope.$evalAsync( attrs.cnReallyClick );
+            } else {
+              if( attrs.cnDoNotClick ) scope.$evalAsync( attrs.cnDoNotClick );
+            }
+          } );
+        } );
+      }
     }
   }
-} );
+] );
 
 /**
  * A form for filling out a new record's details
@@ -480,11 +441,11 @@ cenozo.directive( 'cnRecordAdd', [
                       : attrs.heading;
 
         scope.inputList = [];
+        scope.test = new Date( '1976-06-09T04:03:00Z' );
         for( var key in scope.addModel.inputList ) {
           var input = scope.addModel.inputList[key];
           input.key = key;
-          if( 'enum' == input.type ) {
-          } else if( 'boolean' == input.type ) {
+          if( 'boolean' == input.type ) {
             input.enumList = [
               { value: undefined, name: '(Select Yes or No)' },
               { value: '1', name: 'Yes' },
@@ -562,11 +523,10 @@ cenozo.directive( 'cnRecordList', [
         if( undefined !== scope.listModel.restrict ) {
           scope.addRestrict = function( column ) {
             var modal = CnModalRestrictFactory.instance( {
-              subject: scope.listModel.subject,
+              name: scope.listModel.name,
               column: scope.listModel.columnList[column].title,
               comparison: scope.listModel.columnList[column].restrict
-            } ).show();
-            modal.result.then( function( comparison ) {
+            } ).show().then( function( comparison ) {
               scope.listModel.restrict( column, comparison );
             } );
           };
@@ -750,3 +710,26 @@ cenozo.directive( 'cnSiteRoleSwitcher', [
     };
   }
 ] );
+
+/**
+ * Displays a group of buttons that provide various tools which may be used in any state.
+ */
+cenozo.directive( 'cnToolbelt', [
+  'CnAppSingleton', 'CnModalTimezoneCalculatorFactory',
+  function( CnAppSingleton, CnModalTimezoneCalculatorFactory ) {
+    return {
+      restrict: 'E',
+      templateUrl: cnCenozoUrl + '/app/cenozo/toolbelt.tpl.html',
+      transclude: true,
+      scope: true,
+      controller: function( $scope ) {
+        $scope.openTimezoneCalculator = function() {
+          CnModalTimezoneCalculatorFactory.instance().show();
+        };
+      },
+      link: function( scope, element, attrs ) {
+      }
+    };
+  }
+] );
+

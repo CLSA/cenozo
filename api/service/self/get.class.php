@@ -33,6 +33,7 @@ class get extends \cenozo\service\service
   public function get_resource( $index )
   {
     $util_class_name = lib::get_class_name( 'util' );
+    $activity_class_name = lib::get_class_name( 'database\activity' );
     $session = lib::create( 'business\session' );
 
     $application_sel = lib::create( 'database\select' );
@@ -61,6 +62,13 @@ class get extends \cenozo\service\service
     $user_sel->add_column( 'first_name' );
     $user_sel->add_column( 'last_name' );
 
+    $pseudo_record = array(
+      'application' => $session->get_application()->get_column_values( $application_sel ),
+      'role' => $session->get_role()->get_column_values( $role_sel ),
+      'site' => $session->get_site()->get_column_values( $site_sel ),
+      'user' => $session->get_user()->get_column_values( $user_sel ) );
+
+    // include the last (closed) activity for this user
     $activity_sel = lib::create( 'database\select' );
     $activity_sel->add_column( 'start_datetime' );
     $activity_sel->add_column( 'end_datetime' );
@@ -73,13 +81,22 @@ class get extends \cenozo\service\service
     $activity_mod->order_desc( 'start_datetime' );
     $activity_mod->limit( 1 );
     $activity_list = $session->get_user()->get_activity_list( $activity_sel, $activity_mod );
+    $last_activity = current( $activity_list );
+    $pseudo_record['user']['last_activity'] = $last_activity ? $last_activity : NULL;
 
-    $pseudo_record = array(
-      'application' => $session->get_application()->get_column_values( $application_sel ),
-      'role' => $session->get_role()->get_column_values( $role_sel ),
-      'site' => $session->get_site()->get_column_values( $site_sel ),
-      'user' => $session->get_user()->get_column_values( $user_sel ),
-      'last_activity' => current( $activity_list ) );
+    // include the number of active users for the application and whether it is in development mode
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'site', 'activity.site_id', 'site.id' );
+    $modifier->where( 'end_datetime', '=', NULL );
+    $modifier->where( 'site.application_id', '=', $session->get_application()->id );
+    $pseudo_record['application']['active_users'] = $activity_class_name::count( $modifier );
+    $pseudo_record['application']['development_mode'] = lib::in_development_mode();
+
+    // include the number of active users for the site
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'end_datetime', '=', NULL );
+    $modifier->where( 'site_id', '=', $session->get_site()->id );
+    $pseudo_record['site']['active_users'] = $activity_class_name::count( $modifier );
 
     return $pseudo_record;
   }

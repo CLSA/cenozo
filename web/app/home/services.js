@@ -13,7 +13,6 @@ define( [], function() {
           thisRef.user = CnAppSingleton.user;
           thisRef.role = CnAppSingleton.role;
           thisRef.site = CnAppSingleton.site;
-          thisRef.last_activity = CnAppSingleton.last_activity;
         } );
       } );
     }

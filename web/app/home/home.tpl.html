@@ -14,20 +14,26 @@
     </span>
   </div>
   <div class="vertical-spacer"></div>
-  <div class="container-fluid">
+  <div ng-if="model.user.last_activity" class="container-fluid">
     You were last logged in from
-    <strong>{{ model.last_activity.start_datetime | cnMomentDate:"MMM D, YYYY @ HH:mm z" }}</strong>
+    <strong>{{ model.user.last_activity.start_datetime | cnMomentDate:"MMM D, YYYY @ HH:mm z" }}</strong>
     until
-    <strong>{{ model.last_activity.end_datetime | cnMomentDate:"MMM D, YYYY @ HH:mm z" }}</strong>
+    <strong>{{ model.user.last_activity.end_datetime | cnMomentDate:"MMM D, YYYY @ HH:mm z" }}</strong>
     under the role of 
-    <strong>{{ model.last_activity.role_name }}</strong>
+    <strong>{{ model.user.last_activity.role_name }}</strong>
     for the
-    <strong>{{ model.last_activity.site_name }}</strong>
+    <strong>{{ model.user.last_activity.site_name }}</strong>
     site.
   </div>
   <div class="vertical-spacer"></div>
   <h3 class="text-primary">System Status</h3>
+  <div ng-if="model.application.development_mode" class="container-fluid text-warning">
+    This application is currently in development mode.
+  </div>
   <div class="container-fluid">
-    There are currently X active users, X of which are logged into your current site.
+    There {{ 1 == model.application.active_users ? "is" : "are" }} currently
+    {{ model.application.active_users }} active user{{ 1 == model.application.active_users ? "" : "s" }},
+    {{ model.site.active_users }} of which {{ 1 == model.application.active_users ? "is" : "are" }}
+    logged into your site.
   </div>
 </div>
