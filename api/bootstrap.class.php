@@ -71,7 +71,7 @@ final class bootstrap
   public function initialize( $launch )
   {
     // WARNING!  Do not use the log class in this method!
-    if( array_key_exists( 'logout', $this->arguments ) )
+    if( is_array( $this->arguments ) && array_key_exists( 'logout', $this->arguments ) )
     {
       header( sprintf( 'Location: %s://none:none@%s%s',
                        'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' ),

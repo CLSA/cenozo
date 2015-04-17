@@ -104,15 +104,7 @@ class patch extends \cenozo\service\service
 
           $success = false;
           if( !is_null( $db_site ) || !is_null( $db_role ) )
-          {
             $success = $session->set_site_and_role( $db_site, $db_role );
-            if( $success )
-            { // mark the access time and update the writelog to reflect the new site/role pair
-              $session->mark_access_time();
-              $this->db_writelog->site_id = $session->get_site()->id;
-              $this->db_writelog->role_id = $session->get_role()->id;
-            }
-          }
 
           $this->status->set_code( $success ? 204 : 403 );
         }

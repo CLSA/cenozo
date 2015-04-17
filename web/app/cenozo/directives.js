@@ -679,8 +679,8 @@ cenozo.directive( 'cnRecordView', [
  * Site and role drop-downs which will switch the user's current role
  */
 cenozo.directive( 'cnSiteRoleSwitcher', [
-  '$window', 'CnAppSingleton',
-  function( $window, CnAppSingleton ) {
+  '$state', '$window', 'CnAppSingleton',
+  function( $state, $window, CnAppSingleton ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/site-role-switcher.tpl.html',
       restrict: 'E',
@@ -688,11 +688,17 @@ cenozo.directive( 'cnSiteRoleSwitcher', [
       scope: true,
       controller: function( $scope ) {
         $scope.setSite = function( id ) {
-          CnAppSingleton.setSite( id ).then( function() { $window.location.reload(); } );
+          CnAppSingleton.setSite( id ).then( function() {
+            // reload and set the url to the home state
+            $window.location.assign( $window.location.pathname );
+          } );
         }
 
         $scope.setRole = function( id ) {
-          CnAppSingleton.setRole( id ).then( function() { $window.location.reload(); } );
+          CnAppSingleton.setRole( id ).then( function() {
+            // reload and set the url to the home state
+            $window.location.assign( $window.location.pathname );
+          } );
         }
       },
       link: function( scope ) {

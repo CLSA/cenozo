@@ -62,11 +62,29 @@ class get extends \cenozo\service\service
     $user_sel->add_column( 'first_name' );
     $user_sel->add_column( 'last_name' );
 
+    // include the user's access
+    $access_sel = lib::create( 'database\select' );
+    $access_sel->from( 'access' );
+    $access_sel->add_column( 'site_id' );
+    $access_sel->add_table_column( 'site', 'name', 'site_name' );
+    $access_sel->add_column( 'role_id' );
+    $access_sel->add_table_column( 'role', 'name', 'role_name' );
+
+    // restrict to the current user's access to the current application
+    $access_mod = lib::create( 'database\modifier' );
+    $access_mod->join( 'site', 'access.site_id', 'site.id' );
+    $access_mod->join( 'role', 'access.role_id', 'role.id' );
+    $access_mod->where( 'access.user_id', '=', lib::create( 'business\session' )->get_user()->id );
+    $access_mod->where( 'site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
+    $access_mod->order( 'site.name' );
+    $access_mod->order( 'role.name' );
+
     $pseudo_record = array(
       'application' => $session->get_application()->get_column_values( $application_sel ),
       'role' => $session->get_role()->get_column_values( $role_sel ),
       'site' => $session->get_site()->get_column_values( $site_sel ),
-      'user' => $session->get_user()->get_column_values( $user_sel ) );
+      'user' => $session->get_user()->get_column_values( $user_sel ),
+      'access' => $session->get_user()->get_access_list( $access_sel, $access_mod ) );
 
     // include the last (closed) activity for this user
     $activity_sel = lib::create( 'database\select' );

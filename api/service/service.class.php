@@ -40,12 +40,13 @@ abstract class service extends \cenozo\base_object
     $this->path = $path;
     $this->method = strtoupper( $method );
     $this->arguments = $args;
+    if( !is_array( $this->arguments ) ) $this->arguments = array();
     $this->file = $file;
   }
 
   /**
    * Processes the service by doing the following stages:
-   * 1. prepare:  processes arguments, preparing them for the service
+   * 1. prepare:  processes path and arguments, preparing them for the service
    * 2. validate: checks to make sure the arguments are valid, the user has access, etc
    * 3. setup:    a pre-execution phase that sets up the service
    * 4. execute:  execution of the service, completing the task
@@ -102,7 +103,7 @@ abstract class service extends \cenozo\base_object
     $session = lib::create( 'business\session' );
 
     // go through all collection/resource pairs
-    foreach( $this->collection_name_list as $index => $collection_name )
+    foreach( $this->collection_name_list as $index => $subject )
     {
       if( array_key_exists( $index, $this->resource_value_list ) )
       {
@@ -120,7 +121,7 @@ abstract class service extends \cenozo\base_object
           {
             // get the parent record and test to see if this record is one of its children
             $parent_record = $this->get_resource( $index - 1 );
-            $method_name = sprintf( 'get_%s_count', $collection_name );
+            $method_name = sprintf( 'get_%s_count', $subject );
             $modifier = lib::create( 'database\modifier' );
             $modifier->where( sprintf( '%s.id', $record::get_table_name() ), '=', $record->id );
             if( 0 == $parent_record->$method_name( $modifier ) )
@@ -133,7 +134,9 @@ abstract class service extends \cenozo\base_object
       }
     }
 
-    if( 404 != $this->status->get_code() && self::is_write_method( $this->method ) )
+    if( 404 != $this->status->get_code() &&
+        self::is_write_method( $this->method ) &&
+        'self' != $this->get_leaf_subject() )
     { // record to the write log if the method is of write type
       $this->db_writelog = lib::create( 'database\writelog' );
       $this->db_writelog->user_id = $session->get_user()->id;
@@ -157,22 +160,35 @@ abstract class service extends \cenozo\base_object
    */
   protected function validate()
   {
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $service_class_name = lib::get_class_name( 'database\service' );
     $session = lib::create( 'business\session' );
 
     if( $this->validate_access )
     {
       // check access for each collection/resource pair
-      foreach( $this->collection_name_list as $index => $collection_name )
+      $many_to_many = $relationship_class_name::MANY_TO_MANY === $this->get_leaf_parent_relationship();
+      foreach( $this->collection_name_list as $index => $subject )
       {
-        // TODONEXT: how to we handle eg: POST collection/1/user to add a user to a collection?
-        $method = $index === count( $this->collection_name_list ) - 1 ? $this->method : 'GET';
+        $method = 'GET';
+        if( $index == count( $this->collection_name_list ) - 1 && !$many_to_many )
+        { // for the leaf it depends on whether there is a many-to-many relationship with the parent
+          $method = $this->method;
+        }
+        else if( $index == count( $this->collection_name_list ) - 2 && $many_to_many )
+        { // for the parent it depends on whether there is a many-to-many relationship with the leaf
+          $method = 'PATCH';
+        }
+
         if( 'HEAD' == $method ) $method = 'GET'; // HEAD access is based on GET access
         $db_service = $service_class_name::get_unique_record(
           array( 'method', 'subject', 'resource' ),
-          array( $method, $collection_name, array_key_exists( $index, $this->resource_value_list ) ) );
+          array( $method, $subject, array_key_exists( $index, $this->resource_value_list ) ) );
         if( is_null( $db_service ) || !$session->is_service_allowed( $db_service ) )
+        {
           $this->status->set_code( 403 );
+          break;
+        }
       }
     }
   }
@@ -265,11 +281,11 @@ abstract class service extends \cenozo\base_object
       if( array_key_exists( $index, $this->collection_name_list ) &&
           array_key_exists( $index, $this->resource_value_list ) )
       {
-        $collection_name = $this->collection_name_list[$index];
+        $subject = $this->collection_name_list[$index];
         $resource_value = $this->resource_value_list[$index];
 
         $util_class_name = lib::get_class_name( 'util' );
-        $record_class_name = lib::get_class_name( sprintf( 'database\%s', $collection_name ) );
+        $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
 
         if( $util_class_name::string_matches_int( $resource_value ) )
         { // there is a resource, get the corresponding record
@@ -306,21 +322,6 @@ abstract class service extends \cenozo\base_object
             }
             
             $record = $record_class_name::get_unique_record( $columns, $values );
-          }
-        }
-
-        // restrict some roles when resource is related to a site
-        if( !$session->get_role()->all_sites )
-        {
-          $db_site = $session->get_site();
-          if( 'site' == $collection_name )
-          {
-            if( $db_site->id != $record->id ) $this->status->set_code( 403 );
-          }
-          else
-          {
-            if( $record_class_name::column_exists( 'site_id' ) && $record->site_id != $db_site->id )
-              $this->status->set_code( 403 );
           }
         }
       }
@@ -381,6 +382,19 @@ abstract class service extends \cenozo\base_object
   {
     $count = count( $this->collection_name_list );
     return 0 < $count ? $this->get_resource( $count - 1 ) : NULL;
+  }
+
+  /**
+   * Returns the database relationship between the leaf and its parent
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int See database\relationship for list of possible values
+   * @access protected
+   */
+  protected function get_leaf_parent_relationship()
+  {
+    $parent_record = $this->get_parent_record();
+    return is_null( $parent_record ) ? NULL : $parent_record::get_relationship( $this->get_leaf_subject() );
   }
 
   /**
@@ -523,7 +537,7 @@ abstract class service extends \cenozo\base_object
   protected static function is_write_method( $method )
   {
     $method = strtoupper( $method );
-    return array_key_exists( $method, self::$method_list ) && !self::$method_list[$method];
+    return array_key_exists( $method, self::$method_list ) && self::$method_list[$method];
   }
 
   /**

@@ -26,29 +26,25 @@ cenozo.factory( 'CnAppSingleton', [
         thisRef.role = response.data.role;
         cnConvertFromDatabaseRecord( thisRef.user.last_activity );
 
-        // chain a second http request into the promise
-        return CnHttpFactory.instance( {
-          path: 'access'
-        } ).query().then( function success( response ) {
-          for( var i = 0; i < response.data.length; i++ ) {
-            var access = response.data[i];
+        // process access records
+        for( var i = 0; i < response.data.access.length; i++ ) {
+          var access = response.data.access[i];
 
-            // get the site's index
-            var index = 0;
-            for( ; index < thisRef.siteList.length; index++ )
-              if( access.site_id == thisRef.siteList[index].id ) break;
+          // get the site's index
+          var index = 0;
+          for( ; index < thisRef.siteList.length; index++ )
+            if( access.site_id == thisRef.siteList[index].id ) break;
 
-            // if the site isn't found, add it to the list
-            if( thisRef.siteList.length == index )
-              thisRef.siteList.push( { id: access.site_id, name: access.site_name, roleList: [] } );
+          // if the site isn't found, add it to the list
+          if( thisRef.siteList.length == index )
+            thisRef.siteList.push( { id: access.site_id, name: access.site_name, roleList: [] } );
 
-            // now add the role to the site's role list
-            thisRef.siteList[index].roleList.push( {
-              id: access.role_id,
-              name: access.role_name
-            } );
-          }
-        } );
+          // now add the role to the site's role list
+          thisRef.siteList[index].roleList.push( {
+            id: access.role_id,
+            name: access.role_name
+          } );
+        }
       } ).catch( function exception() { cnFatalError(); } );
 
       this.setSite = function setSite( id ) {
@@ -201,13 +197,10 @@ cenozo.factory( 'CnBaseListFactory', [
             };
             this.select = function( record ) {
               return record.selected ?
-                CnHttpFactory.instance( {
-                  path: this.listPath + '/' + record.id
-                } ).delete().then( function success( response ) { record.selected = 0; }) :
-                CnHttpFactory.instance( {
-                  path: this.listPath,
-                  data: record.id
-                } ).post().then( function success( response ) { record.selected = 1; });
+                CnHttpFactory.instance( { path: this.listPath + '/' + record.id } ).delete().
+                  then( function success( response ) { record.selected = 0; } ) :
+                CnHttpFactory.instance( { path: this.listPath, data: record.id } ).post().
+                  then( function success( response ) { record.selected = 1; } );
             };
           } else {
             delete this.selectMode;

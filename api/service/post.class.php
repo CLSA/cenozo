@@ -35,8 +35,7 @@ class post extends write
     if( !is_null( $leaf_subject ) )
     {
       $parent_record = $this->get_parent_record();
-      if( !is_null( $parent_record ) &&
-          $relationship_class_name::MANY_TO_MANY == $parent_record::get_relationship( $leaf_subject ) )
+      if( $relationship_class_name::MANY_TO_MANY === $this->get_leaf_parent_relationship() )
       {
         $id = $this->get_file_as_object();
         if( !is_int( $id ) && !is_array( $id ) )

@@ -39,14 +39,14 @@ class query extends read
       $selected_mode = $this->get_argument( 'select_mode', false );
       if( $selected_mode )
       {
-        $parent_record = $this->get_parent_record();
-        if( $relationship_class_name::MANY_TO_MANY != $parent_record::get_relationship( $leaf_subject ) )
+        if( $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )
         { // must have table1/<id>/table2 where table1 N-to-N table2
           $this->status->set_code( 400 );
         }
         else
         {
           // create a sub-query identifying selected records
+          $parent_record = $this->get_parent_record();
           $table_name = $parent_record::get_joining_table_name( $leaf_subject );
           $select = lib::create( 'database\select' );
           $select->from( $table_name );
