@@ -23,19 +23,76 @@ class setting_manager extends \cenozo\singleton
    */
   protected function __construct( $arguments )
   {
-    $static_settings = $arguments[0];
+    $args = $arguments[0];
+    $args = is_array( $arguments[0] ) ? $arguments[0] : array();
 
-    // copy the setting one category at a time, ignore any unknown categories
-    $categories = array( 'db', 'general', 'ldap', 'opal', 'path', 'url' );
-    foreach( $categories as $category )
-    {
-      // make sure the category exists
-      if( !array_key_exists( $category, $static_settings ) )
-        throw lib::create( 'exception\argument',
-          'static_settings['.$category.']', NULL, __METHOD__ );
+    // get the survey database settings from the limesurvey config file
+    $file = LIMESURVEY_PATH.'/config.php';
+    if( file_exists( $file ) ) 
+    {   
+      include $file;
+      $args['survey_db'] =
+        array( 'driver' => $databasetype,
+               'server' => $databaselocation,
+               'username' => $databaseuser,
+               'password' => $databasepass,
+               'database' => $databasename );
+    }   
+    else // no version 1.92 of the config file, try version 2.0
+    {   
+      $file = LIMESURVEY_PATH.'/application/config/config.php';
 
-      $this->static_settings[$category] = $static_settings[$category];
+      if( file_exists( $file ) ) 
+      {   
+        define( 'BASEPATH', '' ); // needed to read the config file
+        $config = require( $file );
+        $db = explode( ';', $config['components']['db']['connectionString'] );
+
+        $parts = explode( ':', $db[0], 2 );
+        $driver = current( $parts );
+        $parts = explode( '=', $db[0], 2 );
+        $server = next( $parts );
+        $parts = explode( '=', $db[2], 2 );
+        $database = next( $parts );
+
+        $args['survey_db'] =
+          array( 'driver' => $driver,
+                 'server' => $server,
+                 'username' => $config['components']['db']['username'],
+                 'password' => $config['components']['db']['password'],
+                 'database' => $database );
+      }   
+      else throw lib::create( 'exception\runtime',
+        'Cannot find limesurvey config.php file.', __METHOD__ );
     }
+
+    // copy the setting one category at a time
+    $this->read_settings( 'db', $args );
+    $this->read_settings( 'general', $args );
+    $this->read_settings( 'ldap', $args );
+    $this->read_settings( 'opal', $args );
+    $this->read_settings( 'path', $args );
+    $this->read_settings( 'survey_db', $args );
+    $this->read_settings( 'url', $args );
+    $this->read_settings( 'voip', $args );
+  }
+
+  /**
+   * Read settings into the manager (should be called in the constructor only)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $category The category the setting belongs to.
+   * @param array $arguments The associative array containing all settings
+   * @throws exception\argument
+   * @access protected
+   */
+  protected function read_settings( $category, $arguments )
+  {
+    if( !array_key_exists( $category, $arguments ) )
+      throw lib::create( 'exception\argument',
+        'arguments['.$category.']', NULL, __METHOD__ );
+
+    $this->setting_list[$category] = $arguments[$category];
   }
 
   /**
@@ -44,53 +101,17 @@ class setting_manager extends \cenozo\singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $category The category the setting belongs to.
    * @param string $name The name of the setting.
-   * @param database\site $db_site Force a site other than the user's current site.
    * @access public
    */
-  public function get_setting( $category, $name, $db_site = NULL )
+  public function get_setting( $category, $name )
   {
     // first check for the setting in static settings
-    if( array_key_exists( $category, $this->static_settings ) &&
-        array_key_exists( $name, $this->static_settings[$category] ) )
+    if( array_key_exists( $category, $this->setting_list ) &&
+        array_key_exists( $name, $this->setting_list[$category] ) )
     {
-      return $this->static_settings[$category][$name];
+      return $this->setting_list[$category][$name];
     }
 
-    if( is_null( $db_site ) ) $db_site = lib::create( 'business\session' )->get_site();
-
-    // now check in dynamic settings 
-    if( array_key_exists( $category, $this->dynamic_settings ) &&
-        array_key_exists( $name, $this->dynamic_settings[$category] ) &&
-        array_key_exists( $db_site->id, $this->dynamic_settings[$category][$name] ) )
-    {
-      return $this->dynamic_settings[$category][$name][$db_site->id];
-    }
-    else // check if the setting exists in the database
-    {
-      $setting_class_name = lib::get_class_name( 'database\setting' );
-      $db_setting = $setting_class_name::get_setting( $category, $name );
-      if( !is_null( $db_setting ) )
-      {
-        $select = lib::create( 'database\select' );
-        $select->add_column( 'value' );
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'setting_value.site_id', '=', $db_site->id );
-        $setting_value_list = $db_setting->get_setting_value_list( $select, $modifier );
-        
-        $string_value = count( $setting_value_list )
-                      ? $setting_value_list[0]['value']
-                      : $db_setting->value;
-        if( 'boolean' == $db_setting->type ) $value = "true" == $string_value;
-        else if( 'integer' == $db_setting->type ) $value = intval( $string_value );
-        else if( 'float' == $db_setting->type ) $value = floatval( $string_value );
-        else $value = $string_value;
-
-        // store the value in case we need it again
-        $this->dynamic_settings[$category][$name][$db_site->id] = $value;
-        return $value;
-      }
-    }
-    
     // if we get here then the setting doesn't exist
     log::err( "Tried getting value for setting [$category][$name] which doesn't exist." );
     
@@ -98,31 +119,9 @@ class setting_manager extends \cenozo\singleton
   }
 
   /**
-   * Get all settings in a category.
-   * Note, this only works with static settings.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $category The category the setting belongs to.
-   * @access public
-   */
-  public function get_setting_category( $category )
-  {
-    return array_key_exists( $category, $this->static_settings )
-         ? $this->static_settings[$category]
-         : array();
-  }
-
-  /**
    * An array which holds static (non database) settings
    * @var array( mixed )
    * @access private
    */
-  protected $static_settings = array();
-
-  /**
-   * An array which holds dynamic (database) settings
-   * @var array( mixed )
-   * @access private
-   */
-  protected $dynamic_settings = array();
+  protected $setting_list = array();
 }
