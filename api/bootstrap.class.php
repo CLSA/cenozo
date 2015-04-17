@@ -205,11 +205,6 @@ final class bootstrap
             $this->settings['general']['version'],
             $this->session->get_application()->version ),
           __METHOD__ );
-
-      if( lib::in_development_mode() )
-      {
-        $operation_time = $util_class_name::get_elapsed_time();
-      }
     }
     catch( exception\base_exception $e )
     {
@@ -289,11 +284,6 @@ final class bootstrap
 
       $service->process();
       $status = $service->get_status();
-
-      if( lib::in_development_mode() )
-      {
-        $operation_time = $util_class_name::get_elapsed_time();
-      }
     }
     catch( exception\base_exception $e )
     {

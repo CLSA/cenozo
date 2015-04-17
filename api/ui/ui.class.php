@@ -40,52 +40,52 @@ class ui extends \cenozo\base_object
    */
   public function get_interface( $error = NULL )
   {
-    $site_class_name = lib::get_class_name( 'database\site' );
-    $role_class_name = lib::get_class_name( 'database\role' );
-
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $session = lib::create( 'business\session' );
-    $db_user = $session->get_user();
-    $db_site = $session->get_site();
+    $service_class_name = lib::get_class_name( 'database\service' );
 
     $interface = '';
     if( is_null( $error ) )
     {
       // build the script
+      $service_sel = lib::create( 'database\select' );
+      $service_sel->add_column( 'subject' );
+      $service_sel->add_column( 'method' );
+      $service_sel->add_column( 'resource' );
+      
+      $service_mod = lib::create( 'database\modifier' );
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'service.id', '=', 'role_has_service.service_id', false );
+      $join_mod->where( 'role_has_service.role_id', '=', lib::create( 'business\session' )->get_role()->id );
+      $service_mod->join_modifier( 'role_has_service', $join_mod, 'left' );
+      $service_mod->where_bracket( true );
+      $service_mod->where( 'service.restricted', '=', false );
+      $service_mod->or_where( 'role_has_service.role_id', '!=', NULL );
+      $service_mod->where_bracket( false );
+      $service_mod->where( 'method', 'IN', array( 'GET', 'POST' ) ); // only need add/list/view
+      $service_mod->order( 'subject' );
+      $service_mod->order( 'method' );
+      
+      $list_module_list = array();
+      foreach( $service_class_name::select( $service_sel, $service_mod ) as $service )
+      {
+        $subject = $service['subject'];
+        if( !array_key_exists( $subject, $list_module_list ) )
+          $list_module_list[$subject] = array(
+            'title' => ucwords( str_replace( '_', ' ', $subject ) ),
+            'actions' => array() );
+        
+        if( 'POST' == $service['method'] && !$service['resource'] )
+          $list_module_list[$subject]['actions'][] = 'add';
+        else if( 'GET' == $service['method'] && $service['resource'] )
+          $list_module_list[$subject]['actions'][] = 'list';
+        else if( 'GET' == $service['method'] && !$service['resource'] )
+          $list_module_list[$subject]['actions'][] = 'view';
+      }
+
       ob_start();
       include( dirname( __FILE__ ).'/script.php' );
       $script = ob_get_clean();
 
       // build the body
-      $version = $setting_manager->get_setting( 'general', 'version' );
-      $site_name = $session->get_site()->name;
-      $role_name = $session->get_role()->name;
-
-      $site_select = lib::create( 'database\select' );
-      $site_select->from( 'site' );
-      $site_select->add_column( 'id' );
-      $site_select->add_column( 'name' );
-      $site_mod = lib::create( 'database\modifier' );
-      $site_mod->join( 'access', 'site.id', 'access.site_id' );
-      $site_mod->where( 'access.user_id', '=', $db_user->id );
-      $site_mod->order( 'site.name' );
-      $sites = array();
-      $site_list = array();
-      foreach( $site_class_name::select( $site_select, $site_mod ) as $site )
-        $site_list[ $site['id'] ] = $site['name'];
-  
-      $role_select = lib::create( 'database\select' );
-      $role_select->from( 'role' );
-      $role_select->add_column( 'id' );
-      $role_select->add_column( 'name' );
-      $role_mod = lib::create( 'database\modifier' );
-      $role_mod->join( 'access', 'role.id', 'access.role_id' );
-      $role_mod->where( 'access.user_id', '=', $db_user->id );
-      $role_mod->order( 'role.name' );
-      $role_list = array();
-      foreach( $role_class_name::select( $role_select, $role_mod ) as $role )
-        $role_list[ $role['id'] ] = $role['name'];
-
       ob_start();
       include( dirname( __FILE__ ).'/body.php' );
       $body = ob_get_clean();
