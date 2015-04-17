@@ -12,4 +12,4 @@ use cenozo\lib, cenozo\log;
 /**
  * person_note: record
  */
-class person_note extends base_note {}
+class person_note extends record {}
