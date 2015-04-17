@@ -9,13 +9,12 @@
                   ng-click="listModel.orderBy( column.key )">{{ column.title }}
             <i ng-if="null !== listModel.order && listModel.order.column == column.key"
                class="glyphicon"
-               ng-class="listModel.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"
-               aria-hidden="true"></i>
+               ng-class="listModel.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
           </button>
           <button class="btn btn-narrow btn-info"
                   ng-if="column.allowRestrict"
                   ng-click="addRestrict( column.key )">
-            <i class="glyphicon glyphicon-flag" aria-hidden="true"></i>
+            <i class="glyphicon glyphicon-flag"></i>
           </button>
         </div>
         <div class="text-center text-info full-width" ng-if="column.restrict">
@@ -59,7 +58,7 @@
                     cn-really-message="Are you sure you want to delete this {{ listModel.name.singular }}?"
                     cn-really-click="deleteRecord( record.id )"
                     ng-click="$event.stopPropagation()">
-              <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
+              <i class="glyphicon glyphicon-remove"></i>
             </button>
           </div>
         </td>
@@ -81,15 +80,15 @@
         <button class="btn btn-default right"
                 ng-if="listModel.addEnabled"
                 ng-click="addRecord()">
-          <i class="glyphicon glyphicon-plus" aria-hidden="true"></i> Add
+          <i class="glyphicon glyphicon-plus"></i> Add
         </button>
         <button class="btn btn-default right"
                 ng-if="listModel.selectEnabled"
                 ng-class="listModel.selectMode ? 'btn-success' : 'btn-default'"
                 ng-click="listModel.toggleSelectMode()">
           <i class="glyphicon glyphicon-edit"
-             ng-class="listModel.selectMode ? 'glyphicon-check' : 'glyphicon-edit'"
-             aria-hidden="true"></i> {{ listModel.selectMode ? 'Done' : 'Select' }}
+             ng-class="listModel.selectMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
+          {{ listModel.selectMode ? 'Done' : 'Select' }}
         </button>
       </td>
     </tr>
