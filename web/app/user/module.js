@@ -7,15 +7,15 @@ define( {
     pluralPossessive: 'users\''
   },
   inputList: {
+    active: {
+      title: 'Active',
+      type: 'boolean',
+      required: true
+    },
     name: {
       title: 'Username',
       type: 'string',
       required: true
-    },
-    password: {
-      title: 'Password', /* TODO: necessary for a non-user-input? */
-      type: 'string',
-      required: false
     },
     first_name: {
       title: 'First Name',
@@ -27,10 +27,10 @@ define( {
       type: 'string',
       required: true
     },
-    active: {
-      title: 'Active',
-      type: 'bolean',
-      required: true
+    email: {
+      title: 'Email',
+      type: 'string',
+      required: false
     }
   },
   columnList: {

@@ -48,30 +48,18 @@ window.cnConvertToDatabaseRecord = function cnConvertToDatabaseRecord( object ) 
   }
 };
 
-window.cnModuleList = [
-  'activity',
-  'collection',
-  'language',
-  'participant',
-  'quota',
-  'region_site',
-  'setting',
-  'site',
-  'state',
-  'system_message',
-  'user'
-];
+window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
+  if( undefined === $stateProvider ) throw 'cnRouteModule requires exactly 3 parameters';
+  if( undefined === name ) throw 'cnRouteModule requires exactly 3 parameters';
+  if( undefined === module ) throw 'cnRouteModule requires exactly 3 parameters';
 
-window.cnRouteModule = function cnRouteModule( $stateProvider, module ) {
-  if( undefined === $stateProvider ) throw 'cnRouteModule requires exactly 2 parameters';
-  if( undefined === module ) throw 'cnRouteModule requires exactly 2 parameters';
+  var baseUrl = 'app/' + name + '/';
+  if( 0 <= cnFrameworkModuleList.indexOf( name ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
 
-  var baseUrl = 'app/' + module.name + '/';
-  if( 0 <= cnModuleList.indexOf( module.name ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
-
-  $stateProvider.state( module.name, {
+  // add base state
+  $stateProvider.state( name, {
     abstract: true,
-    url: '/' + module.name,
+    url: '/' + name,
     template: '<div ui-view></div>',
     resolve: {
       data: [ '$q', function( $q ) {
@@ -82,17 +70,30 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, module ) {
     }
   } );
   
+  // add action states
   for( var i = 0; i < module.actions.length; i++ ) {
     var action = module.actions[i];
-    var state = module.name + '.' + action;
     var url = '/' + action;
     if( 'view' == action ) url += '/{id}';
-    var controller = ( module.name + '_' + action + '_ctrl' ).snakeToCamel( true );
     var templateUrl = baseUrl + action + '.tpl.html';
 
-    $stateProvider.state( state, {
+    $stateProvider.state( name + '.' + action, {
       url: url,
-      controller: controller,
+      controller: ( name + '_' + action + '_ctrl' ).snakeToCamel( true ),
+      templateUrl: templateUrl
+    } );
+  }
+
+  // add child states to the list
+  for( var i = 0; i < module.children.length; i++ ) {
+    var child = module.children[i];
+    var baseUrl = 'app/' + child + '/';
+    if( 0 <= cnFrameworkModuleList.indexOf( child ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
+    var templateUrl = baseUrl + 'add.tpl.html';
+
+    $stateProvider.state( name + '.add_' + child, {
+      url: '/view/{id}/add',
+      controller: ( child + '_add_ctrl' ).snakeToCamel( true ),
       templateUrl: templateUrl
     } );
   }

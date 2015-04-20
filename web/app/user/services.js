@@ -1,5 +1,8 @@
 define( [
-  cnCenozoUrl + '/app/user/module.js'
+  cnCenozoUrl + '/app/user/module.js',
+  cnCenozoUrl + '/app/access/controllers.js',
+  cnCenozoUrl + '/app/access/directives.js',
+  cnCenozoUrl + '/app/access/services.js'
 ], function( module ) {
 
   'use strict';
@@ -35,14 +38,36 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnUserViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
+    'CnBaseViewFactory', 'CnAccessListFactory',
+    function( CnBaseViewFactory, CnAccessListFactory ) {
+      var object = function( params ) { 
+        var base = CnBaseViewFactory.instance( params );
+        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+
+        ////////////////////////////////////
+        // factory customizations start here
+        this.cnAccessList = CnAccessListFactory.instance( { parentModel: this } );
+        this.cnAccessList.enableAdd( true );
+        var thisRef = this;
+        this.load = function load( id ) { 
+          thisRef.cnAccessList.cache = []; 
+          return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
+            thisRef.cnAccessList.load( 'user/' + thisRef.record.id + '/access' );
+          } );
+        };
+        // factory customizations end here
+        //////////////////////////////////
+
+        cnCopyParams( this, params );
+      }   
+
+      object.prototype = CnBaseViewFactory.prototype;
+      return { instance: function( params ) { 
+        if( undefined === params ) params = {}; 
         params.subject = module.subject;
         params.name = module.name;
         params.inputList = module.inputList;
-        return CnBaseViewFactory.instance( params );
+        return new object( params );
       } };
     }
   ] );

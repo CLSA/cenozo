@@ -437,7 +437,7 @@ cenozo.directive( 'cnRecordAdd', [
       },
       link: function( scope, element, attrs ) {
         scope.heading = undefined === attrs.heading
-                      ? 'Creating A ' + scope.listModel.name.singular.ucWords()
+                      ? 'Create ' + scope.listModel.name.singular.ucWords()
                       : attrs.heading;
 
         scope.inputList = [];
@@ -485,8 +485,8 @@ cenozo.directive( 'cnRecordAdd', [
  * @attr removeColumns: An array of columns (by key) to remove from the default list
  */
 cenozo.directive( 'cnRecordList', [
-  '$state', 'CnModalRestrictFactory',
-  function( $state, CnModalRestrictFactory ) {
+  '$state', '$stateParams', 'CnModalRestrictFactory',
+  function( $state, $stateParams, CnModalRestrictFactory ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-list.tpl.html',
       restrict: 'E',
@@ -496,7 +496,17 @@ cenozo.directive( 'cnRecordList', [
       },
       controller: function( $scope ) {
         if( $scope.listModel.addEnabled ) {
-          $scope.addRecord = function() { $state.go( '^.add' ); };
+          var parent = $scope.listModel.parentModel;
+          var subject = $scope.listModel.subject;
+          var state = subject + '.add';
+          var params = {};
+
+          // the add state depends on the parent
+          if( subject != parent.subject && parent.record ) {
+            state = parent.subject + '.add_' + subject;
+            params = $stateParams;
+          }
+          $scope.addRecord = function() { $state.go( state, params ); };
         }
 
         if( $scope.listModel.deleteEnabled ) {

@@ -63,6 +63,28 @@ class application extends record
   }
 
   /**
+   * Returns an array of all types of grouping used by this application
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_cohort_groupings()
+  {
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to get cohort gropuing for application with no id.' );
+      return '';
+    }
+
+    $select = lib::create( 'database\select' );
+    $select->add_column( 'DISTINCT grouping', 'grouping', false );
+    $list = array();
+    foreach( $this->get_cohort_list( $select ) as $row ) $list[] = $row['grouping'];
+    return $list;
+  }
+
+  /**
    * Returns the type of grouping that this application has for a particular cohort.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -78,10 +100,12 @@ class application extends record
       return '';
     }
 
-    return static::db()->get_one( sprintf(
-      'SELECT grouping FROM application_has_cohort WHERE application_id = %s AND cohort_id = %s',
-      $this->id,
-      $db_cohort->id ) );
+    $select = lib::create( 'database\select' );
+    $select->add_column( 'grouping' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'cohort_id', '=', $db_cohort->id );
+    $list = $this->get_cohort_list( $select, $modifier );
+    return 0 < count( $list ) ? $list[0]['grouping'] : NULL;
   }
 
   /**

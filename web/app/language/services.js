@@ -1,5 +1,5 @@
 define( [
-  cnCenozoUrl + '/app/language/module.js'
+  cnCenozoUrl + '/app/language/module.js',
   cnCenozoUrl + '/app/user/controllers.js',
   cnCenozoUrl + '/app/user/directives.js',
   cnCenozoUrl + '/app/user/services.js'
