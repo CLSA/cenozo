@@ -7,9 +7,9 @@
         </accordion-heading>
         <div class="btn-group-vertical full-width" role="group">
           <a class="btn btn-default"
-             ng-repeat="item in lists"
-             ng-class="{ 'btn-info': isCurrentState( item.sref ) }"
-             ui-sref="{{ item.sref }}"
+             ng-repeat="(subject,item) in lists"
+             ng-class="{ 'btn-info': isCurrentState( subject ) }"
+             ui-sref="{{ subject }}.list"
              snap-close>{{ item.title }}</a>
         </div>
       </accordion-group>
@@ -19,9 +19,9 @@
         </accordion-heading>
         <div class="btn-group-vertical full-width" role="group">
           <a class="btn btn-default"
-             ng-repeat="item in utilities"
-             ng-class="{ 'btn-info': isCurrentState( item.sref ) }"
-             ui-sref="{{ item.sref }}"
+             ng-repeat="(subject,item) in utilities"
+             ng-class="{ 'btn-info': isCurrentState( subject ) }"
+             ui-sref="{{ subject }}"
              snap-close>{{ item.title }}</a>
         </div>
       </accordion-group>
@@ -31,9 +31,9 @@
         </accordion-heading>
         <div class="btn-group-vertical full-width" role="group">
           <a class="btn btn-default"
-             ng-repeat="item in reports"
-             ng-class="{ 'btn-info': isCurrentState( item.sref ) }"
-             ui-sref="{{ item.sref }}"
+             ng-repeat="(subject,item) in reports"
+             ng-class="{ 'btn-info': isCurrentState( subject ) }"
+             ui-sref="{{ subject }}"
              snap-close>{{ item.title }}</a>
         </div>
       </accordion-group>

@@ -81,9 +81,8 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, module ) {
       } ]
     }
   } );
-
+  
   for( var i = 0; i < module.actions.length; i++ ) {
-    // determine the state
     var action = module.actions[i];
     var state = module.name + '.' + action;
     var url = '/' + action;
