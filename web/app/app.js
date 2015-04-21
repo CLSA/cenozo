@@ -53,9 +53,6 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
   if( undefined === name ) throw 'cnRouteModule requires exactly 3 parameters';
   if( undefined === module ) throw 'cnRouteModule requires exactly 3 parameters';
 
-  var baseUrl = 'app/' + name + '/';
-  if( 0 <= cnFrameworkModuleList.indexOf( name ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
-
   // add base state
   $stateProvider.state( name, {
     abstract: true,
@@ -64,13 +61,18 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
     resolve: {
       data: [ '$q', function( $q ) {
         var deferred = $q.defer();
-        require( [ baseUrl + 'bootstrap.js' ], function() { deferred.resolve(); } );
+        var bootstrapUrl = 'app/' + name + '/bootstrap.js';
+        if( 0 <= cnFrameworkModuleList.indexOf( name ) )
+          bootstrapUrl = cnCenozoUrl + '/' + bootstrapUrl;
+        require( [ bootstrapUrl ], function() { deferred.resolve(); } );
         return deferred.promise;
       } ]
     }
   } );
   
   // add action states
+  var baseUrl = 'app/' + name + '/';
+  if( 0 <= cnFrameworkModuleList.indexOf( name ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
   for( var i = 0; i < module.actions.length; i++ ) {
     var action = module.actions[i];
     var url = '/' + action;
