@@ -26,20 +26,34 @@ class read_modification extends \cenozo\base_object
    */
   public static function apply( $select, $modifier )
   {
+    $session = lib::create( 'business\session' );
+
+    // restrict list by role
+    if( !$session->get_role()->all_sites )
+    {
+      $modifier->join( 'access', 'user.id', 'access.user_id' );
+      $modifier->where( 'access.site_id', '=', $session->get_site()->id );
+    }
+
     // add the total number of related records
     if( $select->has_table_column( '', 'role_count' ) ||
         $select->has_table_column( '', 'user_count' ) ||
         $select->has_table_column( '', 'last_access_datetime' ) )
     {
-      $user_join_access =
-        'SELECT user_id, '.
-               'COUNT( DISTINCT role_id ) AS role_count, '.
-               'COUNT( DISTINCT site_id ) AS site_count, '.
-               'MAX( datetime ) AS last_access_datetime '.
-        'FROM access '.
-        'GROUP BY user_id ';
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'access' );
+      $join_sel->add_column( 'user_id' );
+      $join_sel->add_column( 'COUNT( DISTINCT role_id )', 'role_count', false );
+      $join_sel->add_column( 'COUNT( DISTINCT site_id )', 'site_count', false );
+      $join_sel->add_column( 'MAX( datetime )', 'last_access_datetime', false );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->join( 'site', 'access.site_id', 'site.id' );
+      $join_mod->where( 'site.application_id', '=', $session->get_application()->id );
+      $join_mod->group( 'user_id' );
+
       $modifier->left_join(
-        sprintf( '( %s ) AS user_join_access', $user_join_access ),
+        sprintf( '( %s %s ) AS user_join_access', $join_sel->get_sql(), $join_mod->get_sql() ),
         'user.id',
         'user_join_access.user_id' );
 

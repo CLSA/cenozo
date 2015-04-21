@@ -128,6 +128,7 @@ class ui extends \cenozo\base_object
     $modifier->where( 'service.restricted', '=', false );
     $modifier->or_where( 'role_has_service.role_id', '!=', NULL );
     $modifier->where_bracket( false );
+    $modifier->where( 'subject', '!=', 'self' );
     $modifier->where( 'method', 'IN', array( 'GET', 'POST' ) ); // only need add/list/view
     $modifier->order( 'subject' );
     $modifier->order( 'method' );

@@ -4,16 +4,6 @@ try { var cenozo = angular.module( 'cenozo' ); }
 catch( err ) { var cenozo = angular.module( 'cenozo', ['ngAnimate'] ); }
 
 /* ######################################################################################################## */
-cenozo.filter( 'cnOrdinal', function() {
-  return function( number ) {
-    var postfixList = [ 'th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th' ];
-    var modulo = number % 100;
-    if( 11 <= modulo && modulo <= 13 ) return number + 'th';
-    return number + postfixList[number % 10];
-  }
-} );
-
-/* ######################################################################################################## */
 cenozo.filter( 'cnComparator', function() {
   return function( input ) {
     if( '<=>' == input ) return '=';
@@ -32,6 +22,13 @@ cenozo.filter( 'cnCheckmark', function() {
   return function( input ) {
     if( "boolean" != typeof input ) input = 0 != input;
     return input ? '\u2714' : '\u2718';
+  };
+} );
+
+/* ######################################################################################################## */
+cenozo.filter( 'cnCrop', function() {
+  return function( string, max ) {
+    return max < string.length ? string.substring( 0, max-2 ) + '\u2026' : string;
   };
 } );
 
@@ -73,6 +70,16 @@ cenozo.filter( 'cnMomentDate', [
     };
   }
 ] );
+
+/* ######################################################################################################## */
+cenozo.filter( 'cnOrdinal', function() {
+  return function( number ) {
+    var postfixList = [ 'th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th' ];
+    var modulo = number % 100;
+    if( 11 <= modulo && modulo <= 13 ) return number + 'th';
+    return number + postfixList[number % 10];
+  }
+} );
 
 /* ######################################################################################################## */
 cenozo.filter( 'cnPercent', function() {

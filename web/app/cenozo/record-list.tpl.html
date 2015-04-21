@@ -4,7 +4,7 @@
   <thead>
     <tr class="info">
       <td ng-repeat="column in columnList">
-        <div class="btn-group" role="group" area-hidden="true">
+        <div class="btn-group" role="group" area-hidden="true" tooltip="{{ column.help }}">
           <button class="btn btn-narrow btn-info"
                   ng-click="listModel.orderBy( column.key )">{{ column.title }}
             <i ng-if="null !== listModel.order && listModel.order.column == column.key"

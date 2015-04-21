@@ -40,8 +40,5 @@ class query extends \cenozo\service\query
       'site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
     $this->modifier->order( 'site.name' );
     $this->modifier->order( 'role.name' );
-
-    // remove restricting to the current site only
-    $this->modifier->remove_where( 'site_id' );
   }
 }

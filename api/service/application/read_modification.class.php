@@ -26,6 +26,12 @@ class read_modification extends \cenozo\base_object
    */
   public static function apply( $select, $modifier )
   {
+    /*
+      TODONEXT:
+        convert raw sql to select/modifier
+        restrict data by !role.all_sites
+    */
+
     // add the total number of participants
     if( $select->has_table_column( '', 'participant_count' ) )
     {
@@ -65,9 +71,10 @@ class read_modification extends \cenozo\base_object
     if( $select->has_table_column( '', 'user_count' ) )
     {
       $application_join_user =
-        'SELECT application_id, COUNT(*) AS user_count '.
-        'FROM user_has_application '.
-        'GROUP BY application_id';
+        'SELECT site.application_id, COUNT( DISTINCT user_id ) AS user_count '.
+        'FROM access '.
+        'JOIN site ON access.site_id = site.id '.
+        'GROUP BY site.application_id';
       $modifier->left_join(
         sprintf( '( %s ) AS application_join_user', $application_join_user ),
         'application.id',
