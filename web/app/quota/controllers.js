@@ -6,7 +6,6 @@ define( [], function() {
   cnCachedProviders.controller( 'QuotaAddCtrl', [
     '$state', '$stateParams', '$scope', 'CnQuotaSingleton',
     function( $state, $stateParams, $scope, CnQuotaSingleton ) {
-      console.log( [ $state.current.name, $stateParams ] );
       $scope.cnAdd = CnQuotaSingleton.cnAdd;
       $scope.cnList = CnQuotaSingleton.cnList;
       CnQuotaSingleton.promise.then( function() {
