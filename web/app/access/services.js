@@ -49,8 +49,12 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAccessSingleton', [
-    'CnBaseSingletonFactory', 'CnAccessListFactory', 'CnAccessAddFactory', 'CnAccessViewFactory',
-    function( CnBaseSingletonFactory, CnAccessListFactory, CnAccessAddFactory, CnAccessViewFactory ) {
+    'CnBaseSingletonFactory',
+    'CnAccessListFactory', 'CnAccessAddFactory', 'CnAccessViewFactory',
+    'CnHttpFactory',
+    function( CnBaseSingletonFactory,
+              CnAccessListFactory, CnAccessAddFactory, CnAccessViewFactory,
+              CnHttpFactory ) {
       return new ( function() {
         this.subject = module.subject;
         CnBaseSingletonFactory.apply( this );
@@ -65,51 +69,27 @@ define( [
 
         // populate the foreign-key enumerations
         var thisRef = this;
-        /* TODONEXT: need a way to select user/role/site (long lists) and make sure pre-selection works
         this.promise.then( function() {
           CnHttpFactory.instance( {
-            path: 'user',
+            path: 'role',
             data: {
               select: { column: [ 'id', 'name' ] },
-              modifier: { order: { lower: false } }
+              modifier: { order: { name: false } }
             }
           } ).query().then( function success( response ) {
-            thisRef.metadata.user_id.enumList = [];
+            thisRef.metadata.role_id.enumList = [];
             for( var i = 0; i < response.data.length; i++ ) {
-              thisRef.metadata.user_id.enumList.push( {
+              thisRef.metadata.role_id.enumList.push( {
                 value: response.data[i].id,
-                name: response.data[i].lower + ' to ' + response.data[i].upper
+                name: response.data[i].name
               } );
             }
           } ).then( function() {
             return CnHttpFactory.instance( {
-              path: 'region',
+              path: 'site',
               data: {
                 select: { column: [ 'id', 'name' ] },
-                modifier: {
-                  where: {
-                    column: 'country',
-                    operator: '=',
-                    value: CnAppSingleton.application.country
-                  },
-                  order: 'name'
-                }
-              }
-            } ).query().then( function success( response ) {
-              thisRef.metadata.region_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.region_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].name
-                } );
-              }
-            } );
-          } ).then( function() {
-            return CnHttpFactory.instance( {
-              path: 'application/' + CnAppSingleton.application.id + '/site',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name' }
+                modifier: { order: { name: false } }
               }
             } ).query().then( function success( response ) {
               thisRef.metadata.site_id.enumList = [];
@@ -120,9 +100,8 @@ define( [
                 } );
               }
             } );
-          } ).catch( function exception() { cnFatalError(); } )
+          } ).catch( function exception() { cnFatalError(); } );
         } );
-      */
       } );
     }
   ] );

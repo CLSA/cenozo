@@ -389,8 +389,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr listModel: An instance of the record's list (parent to the add model)
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$state',
-  function( $state ) {
+  '$state', '$stateParams', 'CnHttpFactory',
+  function( $state, $stateParams, CnHttpFactory ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -400,7 +400,13 @@ cenozo.directive( 'cnRecordAdd', [
         listModel: '='
       },
       controller: function( $scope ) {
-        $scope.back = function() { $state.go( '^.list' ); };
+        // determine the next state to transition to
+        var stateNameParts = $state.current.name.split( '.' );
+        var nextState = 'add' == stateNameParts[1]
+                      ? '^.list'
+                      : '^.view';
+
+        $scope.back = function() { $state.go( nextState, $stateParams ); };
         $scope.submit = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
@@ -416,23 +422,68 @@ cenozo.directive( 'cnRecordAdd', [
               function success( response ) { 
                 $scope.$parent.record = $scope.addModel.createRecord();
                 $scope.form.$setPristine();
-                $state.go( $scope.listModel.subject + '.list' );
+                $state.go( nextState, $stateParams );
               },
               function error( response ) { 
                 if( 409 == response.status ) { 
                   // report which inputs are included in the conflict
                   for( var i = 0; i < response.data.length; i++ ) { 
-                    var item = angular.element(
-                      angular.element( document.querySelector( '#' + response.data[i] ) ) ).
-                        scope().$parent.innerForm.name;
-                    item.$dirty = true;
-                    item.$invalid = true;
-                    item.$error.conflict = true;
+                    var elementScope = angular.element( angular.element(
+                      document.querySelector( '#' + response.data[i] ) ) ).scope();
+                    if( undefined !== elementScope ) {
+                      var item = elementScope.$parent.innerForm.name;
+                      item.$dirty = true;
+                      item.$invalid = true;
+                      item.$error.conflict = true;
+                    }
                   }
                 } else { cnFatalError(); }
               }
             );  
           }
+        };
+        $scope.getTypeaheadValues = function( key, viewValue ) {
+          var input = $scope.addModel.inputList[key];
+          if( undefined === input )
+            throw 'Typeahead used without a valid input key (' + key + ').';
+          if( undefined === input.table )
+            throw 'Typeaheads require a value for "table" in the input list.';
+          
+          // create the where statement
+          var where = {};
+          if( undefined === input.where ) {
+            where = {
+              column: undefined === input.select ? 'name' : input.select,
+              operator: 'like',
+              value: viewValue + '%'
+            };
+          } else {
+            where = [];
+            var whereList = Array === input.where.constructor ? input.where : [ input.where ];
+            for( var i = 0; i < whereList.length; i++ ) {
+              where.push( {
+                column: whereList[i],
+                operator: 'like',
+                value: viewValue + '%',
+                or: true
+              } );
+            }
+          }
+          return CnHttpFactory.instance( {
+            path: input.table,
+            data: {
+              select: {
+                column: {
+                  column: undefined === input.select ? 'name' : input.select,
+                  alias: 'value',
+                  table_prefix: false
+                }
+              },
+              modifier: { where: where }
+            }
+          } ).get().then( function( response ) {
+            return response.data;
+          } );
         };
       },
       link: function( scope, element, attrs ) {

@@ -9,7 +9,10 @@ define( {
   inputList: {
     user_id: {
       title: 'User',
-      type: 'enum',
+      type: 'typeahead',
+      table: 'user',
+      select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
+      where: [ 'first_name', 'last_name', 'name' ],
       required: true
     },
     role_id: {

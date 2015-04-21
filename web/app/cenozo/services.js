@@ -66,8 +66,9 @@ cenozo.factory( 'CnAppSingleton', [
 
 /* ######################################################################################################## */
 // TODO: replace with "apply" model as in base singleton factory? (no params processed here)
-cenozo.factory( 'CnBaseAddFactory',
-  function() {
+cenozo.factory( 'CnBaseAddFactory', [
+  '$state', '$stateParams',
+  function( $state, $stateParams ) {
     var object = function( params ) {
       if( undefined === params.parentModel ) throw 'Tried to create CnBaseAddFactory without a parent model';
       if( undefined === params.subject ) throw 'Tried to create CnBaseAddFactory without a subject';
@@ -85,13 +86,34 @@ cenozo.factory( 'CnBaseAddFactory',
 
       cnCopyParams( this, params );
 
+      // get pre-defined values from the state
+      var preDefinedColumn = null;
+      var preDefinedId = null;
+      var stateNameParts = $state.current.name.split( '.' );
+      if( 1 < stateNameParts.length ) {
+        var actionParts = stateNameParts[1].split( '_' );
+        if( 2 == actionParts.length && 'add' == actionParts[0] && this.subject == actionParts[1] ) {
+          preDefinedColumn = stateNameParts[0] + '_id';
+          preDefinedId = $stateParams.id;
+
+          // remove the column from the input list
+          delete this.inputList[preDefinedColumn];
+        }
+      }
+
       var thisRef = this;
       this.parentModel.promise.then( function() {
         thisRef.createRecord = function() {
           var record = {};
+
+          // apply default values from the metadata
           for( var column in thisRef.parentModel.metadata )
             if( null !== thisRef.parentModel.metadata[column].default )
               record[column] = thisRef.parentModel.metadata[column].default;
+
+          // apply pre-defined values from the state
+          if( null !== preDefinedColumn && null !== preDefinedId ) record[preDefinedColumn] = preDefinedId;
+
           return record;
         };
       } );
@@ -104,7 +126,7 @@ cenozo.factory( 'CnBaseAddFactory',
       prototype: object.prototype
     };
   }
-);
+] );
 
 /* ######################################################################################################## */
 // TODO: replace with "apply" model as in base singleton factory? (no params processed here)

@@ -26,7 +26,7 @@ class read_modification extends \cenozo\base_object
    */
   public static function apply( $select, $modifier )
   {
-    // add the total number of roles
+    // add the total number of related records
     if( $select->has_table_column( '', 'role_count' ) ||
         $select->has_table_column( '', 'user_count' ) ||
         $select->has_table_column( '', 'last_access_datetime' ) )

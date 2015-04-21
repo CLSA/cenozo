@@ -55,7 +55,8 @@
         <td class="tiny" ng-if="listModel.deleteEnabled">
           <div>
             <button class="btn btn-xs btn-danger"
-                    cn-really-message="Are you sure you want to delete this {{ listModel.name.singular }}?"
+                    cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
+                                       item in the {{ listModel.name.singular }} list?"
                     cn-really-click="deleteRecord( record.id )"
                     ng-click="$event.stopPropagation()">
               <i class="glyphicon glyphicon-remove"></i>

@@ -48,6 +48,7 @@ define( [
         // factory customizations start here
         this.cnAccessList = CnAccessListFactory.instance( { parentModel: this } );
         this.cnAccessList.enableAdd( true );
+        this.cnAccessList.enableDelete( true );
         var thisRef = this;
         this.load = function load( id ) { 
           thisRef.cnAccessList.cache = []; 

@@ -4,6 +4,16 @@ try { var cenozo = angular.module( 'cenozo' ); }
 catch( err ) { var cenozo = angular.module( 'cenozo', ['ngAnimate'] ); }
 
 /* ######################################################################################################## */
+cenozo.filter( 'cnOrdinal', function() {
+  return function( number ) {
+    var postfixList = [ 'th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th' ];
+    var modulo = number % 100;
+    if( 11 <= modulo && modulo <= 13 ) return number + 'th';
+    return number + postfixList[number % 10];
+  }
+} );
+
+/* ######################################################################################################## */
 cenozo.filter( 'cnComparator', function() {
   return function( input ) {
     if( '<=>' == input ) return '=';
