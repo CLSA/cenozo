@@ -30,6 +30,30 @@ class select extends \cenozo\base_object
   }
 
   /**
+   * Returns whether or not to use the distinct keyword before the first selected column
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_distinct()
+  {
+    return $this->distinct;
+  }
+
+  /**
+   * Whether or not to use the distinct keyword before the first selected column
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $distinct
+   * @access public
+   */
+  public function set_distinct( $distinct )
+  {
+    $this->distinct = $distinct;
+  }
+
+  /**
    * Returns the table name
    * 
    * @return string
@@ -258,7 +282,7 @@ class select extends \cenozo\base_object
     $table = is_null( $this->table_alias )
            ? $this->table_name
            : sprintf( '%s AS %s', $this->table_name, $this->table_alias );
-    return sprintf( 'SELECT %s FROM %s', join( ',', $columns ), $table );
+    return sprintf( 'SELECT %s%s FROM %s', $this->distinct ? 'DISTINCT ' : '', join( ',', $columns ), $table );
   }
 
   /**
@@ -352,9 +376,16 @@ class select extends \cenozo\base_object
   protected $table_alias = NULL;
 
   /**
-   * 
+   * An array of all columns to be included in the select
    * @var array
    * @access protected
    */
   protected $column_list = array();
+
+  /**
+   * Whether to include the distinct keyword before the first column
+   * @var boolean
+   * @access protected
+   */
+  protected $distinct = false;
 }

@@ -172,6 +172,9 @@ class ui extends \cenozo\base_object
    */
   protected function get_list_items()
   {
+    $session = lib::create( 'business\session' );
+    $db_role = $session->get_role();
+
     $list = array(
       'activity' => 'Activities',
       'application' => 'Applications',
@@ -184,8 +187,11 @@ class ui extends \cenozo\base_object
       'system_message' => 'System Messages',
       'user' => 'Users' );
 
+    if( !$db_role->all_sites ) unset( $list['site'] );
+    if( 3 > $db_role->tier ) unset( $list['application'] );
+
     // determine which grouping type to use
-    $grouping_list = lib::create( 'business\session' )->get_application()->get_cohort_groupings();
+    $grouping_list = $session->get_application()->get_cohort_groupings();
     if( in_array( 'jurisdiction', $grouping_list ) ) $list['jurisdiction'] = 'Jurisdictions';
     if( in_array( 'region', $grouping_list ) ) $list['region_site'] = 'Region Sites';
 

@@ -15,17 +15,6 @@ use cenozo\lib, cenozo\log;
 class site extends base_access
 {
   /**
-   * Override select method to restrict sites to current application
-   */
-  public static function select( $select = NULL, $modifier = NULL, $return_alternate = '' )
-  {
-    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'application_id', '=', lib::create( 'business\session' )->get_application()->id );
-
-    return parent::select( $select, $modifier, $return_alternate );
-  }
-
-  /**
    * Gives a complete name for the site.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>

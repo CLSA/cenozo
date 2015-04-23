@@ -75,29 +75,43 @@ class query extends read
     if( !is_null( $leaf_subject ) )
     {
       $record_class_name = lib::get_class_name( sprintf( 'database\%s', $leaf_subject ) );
-      $parent_record = $this->get_parent_record();
-
-      $count_modifier = clone $this->modifier;
-      if( is_null( $parent_record ) || $this->get_argument( 'select_mode', false ) )
-      { // if we have a parent then select from it, or if we are in "selected" mode
-        $total = $record_class_name::count( $count_modifier );
-        $results = $record_class_name::select( $this->select, $this->modifier );
-      }
-      else
-      {
-        $parent_record_method = sprintf( 'get_%s_count', $leaf_subject );
-        $total = $parent_record->$parent_record_method( $count_modifier );
-        $parent_record_method = sprintf( 'get_%s_list', $leaf_subject );
-        $results = $parent_record->$parent_record_method( $this->select, $this->modifier );
-      }
-
-      $details = $record_class_name::db()->get_column_details( $leaf_subject );
-
-      $this->headers['Columns'] = $details;
+      $this->headers['Columns'] = $record_class_name::db()->get_column_details( $leaf_subject );
       $this->headers['Limit'] = $this->modifier->get_limit();
       $this->headers['Offset'] = $this->modifier->get_offset();
-      $this->headers['Total'] = $total;
-      $this->data = $results;
+      $this->headers['Total'] = $this->get_record_count();
+      $this->data = $this->get_record_list();
     }
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function get_record_count()
+  {
+    $leaf_subject = $this->get_leaf_subject();
+    $parent_record = $this->get_parent_record();
+    $record_class_name = lib::get_class_name( sprintf( 'database\%s', $leaf_subject ) );
+    $parent_record_method = sprintf( 'get_%s_count', $leaf_subject );
+    $modifier = clone $this->modifier;
+
+    return is_null( $parent_record ) || $this->get_argument( 'select_mode', false ) ?
+           $record_class_name::count( $modifier ) :
+           $parent_record->$parent_record_method( $modifier );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function get_record_list()
+  {
+    $leaf_subject = $this->get_leaf_subject();
+    $parent_record = $this->get_parent_record();
+    $record_class_name = lib::get_class_name( sprintf( 'database\%s', $leaf_subject ) );
+    $parent_record_method = sprintf( 'get_%s_list', $leaf_subject );
+    $modifier = clone $this->modifier;
+
+    return is_null( $parent_record ) || $this->get_argument( 'select_mode', false ) ?
+           $record_class_name::select( $this->select, $modifier ) :
+           $parent_record->$parent_record_method( $this->select, $modifier );
   }
 }

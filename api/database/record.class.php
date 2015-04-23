@@ -386,6 +386,8 @@ abstract class record extends \cenozo\base_object
     }
     else
     {
+      // select this table if one hasn't been selected yet
+      if( is_null( $select->get_table_name() ) ) $select->from( static::get_table_name() );
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( sprintf( '%s.id', $this->get_table_name() ), '=', $this->id );
       $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );

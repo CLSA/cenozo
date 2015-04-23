@@ -263,7 +263,7 @@ cenozo.factory( 'CnBaseListFactory', [
 
       checkCache: function() {
         if( this.cache.length < this.total && this.cnPagination.getMaxIndex() >= this.cache.length )
-          this.load().catch( function exception() { cnFatalError(); } );
+          this.load( this.listPath ).catch( function exception() { cnFatalError(); } );
       },
 
       reload: function() {

@@ -167,9 +167,11 @@ abstract class service extends \cenozo\base_object
     if( $this->validate_access )
     {
       // check access for each collection/resource pair
+      $parent_subject = NULL;
       $many_to_many = $relationship_class_name::MANY_TO_MANY === $this->get_leaf_parent_relationship();
       foreach( $this->collection_name_list as $index => $subject )
       {
+        $has_resource = array_key_exists( $index, $this->resource_value_list );
         $method = 'GET';
         if( $index == count( $this->collection_name_list ) - 1 && !$many_to_many )
         { // for the leaf it depends on whether there is a many-to-many relationship with the parent
@@ -181,14 +183,21 @@ abstract class service extends \cenozo\base_object
         }
 
         if( 'HEAD' == $method ) $method = 'GET'; // HEAD access is based on GET access
+
         $db_service = $service_class_name::get_unique_record(
           array( 'method', 'subject', 'resource' ),
-          array( $method, $subject, array_key_exists( $index, $this->resource_value_list ) ) );
-        if( is_null( $db_service ) || !$session->is_service_allowed( $db_service ) )
+          array( $method, $subject, $has_resource ) );
+        
+        // make sure the service exists, is allowed and the module validates
+        if( is_null( $db_service ) ||
+            !$session->is_service_allowed( $db_service ) ||
+            !( 'HEAD' == $this->method || $this->module_list[$index]->validate() ) )
         {
           $this->status->set_code( 403 );
           break;
         }
+
+        $parent_subject = $subject;
       }
     }
   }
@@ -245,15 +254,41 @@ abstract class service extends \cenozo\base_object
   {
     $this->collection_name_list = array();
     $this->resource_value_list = array();
+    $this->module_list = array();
 
     if( 0 < strlen( $path ) )
     {
+      $module_index = 0;
       foreach( explode( '/', $path ) as $index => $part )
       {
-        if( 0 == $index % 2 ) $this->collection_name_list[] = $part;
+        if( 0 == $index % 2 )
+        {
+          $this->collection_name_list[] = $part;
+          $this->module_list[] =
+            lib::create( sprintf( 'service\%s\module', $part ), $module_index, $this );
+          $module_index++;
+        }
         else $this->resource_value_list[] = $part;
       }
     }
+  }
+
+  /**
+   * Returns the subject for a particular index
+   * 
+   * The index is based on the service's path.  Every other item in the path identifies a
+   * collection by name (string).  For instance, for the path /collection/1/participant/2
+   * the first subject is "collection" and the second is "participant".  Null is returned
+   * if there is no subject for the given index.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $index
+   * @return string
+   * @access public
+   */
+  public function get_subject( $index )
+  {
+    return array_key_exists( $index, $this->collection_name_list ) ? $this->collection_name_list[$index] : NULL;
   }
 
   /**
@@ -268,9 +303,9 @@ abstract class service extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $index
    * @return database\record
-   * @access protected
+   * @access public
    */
-  protected function get_resource( $index )
+  public function get_resource( $index )
   {
     if( !array_key_exists( $index, $this->resource_cache ) )
     {
@@ -382,6 +417,19 @@ abstract class service extends \cenozo\base_object
   {
     $count = count( $this->collection_name_list );
     return 0 < $count ? $this->get_resource( $count - 1 ) : NULL;
+  }
+
+  /**
+   * Returns the module of the last collection (based on the service's path)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return module If there is no leaf subject then NULL is returned
+   * @access protected
+   */
+  protected function get_leaf_module()
+  {
+    $count = count( $this->collection_name_list );
+    return 0 < $count ? $this->module_list[$count - 1] : NULL;
   }
 
   /**
@@ -618,6 +666,11 @@ abstract class service extends \cenozo\base_object
    * @access protected
    */
   protected $resource_value_list = NULL;
+
+  /**
+   * TODO: document
+   */
+  protected $module_list = NULL;
 
   /**
    * 

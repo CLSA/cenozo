@@ -657,7 +657,7 @@ class modifier extends \cenozo\base_object
       $on_clause = $join['modifier']->get_where();
       $table = $join['table'];
       if( $alias != $join['table'] ) $table .= ' AS '.$alias;
-      $sql .= sprintf( '%s %s ON %s ', $type, $table, $on_clause );
+      $sql .= sprintf( '%s %s ON%s ', $type, $table, $on_clause );
     }
 
     return $sql;

@@ -12,7 +12,8 @@ define( {
   columnList: {
     name: { title: 'Name' },
     rank: { title: 'Rank' },
-    participant_count: { title: 'Participants' }
+    participant_count: { title: 'Participants' },
+    role_count: { title: 'Roles' }
   },
   defaultOrder: {
     column: 'rank',

@@ -62,18 +62,9 @@ class read extends service
       }
     }
 
-    // add global modifications (found in extending classes)
-    $leaf_subject = $this->get_leaf_subject();
-    if( !is_null( $leaf_subject ) )
-    {
-      $this->select->from( $leaf_subject );
-      $modification_class = sprintf( 'service\%s\read_modification', $leaf_subject );
-      if( lib::class_exists( $modification_class ) )
-      {
-        $class_name = lib::get_class_name( $modification_class );
-        $class_name::apply( $this->select, $this->modifier );
-      }
-    }
+    // modify the select and modifier based on the module
+    $leaf_module = $this->get_leaf_module();
+    if( !is_null( $leaf_module ) ) $leaf_module->prepare_read( $this->select, $this->modifier );
   }
 
   /**
