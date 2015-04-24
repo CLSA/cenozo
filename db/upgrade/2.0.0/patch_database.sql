@@ -12,10 +12,19 @@ SOURCE user_has_application.sql
 SOURCE site.sql
 SOURCE jurisdiction.sql
 SOURCE region_site.sql
-SOURCE participant_site.sql
+SOURCE user.sql
+
 SOURCE participant_default_site.sql
 SOURCE participant_preferred_site.sql
-SOURCE user.sql
+SOURCE alternate_first_address.sql
+SOURCE participant_first_address.sql
+
+SOURCE person_first_address.sql
+SOURCE participant_primary_address.sql
+SOURCE update_person_first_address.sql
+SOURCE update_participant_primary_address.sql
+SOURCE address.sql
+SOURCE participant_site.sql
 
 SOURCE update_version_number.sql
 
