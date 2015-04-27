@@ -1179,15 +1179,15 @@ CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_consent` (`participant_id`
 CREATE TABLE IF NOT EXISTS `cenozo`.`participant_last_written_consent` (`participant_id` INT, `consent_id` INT, `accept` INT);
 
 -- -----------------------------------------------------
--- procedure update_participant_site
+-- procedure update_participant_site_for_participant
 -- -----------------------------------------------------
 
 USE `cenozo`;
-DROP procedure IF EXISTS `cenozo`.`update_participant_site`;
+DROP procedure IF EXISTS `cenozo`.`update_participant_site_for_participant`;
 
 DELIMITER $$
 USE `cenozo`$$
-CREATE PROCEDURE update_participant_site(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_participant_site_for_participant(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
 
   REPLACE INTO participant_site( application_id, participant_id, site_id, default_site_id )
@@ -1610,7 +1610,7 @@ CREATE DEFINER = CURRENT_USER TRIGGER `cenozo`.`application_has_participant_AFTE
 BEGIN
 
   IF( NEW.preferred_site_id ) THEN
-    CALL update_participant_site( NEW.participant_id );
+    CALL update_participant_site_for_participant( NEW.participant_id );
   END IF;
 
 END;$$
@@ -1623,7 +1623,7 @@ CREATE DEFINER = CURRENT_USER TRIGGER `cenozo`.`application_has_participant_AFTE
 BEGIN
 
   IF( NEW.preferred_site_id != OLD.preferred_site_id ) THEN
-    CALL update_participant_site( NEW.participant_id );
+    CALL update_participant_site_for_participant( NEW.participant_id );
   END IF;
 
 END;$$
@@ -1638,7 +1638,7 @@ BEGIN
   IF( OLD.preferred_site_id ) THEN
     DELETE FROM participant_site
     WHERE participant_id = OLD.participant_id;
-    CALL update_participant_site( OLD.participant_id );
+    CALL update_participant_site_for_participant( OLD.participant_id );
   END IF;
 
 END;$$
@@ -1741,7 +1741,7 @@ DROP TRIGGER IF EXISTS `cenozo`.`participant_primary_address_AFTER_INSERT` $$
 USE `cenozo`$$
 CREATE DEFINER = CURRENT_USER TRIGGER `cenozo`.`participant_primary_address_AFTER_INSERT` AFTER INSERT ON `participant_primary_address` FOR EACH ROW
 BEGIN
-  CALL update_participant_site( NEW.participant_id );
+  CALL update_participant_site_for_participant( NEW.participant_id );
 END;$$
 
 
@@ -1750,7 +1750,7 @@ DROP TRIGGER IF EXISTS `cenozo`.`participant_primary_address_AFTER_UPDATE` $$
 USE `cenozo`$$
 CREATE DEFINER = CURRENT_USER TRIGGER `cenozo`.`participant_primary_address_AFTER_UPDATE` AFTER UPDATE ON `participant_primary_address` FOR EACH ROW
 BEGIN
-  CALL update_participant_site( NEW.participant_id );
+  CALL update_participant_site_for_participant( NEW.participant_id );
 END;$$
 
 
@@ -1769,7 +1769,7 @@ DROP TRIGGER IF EXISTS `cenozo`.`participant_primary_address_AFTER_DELETE` $$
 USE `cenozo`$$
 CREATE DEFINER = CURRENT_USER TRIGGER `cenozo`.`participant_primary_address_AFTER_DELETE` AFTER DELETE ON `participant_primary_address` FOR EACH ROW
 BEGIN
-  CALL update_participant_site( OLD.participant_id );
+  CALL update_participant_site_for_participant( OLD.participant_id );
 END;$$
 
 

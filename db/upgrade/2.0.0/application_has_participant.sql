@@ -60,7 +60,7 @@ CREATE TRIGGER application_has_participant_AFTER_INSERT AFTER INSERT ON applicat
 BEGIN
 
   IF( NEW.preferred_site_id ) THEN
-    CALL update_participant_site( NEW.participant_id );
+    CALL update_participant_site_for_participant( NEW.participant_id );
   END IF;
 
 END;$$
@@ -71,7 +71,7 @@ CREATE TRIGGER application_has_participant_AFTER_UPDATE AFTER UPDATE ON applicat
 BEGIN
 
   IF( NEW.preferred_site_id != OLD.preferred_site_id ) THEN
-    CALL update_participant_site( NEW.participant_id );
+    CALL update_participant_site_for_participant( NEW.participant_id );
   END IF;
 
 END;$$
@@ -84,7 +84,7 @@ BEGIN
   IF( OLD.preferred_site_id ) THEN
     DELETE FROM participant_site
     WHERE participant_id = OLD.participant_id;
-    CALL update_participant_site( OLD.participant_id );
+    CALL update_participant_site_for_participant( OLD.participant_id );
   END IF;
 
 END;$$

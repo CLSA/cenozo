@@ -1,3 +1,5 @@
 Change 'service_name' in settings.local.ini.php to 'instance_name'
 Change '/app/service.class.php' to '/app/application.class.php' in cron.hourly
 Move setting files out of web tree (back one directory)
+For all databases, change the default character set to UTF8:
+  ALTER DATABASE <db_name> CHARACTER SET utf8 COLLATE utf8_unicode_ci;

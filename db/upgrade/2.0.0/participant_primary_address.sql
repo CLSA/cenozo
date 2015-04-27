@@ -67,14 +67,14 @@ DELIMITER $$
 DROP TRIGGER IF EXISTS participant_primary_address_AFTER_INSERT $$
 CREATE TRIGGER participant_primary_address_AFTER_INSERT AFTER INSERT ON participant_primary_address FOR EACH ROW
 BEGIN
-  CALL update_participant_site( NEW.participant_id );
+  CALL update_participant_site_for_participant( NEW.participant_id );
 END;$$
 
 
 DROP TRIGGER IF EXISTS participant_primary_address_AFTER_UPDATE $$
 CREATE TRIGGER participant_primary_address_AFTER_UPDATE AFTER UPDATE ON participant_primary_address FOR EACH ROW
 BEGIN
-  CALL update_participant_site( NEW.participant_id );
+  CALL update_participant_site_for_participant( NEW.participant_id );
 END;$$
 
 
@@ -89,7 +89,7 @@ END;$$
 DROP TRIGGER IF EXISTS participant_primary_address_AFTER_DELETE $$
 CREATE TRIGGER participant_primary_address_AFTER_DELETE AFTER DELETE ON participant_primary_address FOR EACH ROW
 BEGIN
-  CALL update_participant_site( OLD.participant_id );
+  CALL update_participant_site_for_participant( OLD.participant_id );
 END;$$
 
 DELIMITER ;
