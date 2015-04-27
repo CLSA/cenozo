@@ -152,8 +152,8 @@ class participant extends person
 
     // need custom SQL
     $address_id = static::db()->get_one(
-      sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
-               static::db()->format_string( $this->id ) ) );
+      sprintf( 'SELECT address_id FROM person_first_address WHERE person_id = %s',
+               static::db()->format_string( $this->person_id ) ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
   }
 
@@ -174,7 +174,7 @@ class participant extends person
 
     $site_id = static::db()->get_one( sprintf(
       'SELECT site_id '.
-      'FROM participant_preferred_site '.
+      'FROM participant_site '.
       'WHERE application_id = %s '.
       'AND participant_id = %s',
       static::db()->format_string( $db_application->id ),
@@ -286,8 +286,8 @@ class participant extends person
     if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
 
     $site_id = static::db()->get_one( sprintf(
-      'SELECT site_id '.
-      'FROM participant_default_site '.
+      'SELECT default_site_id '.
+      'FROM participant_site '.
       'WHERE application_id = %s '.
       'AND participant_id = %s',
       static::db()->format_string( $db_application->id ),

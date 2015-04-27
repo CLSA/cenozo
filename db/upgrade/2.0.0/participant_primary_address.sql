@@ -59,3 +59,37 @@ DELIMITER ;
 
 CALL patch_participant_primary_address();
 DROP PROCEDURE IF EXISTS patch_participant_primary_address;
+
+SELECT "Adding new triggers to participant_primary_address table" AS "";
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS participant_primary_address_AFTER_INSERT $$
+CREATE TRIGGER participant_primary_address_AFTER_INSERT AFTER INSERT ON participant_primary_address FOR EACH ROW
+BEGIN
+  CALL update_participant_site( NEW.participant_id );
+END;$$
+
+
+DROP TRIGGER IF EXISTS participant_primary_address_AFTER_UPDATE $$
+CREATE TRIGGER participant_primary_address_AFTER_UPDATE AFTER UPDATE ON participant_primary_address FOR EACH ROW
+BEGIN
+  CALL update_participant_site( NEW.participant_id );
+END;$$
+
+
+DROP TRIGGER IF EXISTS participant_primary_address_BEFORE_DELETE $$
+CREATE TRIGGER participant_primary_address_BEFORE_DELETE BEFORE DELETE ON participant_primary_address FOR EACH ROW
+BEGIN
+  DELETE FROM participant_site
+  WHERE participant_id = OLD.participant_id;
+END;$$
+
+
+DROP TRIGGER IF EXISTS participant_primary_address_AFTER_DELETE $$
+CREATE TRIGGER participant_primary_address_AFTER_DELETE AFTER DELETE ON participant_primary_address FOR EACH ROW
+BEGIN
+  CALL update_participant_site( OLD.participant_id );
+END;$$
+
+DELIMITER ;

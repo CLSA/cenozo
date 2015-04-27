@@ -123,7 +123,7 @@ define( [
                 } );
               }
             } );
-          } ).catch( function exception() { cnFatalError(); } )
+          } ).catch( function exception() { cnFatalError(); } );
         } );
       } );
     }

@@ -50,3 +50,43 @@ DELIMITER ;
 
 CALL patch_application_has_participant();
 DROP PROCEDURE IF EXISTS patch_application_has_participant;
+
+SELECT "Adding new triggers to application_has_participant table" AS "";
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS application_has_participant_AFTER_INSERT $$
+CREATE TRIGGER application_has_participant_AFTER_INSERT AFTER INSERT ON application_has_participant FOR EACH ROW
+BEGIN
+
+  IF( NEW.preferred_site_id ) THEN
+    CALL update_participant_site( NEW.participant_id );
+  END IF;
+
+END;$$
+
+
+DROP TRIGGER IF EXISTS application_has_participant_AFTER_UPDATE $$
+CREATE TRIGGER application_has_participant_AFTER_UPDATE AFTER UPDATE ON application_has_participant FOR EACH ROW
+BEGIN
+
+  IF( NEW.preferred_site_id != OLD.preferred_site_id ) THEN
+    CALL update_participant_site( NEW.participant_id );
+  END IF;
+
+END;$$
+
+
+DROP TRIGGER IF EXISTS application_has_participant_BEFORE_DELETE $$
+CREATE TRIGGER application_has_participant_BEFORE_DELETE BEFORE DELETE ON application_has_participant FOR EACH ROW
+BEGIN
+
+  IF( OLD.preferred_site_id ) THEN
+    DELETE FROM participant_site
+    WHERE participant_id = OLD.participant_id;
+    CALL update_participant_site( OLD.participant_id );
+  END IF;
+
+END;$$
+
+DELIMITER ;

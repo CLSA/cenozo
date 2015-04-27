@@ -463,6 +463,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         if( 0 < joinList.length ) data.modifier.join = joinList;
 
         var thisRef = this;
+        console.log( data );
         return CnHttpFactory.instance( {
           path: this.subject + '/' + id,
           data: data

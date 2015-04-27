@@ -23,6 +23,8 @@ SOURCE person_first_address.sql
 SOURCE participant_primary_address.sql
 SOURCE update_person_first_address.sql
 SOURCE update_participant_primary_address.sql
+SOURCE update_participant_for_jurisdiction.sql
+SOURCE update_participant_for_region_site.sql
 SOURCE address.sql
 SOURCE participant_site.sql
 

@@ -30,11 +30,10 @@ DROP PROCEDURE IF EXISTS patch_jurisdiction;
 
 SELECT "Adding new triggers to jurisdiction table" AS "";
 
--- create trigger to enforce application-postcode pseudo unique key
-DELIMITER //
-DROP TRIGGER IF EXISTS jurisdiction_BEFORE_INSERT //
-CREATE TRIGGER jurisdiction_BEFORE_INSERT
-BEFORE INSERT ON jurisdiction FOR EACH ROW
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS jurisdiction_BEFORE_INSERT $$
+CREATE TRIGGER jurisdiction_BEFORE_INSERT BEFORE INSERT ON jurisdiction FOR EACH ROW
 BEGIN
   SET @test = (
     SELECT COUNT(*) FROM jurisdiction
@@ -54,11 +53,18 @@ BEGIN
     );
     SIGNAL SQLSTATE '23000' SET MESSAGE_TEXT = @sql, MYSQL_ERRNO = 1062;
   END IF;
-END;//
+END;$$
 
-DROP TRIGGER IF EXISTS jurisdiction_BEFORE_UPDATE //
-CREATE TRIGGER jurisdiction_BEFORE_UPDATE
-BEFORE UPDATE ON jurisdiction FOR EACH ROW
+
+DROP TRIGGER IF EXISTS jurisdiction_AFTER_INSERT $$
+CREATE TRIGGER jurisdiction_AFTER_INSERT AFTER INSERT ON jurisdiction FOR EACH ROW
+BEGIN
+  CALL update_participant_site_for_jurisdiction( NEW.id );
+END;$$
+
+
+DROP TRIGGER IF EXISTS jurisdiction_BEFORE_UPDATE $$
+CREATE TRIGGER jurisdiction_BEFORE_UPDATE BEFORE UPDATE ON jurisdiction FOR EACH ROW
 BEGIN
   SET @test = (
     SELECT COUNT(*) FROM jurisdiction
@@ -79,6 +85,28 @@ BEGIN
     );
     SIGNAL SQLSTATE '23000' SET MESSAGE_TEXT = @sql, MYSQL_ERRNO = 1062;
   END IF;
-END;//
+END;$$
+
+
+DROP TRIGGER IF EXISTS jurisdiction_AFTER_UPDATE $$
+CREATE TRIGGER jurisdiction_AFTER_UPDATE AFTER UPDATE ON jurisdiction FOR EACH ROW
+BEGIN
+  CALL update_participant_site_for_jurisdiction( NEW.id );
+END;$$
+
+
+DROP TRIGGER IF EXISTS jurisdiction_BEFORE_DELETE $$
+CREATE TRIGGER jurisdiction_BEFORE_DELETE BEFORE DELETE ON jurisdiction FOR EACH ROW
+BEGIN
+  DELETE FROM participant_site
+  WHERE site_id = OLD.site_id;
+END;$$
+
+
+DROP TRIGGER IF EXISTS jurisdiction_AFTER_DELETE $$
+CREATE TRIGGER jurisdiction_AFTER_DELETE AFTER DELETE ON jurisdiction FOR EACH ROW
+BEGIN
+  CALL update_participant_site_for_jurisdiction( OLD.id );
+END;$$
 
 DELIMITER ;

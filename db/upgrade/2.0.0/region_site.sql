@@ -30,11 +30,10 @@ DROP PROCEDURE IF EXISTS patch_region_site;
 
 SELECT "Adding new triggers to region_site table" AS "";
 
--- create trigger to enforce application-region-language pseudo unique key
-DELIMITER //
-DROP TRIGGER IF EXISTS region_site_BEFORE_INSERT //
-CREATE TRIGGER region_site_BEFORE_INSERT
-BEFORE INSERT ON region_site FOR EACH ROW
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS region_site_BEFORE_INSERT $$
+CREATE TRIGGER region_site_BEFORE_INSERT BEFORE INSERT ON region_site FOR EACH ROW
 BEGIN
   SET @test = (
     SELECT COUNT(*) FROM region_site
@@ -55,11 +54,18 @@ BEGIN
     );
     SIGNAL SQLSTATE '23000' SET MESSAGE_TEXT = @sql, MYSQL_ERRNO = 1062;
   END IF;
-END;//
+END;$$
 
-DROP TRIGGER IF EXISTS region_site_BEFORE_UPDATE //
-CREATE TRIGGER region_site_BEFORE_UPDATE
-BEFORE UPDATE ON region_site FOR EACH ROW
+
+DROP TRIGGER IF EXISTS region_site_AFTER_INSERT $$
+CREATE TRIGGER region_site_AFTER_INSERT AFTER INSERT ON region_site FOR EACH ROW
+BEGIN
+  CALL update_participant_site_for_region_site( NEW.id );
+END;$$
+
+
+DROP TRIGGER IF EXISTS region_site_BEFORE_UPDATE $$
+CREATE TRIGGER region_site_BEFORE_UPDATE BEFORE UPDATE ON region_site FOR EACH ROW
 BEGIN
   SET @test = (
     SELECT COUNT(*) FROM region_site
@@ -81,6 +87,28 @@ BEGIN
     );
     SIGNAL SQLSTATE '23000' SET MESSAGE_TEXT = @sql, MYSQL_ERRNO = 1062;
   END IF;
-END;//
+END;$$
+
+
+DROP TRIGGER IF EXISTS region_site_AFTER_UPDATE $$
+CREATE TRIGGER region_site_AFTER_UPDATE AFTER UPDATE ON region_site FOR EACH ROW
+BEGIN
+  CALL update_participant_site_for_region_site( NEW.id );
+END;$$
+
+
+DROP TRIGGER IF EXISTS region_site_AFTER_DELETE $$
+CREATE TRIGGER region_site_AFTER_DELETE AFTER DELETE ON region_site FOR EACH ROW
+BEGIN
+  CALL update_participant_site_for_region_site( OLD.id );
+END;$$
+
+
+DROP TRIGGER IF EXISTS region_site_BEFORE_DELETE $$
+CREATE TRIGGER region_site_BEFORE_DELETE BEFORE DELETE ON region_site FOR EACH ROW
+BEGIN
+  DELETE FROM participant_site
+  WHERE site_id = OLD.site_id;
+END;$$
 
 DELIMITER ;

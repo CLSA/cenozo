@@ -7,9 +7,30 @@ define( {
     pluralPossessive: 'region sites\''
   },
   inputList: {
-    // TODO: fill out
+    site_id: {
+      column: 'region_site.site_id',
+      title: 'Site',
+      type: 'enum',
+      required: true
+    },
+    region_id: {
+      column: 'region_site.region_id',
+      title: 'Region',
+      type: 'enum',
+      required: true
+    },
+    language_id: {
+      column: 'region_site.language_id',
+      title: 'Language',
+      type: 'enum',
+      required: true
+    }
   },
   columnList: {
+    site: {
+      column: 'site.name',
+      title: 'Site'
+    },
     region: {
       column: 'region.name',
       title: 'Region'
@@ -17,10 +38,6 @@ define( {
     language: {
       column: 'language.name',
       title: 'Language'
-    },
-    site: {
-      column: 'site.name',
-      title: 'Site'
     }
   },
   defaultOrder: {
