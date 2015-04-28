@@ -60,10 +60,11 @@ define( {
       type: 'string',
       help: 'Must be in the format "account@domain.name"'
     },
-    email_do_not_contact: {
-      title: 'Do Not Send Mass Emails',
+    mass_email: {
+      title: 'Mass Emails',
       type: 'boolean',
-      help: 'Whether the participant wishes to be included in mass emails.'
+      help: 'Whether the participant wishes to be included in mass emails such as newsletters, ' +
+            'holiday greetings, etc.'
     },
     gender: {
       title: 'Sex',
