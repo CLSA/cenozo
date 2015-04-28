@@ -43,7 +43,8 @@ window.cnConvertFromDatabaseRecord = function cnConvertFromDatabaseRecord( objec
 window.cnConvertToDatabaseRecord = function cnConvertToDatabaseRecord( object ) {
   for( var prop in object ) {
     if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
-      object[prop] = null === object[prop] ? '' : object[prop].format( 'YYYY-MM-DD HH:mm:ss' );
+      if( null === object[prop] ) object[prop] = '';
+      else if( object[prop].format ) object[prop].format( 'YYYY-MM-DD HH:mm:ss' );
     }
   }
 };

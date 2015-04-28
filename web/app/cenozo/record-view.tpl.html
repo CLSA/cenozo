@@ -25,13 +25,14 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="viewModel.record[input.key]"
-              cn-change="patch( input.key )"
+              ng-change="patch( input.key )"
               class="form-control"
               type="text"
               datepicker-popup="yyyy-MM-dd"
               is-open="isOpen"
               ng-click="isOpen = true"
-              ng-readonly="input.constant"></input>
+              show-weeks="false"
+              onkeydown="return false"></input>
             <select ng-if="'boolean' == input.type || 'enum' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
