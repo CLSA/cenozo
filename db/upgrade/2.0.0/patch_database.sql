@@ -14,6 +14,7 @@ SOURCE jurisdiction.sql
 SOURCE region_site.sql
 SOURCE user.sql
 SOURCE participant.sql
+SOURCE quota.sql
 
 SOURCE participant_default_site.sql
 SOURCE participant_preferred_site.sql

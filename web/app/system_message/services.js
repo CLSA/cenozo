@@ -49,8 +49,10 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnSystemMessageSingleton', [
-    'CnBaseSingletonFactory', 'CnSystemMessageListFactory', 'CnSystemMessageAddFactory', 'CnSystemMessageViewFactory',
-    function( CnBaseSingletonFactory, CnSystemMessageListFactory, CnSystemMessageAddFactory, CnSystemMessageViewFactory ) {
+    'CnBaseSingletonFactory',
+    'CnSystemMessageListFactory', 'CnSystemMessageAddFactory', 'CnSystemMessageViewFactory',
+    function( CnBaseSingletonFactory,
+              CnSystemMessageListFactory, CnSystemMessageAddFactory, CnSystemMessageViewFactory ) {
       return new ( function() {
         this.subject = module.subject;
         CnBaseSingletonFactory.apply( this );
@@ -62,6 +64,10 @@ define( [
         this.cnList.enableAdd( true );
         this.cnList.enableDelete( true );
         this.cnList.enableView( true );
+
+        // process metadata
+        var thisRef = this;
+        this.promise.then( function() { thisRef.metadata.isLoading = false; } );
       } );
     }
   ] );

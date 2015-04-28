@@ -71,6 +71,10 @@ define( [
 
         this.cnList.enableDelete( true );
         this.cnList.enableView( true );
+
+        // process metadata
+        var thisRef = this;
+        this.promise.then( function() { thisRef.metadata.isLoading = false; } );
       } );
     }
   ] );

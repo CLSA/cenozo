@@ -28,6 +28,10 @@ define( [
         CnBaseSingletonFactory.apply( this );
         this.name = module.name;
         this.cnList = CnActivityListFactory.instance( { parentModel: this } );
+
+        // process metadata
+        var thisRef = this;
+        this.promise.then( function() { thisRef.metadata.isLoading = false; } );
       } );
     }
   ] );

@@ -22,6 +22,20 @@ CREATE PROCEDURE patch_participant()
       ALTER TABLE participant DROP COLUMN email_do_not_contact;
     END IF;
 
+    SELECT "Renaming gender to sex in participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "gender" );
+    IF @test = 1 THEN
+      -- add column
+      ALTER TABLE participant
+      CHANGE gender sex ENUM('male','female') NOT NULL;
+    END IF;
+
   END //
 DELIMITER ;
 

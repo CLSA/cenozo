@@ -66,7 +66,7 @@ define( {
       help: 'Whether the participant wishes to be included in mass emails such as newsletters, ' +
             'holiday greetings, etc.'
     },
-    gender: {
+    sex: {
       title: 'Sex',
       type: 'enum'
     },

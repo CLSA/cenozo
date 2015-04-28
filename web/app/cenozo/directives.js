@@ -510,21 +510,23 @@ cenozo.directive( 'cnRecordAdd', [
         scope.$parent.$watch( 'record', function( record ) { scope.record = record; } );
 
         // watch for changes in metadata (created asynchronously by the service)
+        scope.isComplete = false;
         scope.$watch( 'addModel.parentModel.metadata', function( metadata ) {
-          if( undefined !== metadata ) {
-            for( var key in metadata ) {
-              if( undefined !== metadata[key].enumList ) {
+          if( undefined !== metadata && !metadata.isLoading && !scope.isComplete ) {
+            for( var key in metadata.columnList ) {
+              if( undefined !== metadata.columnList[key].enumList ) {
                 var input = scope.inputList.find( // by key
                   function( item, index, array ) { return key == item.key }
                 );
                 if( undefined === input.enumList ) {
-                  input.enumList = metadata[key].enumList;
-                  input.enumList.unshift( metadata[key].required ?
+                  input.enumList = metadata.columnList[key].enumList;
+                  input.enumList.unshift( metadata.columnList[key].required ?
                     { value: undefined, name: '(Select a ' + input.title + ')' } :
                     { value: null, name: '' } );
                 }
               }
             }
+            scope.isComplete = true;
           }
         }, true );
       }
@@ -707,23 +709,46 @@ cenozo.directive( 'cnRecordView', [
         }
 
         // watch for changes in the record (created asynchronously by the service)
-        scope.$parent.$watch( 'record', function( record ) { scope.record = record; } );
+        console.log( 'warning: view directive is not watching for changes in $parent.record' );
+        /* TODO: do we need this? It was always undefined when tested
+        scope.$parent.$watch( 'record', function( record ) {
+          scope.record = record;
+          console.log( record );
+        } );
+        */
+
+        var recordLoaded = false;
+        scope.$watch( 'viewModel.record', function( record ) {
+          // convert datetimes
+          if( undefined !== record.id && !recordLoaded ) {
+            for( var key in scope.viewModel.inputList ) {
+              if( 'date' == scope.viewModel.inputList[key].type && record[key].format )
+                record[key] = record[key].format( 'YYYY-MM-DD' );
+            }
+            recordLoaded = true;
+            if( recordLoaded && metadataLoaded ) scope.isComplete = true;
+          }
+        } );
 
         // watch for changes in metadata (created asynchronously by the service)
-        scope.$watch( 'viewModel.parentModel.metadata', function( metadata ) {
-          if( undefined !== metadata && metadata.readyForWatch ) {
-            for( var key in metadata ) {
+        var metadataLoaded = false;
+        scope.isComplete = false;
+        var unbind = scope.$watch( 'viewModel.parentModel.metadata', function( metadata ) {
+          if( undefined !== metadata && !metadata.isLoading && !metadataLoaded ) {
+            // build enum lists
+            for( var key in metadata.columnList ) {
               var input = scope.inputList.find( // by key
                 function( item, index, array ) { return key == item.key }
               );
               if( undefined !== input && ( 'boolean' === input.type || 'enum' === input.type ) ) {
                 input.enumList = 'boolean' === input.type
                                ? [ { value: '1', name: 'Yes' }, { value: '0', name: 'No' } ]
-                               : metadata[key].enumList;
-                if( !metadata[key].required ) input.enumList.unshift( { value: '', name: '' } );
+                               : metadata.columnList[key].enumList.slice();
+                if( !metadata.columnList[key].required ) input.enumList.unshift( { value: '', name: '' } );
               }
             }
-            metadata.readyForWatch = false;
+            metadataLoaded = true;
+            if( recordLoaded && metadataLoaded ) scope.isComplete = true;
           }
         }, true );
       }

@@ -67,7 +67,7 @@ define( [
         this.cnList.enableDelete( true );
         this.cnList.enableView( true );
 
-        // populate the foreign-key enumerations
+        // process metadata
         var thisRef = this;
         this.promise.then( function() {
           CnHttpFactory.instance( {
@@ -77,9 +77,9 @@ define( [
               modifier: { order: { name: false } }
             }
           } ).query().then( function success( response ) {
-            thisRef.metadata.role_id.enumList = [];
+            thisRef.metadata.columnList.role_id.enumList = [];
             for( var i = 0; i < response.data.length; i++ ) {
-              thisRef.metadata.role_id.enumList.push( {
+              thisRef.metadata.columnList.role_id.enumList.push( {
                 value: response.data[i].id,
                 name: response.data[i].name
               } );
@@ -92,14 +92,17 @@ define( [
                 modifier: { order: { name: false } }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.site_id.enumList = [];
+              thisRef.metadata.columnList.site_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.site_id.enumList.push( {
+                thisRef.metadata.columnList.site_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].name
                 } );
               }
             } );
+          } ).finally( function() {
+            // signal that the metadata is finished loading
+            thisRef.metadata.isLoading = false;
           } ).catch( function exception() { cnFatalError(); } );
         } );
       } );

@@ -350,7 +350,7 @@ class participant extends person
     if( !is_null( $db_primary_address ) &&
         !is_null( $db_primary_address->region_id ) &&
         !is_null( $db_default_site ) &&
-        !is_null( $this->gender ) &&
+        !is_null( $this->sex ) &&
         !is_null( $db_age_group ) )
     {
       $quota_id = static::db()->get_one( sprintf(
@@ -358,11 +358,11 @@ class participant extends person
         'FROM quota '.
         'WHERE region_id = %s '.
         'AND site_id = %s '.
-        'AND gender = %s '.
+        'AND sex = %s '.
         'AND age_group_id = %s',
         static::db()->format_string( $db_primary_address->region_id ),
         static::db()->format_string( $db_default_site->id ),
-        static::db()->format_string( $this->gender ),
+        static::db()->format_string( $this->sex ),
         static::db()->format_string( $db_age_group->id ) ) );
     }
 

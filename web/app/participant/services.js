@@ -47,7 +47,7 @@ define( [
         this.cnList.enableDelete( true );
         this.cnList.enableView( true );
 
-        // populate the foreign-key enumerations
+        // process metadata
         var thisRef = this;
         this.promise.then( function() {
           CnHttpFactory.instance( {
@@ -57,9 +57,9 @@ define( [
               modifier: { order: { lower: false } }
             }
           } ).query().then( function success( response ) {
-            thisRef.metadata.age_group_id.enumList = [];
+            thisRef.metadata.columnList.age_group_id.enumList = [];
             for( var i = 0; i < response.data.length; i++ ) {
-              thisRef.metadata.age_group_id.enumList.push( {
+              thisRef.metadata.columnList.age_group_id.enumList.push( {
                 value: response.data[i].id,
                 name: response.data[i].lower + ' to ' + response.data[i].upper
               } );
@@ -79,9 +79,9 @@ define( [
                 }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.language_id.enumList = [];
+              thisRef.metadata.columnList.language_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.language_id.enumList.push( {
+                thisRef.metadata.columnList.language_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].name
                 } );
@@ -95,9 +95,9 @@ define( [
                 modifier: { order: 'name' }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.preferred_site_id = { enumList: [] };
+              thisRef.metadata.columnList.preferred_site_id = { enumList: [] };
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.preferred_site_id.enumList.push( {
+                thisRef.metadata.columnList.preferred_site_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].name
                 } );
@@ -111,17 +111,17 @@ define( [
                 modifier: { order: 'rank' }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.state_id.enumList = [];
+              thisRef.metadata.columnList.state_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.state_id.enumList.push( {
+                thisRef.metadata.columnList.state_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].name
                 } );
               }
             } );
           } ).finally( function() {
-            // signal to watch statements that the metadata is ready
-            thisRef.metadata.readyForWatch = true;
+            // signal that the metadata is finished loading
+            thisRef.metadata.isLoading = false;
           } ).catch( function exception() { cnFatalError(); } );
         } );
       } );

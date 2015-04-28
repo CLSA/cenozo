@@ -12,10 +12,11 @@ define( {
       type: 'enum'
     },
     region_id: {
+      column: 'quota.region_id',
       title: 'Region',
       type: 'enum'
     },
-    gender: {
+    sex: {
       title: 'Sex',
       type: 'enum'
     },
@@ -37,7 +38,7 @@ define( {
       column: 'region.name',
       title: 'Region'
     },
-    gender: { title: 'Gender' },
+    sex: { title: 'Gender' },
     age_group_range: { title: 'Age Group' },
     population: { title: 'Population' }
   },

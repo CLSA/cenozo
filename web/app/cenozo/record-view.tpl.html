@@ -1,4 +1,6 @@
-<div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
+<div class="container-fluid bg-primary rounded-top">
+  <h4>{{ heading }} <span ng-if="!isComplete">(Loading...)</span></h4>
+</div>
 <form name="form" class="form-horizontal" novalidate>
   <div class="form-body">
     <ng-form ng-repeat="input in inputList"
@@ -10,32 +12,43 @@
           <div class="input-group"
                ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
             <input ng-if="'string' == input.type"
-                   ng-attr-id="{{ input.key }}"
-                   name="name"
-                   ng-model="viewModel.record[input.key]"
-                   cn-change="patch( input.key )"
-                   class="form-control"
-                   type="text"
-                   autocomplete="off"
-                   ng-readonly="input.constant"
-                   ng-required="viewModel.parentModel.metadata[input.key].required"></input>
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="viewModel.record[input.key]"
+              cn-change="patch( input.key )"
+              class="form-control"
+              type="text"
+              autocomplete="off"
+              ng-readonly="input.constant"
+              ng-required="viewModel.parentModel.metadata[input.key].required"></input>
+            <input ng-if="'date' == input.type"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="viewModel.record[input.key]"
+              cn-change="patch( input.key )"
+              class="form-control"
+              type="text"
+              datepicker-popup="yyyy-MM-dd"
+              is-open="isOpen"
+              ng-click="isOpen = true"
+              ng-readonly="input.constant"></input>
             <select ng-if="'boolean' == input.type || 'enum' == input.type"
-                    ng-attr-id="{{ input.key }}"
-                    name="name"
-                    ng-options="item.value as item.name for item in input.enumList"
-                    ng-model="viewModel.record[input.key]"
-                    cn-change="patch( input.key )"
-                    class="form-control"
-                    ng-readonly="input.constant || !input.enumList"
-                    ng-required="viewModel.parentModel.metadata[input.key].required"></select>
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-options="item.value as item.name for item in input.enumList"
+              ng-model="viewModel.record[input.key]"
+              cn-change="patch( input.key )"
+              class="form-control"
+              ng-readonly="input.constant || !input.enumList"
+              ng-required="viewModel.parentModel.metadata[input.key].required"></select>
             <textarea ng-if="'text' == input.type || 'constant text' == input.type"
-                      ng-attr-id="{{ input.key }}"
-                      name="name"
-                      ng-model="viewModel.record[input.key]"
-                      cn-change="patch( input.key )"
-                      class="form-control"
-                      ng-readonly="input.constant"
-                      ng-required="viewModel.parentModel.metadata[input.key].required"></textarea>
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="viewModel.record[input.key]"
+              cn-change="patch( input.key )"
+              class="form-control"
+              ng-readonly="input.constant"
+              ng-required="viewModel.parentModel.metadata[input.key].required"></textarea>
           </div>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.required">
             Cannot be blank

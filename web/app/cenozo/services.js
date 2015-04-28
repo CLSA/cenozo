@@ -107,9 +107,9 @@ cenozo.factory( 'CnBaseAddFactory', [
           var record = {};
 
           // apply default values from the metadata
-          for( var column in thisRef.parentModel.metadata )
-            if( null !== thisRef.parentModel.metadata[column].default )
-              record[column] = thisRef.parentModel.metadata[column].default;
+          for( var column in thisRef.parentModel.metadata.columnList )
+            if( null !== thisRef.parentModel.metadata.columnList[column].default )
+              record[column] = thisRef.parentModel.metadata.columnList[column].default;
 
           // apply pre-defined values from the state
           if( null !== preDefinedColumn && null !== preDefinedId ) record[preDefinedColumn] = preDefinedId;
@@ -472,7 +472,7 @@ cenozo.factory( 'CnBaseViewFactory', [
           // once the metadata is complete convert blank enums to empty strings (for ng-options)
           thisRef.parentModel.promise.then( function() {
             for( var column in thisRef.inputList ) {
-              var metadata = thisRef.parentModel.metadata[column];
+              var metadata = thisRef.parentModel.metadata.columnList[column];
               var notRequired =
                 ( undefined !== metadata && !metadata.required ) ||
                 undefined === thisRef.inputList[column].required ||
@@ -521,28 +521,28 @@ cenozo.factory( 'CnBaseSingletonFactory', [
         if( undefined === object.subject ) throw 'Tried to apply CnBaseSingletonFactory without a subject';
 
         // get metadata
+        object.metadata = { columnList: {}, isLoading: true, isComplete: false };
         object.promise = CnHttpFactory.instance( {
           path: object.subject
         } ).head().then( function( response ) {
-          var metadata = JSON.parse( response.headers( 'Columns' ) );
-          for( var column in metadata ) {
+          var columnList = JSON.parse( response.headers( 'Columns' ) );
+          for( var column in columnList ) {
             // parse out the enum values
-            metadata[column].required = "1" == metadata[column].required;
-            if( 'enum' == metadata[column].data_type ) {
-              metadata[column].enumList = [];
-              var enumList = metadata[column].type.replace( /^enum\(['"]/i, '' )
+            columnList[column].required = "1" == columnList[column].required;
+            if( 'enum' == columnList[column].data_type ) {
+              columnList[column].enumList = [];
+              var enumList = columnList[column].type.replace( /^enum\(['"]/i, '' )
                                                   .replace( /['"]\)$/, '' )
                                                   .split( "','" );
               for( var i = 0; i < enumList.length; i++ ) {
-                metadata[column].enumList.push( {
+                columnList[column].enumList.push( {
                   value: enumList[i],
                   name: enumList[i]
                 } );
               }
             }
           }
-          metadata.readyForWatch = false;
-          object.metadata = metadata;
+          object.metadata.columnList = columnList;
         } );
       }
     };
