@@ -469,19 +469,21 @@ cenozo.factory( 'CnBaseViewFactory', [
         } ).get().then( function success( response ) {
           thisRef.record = response.data;
 
-          // convert blank enums to empty strings (for ng-options)
-          for( var column in thisRef.inputList ) {
-            var metadata = thisRef.parentModel.metadata[column];
-            var notRequired =
-              ( undefined !== metadata && !metadata.required ) ||
-              undefined === thisRef.inputList[column].required ||
-              !thisRef.inputList[column].required;
-            if( notRequired && 'enum' == thisRef.inputList[column].type ) {
-              if( null === thisRef.record[column] ) {
-                thisRef.record[column] = '';
+          // once the metadata is complete convert blank enums to empty strings (for ng-options)
+          thisRef.parentModel.promise.then( function() {
+            for( var column in thisRef.inputList ) {
+              var metadata = thisRef.parentModel.metadata[column];
+              var notRequired =
+                ( undefined !== metadata && !metadata.required ) ||
+                undefined === thisRef.inputList[column].required ||
+                !thisRef.inputList[column].required;
+              if( notRequired && 'enum' == thisRef.inputList[column].type ) {
+                if( null === thisRef.record[column] ) {
+                  thisRef.record[column] = '';
+                }
               }
             }
-          }
+          } );
         } );
       },
       patch: function( id, data ) {

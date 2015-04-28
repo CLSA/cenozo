@@ -56,8 +56,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 /* used by the ng-view so that animated transitions work correctly */
 .view-frame {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 4px;
   position: absolute;
   min-width: 750px;
   width: 100%;
