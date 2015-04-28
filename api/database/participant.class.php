@@ -187,13 +187,20 @@ class participant extends person
    * Sets the preferred site for a particular application.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\application $db_application
-   * @param database\site $db_site
+   * @param database\site|int $site
    * @access public
    */
-  public function set_preferred_site( $db_application, $db_site = NULL )
+  public function set_preferred_site( $db_application, $site = NULL )
   {
     // no primary key means no preferred site
-    if( is_null( $this->id ) ) return NULL;
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to change preferred site of participant with no id.' );
+      return NULL;
+    }
+
+    // get the requested site's id
+    $site_id = is_a( $site, lib::get_class_name( 'database\site' ) ) ? $site->id : $site;
 
     // make sure this participant's cohort belongs to the application
     if( !static::db()->get_one( sprintf(
@@ -221,7 +228,7 @@ class participant extends person
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
       static::db()->format_string( $db_application->id ),
       static::db()->format_string( $this->id ),
-      is_null( $db_site ) ? 'NULL' : static::db()->format_string( $db_site->id ) ) );
+      static::db()->format_string( $site_id ) ) );
   }
 
   /**
@@ -229,10 +236,10 @@ class participant extends person
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier
    * @param database\application $db_application
-   * @param database\site $db_site
+   * @param database\site|int $site
    * @access public
    */
-  public static function multi_set_preferred_site( $modifier, $db_application, $db_site = NULL )
+  public static function multi_set_preferred_site( $modifier, $db_application, $site = NULL )
   {
     // make sure all participants' cohorts belongs to the application
     $total = static::db()->get_one( sprintf(
@@ -256,6 +263,9 @@ class participant extends person
         $this->get_cohort()->name ),
         __METHOD__ );
 
+    // get the requested site's id
+    $site_id = is_a( $site, lib::get_class_name( 'database\site' ) ) ? $site->id : $site;
+
     // we want to add the row (if none exists) or just update the preferred_site_id column
     // if a row already exists
     static::db()->execute( sprintf(
@@ -265,7 +275,7 @@ class participant extends person
       'FROM participant %s '.
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
       static::db()->format_string( $db_application->id ),
-      is_null( $db_site ) ? 'NULL' : static::db()->format_string( $db_site->id ),
+      static::db()->format_string( $site_id ),
       $modifier->get_sql() ) );
   }
 
@@ -371,6 +381,35 @@ class participant extends person
     return 0 < strlen( $this->other_name ) ?
       sprintf( '%s (%s) %s', $this->first_name, $this->other_name, $this->last_name ) :
       sprintf( '%s %s', $this->first_name, $this->last_name );
+  }
+
+  /**
+   * Returns a user-friendly string describing which withdraw option the participant has selected
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_withdraw_option()
+  {
+    $withdraw_option = 'Not withdrawn';
+    if( !is_null( $this->withdraw_letter ) ) 
+    {   
+      if( in_array( $this->withdraw_letter, array( 'a', 'b', 'c', 'd' ) ) ) 
+        $withdraw_option = 'Withdrawn: Option #1';
+      else if( in_array( $this->withdraw_letter, array( 'e', 'f', 'g', 'h' ) ) ) 
+        $withdraw_option = 'Withdrawn: Option #2';
+      else if( in_array( $this->withdraw_letter, array( 'i', 'j' ) ) ) 
+        $withdraw_option = 'Withdrawn: Option #3';
+      else if( in_array( $this->withdraw_letter, array( 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't' ) ) ) 
+        $withdraw_option = 'Withdrawn: Option #4';
+      else if( '0' == $this->withdraw_letter )
+        $withdraw_option = 'Withdrawn: no option (data never provided)';
+      else
+        $withdraw_option = 'Withdrawn: unknown option';
+    }   
+
+    return $withdraw_option;
   }
 
   /**

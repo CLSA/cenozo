@@ -10,24 +10,20 @@ define( {
     site_id: {
       title: 'Site',
       type: 'enum', // TODO: Blank for all sites //
-      required: true
       help: 'Leaving the site blank will show the message across all sites.'
     },
     role_id: {
       title: 'Role',
       type: 'enum', // TODO: Blank for all roles //
-      required: true
       help: 'Leaving the site blank will show the message across all roles.'
     },
     title: {
       title: 'Title',
-      type: 'string',
-      required: true
+      type: 'string'
     },
     note: {
       title: 'Note',
-      type: 'text',
-      required: true
+      type: 'text'
     } 
   },
   columnList: {

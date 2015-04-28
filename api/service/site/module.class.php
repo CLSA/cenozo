@@ -27,13 +27,10 @@ class module extends \cenozo\service\module
     // only include sites which belong to this application
     $modifier->where( 'site.application_id', '=', $db_application->id );
 
-    // restrict to the current site only (for some roles)
-    if( !$session->get_role()->all_sites ) $modifier->where( 'site.id', '=', $session->get_site()->id );
-
     // add the total number of related records
-    if( $select->has_table_column( '', 'role_count' ) ||
-        $select->has_table_column( '', 'user_count' ) ||
-        $select->has_table_column( '', 'last_access_datetime' ) )
+    if( $select->has_column( 'role_count' ) ||
+        $select->has_column( 'user_count' ) ||
+        $select->has_column( 'last_access_datetime' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'access' );
@@ -56,11 +53,11 @@ class module extends \cenozo\service\module
       $join_mod->where( 'application_has_role.application_id', '=', $db_application->id );
 
       // override columns so that we can fake these columns being in the site table
-      if( $select->has_table_column( '', 'role_count' ) )
+      if( $select->has_column( 'role_count' ) )
         $select->add_column( 'IFNULL( role_count, 0 )', 'role_count', false );
-      if( $select->has_table_column( '', 'user_count' ) )
+      if( $select->has_column( 'user_count' ) )
         $select->add_column( 'IFNULL( user_count, 0 )', 'user_count', false );
-      if( $select->has_table_column( '', 'last_access_datetime' ) )
+      if( $select->has_column( 'last_access_datetime' ) )
         $select->add_column( 'site_join_access.last_access_datetime', 'last_access_datetime', false );
     }
   }

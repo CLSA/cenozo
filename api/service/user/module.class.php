@@ -44,9 +44,9 @@ class module extends \cenozo\service\module
       'user_join_application.user_id' );
 
     // add the total number of related records
-    if( $select->has_table_column( '', 'role_count' ) ||
-        $select->has_table_column( '', 'site_count' ) ||
-        $select->has_table_column( '', 'last_access_datetime' ) )
+    if( $select->has_column( 'role_count' ) ||
+        $select->has_column( 'site_count' ) ||
+        $select->has_column( 'last_access_datetime' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'access' );
@@ -77,11 +77,11 @@ class module extends \cenozo\service\module
       if( !$db_role->all_sites ) $join_mod->where( 'site.id', '=', $db_site->id );
 
       // override columns so that we can fake these columns being in the user table
-      if( $select->has_table_column( '', 'role_count' ) )
+      if( $select->has_column( 'role_count' ) )
         $select->add_column( 'IFNULL( role_count, 0 )', 'role_count', false );
-      if( $select->has_table_column( '', 'site_count' ) )
+      if( $select->has_column( 'site_count' ) )
         $select->add_column( 'IFNULL( site_count, 0 )', 'site_count', false );
-      if( $select->has_table_column( '', 'last_access_datetime' ) )
+      if( $select->has_column( 'last_access_datetime' ) )
         $select->add_column( 'user_join_access.last_access_datetime', 'last_access_datetime', false );
     }
   }

@@ -27,7 +27,7 @@ class module extends \cenozo\service\module
     $db_role = $session->get_role();
 
     // add the total number of participants
-    if( $select->has_table_column( '', 'participant_count' ) )
+    if( $select->has_column( 'participant_count' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'participant' );
@@ -66,7 +66,7 @@ class module extends \cenozo\service\module
     }
 
     // add the total number of users
-    if( $select->has_table_column( '', 'user_count' ) )
+    if( $select->has_column( 'user_count' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'user_has_language' );

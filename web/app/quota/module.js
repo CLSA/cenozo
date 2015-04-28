@@ -9,28 +9,23 @@ define( {
   inputList: {
     site_id: {
       title: 'Site',
-      type: 'enum',
-      required: true
+      type: 'enum'
     },
     region_id: {
       title: 'Region',
-      type: 'enum',
-      required: true
+      type: 'enum'
     },
     gender: {
       title: 'Sex',
-      type: 'enum',
-      required: true
+      type: 'enum'
     },
     age_group_id: {
       title: 'Age Group',
-      type: 'enum',
-      required: true
+      type: 'enum'
     },
     population: {
       title: 'Population',
-      type: 'string',
-      required: true
+      type: 'string'
     }
   },
   columnList: {

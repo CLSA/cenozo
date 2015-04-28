@@ -12,18 +12,15 @@ define( {
       type: 'typeahead',
       table: 'user',
       select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
-      where: [ 'first_name', 'last_name', 'name' ],
-      required: true
+      where: [ 'first_name', 'last_name', 'name' ]
     },
     role_id: {
       title: 'Role',
-      type: 'enum',
-      required: true
+      type: 'enum'
     },
     site_id: {
       title: 'Site',
-      type: 'enum',
-      required: true
+      type: 'enum'
     }
   },
   columnList: {

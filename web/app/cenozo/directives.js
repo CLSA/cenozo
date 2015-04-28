@@ -519,7 +519,9 @@ cenozo.directive( 'cnRecordAdd', [
                 );
                 if( undefined === input.enumList ) {
                   input.enumList = metadata[key].enumList;
-                  input.enumList.unshift( { value: undefined, name: '(Select a ' + input.title + ')' } );
+                  input.enumList.unshift( metadata[key].required ?
+                    { value: undefined, name: '(Select a ' + input.title + ')' } :
+                    { value: null, name: '' } );
                 }
               }
             }
@@ -701,14 +703,6 @@ cenozo.directive( 'cnRecordView', [
         for( var key in scope.viewModel.inputList ) {
           var input = scope.viewModel.inputList[key];
           input.key = key;
-          if( 'enum' == input.type ) {
-          } else if( 'boolean' == input.type ) {
-            input.enumList = [
-              { value: undefined, name: '(Select Yes or No)' },
-              { value: '1', name: 'Yes' },
-              { value: '0', name: 'No' }
-            ];
-          }
           scope.inputList.push( input );
         }
 
@@ -717,18 +711,19 @@ cenozo.directive( 'cnRecordView', [
 
         // watch for changes in metadata (created asynchronously by the service)
         scope.$watch( 'viewModel.parentModel.metadata', function( metadata ) {
-          if( undefined !== metadata ) {
+          if( undefined !== metadata && metadata.readyForWatch ) {
             for( var key in metadata ) {
-              if( undefined !== metadata[key].enumList ) {
-                var input = scope.inputList.find( // by key
-                  function( item, index, array ) { return key == item.key }
-                );
-                if( undefined === input.enumList ) {
-                  input.enumList = metadata[key].enumList;
-                  input.enumList.unshift( { value: undefined, name: '(Select a ' + input.title + ')' } );
-                }
+              var input = scope.inputList.find( // by key
+                function( item, index, array ) { return key == item.key }
+              );
+              if( undefined !== input && ( 'boolean' === input.type || 'enum' === input.type ) ) {
+                input.enumList = 'boolean' === input.type
+                               ? [ { value: '1', name: 'Yes' }, { value: '0', name: 'No' } ]
+                               : metadata[key].enumList;
+                if( !metadata[key].required ) input.enumList.unshift( { value: '', name: '' } );
               }
             }
+            metadata.readyForWatch = false;
           }
         }, true );
       }

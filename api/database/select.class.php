@@ -158,10 +158,13 @@ class select extends \cenozo\base_object
         }
         else
         {
+
           foreach( $this->column_list[$table] as $table_alias => $table_column )
-            if( ( is_null( $column ) || $column == $table_column ) &&
+          {
+            if( ( is_null( $column ) || $column == $table_column['column'] ) &&
                 ( is_null( $alias ) || $alias == $table_alias ) )
               unset( $this->column_list[$table][$table_alias] );
+          }
         }
       }
     }
@@ -220,7 +223,7 @@ class select extends \cenozo\base_object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to search for
-   * @param string $column The column (or alias) to search for (optional)
+   * @param string $column The column to search for (optional)
    * @return boolean
    * @access public
    */
@@ -228,6 +231,19 @@ class select extends \cenozo\base_object
   {
     return array_key_exists( $table, $this->column_list ) &&
            ( is_null( $column ) || array_key_exists( $column, $this->column_list[$table] ) );
+  }
+
+  /**
+   * Returns whether a column from the base table has been added to the select or not
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to search for
+   * @return boolean
+   * @access public
+   */
+  public function has_column( $column )
+  {
+    return $this->has_table_column( '', $column );
   }
 
   /**

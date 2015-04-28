@@ -22,7 +22,7 @@ class module extends \cenozo\service\module
     parent::prepare_read( $select, $modifier );
 
     // add the total number of participants
-    if( $select->has_table_column( '', 'participant_count' ) )
+    if( $select->has_column( 'participant_count' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'application' );
@@ -48,7 +48,7 @@ class module extends \cenozo\service\module
     }
 
     // add the total number of sites
-    if( $select->has_table_column( '', 'site_count' ) )
+    if( $select->has_column( 'site_count' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'site' );
@@ -66,7 +66,7 @@ class module extends \cenozo\service\module
     }
 
     // add the total number of users
-    if( $select->has_table_column( '', 'user_count' ) )
+    if( $select->has_column( 'user_count' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'access' );

@@ -16,12 +16,14 @@ define( {
       type: 'string',
       constant: true
     },
-    source_id: {
+    source: {
+      column: 'source.name',
       title: 'Source',
       type: 'string',
       constant: true
     },
-    cohort_id: {
+    cohort: {
+      column: 'cohort.name',
       title: 'Cohort',
       type: 'string',
       constant: true
@@ -40,33 +42,32 @@ define( {
     },
     language_id: {
       title: 'Preferred Language',
-      type: 'enum',
-      required: false
+      type: 'enum'
     },
     default_site: {
+      column: 'default_site.name',
       title: 'Default Site',
       type: 'string',
       constant: true
     },
     preferred_site_id: {
+      column: 'preferred_site.id',
       title: 'Preferred Site',
-      type: 'enum',
-      required: false
+      type: 'enum'
     },
     email: {
       title: 'Email',
       type: 'string',
       help: 'Must be in the format "account@domain.name"'
     },
-    send_mass_emails: {
-      title: 'Send Mass Emails',
+    email_do_not_contact: {
+      title: 'Do Not Send Mass Emails',
       type: 'boolean',
       help: 'Whether the participant wishes to be included in mass emails.'
     },
-    sex: {
+    gender: {
       title: 'Sex',
-      type: 'enum',
-      required: true
+      type: 'enum'
     },
     date_of_birth: {
       title: 'Date of Birth',
@@ -74,13 +75,11 @@ define( {
     },
     age_group_id: {
       title: 'Age Group',
-      type: 'enum',
-      required: false
+      type: 'enum'
     },
     state_id: {
       title: 'Final State',
-      type: 'enum',
-      required: false
+      type: 'enum'
     },
     withdraw_option: {
       title: 'Withdraw Option',

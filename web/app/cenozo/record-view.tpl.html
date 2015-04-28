@@ -18,7 +18,7 @@
                    type="text"
                    autocomplete="off"
                    ng-readonly="input.constant"
-                   ng-required="input.required"></input>
+                   ng-required="viewModel.parentModel.metadata[input.key].required"></input>
             <select ng-if="'boolean' == input.type || 'enum' == input.type"
                     ng-attr-id="{{ input.key }}"
                     name="name"
@@ -26,8 +26,8 @@
                     ng-model="viewModel.record[input.key]"
                     cn-change="patch( input.key )"
                     class="form-control"
-                    ng-readonly="input.constant"
-                    ng-required="input.required"></select>
+                    ng-readonly="input.constant || !input.enumList"
+                    ng-required="viewModel.parentModel.metadata[input.key].required"></select>
             <textarea ng-if="'text' == input.type || 'constant text' == input.type"
                       ng-attr-id="{{ input.key }}"
                       name="name"
@@ -35,7 +35,7 @@
                       cn-change="patch( input.key )"
                       class="form-control"
                       ng-readonly="input.constant"
-                      ng-required="input.required"></textarea>
+                      ng-required="viewModel.parentModel.metadata[input.key].required"></textarea>
           </div>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.required">
             Cannot be blank

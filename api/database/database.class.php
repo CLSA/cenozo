@@ -61,7 +61,7 @@ class database extends \cenozo\base_object
 
     $rows = $this->get_all(
       sprintf( 'SELECT table_schema, table_name, column_name, column_type, '.
-                      'data_type, column_key, column_default '.
+                      'data_type, column_key, column_default, is_nullable != "YES" AS is_nullable '.
                'FROM information_schema.columns %s ',
                $column_mod->get_sql() ),
       false ); // do not add table names
@@ -85,6 +85,7 @@ class database extends \cenozo\base_object
         array( 'data_type' => $data_type,
                'type' => $column_type,
                'default' => $column_default,
+               'required' => $is_nullable,
                'key' => $column_key );
     }
 
@@ -285,7 +286,7 @@ class database extends \cenozo\base_object
   }
   
   /**
-   * Returns an associative list of all columns that have a default value
+   * Returns an associative list of metadata for all columns
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @return string

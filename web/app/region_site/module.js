@@ -10,20 +10,17 @@ define( {
     site_id: {
       column: 'region_site.site_id',
       title: 'Site',
-      type: 'enum',
-      required: true
+      type: 'enum'
     },
     region_id: {
       column: 'region_site.region_id',
       title: 'Region',
-      type: 'enum',
-      required: true
+      type: 'enum'
     },
     language_id: {
       column: 'region_site.language_id',
       title: 'Language',
-      type: 'enum',
-      required: true
+      type: 'enum'
     }
   },
   columnList: {

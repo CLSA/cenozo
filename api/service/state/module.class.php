@@ -25,7 +25,7 @@ class module extends \cenozo\service\module
     $db_application = $session->get_application();
 
     // add the total number of participants
-    if( $select->has_table_column( '', 'participant_count' ) )
+    if( $select->has_column( 'participant_count' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'participant' );
@@ -64,7 +64,7 @@ class module extends \cenozo\service\module
     }
 
     // add the total number of roles
-    if( $select->has_table_column( '', 'role_count' ) )
+    if( $select->has_column( 'role_count' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'role_has_state' );

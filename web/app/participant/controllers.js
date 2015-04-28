@@ -17,7 +17,9 @@ define( [], function() {
     function( $stateParams, $scope, CnParticipantSingleton ) {
       $scope.cnList = CnParticipantSingleton.cnList;
       $scope.cnView = CnParticipantSingleton.cnView;
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      CnParticipantSingleton.promise.then( function() {
+        $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      } );
     }
   ] );
 

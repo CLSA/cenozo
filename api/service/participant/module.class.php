@@ -25,13 +25,18 @@ class module extends \cenozo\service\module
     $db_application = $session->get_application();
 
     // restrict to participants in this application
-    if( $db_application->release_based )
+    if( $db_application->release_based || $select->has_table_columns( 'preferred_site' ) )
     {
       $sub_mod = lib::create( 'database\modifier' );
       $sub_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
       $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
-      $modifier->join_modifier( 'application_has_participant', $sub_mod );
+      $modifier->join_modifier(
+        'application_has_participant', $sub_mod, $db_application->release_based ? '' : 'left' );
       $modifier->where( 'application_has_participant.datetime', '!=', NULL );
+
+      if( $select->has_table_columns( 'preferred_site' ) )
+        $modifier->join( 'site', 'application_has_participant.preferred_site_id', 'preferred_site.id',
+                         'left', 'preferred_site' );
     }
 
     // restrict to participants in this site (for some roles)
@@ -45,8 +50,8 @@ class module extends \cenozo\service\module
       $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
     }
 
-    // if any of the select columns include the site table then link to it using the participant_site view
-    if( $select->has_table_columns( 'site' ) )
+    // join to participant_site table
+    if( $select->has_table_columns( 'site' ) || $select->has_table_columns( 'default_site' ) )
     {
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
@@ -54,6 +59,7 @@ class module extends \cenozo\service\module
         'participant_site.application_id', '=', $db_application->id );
       $modifier->join_modifier( 'participant_site', $join_mod );
       $modifier->join( 'site', 'participant_site.site_id', 'site.id' );
+      $modifier->join( 'site', 'participant_site.default_site_id', 'default_site.id', '', 'default_site' );
     }
   }
 }

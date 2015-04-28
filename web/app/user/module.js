@@ -9,28 +9,23 @@ define( {
   inputList: {
     active: {
       title: 'Active',
-      type: 'boolean',
-      required: true
+      type: 'boolean'
     },
     name: {
       title: 'Username',
-      type: 'string',
-      required: true
+      type: 'string'
     },
     first_name: {
       title: 'First Name',
-      type: 'string',
-      required: true
+      type: 'string'
     },
     last_name: {
       title: 'Last Name',
-      type: 'string',
-      required: true
+      type: 'string'
     },
     email: {
       title: 'Email',
-      type: 'string',
-      required: false
+      type: 'string'
     }
   },
   columnList: {

@@ -460,15 +460,28 @@ cenozo.factory( 'CnBaseViewFactory', [
 
         var data = {};
         if( 0 < selectList.length ) data.select = { column: selectList };
-        if( 0 < joinList.length ) data.modifier.join = joinList;
+        if( 0 < joinList.length ) data.modifier = { join: joinList };
 
         var thisRef = this;
-        console.log( data );
         return CnHttpFactory.instance( {
           path: this.subject + '/' + id,
           data: data
         } ).get().then( function success( response ) {
           thisRef.record = response.data;
+
+          // convert blank enums to empty strings (for ng-options)
+          for( var column in thisRef.inputList ) {
+            var metadata = thisRef.parentModel.metadata[column];
+            var notRequired =
+              ( undefined !== metadata && !metadata.required ) ||
+              undefined === thisRef.inputList[column].required ||
+              !thisRef.inputList[column].required;
+            if( notRequired && 'enum' == thisRef.inputList[column].type ) {
+              if( null === thisRef.record[column] ) {
+                thisRef.record[column] = '';
+              }
+            }
+          }
         } );
       },
       patch: function( id, data ) {
@@ -510,22 +523,24 @@ cenozo.factory( 'CnBaseSingletonFactory', [
           path: object.subject
         } ).head().then( function( response ) {
           var metadata = JSON.parse( response.headers( 'Columns' ) );
-          object.metadata = metadata;
           for( var column in metadata ) {
             // parse out the enum values
+            metadata[column].required = "1" == metadata[column].required;
             if( 'enum' == metadata[column].data_type ) {
-              object.metadata[column].enumList = [];
+              metadata[column].enumList = [];
               var enumList = metadata[column].type.replace( /^enum\(['"]/i, '' )
                                                   .replace( /['"]\)$/, '' )
                                                   .split( "','" );
               for( var i = 0; i < enumList.length; i++ ) {
-                object.metadata[column].enumList.push( {
+                metadata[column].enumList.push( {
                   value: enumList[i],
                   name: enumList[i]
                 } );
               }
             }
           }
+          metadata.readyForWatch = false;
+          object.metadata = metadata;
         } );
       }
     };
