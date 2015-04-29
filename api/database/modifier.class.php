@@ -28,10 +28,11 @@ class modifier extends \cenozo\base_object
    * @param string $type The type of join to use.  May be blank or include inner, cross, straight,
    *        left, left outer, right or right outer
    * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function join_modifier( $table, $modifier, $type = '', $alias = NULL )
+  public function join_modifier( $table, $modifier, $type = '', $alias = NULL, $prepend = false )
   {
     $type = strtoupper( $type );
 
@@ -63,9 +64,12 @@ class modifier extends \cenozo\base_object
     // replace existing joins (because order matters)
     if( array_key_exists( $alias, $this->join_list ) ) unset( $this->join_list[$alias] );
 
-    $this->join_list[$alias] = array( 'table' => $table,
-                                      'modifier' => $modifier,
-                                      'type' => strtoupper( $type ) );
+    $join = array( $alias => array( 'table' => $table,
+                                    'modifier' => $modifier,
+                                    'type' => strtoupper( $type ) ) );
+
+    if( $prepend ) $this->join_list = array_merge( $join, $this->join_list );
+    else $this->join_list = array_merge( $this->join_list, $join );
   }
 
   /**
@@ -77,14 +81,15 @@ class modifier extends \cenozo\base_object
    * @param string $type The type of join to use.  May be blank or include inner, cross, straight,
    *                     left, left outer, right or right outer
    * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function join( $table, $on_left, $on_right, $type = '', $alias = NULL )
+  public function join( $table, $on_left, $on_right, $type = '', $alias = NULL, $prepend = false )
   {
     $on_mod = new static();
     $on_mod->where( $on_left, '=', $on_right, false );
-    $this->join_modifier( $table, $on_mod, $type, $alias );
+    $this->join_modifier( $table, $on_mod, $type, $alias, $prepend );
   }
 
   /**
@@ -93,12 +98,13 @@ class modifier extends \cenozo\base_object
    * @param string $on_left The left column of the join rule.
    * @param string $on_right The right column of the join rule.
    * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function left_join( $table, $on_left, $on_right, $alias = NULL )
+  public function left_join( $table, $on_left, $on_right, $alias = NULL, $prepend = false )
   {
-    $this->join( $table, $on_left, $on_right, 'left', $alias );
+    $this->join( $table, $on_left, $on_right, 'left', $alias, $prepend );
   }
 
   /**
@@ -107,12 +113,13 @@ class modifier extends \cenozo\base_object
    * @param string $on_left The left column of the join rule.
    * @param string $on_right The right column of the join rule.
    * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function right_join( $table, $on_left, $on_right, $alias = NULL )
+  public function right_join( $table, $on_left, $on_right, $alias = NULL, $prepend = false )
   {
-    $this->join( $table, $on_left, $on_right, 'right', $alias );
+    $this->join( $table, $on_left, $on_right, 'right', $alias, $prepend );
   }
 
   /**
@@ -121,12 +128,13 @@ class modifier extends \cenozo\base_object
    * @param string $on_left The left column of the join rule.
    * @param string $on_right The right column of the join rule.
    * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function cross_join( $table, $on_left, $on_right, $alias = NULL )
+  public function cross_join( $table, $on_left, $on_right, $alias = NULL, $prepend = false )
   {
-    $this->join( $table, $on_left, $on_right, 'cross', $alias );
+    $this->join( $table, $on_left, $on_right, 'cross', $alias, $prepend );
   }
 
   /**
@@ -134,12 +142,13 @@ class modifier extends \cenozo\base_object
    * @param string $table The table to join to.
    * @param modifier $modifier Unlike other join types this can be left NULL
    * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function inner_join( $table, $modifier = NULL, $alias = NULL )
+  public function inner_join( $table, $modifier = NULL, $alias = NULL, $prepend = false )
   {
-    $this->join( $table, $modifier, 'inner', $alias );
+    $this->join( $table, $modifier, 'inner', $alias, $prepend );
   }
 
   /**
