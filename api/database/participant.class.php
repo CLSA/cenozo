@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * participant: record
  */
-class participant extends person
+class participant extends has_rank
 {
   /**
    * Audit changs to email address by overriding the magic __set method
@@ -152,8 +152,8 @@ class participant extends person
 
     // need custom SQL
     $address_id = static::db()->get_one(
-      sprintf( 'SELECT address_id FROM person_first_address WHERE person_id = %s',
-               static::db()->format_string( $this->person_id ) ) );
+      sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
+               static::db()->format_string( $this->id ) ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
   }
 

@@ -29,4 +29,22 @@ class module extends \cenozo\service\module
 
     return $valid;
   }
+
+  /**
+   * Extend parent method
+   */
+  public function prepare_read( $select, $modifier )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    parent::prepare_read( $select, $modifier );
+
+    // add the "available" column if needed
+    if( $select->has_column( 'available' ) )
+    {
+      // check if the address is available this month
+      $month = strtolower( $util_class_name::get_datetime_object( NULL, true )->format( 'F' ) );
+      $select->add_column( $month, 'available' );
+    }
+  }
 }

@@ -39,7 +39,7 @@ CREATE PROCEDURE patch_participant_primary_address()
       REPLACE INTO participant_primary_address( participant_id, address_id )
       SELECT participant.id, address1.id
       FROM participant
-      JOIN address AS address1 ON participant.person_id = address1.person_id
+      JOIN address AS address1 ON participant.id = address1.participant_id
       WHERE address1.rank = (
         SELECT MIN( address2.rank )
         FROM address AS address2
@@ -48,8 +48,8 @@ CREATE PROCEDURE patch_participant_primary_address()
         -- in region_site, actual linkage (and language) is irrelevant
         JOIN region_site ON region.id = region_site.region_id
         WHERE address2.active
-        AND address1.person_id = address2.person_id
-        GROUP BY address2.person_id
+        AND address1.participant_id = address2.participant_id
+        GROUP BY address2.participant_id
       );
 
     END IF;

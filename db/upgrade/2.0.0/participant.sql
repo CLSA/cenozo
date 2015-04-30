@@ -36,6 +36,23 @@ CREATE PROCEDURE patch_participant()
       CHANGE gender sex ENUM('male','female') NOT NULL;
     END IF;
 
+    SELECT "Dropping person_id column from participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "person_id" );
+    IF @test = 1 THEN
+      -- drop column
+      ALTER TABLE participant
+      DROP FOREIGN KEY fk_participant_person_id,
+      DROP INDEX fk_person_id,
+      DROP INDEX uq_person_id,
+      DROP COLUMN person_id;
+    END IF;
+
   END //
 DELIMITER ;
 

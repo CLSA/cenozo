@@ -1,21 +1,20 @@
-SELECT "Creating new update_person_first_address procedure" AS "";
+SELECT "Creating new update_participant_first_address procedure" AS "";
 
-DROP procedure IF EXISTS update_person_first_address;
+DROP procedure IF EXISTS update_participant_first_address;
 
 DELIMITER $$
-
-CREATE PROCEDURE update_person_first_address(IN proc_person_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_participant_first_address(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
-
   SET @address_id = (
     SELECT address1.id
-    FROM address AS address1
-    WHERE person_id = proc_person_id
-    AND address1.rank = (
+    FROM participant
+    LEFT JOIN address AS address1 ON participant.id = address.participant_id
+    WHERE participant.id = proc_participant_id
+    AND address1.rank <=> (
       SELECT MIN( address2.rank )
       FROM address AS address2
       WHERE address2.active
-      AND address1.person_id = address2.person_id
+      AND participant.id = address2.participant_id
       AND CASE MONTH( CURRENT_DATE() )
         WHEN 1 THEN address2.january
         WHEN 2 THEN address2.february
@@ -30,18 +29,17 @@ BEGIN
         WHEN 11 THEN address2.november
         WHEN 12 THEN address2.december
         ELSE 0 END = 1
-      GROUP BY address2.person_id
+      GROUP BY address2.participant_id
     )
   );
-  
-  IF @address_id THEN
-    REPLACE INTO person_first_address
-    SET person_id = proc_person_id, address_id = @address_id;
-  ELSE
-    DELETE FROM person_first_address
-    WHERE person_id = proc_person_id;
-  END IF;
 
+  IF @address_id THEN
+    REPLACE INTO participant_first_address
+    SET participant_id = proc_participant_id, address_id = @address_id;
+  ELSE
+    DELETE FROM participant_first_address
+    WHERE participant_id = proc_participant_id;
+  END IF;
 END$$
 
 DELIMITER ;

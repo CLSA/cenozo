@@ -14,6 +14,7 @@ CREATE PROCEDURE patch_jurisdiction()
     IF @test = 1 THEN
       -- drop foreign keys, key and column
       ALTER TABLE jurisdiction
+      ADD INDEX dk_postcode (postcode),
       DROP FOREIGN KEY fk_jurisdiction_service_id,
       DROP KEY fk_service_id,
       DROP COLUMN service_id,
