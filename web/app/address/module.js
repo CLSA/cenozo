@@ -1,15 +1,80 @@
 define( {
   subject: 'address',
   name: {
-    // TODO: fill out
+    singular: 'address',
+    plural: 'addresses',
+    possessive: 'address\'',
+    pluralPossessive: 'addresses\''
   },
   inputList: {
-    // TODO: fill out
+    active: {
+      title: 'Active',
+      type: 'boolean'
+    },
+    rank: {
+      title: 'Rank',
+      type: 'rank'
+    },
+    address1: {
+      title: 'Address Line 1',
+      type: 'string'
+    },
+    address2: {
+      title: 'Address Line 2',
+      type: 'string'
+    },
+    city: {
+      title: 'City',
+      type: 'string'
+    },
+    region_id: {
+      title: 'Region',
+      type: 'enum'
+    },
+    postcode: {
+      title: 'Postcode',
+      type: 'string',
+      help: 'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.'
+    },
+    timezone_offset: {
+      title: 'Timezone Offset',
+      type: 'number',
+      help: 'The number of hours difference between the address\' timezone and UTC.'
+    },
+    daylight_savings: {
+      title: 'Daylight Savings',
+      type: 'string',
+      help: 'Whether the address observes daylight savings.'
+    },
+    note: {
+      title: 'Note',
+      type: 'text'
+    }
   },
   columnList: {
-    // TODO: fill out
-  }
+    city: {
+      title: 'City'
+    },
+    region: {
+      column: 'region.name',
+      title: 'Region'
+    },
+    active: {
+      column: 'address.active',
+      title: 'Active',
+      filter: 'cnYesNo'
+    },
+    available: {
+      title: 'Available',
+      filter: 'cnYesNo'
+    },
+    rank: {
+      title: 'Rank',
+      filter: 'cnOrdinal'
+    }
+  },
   defaultOrder: {
-    // TODO: fill out
+    column: 'rank',
+    reverse: false
   } 
 } );

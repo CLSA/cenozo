@@ -51,7 +51,6 @@ define( [
         this.cnAccessList.enableDelete( true );
         var thisRef = this;
         this.load = function load( id ) { 
-          thisRef.cnAccessList.cache = []; 
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
             thisRef.cnAccessList.load( 'user/' + thisRef.record.id + '/access' );
           } );

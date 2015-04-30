@@ -1,18 +1,31 @@
 define( {
-  subject: '',
+  subject: 'age_group',
   name: {
-    singular: '',
-    plural: '',
-    possessive: '',
-    pluralPossessive: ''
+    singular: 'age group',
+    plural: 'age groups',
+    possessive: 'age group\'s',
+    pluralPossessive: 'age groups\''
   },
   inputList: {
-    // TODO: fill out
+    lower: {
+      title: 'Lower Age',
+      type: 'number'
+    },
+    upper: {
+      title: 'Upper Age',
+      type: 'number'
+    },
   },
   columnList: {
-    // TODO: fill out
+    lower: {
+      title: 'Lower Age',
+    },
+    upper: {
+      title: 'Upper Age',
+    }
   },
   defaultOrder: {
-    // TODO: fill out
-  }
+    column: 'lower',
+    reverse: false
+  } 
 } );

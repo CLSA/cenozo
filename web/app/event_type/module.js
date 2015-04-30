@@ -1,10 +1,10 @@
 define( {
-  subject: '',
+  subject: 'event_type',
   name: {
-    singular: '',
-    plural: '',
-    possessive: '',
-    pluralPossessive: ''
+    singular: 'event type',
+    plural: 'event types',
+    possessive: 'event type\'s',
+    pluralPossessive: 'event types\''
   },
   inputList: {
     // TODO: fill out

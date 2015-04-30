@@ -58,7 +58,7 @@ define( {
     email: {
       title: 'Email',
       type: 'string',
-      help: 'Must be in the format "account@domain.name"'
+      help: 'Must be in the format "account@domain.name".'
     },
     mass_email: {
       title: 'Mass Emails',

@@ -10,21 +10,25 @@ define( {
     name: {
       title: 'Name',
       type: 'string',
-      help: 'May only contain letters, numbers and underscores'
+      help: 'May only contain letters, numbers and underscores.'
     },
-    active: {
-      title: 'Active',
+    title: {
+      title: 'Title',
+      type: 'string',
+      help: 'A user-friendly name for the service, may contain any characters.'
+    },
+    language_id: {
+      title: 'Default Language',
+      type: 'enum'
+    },
+    version: {
+      title: 'Version',
+      type: 'constant'
+    },
+    release_based: {
+      title: 'Release Based',
       type: 'boolean',
-      help: 'Inactive applications will not show as options in reports or to external applications'
-    },
-    locked: {
-      title: 'Locked',
-      type: 'boolean',
-      help: 'If locked then only users in the access list will be able to make changes to the application'
-    },
-    description: {
-      title: 'Description',
-      type: 'text'
+      help: 'Whether the application only has access to participants once they are released.'
     }
   },
   columnList: {

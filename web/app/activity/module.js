@@ -7,7 +7,7 @@ define( {
     pluralPossessive: 'activities\''
   },
   inputList: {
-    // TODO: fill out
+    // not used
   },
   columnList: {
     user: {

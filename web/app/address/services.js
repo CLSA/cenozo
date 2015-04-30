@@ -35,8 +35,8 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAddressViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnUserListFactory',
-    function( CnBaseViewFactory, CnParticipantListFactory, CnUserListFactory ) {
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
         params.subject = module.subject;

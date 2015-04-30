@@ -1,7 +1,10 @@
 define( {
   subject: 'event',
   name: {
-    // TODO: fill out
+    singular: 'event',
+    plural: 'events',
+    possessive: 'event\'s',
+    pluralPossessive: 'events\''
   },
   inputList: {
     // TODO: fill out

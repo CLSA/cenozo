@@ -36,7 +36,6 @@ define( [
         this.cnUserList.enableSelect( true );
         var thisRef = this;
         this.load = function load( id ) {
-          thisRef.cnUserList.cache = [];
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
             thisRef.cnUserList.load( 'language/' + thisRef.record.id + '/user' );
           } );

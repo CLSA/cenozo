@@ -60,9 +60,6 @@ define( [
         this.cnUserList.enableSelect( true );
         var thisRef = this;
         this.load = function load( id ) {
-          thisRef.cnParticipantList.cache = [];
-          thisRef.cnSiteList.cache = [];
-          thisRef.cnUserList.cache = [];
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
             thisRef.cnParticipantList.load( 'application/' + thisRef.record.id + '/participant' );
             thisRef.cnSiteList.load( 'application/' + thisRef.record.id + '/site' );

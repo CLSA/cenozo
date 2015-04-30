@@ -1,5 +1,8 @@
 define( [
-  cnCenozoUrl + '/app/participant/module.js'
+  cnCenozoUrl + '/app/participant/module.js',
+  cnCenozoUrl + '/app/address/controllers.js',
+  cnCenozoUrl + '/app/address/directives.js',
+  cnCenozoUrl + '/app/address/services.js'
 ], function( module ) {
 
   'use strict';
@@ -21,14 +24,56 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnParticipantViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnAddressListFactory',
+    function( CnBaseViewFactory, CnAddressListFactory ) {
+      var object = function( params ) {
+        var base = CnBaseViewFactory.instance( params );
+        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+
+        ////////////////////////////////////
+        // factory customizations start here
+        this.cnAddressList = CnAddressListFactory.instance( { parentModel: this } );
+        this.cnAddressList.enableAdd( true );
+        this.cnAddressList.enableDelete( true );
+        /*
+        this.cnPhoneList = CnPhoneListFactory.instance( { parentModel: this } );
+        this.cnPhoneList.enableAdd( true );
+        this.cnPhoneList.enableDelete( true );
+        this.cnConsentList = CnConsentListFactory.instance( { parentModel: this } );
+        this.cnConsentList.enableAdd( true );
+        this.cnConsentList.enableDelete( true );
+        this.cnAlternateList = CnAlternateListFactory.instance( { parentModel: this } );
+        this.cnAlternateList.enableAdd( true );
+        this.cnAlternateList.enableDelete( true );
+        this.cnEventList = CnEventListFactory.instance( { parentModel: this } );
+        this.cnEventList.enableAdd( true );
+        this.cnEventList.enableDelete( true );
+        */
+        var thisRef = this;
+        this.load = function load( id ) { 
+          return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
+            thisRef.cnAddressList.load( 'participant/' + thisRef.record.id + '/address' );
+            /*
+            thisRef.cnPhoneList.load( 'participant/' + thisRef.record.id + '/phone' );
+            thisRef.cnConsentList.load( 'participant/' + thisRef.record.id + '/consent' );
+            thisRef.cnAlternateList.load( 'participant/' + thisRef.record.id + '/alternate' );
+            thisRef.cnEventList.load( 'participant/' + thisRef.record.id + '/event' );
+            */
+          } );
+        };
+        // factory customizations end here
+        //////////////////////////////////
+
+        cnCopyParams( this, params );
+      };
+
+      object.prototype = CnBaseViewFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
         params.subject = module.subject;
         params.name = module.name;
         params.inputList = module.inputList;
-        return CnBaseViewFactory.instance( params );
+        return new object( params );
       } };
     }
   ] );

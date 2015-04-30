@@ -1,15 +1,45 @@
 define( {
   subject: 'consent',
   name: {
-    // TODO: fill out
+    singular: 'consent',
+    plural: 'consents',
+    possessive: 'consent\'s',
+    pluralPossessive: 'consents\''
   },
   inputList: {
-    // TODO: fill out
+    accept: {
+      title: 'Accept',
+      type: 'boolean
+    },
+    written: {
+      title: 'Written',
+      type: 'boolean'
+    },
+    date: {
+      title: 'Date',
+      type: 'date'
+    },
+    note: {
+      title: 'Note',
+      type: 'text'
+    },
   },
   columnList: {
-    // TODO: fill out
+    accept: {
+      title: 'Accept',
+      filter: 'cnYesNo'
+    },
+    written: {
+      title: 'Written',
+      filter: 'cnYesNo'
+    },
+    date: {
+      title: 'Date',
+      filter: 'cnMomentDate:YYYY-MM-DD'
+    },
   }
   defaultOrder: {
-    // TODO: fill out
+    column: 'date',
+    reverse: true
   } 
 } );

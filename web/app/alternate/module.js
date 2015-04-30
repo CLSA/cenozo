@@ -1,15 +1,60 @@
 define( {
   subject: 'alternate',
   name: {
-    // TODO: fill out
+    singular: 'alternate',
+    plural: 'alternates',
+    possessive: 'alternate\'s',
+    pluralPossessive: 'alternates\''
   },
   inputList: {
-    // TODO: fill out
+    first_name: {
+      title: 'First Name',
+      type: 'string'
+    },
+    last_name: {
+      title: 'Last Name',
+      type: 'string'
+    },
+    association: {
+      title: 'Association',
+      type: 'string'
+    },
+    alternate: {
+      title: 'Alternate',
+      type: 'boolean'
+    },
+    informant: {
+      title: 'Information Provider',
+      type: 'boolean'
+    },
+    proxy: {
+      title: 'Decision Maker',
+      type: 'boolean'
+    },
   },
   columnList: {
-    // TODO: fill out
+    name: {
+      column: 'CONCAT( first_name, " ", last_name)',
+      title: 'Name'
+    },
+    association: {
+      title: 'Association'
+    },
+    alternate: {
+      title: 'Alternate',
+      filter: 'cnYesNo'
+    },
+    informant: {
+      title: 'Information Provider',
+      filter: 'cnYesNo'
+    },
+    proxy: {
+      title: 'Decision Maker',
+      filter: 'cnYesNo'
+    },
   }
   defaultOrder: {
-    // TODO: fill out
+    column: 'last_name',
+    reverse: false
   } 
 } );

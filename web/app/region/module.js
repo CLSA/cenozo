@@ -1,10 +1,10 @@
 define( {
-  subject: '',
+  subject: 'region',
   name: {
-    singular: '',
-    plural: '',
-    possessive: '',
-    pluralPossessive: ''
+    singular: 'region',
+    plural: 'regions',
+    possessive: 'region\'s',
+    pluralPossessive: 'regions\''
   },
   inputList: {
     // TODO: fill out

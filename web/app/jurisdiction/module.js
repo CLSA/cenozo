@@ -1,10 +1,10 @@
 define( {
-  subject: '',
+  subject: 'jurisdiction',
   name: {
-    singular: '',
-    plural: '',
-    possessive: '',
-    pluralPossessive: ''
+    singular: 'jurisdiction',
+    plural: 'jurisdictions',
+    possessive: 'jurisdiction\'s',
+    pluralPossessive: 'jurisdictions\''
   },
   inputList: {
     // TODO: fill out

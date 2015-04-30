@@ -55,8 +55,6 @@ define( [
         this.cnUserList.enableSelect( true );
         var thisRef = this;
         this.load = function load( id ) {
-          thisRef.cnParticipantList.cache = [];
-          thisRef.cnUserList.cache = [];
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
             thisRef.cnParticipantList.load( 'collection/' + thisRef.record.id + '/participant' );
             thisRef.cnUserList.load( 'collection/' + thisRef.record.id + '/user' );
@@ -66,7 +64,7 @@ define( [
         //////////////////////////////////
 
         cnCopyParams( this, params );
-      }
+      };
 
       object.prototype = CnBaseViewFactory.prototype;
       return { instance: function( params ) {

@@ -51,16 +51,16 @@ define( {
     },
     role_count: {
       title: 'Roles',
-      help: 'The number of roles the user has access to for this application'
+      help: 'The number of roles the user has access to for this application.'
     },
     site_count: {
       title: 'Sites',
-      help: 'The number of sites the user has access to for this application'
+      help: 'The number of sites the user has access to for this application.'
     },
     last_access_datetime: {
       title: 'Last Access',
       filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
-      help: 'The last time the user accessed this application'
+      help: 'The last time the user accessed this application.'
     }
   },
   defaultOrder: {

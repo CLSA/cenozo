@@ -1,10 +1,10 @@
 define( {
-  subject: '',
+  subject: 'role',
   name: {
-    singular: '',
-    plural: '',
-    possessive: '',
-    pluralPossessive: ''
+    singular: 'role',
+    plural: 'roles',
+    possessive: 'role\'s',
+    pluralPossessive: 'roles\''
   },
   inputList: {
     // TODO: fill out

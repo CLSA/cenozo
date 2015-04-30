@@ -18,13 +18,13 @@ define( {
     active: {
       title: 'Active',
       type: 'boolean',
-      help: 'Setting this to yes will make this language appear in language lists'
+      help: 'Setting this to yes will make this language appear in language lists.'
     },
     participant_count: {
       title: 'Participants',
       type: 'string',
       constant: true,
-      help: 'Participants can only be added to this language by going directly to participant details'
+      help: 'Participants can only be added to this language by going directly to participant details.'
     }
   },
   columnList: {
