@@ -20,7 +20,21 @@
               type="text"
               autocomplete="off"
               ng-readonly="input.constant"
-              ng-required="model.cnView.parentModel.metadata[input.key].required"></input>
+              ng-required="model.metadata[input.key].required"></input>
+            <input ng-if="'typeahead' == input.type"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="model.cnView.record[input.key]"
+              typeahead="item.value for item in getTypeaheadValues( input.key, $viewValue )"
+              typeahead-loading="true"
+              typeahead-min-length="2"
+              cn-change="patch( input.key )"
+              class="form-control"
+              type="text"
+              placeholder="(Type the first few letters to search possible values)"
+              autocomplete="off"
+              ng-readonly="input.constant"
+              ng-required="model.metadata[input.key].required"></input>
             <input ng-if="'date' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
@@ -41,7 +55,7 @@
               cn-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant || !input.enumList"
-              ng-required="model.cnView.parentModel.metadata[input.key].required"></select>
+              ng-required="model.metadata[input.key].required"></select>
             <textarea ng-if="'text' == input.type || 'constant text' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
@@ -49,7 +63,7 @@
               cn-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant"
-              ng-required="model.cnView.parentModel.metadata[input.key].required"></textarea>
+              ng-required="model.metadata[input.key].required"></textarea>
           </div>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.required">
             Cannot be blank

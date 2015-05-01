@@ -4,8 +4,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'AccessAddCtrl', [
-    '$state', 'CnAccessModelFactory',
-    function( $state, CnAccessModelFactory ) {
+    '$scope', 'CnAccessModelFactory',
+    function( $scope, CnAccessModelFactory ) {
       $scope.model = CnAccessModelFactory.root;
       $scope.model.promise.then( function() { $scope.record = $scope.model.cnAdd.createRecord(); } );
     }

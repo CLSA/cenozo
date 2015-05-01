@@ -131,8 +131,8 @@ cenozo.factory( 'CnBaseAddFactory', [
 /* ######################################################################################################## */
 // TODO: replace with "apply" model as in base singleton factory? (no params processed here)
 cenozo.factory( 'CnBaseListFactory', [
-  'CnPaginationFactory', 'CnHttpFactory',
-  function( CnPaginationFactory, CnHttpFactory ) {
+  '$state', '$stateParams', 'CnPaginationFactory', 'CnHttpFactory',
+  function( $state, $stateParams, CnPaginationFactory, CnHttpFactory ) {
     var object = function( params ) {
       if( undefined === params.parentModel ) throw 'Tried to create CnBaseListFactory without a parent model';
       if( undefined === params.subject ) throw 'Tried to create CnBaseListFactory without a subject';
@@ -168,10 +168,17 @@ cenozo.factory( 'CnBaseListFactory', [
           this.addEnabled = enable;
           if( enable ) {
             this.add = function( record ) {
-              var thisRef = this;
               cnConvertToDatabaseRecord( record );
+              var stateNameParts = $state.current.name.split( '.' );
+              var len = stateNameParts.length;
+              var path = this.subject != stateNameParts[len-2]
+                       ? stateNameParts[len-2] + '/' + $stateParams.parentId + '/'
+                       : '';
+              path += this.subject;
+
+              var thisRef = this;
               return CnHttpFactory.instance( {
-                path: this.subject,
+                path: path,
                 data: record
               } ).post().then( function success( response ) {
                 record.id = response.data;
@@ -190,9 +197,16 @@ cenozo.factory( 'CnBaseListFactory', [
           this.deleteEnabled = enable;
           if( enable ) {
             this.delete = function( id ) {
+              var stateNameParts = $state.current.name.split( '.' );
+              var len = stateNameParts.length;
+              var path = this.subject != stateNameParts[len-2]
+                       ? stateNameParts[len-2] + '/' + $stateParams.id + '/'
+                       : '';
+              path += this.subject + '/' + id;
+
               var thisRef = this;
               return CnHttpFactory.instance( {
-                path: this.subject + '/' + id
+                path: path
               } ).delete().then( function success( response ) {
                 for( var i = 0; i < thisRef.cache.length; i++ ) {
                   if( thisRef.cache[i].id == id ) {
@@ -560,7 +574,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           var columnList = JSON.parse( response.headers( 'Columns' ) );
           for( var column in columnList ) {
             // parse out the enum values
-            columnList[column].required = "1" == columnList[column].required;
+            columnList[column].required = '1' == columnList[column].required;
             if( 'enum' == columnList[column].data_type ) {
               columnList[column].enumList = [];
               var enumList = columnList[column].type.replace( /^enum\(['"]/i, '' )

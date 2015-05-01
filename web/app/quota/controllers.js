@@ -4,8 +4,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QuotaAddCtrl', [
-    '$state', 'CnQuotaModelFactory',
-    function( $state, CnQuotaModelFactory ) {
+    '$scope', 'CnQuotaModelFactory',
+    function( $scope, CnQuotaModelFactory ) {
       $scope.model = CnQuotaModelFactory.root;
       $scope.model.promise.then( function() { $scope.record = $scope.model.cnAdd.createRecord(); } );
     }

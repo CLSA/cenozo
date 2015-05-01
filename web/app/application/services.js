@@ -44,26 +44,26 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnApplicationViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnSiteListFactory', 'CnUserListFactory',
-    function( CnBaseViewFactory, CnParticipantListFactory, CnSiteListFactory, CnUserListFactory ) {
+    'CnBaseViewFactory', 'CnParticipantModelFactory', 'CnSiteModelFactory', 'CnUserModelFactory',
+    function( CnBaseViewFactory, CnParticipantModelFactory, CnSiteModelFactory, CnUserModelFactory ) {
       var object = function( params ) {
         var base = CnBaseViewFactory.instance( params );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
 
         ////////////////////////////////////
         // factory customizations start here
-        this.cnParticipantList = CnParticipantListFactory.instance( { parentModel: this } );
-        this.cnParticipantList.enableSelect( true );
-        this.cnSiteList = CnSiteListFactory.instance( { parentModel: this } );
-        this.cnSiteList.enableSelect( true );
-        this.cnUserList = CnUserListFactory.instance( { parentModel: this } );
-        this.cnUserList.enableSelect( true );
+        this.cnParticipantModel = CnParticipantModelFactory.instance();
+        this.cnParticipantModel.cnList.enableSelect( true );
+        this.cnSiteModel = CnSiteModelFactory.instance();
+        this.cnSiteModel.cnList.enableSelect( true );
+        this.cnUserModel = CnUserModelFactory.instance();
+        this.cnUserModel.cnList.enableSelect( true );
         var thisRef = this;
         this.load = function load( id ) {
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnParticipantList.load( 'application/' + thisRef.record.id + '/participant' );
-            thisRef.cnSiteList.load( 'application/' + thisRef.record.id + '/site' );
-            thisRef.cnUserList.load( 'application/' + thisRef.record.id + '/user' );
+            thisRef.cnParticipantModel.cnList.load( 'application/' + thisRef.record.id + '/participant' );
+            thisRef.cnSiteModel.cnList.load( 'application/' + thisRef.record.id + '/site' );
+            thisRef.cnUserModel.cnList.load( 'application/' + thisRef.record.id + '/user' );
           } );
         };
         // factory customizations end here

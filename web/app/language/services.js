@@ -24,20 +24,20 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnLanguageViewFactory', [
-    'CnBaseViewFactory', 'CnUserListFactory',
-    function( CnBaseViewFactory, CnUserListFactory ) {
+    'CnBaseViewFactory', 'CnUserModelFactory',
+    function( CnBaseViewFactory, CnUserModelFactory ) {
       var object = function( params ) {
         var base = CnBaseViewFactory.instance( params );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
 
         ////////////////////////////////////
         // factory customizations start here
-        this.cnUserList = CnUserListFactory.instance( { parentModel: this } );
-        this.cnUserList.enableSelect( true );
+        this.cnUserModel = CnUserModelFactory.instance();
+        this.cnUserModel.cnList.enableSelect( true );
         var thisRef = this;
         this.load = function load( id ) {
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnUserList.load( 'language/' + thisRef.record.id + '/user' );
+            thisRef.cnUserModel.cnList.load( 'language/' + thisRef.record.id + '/user' );
           } );
         };
         // factory customizations end here

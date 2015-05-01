@@ -38,21 +38,21 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnUserViewFactory', [
-    'CnBaseViewFactory', 'CnAccessListFactory',
-    function( CnBaseViewFactory, CnAccessListFactory ) {
+    'CnBaseViewFactory', 'CnAccessModelFactory',
+    function( CnBaseViewFactory, CnAccessModelFactory ) {
       var object = function( params ) { 
         var base = CnBaseViewFactory.instance( params );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
 
         ////////////////////////////////////
         // factory customizations start here
-        this.cnAccessList = CnAccessListFactory.instance( { parentModel: this } );
-        this.cnAccessList.enableAdd( true );
-        this.cnAccessList.enableDelete( true );
+        this.cnAccessModel = CnAccessModelFactory.instance();
+        this.cnAccessModel.cnList.enableAdd( true );
+        this.cnAccessModel.cnList.enableDelete( true );
         var thisRef = this;
         this.load = function load( id ) { 
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnAccessList.load( 'user/' + thisRef.record.id + '/access' );
+            thisRef.cnAccessModel.cnList.load( 'user/' + thisRef.record.id + '/access' );
           } );
         };
         // factory customizations end here
