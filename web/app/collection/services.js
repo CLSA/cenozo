@@ -56,8 +56,8 @@ define( [
         var thisRef = this;
         this.load = function load( id ) {
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnParticipantModel.cnList.load( 'collection/' + thisRef.record.id + '/participant' );
-            thisRef.cnUserModel.cnList.load( 'collection/' + thisRef.record.id + '/user' );
+            thisRef.cnParticipantModel.cnList.load( 'collection/' + thisRef.record.id + '/participant', true );
+            thisRef.cnUserModel.cnList.load( 'collection/' + thisRef.record.id + '/user', true );
           } );
         };
         // factory customizations end here

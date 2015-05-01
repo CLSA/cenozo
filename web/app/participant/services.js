@@ -72,11 +72,11 @@ define( [
         var thisRef = this;
         this.load = function load( id ) { 
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnAddressModel.cnList.load( 'participant/' + thisRef.record.id + '/address' );
-            thisRef.cnPhoneModel.cnList.load( 'participant/' + thisRef.record.id + '/phone' );
-            thisRef.cnConsentModel.cnList.load( 'participant/' + thisRef.record.id + '/consent' );
-            thisRef.cnAlternateModel.cnList.load( 'participant/' + thisRef.record.id + '/alternate' );
-            thisRef.cnEventModel.cnList.load( 'participant/' + thisRef.record.id + '/event' );
+            thisRef.cnAddressModel.cnList.load( 'participant/' + thisRef.record.id + '/address', true );
+            thisRef.cnPhoneModel.cnList.load( 'participant/' + thisRef.record.id + '/phone', true );
+            thisRef.cnConsentModel.cnList.load( 'participant/' + thisRef.record.id + '/consent', true );
+            thisRef.cnAlternateModel.cnList.load( 'participant/' + thisRef.record.id + '/alternate', true );
+            thisRef.cnEventModel.cnList.load( 'participant/' + thisRef.record.id + '/event', true );
           } );
         };
         // factory customizations end here
