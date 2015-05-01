@@ -9,7 +9,7 @@ define( {
   inputList: {
     accept: {
       title: 'Accept',
-      type: 'boolean
+      type: 'boolean'
     },
     written: {
       title: 'Written',
@@ -22,12 +22,12 @@ define( {
     note: {
       title: 'Note',
       type: 'text'
-    },
+    }
   },
   columnList: {
     accept: {
       title: 'Accept',
-      filter: 'cnYesNo'
+     filter: 'cnYesNo'
     },
     written: {
       title: 'Written',
@@ -36,8 +36,8 @@ define( {
     date: {
       title: 'Date',
       filter: 'cnMomentDate:YYYY-MM-DD'
-    },
-  }
+    }
+  },
   defaultOrder: {
     column: 'date',
     reverse: true

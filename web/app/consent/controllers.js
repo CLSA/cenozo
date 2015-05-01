@@ -4,32 +4,28 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ConsentAddCtrl', [
-    '$scope', 'CnConsentSingleton',
-    function( $scope, CnConsentSingleton ) {
-      $scope.cnAdd = CnConsentSingleton.cnAdd;
-      $scope.cnList = CnConsentSingleton.cnList;
-      CnConsentSingleton.promise.then( function() {
-        $scope.record = $scope.cnAdd.createRecord();
-      } );
+    '$scope', 'CnConsentModelFactory',
+    function( $scope, CnConsentModelFactory ) {
+      $scope.model = CnConsentModelFactory.root;
+      $scope.model.promise.then( function() { $scope.record = $scope.model.cnAdd.createRecord(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ConsentListCtrl', [
-    '$scope', 'CnConsentSingleton',
-    function( $scope, CnConsentSingleton ) {
-      $scope.cnList = CnConsentSingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnConsentModelFactory',
+    function( $scope, CnConsentModelFactory ) {
+      $scope.model = CnConsentModelFactory.root;
+      $scope.model.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ConsentViewCtrl', [
-    '$stateParams', '$scope', 'CnConsentSingleton',
-    function( $stateParams, $scope, CnConsentSingleton ) {
-      $scope.cnList = CnConsentSingleton.cnList;
-      $scope.cnView = CnConsentSingleton.cnView;
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnConsentModelFactory',
+    function( $scope, CnConsentModelFactory ) {
+      $scope.model = CnConsentModelFactory.root;
+      $scope.model.cnView.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 

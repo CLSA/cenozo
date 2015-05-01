@@ -1,15 +1,18 @@
 <div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
 <table class="table"
-       ng-class="{ 'table-hover':listModel.viewEnabled||listModel.selectMode, 'table-striped':!listModel.selectMode } ">
+       ng-class="{
+         'table-hover':(model.cnList.viewEnabled && !model.cnList.selectEnabled) || model.cnList.selectMode,
+         'table-striped':!model.cnList.selectMode
+       } ">
   <thead>
     <tr class="info">
       <td ng-repeat="column in columnList">
         <div class="btn-group" role="group" area-hidden="true" tooltip="{{ column.help }}">
           <button class="btn btn-narrow btn-info"
-                  ng-click="listModel.orderBy( column.key )">{{ column.title }}
-            <i ng-if="null !== listModel.order && listModel.order.column == column.key"
+                  ng-click="model.cnList.orderBy( column.key )">{{ column.title }}
+            <i ng-if="null !== model.cnList.order && model.cnList.order.column == column.key"
                class="glyphicon"
-               ng-class="listModel.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
+               ng-class="model.cnList.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
           </button>
           <button class="btn btn-narrow btn-info"
                   ng-if="column.allowRestrict"
@@ -27,36 +30,36 @@
           </p>
         </div>
       </td>
-      <td class="tiny" ng-if="listModel.deleteEnabled"></td>
+      <td class="tiny" ng-if="model.cnList.deleteEnabled && !model.cnList.selectEnabled"></td>
     </tr>
   </thead>
   <tbody>
-    <tr ng-if="listModel.loading">
+    <tr ng-if="model.cnList.loading">
       <td colspan="{{ numColumns }}" style="background-color: #FFF">
         <div class="loader" tooltip="Loading..."></div>
       </td>
     </tr>
-    <tr ng-if="!listModel.loading && 0 == listModel.cache.length">
+    <tr ng-if="!model.cnList.loading && 0 == model.cnList.cache.length">
       <td colspan="{{ numColumns }}">
-        There are no {{ listModel.name.plural }} found.
+        There are no {{ model.cnList.name.plural }} found.
       </td>
     </tr>
-    <tr ng-if="!listModel.loading"
-        ng-repeat="record in listModel.cache
-                   | orderBy: listModel.order.column:listModel.order.reverse
-                   | limitTo: ( listModel.cnPagination.currentPage - 1 ) * listModel.cnPagination.itemsPerPage -
-                              listModel.cache.length
-                   | limitTo: listModel.cnPagination.itemsPerPage"
+    <tr ng-if="!model.cnList.loading"
+        ng-repeat="record in model.cnList.cache
+                   | orderBy: model.cnList.order.column:model.cnList.order.reverse
+                   | limitTo: ( model.cnList.cnPagination.currentPage - 1 ) * model.cnList.cnPagination.itemsPerPage -
+                              model.cnList.cache.length
+                   | limitTo: model.cnList.cnPagination.itemsPerPage"
         ng-click="selectRecord( record )"
-        ng-class="{ success:listModel.selectMode&&record.selected }">
+        ng-class="{ success:model.cnList.selectMode&&record.selected }">
         <td ng-repeat="column in columnList">
           <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
         </td>
-        <td class="tiny" ng-if="listModel.deleteEnabled">
+        <td class="tiny" ng-if="model.cnList.deleteEnabled && !model.cnList.selectEnabled">
           <div>
             <button class="btn btn-xs btn-danger"
                     cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
-                                       item in the {{ listModel.name.singular }} list?"
+                                       item in the {{ model.cnList.name.singular }} list?"
                     cn-really-click="deleteRecord( record.id )"
                     ng-click="$event.stopPropagation()">
               <i class="glyphicon glyphicon-remove"></i>
@@ -69,27 +72,27 @@
     <tr class="info">
       <td colspan="{{ numColumns }}" class="rounded-bottom">
         <pagination class="pagination left"
-                    ng-model="listModel.cnPagination.currentPage"
-                    ng-show="listModel.cache.length > listModel.cnPagination.itemsPerPage"
-                    ng-change="listModel.checkCache()"
-                    max-size="listModel.cnPagination.showPageLimit"
-                    items-per-page="listModel.cnPagination.itemsPerPage"
-                    total-items="listModel.total"
+                    ng-model="model.cnList.cnPagination.currentPage"
+                    ng-show="model.cnList.cache.length > model.cnList.cnPagination.itemsPerPage"
+                    ng-change="model.cnList.checkCache()"
+                    max-size="model.cnList.cnPagination.showPageLimit"
+                    items-per-page="model.cnList.cnPagination.itemsPerPage"
+                    total-items="model.cnList.total"
                     previous-text="&lsaquo;"
                     next-text="&rsaquo;"></pagination>
-        {{ listModel.total }} records total
+        {{ model.cnList.total }} records total
         <button class="btn btn-default right"
-                ng-if="listModel.addEnabled"
+                ng-if="model.cnList.addEnabled && !model.cnList.selectEnabled"
                 ng-click="addRecord()">
           <i class="glyphicon glyphicon-plus"></i> Add
         </button>
         <button class="btn btn-default right"
-                ng-if="listModel.selectEnabled"
-                ng-class="listModel.selectMode ? 'btn-success' : 'btn-default'"
-                ng-click="listModel.toggleSelectMode()">
+                ng-if="model.cnList.selectEnabled"
+                ng-class="model.cnList.selectMode ? 'btn-success' : 'btn-default'"
+                ng-click="model.cnList.toggleSelectMode()">
           <i class="glyphicon glyphicon-edit"
-             ng-class="listModel.selectMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
-          {{ listModel.selectMode ? 'Done' : 'Select' }}
+             ng-class="model.cnList.selectMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
+          {{ model.cnList.selectMode ? 'Done' : 'Select' }}
         </button>
       </td>
     </tr>

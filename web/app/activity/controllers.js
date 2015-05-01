@@ -4,10 +4,10 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ActivityListCtrl', [
-    '$scope', 'CnActivitySingleton',
-    function( $scope, CnActivitySingleton ) {
-      $scope.cnList = CnActivitySingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnActivityModelFactory',
+    function( $scope, CnActivityModelFactory ) {
+      $scope.model = CnActivityModelFactory.root;
+      $scope.model.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 

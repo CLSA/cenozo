@@ -48,12 +48,12 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnSiteSingleton', [
-    'CnBaseSingletonFactory', 'CnSiteListFactory', 'CnSiteAddFactory', 'CnSiteViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory, CnHttpFactory ) {
-      return new ( function() {
+  cnCachedProviders.factory( 'CnSiteModelFactory', [
+    'CnBaseModelFactory', 'CnSiteListFactory', 'CnSiteAddFactory', 'CnSiteViewFactory', 'CnHttpFactory',
+    function( CnBaseModelFactory, CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory, CnHttpFactory ) {
+      var object = function() {
         this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
+        CnBaseModelFactory.apply( this );
         this.name = module.name;
         this.cnAdd = CnSiteAddFactory.instance( { parentModel: this } );
         this.cnList = CnSiteListFactory.instance( { parentModel: this } );
@@ -66,7 +66,12 @@ define( [
         // process metadata
         var thisRef = this;
         this.promise.then( function() { thisRef.metadata.isLoading = false; } );
-      } );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

@@ -4,32 +4,28 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'SystemMessageAddCtrl', [
-    '$scope', 'CnSystemMessageSingleton',
-    function( $scope, CnSystemMessageSingleton ) {
-      $scope.cnAdd = CnSystemMessageSingleton.cnAdd;
-      $scope.cnList = CnSystemMessageSingleton.cnList;
-      CnSystemMessageSingleton.promise.then( function() {
-        $scope.record = $scope.cnAdd.createRecord();
-      } );
+    '$scope', 'CnSystemMessageModelFactory',
+    function( $scope, CnSystemMessageModelFactory ) {
+      $scope.model = CnSystemMessageModelFactory.root;
+      $scope.model.promise.then( function() { $scope.record = $scope.model.cnAdd.createRecord(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'SystemMessageListCtrl', [
-    '$scope', 'CnSystemMessageSingleton',
-    function( $scope, CnSystemMessageSingleton ) {
-      $scope.cnList = CnSystemMessageSingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnSystemMessageModelFactory',
+    function( $scope, CnSystemMessageModelFactory ) {
+      $scope.model = CnSystemMessageModelFactory.root;
+      $scope.model.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'SystemMessageViewCtrl', [
-    '$stateParams', '$scope', 'CnSystemMessageSingleton',
-    function( $stateParams, $scope, CnSystemMessageSingleton ) {
-      $scope.cnList = CnSystemMessageSingleton.cnList;
-      $scope.cnView = CnSystemMessageSingleton.cnView;
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnSystemMessageModelFactory',
+    function( $scope, CnSystemMessageModelFactory ) {
+      $scope.model = CnSystemMessageModelFactory.root;
+      $scope.model.cnView.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 

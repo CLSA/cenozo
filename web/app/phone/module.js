@@ -11,11 +11,11 @@ define( {
       title: 'Associated Address',
       type: 'enum',
       help: 'The address that this phone number is associated with, if any.'
-    }
+    },
     active: {
       title: 'Active',
       type: 'boolean'
-    }
+    },
     rank: {
       title: 'Rank',
       type: 'rank'
@@ -35,25 +35,24 @@ define( {
     }
   },
   columnList: {
-    participant: {
-      column: 'participant.uid',
-      title: 'Participant'
-    },
-    active: {
-      title: 'Active'
-    },
-    rank: {
-      title: 'Rank'
+    number: {
+      title: 'Number'
     },
     type: {
       title: 'Type'
     },
-    number: {
-      title: 'Number'
+    active: {
+      column: 'phone.active',
+      title: 'Active',
+      filter: 'cnYesNo'
+    },
+    rank: {
+      title: 'Rank',
+      filter: 'cnOrdinal'
     }
   },
   defaultOrder: {
     column: 'rank',
     reverse: false
-  } 
+  }
 } );

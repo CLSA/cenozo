@@ -94,7 +94,7 @@ cenozo.factory( 'CnBaseAddFactory', [
         var actionParts = stateNameParts[1].split( '_' );
         if( 2 == actionParts.length && 'add' == actionParts[0] && this.subject == actionParts[1] ) {
           preDefinedColumn = stateNameParts[0] + '_id';
-          preDefinedId = $stateParams.id;
+          preDefinedId = $stateParams.parentId;
 
           // remove the column from the input list
           delete this.inputList[preDefinedColumn];
@@ -408,7 +408,7 @@ cenozo.factory( 'CnBaseViewFactory', [
     };
 
     object.prototype = {
-      load: function( id ) {
+      load: function() {
         // set up the select and join list based on the column list
         this.record = {};
         var selectList = [];
@@ -464,7 +464,7 @@ cenozo.factory( 'CnBaseViewFactory', [
 
         var thisRef = this;
         return CnHttpFactory.instance( {
-          path: this.subject + '/' + id,
+          path: thisRef.parentModel.getViewPath(),
           data: data
         } ).get().then( function success( response ) {
           thisRef.record = response.data;
@@ -512,13 +512,45 @@ cenozo.factory( 'CnBaseViewFactory', [
 ] );
 
 /* ######################################################################################################## */
-cenozo.factory( 'CnBaseSingletonFactory', [
-  'CnHttpFactory',
-  function( CnHttpFactory ) {
+cenozo.factory( 'CnBaseModelFactory', [
+  '$state', '$stateParams', 'CnHttpFactory',
+  function( $state, $stateParams, CnHttpFactory ) {
     return {
       apply: function( object ) {
-        if( undefined === object ) throw 'Tried to apply CnBaseSingletonFactory without a base object';
-        if( undefined === object.subject ) throw 'Tried to apply CnBaseSingletonFactory without a subject';
+        if( undefined === object ) throw 'Tried to apply CnBaseModelFactory without a base object';
+        if( undefined === object.subject ) throw 'Tried to apply CnBaseModelFactory without a subject';
+
+        // define helper functions based on the state
+        object.transitionToLastState = function() {
+          var stateName = $state.current.name;
+          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
+            $state.go( '^.list' );
+          } else { // sub-view, return to parent view
+            $state.go( '^.view', { id: $stateParams.parentId } );
+          }
+        };
+        object.transitionToAddState = function() {
+          var stateName = $state.current.name;
+          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
+            $state.go( '^.add_' + this.subject, { parentId: $stateParams.id } );
+          } else { // adding to a view state
+            $state.go( '^.add' );
+          }
+        };
+        object.transitionToViewState = function( id ) {
+          var stateName = $state.current.name;
+          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
+            $state.go( '^.view_' + this.subject, { parentId: $stateParams.id, id: id } );
+          } else {
+            $state.go( this.subject + '.view', { id: id } );
+          }
+        };
+        object.getViewPath = function() {
+          var path = undefined !== $stateParams.parentId
+                   ? $state.current.name.split( '.' )[0] + '/' + $stateParams.parentId + '/'
+                   : '';
+          return path + this.subject + '/' + $stateParams.id;
+        };
 
         // get metadata
         object.metadata = { columnList: {}, isLoading: true, isComplete: false };

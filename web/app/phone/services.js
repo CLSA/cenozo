@@ -35,8 +35,8 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnPhoneViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnUserListFactory',
-    function( CnBaseViewFactory, CnParticipantListFactory, CnUserListFactory ) {
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
         params.subject = module.subject;
@@ -48,12 +48,12 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnPhoneSingleton', [
-    'CnBaseSingletonFactory', 'CnPhoneListFactory', 'CnPhoneAddFactory', 'CnPhoneViewFactory',
-    function( CnBaseSingletonFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory ) {
-      return new ( function() {
+  cnCachedProviders.factory( 'CnPhoneModelFactory', [
+    'CnBaseModelFactory', 'CnPhoneListFactory', 'CnPhoneAddFactory', 'CnPhoneViewFactory',
+    function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory ) {
+      var object = function() {
         this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
+        CnBaseModelFactory.apply( this );
         this.name = module.name;
         this.cnAdd = CnPhoneAddFactory.instance( { parentModel: this } );
         this.cnList = CnPhoneListFactory.instance( { parentModel: this } );
@@ -66,7 +66,12 @@ define( [
         // process metadata
         var thisRef = this;
         this.promise.then( function() { thisRef.metadata.isLoading = false; } );
-      } );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

@@ -4,32 +4,28 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'AddressAddCtrl', [
-    '$scope', 'CnAddressSingleton',
-    function( $scope, CnAddressSingleton ) {
-      $scope.cnAdd = CnAddressSingleton.cnAdd;
-      $scope.cnList = CnAddressSingleton.cnList;
-      CnAddressSingleton.promise.then( function() {
-        $scope.record = $scope.cnAdd.createRecord();
-      } );
+    '$scope', 'CnAddressModelFactory',
+    function( $scope, CnAddressModelFactory ) {
+      $scope.model = CnAddressModelFactory.root;
+      $scope.model.promise.then( function() { $scope.record = $scope.model.cnAdd.createRecord(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'AddressListCtrl', [
-    '$scope', 'CnAddressSingleton',
-    function( $scope, CnAddressSingleton ) {
-      $scope.cnList = CnAddressSingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnAddressModelFactory',
+    function( $scope, CnAddressModelFactory ) {
+      $scope.model = CnAddressModelFactory.root;
+      $scope.model.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'AddressViewCtrl', [
-    '$stateParams', '$scope', 'CnAddressSingleton',
-    function( $stateParams, $scope, CnAddressSingleton ) {
-      $scope.cnList = CnAddressSingleton.cnList;
-      $scope.cnView = CnAddressSingleton.cnView;
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnAddressModelFactory',
+    function( $scope, CnAddressModelFactory ) {
+      $scope.model = CnAddressModelFactory.root;
+      $scope.model.cnView.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 

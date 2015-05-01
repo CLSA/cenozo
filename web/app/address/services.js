@@ -48,12 +48,14 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAddressSingleton', [
-    'CnBaseSingletonFactory', 'CnAddressListFactory', 'CnAddressAddFactory', 'CnAddressViewFactory',
-    function( CnBaseSingletonFactory, CnAddressListFactory, CnAddressAddFactory, CnAddressViewFactory ) {
-      return new ( function() {
+  cnCachedProviders.factory( 'CnAddressModelFactory', [
+    'CnBaseModelFactory', 'CnAddressListFactory', 'CnAddressAddFactory', 'CnAddressViewFactory',
+    'CnHttpFactory', 'CnAppSingleton',
+    function( CnBaseModelFactory, CnAddressListFactory, CnAddressAddFactory, CnAddressViewFactory,
+              CnHttpFactory, CnAppSingleton ) {
+      var object = function() {
         this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
+        CnBaseModelFactory.apply( this );
         this.name = module.name;
         this.cnAdd = CnAddressAddFactory.instance( { parentModel: this } );
         this.cnList = CnAddressListFactory.instance( { parentModel: this } );
@@ -65,8 +67,39 @@ define( [
 
         // process metadata
         var thisRef = this;
-        this.promise.then( function() { thisRef.metadata.isLoading = false; } );
-      } );
+        this.promise.then( function() {
+          CnHttpFactory.instance( {
+            path: 'region',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: {
+                  column: 'country',
+                  operator: '=',
+                  value: CnAppSingleton.application.country
+                },
+                order: 'name'
+              }
+            }
+          } ).query().then( function success( response ) {
+            thisRef.metadata.columnList.region_id.enumList = [];
+            for( var i = 0; i < response.data.length; i++ ) {
+              thisRef.metadata.columnList.region_id.enumList.push( {
+                value: response.data[i].id,
+                name: response.data[i].name
+              } );
+            }
+          } ).finally( function() {
+            // signal that the metadata is finished loading
+            thisRef.metadata.isLoading = false;
+          } ).catch( function exception() { cnFatalError(); } );
+        } );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

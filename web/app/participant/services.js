@@ -2,7 +2,19 @@ define( [
   cnCenozoUrl + '/app/participant/module.js',
   cnCenozoUrl + '/app/address/controllers.js',
   cnCenozoUrl + '/app/address/directives.js',
-  cnCenozoUrl + '/app/address/services.js'
+  cnCenozoUrl + '/app/address/services.js',
+  cnCenozoUrl + '/app/phone/controllers.js',
+  cnCenozoUrl + '/app/phone/directives.js',
+  cnCenozoUrl + '/app/phone/services.js',
+  cnCenozoUrl + '/app/consent/controllers.js',
+  cnCenozoUrl + '/app/consent/directives.js',
+  cnCenozoUrl + '/app/consent/services.js',
+  cnCenozoUrl + '/app/alternate/controllers.js',
+  cnCenozoUrl + '/app/alternate/directives.js',
+  cnCenozoUrl + '/app/alternate/services.js',
+  cnCenozoUrl + '/app/event/controllers.js',
+  cnCenozoUrl + '/app/event/directives.js',
+  cnCenozoUrl + '/app/event/services.js'
 ], function( module ) {
 
   'use strict';
@@ -24,41 +36,47 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnParticipantViewFactory', [
-    'CnBaseViewFactory', 'CnAddressListFactory',
-    function( CnBaseViewFactory, CnAddressListFactory ) {
+    'CnBaseViewFactory',
+    'CnAddressModelFactory', 'CnPhoneModelFactory', 'CnConsentModelFactory',
+    'CnAlternateModelFactory', 'CnEventModelFactory',
+    function( CnBaseViewFactory,
+              CnAddressModelFactory, CnPhoneModelFactory, CnConsentModelFactory,
+              CnAlternateModelFactory, CnEventModelFactory ) {
       var object = function( params ) {
         var base = CnBaseViewFactory.instance( params );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
 
         ////////////////////////////////////
         // factory customizations start here
-        this.cnAddressList = CnAddressListFactory.instance( { parentModel: this } );
-        this.cnAddressList.enableAdd( true );
-        this.cnAddressList.enableDelete( true );
-        /*
-        this.cnPhoneList = CnPhoneListFactory.instance( { parentModel: this } );
-        this.cnPhoneList.enableAdd( true );
-        this.cnPhoneList.enableDelete( true );
-        this.cnConsentList = CnConsentListFactory.instance( { parentModel: this } );
-        this.cnConsentList.enableAdd( true );
-        this.cnConsentList.enableDelete( true );
-        this.cnAlternateList = CnAlternateListFactory.instance( { parentModel: this } );
-        this.cnAlternateList.enableAdd( true );
-        this.cnAlternateList.enableDelete( true );
-        this.cnEventList = CnEventListFactory.instance( { parentModel: this } );
-        this.cnEventList.enableAdd( true );
-        this.cnEventList.enableDelete( true );
-        */
+        this.cnAddressModel = CnAddressModelFactory.instance();
+        this.cnAddressModel.cnList.enableAdd( true );
+        this.cnAddressModel.cnList.enableDelete( true );
+        this.cnAddressModel.cnList.enableView( true );
+        this.cnPhoneModel = CnPhoneModelFactory.instance();
+        this.cnPhoneModel.cnList.enableAdd( true );
+        this.cnPhoneModel.cnList.enableDelete( true );
+        this.cnPhoneModel.cnList.enableView( true );
+        this.cnConsentModel = CnConsentModelFactory.instance();
+        this.cnConsentModel.cnList.enableAdd( true );
+        this.cnConsentModel.cnList.enableDelete( true );
+        this.cnConsentModel.cnList.enableView( true );
+        this.cnAlternateModel = CnAlternateModelFactory.instance();
+        this.cnAlternateModel.cnList.enableAdd( true );
+        this.cnAlternateModel.cnList.enableDelete( true );
+        this.cnAlternateModel.cnList.enableView( true );
+        this.cnEventModel = CnEventModelFactory.instance();
+        this.cnEventModel.cnList.enableAdd( true );
+        this.cnEventModel.cnList.enableDelete( true );
+        this.cnEventModel.cnList.enableView( true );
+
         var thisRef = this;
         this.load = function load( id ) { 
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnAddressList.load( 'participant/' + thisRef.record.id + '/address' );
-            /*
-            thisRef.cnPhoneList.load( 'participant/' + thisRef.record.id + '/phone' );
-            thisRef.cnConsentList.load( 'participant/' + thisRef.record.id + '/consent' );
-            thisRef.cnAlternateList.load( 'participant/' + thisRef.record.id + '/alternate' );
-            thisRef.cnEventList.load( 'participant/' + thisRef.record.id + '/event' );
-            */
+            thisRef.cnAddressModel.cnList.load( 'participant/' + thisRef.record.id + '/address' );
+            thisRef.cnPhoneModel.cnList.load( 'participant/' + thisRef.record.id + '/phone' );
+            thisRef.cnConsentModel.cnList.load( 'participant/' + thisRef.record.id + '/consent' );
+            thisRef.cnAlternateModel.cnList.load( 'participant/' + thisRef.record.id + '/alternate' );
+            thisRef.cnEventModel.cnList.load( 'participant/' + thisRef.record.id + '/event' );
           } );
         };
         // factory customizations end here
@@ -79,12 +97,12 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnParticipantSingleton', [
-    'CnBaseSingletonFactory', 'CnParticipantListFactory', 'CnParticipantViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnParticipantListFactory, CnParticipantViewFactory, CnHttpFactory ) {
-      return new ( function() {
+  cnCachedProviders.factory( 'CnParticipantModelFactory', [
+    'CnBaseModelFactory', 'CnParticipantListFactory', 'CnParticipantViewFactory', 'CnHttpFactory',
+    function( CnBaseModelFactory, CnParticipantListFactory, CnParticipantViewFactory, CnHttpFactory ) {
+      var object = function() {
         this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
+        CnBaseModelFactory.apply( this );
         this.name = module.name;
         this.cnList = CnParticipantListFactory.instance( { parentModel: this } );
         this.cnView = CnParticipantViewFactory.instance( { parentModel: this } );
@@ -169,7 +187,12 @@ define( [
             thisRef.metadata.isLoading = false;
           } ).catch( function exception() { cnFatalError(); } );
         } );
-      } );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

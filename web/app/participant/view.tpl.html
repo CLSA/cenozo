@@ -1,3 +1,11 @@
-<cn-record-view list-model="cnList" view-model="cnView"></cn-record-view>
+<cn-record-view model="model"></cn-record-view>
 <div class="vertical-spacer"></div>
-<cn-record-list heading="Address List" list-model="cnView.cnAddressList"></cn-record-list>
+<cn-record-list heading="Address List" model="model.cnView.cnAddressModel"></cn-record-list>
+<div class="vertical-spacer"></div>
+<cn-record-list heading="Phone List" model="model.cnView.cnPhoneModel"></cn-record-list>
+<div class="vertical-spacer"></div>
+<cn-record-list heading="Consent List" model="model.cnView.cnConsentModel"></cn-record-list>
+<div class="vertical-spacer"></div>
+<cn-record-list heading="Alternate List" model="model.cnView.cnAlternateModel"></cn-record-list>
+<div class="vertical-spacer"></div>
+<cn-record-list heading="Event List" model="model.cnView.cnEventModel"></cn-record-list>

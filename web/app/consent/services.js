@@ -35,8 +35,8 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnConsentViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnUserListFactory',
-    function( CnBaseViewFactory, CnParticipantListFactory, CnUserListFactory ) {
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
         params.subject = module.subject;
@@ -48,12 +48,12 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnConsentSingleton', [
-    'CnBaseSingletonFactory', 'CnConsentListFactory', 'CnConsentAddFactory', 'CnConsentViewFactory',
-    function( CnBaseSingletonFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory ) {
-      return new ( function() {
+  cnCachedProviders.factory( 'CnConsentModelFactory', [
+    'CnBaseModelFactory', 'CnConsentListFactory', 'CnConsentAddFactory', 'CnConsentViewFactory',
+    function( CnBaseModelFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory ) {
+      var object = function() {
         this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
+        CnBaseModelFactory.apply( this );
         this.name = module.name;
         this.cnAdd = CnConsentAddFactory.instance( { parentModel: this } );
         this.cnList = CnConsentListFactory.instance( { parentModel: this } );
@@ -66,7 +66,12 @@ define( [
         // process metadata
         var thisRef = this;
         this.promise.then( function() { thisRef.metadata.isLoading = false; } );
-      } );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

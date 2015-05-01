@@ -48,16 +48,16 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAccessSingleton', [
-    'CnBaseSingletonFactory',
+  cnCachedProviders.factory( 'CnAccessModelFactory', [
+    'CnBaseModelFactory',
     'CnAccessListFactory', 'CnAccessAddFactory', 'CnAccessViewFactory',
     'CnHttpFactory',
-    function( CnBaseSingletonFactory,
+    function( CnBaseModelFactory,
               CnAccessListFactory, CnAccessAddFactory, CnAccessViewFactory,
               CnHttpFactory ) {
-      return new ( function() {
+      var object = function() {
         this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
+        CnBaseModelFactory.apply( this );
         this.name = module.name;
         this.cnAdd = CnAccessAddFactory.instance( { parentModel: this } );
         this.cnList = CnAccessListFactory.instance( { parentModel: this } );
@@ -105,7 +105,12 @@ define( [
             thisRef.metadata.isLoading = false;
           } ).catch( function exception() { cnFatalError(); } );
         } );
-      } );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

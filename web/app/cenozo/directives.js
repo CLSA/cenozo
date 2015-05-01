@@ -385,28 +385,18 @@ cenozo.directive( 'cnReallyClick', [
 
 /**
  * A form for filling out a new record's details
- * @attr addModel: An instance of the record's add model
- * @attr listModel: An instance of the record's list (parent to the add model)
+ * @attr model: An instance of the record's singleton model
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$state', '$stateParams', 'CnHttpFactory',
-  function( $state, $stateParams, CnHttpFactory ) {
+  'CnHttpFactory',
+  function( CnHttpFactory ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
       transclude: true,
-      scope: {
-        addModel: '=',
-        listModel: '='
-      },
+      scope: { model: '=' },
       controller: function( $scope ) {
-        // determine the next state to transition to
-        var stateNameParts = $state.current.name.split( '.' );
-        var nextState = 'add' == stateNameParts[1]
-                      ? '^.list'
-                      : '^.view';
-
-        $scope.back = function() { $state.go( nextState, $stateParams ); };
+        $scope.back = function() { $scope.model.transitionToLastState(); };
         $scope.submit = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
@@ -418,11 +408,11 @@ cenozo.directive( 'cnRecordAdd', [
               scope = scope.$$nextSibling;
             }
           } else {
-            $scope.listModel.add( $scope.$parent.record ).then(
+            $scope.model.cnList.add( $scope.$parent.record ).then(
               function success( response ) { 
-                $scope.$parent.record = $scope.addModel.createRecord();
+                $scope.$parent.record = $scope.model.cnAdd.createRecord();
                 $scope.form.$setPristine();
-                $state.go( nextState, $stateParams );
+                $scope.model.transitionToLastState();
               },
               function error( response ) { 
                 if( 409 == response.status ) { 
@@ -443,7 +433,7 @@ cenozo.directive( 'cnRecordAdd', [
           }
         };
         $scope.getTypeaheadValues = function( key, viewValue ) {
-          var input = $scope.addModel.inputList[key];
+          var input = $scope.model.cnAdd.inputList[key];
           if( undefined === input )
             throw 'Typeahead used without a valid input key (' + key + ').';
           if( undefined === input.table )
@@ -488,13 +478,12 @@ cenozo.directive( 'cnRecordAdd', [
       },
       link: function( scope, element, attrs ) {
         scope.heading = undefined === attrs.heading
-                      ? 'Create ' + scope.listModel.name.singular.ucWords()
+                      ? 'Create ' + scope.model.name.singular.ucWords()
                       : attrs.heading;
 
         scope.inputList = [];
-        scope.test = new Date( '1976-06-09T04:03:00Z' );
-        for( var key in scope.addModel.inputList ) {
-          var input = scope.addModel.inputList[key];
+        for( var key in scope.model.cnAdd.inputList ) {
+          var input = scope.model.cnAdd.inputList[key];
           input.key = key;
           if( 'boolean' == input.type ) {
             input.enumList = [
@@ -511,7 +500,7 @@ cenozo.directive( 'cnRecordAdd', [
 
         // watch for changes in metadata (created asynchronously by the service)
         scope.isComplete = false;
-        scope.$watch( 'addModel.parentModel.metadata', function( metadata ) {
+        scope.$watch( 'model.metadata', function( metadata ) {
           if( undefined !== metadata && !metadata.isLoading && !scope.isComplete ) {
             for( var key in metadata.columnList ) {
               if( undefined !== metadata.columnList[key].enumList ) {
@@ -536,63 +525,55 @@ cenozo.directive( 'cnRecordAdd', [
 
 /**
  * A listing of records
- * @attr listModel: An instance of the record's list (parent to the add model)
+ * @attr model: An instance of the record's singleton model
  * @attr removeColumns: An array of columns (by key) to remove from the default list
  */
 cenozo.directive( 'cnRecordList', [
-  '$state', '$stateParams', 'CnModalRestrictFactory',
-  function( $state, $stateParams, CnModalRestrictFactory ) {
+  'CnModalRestrictFactory',
+  function( CnModalRestrictFactory ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-list.tpl.html',
       restrict: 'E',
       scope: {
-        listModel: '=',
+        model: '=',
         removeColumns: '@'
       },
       controller: function( $scope ) {
-        if( $scope.listModel.addEnabled ) {
-          var parent = $scope.listModel.parentModel;
-          var subject = $scope.listModel.subject;
-          var state = subject + '.add';
-          var params = {};
-
-          // the add state depends on the parent
-          if( subject != parent.subject && parent.record ) {
-            state = parent.subject + '.add_' + subject;
-            params = $stateParams;
-          }
-          $scope.addRecord = function() { $state.go( state, params ); };
+        if( $scope.model.cnList.addEnabled ) {
+          $scope.addRecord = function() { $scope.model.transitionToAddState(); };
         }
 
-        if( $scope.listModel.deleteEnabled ) {
+        if( $scope.model.cnList.deleteEnabled ) {
           $scope.deleteRecord = function( id ) {
-            $scope.listModel.delete( id ).catch( function error( response ) { cnFatalError(); } );
+            $scope.model.cnList.delete( id ).catch( function error( response ) { cnFatalError(); } );
           };
         }
 
-        if( $scope.listModel.selectEnabled ) {
+        if( $scope.model.cnList.selectEnabled ) {
           $scope.selectRecord = function( record ) {
-            if( $scope.listModel.selectMode ) {
-              $scope.listModel.select( record ).catch( function error( response ) { cnFatalError(); } );
+            if( $scope.model.cnList.selectMode ) {
+              $scope.model.cnList.select( record ).catch( function error( response ) { cnFatalError(); } );
             }
           };
-        } else if( $scope.listModel.viewEnabled ) {
-          $scope.selectRecord = function( record ) { $state.go( '^.view', { id: record.id } ); };
+        } else if( $scope.model.cnList.viewEnabled ) {
+          $scope.selectRecord = function( record ) {
+            $scope.model.transitionToViewState( record.id );
+          };
         }
       },
       link: function( scope, element, attrs ) {
         scope.heading = undefined === attrs.heading
-                      ? scope.listModel.name.singular.ucWords() + ' List'
+                      ? scope.model.name.singular.ucWords() + ' List'
                       : attrs.heading;
 
-        if( undefined !== scope.listModel.restrict ) {
+        if( undefined !== scope.model.cnList.restrict ) {
           scope.addRestrict = function( column ) {
             var modal = CnModalRestrictFactory.instance( {
-              name: scope.listModel.name,
-              column: scope.listModel.columnList[column].title,
-              comparison: scope.listModel.columnList[column].restrict
+              name: scope.model.name,
+              column: scope.model.cnList.columnList[column].title,
+              comparison: scope.model.cnList.columnList[column].restrict
             } ).show().then( function( comparison ) {
-              scope.listModel.restrict( column, comparison );
+              scope.model.cnList.restrict( column, comparison );
             } );
           };
         }
@@ -600,9 +581,9 @@ cenozo.directive( 'cnRecordList', [
         // convert the columnList into an array
         var removeColumns = undefined === scope.removeColumns ? [] : scope.removeColumns.split( ' ' );
         scope.columnList = [];
-        for( var key in scope.listModel.columnList ) {
+        for( var key in scope.model.cnList.columnList ) {
           if( 0 > removeColumns.indexOf( key ) ) {
-            var column = scope.listModel.columnList[key];
+            var column = scope.model.cnList.columnList[key];
             if( undefined === column.allowRestrict ) column.allowRestrict = true;
             column.key = key;
             scope.columnList.push( column );
@@ -611,7 +592,7 @@ cenozo.directive( 'cnRecordList', [
 
         // get the total number of columns in the table
         scope.numColumns = scope.columnList.length;
-        if( scope.listModel.deleteEnabled ) scope.numColumns++;
+        if( scope.model.cnList.deleteEnabled ) scope.numColumns++;
       }
     };
   }
@@ -619,33 +600,30 @@ cenozo.directive( 'cnRecordList', [
 
 /**
  * A form for editing an existing record's details
- * @attr viewModel: An instance of the record's view model
- * @attr listModel: An instance of the record's list (parent to the view model)
+ * @attr model: An instance of the record's singleton model
  */
-cenozo.directive( 'cnRecordView', [
-  '$state',
-  function( $state ) {
+cenozo.directive( 'cnRecordView',
+  function() {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
-      scope: {
-        listModel: '=',
-        viewModel: '='
-      },
+      scope: { model: '=', },
       controller: function( $scope ) {
-        $scope.back = function() { $state.go( '^.list' ); };
+        $scope.back = function() {
+          $scope.model.transitionToLastState();
+        };
 
         $scope.delete = function() {
-          $scope.listModel.delete( $scope.viewModel.record.id ).then(
-            function success( response ) { $state.go( $scope.listModel.subject + '.list' ); },
+          $scope.model.cnList.delete( $scope.model.cnView.record.id ).then(
+            function success( response ) { $scope.model.transitionToLastState(); },
             function error( response ) { cnFatalError(); }
           );
         };
 
         $scope.patch = function( property ) {
           var data = {};
-          data[property] = $scope.viewModel.record[property];
-          $scope.viewModel.patch( $scope.viewModel.record.id, data ).then(
+          data[property] = $scope.model.cnView.record[property];
+          $scope.model.cnView.patch( $scope.model.cnView.record.id, data ).then(
             function success( response ) { 
               var scope = angular.element(
                 angular.element( document.querySelector( '#' + property ) ) ).scope();
@@ -686,43 +664,38 @@ cenozo.directive( 'cnRecordView', [
       link: function( scope, element, attrs ) {
         // turn off any sub-list model currently in select mode whenever leaving a view model
         scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
-          if( '.view' == fromState.name.substr( fromState.name.length - 5 ) ) {
-            var viewModel = event.currentScope.$parent.cnView;
-            if( undefined !== viewModel )
-              for( var property in viewModel )
-                if( 'object' == typeof viewModel[property] && true === viewModel[property].selectMode )
-                  viewModel[property].toggleSelectMode();
+          var stateName = fromState.name;
+          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) &&
+              undefined !== scope.model.cnView ) {
+            for( var property in scope.model.cnView ) {
+              if( 'object' == typeof scope.model.cnView[property] &&
+                  'object' == typeof scope.model.cnView[property].cnList &&
+                  true === scope.model.cnView[property].cnList.selectMode ) {
+                scope.model.cnView[property].cnList.toggleSelectMode();
+              }
+            }
           }
         } );
 
         scope.heading = undefined === attrs.heading
-                      ? scope.listModel.name.singular.ucWords() + ' Details'
+                      ? scope.model.name.singular.ucWords() + ' Details'
                       : attrs.heading;
 
         //scope.$parent.form = scope.form;
 
         scope.inputList = [];
-        for( var key in scope.viewModel.inputList ) {
-          var input = scope.viewModel.inputList[key];
+        for( var key in scope.model.cnView.inputList ) {
+          var input = scope.model.cnView.inputList[key];
           input.key = key;
           scope.inputList.push( input );
         }
 
-        // watch for changes in the record (created asynchronously by the service)
-        console.log( 'warning: view directive is not watching for changes in $parent.record' );
-        /* TODO: do we need this? It was always undefined when tested
-        scope.$parent.$watch( 'record', function( record ) {
-          scope.record = record;
-          console.log( record );
-        } );
-        */
-
         var recordLoaded = false;
-        scope.$watch( 'viewModel.record', function( record ) {
+        scope.$watch( 'model.cnView.record', function( record ) {
           // convert datetimes
           if( undefined !== record.id && !recordLoaded ) {
-            for( var key in scope.viewModel.inputList ) {
-              if( 'date' == scope.viewModel.inputList[key].type && record[key].format )
+            for( var key in scope.model.cnView.inputList ) {
+              if( 'date' == scope.model.cnView.inputList[key].type && record[key].format )
                 record[key] = record[key].format( 'YYYY-MM-DD' );
             }
             recordLoaded = true;
@@ -733,7 +706,7 @@ cenozo.directive( 'cnRecordView', [
         // watch for changes in metadata (created asynchronously by the service)
         var metadataLoaded = false;
         scope.isComplete = false;
-        var unbind = scope.$watch( 'viewModel.parentModel.metadata', function( metadata ) {
+        var unbind = scope.$watch( 'model.metadata', function( metadata ) {
           if( undefined !== metadata && !metadata.isLoading && !metadataLoaded ) {
             // build enum lists
             for( var key in metadata.columnList ) {
@@ -754,7 +727,7 @@ cenozo.directive( 'cnRecordView', [
       }
     };
   }
-] );
+);
 
 /**
  * Site and role drop-downs which will switch the user's current role

@@ -58,12 +58,12 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnLanguageSingleton', [
-    'CnBaseSingletonFactory', 'CnLanguageListFactory', 'CnLanguageViewFactory',
-    function( CnBaseSingletonFactory, CnLanguageListFactory, CnLanguageViewFactory ) {
-      return new ( function() {
+  cnCachedProviders.factory( 'CnLanguageModelFactory', [
+    'CnBaseModelFactory', 'CnLanguageListFactory', 'CnLanguageViewFactory',
+    function( CnBaseModelFactory, CnLanguageListFactory, CnLanguageViewFactory ) {
+      var object = function() {
         this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
+        CnBaseModelFactory.apply( this );
         this.name = module.name;
         this.cnList = CnLanguageListFactory.instance( { parentModel: this } );
         this.cnView = CnLanguageViewFactory.instance( { parentModel: this } );
@@ -74,7 +74,12 @@ define( [
         // process metadata
         var thisRef = this;
         this.promise.then( function() { thisRef.metadata.isLoading = false; } );
-      } );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

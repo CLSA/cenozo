@@ -4,11 +4,9 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'HomeCtrl', [
-    '$scope', 'CnHomeSingleton',
-    function( $scope, CnHomeSingleton ) {
-      CnHomeSingleton.promise.then( function() {
-        $scope.model = CnHomeSingleton;
-      } );
+    '$scope', 'CnHomeModelFactory',
+    function( $scope, CnHomeModelFactory ) {
+      $scope.model = CnHomeModelFactory.root;
     }
   ] );
 

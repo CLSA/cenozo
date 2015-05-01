@@ -48,16 +48,16 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnRegionSiteSingleton', [
-    'CnBaseSingletonFactory',
+  cnCachedProviders.factory( 'CnRegionSiteModelFactory', [
+    'CnBaseModelFactory',
     'CnRegionSiteListFactory', 'CnRegionSiteAddFactory', 'CnRegionSiteViewFactory',
     'CnHttpFactory', 'CnAppSingleton',
-    function( CnBaseSingletonFactory,
+    function( CnBaseModelFactory,
               CnRegionSiteListFactory, CnRegionSiteAddFactory, CnRegionSiteViewFactory,
               CnHttpFactory, CnAppSingleton ) {
-      return new ( function() {
+      var object = function() {
         this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
+        CnBaseModelFactory.apply( this );
         this.name = module.name;
         this.cnAdd = CnRegionSiteAddFactory.instance( { parentModel: this } );
         this.cnList = CnRegionSiteListFactory.instance( { parentModel: this } );
@@ -135,7 +135,12 @@ define( [
             thisRef.metadata.isLoading = false;
           } ).catch( function exception() { cnFatalError(); } );
         } );
-      } );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

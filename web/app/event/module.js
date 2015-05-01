@@ -7,12 +7,27 @@ define( {
     pluralPossessive: 'events\''
   },
   inputList: {
-    // TODO: fill out
+    event_type_id: {
+      title: 'Event',
+      type: 'enum'
+    },
+    datetime: {
+      title: 'Date & Time',
+      type: 'datetime'
+    }
   },
   columnList: {
-    // TODO: fill out
-  }
+    event: {
+      column: 'event_type.name',
+      title: 'Event'
+    },
+    datetime: {
+      title: 'Date & Time',
+      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm:ss"'
+    }
+  },
   defaultOrder: {
-    // TODO: fill out
+    column: 'datetime',
+    reverse: true
   } 
 } );

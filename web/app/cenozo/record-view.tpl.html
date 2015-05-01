@@ -14,17 +14,17 @@
             <input ng-if="'string' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="viewModel.record[input.key]"
+              ng-model="model.cnView.record[input.key]"
               cn-change="patch( input.key )"
               class="form-control"
               type="text"
               autocomplete="off"
               ng-readonly="input.constant"
-              ng-required="viewModel.parentModel.metadata[input.key].required"></input>
+              ng-required="model.cnView.parentModel.metadata[input.key].required"></input>
             <input ng-if="'date' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="viewModel.record[input.key]"
+              ng-model="model.cnView.record[input.key]"
               ng-change="patch( input.key )"
               class="form-control"
               type="text"
@@ -37,19 +37,19 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-options="item.value as item.name for item in input.enumList"
-              ng-model="viewModel.record[input.key]"
+              ng-model="model.cnView.record[input.key]"
               cn-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant || !input.enumList"
-              ng-required="viewModel.parentModel.metadata[input.key].required"></select>
+              ng-required="model.cnView.parentModel.metadata[input.key].required"></select>
             <textarea ng-if="'text' == input.type || 'constant text' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="viewModel.record[input.key]"
+              ng-model="model.cnView.record[input.key]"
               cn-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant"
-              ng-required="viewModel.parentModel.metadata[input.key].required"></textarea>
+              ng-required="model.cnView.parentModel.metadata[input.key].required"></textarea>
           </div>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.required">
             Cannot be blank
@@ -69,7 +69,7 @@
   </div>
   <div class="form-footer rounded-bottom">
     <button type="button" class="btn btn-danger"
-            cn-really-message="Are you sure you want to delete this {{ viewModel.subject }}?"
+            cn-really-message="Are you sure you want to delete this {{ model.cnView.subject }}?"
             cn-really-click="delete()">
       <i class="glyphicon glyphicon-remove-sign"></i> Delete
     </button>

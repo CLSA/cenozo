@@ -92,12 +92,17 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
     var child = module.children[i];
     var baseUrl = 'app/' + child + '/';
     if( 0 <= cnFrameworkModuleList.indexOf( child ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
-    var templateUrl = baseUrl + 'add.tpl.html';
 
     $stateProvider.state( name + '.add_' + child, {
-      url: '/view/{id}/add',
+      url: '/view/{parentId}/' + child,
       controller: ( child + '_add_ctrl' ).snakeToCamel( true ),
-      templateUrl: templateUrl
+      templateUrl: baseUrl + 'add.tpl.html'
+    } );
+
+    $stateProvider.state( name + '.view_' + child, {
+      url: '/view/{parentId}/' + child + '/{id}',
+      controller: ( child + '_view_ctrl' ).snakeToCamel( true ),
+      templateUrl: baseUrl + 'view.tpl.html'
     } );
   }
 };

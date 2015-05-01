@@ -4,32 +4,28 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionAddCtrl', [
-    '$scope', 'CnCollectionSingleton',
-    function( $scope, CnCollectionSingleton ) {
-      $scope.cnAdd = CnCollectionSingleton.cnAdd;
-      $scope.cnList = CnCollectionSingleton.cnList;
-      CnCollectionSingleton.promise.then( function() {
-        $scope.record = $scope.cnAdd.createRecord();
-      } );
+    '$scope', 'CnCollectionModelFactory',
+    function( $scope, CnCollectionModelFactory ) {
+      $scope.model = CnCollectionModelFactory.root;
+      $scope.model.promise.then( function() { $scope.record = $scope.model.cnAdd.createRecord(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionListCtrl', [
-    '$scope', 'CnCollectionSingleton',
-    function( $scope, CnCollectionSingleton ) {
-      $scope.cnList = CnCollectionSingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnCollectionModelFactory',
+    function( $scope, CnCollectionModelFactory ) {
+      $scope.model = CnCollectionModelFactory.root;
+      $scope.model.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CollectionViewCtrl', [
-    '$stateParams', '$scope', 'CnCollectionSingleton',
-    function( $stateParams, $scope, CnCollectionSingleton ) {
-      $scope.cnList = CnCollectionSingleton.cnList;
-      $scope.cnView = CnCollectionSingleton.cnView;
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnCollectionModelFactory',
+    function( $scope, CnCollectionModelFactory ) {
+      $scope.model = CnCollectionModelFactory.root;
+      $scope.model.cnView.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 

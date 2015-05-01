@@ -41,23 +41,23 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnCollectionViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnUserListFactory',
-    function( CnBaseViewFactory, CnParticipantListFactory, CnUserListFactory ) {
+    'CnBaseViewFactory', 'CnParticipantModelFactory', 'CnUserModelFactory',
+    function( CnBaseViewFactory, CnParticipantModelFactory, CnUserModelFactory ) {
       var object = function( params ) {
         var base = CnBaseViewFactory.instance( params );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
 
         ////////////////////////////////////
         // factory customizations start here
-        this.cnParticipantList = CnParticipantListFactory.instance( { parentModel: this } );
-        this.cnParticipantList.enableSelect( true );
-        this.cnUserList = CnUserListFactory.instance( { parentModel: this } );
-        this.cnUserList.enableSelect( true );
+        this.cnParticipantModel = CnParticipantModelFactory.instance();
+        this.cnParticipantModel.cnList.enableSelect( true );
+        this.cnUserModel = CnUserModelFactory.instance();
+        this.cnUserModel.cnList.enableSelect( true );
         var thisRef = this;
         this.load = function load( id ) {
           return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnParticipantList.load( 'collection/' + thisRef.record.id + '/participant' );
-            thisRef.cnUserList.load( 'collection/' + thisRef.record.id + '/user' );
+            thisRef.cnParticipantModel.cnList.load( 'collection/' + thisRef.record.id + '/participant' );
+            thisRef.cnUserModel.cnList.load( 'collection/' + thisRef.record.id + '/user' );
           } );
         };
         // factory customizations end here
@@ -78,12 +78,12 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnCollectionSingleton', [
-    'CnBaseSingletonFactory', 'CnCollectionListFactory', 'CnCollectionAddFactory', 'CnCollectionViewFactory',
-    function( CnBaseSingletonFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
-      return new ( function() {
+  cnCachedProviders.factory( 'CnCollectionModelFactory', [
+    'CnBaseModelFactory', 'CnCollectionListFactory', 'CnCollectionAddFactory', 'CnCollectionViewFactory',
+    function( CnBaseModelFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
+      var object = function() {
         this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
+        CnBaseModelFactory.apply( this );
         this.name = module.name;
         this.cnAdd = CnCollectionAddFactory.instance( { parentModel: this } );
         this.cnList = CnCollectionListFactory.instance( { parentModel: this } );
@@ -96,7 +96,12 @@ define( [
         // process metadata
         var thisRef = this;
         this.promise.then( function() { thisRef.metadata.isLoading = false; } );
-      } );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

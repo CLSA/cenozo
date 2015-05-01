@@ -30,29 +30,24 @@ define( {
     proxy: {
       title: 'Decision Maker',
       type: 'boolean'
-    },
+    }
   },
   columnList: {
-    name: {
-      column: 'CONCAT( first_name, " ", last_name)',
-      title: 'Name'
+    first_name: {
+      column: 'alternate.first_name',
+      title: 'First Name'
+    },
+    last_name: {
+      column: 'alternate.last_name',
+      title: 'Last Name'
     },
     association: {
       title: 'Association'
     },
-    alternate: {
-      title: 'Alternate',
-      filter: 'cnYesNo'
-    },
-    informant: {
-      title: 'Information Provider',
-      filter: 'cnYesNo'
-    },
-    proxy: {
-      title: 'Decision Maker',
-      filter: 'cnYesNo'
-    },
-  }
+    types: {
+      title: 'Types'
+    }
+  },
   defaultOrder: {
     column: 'last_name',
     reverse: false

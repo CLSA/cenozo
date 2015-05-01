@@ -4,32 +4,28 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'StateAddCtrl', [
-    '$scope', 'CnStateSingleton',
-    function( $scope, CnStateSingleton ) {
-      $scope.cnAdd = CnStateSingleton.cnAdd;
-      $scope.cnList = CnStateSingleton.cnList;
-      CnStateSingleton.promise.then( function() {
-        $scope.record = $scope.cnAdd.createRecord();
-      } );
+    '$scope', 'CnStateModelFactory',
+    function( $scope, CnStateModelFactory ) {
+      $scope.model = CnStateModelFactory.root;
+      $scope.model.promise.then( function() { $scope.record = $scope.model.cnAdd.createRecord(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'StateListCtrl', [
-    '$scope', 'CnStateSingleton',
-    function( $scope, CnStateSingleton ) {
-      $scope.cnList = CnStateSingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnStateModelFactory',
+    function( $scope, CnStateModelFactory ) {
+      $scope.model = CnStateModelFactory.root;
+      $scope.model.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'StateViewCtrl', [
-    '$stateParams', '$scope', 'CnStateSingleton',
-    function( $stateParams, $scope, CnStateSingleton ) {
-      $scope.cnList = CnStateSingleton.cnList;
-      $scope.cnView = CnStateSingleton.cnView;
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+    '$scope', 'CnStateModelFactory',
+    function( $scope, CnStateModelFactory ) {
+      $scope.model = CnStateModelFactory.root;
+      $scope.model.cnView.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
