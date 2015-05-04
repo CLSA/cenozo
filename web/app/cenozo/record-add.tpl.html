@@ -1,7 +1,7 @@
 <div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
 <form name="form" class="form-horizontal" novalidate>
   <div class="form-body">
-    <ng-form ng-repeat="input in inputList"
+    <ng-form ng-repeat="input in inputArray"
              name="innerForm">
       <div class="form-group"
            ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">

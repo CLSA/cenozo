@@ -11,13 +11,12 @@ define( [
   cnCachedProviders.factory( 'CnUserAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseAddFactory.instance( params );
-      } };
+      var object = function( parentModel ) {
+        CnBaseAddFactory.construct( this, parentModel, module );
+        this.validate();
+      };
+
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -80,7 +79,7 @@ define( [
         this.subject = module.subject;
         CnBaseModelFactory.apply( this );
         this.name = module.name;
-        this.cnAdd = CnUserAddFactory.instance( { parentModel: this } );
+        this.cnAdd = CnUserAddFactory.instance( this );
         this.cnList = CnUserListFactory.instance( { parentModel: this } );
         this.cnView = CnUserViewFactory.instance( { parentModel: this } );
 

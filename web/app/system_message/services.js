@@ -8,13 +8,12 @@ define( [
   cnCachedProviders.factory( 'CnSystemMessageAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseAddFactory.instance( params );
-      } };
+      var object = function( parentModel ) {
+        CnBaseAddFactory.construct( this, parentModel, module );
+        this.validate();
+      };
+
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -57,7 +56,7 @@ define( [
         this.subject = module.subject;
         CnBaseModelFactory.apply( this );
         this.name = module.name;
-        this.cnAdd = CnSystemMessageAddFactory.instance( { parentModel: this } );
+        this.cnAdd = CnSystemMessageAddFactory.instance( this );
         this.cnList = CnSystemMessageListFactory.instance( { parentModel: this } );
         this.cnView = CnSystemMessageViewFactory.instance( { parentModel: this } );
 

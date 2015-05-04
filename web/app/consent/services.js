@@ -6,15 +6,14 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnConsentAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory',
-    function( CnBaseAddFactory, CnHttpFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseAddFactory.instance( params );
-      } };
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
+      var object = function( parentModel ) {
+        CnBaseAddFactory.construct( this, parentModel, module );
+        this.validate();
+      };
+
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -55,7 +54,7 @@ define( [
         this.subject = module.subject;
         CnBaseModelFactory.apply( this );
         this.name = module.name;
-        this.cnAdd = CnConsentAddFactory.instance( { parentModel: this } );
+        this.cnAdd = CnConsentAddFactory.instance( this );
         this.cnList = CnConsentListFactory.instance( { parentModel: this } );
         this.cnView = CnConsentViewFactory.instance( { parentModel: this } );
 

@@ -481,18 +481,16 @@ cenozo.directive( 'cnRecordAdd', [
                       ? 'Create ' + scope.model.name.singular.ucWords()
                       : attrs.heading;
 
-        scope.inputList = [];
-        for( var key in scope.model.cnAdd.inputList ) {
-          var input = scope.model.cnAdd.inputList[key];
-          input.key = key;
-          if( 'boolean' == input.type ) {
-            input.enumList = [
+        // get the input array and add enum lists for boolean types
+        scope.inputArray = scope.model.cnAdd.getInputArray();
+        for( var i = 0; i < scope.inputArray.length; i++ ) {
+          if( 'boolean' == scope.inputArray[i].type ) {
+            scope.inputArray[i].enumList = [
               { value: undefined, name: '(Select Yes or No)' },
               { value: '1', name: 'Yes' },
               { value: '0', name: 'No' }
             ];
           }
-          scope.inputList.push( input );
         }
 
         // watch for changes in the record (created asynchronously by the service)
@@ -504,7 +502,7 @@ cenozo.directive( 'cnRecordAdd', [
           if( undefined !== metadata && !metadata.isLoading && !scope.isComplete ) {
             for( var key in metadata.columnList ) {
               if( undefined !== metadata.columnList[key].enumList ) {
-                var input = scope.inputList.find( // by key
+                var input = scope.inputArray.find( // by key
                   function( item, index, array ) { return key == item.key }
                 );
                 if( undefined === input.enumList ) {

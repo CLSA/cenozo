@@ -8,13 +8,12 @@ define( [
   cnCachedProviders.factory( 'CnQuotaAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseAddFactory.instance( params );
-      } };
+      var object = function( parentModel ) {
+        CnBaseAddFactory.construct( this, parentModel, module );
+        this.validate();
+      };
+
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -59,7 +58,7 @@ define( [
         this.subject = module.subject;
         CnBaseModelFactory.apply( this );
         this.name = module.name;
-        this.cnAdd = CnQuotaAddFactory.instance( { parentModel: this } );
+        this.cnAdd = CnQuotaAddFactory.instance( this );
         this.cnList = CnQuotaListFactory.instance( { parentModel: this } );
         this.cnView = CnQuotaViewFactory.instance( { parentModel: this } );
 

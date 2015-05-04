@@ -69,61 +69,61 @@ cenozo.factory( 'CnAppSingleton', [
 cenozo.factory( 'CnBaseAddFactory', [
   '$state', '$stateParams',
   function( $state, $stateParams ) {
-    var object = function( params ) {
-      if( undefined === params.parentModel ) throw 'Tried to create CnBaseAddFactory without a parent model';
-      if( undefined === params.subject ) throw 'Tried to create CnBaseAddFactory without a subject';
-      if( undefined === params.name ) throw 'Tried to create CnBaseAddFactory without a name';
-      if( undefined === params.inputList ) throw 'Tried to create CnBaseAddFactory without an input list';
-
-      this.subject = null;
-      this.name = {
-        singular: '(undefined)',
-        plural: '(undefined)',
-        possessive: '(undefined)',
-        pluralPossessive: '(undefined)'
-      };
-      this.inputList = [];
-
-      cnCopyParams( this, params );
-
-      // get pre-defined values from the state
-      var preDefinedColumn = null;
-      var preDefinedId = null;
-      var stateNameParts = $state.current.name.split( '.' );
-      if( 1 < stateNameParts.length ) {
-        var actionParts = stateNameParts[1].split( '_' );
-        if( 2 == actionParts.length && 'add' == actionParts[0] && this.subject == actionParts[1] ) {
-          preDefinedColumn = stateNameParts[0] + '_id';
-          preDefinedId = $stateParams.parentId;
-
-          // remove the column from the input list
-          delete this.inputList[preDefinedColumn];
-        }
-      }
-
-      var thisRef = this;
-      this.parentModel.promise.then( function() {
-        thisRef.createRecord = function() {
-          var record = {};
-
-          // apply default values from the metadata
-          for( var column in thisRef.parentModel.metadata.columnList )
-            if( null !== thisRef.parentModel.metadata.columnList[column].default )
-              record[column] = thisRef.parentModel.metadata.columnList[column].default;
-
-          // apply pre-defined values from the state
-          if( null !== preDefinedColumn && null !== preDefinedId ) record[preDefinedColumn] = preDefinedId;
-
-          return record;
-        };
-      } );
-    };
-
-    object.prototype = {};
-
     return {
-      instance: function( params ) { return new object( undefined === params ? {} : params ); },
-      prototype: object.prototype
+      construct: function( object, parentModel, module ) {
+        object.parentModel = parentModel;
+        for( var property in module ) object[property] = cnCopy( module[property] );
+
+        object.validate = function() {
+          if( undefined === this.parentModel ) throw 'Missing "parentModel" in AddFactory';
+          if( undefined === this.subject ) throw 'Missing "subject" in AddFactory';
+          if( undefined === this.name ) throw 'Missing "name" in AddFactory';
+          if( undefined === this.inputList ) throw 'Missing "inputList" in AddFactory';
+        };
+
+        object.getParentIdentifier = function() {
+          var identifier = {};
+          var stateNameParts = $state.current.name.split( '.' );
+          if( 1 < stateNameParts.length ) {
+            var actionParts = stateNameParts[stateNameParts.length-1].split( '_' );
+            if( 2 == actionParts.length && 'add' == actionParts[0] && this.subject == actionParts[1] )
+              identifier[stateNameParts[stateNameParts.length-2] + '_id'] = $stateParams.parentId;
+          }
+          return identifier;
+        };
+        
+        object.getInputArray = function() {
+          // make a copy of the input list and remove any parent column(s)
+          var inputObjectList = cnCopy( this.inputList );
+          for( var property in this.getParentIdentifier() ) delete inputObjectList[property];
+
+          // create an array out of the input list
+          var inputArray = [];
+          for( var key in inputObjectList ) {
+            var input = inputObjectList[key];
+            input.key = key;
+            inputArray.push( input );
+          }
+          return inputArray;
+        };
+
+        object.parentModel.promise.then( function() {
+          object.createRecord = function() {
+            var record = {};
+
+            // apply default values from the metadata
+            for( var column in this.parentModel.metadata.columnList )
+              if( null !== this.parentModel.metadata.columnList[column].default )
+                record[column] = this.parentModel.metadata.columnList[column].default;
+
+            // copy the parent's identifying columns into the record
+            var parentIdentifier = this.getParentIdentifier();
+            for( var property in parentIdentifier ) record[property] = parentIdentifier[property];
+
+            return record;
+          };
+        } );
+      }
     };
   }
 ] );

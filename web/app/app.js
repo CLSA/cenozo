@@ -12,6 +12,16 @@ window.cnFatalError = function cnFatalError() {
   }
 };
 
+window.cnCopy = function cnCopy( arg ) {
+  if( 'object' === typeof arg ) {
+    return JSON.parse( JSON.stringify( arg ) );
+  } else if( Array === arg.constructor ) {
+    return arg.slice();
+  } else {
+    return arg;
+  }
+};
+
 window.cnCopyParams = function cnCopyParams( object, params ) {
   for( var property in params ) {
     if( params.hasOwnProperty( property ) ) {

@@ -6,15 +6,14 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAccessAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory',
-    function( CnBaseAddFactory, CnHttpFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseAddFactory.instance( params );
-      } };
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
+      var object = function( parentModel ) {
+        CnBaseAddFactory.construct( this, parentModel, module );
+        this.validate();
+      };
+
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -59,7 +58,7 @@ define( [
         this.subject = module.subject;
         CnBaseModelFactory.apply( this );
         this.name = module.name;
-        this.cnAdd = CnAccessAddFactory.instance( { parentModel: this } );
+        this.cnAdd = CnAccessAddFactory.instance( this );
         this.cnList = CnAccessListFactory.instance( { parentModel: this } );
         this.cnView = CnAccessViewFactory.instance( { parentModel: this } );
 
