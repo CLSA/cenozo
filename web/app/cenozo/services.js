@@ -65,47 +65,12 @@ cenozo.factory( 'CnAppSingleton', [
 ] );
 
 /* ######################################################################################################## */
-// TODO: replace with "apply" model as in base singleton factory? (no params processed here)
 cenozo.factory( 'CnBaseAddFactory', [
-  '$state', '$stateParams',
-  function( $state, $stateParams ) {
+  'CnHttpFactory',
+  function( CnHttpFactory ) {
     return {
-      construct: function( object, parentModel, module ) {
+      construct: function( object, parentModel ) {
         object.parentModel = parentModel;
-        for( var property in module ) object[property] = cnCopy( module[property] );
-
-        object.validate = function() {
-          if( undefined === this.parentModel ) throw 'Missing "parentModel" in AddFactory';
-          if( undefined === this.subject ) throw 'Missing "subject" in AddFactory';
-          if( undefined === this.name ) throw 'Missing "name" in AddFactory';
-          if( undefined === this.inputList ) throw 'Missing "inputList" in AddFactory';
-        };
-
-        object.getParentIdentifier = function() {
-          var identifier = {};
-          var stateNameParts = $state.current.name.split( '.' );
-          if( 1 < stateNameParts.length ) {
-            var actionParts = stateNameParts[stateNameParts.length-1].split( '_' );
-            if( 2 == actionParts.length && 'add' == actionParts[0] && this.subject == actionParts[1] )
-              identifier[stateNameParts[stateNameParts.length-2] + '_id'] = $stateParams.parentId;
-          }
-          return identifier;
-        };
-        
-        object.getInputArray = function() {
-          // make a copy of the input list and remove any parent column(s)
-          var inputObjectList = cnCopy( this.inputList );
-          for( var property in this.getParentIdentifier() ) delete inputObjectList[property];
-
-          // create an array out of the input list
-          var inputArray = [];
-          for( var key in inputObjectList ) {
-            var input = inputObjectList[key];
-            input.key = key;
-            inputArray.push( input );
-          }
-          return inputArray;
-        };
 
         object.parentModel.promise.then( function() {
           object.createRecord = function() {
@@ -117,410 +82,187 @@ cenozo.factory( 'CnBaseAddFactory', [
                 record[column] = this.parentModel.metadata.columnList[column].default;
 
             // copy the parent's identifying columns into the record
-            var parentIdentifier = this.getParentIdentifier();
-            for( var property in parentIdentifier ) record[property] = parentIdentifier[property];
+            var parentIdentifier = this.parentModel.getParentIdentifier();
+            for( var property in parentIdentifier ) record[property+'_id'] = parentIdentifier[property];
 
             return record;
           };
         } );
+
+        object.add = function( record ) {
+          if( !this.parentModel.addEnabled ) throw 'Calling add() but addEnabled is false';
+
+          cnConvertToDatabaseRecord( record );
+          var thisRef = this;
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceCollectionPath(),
+            data: record
+          } ).post();
+        };
       }
     };
   }
 ] );
 
 /* ######################################################################################################## */
-// TODO: replace with "apply" model as in base singleton factory? (no params processed here)
 cenozo.factory( 'CnBaseListFactory', [
-  '$state', '$stateParams', 'CnPaginationFactory', 'CnHttpFactory',
-  function( $state, $stateParams, CnPaginationFactory, CnHttpFactory ) {
-    var object = function( params ) {
-      if( undefined === params.parentModel ) throw 'Tried to create CnBaseListFactory without a parent model';
-      if( undefined === params.subject ) throw 'Tried to create CnBaseListFactory without a subject';
-      if( undefined === params.name ) throw 'Tried to create CnBaseListFactory without a name';
-
-      this.parentModel = null;
-      this.subject = null;
-      this.name = {
-        singular: '(undefined)',
-        plural: '(undefined)',
-        possessive: '(undefined)',
-        pluralPossessive: '(undefined)'
-      };
-      this.columnList = {};
-      this.total = 0;
-      this.order = {};
-      this.listPath = null;
-      this.cache = [];
-      this.cnPagination = CnPaginationFactory.instance();
-      this.loading = false;
-
-      this.addEnabled = false;
-      this.deleteEnabled = false;
-      this.selectEnabled = false;
-      this.viewEnabled = false;
-
-      cnCopyParams( this, params );
-    };
-
-    object.prototype = {
-      enableAdd: function( enable ) {
-        if( enable != this.addEnabled ) {
-          this.addEnabled = enable;
-          if( enable ) {
-            this.add = function( record ) {
-              cnConvertToDatabaseRecord( record );
-              var stateNameParts = $state.current.name.split( '.' );
-              var len = stateNameParts.length;
-              var path = this.subject != stateNameParts[len-2]
-                       ? stateNameParts[len-2] + '/' + $stateParams.parentId + '/'
-                       : '';
-              path += this.subject;
-
-              var thisRef = this;
-              return CnHttpFactory.instance( {
-                path: path,
-                data: record
-              } ).post().then( function success( response ) {
-                record.id = response.data;
-                thisRef.cache.unshift( record );
-                thisRef.total++;
-              } );
-            };
-          } else {
-            delete this.add;
-          }
-        }
-      },
-
-      enableDelete: function( enable ) {
-        if( enable != this.deleteEnabled ) {
-          this.deleteEnabled = enable;
-          if( enable ) {
-            this.delete = function( id ) {
-              var stateNameParts = $state.current.name.split( '.' );
-              var len = stateNameParts.length;
-              var path = this.subject != stateNameParts[len-2]
-                       ? stateNameParts[len-2] + '/' + $stateParams.id + '/'
-                       : '';
-              path += this.subject + '/' + id;
-
-              var thisRef = this;
-              return CnHttpFactory.instance( {
-                path: path
-              } ).delete().then( function success( response ) {
-                for( var i = 0; i < thisRef.cache.length; i++ ) {
-                  if( thisRef.cache[i].id == id ) {
-                    thisRef.total--;
-                    return thisRef.cache.splice( i, 1 );
-                  }
-                }
-              } );
-            };
-          } else {
-            delete this.delete;
-          }
-        }
-      },
-
-      enableSelect: function( enable ) {
-        if( enable != this.selectEnabled ) {
-          this.selectEnabled = enable;
-          if( enable ) {
-            this.selectMode = false;
-            this.toggleSelectMode = function() {
-              this.selectMode = !this.selectMode;
-              this.reload();
-            };
-            this.select = function( record ) {
-              return record.selected ?
-                CnHttpFactory.instance( { path: this.listPath + '/' + record.id } ).delete().
-                  then( function success( response ) { record.selected = 0; } ) :
-                CnHttpFactory.instance( { path: this.listPath, data: record.id } ).post().
-                  then( function success( response ) { record.selected = 1; } );
-            };
-          } else {
-            delete this.selectMode;
-            delete this.toggleSelectMode;
-            delete this.select;
-          }
-        }
-      },
-
-      enableView: function( enable ) {
-        if( enable != this.viewEnabled ) {
-          this.viewEnabled = enable;
-          if( enable ) {
-          } else {
-          }
-        }
-      },
-
-      orderBy: function( column ) {
-        if( null === this.order || column != this.order.column ) {
-          this.order = { column: column, reverse: false };
-        } else {
-          this.order.reverse = !this.order.reverse;
-        }
-        if( this.cache.length < this.total ) this.reload();
-        this.cnPagination.currentPage = 1;
-      },
-
-      restrict: function( column, restrict ) {
-        if( undefined === restrict ) {
-          if( undefined !== this.columnList[column].restrict ) delete this.columnList[column].restrict;
-        } else {
-          this.columnList[column].restrict = restrict;
-        }
-        this.reload();
-        this.cnPagination.currentPage = 1;
-      },
-
-      checkCache: function() {
-        if( this.cache.length < this.total && this.cnPagination.getMaxIndex() >= this.cache.length )
-          this.load( this.listPath ).catch( function exception() { cnFatalError(); } );
-      },
-
-      reload: function() {
-        return this.load( this.listPath, true );
-      },
-
-      load: function( path, replace ) {
-        if( undefined === replace ) replace = false;
-        this.listPath = undefined === path || null === path ? this.subject : path;
-        if( replace ) this.cache = [];
-
-        // set up the select, join and where list based on the column list
-        var selectList = [];
-        var joinList = [];
-        var whereList = [];
-        for( var key in this.columnList ) {
-          var lastJoin = null;
-          var parentTable = this.subject;
-          var columnParts = undefined === this.columnList[key].column
-                          ? [ key ]
-                          : this.columnList[key].column.split( '.' );
-          for( var k = 0; k < columnParts.length; k++ ) {
-            if( k == columnParts.length - 1 ) {
-              // add this column to the select list
-              var select = { column: columnParts[k], alias: key };
-              if( 0 < k ) select.table = columnParts[k-1];
-              else select.table_prefix = false;
-              selectList.push( select );
-            } else { // part of table list
-              var table = columnParts[k];
-
-              // don't join a table to itself
-              if( table !== parentTable ) {
-                var onleft = parentTable + '.' + table + '_id';
-                var onright = table + '.id';
-
-                // see if the join to this table already exists
-                var join = null;
-                for( var j = 0; j < joinList.length; j++ ) {
-                  if( joinList[j].table == table &&
-                      joinList[j].onleft == onleft &&
-                      joinList[j].onright == onright ) {
-                    join = joinList[j];
-                    break;
-                  }
-                }
-
-                // if the join wasn't found then add it to the list
-                if( null === join ) {
-                  join = { table: table, onleft: onleft, onright: onright };
-                  joinList.push( join );
-                }
-
-                var lastJoin = join;
-                var parentTable = table;
-              }
-            }
-          }
-
-          if( undefined !== this.columnList[key].restrict && null !== this.columnList[key].restrict ) {
-            var test = this.columnList[key].restrict.test;
-            var value = this.columnList[key].restrict.value;
-            if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
-            
-            // determine the column name
-            var column = key;
-            if( undefined !== this.columnList[key].column ) {
-              var columnParts = this.columnList[key].column.split( '.' );
-              var len = columnParts.length;
-              column = this.columnList[key].column;
-              if( 2 < len ) column = columnParts[len-2] + '.' + columnParts[len-1];
-            }
-
-            whereList.push( { 
-              column: column,
-              operator: test,
-              value: value
-            } );
-          }
-        }
-
-        var data = { modifier: { offset: replace ? 0 : this.cache.length } };
-        if( 0 < selectList.length ) data.select = { column: selectList };
-        if( 0 < joinList.length ) data.modifier.join = joinList;
-        if( 0 < whereList.length ) data.modifier.where = whereList;
-        if( this.selectEnabled && this.selectMode ) data.select_mode = 1;
-
-        // set up the offset and sorting
-        if( null !== this.order ) {
-          // add the table prefix to the column if there isn't already a prefix
-          var column = this.order.column;
-          data.modifier.order = {};
-          data.modifier.order[column] = this.order.reverse;
-        }
-
-        data.modifier = JSON.stringify( data.modifier );
-
-        this.loading = true;
-        var thisRef = this;
-        return CnHttpFactory.instance( {
-          path: this.listPath,
-          data: data
-        } ).query().then( function success( response ) {
-          thisRef.cache = thisRef.cache.concat( response.data );
-          thisRef.total = response.headers( 'Total' );
-        } ).finally( function done() {
-          thisRef.loading = false;
-        } );
-      },
-
-    };
-
+  'CnPaginationFactory', 'CnHttpFactory',
+  function( CnPaginationFactory, CnHttpFactory ) {
     return {
-      instance: function( params ) { return new object( undefined === params ? {} : params ); },
-      prototype: object.prototype
-    };
-  }
-] );
+      construct: function( object, parentModel ) {
+        object.parentModel = parentModel;
+        object.order = object.parentModel.defaultOrder;
+        object.total = 0;
+        object.cache = [];
+        object.cnPagination = CnPaginationFactory.instance();
+        object.loading = false;
 
-/* ######################################################################################################## */
-// TODO: replace with "apply" model as in base singleton factory? (no params processed here)
-cenozo.factory( 'CnBaseViewFactory', [
-  'CnHttpFactory',
-  function( CnHttpFactory ) {
-    var object = function( params ) {
-      if( undefined === params.parentModel ) throw 'Tried to create CnBaseViewFactory without a parent model';
-      if( undefined === params.subject ) throw 'Tried to create CnBaseViewFactory without a subject';
-      if( undefined === params.name ) throw 'Tried to create CnBaseViewFactory without a name';
-      if( undefined === params.inputList ) throw 'Tried to create CnBaseViewFactory without an input list';
-
-      this.subject = null;
-      this.name = {
-        singular: '(undefined)',
-        plural: '(undefined)',
-        possessive: '(undefined)',
-        pluralPossessive: '(undefined)'
-      };
-      this.inputList = [];
-      this.record = {};
-
-      cnCopyParams( this, params );
-    };
-
-    object.prototype = {
-      load: function() {
-        // set up the select and join list based on the column list
-        this.record = {};
-        var selectList = [];
-        var joinList = [];
-        for( var key in this.inputList ) {
-          var lastJoin = null;
-          var parentTable = this.subject;
-          var columnParts = undefined === this.inputList[key].column
-                          ? [ key ]
-                          : this.inputList[key].column.split( '.' );
-          for( var k = 0; k < columnParts.length; k++ ) {
-            if( k == columnParts.length - 1 ) {
-              // add this column to the select list
-              var select = { column: columnParts[k], alias: key };
-              if( 0 < k ) select.table = columnParts[k-1];
-              else select.table_prefix = false;
-              selectList.push( select );
-            } else { // part of table list
-              var table = columnParts[k];
-
-              // don't join a table to itself
-              if( table !== parentTable ) {
-                var onleft = parentTable + '.' + table + '_id';
-                var onright = table + '.id';
-
-                // see if the join to this table already exists
-                var join = null;
-                for( var j = 0; j < joinList.length; j++ ) {
-                  if( joinList[j].table == table &&
-                      joinList[j].onleft == onleft &&
-                      joinList[j].onright == onright ) {
-                    join = joinList[j];
-                    break;
-                  }
-                }
-
-                // if the join wasn't found then add it to the list
-                if( null === join ) {
-                  join = { table: table, onleft: onleft, onright: onright };
-                  joinList.push( join );
-                }
-
-                var lastJoin = join;
-                var parentTable = table;
-              }
-            }
+        object.orderBy = function( column ) {
+          if( null === this.order || column != this.order.column ) {
+            this.order = { column: column, reverse: false };
+          } else {
+            this.order.reverse = !this.order.reverse;
           }
-        }
+          if( this.cache.length < this.total ) this.reload();
+          this.cnPagination.currentPage = 1;
+        };
 
-        var data = {};
-        if( 0 < selectList.length ) data.select = { column: selectList };
-        if( 0 < joinList.length ) data.modifier = { join: joinList };
+        object.restrict = function( column, restrict ) {
+          var columnList = this.parentModel.columnList;
+          if( undefined === restrict ) {
+            if( undefined !== columnList[column].restrict ) delete columnList[column].restrict;
+          } else {
+            columnList[column].restrict = restrict;
+          }
+          this.reload();
+          this.cnPagination.currentPage = 1;
+        };
 
-        var thisRef = this;
-        return CnHttpFactory.instance( {
-          path: thisRef.parentModel.getViewPath(),
-          data: data
-        } ).get().then( function success( response ) {
-          thisRef.record = response.data;
+        object.checkCache = function() {
+          if( this.cache.length < this.total && this.cnPagination.getMaxIndex() >= this.cache.length )
+            this.load().catch( function exception() { cnFatalError(); } );
+        };
 
-          // once the metadata is complete convert blank enums to empty strings (for ng-options)
-          thisRef.parentModel.promise.then( function() {
-            for( var column in thisRef.inputList ) {
-              var metadata = thisRef.parentModel.metadata.columnList[column];
-              var notRequired =
-                ( undefined !== metadata && !metadata.required ) ||
-                undefined === thisRef.inputList[column].required ||
-                !thisRef.inputList[column].required;
-              if( notRequired && 'enum' == thisRef.inputList[column].type ) {
-                if( null === thisRef.record[column] ) {
-                  thisRef.record[column] = '';
-                }
+        object.reload = function() { return this.load( true ); };
+
+        object.load = function( replace ) {
+          if( undefined === replace ) replace = false;
+          if( replace ) this.cache = [];
+
+          var data = getServiceData( this.parentModel.subject, this.parentModel.columnList );
+          if( undefined === data.modifier ) data.modifier = {};
+          data.modifier.offset = replace ? 0 : this.cache.length;
+          if( parentModel.chooseEnabled && this.chooseMode ) data.choosing = 1;
+
+          // set up the offset and sorting
+          if( null !== this.order ) {
+            // add the table prefix to the column if there isn't already a prefix
+            var column = this.order.column;
+            data.modifier.order = {};
+            data.modifier.order[column] = this.order.reverse;
+          }
+
+          this.loading = true;
+          var thisRef = this;
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceCollectionPath(),
+            data: data
+          } ).query().then( function success( response ) {
+            thisRef.cache = thisRef.cache.concat( response.data );
+            thisRef.total = response.headers( 'Total' );
+          } ).finally( function done() {
+            thisRef.loading = false;
+          } );
+        };
+
+        object.chooseMode = false;
+        object.toggleChooseMode = function() {
+          this.chooseMode = !this.chooseMode;
+          this.reload();
+        };
+
+        object.choose = function( record ) {
+          if( !this.parentModel.chooseEnabled ) throw 'Calling choose() but chooseEnabled is false';
+
+          return record.chosen ?
+            CnHttpFactory.instance( {
+              path: this.parentModel.getServiceResourcePath()
+            } ).delete().then( function success( response ) { record.chosen = 0; } ) :
+            CnHttpFactory.instance( {
+              path: this.parentModel.getServiceCollectionPath(), data: record.id
+            } ).post().then( function success( response ) { record.chosen = 1; } );
+        };
+
+        object.delete = function( id ) {
+          var thisRef = this;
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceResourcePath( id ),
+          } ).delete().then( function success( response ) {
+            for( var i = 0; i < thisRef.cache.length; i++ ) {
+              if( thisRef.cache[i].id == id ) {
+                thisRef.total--;
+                return thisRef.cache.splice( i, 1 );
               }
             }
           } );
-        } );
-      },
-      patch: function( id, data ) {
-        cnConvertToDatabaseRecord( data );
-        var thisRef = this;
-        return CnHttpFactory.instance( {
-          path: this.subject + '/' + id,
-          data: data
-        } ).patch().then( function success() {
-          if( undefined !== thisRef.parentModel.cnList ) {
-            // find and update this record in the list
-            var record = thisRef.parentModel.cnList.cache.find( // by id
-              function( item, index, array ) { return id == item.id; }
-            );
-            if( undefined !== record ) for( var key in data ) record[key] = data[key];
-          }
-        } );
+        };
       }
     };
+  }
+] );
 
+/* ######################################################################################################## */
+cenozo.factory( 'CnBaseViewFactory', [
+  'CnHttpFactory',
+  function( CnHttpFactory ) {
     return {
-      instance: function( params ) { return new object( undefined === params ? {} : params ); },
-      prototype: object.prototype
+      construct: function( object, parentModel ) {
+        object.parentModel = parentModel;
+        object.record = {};
+
+        object.deleteRecord = function() {
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceResourcePath()
+          } ).delete();
+        };
+
+        object.loadRecord = function() {
+          this.record = {};
+          var thisRef = this;
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceResourcePath(),
+            data: getServiceData( this.parentModel.subject, this.parentModel.inputList )
+          } ).get().then( function success( response ) {
+            thisRef.record = response.data;
+
+            // once the metadata is complete convert blank enums to empty strings (for ng-options)
+            thisRef.parentModel.promise.then( function() {
+              for( var column in thisRef.parentModel.inputList ) {
+                var inputObject = thisRef.parentModel.inputList[column];
+                var metadata = thisRef.parentModel.metadata.columnList[column];
+                var notRequired =
+                  ( undefined !== metadata && !metadata.required ) ||
+                  undefined === inputObject.required ||
+                  !inputObject.required;
+                if( notRequired && 'enum' == inputObject.type && null === thisRef.record[column] )
+                  thisRef.record[column] = '';
+              }
+            } );
+          } );
+        };
+
+        object.patchRecord = function( data ) {
+          cnConvertToDatabaseRecord( data );
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceResourcePath(),
+            data: data
+          } ).patch();
+        };
+
+        object.delete = function() { return this.deleteRecord(); };
+        object.load = function() { return this.loadRecord(); };
+        object.patch = function( data ) { return this.patchRecord( data ); };
+      }
     };
   }
 ] );
@@ -530,11 +272,41 @@ cenozo.factory( 'CnBaseModelFactory', [
   '$state', '$stateParams', 'CnHttpFactory',
   function( $state, $stateParams, CnHttpFactory ) {
     return {
-      apply: function( object ) {
-        if( undefined === object ) throw 'Tried to apply CnBaseModelFactory without a base object';
-        if( undefined === object.subject ) throw 'Tried to apply CnBaseModelFactory without a subject';
+      construct: function( object, module ) {
+        for( var property in module ) object[property] = cnCopy( module[property] );
 
-        // define helper functions based on the state
+        object.getId = function() {
+          if( undefined === $stateParams.id ) throw 'Unable to determine id';
+          return $stateParams.id;
+        };
+        
+        object.getParentIdentifier = function() {
+          var stateNameParts = $state.current.name.split( '.' );
+          var len = stateNameParts.length;
+          if( 2 > len ) throw 'State "' + $state.current.name + '" is expected to have at least 2 parts';
+
+          var parentIdentifier = {};
+          if( stateNameParts[len-2] != this.subject ) {
+            var parentSubject = stateNameParts[len-2];
+            var parentId = undefined !== $stateParams.parentId ? $stateParams.parentId : $stateParams.id;
+            parentIdentifier[parentSubject] = parentId;
+          }
+          return parentIdentifier;
+        };
+        
+        // Helper functions to get service paths
+        object.getServiceCollectionPath = function() {
+          var path = '';
+          var parentIdentifier = this.getParentIdentifier();
+          for( var property in parentIdentifier ) path += property + '/' + parentIdentifier[property] + '/';
+          return path + module.subject;
+        }
+        object.getServiceResourcePath = function( resource ) {
+          var id = undefined === resource ? $stateParams.id : resource;
+          return this.getServiceCollectionPath() + '/' + id;
+        }
+
+        // helper functions based on the state
         object.transitionToLastState = function() {
           var stateName = $state.current.name;
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
@@ -559,12 +331,32 @@ cenozo.factory( 'CnBaseModelFactory', [
             $state.go( this.subject + '.view', { id: id } );
           }
         };
-        object.getViewPath = function() {
-          var path = undefined !== $stateParams.parentId
-                   ? $state.current.name.split( '.' )[0] + '/' + $stateParams.parentId + '/'
-                   : '';
-          return path + this.subject + '/' + $stateParams.id;
+
+        object.getInputArray = function() {
+          // make a copy of the input list and remove any parent column(s)
+          var inputObjectList = cnCopy( this.inputList );
+          for( var property in this.getParentIdentifier() ) delete inputObjectList[property+'_id'];
+
+          // create an array out of the input list
+          var inputArray = [];
+          for( var key in inputObjectList ) {
+            var input = inputObjectList[key];
+            input.key = key;
+            inputArray.push( input );
+          }
+          return inputArray;
         };
+
+        object.addEnabled = false;
+        object.chooseEnabled = false;
+        object.deleteEnabled = false;
+        object.viewEnabled = false;
+
+        // enable/disable module functionality
+        object.enableAdd = function( enable ) { this.addEnabled = enable; };
+        object.enableChoose = function( enable ) { this.chooseEnabled = enable; };
+        object.enableDelete = function( enable ) { this.deleteEnabled = enable; };
+        object.enableView = function( enable ) { this.viewEnabled = enable; };
 
         // get metadata
         object.metadata = { columnList: {}, isLoading: true, isComplete: false };
@@ -604,24 +396,22 @@ cenozo.factory( 'CnHttpFactory', [
       this.path = null;
       this.data = {};
       cnCopyParams( this, params );
-    };
 
-    object.prototype = {
-      http: function( method, url ) {
+      this.http = function( method, url ) {
         var object = { url: url, method: method };
         if( null != this.data ) {
           if( 'POST' == method || 'PATCH' == method ) object.data = this.data;
           else object.params = this.data;
         }
         return $http( object );
-      },
+      };
 
-      delete: function() { return this.http( 'DELETE', 'api/' + this.path ); },
-      get: function() { return this.http( 'GET', 'api/' + this.path ); },
-      head: function() { return this.http( 'HEAD', 'api/' + this.path ); },
-      patch: function() { return this.http( 'PATCH', 'api/' + this.path ); },
-      post: function() { return this.http( 'POST', 'api/' + this.path ); },
-      query: function() { return this.http( 'GET', 'api/' + this.path ); }
+      this.delete = function() { return this.http( 'DELETE', 'api/' + this.path ); };
+      this.get = function() { return this.http( 'GET', 'api/' + this.path ); };
+      this.head = function() { return this.http( 'HEAD', 'api/' + this.path ); };
+      this.patch = function() { return this.http( 'PATCH', 'api/' + this.path ); };
+      this.post = function() { return this.http( 'POST', 'api/' + this.path ); };
+      this.query = function() { return this.http( 'GET', 'api/' + this.path ); };
     };
     
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
@@ -805,3 +595,85 @@ cenozo.factory( 'CnPaginationFactory',
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
   }
 );
+
+
+
+/* ######################################################################################################## */
+function getServiceData( subject, list ) {
+  // set up the select, join and where list based on the column list
+  var selectList = [];
+  var joinList = [];
+  var whereList = [];
+  for( var key in list ) {
+    var lastJoin = null;
+    var parentTable = subject;
+    var columnParts = undefined === list[key].column ? [ key ] : list[key].column.split( '.' );
+    for( var k = 0; k < columnParts.length; k++ ) {
+      if( k == columnParts.length - 1 ) {
+        // add this column to the select list
+        var select = { column: columnParts[k], alias: key };
+        if( 0 < k ) select.table = columnParts[k-1];
+        else select.table_prefix = false;
+        selectList.push( select );
+      } else { // part of table list
+        var table = columnParts[k];
+
+        // don't join a table to itself
+        if( table !== parentTable ) {
+          var onleft = parentTable + '.' + table + '_id';
+          var onright = table + '.id';
+
+          // see if the join to this table already exists
+          var join = null;
+          for( var j = 0; j < joinList.length; j++ ) {
+            if( joinList[j].table == table &&
+                joinList[j].onleft == onleft &&
+                joinList[j].onright == onright ) {
+              join = joinList[j];
+              break;
+            }
+          }
+
+          // if the join wasn't found then add it to the list
+          if( null === join ) {
+            join = { table: table, onleft: onleft, onright: onright };
+            joinList.push( join );
+          }
+
+          var lastJoin = join;
+          var parentTable = table;
+        }
+      }
+    }
+
+    if( undefined !== list[key].restrict && null !== list[key].restrict ) {
+      var test = list[key].restrict.test;
+      var value = list[key].restrict.value;
+      if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
+      
+      // determine the column name
+      var column = key;
+      if( undefined !== list[key].column ) {
+        var columnParts = list[key].column.split( '.' );
+        var len = columnParts.length;
+        column = list[key].column;
+        if( 2 < len ) column = columnParts[len-2] + '.' + columnParts[len-1];
+      }
+
+      whereList.push( { 
+        column: column,
+        operator: test,
+        value: value
+      } );
+    }
+  }
+
+  var data = {};
+  if( 0 < selectList.length ) data.select = { column: selectList };
+  if( 0 < joinList.length || 0 < whereList.length ) {
+    data.modifier = {};
+    if( 0 < joinList.length ) data.modifier.join = joinList;
+    if( 0 < whereList.length ) data.modifier.where = whereList;
+  }
+  return data;
+}

@@ -14,11 +14,7 @@ define( [
   cnCachedProviders.factory( 'CnCollectionAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) {
-        CnBaseAddFactory.construct( this, parentModel, module );
-        this.validate();
-      };
-
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -27,14 +23,8 @@ define( [
   cnCachedProviders.factory( 'CnCollectionListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.columnList = module.columnList;
-        params.order = module.defaultOrder;
-        return CnBaseListFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -42,37 +32,27 @@ define( [
   cnCachedProviders.factory( 'CnCollectionViewFactory', [
     'CnBaseViewFactory', 'CnParticipantModelFactory', 'CnUserModelFactory',
     function( CnBaseViewFactory, CnParticipantModelFactory, CnUserModelFactory ) {
-      var object = function( params ) {
-        var base = CnBaseViewFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+      var object = function( parentModel ) {
+        CnBaseViewFactory.construct( this, parentModel );
 
         ////////////////////////////////////
         // factory customizations start here
         this.cnParticipantModel = CnParticipantModelFactory.instance();
-        this.cnParticipantModel.cnList.enableSelect( true );
+        this.cnParticipantModel.enableChoose( true );
         this.cnUserModel = CnUserModelFactory.instance();
-        this.cnUserModel.cnList.enableSelect( true );
+        this.cnUserModel.enableChoose( true );
         var thisRef = this;
-        this.load = function load( id ) {
-          return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnParticipantModel.cnList.load( 'collection/' + thisRef.record.id + '/participant', true );
-            thisRef.cnUserModel.cnList.load( 'collection/' + thisRef.record.id + '/user', true );
+        this.load = function load() {
+          return this.loadRecord().then( function() {
+            thisRef.cnParticipantModel.cnList.reload();
+            thisRef.cnUserModel.cnList.reload();
           } );
         };
         // factory customizations end here
         //////////////////////////////////
-
-        cnCopyParams( this, params );
       };
 
-      object.prototype = CnBaseViewFactory.prototype;
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return new object( params );
-      } };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -81,16 +61,14 @@ define( [
     'CnBaseModelFactory', 'CnCollectionListFactory', 'CnCollectionAddFactory', 'CnCollectionViewFactory',
     function( CnBaseModelFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
       var object = function() {
-        this.subject = module.subject;
-        CnBaseModelFactory.apply( this );
-        this.name = module.name;
+        CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnCollectionAddFactory.instance( this );
-        this.cnList = CnCollectionListFactory.instance( { parentModel: this } );
-        this.cnView = CnCollectionViewFactory.instance( { parentModel: this } );
+        this.cnList = CnCollectionListFactory.instance( this );
+        this.cnView = CnCollectionViewFactory.instance( this );
 
-        this.cnList.enableAdd( true );
-        this.cnList.enableDelete( true );
-        this.cnList.enableView( true );
+        this.enableAdd( true );
+        this.enableDelete( true );
+        this.enableView( true );
 
         // process metadata
         var thisRef = this;

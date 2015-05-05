@@ -8,11 +8,7 @@ define( [
   cnCachedProviders.factory( 'CnSiteAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) {
-        CnBaseAddFactory.construct( this, parentModel, module );
-        this.validate();
-      };
-
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -21,14 +17,8 @@ define( [
   cnCachedProviders.factory( 'CnSiteListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.columnList = module.columnList;
-        params.order = module.defaultOrder;
-        return CnBaseListFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -36,13 +26,8 @@ define( [
   cnCachedProviders.factory( 'CnSiteViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseViewFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -51,16 +36,14 @@ define( [
     'CnBaseModelFactory', 'CnSiteListFactory', 'CnSiteAddFactory', 'CnSiteViewFactory', 'CnHttpFactory',
     function( CnBaseModelFactory, CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory, CnHttpFactory ) {
       var object = function() {
-        this.subject = module.subject;
-        CnBaseModelFactory.apply( this );
-        this.name = module.name;
+        CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnSiteAddFactory.instance( this );
-        this.cnList = CnSiteListFactory.instance( { parentModel: this } );
-        this.cnView = CnSiteViewFactory.instance( { parentModel: this } );
+        this.cnList = CnSiteListFactory.instance( this );
+        this.cnView = CnSiteViewFactory.instance( this );
 
-        this.cnList.enableAdd( true );
-        this.cnList.enableDelete( true );
-        this.cnList.enableView( true );
+        this.enableAdd( true );
+        this.enableDelete( true );
+        this.enableView( true );
 
         // process metadata
         var thisRef = this;

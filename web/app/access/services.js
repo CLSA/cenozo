@@ -8,11 +8,7 @@ define( [
   cnCachedProviders.factory( 'CnAccessAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) {
-        CnBaseAddFactory.construct( this, parentModel, module );
-        this.validate();
-      };
-
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -21,14 +17,8 @@ define( [
   cnCachedProviders.factory( 'CnAccessListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.columnList = module.columnList;
-        params.order = module.defaultOrder;
-        return CnBaseListFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -36,13 +26,8 @@ define( [
   cnCachedProviders.factory( 'CnAccessViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseViewFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -55,16 +40,14 @@ define( [
               CnAccessListFactory, CnAccessAddFactory, CnAccessViewFactory,
               CnHttpFactory ) {
       var object = function() {
-        this.subject = module.subject;
-        CnBaseModelFactory.apply( this );
-        this.name = module.name;
+        CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnAccessAddFactory.instance( this );
-        this.cnList = CnAccessListFactory.instance( { parentModel: this } );
-        this.cnView = CnAccessViewFactory.instance( { parentModel: this } );
+        this.cnList = CnAccessListFactory.instance( this );
+        this.cnView = CnAccessViewFactory.instance( this );
 
-        this.cnList.enableAdd( true );
-        this.cnList.enableDelete( true );
-        this.cnList.enableView( true );
+        this.enableAdd( true );
+        this.enableDelete( true );
+        this.enableView( true );
 
         // process metadata
         var thisRef = this;

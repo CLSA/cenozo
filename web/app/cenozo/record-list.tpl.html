@@ -1,8 +1,8 @@
 <div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
 <table class="table"
        ng-class="{
-         'table-hover':(model.cnList.viewEnabled && !model.cnList.selectEnabled) || model.cnList.selectMode,
-         'table-striped':!model.cnList.selectMode
+         'table-hover':(model.viewEnabled && !model.chooseEnabled) || model.cnList.chooseMode,
+         'table-striped':!model.cnList.chooseMode
        } ">
   <thead>
     <tr class="info">
@@ -30,7 +30,7 @@
           </p>
         </div>
       </td>
-      <td class="tiny" ng-if="model.cnList.deleteEnabled && !model.cnList.selectEnabled"></td>
+      <td class="tiny" ng-if="model.deleteEnabled && !model.chooseEnabled"></td>
     </tr>
   </thead>
   <tbody>
@@ -41,7 +41,7 @@
     </tr>
     <tr ng-if="!model.cnList.loading && 0 == model.cnList.cache.length">
       <td colspan="{{ numColumns }}">
-        There are no {{ model.cnList.name.plural }} found.
+        There are no {{ model.name.plural }} found.
       </td>
     </tr>
     <tr ng-if="!model.cnList.loading"
@@ -50,16 +50,16 @@
                    | limitTo: ( model.cnList.cnPagination.currentPage - 1 ) * model.cnList.cnPagination.itemsPerPage -
                               model.cnList.cache.length
                    | limitTo: model.cnList.cnPagination.itemsPerPage"
-        ng-click="selectRecord( record )"
-        ng-class="{ success:model.cnList.selectMode&&record.selected }">
+        ng-click="model.chooseEnabled ? chooseRecord( record ) : selectRecord( record.id )"
+        ng-class="{ success:model.cnList.chooseMode && record.chosen }">
         <td ng-repeat="column in columnList">
           <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
         </td>
-        <td class="tiny" ng-if="model.cnList.deleteEnabled && !model.cnList.selectEnabled">
+        <td class="tiny" ng-if="model.deleteEnabled && !model.chooseEnabled">
           <div>
             <button class="btn btn-xs btn-danger"
                     cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
-                                       item in the {{ model.cnList.name.singular }} list?"
+                                       item in the {{ model.name.singular }} list?"
                     cn-really-click="deleteRecord( record.id )"
                     ng-click="$event.stopPropagation()">
               <i class="glyphicon glyphicon-remove"></i>
@@ -82,17 +82,17 @@
                     next-text="&rsaquo;"></pagination>
         {{ model.cnList.total }} records total
         <button class="btn btn-default right"
-                ng-if="model.cnList.addEnabled && !model.cnList.selectEnabled"
+                ng-if="model.addEnabled && !model.chooseEnabled"
                 ng-click="addRecord()">
           <i class="glyphicon glyphicon-plus"></i> Add
         </button>
         <button class="btn btn-default right"
-                ng-if="model.cnList.selectEnabled"
-                ng-class="model.cnList.selectMode ? 'btn-success' : 'btn-default'"
-                ng-click="model.cnList.toggleSelectMode()">
+                ng-if="model.chooseEnabled"
+                ng-class="model.cnList.chooseMode ? 'btn-success' : 'btn-default'"
+                ng-click="model.cnList.toggleChooseMode()">
           <i class="glyphicon glyphicon-edit"
-             ng-class="model.cnList.selectMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
-          {{ model.cnList.selectMode ? 'Done' : 'Select' }}
+             ng-class="model.cnList.chooseMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
+          {{ model.cnList.chooseMode ? 'Done' : 'Select' }}
         </button>
       </td>
     </tr>

@@ -23,14 +23,8 @@ define( [
   cnCachedProviders.factory( 'CnParticipantListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.columnList = module.columnList;
-        params.order = module.defaultOrder;
-        return CnBaseListFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -42,57 +36,47 @@ define( [
     function( CnBaseViewFactory,
               CnAddressModelFactory, CnPhoneModelFactory, CnConsentModelFactory,
               CnAlternateModelFactory, CnEventModelFactory ) {
-      var object = function( params ) {
-        var base = CnBaseViewFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+      var object = function( parentModel ) {
+        CnBaseViewFactory.construct( this, parentModel );
 
         ////////////////////////////////////
         // factory customizations start here
         this.cnAddressModel = CnAddressModelFactory.instance();
-        this.cnAddressModel.cnList.enableAdd( true );
-        this.cnAddressModel.cnList.enableDelete( true );
-        this.cnAddressModel.cnList.enableView( true );
+        this.cnAddressModel.enableAdd( true );
+        this.cnAddressModel.enableDelete( true );
+        this.cnAddressModel.enableView( true );
         this.cnPhoneModel = CnPhoneModelFactory.instance();
-        this.cnPhoneModel.cnList.enableAdd( true );
-        this.cnPhoneModel.cnList.enableDelete( true );
-        this.cnPhoneModel.cnList.enableView( true );
+        this.cnPhoneModel.enableAdd( true );
+        this.cnPhoneModel.enableDelete( true );
+        this.cnPhoneModel.enableView( true );
         this.cnConsentModel = CnConsentModelFactory.instance();
-        this.cnConsentModel.cnList.enableAdd( true );
-        this.cnConsentModel.cnList.enableDelete( true );
-        this.cnConsentModel.cnList.enableView( true );
+        this.cnConsentModel.enableAdd( true );
+        this.cnConsentModel.enableDelete( true );
+        this.cnConsentModel.enableView( true );
         this.cnAlternateModel = CnAlternateModelFactory.instance();
-        this.cnAlternateModel.cnList.enableAdd( true );
-        this.cnAlternateModel.cnList.enableDelete( true );
-        this.cnAlternateModel.cnList.enableView( true );
+        this.cnAlternateModel.enableAdd( true );
+        this.cnAlternateModel.enableDelete( true );
+        this.cnAlternateModel.enableView( true );
         this.cnEventModel = CnEventModelFactory.instance();
-        this.cnEventModel.cnList.enableAdd( true );
-        this.cnEventModel.cnList.enableDelete( true );
-        this.cnEventModel.cnList.enableView( true );
+        this.cnEventModel.enableAdd( true );
+        this.cnEventModel.enableDelete( true );
+        this.cnEventModel.enableView( true );
 
         var thisRef = this;
-        this.load = function load( id ) { 
-          return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnAddressModel.cnList.load( 'participant/' + thisRef.record.id + '/address', true );
-            thisRef.cnPhoneModel.cnList.load( 'participant/' + thisRef.record.id + '/phone', true );
-            thisRef.cnConsentModel.cnList.load( 'participant/' + thisRef.record.id + '/consent', true );
-            thisRef.cnAlternateModel.cnList.load( 'participant/' + thisRef.record.id + '/alternate', true );
-            thisRef.cnEventModel.cnList.load( 'participant/' + thisRef.record.id + '/event', true );
+        this.load = function load() { 
+          return this.loadRecord().then( function() {
+            thisRef.cnAddressModel.cnList.reload();
+            thisRef.cnPhoneModel.cnList.reload();
+            thisRef.cnConsentModel.cnList.reload();
+            thisRef.cnAlternateModel.cnList.reload();
+            thisRef.cnEventModel.cnList.reload();
           } );
         };
         // factory customizations end here
         //////////////////////////////////
-
-        cnCopyParams( this, params );
       };
 
-      object.prototype = CnBaseViewFactory.prototype;
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return new object( params );
-      } };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -101,14 +85,12 @@ define( [
     'CnBaseModelFactory', 'CnParticipantListFactory', 'CnParticipantViewFactory', 'CnHttpFactory',
     function( CnBaseModelFactory, CnParticipantListFactory, CnParticipantViewFactory, CnHttpFactory ) {
       var object = function() {
-        this.subject = module.subject;
-        CnBaseModelFactory.apply( this );
-        this.name = module.name;
-        this.cnList = CnParticipantListFactory.instance( { parentModel: this } );
-        this.cnView = CnParticipantViewFactory.instance( { parentModel: this } );
+        CnBaseModelFactory.construct( this, module );
+        this.cnList = CnParticipantListFactory.instance( this );
+        this.cnView = CnParticipantViewFactory.instance( this );
 
-        this.cnList.enableDelete( true );
-        this.cnList.enableView( true );
+        this.enableDelete( true );
+        this.enableView( true );
 
         // process metadata
         var thisRef = this;

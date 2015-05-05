@@ -408,7 +408,7 @@ cenozo.directive( 'cnRecordAdd', [
               scope = scope.$$nextSibling;
             }
           } else {
-            $scope.model.cnList.add( $scope.$parent.record ).then(
+            $scope.model.cnAdd.add( $scope.$parent.record ).then(
               function success( response ) { 
                 $scope.$parent.record = $scope.model.cnAdd.createRecord();
                 $scope.form.$setPristine();
@@ -433,7 +433,7 @@ cenozo.directive( 'cnRecordAdd', [
           }
         };
         $scope.getTypeaheadValues = function( key, viewValue ) {
-          var input = $scope.model.cnAdd.inputList[key];
+          var input = $scope.model.inputList[key];
           if( undefined === input )
             throw 'Typeahead used without a valid input key (' + key + ').';
           if( undefined === input.table )
@@ -482,7 +482,7 @@ cenozo.directive( 'cnRecordAdd', [
                       : attrs.heading;
 
         // get the input array and add enum lists for boolean types
-        scope.inputArray = scope.model.cnAdd.getInputArray();
+        scope.inputArray = scope.model.getInputArray();
         for( var i = 0; i < scope.inputArray.length; i++ ) {
           if( 'boolean' == scope.inputArray[i].type ) {
             scope.inputArray[i].enumList = [
@@ -537,25 +537,27 @@ cenozo.directive( 'cnRecordList', [
         removeColumns: '@'
       },
       controller: function( $scope ) {
-        if( $scope.model.cnList.addEnabled ) {
+        if( $scope.model.addEnabled ) {
           $scope.addRecord = function() { $scope.model.transitionToAddState(); };
         }
 
-        if( $scope.model.cnList.deleteEnabled ) {
+        if( $scope.model.deleteEnabled ) {
           $scope.deleteRecord = function( id ) {
             $scope.model.cnList.delete( id ).catch( function error( response ) { cnFatalError(); } );
           };
         }
 
-        if( $scope.model.cnList.selectEnabled ) {
-          $scope.selectRecord = function( record ) {
-            if( $scope.model.cnList.selectMode ) {
-              $scope.model.cnList.select( record ).catch( function error( response ) { cnFatalError(); } );
+        if( $scope.model.chooseEnabled ) {
+          $scope.chooseRecord = function( record ) {
+            if( $scope.model.cnList.chooseMode ) {
+              $scope.model.cnList.choose( record ).catch( function error( response ) { cnFatalError(); } );
             }
           };
-        } else if( $scope.model.cnList.viewEnabled ) {
-          $scope.selectRecord = function( record ) {
-            $scope.model.transitionToViewState( record.id );
+        }
+        
+        if( $scope.model.viewEnabled ) {
+          $scope.selectRecord = function( id ) {
+            $scope.model.transitionToViewState( id );
           };
         }
       },
@@ -568,8 +570,8 @@ cenozo.directive( 'cnRecordList', [
           scope.addRestrict = function( column ) {
             var modal = CnModalRestrictFactory.instance( {
               name: scope.model.name,
-              column: scope.model.cnList.columnList[column].title,
-              comparison: scope.model.cnList.columnList[column].restrict
+              column: scope.model.columnList[column].title,
+              comparison: scope.model.columnList[column].restrict
             } ).show().then( function( comparison ) {
               scope.model.cnList.restrict( column, comparison );
             } );
@@ -579,9 +581,9 @@ cenozo.directive( 'cnRecordList', [
         // convert the columnList into an array
         var removeColumns = undefined === scope.removeColumns ? [] : scope.removeColumns.split( ' ' );
         scope.columnList = [];
-        for( var key in scope.model.cnList.columnList ) {
+        for( var key in scope.model.columnList ) {
           if( 0 > removeColumns.indexOf( key ) ) {
-            var column = scope.model.cnList.columnList[key];
+            var column = scope.model.columnList[key];
             if( undefined === column.allowRestrict ) column.allowRestrict = true;
             column.key = key;
             scope.columnList.push( column );
@@ -590,7 +592,7 @@ cenozo.directive( 'cnRecordList', [
 
         // get the total number of columns in the table
         scope.numColumns = scope.columnList.length;
-        if( scope.model.cnList.deleteEnabled ) scope.numColumns++;
+        if( scope.model.deleteEnabled ) scope.numColumns++;
       }
     };
   }
@@ -612,7 +614,7 @@ cenozo.directive( 'cnRecordView',
         };
 
         $scope.delete = function() {
-          $scope.model.cnList.delete( $scope.model.cnView.record.id ).then(
+          $scope.model.cnView.delete().then(
             function success( response ) { $scope.model.transitionToLastState(); },
             function error( response ) { cnFatalError(); }
           );
@@ -621,7 +623,7 @@ cenozo.directive( 'cnRecordView',
         $scope.patch = function( property ) {
           var data = {};
           data[property] = $scope.model.cnView.record[property];
-          $scope.model.cnView.patch( $scope.model.cnView.record.id, data ).then(
+          $scope.model.cnView.patch( data ).then(
             function success( response ) { 
               var scope = angular.element(
                 angular.element( document.querySelector( '#' + property ) ) ).scope();
@@ -663,15 +665,17 @@ cenozo.directive( 'cnRecordView',
         // turn off any sub-list model currently in select mode whenever leaving a view model
         scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
           var stateName = fromState.name;
-          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) &&
-              undefined !== scope.model.cnView ) {
+          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
+            console.log( 'TODO: turn off select mode for all child modules in select mode' );
+            /*
             for( var property in scope.model.cnView ) {
               if( 'object' == typeof scope.model.cnView[property] &&
                   'object' == typeof scope.model.cnView[property].cnList &&
-                  true === scope.model.cnView[property].cnList.selectMode ) {
-                scope.model.cnView[property].cnList.toggleSelectMode();
+                  true === scope.model.cnView[property].chooseMode ) {
+                scope.model.cnView[property].toggleChooseMode();
               }
             }
+            */
           }
         } );
 
@@ -679,21 +683,13 @@ cenozo.directive( 'cnRecordView',
                       ? scope.model.name.singular.ucWords() + ' Details'
                       : attrs.heading;
 
-        //scope.$parent.form = scope.form;
-
-        scope.inputList = [];
-        for( var key in scope.model.cnView.inputList ) {
-          var input = scope.model.cnView.inputList[key];
-          input.key = key;
-          scope.inputList.push( input );
-        }
-
+        scope.inputArray = scope.model.getInputArray();
         var recordLoaded = false;
         scope.$watch( 'model.cnView.record', function( record ) {
           // convert datetimes
           if( undefined !== record.id && !recordLoaded ) {
-            for( var key in scope.model.cnView.inputList ) {
-              if( 'date' == scope.model.cnView.inputList[key].type && record[key].format )
+            for( var key in scope.model.inputArray ) {
+              if( 'date' == scope.model.inputArray[key].type && record[key].format )
                 record[key] = record[key].format( 'YYYY-MM-DD' );
             }
             recordLoaded = true;
@@ -708,7 +704,7 @@ cenozo.directive( 'cnRecordView',
           if( undefined !== metadata && !metadata.isLoading && !metadataLoaded ) {
             // build enum lists
             for( var key in metadata.columnList ) {
-              var input = scope.inputList.find( // by key
+              var input = scope.inputArray.find( // by key
                 function( item, index, array ) { return key == item.key }
               );
               if( undefined !== input && ( 'boolean' === input.type || 'enum' === input.type ) ) {

@@ -35,9 +35,8 @@ class query extends read
     $leaf_subject = $this->get_leaf_subject();
     if( !is_null( $leaf_subject ) )
     {
-      // process "selected" mode
-      $selected_mode = $this->get_argument( 'select_mode', false );
-      if( $selected_mode )
+      // process "choosing" mode
+      if( $this->get_argument( 'choosing', false ) )
       {
         if( $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )
         { // must have table1/<id>/table2 where table1 N-to-N table2
@@ -45,7 +44,7 @@ class query extends read
         }
         else
         {
-          // create a sub-query identifying selected records
+          // create a sub-query identifying chosen records
           $parent_record = $this->get_parent_record();
           $table_name = $parent_record::get_joining_table_name( $leaf_subject );
           $select = lib::create( 'database\select' );
@@ -55,7 +54,7 @@ class query extends read
           $modifier->where( sprintf( '%s_id', $parent_record::get_table_name() ), '=', $parent_record->id );
           $modifier->where( sprintf( '%s_id', $leaf_subject ), '=', sprintf( '%s.id', $leaf_subject ), false );
           $sub_query = sprintf( '( %s %s )', $select->get_sql(), $modifier->get_sql() );
-          $this->select->add_column( $sub_query, 'selected', false ); 
+          $this->select->add_column( $sub_query, 'chosen', false ); 
         }
       }
     }
@@ -94,7 +93,7 @@ class query extends read
     $parent_record_method = sprintf( 'get_%s_count', $leaf_subject );
     $modifier = clone $this->modifier;
 
-    return is_null( $parent_record ) || $this->get_argument( 'select_mode', false ) ?
+    return is_null( $parent_record ) || $this->get_argument( 'choosing', false ) ?
            $record_class_name::count( $modifier ) :
            $parent_record->$parent_record_method( $modifier );
   }
@@ -110,7 +109,7 @@ class query extends read
     $parent_record_method = sprintf( 'get_%s_list', $leaf_subject );
     $modifier = clone $this->modifier;
 
-    return is_null( $parent_record ) || $this->get_argument( 'select_mode', false ) ?
+    return is_null( $parent_record ) || $this->get_argument( 'choosing', false ) ?
            $record_class_name::select( $this->select, $modifier ) :
            $parent_record->$parent_record_method( $this->select, $modifier );
   }

@@ -11,14 +11,8 @@ define( [
   cnCachedProviders.factory( 'CnLanguageListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.columnList = module.columnList;
-        params.order = module.defaultOrder;
-        return CnBaseListFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -26,34 +20,24 @@ define( [
   cnCachedProviders.factory( 'CnLanguageViewFactory', [
     'CnBaseViewFactory', 'CnUserModelFactory',
     function( CnBaseViewFactory, CnUserModelFactory ) {
-      var object = function( params ) {
-        var base = CnBaseViewFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
+      var object = function( parentModel ) {
+        CnBaseViewFactory.construct( this, parentModel );
 
         ////////////////////////////////////
         // factory customizations start here
         this.cnUserModel = CnUserModelFactory.instance();
-        this.cnUserModel.cnList.enableSelect( true );
+        this.cnUserModel.enableChoose( true );
         var thisRef = this;
-        this.load = function load( id ) {
-          return CnBaseViewFactory.prototype.load.call( this, id ).then( function() {
-            thisRef.cnUserModel.cnList.load( 'language/' + thisRef.record.id + '/user' );
+        this.load = function load() {
+          return this.loadRecord().then( function() {
+            thisRef.cnUserModel.cnList.reload();
           } );
         };
         // factory customizations end here
         //////////////////////////////////
-
-        cnCopyParams( this, params );
       }
 
-      object.prototype = CnBaseViewFactory.prototype;
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return new object( params );
-      } };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -62,14 +46,12 @@ define( [
     'CnBaseModelFactory', 'CnLanguageListFactory', 'CnLanguageViewFactory',
     function( CnBaseModelFactory, CnLanguageListFactory, CnLanguageViewFactory ) {
       var object = function() {
-        this.subject = module.subject;
-        CnBaseModelFactory.apply( this );
-        this.name = module.name;
-        this.cnList = CnLanguageListFactory.instance( { parentModel: this } );
-        this.cnView = CnLanguageViewFactory.instance( { parentModel: this } );
+        CnBaseModelFactory.construct( this, module );
+        this.cnList = CnLanguageListFactory.instance( this );
+        this.cnView = CnLanguageViewFactory.instance( this );
 
-        this.cnList.enableDelete( true );
-        this.cnList.enableView( true );
+        this.enableDelete( true );
+        this.enableView( true );
 
         // process metadata
         var thisRef = this;

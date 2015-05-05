@@ -8,14 +8,8 @@ define( [
   cnCachedProviders.factory( 'CnActivityListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.columnList = module.columnList;
-        params.order = module.defaultOrder;
-        return CnBaseListFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -24,10 +18,8 @@ define( [
     'CnBaseModelFactory', 'CnActivityListFactory',
     function( CnBaseModelFactory, CnActivityListFactory ) {
       var object = function() {
-        this.subject = module.subject;
-        CnBaseModelFactory.apply( this );
-        this.name = module.name;
-        this.cnList = CnActivityListFactory.instance( { parentModel: this } );
+        CnBaseModelFactory.construct( this, module );
+        this.cnList = CnActivityListFactory.instance( this );
 
         // process metadata
         var thisRef = this;
