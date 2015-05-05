@@ -42,10 +42,10 @@ define( [
         this.cnUserModel = CnUserModelFactory.instance();
         this.cnUserModel.enableChoose( true );
         var thisRef = this;
-        this.load = function load() {
-          return this.loadRecord().then( function() {
-            thisRef.cnParticipantModel.cnList.reload();
-            thisRef.cnUserModel.cnList.reload();
+        this.view = function view() {
+          return this.viewRecord().then( function() {
+            thisRef.cnParticipantModel.cnList.list( true );
+            thisRef.cnUserModel.cnList.list( true );
           } );
         };
         // factory customizations end here

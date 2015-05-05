@@ -89,9 +89,8 @@ cenozo.factory( 'CnBaseAddFactory', [
           };
         } );
 
-        object.add = function( record ) {
-          if( !this.parentModel.addEnabled ) throw 'Calling add() but addEnabled is false';
-
+        object.addRecord = function( record ) {
+          if( !this.parentModel.addEnabled ) throw 'Calling addRecord() but addEnabled is false';
           cnConvertToDatabaseRecord( record );
           var thisRef = this;
           return CnHttpFactory.instance( {
@@ -99,6 +98,8 @@ cenozo.factory( 'CnBaseAddFactory', [
             data: record
           } ).post();
         };
+
+        object.add = function( record ) { return this.addRecord( record ); };
       }
     };
   }
@@ -123,7 +124,7 @@ cenozo.factory( 'CnBaseListFactory', [
           } else {
             this.order.reverse = !this.order.reverse;
           }
-          if( this.cache.length < this.total ) this.reload();
+          if( this.cache.length < this.total ) this.list( true );
           this.cnPagination.currentPage = 1;
         };
 
@@ -134,18 +135,16 @@ cenozo.factory( 'CnBaseListFactory', [
           } else {
             columnList[column].restrict = restrict;
           }
-          this.reload();
+          this.list( true );
           this.cnPagination.currentPage = 1;
         };
 
         object.checkCache = function() {
           if( this.cache.length < this.total && this.cnPagination.getMaxIndex() >= this.cache.length )
-            this.load().catch( function exception() { cnFatalError(); } );
+            this.list().catch( function exception() { cnFatalError(); } );
         };
 
-        object.reload = function() { return this.load( true ); };
-
-        object.load = function( replace ) {
+        object.listRecords = function( replace ) {
           if( undefined === replace ) replace = false;
           if( replace ) this.cache = [];
 
@@ -178,11 +177,11 @@ cenozo.factory( 'CnBaseListFactory', [
         object.chooseMode = false;
         object.toggleChooseMode = function() {
           this.chooseMode = !this.chooseMode;
-          this.reload();
+          this.list( true );
         };
 
-        object.choose = function( record ) {
-          if( !this.parentModel.chooseEnabled ) throw 'Calling choose() but chooseEnabled is false';
+        object.chooseRecord = function( record ) {
+          if( !this.parentModel.chooseEnabled ) throw 'Calling chooseRecord() but chooseEnabled is false';
 
           return record.chosen ?
             CnHttpFactory.instance( {
@@ -193,7 +192,9 @@ cenozo.factory( 'CnBaseListFactory', [
             } ).post().then( function success( response ) { record.chosen = 1; } );
         };
 
-        object.delete = function( id ) {
+        object.deleteRecord = function( id ) {
+          if( !this.parentModel.deleteEnabled ) throw 'Calling deleteRecord() but deleteEnabled is false';
+
           var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath( id ),
@@ -206,6 +207,10 @@ cenozo.factory( 'CnBaseListFactory', [
             }
           } );
         };
+
+        object.choose = function( record ) { return this.chooseRecord( record ); };
+        object.delete = function( id ) { return this.deleteRecord( id ); };
+        object.list = function( replace ) { return this.listRecords( replace ); };
       }
     };
   }
@@ -226,7 +231,17 @@ cenozo.factory( 'CnBaseViewFactory', [
           } ).delete();
         };
 
-        object.loadRecord = function() {
+        object.patchRecord = function( data ) {
+          cnConvertToDatabaseRecord( data );
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceResourcePath(),
+            data: data
+          } ).patch();
+        };
+
+        object.viewRecord = function() {
+          if( !this.parentModel.viewEnabled ) throw 'Calling viewRecord() but viewEnabled is false';
+
           this.record = {};
           var thisRef = this;
           return CnHttpFactory.instance( {
@@ -251,17 +266,9 @@ cenozo.factory( 'CnBaseViewFactory', [
           } );
         };
 
-        object.patchRecord = function( data ) {
-          cnConvertToDatabaseRecord( data );
-          return CnHttpFactory.instance( {
-            path: this.parentModel.getServiceResourcePath(),
-            data: data
-          } ).patch();
-        };
-
         object.delete = function() { return this.deleteRecord(); };
-        object.load = function() { return this.loadRecord(); };
         object.patch = function( data ) { return this.patchRecord( data ); };
+        object.view = function() { return this.viewRecord(); };
       }
     };
   }

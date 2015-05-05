@@ -508,7 +508,7 @@ cenozo.directive( 'cnRecordAdd', [
                 if( undefined === input.enumList ) {
                   input.enumList = metadata.columnList[key].enumList;
                   input.enumList.unshift( metadata.columnList[key].required ?
-                    { value: undefined, name: '(Select a ' + input.title + ')' } :
+                    { value: undefined, name: '(Select ' + input.title + ')' } :
                     { value: null, name: '' } );
                 }
               }
@@ -737,14 +737,14 @@ cenozo.directive( 'cnSiteRoleSwitcher', [
       controller: function( $scope ) {
         $scope.setSite = function( id ) {
           CnAppSingleton.setSite( id ).then( function() {
-            // reload and set the url to the home state
+            // relist and set the url to the home state
             $window.location.assign( $window.location.pathname );
           } );
         }
 
         $scope.setRole = function( id ) {
           CnAppSingleton.setRole( id ).then( function() {
-            // reload and set the url to the home state
+            // relist and set the url to the home state
             $window.location.assign( $window.location.pathname );
           } );
         }

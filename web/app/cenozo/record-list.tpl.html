@@ -34,17 +34,17 @@
     </tr>
   </thead>
   <tbody>
-    <tr ng-if="model.cnList.loading">
+    <tr ng-if="model.cnList.listing">
       <td colspan="{{ numColumns }}" style="background-color: #FFF">
         <div class="loader" tooltip="Loading..."></div>
       </td>
     </tr>
-    <tr ng-if="!model.cnList.loading && 0 == model.cnList.cache.length">
+    <tr ng-if="!model.cnList.listing && 0 == model.cnList.cache.length">
       <td colspan="{{ numColumns }}">
         There are no {{ model.name.plural }} found.
       </td>
     </tr>
-    <tr ng-if="!model.cnList.loading"
+    <tr ng-if="!model.cnList.listing"
         ng-repeat="record in model.cnList.cache
                    | orderBy: model.cnList.order.column:model.cnList.order.reverse
                    | limitTo: ( model.cnList.cnPagination.currentPage - 1 ) * model.cnList.cnPagination.itemsPerPage -

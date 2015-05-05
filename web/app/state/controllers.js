@@ -16,7 +16,7 @@ define( [], function() {
     '$scope', 'CnStateModelFactory',
     function( $scope, CnStateModelFactory ) {
       $scope.model = CnStateModelFactory.root;
-      $scope.model.cnList.load().catch( function exception() { cnFatalError(); } );
+      $scope.model.cnList.list().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
@@ -25,7 +25,7 @@ define( [], function() {
     '$scope', 'CnStateModelFactory',
     function( $scope, CnStateModelFactory ) {
       $scope.model = CnStateModelFactory.root;
-      $scope.model.cnView.load().catch( function exception() { cnFatalError(); } );
+      $scope.model.cnView.view().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
