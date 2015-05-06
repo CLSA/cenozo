@@ -63,13 +63,13 @@ define( [
         this.cnEventModel.enableView( true );
 
         var thisRef = this;
-        this.view = function view() { 
+        this.onView = function view() { 
           return this.viewRecord().then( function() {
-            thisRef.cnAddressModel.cnList.list( true );
-            thisRef.cnPhoneModel.cnList.list( true );
-            thisRef.cnConsentModel.cnList.list( true );
-            thisRef.cnAlternateModel.cnList.list( true );
-            thisRef.cnEventModel.cnList.list( true );
+            thisRef.cnAddressModel.cnList.onList( true );
+            thisRef.cnPhoneModel.cnList.onList( true );
+            thisRef.cnConsentModel.cnList.onList( true );
+            thisRef.cnAlternateModel.cnList.onList( true );
+            thisRef.cnEventModel.cnList.onList( true );
           } );
         };
         // factory customizations end here

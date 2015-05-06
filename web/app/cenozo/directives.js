@@ -408,7 +408,7 @@ cenozo.directive( 'cnRecordAdd', [
               scope = scope.$$nextSibling;
             }
           } else {
-            $scope.model.cnAdd.add( $scope.$parent.record ).then(
+            $scope.model.cnAdd.onAdd( $scope.$parent.record ).then(
               function success( response ) { 
                 $scope.$parent.record = $scope.model.cnAdd.createRecord();
                 $scope.form.$setPristine();
@@ -543,14 +543,14 @@ cenozo.directive( 'cnRecordList', [
 
         if( $scope.model.deleteEnabled ) {
           $scope.deleteRecord = function( id ) {
-            $scope.model.cnList.delete( id ).catch( function error( response ) { cnFatalError(); } );
+            $scope.model.cnList.onDelete( id ).catch( function error( response ) { cnFatalError(); } );
           };
         }
 
         if( $scope.model.chooseEnabled ) {
           $scope.chooseRecord = function( record ) {
             if( $scope.model.cnList.chooseMode ) {
-              $scope.model.cnList.choose( record ).catch( function error( response ) { cnFatalError(); } );
+              $scope.model.cnList.onChoose( record ).catch( function error( response ) { cnFatalError(); } );
             }
           };
         }
@@ -614,7 +614,7 @@ cenozo.directive( 'cnRecordView',
         };
 
         $scope.delete = function() {
-          $scope.model.cnView.delete().then(
+          $scope.model.cnView.onDelete().then(
             function success( response ) { $scope.model.transitionToLastState(); },
             function error( response ) { cnFatalError(); }
           );
@@ -623,7 +623,7 @@ cenozo.directive( 'cnRecordView',
         $scope.patch = function( property ) {
           var data = {};
           data[property] = $scope.model.cnView.record[property];
-          $scope.model.cnView.patch( data ).then(
+          $scope.model.cnView.onPatch( data ).then(
             function success( response ) { 
               var scope = angular.element(
                 angular.element( document.querySelector( '#' + property ) ) ).scope();

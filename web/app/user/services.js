@@ -38,9 +38,9 @@ define( [
         this.cnAccessModel.enableAdd( true );
         this.cnAccessModel.enableDelete( true );
         var thisRef = this;
-        this.view = function view() { 
+        this.onView = function view() { 
           return this.viewRecord().then( function() {
-            thisRef.cnAccessModel.cnList.list( true );
+            thisRef.cnAccessModel.cnList.onList( true );
           } );
         };
         // factory customizations end here

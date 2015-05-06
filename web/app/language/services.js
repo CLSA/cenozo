@@ -28,9 +28,9 @@ define( [
         this.cnUserModel = CnUserModelFactory.instance();
         this.cnUserModel.enableChoose( true );
         var thisRef = this;
-        this.view = function view() {
+        this.onView = function view() {
           return this.viewRecord().then( function() {
-            thisRef.cnUserModel.cnList.list( true );
+            thisRef.cnUserModel.cnList.onList( true );
           } );
         };
         // factory customizations end here

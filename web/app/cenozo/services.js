@@ -89,6 +89,13 @@ cenozo.factory( 'CnBaseAddFactory', [
           };
         } );
 
+        /**
+         * Must be called by the onAdd() function in order to send the new record to the server.
+         * This function should not be changed, override the onAdd() function instead.
+         * 
+         * @param object record: The record to add
+         * @return promise
+         */
         object.addRecord = function( record ) {
           if( !this.parentModel.addEnabled ) throw 'Calling addRecord() but addEnabled is false';
           cnConvertToDatabaseRecord( record );
@@ -99,7 +106,12 @@ cenozo.factory( 'CnBaseAddFactory', [
           } ).post();
         };
 
-        object.add = function( record ) { return this.addRecord( record ); };
+        /**
+         * Override this function when needing to make additional operations when adding this model's records.
+         * 
+         * @return promise
+         */
+        object.onAdd = function( record ) { return this.addRecord( record ); };
       }
     };
   }
@@ -124,7 +136,7 @@ cenozo.factory( 'CnBaseListFactory', [
           } else {
             this.order.reverse = !this.order.reverse;
           }
-          if( this.cache.length < this.total ) this.list( true );
+          if( this.cache.length < this.total ) this.listRecords( true );
           this.cnPagination.currentPage = 1;
         };
 
@@ -135,15 +147,65 @@ cenozo.factory( 'CnBaseListFactory', [
           } else {
             columnList[column].restrict = restrict;
           }
-          this.list( true );
+          this.listRecords( true );
           this.cnPagination.currentPage = 1;
         };
 
         object.checkCache = function() {
           if( this.cache.length < this.total && this.cnPagination.getMaxIndex() >= this.cache.length )
-            this.list().catch( function exception() { cnFatalError(); } );
+            this.listRecords().catch( function exception() { cnFatalError(); } );
         };
 
+        /**
+         * Must be called by the onChoose() function in order to add a record on the server in a
+         * many-to-many relationship.
+         * This function should not be changed, override the onChoose() function instead.
+         * 
+         * @param object record: The record to choose
+         * @return promise
+         */
+        object.chooseRecord = function( record ) {
+          if( !this.parentModel.chooseEnabled ) throw 'Calling chooseRecord() but chooseEnabled is false';
+
+          return record.chosen ?
+            CnHttpFactory.instance( {
+              path: this.parentModel.getServiceResourcePath()
+            } ).delete().then( function success( response ) { record.chosen = 0; } ) :
+            CnHttpFactory.instance( {
+              path: this.parentModel.getServiceCollectionPath(), data: record.id
+            } ).post().then( function success( response ) { record.chosen = 1; } );
+        };
+
+        /**
+         * Must be called by the onDelete() function in order to delete a record from the server.
+         * This function should not be changed, override the onDelete() function instead.
+         * 
+         * @param int id: The id of the record to delete
+         * @return promise
+         */
+        object.deleteRecord = function( id ) {
+          if( !this.parentModel.deleteEnabled ) throw 'Calling deleteRecord() but deleteEnabled is false';
+
+          var thisRef = this;
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceResourcePath( id ),
+          } ).delete().then( function success( response ) {
+            for( var i = 0; i < thisRef.cache.length; i++ ) {
+              if( thisRef.cache[i].id == id ) {
+                thisRef.total--;
+                return thisRef.cache.splice( i, 1 );
+              }
+            }
+          } );
+        };
+
+        /**
+         * Must be called by the onList() function in order to load records from the server.
+         * This function should not be changed, override the onList() function instead.
+         * 
+         * @param boolean replace: Whether to replace the cached list or append to it
+         * @return promise
+         */
         object.listRecords = function( replace ) {
           if( undefined === replace ) replace = false;
           if( replace ) this.cache = [];
@@ -177,40 +239,18 @@ cenozo.factory( 'CnBaseListFactory', [
         object.chooseMode = false;
         object.toggleChooseMode = function() {
           this.chooseMode = !this.chooseMode;
-          this.list( true );
+          this.listRecords( true );
         };
 
-        object.chooseRecord = function( record ) {
-          if( !this.parentModel.chooseEnabled ) throw 'Calling chooseRecord() but chooseEnabled is false';
-
-          return record.chosen ?
-            CnHttpFactory.instance( {
-              path: this.parentModel.getServiceResourcePath()
-            } ).delete().then( function success( response ) { record.chosen = 0; } ) :
-            CnHttpFactory.instance( {
-              path: this.parentModel.getServiceCollectionPath(), data: record.id
-            } ).post().then( function success( response ) { record.chosen = 1; } );
-        };
-
-        object.deleteRecord = function( id ) {
-          if( !this.parentModel.deleteEnabled ) throw 'Calling deleteRecord() but deleteEnabled is false';
-
-          var thisRef = this;
-          return CnHttpFactory.instance( {
-            path: this.parentModel.getServiceResourcePath( id ),
-          } ).delete().then( function success( response ) {
-            for( var i = 0; i < thisRef.cache.length; i++ ) {
-              if( thisRef.cache[i].id == id ) {
-                thisRef.total--;
-                return thisRef.cache.splice( i, 1 );
-              }
-            }
-          } );
-        };
-
-        object.choose = function( record ) { return this.chooseRecord( record ); };
-        object.delete = function( id ) { return this.deleteRecord( id ); };
-        object.list = function( replace ) { return this.listRecords( replace ); };
+        /**
+         * Override these function when needing to make additional operations when choosing, deleting
+         * or listing this model's records.
+         * 
+         * @return promise
+         */
+        object.onChoose = function( record ) { return this.chooseRecord( record ); };
+        object.onDelete = function( id ) { return this.deleteRecord( id ); };
+        object.onList = function( replace ) { return this.listRecords( replace ); };
       }
     };
   }
@@ -225,12 +265,25 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.parentModel = parentModel;
         object.record = {};
 
+        /**
+         * Must be called by the onDelete() function in order to delete the viewed record from the server.
+         * This function should not be changed, override the onDelete() function instead.
+         * 
+         * @return promise
+         */
         object.deleteRecord = function() {
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath()
           } ).delete();
         };
 
+        /**
+         * Must be called by the onPatch() function in order to make changes on the server to the viewed record.
+         * This function should not be changed, override the onPatch() function instead.
+         * 
+         * @param object data: An object of column -> value pairs to change
+         * @return promise
+         */
         object.patchRecord = function( data ) {
           cnConvertToDatabaseRecord( data );
           return CnHttpFactory.instance( {
@@ -239,6 +292,12 @@ cenozo.factory( 'CnBaseViewFactory', [
           } ).patch();
         };
 
+        /**
+         * Must be called by the onView() function in order to load data from the server to view the record.
+         * This function should not be changed, override the onView() function instead.
+         * 
+         * @return promise
+         */
         object.viewRecord = function() {
           if( !this.parentModel.viewEnabled ) throw 'Calling viewRecord() but viewEnabled is false';
 
@@ -266,9 +325,15 @@ cenozo.factory( 'CnBaseViewFactory', [
           } );
         };
 
-        object.delete = function() { return this.deleteRecord(); };
-        object.patch = function( data ) { return this.patchRecord( data ); };
-        object.view = function() { return this.viewRecord(); };
+        /**
+         * Override these function when needing to make additional operations when deleting, patching
+         * or viewing this model's records.
+         * 
+         * @return promise
+         */
+        object.onDelete = function() { return this.deleteRecord(); };
+        object.onPatch = function( data ) { return this.patchRecord( data ); };
+        object.onView = function() { return this.viewRecord(); };
       }
     };
   }

@@ -49,9 +49,9 @@ define( [
         var thisRef = this;
         this.view = function view() {
           return this.viewRecord().then( function() {
-            thisRef.cnParticipantModel.cnList.list( true );
-            thisRef.cnSiteModel.cnList.list( true );
-            thisRef.cnUserModel.cnList.list( true );
+            thisRef.cnParticipantModel.cnList.onList( true );
+            thisRef.cnSiteModel.cnList.onList( true );
+            thisRef.cnUserModel.cnList.onList( true );
           } );
         };
         // factory customizations end here
