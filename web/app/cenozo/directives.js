@@ -666,16 +666,13 @@ cenozo.directive( 'cnRecordView',
         scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
           var stateName = fromState.name;
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
-            console.log( 'TODO: turn off select mode for all child modules in select mode' );
-            /*
             for( var property in scope.model.cnView ) {
               if( 'object' == typeof scope.model.cnView[property] &&
                   'object' == typeof scope.model.cnView[property].cnList &&
-                  true === scope.model.cnView[property].chooseMode ) {
-                scope.model.cnView[property].toggleChooseMode();
+                  true === scope.model.cnView[property].cnList.chooseMode ) {
+                scope.model.cnView[property].cnList.toggleChooseMode();
               }
             }
-            */
           }
         } );
 
