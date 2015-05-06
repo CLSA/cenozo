@@ -92,15 +92,15 @@ cenozo.factory( 'CnBaseAddFactory', [
          * Must be called by the onNew() function in order to create a new local record.
          * This function should not be changed, override the onNew() function instead.
          * 
+         * @param object record: The object to initialize as a new record
          * @return promise
          */
-        object.newRecord = function() {
+        object.newRecord = function( record ) {
           if( !this.parentModel.addEnabled ) throw 'Calling newRecord() but addEnabled is false';
-          var record = {};
 
           // load the metadata and use it to apply default values to the record
           var thisRef = this;
-          this.parentModel.getMetadata().then( function() {
+          return this.parentModel.getMetadata().then( function() {
             // apply default values from the metadata
             for( var column in thisRef.parentModel.metadata.columnList )
               if( null !== thisRef.parentModel.metadata.columnList[column].default )
@@ -110,8 +110,6 @@ cenozo.factory( 'CnBaseAddFactory', [
             var parentIdentifier = thisRef.parentModel.getParentIdentifier();
             for( var property in parentIdentifier ) record[property+'_id'] = parentIdentifier[property];
           } ).catch( function exception() { cnFatalError(); } );
-
-          return record;
         };
 
         /**
@@ -413,6 +411,12 @@ cenozo.factory( 'CnBaseModelFactory', [
           } else {
             $state.go( this.subject + '.view', { id: id } );
           }
+        };
+        object.transitionToErrorState = function( response ) {
+          $state.go( 'error.' +
+            undefined === response ||
+            undefined === response.status ||
+            404 != response.status ? '500' : '404' );
         };
 
         object.getInputArray = function() {

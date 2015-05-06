@@ -7,7 +7,9 @@ define( [], function() {
     '$scope', 'CnLanguageModelFactory',
     function( $scope, CnLanguageModelFactory ) {
       $scope.model = CnLanguageModelFactory.root;
-      $scope.model.cnList.onList().catch( function exception() { cnFatalError(); } );
+      $scope.model.cnList.onList().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 
@@ -16,7 +18,9 @@ define( [], function() {
     '$scope', 'CnLanguageModelFactory',
     function( $scope, CnLanguageModelFactory ) {
       $scope.model = CnLanguageModelFactory.root;
-      $scope.model.cnView.onView().catch( function exception() { cnFatalError(); } );
+      $scope.model.cnView.onView().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 

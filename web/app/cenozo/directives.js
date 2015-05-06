@@ -410,7 +410,7 @@ cenozo.directive( 'cnRecordAdd', [
           } else {
             $scope.model.cnAdd.onAdd( $scope.$parent.record ).then(
               function success( response ) { 
-                $scope.$parent.record = $scope.model.cnAdd.onNew();
+                $scope.model.cnAdd.onNew( $scope.$parent.record );
                 $scope.form.$setPristine();
                 $scope.model.transitionToLastState();
               },

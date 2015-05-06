@@ -101,19 +101,19 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
   // add child states to the list
   for( var i = 0; i < module.children.length; i++ ) {
     var child = module.children[i];
-    var baseUrl = 'app/' + child + '/';
-    if( 0 <= cnFrameworkModuleList.indexOf( child ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
+    var baseChildUrl = 'app/' + child + '/';
+    if( 0 <= cnFrameworkModuleList.indexOf( child ) ) baseChildUrl = cnCenozoUrl + '/' + baseChildUrl;
 
     $stateProvider.state( name + '.add_' + child, {
       url: '/view/{parentId}/' + child,
       controller: ( child + '_add_ctrl' ).snakeToCamel( true ),
-      templateUrl: baseUrl + 'add.tpl.html'
+      templateUrl: baseChildUrl + 'add.tpl.html'
     } );
 
     $stateProvider.state( name + '.view_' + child, {
       url: '/view/{parentId}/' + child + '/{id}',
       controller: ( child + '_view_ctrl' ).snakeToCamel( true ),
-      templateUrl: baseUrl + 'view.tpl.html'
+      templateUrl: baseChildUrl + 'view.tpl.html'
     } );
   }
 };
@@ -173,26 +173,41 @@ cenozoApp.config( [
   '$stateProvider', '$urlRouterProvider', '$httpProvider',
   function( $stateProvider, $urlRouterProvider, $httpProvider ) {
     // add the root states
-    var baseUrl = cnCenozoUrl + '/app/root/';
-    $stateProvider.state( 'root', {
+    var baseRootUrl = cnCenozoUrl + '/app/root/';
+    $stateProvider.state( 'root', { // resolves application/
       url: '',
       controller: 'HomeCtrl',
-      templateUrl: baseUrl + 'home.tpl.html',
+      templateUrl: baseRootUrl + 'home.tpl.html',
       resolve: {
         data: [ '$q', function( $q ) {
           var deferred = $q.defer();
-          require( [ baseUrl + 'bootstrap.js' ], function() { deferred.resolve(); } );
+          require( [ baseRootUrl + 'bootstrap.js' ], function() { deferred.resolve(); } );
           return deferred.promise;
         } ]
       }
     } );
-    $stateProvider.state( 'root.home', { url: '/' } );
-    $stateProvider.state( '404', { templateUrl: baseUrl + '404.tpl.html' } );
-    $stateProvider.state( '500', { templateUrl: baseUrl + '500.tpl.html' } );
+    $stateProvider.state( 'root.home', { url: '/' } ); // resolve application/#/
+
+    // add the error states
+    var baseErrorUrl = cnCenozoUrl + '/app/error/';
+    $stateProvider.state( 'error', {
+      controller: 'ErrorCtrl',
+      template: '<div ui-view></div>',
+      resolve: {
+        data: [ '$q', function( $q ) {
+          var deferred = $q.defer();
+          require( [ baseErrorUrl + 'bootstrap.js' ], function() { deferred.resolve(); } );
+          return deferred.promise;
+        } ]
+      }
+    } );
+    $stateProvider.state( 'error.403', { templateUrl: baseErrorUrl + '403.tpl.html' } );
+    $stateProvider.state( 'error.404', { templateUrl: baseErrorUrl + '404.tpl.html' } );
+    $stateProvider.state( 'error.500', { templateUrl: baseErrorUrl + '500.tpl.html' } );
 
     // load the 404 state when a state is not found for the provided path
     $urlRouterProvider.otherwise( function( $injector, $location ) {
-      $injector.get( '$state' ).go( '404' );
+      $injector.get( '$state' ).go( 'error.404' );
       return $location.path();
     } );
 
@@ -223,10 +238,10 @@ cenozoApp.run( [
   '$state', '$rootScope',
   function( $state, $rootScope ) {
     $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
-      $state.go( '500' );
+      $state.go( 'error.500' );
     } );
     $rootScope.$on( '$stateChangeError', function( event, toState, toParams, fromState, fromParams, error ) {
-      $state.go( '404' );
+      $state.go( 'error.404' );
     } );
   }
 ] );

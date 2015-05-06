@@ -7,7 +7,10 @@ define( [], function() {
     '$scope', 'CnSiteModelFactory',
     function( $scope, CnSiteModelFactory ) {
       $scope.model = CnSiteModelFactory.root;
-      $scope.record = $scope.model.cnAdd.onNew();
+      $scope.record = {};
+      $scope.model.cnAdd.onNew( $scope.record ).catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 
@@ -16,7 +19,9 @@ define( [], function() {
     '$scope', 'CnSiteModelFactory',
     function( $scope, CnSiteModelFactory ) {
       $scope.model = CnSiteModelFactory.root;
-      $scope.model.cnList.onList().catch( function exception() { cnFatalError(); } );
+      $scope.model.cnList.onList().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 
@@ -25,7 +30,9 @@ define( [], function() {
     '$scope', 'CnSiteModelFactory',
     function( $scope, CnSiteModelFactory ) {
       $scope.model = CnSiteModelFactory.root;
-      $scope.model.cnView.onView().catch( function exception() { cnFatalError(); } );
+      $scope.model.cnView.onView().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 

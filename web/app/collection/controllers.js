@@ -7,9 +7,9 @@ define( [], function() {
     '$scope', 'CnCollectionModelFactory',
     function( $scope, CnCollectionModelFactory ) {
       $scope.model = CnCollectionModelFactory.root;
-      $scope.record = $scope.model.cnAdd.onNew();
-
-      $scope.$on( '$stateChangeSuccess', function( event, toState, toParams, fromState, fromParams ) {
+      $scope.record = {};
+      $scope.model.cnAdd.onNew( $scope.record ).catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
       } );
     }
   ] );
@@ -19,7 +19,9 @@ define( [], function() {
     '$scope', 'CnCollectionModelFactory',
     function( $scope, CnCollectionModelFactory ) {
       $scope.model = CnCollectionModelFactory.root;
-      $scope.model.cnList.onList().catch( function exception() { cnFatalError(); } );
+      $scope.model.cnList.onList().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 
@@ -28,7 +30,9 @@ define( [], function() {
     '$scope', 'CnCollectionModelFactory',
     function( $scope, CnCollectionModelFactory ) {
       $scope.model = CnCollectionModelFactory.root;
-      $scope.model.cnView.onView().catch( function exception() { cnFatalError(); } );
+      $scope.model.cnView.onView().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
 
       // when leaving...
       $scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
@@ -37,11 +41,6 @@ define( [], function() {
           $scope.model.cnView.cnParticipantModel.cnList.toggleChooseMode();
         if( $scope.model.cnView.cnUserModel.cnList.chooseMode )
           $scope.model.cnView.cnUserModel.cnList.toggleChooseMode();
-      } );
-
-      // when entering...
-      $scope.$on( '$stateChangeSuccess', function( event, toState, toParams, fromState, fromParams ) {
-        // load the metadata
       } );
     }
   ] );
