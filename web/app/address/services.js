@@ -47,35 +47,37 @@ define( [
         this.enableDelete( true );
         this.enableView( true );
 
-        // process metadata
+        // extend getMetadata
         var thisRef = this;
-        this.promise.then( function() {
-          CnHttpFactory.instance( {
-            path: 'region',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: {
-                where: {
-                  column: 'country',
-                  operator: '=',
-                  value: CnAppSingleton.application.country
-                },
-                order: 'name'
+        this.getMetadata = function() {
+          return this.loadMetadata().then( function() {
+            CnHttpFactory.instance( {
+              path: 'region',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: {
+                  where: {
+                    column: 'country',
+                    operator: '=',
+                    value: CnAppSingleton.application.country
+                  },
+                  order: 'name'
+                }
               }
-            }
-          } ).query().then( function success( response ) {
-            thisRef.metadata.columnList.region_id.enumList = [];
-            for( var i = 0; i < response.data.length; i++ ) {
-              thisRef.metadata.columnList.region_id.enumList.push( {
-                value: response.data[i].id,
-                name: response.data[i].name
-              } );
-            }
-          } ).finally( function() {
-            // signal that the metadata is finished loading
-            thisRef.metadata.isLoading = false;
-          } ).catch( function exception() { cnFatalError(); } );
-        } );
+            } ).query().then( function success( response ) {
+              thisRef.metadata.columnList.region_id.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                thisRef.metadata.columnList.region_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].name
+                } );
+              }
+            } ).finally( function() {
+              // signal that the metadata is finished loading
+              thisRef.metadata.isLoading = false;
+            } ).catch( function exception() { cnFatalError(); } );
+          } );
+        };
       };
 
       return {

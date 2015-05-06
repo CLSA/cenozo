@@ -20,10 +20,6 @@ define( [
       var object = function() {
         CnBaseModelFactory.construct( this, module );
         this.cnList = CnActivityListFactory.instance( this );
-
-        // process metadata
-        var thisRef = this;
-        this.promise.then( function() { thisRef.metadata.isLoading = false; } );
       };
 
       return {

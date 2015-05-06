@@ -49,44 +49,46 @@ define( [
         this.enableDelete( true );
         this.enableView( true );
 
-        // process metadata
+        // extend getMetadata
         var thisRef = this;
-        this.promise.then( function() {
-          CnHttpFactory.instance( {
-            path: 'role',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: { name: false } }
-            }
-          } ).query().then( function success( response ) {
-            thisRef.metadata.columnList.role_id.enumList = [];
-            for( var i = 0; i < response.data.length; i++ ) {
-              thisRef.metadata.columnList.role_id.enumList.push( {
-                value: response.data[i].id,
-                name: response.data[i].name
-              } );
-            }
-          } ).then( function() {
-            return CnHttpFactory.instance( {
-              path: 'site',
+        this.getMetadata = function() {
+          return this.loadMetadata().then( function() {
+            CnHttpFactory.instance( {
+              path: 'role',
               data: {
                 select: { column: [ 'id', 'name' ] },
                 modifier: { order: { name: false } }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.columnList.site_id.enumList = [];
+              thisRef.metadata.columnList.role_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.columnList.site_id.enumList.push( {
+                thisRef.metadata.columnList.role_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].name
                 } );
               }
-            } );
-          } ).finally( function() {
-            // signal that the metadata is finished loading
-            thisRef.metadata.isLoading = false;
-          } ).catch( function exception() { cnFatalError(); } );
-        } );
+            } ).then( function() {
+              return CnHttpFactory.instance( {
+                path: 'site',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: { name: false } }
+                }
+              } ).query().then( function success( response ) {
+                thisRef.metadata.columnList.site_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  thisRef.metadata.columnList.site_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } );
+            } ).finally( function() {
+              // signal that the metadata is finished loading
+              thisRef.metadata.isLoading = false;
+            } ).catch( function exception() { cnFatalError(); } );
+          } );
+        };
       };
 
       return {

@@ -16,9 +16,7 @@ define( [], function() {
     '$scope', 'CnParticipantModelFactory',
     function( $scope, CnParticipantModelFactory ) {
       $scope.model = CnParticipantModelFactory.root;
-      $scope.model.promise.then( function() {
-        $scope.model.cnView.onView().catch( function exception() { cnFatalError(); } );
-      } );
+      $scope.model.cnView.onView().catch( function exception() { cnFatalError(); } );
     }
   ] );
 

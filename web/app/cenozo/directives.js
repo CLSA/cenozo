@@ -410,7 +410,7 @@ cenozo.directive( 'cnRecordAdd', [
           } else {
             $scope.model.cnAdd.onAdd( $scope.$parent.record ).then(
               function success( response ) { 
-                $scope.$parent.record = $scope.model.cnAdd.createRecord();
+                $scope.$parent.record = $scope.model.cnAdd.onNew();
                 $scope.form.$setPristine();
                 $scope.model.transitionToLastState();
               },
@@ -662,20 +662,6 @@ cenozo.directive( 'cnRecordView',
         };
       },
       link: function( scope, element, attrs ) {
-        // turn off any sub-list model currently in select mode whenever leaving a view model
-        scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
-          var stateName = fromState.name;
-          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
-            for( var property in scope.model.cnView ) {
-              if( 'object' == typeof scope.model.cnView[property] &&
-                  'object' == typeof scope.model.cnView[property].cnList &&
-                  true === scope.model.cnView[property].cnList.chooseMode ) {
-                scope.model.cnView[property].cnList.toggleChooseMode();
-              }
-            }
-          }
-        } );
-
         scope.heading = undefined === attrs.heading
                       ? scope.model.name.singular.ucWords() + ' Details'
                       : attrs.heading;
@@ -724,8 +710,8 @@ cenozo.directive( 'cnRecordView',
  * Site and role drop-downs which will switch the user's current role
  */
 cenozo.directive( 'cnSiteRoleSwitcher', [
-  '$state', '$window', 'CnAppSingleton',
-  function( $state, $window, CnAppSingleton ) {
+  '$window', 'CnAppSingleton',
+  function( $window, CnAppSingleton ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/site-role-switcher.tpl.html',
       restrict: 'E',

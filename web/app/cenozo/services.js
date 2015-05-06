@@ -72,23 +72,6 @@ cenozo.factory( 'CnBaseAddFactory', [
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
 
-        object.parentModel.promise.then( function() {
-          object.createRecord = function() {
-            var record = {};
-
-            // apply default values from the metadata
-            for( var column in this.parentModel.metadata.columnList )
-              if( null !== this.parentModel.metadata.columnList[column].default )
-                record[column] = this.parentModel.metadata.columnList[column].default;
-
-            // copy the parent's identifying columns into the record
-            var parentIdentifier = this.parentModel.getParentIdentifier();
-            for( var property in parentIdentifier ) record[property+'_id'] = parentIdentifier[property];
-
-            return record;
-          };
-        } );
-
         /**
          * Must be called by the onAdd() function in order to send the new record to the server.
          * This function should not be changed, override the onAdd() function instead.
@@ -99,7 +82,6 @@ cenozo.factory( 'CnBaseAddFactory', [
         object.addRecord = function( record ) {
           if( !this.parentModel.addEnabled ) throw 'Calling addRecord() but addEnabled is false';
           cnConvertToDatabaseRecord( record );
-          var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceCollectionPath(),
             data: record
@@ -107,11 +89,39 @@ cenozo.factory( 'CnBaseAddFactory', [
         };
 
         /**
-         * Override this function when needing to make additional operations when adding this model's records.
+         * Must be called by the onNew() function in order to create a new local record.
+         * This function should not be changed, override the onNew() function instead.
+         * 
+         * @return promise
+         */
+        object.newRecord = function() {
+          if( !this.parentModel.addEnabled ) throw 'Calling newRecord() but addEnabled is false';
+          var record = {};
+
+          // load the metadata and use it to apply default values to the record
+          var thisRef = this;
+          this.parentModel.getMetadata().then( function() {
+            // apply default values from the metadata
+            for( var column in thisRef.parentModel.metadata.columnList )
+              if( null !== thisRef.parentModel.metadata.columnList[column].default )
+                record[column] = thisRef.parentModel.metadata.columnList[column].default;
+
+            // copy the parent's identifying columns into the record
+            var parentIdentifier = thisRef.parentModel.getParentIdentifier();
+            for( var property in parentIdentifier ) record[property+'_id'] = parentIdentifier[property];
+          } ).catch( function exception() { cnFatalError(); } );
+
+          return record;
+        };
+
+        /**
+         * Override this function when needing to make additional operations when adding or creating
+         * this model's records.
          * 
          * @return promise
          */
         object.onAdd = function( record ) { return this.addRecord( record ); };
+        object.onNew = function( record ) { return this.newRecord( record ); };
       }
     };
   }
@@ -309,8 +319,8 @@ cenozo.factory( 'CnBaseViewFactory', [
           } ).get().then( function success( response ) {
             thisRef.record = response.data;
 
-            // once the metadata is complete convert blank enums to empty strings (for ng-options)
-            thisRef.parentModel.promise.then( function() {
+            // load the metadata and use it to convert blank enums into empty strings (for ng-options)
+            return thisRef.parentModel.getMetadata().then( function() {
               for( var column in thisRef.parentModel.inputList ) {
                 var inputObject = thisRef.parentModel.inputList[column];
                 var metadata = thisRef.parentModel.metadata.columnList[column];
@@ -381,7 +391,8 @@ cenozo.factory( 'CnBaseModelFactory', [
         // helper functions based on the state
         object.transitionToLastState = function() {
           var stateName = $state.current.name;
-          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
+          var action = stateName.substring( stateName.lastIndexOf( '.' ) + 1 );
+          if( 'add' == action || 'view' == action ) {
             $state.go( '^.list' );
           } else { // sub-view, return to parent view
             $state.go( '^.view', { id: $stateParams.parentId } );
@@ -430,30 +441,50 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.enableDelete = function( enable ) { this.deleteEnabled = enable; };
         object.enableView = function( enable ) { this.viewEnabled = enable; };
 
-        // get metadata
-        object.metadata = { columnList: {}, isLoading: true, isComplete: false };
-        object.promise = CnHttpFactory.instance( {
-          path: object.subject
-        } ).head().then( function( response ) {
-          var columnList = JSON.parse( response.headers( 'Columns' ) );
-          for( var column in columnList ) {
-            // parse out the enum values
-            columnList[column].required = '1' == columnList[column].required;
-            if( 'enum' == columnList[column].data_type ) {
-              columnList[column].enumList = [];
-              var enumList = columnList[column].type.replace( /^enum\(['"]/i, '' )
-                                                  .replace( /['"]\)$/, '' )
-                                                  .split( "','" );
-              for( var i = 0; i < enumList.length; i++ ) {
-                columnList[column].enumList.push( {
-                  value: enumList[i],
-                  name: enumList[i]
-                } );
+        /**
+         * Must be called by the getMetadata() function in order to load this model's base metadata
+         * This function should not be changed, override the getMetadata() function instead.
+         * 
+         * @return promise
+         */
+        object.loadMetadata = function() {
+          this.metadata = { columnList: {}, isLoading: true, isComplete: false };
+          var thisRef = this;
+          return CnHttpFactory.instance( {
+            path: this.subject
+          } ).head().then( function( response ) {
+            var columnList = JSON.parse( response.headers( 'Columns' ) );
+            for( var column in columnList ) {
+              // parse out the enum values
+              columnList[column].required = '1' == columnList[column].required;
+              if( 'enum' == columnList[column].data_type ) {
+                columnList[column].enumList = [];
+                var enumList = columnList[column].type.replace( /^enum\(['"]/i, '' )
+                                                    .replace( /['"]\)$/, '' )
+                                                    .split( "','" );
+                for( var i = 0; i < enumList.length; i++ ) {
+                  columnList[column].enumList.push( {
+                    value: enumList[i],
+                    name: enumList[i]
+                  } );
+                }
               }
             }
-          }
-          object.metadata.columnList = columnList;
-        } );
+            thisRef.metadata.columnList = columnList;
+          } );
+        };
+
+        /**
+         * Override this function when additional metadata is required by the model.
+         * 
+         * @return promise
+         */
+        object.getMetadata = function() {
+          var thisRef = this;
+          return this.loadMetadata().then( function() {
+            thisRef.metadata.isLoading = false;
+          } );
+        };
       }
     };
   }

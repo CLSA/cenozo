@@ -7,7 +7,7 @@ define( [], function() {
     '$scope', 'CnSystemMessageModelFactory',
     function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;
-      $scope.model.promise.then( function() { $scope.record = $scope.model.cnAdd.createRecord(); } );
+      $scope.record = $scope.model.cnAdd.onNew();
     }
   ] );
 

@@ -49,67 +49,69 @@ define( [
         this.enableDelete( true );
         this.enableView( true );
 
-        // process metadata
+        // extend getMetadata
         var thisRef = this;
-        this.promise.then( function() {
-          CnHttpFactory.instance( {
-            path: 'age_group',
-            data: {
-              select: { column: [ 'id', 'lower', 'upper' ] },
-              modifier: { order: { lower: false } }
-            }
-          } ).query().then( function success( response ) {
-            thisRef.metadata.columnList.age_group_id.enumList = [];
-            for( var i = 0; i < response.data.length; i++ ) {
-              thisRef.metadata.columnList.age_group_id.enumList.push( {
-                value: response.data[i].id,
-                name: response.data[i].lower + ' to ' + response.data[i].upper
-              } );
-            }
-          } ).then( function() {
-            return CnHttpFactory.instance( {
-              path: 'region',
+        this.getMetadata = function() {
+          return this.loadMetadata().then( function() {
+            CnHttpFactory.instance( {
+              path: 'age_group',
               data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: {
-                  where: {
-                    column: 'country',
-                    operator: '=',
-                    value: CnAppSingleton.application.country
-                  },
-                  order: 'name'
+                select: { column: [ 'id', 'lower', 'upper' ] },
+                modifier: { order: { lower: false } }
+              }
+            } ).query().then( function success( response ) {
+              thisRef.metadata.columnList.age_group_id.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                thisRef.metadata.columnList.age_group_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].lower + ' to ' + response.data[i].upper
+                } );
+              }
+            } ).then( function() {
+              return CnHttpFactory.instance( {
+                path: 'region',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: {
+                    where: {
+                      column: 'country',
+                      operator: '=',
+                      value: CnAppSingleton.application.country
+                    },
+                    order: 'name'
+                  }
                 }
-              }
-            } ).query().then( function success( response ) {
-              thisRef.metadata.columnList.region_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.columnList.region_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].name
-                } );
-              }
-            } );
-          } ).then( function() {
-            return CnHttpFactory.instance( {
-              path: 'application/' + CnAppSingleton.application.id + '/site',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name' }
-              }
-            } ).query().then( function success( response ) {
-              thisRef.metadata.columnList.site_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.columnList.site_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].name
-                } );
-              }
-            } );
-          } ).finally( function() {
-            // signal that the metadata is finished loading
-            thisRef.metadata.isLoading = false;
-          } ).catch( function exception() { cnFatalError(); } );
-        } );
+              } ).query().then( function success( response ) {
+                thisRef.metadata.columnList.region_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  thisRef.metadata.columnList.region_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } );
+            } ).then( function() {
+              return CnHttpFactory.instance( {
+                path: 'application/' + CnAppSingleton.application.id + '/site',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function success( response ) {
+                thisRef.metadata.columnList.site_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  thisRef.metadata.columnList.site_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } );
+            } ).finally( function() {
+              // signal that the metadata is finished loading
+              thisRef.metadata.isLoading = false;
+            } ).catch( function exception() { cnFatalError(); } );
+          } );
+        };
       };
 
       return {

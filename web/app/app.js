@@ -212,3 +212,17 @@ cenozoApp.config( [
     } );
   }
 ] );
+
+cenozoApp.run( [
+  '$rootScope',
+  function( $rootScope ) {
+    $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
+      console.log( 'TODO: handle $stateNotFound' );
+      cnFatalError();
+    } );
+    $rootScope.$on( '$stateChangeError', function( event, toState, toParams, fromState, fromParams, error ) {
+      console.log( 'TODO: handle $stateChangeError' );
+      cnFatalError();
+    } );
+  }
+] );
