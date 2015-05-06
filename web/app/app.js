@@ -175,7 +175,7 @@ cenozoApp.config( [
     // add the home state
     var baseUrl = cnCenozoUrl + '/app/home/';
     $stateProvider.state( 'home', {
-      url: '/',
+      url: '',
       controller: 'HomeCtrl',
       templateUrl: baseUrl + 'home.tpl.html',
       resolve: {
@@ -187,8 +187,15 @@ cenozoApp.config( [
       }
     } );
 
-    // make home the default state
-    $urlRouterProvider.otherwise( '/' );
+    // add the 404 and 500 states
+    $stateProvider.state( '404', { templateUrl: baseUrl + '404.tpl.html' } );
+    $stateProvider.state( '500', { templateUrl: baseUrl + '500.tpl.html' } );
+
+    // load the 404 state when a state is not found for the provided path
+    $urlRouterProvider.otherwise( function( $injector, $location ) {
+      $injector.get( '$state' ).go( '404' );
+      return $location.path();
+    } );
 
     // intercept http data to convert to/from server/client data formats
     $httpProvider.interceptors.push( function() {
@@ -214,15 +221,13 @@ cenozoApp.config( [
 ] );
 
 cenozoApp.run( [
-  '$rootScope',
-  function( $rootScope ) {
+  '$state', '$rootScope',
+  function( $state, $rootScope ) {
     $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
-      console.log( 'TODO: handle $stateNotFound' );
-      cnFatalError();
+      $state.go( '500' );
     } );
     $rootScope.$on( '$stateChangeError', function( event, toState, toParams, fromState, fromParams, error ) {
-      console.log( 'TODO: handle $stateChangeError' );
-      cnFatalError();
+      $state.go( '404' );
     } );
   }
 ] );
