@@ -172,9 +172,9 @@ cenozoApp.config( [
 cenozoApp.config( [
   '$stateProvider', '$urlRouterProvider', '$httpProvider',
   function( $stateProvider, $urlRouterProvider, $httpProvider ) {
-    // add the home state
-    var baseUrl = cnCenozoUrl + '/app/home/';
-    $stateProvider.state( 'home', {
+    // add the root states
+    var baseUrl = cnCenozoUrl + '/app/root/';
+    $stateProvider.state( 'root', {
       url: '',
       controller: 'HomeCtrl',
       templateUrl: baseUrl + 'home.tpl.html',
@@ -186,8 +186,7 @@ cenozoApp.config( [
         } ]
       }
     } );
-
-    // add the 404 and 500 states
+    $stateProvider.state( 'root.home', { url: '/' } );
     $stateProvider.state( '404', { templateUrl: baseUrl + '404.tpl.html' } );
     $stateProvider.state( '500', { templateUrl: baseUrl + '500.tpl.html' } );
 
