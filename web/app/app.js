@@ -61,7 +61,7 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
   $stateProvider.state( name, {
     abstract: true,
     url: '/' + name,
-    template: '<div ui-view></div>',
+    template: '<div ui-view class="inner-view-frame fade-transition"></div>',
     resolve: {
       data: [ '$q', function( $q ) {
         var deferred = $q.defer();
@@ -184,7 +184,7 @@ cenozoApp.config( [
     var baseErrorUrl = cnCenozoUrl + '/app/error/';
     $stateProvider.state( 'error', {
       controller: 'ErrorCtrl',
-      template: '<div ui-view></div>',
+      template: '<div ui-view class="fade-transition"></div>',
       resolve: {
         data: [ '$q', function( $q ) {
           var deferred = $q.defer();

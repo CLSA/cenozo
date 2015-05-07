@@ -48,18 +48,36 @@ input[type=number] { -moz-appearance: textfield; }
 /* needed by bootstrap-ui-datetime-picker */
 .datetime-picker div > table .btn-default { border: 0; }
 .body-heading { padding-top: 0.33em; padding-bottom: 0.33em; min-width: 750px; }
-.body-view { margin-top: 0.5em; padding: 0px; }
 .body-heading .row { margin-left: 10px; }
 .body-heading-title { font-size: 120%; font-weight: bold; top: 4px; }
 .body-heading-shortcuts { text-align: center; }
 .body-heading-state {}
 
 /* used by the ng-view so that animated transitions work correctly */
-.view-frame {
-  padding: 4px;
+.fade-transition {
   position: absolute;
-  min-width: 750px;
   width: 100%;
+}
+
+.outer-view-frame {
+  padding: 0px;
+  min-width: 750px;
+}
+
+/* main frame showing */
+.inner-view-frame {
+  padding: 0.5em 0.5em 1.0em;
+  background: #fff;
+}
+
+.gradient-footer {
+  height: 4em;
+  background: -moz-linear-gradient(top, white,  transparent);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, white), color-stop(100%, transparent));
+  background: -webkit-linear-gradient(top, white, transparent);
+  background: -o-linear-gradient(top, white, transparent);
+  background: -ms-linear-gradient(top, white, transparent);
+  background: linear-gradient(to bottom, white, transparent);
 }
 
 /* snap content, drawers and toggle buttons */
@@ -74,10 +92,12 @@ input[type=number] { -moz-appearance: textfield; }
   left: -5px;
 }
 snap-content {
-  background-color: #fff;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
   box-shadow: 2px 0px 5px #000;
+  background-image: url('../img/background.gif');
+  background-size: 60px;
+  background-repeat: repeat;
 }
 .snap-drawer, accordian-heading { background-color: #EAEAEA; }
 

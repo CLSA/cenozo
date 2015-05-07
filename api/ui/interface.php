@@ -119,9 +119,7 @@
         </div>
       </div>
     </div>
-    <div class="body-view">
-      <div ui-view class="container-fluid view-frame"></div>
-    </div>
+    <div ui-view class="container-fluid outer-view-frame fade-transition"></div>
   </snap-content>
 </body>
 </html>
