@@ -47,7 +47,7 @@
               ng-click="isOpen = true"
               show-weeks="false"
               onkeydown="return false"></input>
-            <select ng-if="'boolean' == input.type || 'enum' == input.type"
+            <select ng-if="'boolean' == input.type || 'enum' == input.type || 'rank' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-options="item.value as item.name for item in input.enumList"

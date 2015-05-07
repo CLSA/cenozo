@@ -427,7 +427,7 @@ cenozo.directive( 'cnRecordAdd', [
                       item.$error.conflict = true;
                     }
                   }
-                } else { cnFatalError(); }
+                } else { $scope.model.transitionToErrorState( response ); }
               }
             );  
           }
@@ -499,7 +499,10 @@ cenozo.directive( 'cnRecordAdd', [
         // watch for changes in metadata (created asynchronously by the service)
         scope.isComplete = false;
         scope.$watch( 'model.metadata', function( metadata ) {
-          if( undefined !== metadata && !metadata.isLoading && !scope.isComplete ) {
+          if( undefined !== metadata &&
+              undefined !== metadata.columnList &&
+              0 === metadata.loadingCount &&
+              !scope.isComplete ) {
             for( var key in metadata.columnList ) {
               if( undefined !== metadata.columnList[key].enumList ) {
                 var input = scope.inputArray.find( // by key
@@ -543,14 +546,18 @@ cenozo.directive( 'cnRecordList', [
 
         if( $scope.model.deleteEnabled ) {
           $scope.deleteRecord = function( id ) {
-            $scope.model.cnList.onDelete( id ).catch( function error( response ) { cnFatalError(); } );
+            $scope.model.cnList.onDelete( id ).catch( function error( response ) {
+              $scope.model.transitionToErrorState( response );
+            } );
           };
         }
 
         if( $scope.model.chooseEnabled ) {
           $scope.chooseRecord = function( record ) {
             if( $scope.model.cnList.chooseMode ) {
-              $scope.model.cnList.onChoose( record ).catch( function error( response ) { cnFatalError(); } );
+              $scope.model.cnList.onChoose( record ).catch( function error( response ) {
+                $scope.model.transitionToErrorState( response );
+              } );
             }
           };
         }
@@ -616,7 +623,7 @@ cenozo.directive( 'cnRecordView',
         $scope.delete = function() {
           $scope.model.cnView.onDelete().then(
             function success( response ) { $scope.model.transitionToLastState(); },
-            function error( response ) { cnFatalError(); }
+            function error( response ) { $scope.model.transitionToErrorState( response ); }
           );
         };
 
@@ -656,7 +663,7 @@ cenozo.directive( 'cnRecordView',
                   item.$invalid = true;
                   item.$error.conflict = true;
                 }
-              } else { cnFatalError(); }
+              } else { $scope.model.transitionToErrorState( response ); }
             }
           );
         };
@@ -683,14 +690,17 @@ cenozo.directive( 'cnRecordView',
         // watch for changes in metadata (created asynchronously by the service)
         var metadataLoaded = false;
         scope.isComplete = false;
-        var unbind = scope.$watch( 'model.metadata', function( metadata ) {
-          if( undefined !== metadata && !metadata.isLoading && !metadataLoaded ) {
+        scope.$watch( 'model.metadata', function( metadata ) {
+          if( undefined !== metadata &&
+              undefined !== metadata.columnList &&
+              0 === metadata.loadingCount &&
+              !metadataLoaded ) {
             // build enum lists
             for( var key in metadata.columnList ) {
               var input = scope.inputArray.find( // by key
                 function( item, index, array ) { return key == item.key }
               );
-              if( undefined !== input && ( 'boolean' === input.type || 'enum' === input.type ) ) {
+              if( undefined !== input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
                 input.enumList = 'boolean' === input.type
                                ? [ { value: '1', name: 'Yes' }, { value: '0', name: 'No' } ]
                                : metadata.columnList[key].enumList.slice();

@@ -2,15 +2,7 @@
 
 moment.tz.setDefault( 'UTC' );
 
-window.cnIsBroken = false;
 window.cnCachedProviders = {};
-
-window.cnFatalError = function cnFatalError() {
-  if( !window.cnIsBroken ) {
-    alert( 'An error has occurred.  Please reload your web browser and try again.' );
-    window.cnIsBroken = true;
-  }
-};
 
 window.cnCopy = function cnCopy( arg ) {
   if( 'object' === typeof arg ) {

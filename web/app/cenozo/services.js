@@ -5,8 +5,8 @@ catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 
 /* ######################################################################################################## */
 cenozo.factory( 'CnAppSingleton', [
-  'CnHttpFactory',
-  function( CnHttpFactory ) {
+  '$state', 'CnHttpFactory',
+  function( $state, CnHttpFactory ) {
     return new ( function() {
       this.promise = null;
       this.application = {};
@@ -45,7 +45,7 @@ cenozo.factory( 'CnAppSingleton', [
             name: access.role_name
           } );
         }
-      } ).catch( function exception() { cnFatalError(); } );
+      } ).catch( function exception() { $state.go( 'error.500' ); } );
 
       this.setSite = function setSite( id ) {
         return CnHttpFactory.instance( {
@@ -100,6 +100,7 @@ cenozo.factory( 'CnBaseAddFactory', [
 
           // load the metadata and use it to apply default values to the record
           var thisRef = this;
+          this.parentModel.metadata.loadingCount++;
           return this.parentModel.getMetadata().then( function() {
             // apply default values from the metadata
             for( var column in thisRef.parentModel.metadata.columnList )
@@ -109,7 +110,10 @@ cenozo.factory( 'CnBaseAddFactory', [
             // copy the parent's identifying columns into the record
             var parentIdentifier = thisRef.parentModel.getParentIdentifier();
             for( var property in parentIdentifier ) record[property+'_id'] = parentIdentifier[property];
-          } ).catch( function exception() { cnFatalError(); } );
+
+            // signal that we are done loading metadata
+            thisRef.parentModel.metadata.loadingCount--;
+          } );
         };
 
         /**
@@ -160,8 +164,11 @@ cenozo.factory( 'CnBaseListFactory', [
         };
 
         object.checkCache = function() {
+          var thisRef = this;
           if( this.cache.length < this.total && this.cnPagination.getMaxIndex() >= this.cache.length )
-            this.listRecords().catch( function exception() { cnFatalError(); } );
+            this.listRecords().catch( function exception( response ) {
+              thisRef.parentModel.transitionToErrorState( response );
+            } );
         };
 
         /**
@@ -239,7 +246,7 @@ cenozo.factory( 'CnBaseListFactory', [
           } ).query().then( function success( response ) {
             thisRef.cache = thisRef.cache.concat( response.data );
             thisRef.total = response.headers( 'Total' );
-          } ).finally( function done() {
+          } ).then( function done() {
             thisRef.loading = false;
           } );
         };
@@ -316,9 +323,10 @@ cenozo.factory( 'CnBaseViewFactory', [
             data: getServiceData( this.parentModel.subject, this.parentModel.inputList )
           } ).get().then( function success( response ) {
             thisRef.record = response.data;
+            thisRef.parentModel.metadata.loadingCount++;
 
-            // load the metadata and use it to convert blank enums into empty strings (for ng-options)
             return thisRef.parentModel.getMetadata().then( function() {
+              // convert blank enums into empty strings (for ng-options)
               for( var column in thisRef.parentModel.inputList ) {
                 var inputObject = thisRef.parentModel.inputList[column];
                 var metadata = thisRef.parentModel.metadata.columnList[column];
@@ -329,6 +337,28 @@ cenozo.factory( 'CnBaseViewFactory', [
                 if( notRequired && 'enum' == inputObject.type && null === thisRef.record[column] )
                   thisRef.record[column] = '';
               }
+
+              // get rank information, if needed
+              var promise = null;
+              if( undefined !== thisRef.parentModel.inputList.rank ) {
+                thisRef.parentModel.metadata.loadingCount++;
+                CnHttpFactory.instance( {
+                  path: thisRef.parentModel.getServiceCollectionPath(),
+                  data: { select: { column: { column: 'MAX(rank)', alias: 'max', table_prefix: false } } }
+                } ).query().then( function success( response ) {
+                  if( 0 < response.data.length ) {
+                    thisRef.parentModel.metadata.columnList.rank.enumList = [];
+                    var max = response.data[0].max;
+                    for( var rank = 1; rank <= max; rank++ )
+                      thisRef.parentModel.metadata.columnList.rank.enumList.push( { value: rank, name: rank } );
+                  }
+                  // signal that we are done loading metadata
+                  thisRef.parentModel.metadata.loadingCount--;
+                } );
+              }
+
+              // signal that we are done loading metadata
+              thisRef.parentModel.metadata.loadingCount--;
             } );
           } );
         };
@@ -354,6 +384,12 @@ cenozo.factory( 'CnBaseModelFactory', [
     return {
       construct: function( object, module ) {
         for( var property in module ) object[property] = cnCopy( module[property] );
+
+        object.metadata = { loadingCount: 0 };
+        object.addEnabled = false;
+        object.chooseEnabled = false;
+        object.deleteEnabled = false;
+        object.viewEnabled = false;
 
         object.getId = function() {
           if( undefined === $stateParams.id ) throw 'Unable to determine id';
@@ -413,10 +449,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
         };
         object.transitionToErrorState = function( response ) {
-          $state.go( 'error.' +
-            undefined === response ||
-            undefined === response.status ||
-            404 != response.status ? '500' : '404' );
+          var type = undefined === response || undefined === response.status || 404 != response.status
+                   ? '500' : '404';
+          $state.go( 'error.' + type );
         };
 
         object.getInputArray = function() {
@@ -434,11 +469,6 @@ cenozo.factory( 'CnBaseModelFactory', [
           return inputArray;
         };
 
-        object.addEnabled = false;
-        object.chooseEnabled = false;
-        object.deleteEnabled = false;
-        object.viewEnabled = false;
-
         // enable/disable module functionality
         object.enableAdd = function( enable ) { this.addEnabled = enable; };
         object.enableChoose = function( enable ) { this.chooseEnabled = enable; };
@@ -452,7 +482,9 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @return promise
          */
         object.loadMetadata = function() {
-          this.metadata = { columnList: {}, isLoading: true, isComplete: false };
+          this.metadata.columnList = {};
+          this.metadata.isComplete = false;
+          this.metadata.loadingCount++;
           var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.subject
@@ -475,6 +507,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
             thisRef.metadata.columnList = columnList;
+            thisRef.metadata.loadingCount--;
           } );
         };
 
@@ -483,12 +516,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          * 
          * @return promise
          */
-        object.getMetadata = function() {
-          var thisRef = this;
-          return this.loadMetadata().then( function() {
-            thisRef.metadata.isLoading = false;
-          } );
-        };
+        object.getMetadata = function() { return this.loadMetadata(); };
       }
     };
   }

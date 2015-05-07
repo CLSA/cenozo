@@ -50,6 +50,7 @@ define( [
         // extend getMetadata
         var thisRef = this;
         this.getMetadata = function() {
+          this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
             CnHttpFactory.instance( {
               path: 'region',
@@ -72,10 +73,9 @@ define( [
                   name: response.data[i].name
                 } );
               }
-            } ).finally( function() {
-              // signal that the metadata is finished loading
-              thisRef.metadata.isLoading = false;
-            } ).catch( function exception() { cnFatalError(); } );
+            } ).then( function() {
+              thisRef.metadata.loadingCount--;
+            } );
           } );
         };
       };
