@@ -39,10 +39,8 @@ abstract class has_rank extends record
     if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
     $modifier->where( 'rank', '=', $this->rank );
 
-    $result = static::select( $modifier );
-
     // if a record is found then there is already a record in this slot
-    if( 0 < count( $result ) )
+    if( 0 < static::count( $modifier ) )
     {
       // check to see if this record is being moved or added to the list
       if( !is_null( $this->id ) )
