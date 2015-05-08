@@ -154,10 +154,10 @@ class survey_manager extends \cenozo\singleton
       // reset the script and token
       $tokens_mod = lib::create( 'database\modifier' );
       $tokens_mod->where( 'token', '=', $token );
-      foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens ) $db_tokens->delete();
+      foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens ) $db_tokens->delete();
       $survey_mod = lib::create( 'database\modifier' );
       $survey_mod->where( 'token', '=', $token );
-      foreach( $survey_class_name::select( $survey_mod ) as $db_survey ) $db_survey->delete();
+      foreach( $survey_class_name::select_objects( $survey_mod ) as $db_survey ) $db_survey->delete();
 
       $db_tokens = lib::create( 'database\limesurvey\tokens' );
       $db_tokens->token = $token;
@@ -246,7 +246,7 @@ class survey_manager extends \cenozo\singleton
                        $phase['repeated'] ? $db_assignment : NULL );
             $tokens_mod = lib::create( 'database\modifier' );
             $tokens_mod->where( 'token', '=', $token );
-            $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
+            $db_tokens = current( $tokens_class_name::select_objects( $tokens_mod ) );
     
             if( false === $db_tokens )
             { // token not found, create it
@@ -318,7 +318,7 @@ class survey_manager extends \cenozo\singleton
     $token = $db_participant->uid;
     $tokens_mod = lib::create( 'database\modifier' );
     $tokens_mod->where( 'token', '=', $token );
-    $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
+    $db_tokens = current( $tokens_class_name::select_objects( $tokens_mod ) );
 
     if( false === $db_tokens )
     { // token not found, create it

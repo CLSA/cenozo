@@ -386,6 +386,7 @@ cenozo.directive( 'cnReallyClick', [
 /**
  * A form for filling out a new record's details
  * @attr model: An instance of the record's singleton model
+ * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
   'CnHttpFactory',
@@ -394,7 +395,10 @@ cenozo.directive( 'cnRecordAdd', [
       templateUrl: cnCenozoUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
       transclude: true,
-      scope: { model: '=' },
+      scope: {
+        model: '=',
+        removeInputs: '@'
+      },
       controller: function( $scope ) {
         $scope.back = function() { $scope.model.transitionToLastState(); };
         $scope.submit = function() {
@@ -482,7 +486,7 @@ cenozo.directive( 'cnRecordAdd', [
                       : attrs.heading;
 
         // get the input array and add enum lists for boolean types
-        scope.inputArray = scope.model.getInputArray();
+        scope.inputArray = scope.model.getInputArray( scope.removeInputs );
         for( var i = 0; i < scope.inputArray.length; i++ ) {
           if( 'boolean' == scope.inputArray[i].type ) {
             scope.inputArray[i].enumList = [
@@ -506,7 +510,7 @@ cenozo.directive( 'cnRecordAdd', [
             for( var key in metadata.columnList ) {
               if( undefined !== metadata.columnList[key].enumList ) {
                 var input = scope.inputArray.findByProperty( 'key', key );
-                if( undefined === input.enumList ) {
+                if( input && undefined === input.enumList ) {
                   input.enumList = metadata.columnList[key].enumList;
                   input.enumList.unshift( metadata.columnList[key].required ?
                     { value: undefined, name: '(Select ' + input.title + ')' } :
@@ -525,7 +529,7 @@ cenozo.directive( 'cnRecordAdd', [
 /**
  * A listing of records
  * @attr model: An instance of the record's singleton model
- * @attr removeColumns: An array of columns (by key) to remove from the default list
+ * @attr removeColumns: An array of columns (by key) to remove from the list
  */
 cenozo.directive( 'cnRecordList', [
   'CnModalRestrictFactory',
@@ -606,13 +610,17 @@ cenozo.directive( 'cnRecordList', [
 /**
  * A form for editing an existing record's details
  * @attr model: An instance of the record's singleton model
+ * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView',
   function() {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
-      scope: { model: '=', },
+      scope: {
+        model: '=',
+        removeInputs: '@'
+      },
       controller: function( $scope ) {
         $scope.back = function() {
           $scope.model.transitionToLastState();
@@ -671,8 +679,8 @@ cenozo.directive( 'cnRecordView',
                       ? scope.model.name.singular.ucWords() + ' Details'
                       : attrs.heading;
 
-        scope.inputArray = scope.model.getInputArray();
         var recordLoaded = false;
+        scope.inputArray = scope.model.getInputArray( scope.removeInputs );
         scope.$watch( 'model.cnView.record', function( record ) {
           // convert datetimes
           if( undefined !== record.id && !recordLoaded ) {
@@ -696,7 +704,7 @@ cenozo.directive( 'cnRecordView',
             // build enum lists
             for( var key in metadata.columnList ) {
               var input = scope.inputArray.findByProperty( 'key', key );
-              if( null !== input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
+              if( input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
                 input.enumList = 'boolean' === input.type
                                ? [ { value: '1', name: 'Yes' }, { value: '0', name: 'No' } ]
                                : metadata.columnList[key].enumList.slice();

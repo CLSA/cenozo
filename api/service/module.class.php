@@ -34,6 +34,24 @@ abstract class module extends \cenozo\base_object
   public function prepare_read( $select, $modifier ) {}
 
   /**
+   * Performs operations on the leaf record before writing
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\record The leaf record being written to
+   * @access public
+   */
+  public function pre_write( $record ) {}
+
+  /**
+   * Performs operations on the leaf record after writing
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\record The leaf record being written to
+   * @access public
+   */
+  public function post_write( $record ) {}
+
+  /**
    * Validates the use of a module for its parent service
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

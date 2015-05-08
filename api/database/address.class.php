@@ -37,6 +37,25 @@ class address extends has_rank
   }
 
   /**
+   * Add space in postcodes if needed by overriding the magic __set method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name The name of the column
+   * @param mixed $value The value to set the contents of a column to
+   * @throws exception\argument
+   * @access public
+   */
+  public function __set( $column_name, $value )
+  {
+    if( 'postcode' == $column_name )
+      $value = preg_replace_callback(
+        '/([A-Za-z][0-9][A-Za-z]) ?([0-9][A-Za-z][0-9])/',
+        function( $match ) { return strtoupper( sprintf( '%s %s', $match[1], $match[2] ) ); },
+        $value );
+
+    parent::__set( $column_name, $value );
+  }
+
+  /**
    * Sets the region, timezone offset and daylight savings columns based on the postcode.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public

@@ -34,16 +34,16 @@ define( {
     postcode: {
       title: 'Postcode',
       type: 'string',
-      help: 'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.'
+      help: 'Postal codes must be in "A1A1A1" format, zip codes in "01234" format.'
     },
     timezone_offset: {
       title: 'Timezone Offset',
-      type: 'number',
+      type: 'integer',
       help: 'The number of hours difference between the address\' timezone and UTC.'
     },
     daylight_savings: {
       title: 'Daylight Savings',
-      type: 'string',
+      type: 'boolean',
       help: 'Whether the address observes daylight savings.'
     },
     note: {

@@ -107,9 +107,25 @@ cenozo.factory( 'CnBaseAddFactory', [
               if( null !== thisRef.parentModel.metadata.columnList[column].default )
                 record[column] = thisRef.parentModel.metadata.columnList[column].default;
 
-            // copy the parent's identifying columns into the record
-            var parentIdentifier = thisRef.parentModel.getParentIdentifier();
-            for( var property in parentIdentifier ) record[property+'_id'] = parentIdentifier[property];
+            // get rank information, if needed, and set the default value to the highest rank
+            var promise = null;
+            if( undefined !== thisRef.parentModel.inputList.rank ) {
+              thisRef.parentModel.metadata.loadingCount++;
+              CnHttpFactory.instance( {
+                path: thisRef.parentModel.getServiceCollectionPath(),
+                data: { select: { column: { column: 'MAX(rank)', alias: 'max', table_prefix: false } } }
+              } ).query().then( function success( response ) {
+                if( 0 < response.data.length ) {
+                  var max = parseInt( response.data[0].max );
+                  thisRef.parentModel.metadata.columnList.rank.enumList = [];
+                  for( var rank = 1; rank <= max + 1; rank++ )
+                    thisRef.parentModel.metadata.columnList.rank.enumList.push( { value: rank, name: rank } );
+                  record.rank = thisRef.parentModel.metadata.columnList.rank.default = max + 1;
+                }
+                // signal that we are done loading metadata
+                thisRef.parentModel.metadata.loadingCount--;
+              } );
+            }
 
             // signal that we are done loading metadata
             thisRef.parentModel.metadata.loadingCount--;
@@ -348,8 +364,7 @@ cenozo.factory( 'CnBaseViewFactory', [
                 } ).query().then( function success( response ) {
                   if( 0 < response.data.length ) {
                     thisRef.parentModel.metadata.columnList.rank.enumList = [];
-                    var max = response.data[0].max;
-                    for( var rank = 1; rank <= max; rank++ )
+                    for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ )
                       thisRef.parentModel.metadata.columnList.rank.enumList.push( { value: rank, name: rank } );
                   }
                   // signal that we are done loading metadata
@@ -454,7 +469,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           $state.go( 'error.' + type );
         };
 
-        object.getInputArray = function() {
+        object.getInputArray = function( removeInputs ) {
+          if( undefined === removeInputs ) removeInputs = [];
+
           // make a copy of the input list and remove any parent column(s)
           var inputObjectList = cnCopy( this.inputList );
           for( var property in this.getParentIdentifier() ) delete inputObjectList[property+'_id'];
@@ -462,9 +479,11 @@ cenozo.factory( 'CnBaseModelFactory', [
           // create an array out of the input list
           var inputArray = [];
           for( var key in inputObjectList ) {
-            var input = inputObjectList[key];
-            input.key = key;
-            inputArray.push( input );
+            if( 0 > removeInputs.indexOf( key ) ) {
+              var input = inputObjectList[key];
+              input.key = key;
+              inputArray.push( input );
+            }
           }
           return inputArray;
         };

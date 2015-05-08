@@ -18,7 +18,7 @@
               type="text"
               autocomplete="off"
               ng-readonly="input.constant"
-              ng-required="model.metadata[input.key].required"></input>
+              ng-required="model.metadata.columnList[input.key].required"></input>
             <input ng-if="'typeahead' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
@@ -32,7 +32,7 @@
               placeholder="(Type the first few letters to search possible values)"
               autocomplete="off"
               ng-readonly="input.constant"
-              ng-required="model.metadata[input.key].required"></input>
+              ng-required="model.metadata.columnList[input.key].required"></input>
             <input ng-if="'date' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
@@ -55,8 +55,8 @@
               pattern="\d*"
               autocomplete="off"
               ng-readonly="input.constant"
-              ng-required="model.metadata[input.key].required"></input>
-            <select ng-if="'boolean' == input.type || 'enum' == input.type"
+              ng-required="model.metadata.columnList[input.key].required"></input>
+            <select ng-if="'boolean' == input.type || 'enum' == input.type || 'rank' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-options="item.value as item.name for item in input.enumList"
@@ -64,7 +64,7 @@
               cn-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant"
-              ng-required="model.metadata[input.key].required"></select>
+              ng-required="model.metadata.columnList[input.key].required"></select>
             <textarea ng-if="'text' == input.type || 'constant text' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
@@ -72,7 +72,7 @@
               cn-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant"
-              ng-required="model.metadata[input.key].required"></textarea>
+              ng-required="model.metadata.columnList[input.key].required"></textarea>
           </div>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.required">
             Cannot be blank

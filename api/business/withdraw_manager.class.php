@@ -87,13 +87,13 @@ class withdraw_manager extends \cenozo\singleton
       $tokens_class_name::set_sid( $withdraw_sid );
       $tokens_mod = lib::create( 'database\modifier' );
       $tokens_mod->where( 'token', '=', $db_participant->uid );
-      foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens ) $db_tokens->delete();
+      foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens ) $db_tokens->delete();
 
       // delete the token
       $survey_class_name::set_sid( $withdraw_sid );
       $scripts_mod = lib::create( 'database\modifier' );
       $scripts_mod->where( 'token', '=', $db_participant->uid );
-      foreach( $survey_class_name::select( $scripts_mod ) as $db_survey ) $db_survey->delete();
+      foreach( $survey_class_name::select_objects( $scripts_mod ) as $db_survey ) $db_survey->delete();
     }   
 
     $db_participant->withdraw_letter = NULL;
@@ -124,13 +124,13 @@ class withdraw_manager extends \cenozo\singleton
     $token = $db_participant->uid;
     $tokens_mod = lib::create( 'database\modifier' );
     $tokens_mod->where( 'token', '=', $token );
-    $tokens_list = $tokens_class_name::select( $tokens_mod );
+    $tokens_list = $tokens_class_name::select_objects( $tokens_mod );
     if( 0 == count( $tokens_list ) )
       throw lib::create( 'exception\runtime',
         sprintf( 'Tried to process withdraw for participant %s without a token.',
                  $db_participant->uid ),
         __METHOD__ );
-    $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
+    $db_tokens = current( $tokens_list );
 
     // figure out which token attributes are which
     $attributes = array();

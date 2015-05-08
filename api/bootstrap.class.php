@@ -54,11 +54,6 @@ final class bootstrap
       $this->arguments =  $_POST;
       $this->file = file_get_contents( 'php://input' );
     }
-    else if( 'PUT' == $this->method )
-    {
-      $this->arguments = $_GET;
-      $this->file = file_get_contents( 'php://input' );
-    }
   }
   
   /**
@@ -430,7 +425,7 @@ final class bootstrap
   private $arguments = NULL;
 
   /**
-   * The file sent by PATCH/POST/PUT requests
+   * The file sent by PATCH/POST requests
    * @var string
    * @access private
    */

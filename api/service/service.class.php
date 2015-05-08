@@ -23,10 +23,10 @@ abstract class service extends \cenozo\base_object
    * In addition to constructing the service object, the service is also validated against the
    * user's current role's access.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $method The request's method (DELETE, GET, HEAD, PATCH, POST, PUT)
+   * @param string $method The request's method (DELETE, GET, HEAD, PATCH, POST)
    * @param string $path The URL of the service (not including the base)
    * @param array $args An associative array of arguments included in the request
-   * @param string $file The raw file posted by PATCH, POST and PUT requests
+   * @param string $file The raw file posted by PATCH and POST requests
    * @access public
    */
   public function __construct( $method, $path, $args = NULL, $file = NULL )
@@ -273,6 +273,15 @@ abstract class service extends \cenozo\base_object
     }
   }
 
+  /**
+   * Returns the service's method
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_method() { return $this->method; }
+  
   /**
    * Returns the subject for a particular index
    * 
@@ -704,6 +713,5 @@ abstract class service extends \cenozo\base_object
     'GET' => false,
     'HEAD' => false,
     'PATCH' => true,
-    'POST' => true,
-    'PUT' => true );
+    'POST' => true );
 }

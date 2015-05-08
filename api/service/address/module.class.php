@@ -47,4 +47,13 @@ class module extends \cenozo\service\module
       $select->add_column( $month, 'available' );
     }
   }
+
+  /**
+   * Extend parent method
+   */
+  public function pre_write( $record )
+  {
+    // source the postcode
+    if( is_null( $record->region_id ) ) $record->source_postcode();
+  }
 }
