@@ -6,7 +6,6 @@ DELIMITER $$
 
 CREATE PROCEDURE update_participant_site_for_jurisdiction(IN proc_jurisdiction_id INT(10) UNSIGNED)
 BEGIN
-
   REPLACE INTO participant_site( application_id, participant_id, site_id, default_site_id )
   SELECT application.id,
          participant.id,
@@ -29,8 +28,9 @@ BEGIN
   LEFT JOIN application_has_participant ON application.id = application_has_participant.application_id
   AND application_has_participant.participant_id = participant.id
   WHERE application_has_cohort.grouping = "jurisdiction"
-  AND jurisdiction.id = proc_jurisdiction_id;
-
+  AND jurisdiction.id = proc_jurisdiction_id
+  -- we need to match the sites or we might get links to sites in the wrong application
+  AND jurisdiction.site_id <=> jurisdiction_site.id;
 END$$
 
 DELIMITER ;

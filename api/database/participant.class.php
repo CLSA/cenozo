@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * participant: record
  */
-class participant extends has_rank
+class participant extends record
 {
   /**
    * Audit changs to email address by overriding the magic __set method
