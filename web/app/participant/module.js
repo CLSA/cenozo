@@ -48,12 +48,14 @@ define( {
       column: 'default_site.name',
       title: 'Default Site',
       type: 'string',
-      constant: true
+      constant: true,
+      help: 'The site the participant belongs to if a preferred site is not set.'
     },
     preferred_site_id: {
       column: 'preferred_site.id',
       title: 'Preferred Site',
-      type: 'enum'
+      type: 'enum',
+      help: 'If set then the participant will be assigned to this site instead of the default site.'
     },
     email: {
       title: 'Email',

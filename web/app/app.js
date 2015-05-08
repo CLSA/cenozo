@@ -110,6 +110,13 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
   }
 };
 
+Array.prototype.findByProperty = function( property, value ) {
+  for( var i = 0; i < this.length; i++ )
+    if( undefined !== this[i][property] && value == this[i][property] )
+      return this[i];
+  return null;
+}
+
 String.prototype.regexIndexOf = function( regex, startpos ) {
   var indexOf = this.substring( startpos || 0 ).search( regex );
   return indexOf >= 0 ? indexOf + ( startpos || 0 ) : indexOf;

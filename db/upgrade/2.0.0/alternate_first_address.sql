@@ -16,7 +16,7 @@ CREATE PROCEDURE patch_alternate_first_address()
 
       CREATE TABLE IF NOT EXISTS alternate_first_address (
         alternate_id INT UNSIGNED NOT NULL,
-        address_id INT UNSIGNED NOT NULL,
+        address_id INT UNSIGNED NULL,
         update_timestamp TIMESTAMP NOT NULL,
         create_timestamp TIMESTAMP NOT NULL,
         PRIMARY KEY (alternate_id),

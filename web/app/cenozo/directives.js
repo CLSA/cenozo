@@ -505,9 +505,7 @@ cenozo.directive( 'cnRecordAdd', [
               !scope.isComplete ) {
             for( var key in metadata.columnList ) {
               if( undefined !== metadata.columnList[key].enumList ) {
-                var input = scope.inputArray.find( // by key
-                  function( item, index, array ) { return key == item.key }
-                );
+                var input = scope.inputArray.findByProperty( 'key', key );
                 if( undefined === input.enumList ) {
                   input.enumList = metadata.columnList[key].enumList;
                   input.enumList.unshift( metadata.columnList[key].required ?
@@ -697,10 +695,8 @@ cenozo.directive( 'cnRecordView',
               !metadataLoaded ) {
             // build enum lists
             for( var key in metadata.columnList ) {
-              var input = scope.inputArray.find( // by key
-                function( item, index, array ) { return key == item.key }
-              );
-              if( undefined !== input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
+              var input = scope.inputArray.findByProperty( 'key', key );
+              if( null !== input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
                 input.enumList = 'boolean' === input.type
                                ? [ { value: '1', name: 'Yes' }, { value: '0', name: 'No' } ]
                                : metadata.columnList[key].enumList.slice();

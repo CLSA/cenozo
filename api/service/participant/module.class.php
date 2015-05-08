@@ -58,8 +58,8 @@ class module extends \cenozo\service\module
       $join_mod->where(
         'participant_site.application_id', '=', $db_application->id );
       $modifier->join_modifier( 'participant_site', $join_mod );
-      $modifier->join( 'site', 'participant_site.site_id', 'site.id' );
-      $modifier->join( 'site', 'participant_site.default_site_id', 'default_site.id', '', 'default_site' );
+      $modifier->left_join( 'site', 'participant_site.site_id', 'site.id' );
+      $modifier->left_join( 'site', 'participant_site.default_site_id', 'default_site.id', 'default_site' );
     }
   }
 }

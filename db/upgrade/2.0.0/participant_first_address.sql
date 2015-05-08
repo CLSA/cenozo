@@ -16,7 +16,7 @@ CREATE PROCEDURE patch_participant_first_address()
 
       CREATE TABLE IF NOT EXISTS participant_first_address (
         participant_id INT UNSIGNED NOT NULL,
-        address_id INT UNSIGNED NOT NULL,
+        address_id INT UNSIGNED NULL,
         update_timestamp TIMESTAMP NOT NULL,
         create_timestamp TIMESTAMP NOT NULL,
         PRIMARY KEY (participant_id),

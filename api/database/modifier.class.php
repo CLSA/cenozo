@@ -46,6 +46,13 @@ class modifier extends \cenozo\base_object
           false === strpos( get_class( $modifier ), 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
 
+    if( !is_string( $type ) )
+      throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
+    if( !is_null( $alias ) && !is_string( $alias ) )
+      throw lib::create( 'exception\argument', 'alias', $alias, __METHOD__ );
+    if( !is_bool( $prepend ) )
+      throw lib::create( 'exception\argument', 'prepend', $prepend, __METHOD__ );
+
     $valid_types = array(
       '',
       'INNER',

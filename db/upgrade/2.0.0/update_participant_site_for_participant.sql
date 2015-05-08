@@ -7,7 +7,7 @@ CREATE PROCEDURE update_participant_site_for_participant(IN proc_participant_id 
 BEGIN
 
   REPLACE INTO participant_site( application_id, participant_id, site_id, default_site_id )
-  SELECT proc_application_id,
+  SELECT application.id,
          proc_participant_id,
          IF(
            ISNULL( application_has_participant.preferred_site_id ),
