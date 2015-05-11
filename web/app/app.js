@@ -4,6 +4,11 @@ moment.tz.setDefault( 'UTC' );
 
 window.cnCachedProviders = {};
 
+window.cnMonthList = [
+  'january', 'february', 'march', 'april', 'may', 'june',
+  'july', 'august', 'september', 'october', 'november', 'december'
+];
+
 window.cnCopy = function cnCopy( arg ) {
   if( 'object' === typeof arg ) {
     return JSON.parse( JSON.stringify( arg ) );
@@ -35,10 +40,12 @@ window.cnConvertFromDatabaseRecord = function cnConvertFromDatabaseRecord( objec
     if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
       object[prop] = null === object[prop] ? null : moment( object[prop] );
     } else if( 0 <= prop.regexIndexOf( /^count|_count/ ) ||
-               0 <= prop.regexIndexOf( /^chosen|_chosen/ ) ||
-               0 <= prop.regexIndexOf( /^selected|_selected/ ) ||
                0 <= prop.regexIndexOf( /^rank|_rank/ ) ) {
       object[prop] = parseInt( object[prop] );
+    } else if( 0 <= prop.regexIndexOf( /^chosen|_chosen/ ) ||
+               0 <= prop.regexIndexOf( /^selected|_selected/ ) ||
+               0 <= cnMonthList.indexOf( prop ) ) {
+      object[prop] = 1 == parseInt( object[prop] );
     }
   }
 };

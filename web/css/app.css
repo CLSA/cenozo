@@ -13,6 +13,7 @@ td.tiny { width: 1px; white-space: nowrap; }
 .restrict { margin: 0px; font-size: 1.2em; }
 .pagination { margin: 0; }
 .input-group { width: 100%; }
+.checkbox { display: inline-block; font-weight: normal; }
 .form-body { padding-top: 1em; }
 .form-footer { padding: 1em; background: #EAEAEA; text-align: right; }
 .spacer { margin: 0.5em; }

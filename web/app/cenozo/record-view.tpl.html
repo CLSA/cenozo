@@ -1,5 +1,5 @@
 <div class="container-fluid bg-primary rounded-top">
-  <h4>{{ heading }} <span ng-if="!isComplete">(Loading...)</span></h4>
+  <h4>{{ heading }} <span>
 </div>
 <form name="form" class="form-horizontal" novalidate>
   <div class="form-body">
@@ -64,6 +64,130 @@
               class="form-control"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></textarea>
+            <div ng-if="'months' == input.type" class="row">
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="january"
+                    name="name"
+                    ng-model="model.cnView.record.january"
+                    ng-change="patch( 'january' )"
+                    type="checkbox"> January
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="february"
+                    name="name"
+                    ng-model="model.cnView.record.february"
+                    ng-change="patch( 'february' )"
+                    type="checkbox"> February
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="march"
+                    name="name"
+                    ng-model="model.cnView.record.march"
+                    ng-change="patch( 'march' )"
+                    type="checkbox"> March
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="april"
+                    name="name"
+                    ng-model="model.cnView.record.april"
+                    ng-change="patch( 'april' )"
+                    type="checkbox"> April
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="may"
+                    name="name"
+                    ng-model="model.cnView.record.may"
+                    ng-change="patch( 'may' )"
+                    type="checkbox"> May
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="june"
+                    name="name"
+                    ng-model="model.cnView.record.june"
+                    ng-change="patch( 'june' )"
+                    type="checkbox"> June
+                </label>
+              </div>
+            </div>
+            <div ng-if="'months' == input.type" class="row">
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="july"
+                    name="name"
+                    ng-model="model.cnView.record.july"
+                    ng-change="patch( 'july' )"
+                    type="checkbox"> July
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="august"
+                    name="name"
+                    ng-model="model.cnView.record.august"
+                    ng-change="patch( 'august' )"
+                    type="checkbox"> August
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="september"
+                    name="name"
+                    ng-model="model.cnView.record.september"
+                    ng-change="patch( 'september' )"
+                    type="checkbox"> September
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="october"
+                    name="name"
+                    ng-model="model.cnView.record.october"
+                    ng-change="patch( 'october' )"
+                    type="checkbox"> October
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="november"
+                    name="name"
+                    ng-model="model.cnView.record.november"
+                    ng-change="patch( 'november' )"
+                    type="checkbox"> November
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input
+                    id="december"
+                    name="name"
+                    ng-model="model.cnView.record.december"
+                    ng-change="patch( 'december' )"
+                    type="checkbox"> December
+                </label>
+              </div>
+            </div>
           </div>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.required">
             Cannot be blank

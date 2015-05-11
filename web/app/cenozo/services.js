@@ -786,11 +786,15 @@ function getServiceData( subject, list ) {
     var columnParts = undefined === list[key].column ? [ key ] : list[key].column.split( '.' );
     for( var k = 0; k < columnParts.length; k++ ) {
       if( k == columnParts.length - 1 ) {
-        // add this column to the select list
-        var select = { column: columnParts[k], alias: key };
-        if( 0 < k ) select.table = columnParts[k-1];
-        else select.table_prefix = false;
-        selectList.push( select );
+        if( 'months' == list[key].type ) {
+          selectList = selectList.concat( cnMonthList );
+        } else {
+          // add this column to the select list
+          var select = { column: columnParts[k], alias: key };
+          if( 0 < k ) select.table = columnParts[k-1];
+          else select.table_prefix = false;
+          selectList.push( select );
+        }
       } else { // part of table list
         var table = columnParts[k];
 

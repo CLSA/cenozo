@@ -49,6 +49,10 @@ define( {
     note: {
       title: 'Note',
       type: 'text'
+    },
+    months: {
+      title: 'Active Months',
+      type: 'months'
     }
   },
   columnList: {
