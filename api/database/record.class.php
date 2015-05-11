@@ -145,20 +145,17 @@ abstract class record extends \cenozo\base_object
           foreach( $row as $key => $val )
           {
             if( array_key_exists( $key, $table['columns'] ) )
-            {
-              // convert any date, time or datetime columns to datetime objects
-              if( $database_class_name::is_datetime_column( $key ) ||
-                  $database_class_name::is_date_column( $key ) ||
-                  $database_class_name::is_time_column( $key ) )
+            { // convert data types
+              if( !is_null( $val ) )
               {
-                $table['columns'][$key] = !$val // null, 0 or empty string
-                                        ? NULL
-                                        : $util_class_name::get_datetime_object( $val );
+                $type = static::db()->get_column_data_type( static::get_table_name(), $key );
+                if( 'int' == $type ) $val = intval( $val );
+                else if( 'tinyint' == $type ) $val = (boolean) $val;
+                else if( 'date' == $type || 'time' == $type || 'datetime' == $type )
+                  $val = !$val ? NULL : $util_class_name::get_datetime_object( $val );
               }
-              else
-              {
-                $table['columns'][$key] = $val;
-              }
+
+              $table['columns'][$key] = $val;
             }
           }
         }
@@ -210,15 +207,14 @@ abstract class record extends \cenozo\base_object
       {
         if( static::get_table_name() != $table['name'] || $table['key'] != $key )
         {
+          $type = static::db()->get_column_data_type( static::get_table_name(), $key );
+
           // convert from datetime object to mysql-valid datetime string
-          if( $database_class_name::is_datetime_column( $key ) )
-            $val = static::db()->format_datetime( $val );
-          else if( $database_class_name::is_date_column( $key ) )
-            $val = static::db()->format_date( $val );
-          else if( $database_class_name::is_time_column( $key ) )
-            $val = static::db()->format_time( $val );
+          if( 'datetime' == $type ) $val = static::db()->format_datetime( $val );
+          else if( 'date' == $type ) $val = static::db()->format_date( $val );
+          else if( 'time' == $type ) $val = static::db()->format_time( $val );
           else $val = static::db()->format_string( $val );
-          
+
           $sets .= sprintf( '%s %s = %s', $first ? '' : ',', $key, $val );
 
           $first = false;
@@ -392,6 +388,16 @@ abstract class record extends \cenozo\base_object
       $modifier->where( sprintf( '%s.id', $this->get_table_name() ), '=', $this->id );
       $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
       $columns = static::db()->get_row( $sql );
+
+      foreach( $columns as $column => $value )
+      {
+        if( static::column_exists( $column ) && !is_null( $value ) )
+        {
+          $type = static::db()->get_column_data_type( static::get_table_name(), $column );
+          if( 'int' == $type ) $columns[$column] = intval( $value );
+          else if( 'tinyint' == $type ) $columns[$column] = (boolean) $value;
+        }
+      }
     }
   
     return $columns;
@@ -957,6 +963,21 @@ abstract class record extends \cenozo\base_object
         $records = array();
         foreach( $return_value as $row ) $records[] = new static( $row['id'] );
         $return_value = $records;
+      }
+      else
+      { // convert data types
+        foreach( $return_value as $index => $row )
+        {
+          foreach( $row as $column => $value )
+          {
+            if( static::column_exists( $column ) && !is_null( $value ) )
+            {
+              $type = static::db()->get_column_data_type( static::get_table_name(), $column );
+              if( 'int' == $type ) $return_value[$index][$column] = intval( $value );
+              else if( 'tinyint' == $type ) $return_value[$index][$column] = (boolean) $value;
+            }
+          }
+        }
       }
     }
 

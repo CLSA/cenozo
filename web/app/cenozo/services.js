@@ -105,7 +105,9 @@ cenozo.factory( 'CnBaseAddFactory', [
             // apply default values from the metadata
             for( var column in thisRef.parentModel.metadata.columnList )
               if( null !== thisRef.parentModel.metadata.columnList[column].default )
-                record[column] = thisRef.parentModel.metadata.columnList[column].default;
+                record[column] = 'tinyint' == thisRef.parentModel.metadata.columnList[column].data_type
+                               ? 1 == thisRef.parentModel.metadata.columnList[column].default
+                               : thisRef.parentModel.metadata.columnList[column].default;
 
             // get rank information, if needed, and set the default value to the highest rank
             var promise = null;

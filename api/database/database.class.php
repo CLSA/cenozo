@@ -229,7 +229,7 @@ class database extends \cenozo\base_object
   }
 
   /**
-   * Returns a column's type (int, varchar, enum, etc)
+   * Returns a column's type (int(10) unsigned, varchar(45), enum( 'a', 'b', 'c' ), etc)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
@@ -248,7 +248,7 @@ class database extends \cenozo\base_object
   }
   
   /**
-   * Returns a column's data type (int(10) unsigned, varchar(45), enum( 'a', 'b', 'c' ), etc)
+   * Returns a column's data type (int, varchar, enum, etc)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.

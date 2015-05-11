@@ -39,13 +39,6 @@ window.cnConvertFromDatabaseRecord = function cnConvertFromDatabaseRecord( objec
   for( var prop in object ) {
     if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
       object[prop] = null === object[prop] ? null : moment( object[prop] );
-    } else if( 0 <= prop.regexIndexOf( /^count|_count/ ) ||
-               0 <= prop.regexIndexOf( /^rank|_rank/ ) ) {
-      object[prop] = parseInt( object[prop] );
-    } else if( 0 <= prop.regexIndexOf( /^chosen|_chosen/ ) ||
-               0 <= prop.regexIndexOf( /^selected|_selected/ ) ||
-               0 <= cnMonthList.indexOf( prop ) ) {
-      object[prop] = 1 == parseInt( object[prop] );
     }
   }
 };

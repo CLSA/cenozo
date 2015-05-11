@@ -491,8 +491,8 @@ cenozo.directive( 'cnRecordAdd', [
           if( 'boolean' == scope.inputArray[i].type ) {
             scope.inputArray[i].enumList = [
               { value: undefined, name: '(Select Yes or No)' },
-              { value: '1', name: 'Yes' },
-              { value: '0', name: 'No' }
+              { value: true, name: 'Yes' },
+              { value: false, name: 'No' }
             ];
           }
         }
@@ -698,7 +698,7 @@ cenozo.directive( 'cnRecordView',
               var input = scope.inputArray.findByProperty( 'key', key );
               if( input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
                 input.enumList = 'boolean' === input.type
-                               ? [ { value: '1', name: 'Yes' }, { value: '0', name: 'No' } ]
+                               ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
                                : metadata.columnList[key].enumList.slice();
                 if( !metadata.columnList[key].required ) input.enumList.unshift( { value: '', name: '' } );
               }
