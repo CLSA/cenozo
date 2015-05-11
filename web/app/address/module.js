@@ -38,7 +38,7 @@ define( {
     },
     timezone_offset: {
       title: 'Timezone Offset',
-      type: 'integer',
+      type: 'number',
       help: 'The number of hours difference between the address\' timezone and UTC.'
     },
     daylight_savings: {

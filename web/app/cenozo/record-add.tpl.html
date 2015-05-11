@@ -42,16 +42,6 @@
               ng-click="isOpen = true"
               show-weeks="false"
               onkeydown="return false"></input>
-            <input ng-if="'integer' == input.type"
-              ng-attr-id="{{ input.key }}"
-              name="name"
-              ng-model="record[input.key]"
-              class="form-control"
-              type="number"
-              pattern="\d*"
-              autocomplete="off"
-              ng-readonly="input.constant"
-              ng-required="model.metadata.columnList[input.key].required"></input>
             <select ng-if="'boolean' == input.type || 'enum' == input.type || 'rank' == input.type"
               ng-attr-id="{{ input.key }}"
               name="name"
@@ -137,9 +127,6 @@
           </span>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.minlength">
             Isn't long enough
-          </span>
-          <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.number">
-            Must be a number
           </span>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.conflict">
             Conflicts with existing record

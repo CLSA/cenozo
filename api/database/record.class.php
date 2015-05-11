@@ -150,6 +150,7 @@ abstract class record extends \cenozo\base_object
               {
                 $type = static::db()->get_column_data_type( static::get_table_name(), $key );
                 if( 'int' == $type ) $val = intval( $val );
+                else if( 'float' == $type ) $val = floatval( $val );
                 else if( 'tinyint' == $type ) $val = (boolean) $val;
                 else if( 'date' == $type || 'time' == $type || 'datetime' == $type )
                   $val = !$val ? NULL : $util_class_name::get_datetime_object( $val );
@@ -395,6 +396,7 @@ abstract class record extends \cenozo\base_object
         {
           $type = static::db()->get_column_data_type( static::get_table_name(), $column );
           if( 'int' == $type ) $columns[$column] = intval( $value );
+          else if( 'float' == $type ) $columns[$column] = floatval( $value );
           else if( 'tinyint' == $type ) $columns[$column] = (boolean) $value;
         }
       }
@@ -974,6 +976,7 @@ abstract class record extends \cenozo\base_object
             {
               $type = static::db()->get_column_data_type( static::get_table_name(), $column );
               if( 'int' == $type ) $return_value[$index][$column] = intval( $value );
+              else if( 'float' == $type ) $return_value[$index][$column] = floatval( $value );
               else if( 'tinyint' == $type ) $return_value[$index][$column] = (boolean) $value;
             }
           }

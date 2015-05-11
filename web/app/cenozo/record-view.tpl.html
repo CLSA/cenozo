@@ -52,7 +52,7 @@
               name="name"
               ng-options="item.value as item.name for item in input.enumList"
               ng-model="model.cnView.record[input.key]"
-              cn-change="patch( input.key )"
+              ng-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant || !input.enumList"
               ng-required="model.metadata.columnList[input.key].required"></select>
@@ -194,9 +194,6 @@
           </span>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.minlength">
             Isn't long enough
-          </span>
-          <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.number">
-            Must be a number
           </span>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.conflict">
             Conflicts with existing record

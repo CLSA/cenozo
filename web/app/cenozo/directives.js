@@ -41,26 +41,18 @@ cenozo.directive( 'cnChange', [
     return {
       restrict: 'A',
       require: 'ngModel',
-      link: function( scope, element, attrs, ctrl ) {
-        if( 'checkbox' === attrs.type ||
-            'radio' === attrs.type ||
-            'SELECT' === element[0].tagName ) {
-          ctrl.$viewChangeListeners.push( function() {
-            scope.$eval( attrs.cnChange );
+      link: function( scope, element, attrs ) {
+        var oldValue = null;
+        element.bind( 'focus', function() {
+          $timeout( function() { oldValue = element.val(); } );
+        } );
+        element.bind( 'blur', function() {
+          scope.$evalAsync( function() {
+            if( element.val() != oldValue ) {
+              scope.$eval( attrs.cnChange );
+            }
           } );
-        } else {
-          var oldValue = null;
-          element.bind( 'focus', function() {
-            $timeout( function() { oldValue = element.val(); } );
-          } );
-          element.bind( 'blur', function() {
-            scope.$evalAsync( function() {
-              if( element.val() != oldValue ) {
-                scope.$eval( attrs.cnChange );
-              }
-            } );
-          } );
-        }
+        } );
       }
     };
   }
@@ -106,7 +98,7 @@ cenozo.directive( 'cnClock', [
  * @attr clearText
  * @attr closeText
  * @attr cnDateDisabled
- */
+ *
 cenozo.directive( 'cnDatetimePicker', [
   '$compile', '$parse', '$document', '$position', 'dateFilter', 'dateParser', 'datepickerPopupConfig',
   function( $compile, $parse, $document, $position, dateFilter, dateParser, datepickerPopupConfig ) {
@@ -337,7 +329,7 @@ cenozo.directive( 'cnDatetimePicker', [
 
 /**
  * Popup for the datetime picker
- */
+ /
 cenozo.directive( 'cnDatetimePickerPopup', function () {
   return {
     restrict: 'E',
@@ -512,9 +504,10 @@ cenozo.directive( 'cnRecordAdd', [
                 var input = scope.inputArray.findByProperty( 'key', key );
                 if( input && undefined === input.enumList ) {
                   input.enumList = metadata.columnList[key].enumList;
-                  input.enumList.unshift( metadata.columnList[key].required ?
-                    { value: undefined, name: '(Select ' + input.title + ')' } :
-                    { value: null, name: '' } );
+                  input.enumList.unshift( {
+                    value: undefined,
+                    name: metadata.columnList[key].required ? '(Select ' + input.title + ')' : '(none)'
+                  } );
                 }
               }
             }
@@ -646,8 +639,10 @@ cenozo.directive( 'cnRecordView',
                 }
               }
 
+              /* Removing the following because it was interfering with $error.required
               // now clean up this property's form elements
               currentItem.$error = {};
+              */
             },
             function error( response ) { 
               if( 409 == response.status ) { 
