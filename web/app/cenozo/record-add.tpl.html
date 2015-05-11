@@ -13,7 +13,6 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
-              cn-change="patch( input.key )"
               class="form-control"
               type="text"
               autocomplete="off"
@@ -26,7 +25,6 @@
               typeahead="item.value for item in getTypeaheadValues( input.key, $viewValue )"
               typeahead-loading="true"
               typeahead-min-length="2"
-              cn-change="patch( input.key )"
               class="form-control"
               type="text"
               placeholder="(Type the first few letters to search possible values)"
@@ -37,7 +35,6 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
-              ng-change="patch( input.key )"
               class="form-control"
               type="text"
               datepicker-popup="yyyy-MM-dd"
@@ -49,7 +46,6 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
-              cn-change="patch( input.key )"
               class="form-control"
               type="number"
               pattern="\d*"
@@ -61,7 +57,6 @@
               name="name"
               ng-options="item.value as item.name for item in input.enumList"
               ng-model="record[input.key]"
-              cn-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></select>
@@ -69,10 +64,73 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
-              cn-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></textarea>
+            <div ng-if="'months' == input.type" class="row">
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="january" name="name" ng-model="record.january" type="checkbox"> January
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="february" name="name" ng-model="record.february" type="checkbox"> February
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="march" name="name" ng-model="record.march" type="checkbox"> March
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="april" name="name" ng-model="record.april" type="checkbox"> April
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="may" name="name" ng-model="record.may" type="checkbox"> May
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="june" name="name" ng-model="record.june" type="checkbox"> June
+                </label>
+              </div>
+            </div>
+            <div ng-if="'months' == input.type" class="row">
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="july" name="name" ng-model="record.july" type="checkbox"> July
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="august" name="name" ng-model="record.august" type="checkbox"> August
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="september" name="name" ng-model="record.september" type="checkbox"> September
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="october" name="name" ng-model="record.october" type="checkbox"> October
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="november" name="name" ng-model="record.november" type="checkbox"> November
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="december" name="name" ng-model="record.december" type="checkbox"> December
+                </label>
+              </div>
+            </div>
           </div>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.required">
             Cannot be blank
