@@ -6,7 +6,7 @@
        } ">
   <thead>
     <tr class="info">
-      <td ng-repeat="column in columnList">
+      <td ng-repeat="column in columnArray">
         <div class="btn-group" role="group" area-hidden="true" tooltip="{{ column.help }}">
           <button class="btn btn-narrow btn-info"
                   ng-click="model.cnList.orderBy( column.key )">{{ column.title }}
@@ -52,7 +52,7 @@
                    | limitTo: model.cnList.cnPagination.itemsPerPage"
         ng-click="model.chooseEnabled ? chooseRecord( record ) : selectRecord( record.id )"
         ng-class="{ success:model.cnList.chooseMode && record.chosen }">
-        <td ng-repeat="column in columnList">
+        <td ng-repeat="column in columnArray">
           <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
         </td>
         <td class="tiny" ng-if="model.deleteEnabled && !model.chooseEnabled">

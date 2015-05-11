@@ -575,32 +575,23 @@ cenozo.directive( 'cnRecordList', [
                       ? scope.model.name.singular.ucWords() + ' List'
                       : attrs.heading;
 
+        scope.columnArray = scope.model.getColumnArray( scope.removeColumns );
+
         if( undefined !== scope.model.cnList.restrict ) {
           scope.addRestrict = function( column ) {
-            var modal = CnModalRestrictFactory.instance( {
+            var column = scope.columnArray.findByProperty( 'key', column );
+            CnModalRestrictFactory.instance( {
               name: scope.model.name,
-              column: scope.model.columnList[column].title,
-              comparison: scope.model.columnList[column].restrict
+              column: column.title,
+              comparison: column.restrict
             } ).show().then( function( comparison ) {
-              scope.model.cnList.restrict( column, comparison );
+              scope.model.cnList.restrict( column.key, comparison );
             } );
           };
         }
 
-        // convert the columnList into an array
-        var removeColumns = undefined === scope.removeColumns ? [] : scope.removeColumns.split( ' ' );
-        scope.columnList = [];
-        for( var key in scope.model.columnList ) {
-          if( 0 > removeColumns.indexOf( key ) ) {
-            var column = scope.model.columnList[key];
-            if( undefined === column.allowRestrict ) column.allowRestrict = true;
-            column.key = key;
-            scope.columnList.push( column );
-          }
-        }
-
         // get the total number of columns in the table
-        scope.numColumns = scope.columnList.length;
+        scope.numColumns = scope.columnArray.length;
         if( scope.model.deleteEnabled ) scope.numColumns++;
       }
     };
@@ -684,8 +675,9 @@ cenozo.directive( 'cnRecordView',
         scope.$watch( 'model.cnView.record', function( record ) {
           // convert datetimes
           if( undefined !== record.id && !recordLoaded ) {
-            for( var key in scope.model.inputArray ) {
-              if( 'date' == scope.model.inputArray[key].type && record[key].format )
+            for( var i = 0; i < scope.inputArray.length; i++ ) {
+              var key = scope.inputArray[i].key;
+              if( 'date' == scope.inputArray[i].type && record[key].format )
                 record[key] = record[key].format( 'YYYY-MM-DD' );
             }
             recordLoaded = true;

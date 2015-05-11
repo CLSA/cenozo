@@ -469,8 +469,11 @@ cenozo.factory( 'CnBaseModelFactory', [
           $state.go( 'error.' + type );
         };
 
-        object.getInputArray = function( removeInputs ) {
-          if( undefined === removeInputs ) removeInputs = [];
+        /**
+         * Makes an array containing COPIES of the model's input list
+         */
+        object.getInputArray = function( removeInputList ) {
+          if( undefined === removeInputList ) removeInputList = [];
 
           // make a copy of the input list and remove any parent column(s)
           var inputObjectList = cnCopy( this.inputList );
@@ -479,13 +482,32 @@ cenozo.factory( 'CnBaseModelFactory', [
           // create an array out of the input list
           var inputArray = [];
           for( var key in inputObjectList ) {
-            if( 0 > removeInputs.indexOf( key ) ) {
+            if( 0 > removeInputList.indexOf( key ) ) {
               var input = inputObjectList[key];
               input.key = key;
               inputArray.push( input );
             }
           }
           return inputArray;
+        };
+
+        /**
+         * Makes an array containing REFERENCES to the model's column list
+         */
+        object.getColumnArray = function( removeColumnList ) {
+          if( undefined === removeColumnList ) removeColumnList = [];
+
+          // create an array out of the column list
+          var columnArray = [];
+          for( var key in this.columnList ) {
+            if( 0 > removeColumnList.indexOf( key ) ) {
+              var column = this.columnList[key];
+              if( undefined === column.allowRestrict ) column.allowRestrict = true;
+              column.key = key;
+              columnArray.push( column );
+            }
+          }
+          return columnArray;
         };
 
         // enable/disable module functionality
