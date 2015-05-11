@@ -34,7 +34,9 @@ define( [
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnPhoneModelFactory', [
     'CnBaseModelFactory', 'CnPhoneListFactory', 'CnPhoneAddFactory', 'CnPhoneViewFactory',
-    function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory ) {
+    'CnHttpFactory',
+    function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory,
+              CnHttpFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnPhoneAddFactory.instance( this );
@@ -44,6 +46,31 @@ define( [
         this.enableAdd( true );
         this.enableDelete( true );
         this.enableView( true );
+
+        // extend getMetadata
+        var thisRef = this;
+        this.getMetadata = function() {
+          this.metadata.loadingCount++;
+          return this.loadMetadata().then( function() {
+            CnHttpFactory.instance( {
+              path: thisRef.getServiceCollectionPath().replace( 'phone', 'address' ),
+              data: {
+                select: { column: [ 'id', 'summary' ] },
+                modifier: { order: 'rank' }
+              }
+            } ).query().then( function success( response ) {
+              thisRef.metadata.columnList.address_id.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                thisRef.metadata.columnList.address_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].summary
+                } );
+              }
+            } ).then( function() {
+              thisRef.metadata.loadingCount--;
+            } );
+          } );
+        };
       };
 
       return {

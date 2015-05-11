@@ -46,6 +46,13 @@ class module extends \cenozo\service\module
       $month = strtolower( $util_class_name::get_datetime_object( NULL, true )->format( 'F' ) );
       $select->add_column( $month, 'available' );
     }
+
+    // add the "summary" column if needed
+    if( $select->has_column( 'summary' ) )
+    {
+      if( !$modifier->has_join( 'region' ) ) $modifier->join( 'region', 'address.region_id', 'region.id' );
+      $select->add_column( 'CONCAT( rank, ". ", city, ", ", region.name )', 'summary', false );
+    }
   }
 
   /**
