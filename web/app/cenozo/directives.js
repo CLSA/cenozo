@@ -473,9 +473,13 @@ cenozo.directive( 'cnRecordAdd', [
         };
       },
       link: function( scope, element, attrs ) {
-        scope.heading = undefined === attrs.heading
-                      ? 'Create ' + scope.model.name.singular.ucWords()
-                      : attrs.heading;
+        scope.heading = attrs.heading;
+        if( undefined === scope.heading ) {
+          var parentSubject = scope.model.getParentSubject();
+          scope.heading = 'Create ';
+          scope.heading += parentSubject ? parentSubject.ucWords() + ' ' : '';
+          scope.heading += scope.model.name.singular.ucWords();
+        }
 
         // get the input array and add enum lists for boolean types
         scope.inputArray = scope.model.getInputArray( scope.removeInputs );
@@ -666,9 +670,12 @@ cenozo.directive( 'cnRecordView',
         };
       },
       link: function( scope, element, attrs ) {
-        scope.heading = undefined === attrs.heading
-                      ? scope.model.name.singular.ucWords() + ' Details'
-                      : attrs.heading;
+        scope.heading = attrs.heading;
+        if( undefined === scope.heading ) {
+          var parentSubject = scope.model.getParentSubject();
+          scope.heading = parentSubject ? parentSubject.ucWords() + ' ' : '';
+          scope.heading += scope.model.name.singular.ucWords() + ' Details';
+        }
 
         var recordLoaded = false;
         scope.inputArray = scope.model.getInputArray( scope.removeInputs );

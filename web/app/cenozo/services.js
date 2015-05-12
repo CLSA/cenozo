@@ -436,6 +436,11 @@ cenozo.factory( 'CnBaseModelFactory', [
           return identifierObject;
         };
         
+        object.getParentSubject = function() {
+          var subjectList = Object.keys( this.getParentIdentifierObject() );
+          return 0 < subjectList.length ? subjectList[0] : null;
+        };
+
         // Helper functions to get service paths
         object.getServiceCollectionPath = function() {
           var path = '';
