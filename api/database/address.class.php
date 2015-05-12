@@ -37,6 +37,35 @@ class address extends has_rank
   }
 
   /**
+   * Extend parent method
+   */
+  public static function get_unique_record( $column, $value )
+  {
+    $record = NULL;
+
+    // make use of the uq_alternate_id_participant_id_rank pseudo unique key
+    if( is_array( $column ) && 2 == count( $column ) && in_array( 'rank', $column ) &&
+        ( in_array( 'participant_id', $column ) || in_array( 'alternate_id', $column ) ) )
+    {
+      $select = lib::create( 'database\select' );
+      $select->from( static::get_table_name() );
+      $select->add_column( static::get_primary_key_name() );
+      $modifier = lib::create( 'database\modifier' );
+      foreach( $column as $index => $name ) $modifier->where( $name, '=', $value[$index] );
+
+      // this returns null if no records are found
+      $id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+      if( !is_null( $id ) ) $record = new static( $id );
+    }
+    else
+    {
+      $record = parent::get_unique_record( $column, $value );
+    }
+
+    return $record;
+  }
+
+  /**
    * Add space in postcodes if needed by overriding the magic __set method
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
