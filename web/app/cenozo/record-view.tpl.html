@@ -1,5 +1,5 @@
 <div class="container-fluid bg-primary rounded-top">
-  <h4>{{ heading }} <span>
+  <h4>{{ heading }} <span ng-if="!isComplete">(Loading...)</span></h4>
 </div>
 <form name="form" class="form-horizontal" novalidate>
   <div class="form-body">

@@ -158,7 +158,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.total = 0;
         object.cache = [];
         object.cnPagination = CnPaginationFactory.instance();
-        object.loading = false;
+        object.isLoading = false;
 
         object.orderBy = function( column ) {
           if( null === this.order || column != this.order.column ) {
@@ -202,7 +202,7 @@ cenozo.factory( 'CnBaseListFactory', [
 
           return record.chosen ?
             CnHttpFactory.instance( {
-              path: this.parentModel.getServiceResourcePath()
+              path: this.parentModel.getServiceResourcePath( record.id )
             } ).delete().then( function success( response ) { record.chosen = 0; } ) :
             CnHttpFactory.instance( {
               path: this.parentModel.getServiceCollectionPath(), data: record.id
@@ -256,7 +256,7 @@ cenozo.factory( 'CnBaseListFactory', [
             data.modifier.order[column] = this.order.reverse;
           }
 
-          this.loading = true;
+          this.isLoading = true;
           var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceCollectionPath(),
@@ -265,7 +265,7 @@ cenozo.factory( 'CnBaseListFactory', [
             thisRef.cache = thisRef.cache.concat( response.data );
             thisRef.total = response.headers( 'Total' );
           } ).then( function done() {
-            thisRef.loading = false;
+            thisRef.isLoading = false;
           } );
         };
 

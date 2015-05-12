@@ -85,7 +85,10 @@ class post extends write
    */
   protected function get_leaf_record()
   {
-    if( is_null( $this->new_record ) )
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
+      
+    if( is_null( $this->new_record ) &&
+        $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )
     {
       // create a record for the LAST collection
       $object = $this->get_file_as_object();

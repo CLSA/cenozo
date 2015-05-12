@@ -109,8 +109,14 @@ class query extends read
     $parent_record_method = sprintf( 'get_%s_list', $leaf_subject );
     $modifier = clone $this->modifier;
 
-    return is_null( $parent_record ) || $this->get_argument( 'choosing', false ) ?
-           $record_class_name::select( $this->select, $modifier ) :
-           $parent_record->$parent_record_method( $this->select, $modifier );
+    $list = is_null( $parent_record ) || $this->get_argument( 'choosing', false )
+          ? $record_class_name::select( $this->select, $modifier )
+          : $parent_record->$parent_record_method( $this->select, $modifier );
+
+    // format the chosen column as a boolean
+    if( $this->get_argument( 'choosing', false ) )
+      foreach( $list as $index => $row ) $list[$index]['chosen'] = 1 == $row['chosen'];
+
+    return $list;
   }
 }
