@@ -1032,7 +1032,8 @@ abstract class record extends \cenozo\base_object
     $record = NULL;
 
     // if the column is ID then there's no need to search for unique keys
-    if( 'id' == $column ) return new static( $value );
+    if( 'id' == $column || ( is_array( $column ) && 1 == count( $column ) && 'id' == $column[0] ) )
+      return new static( $value );
     
     // create an associative array from the column/value arguments and sort
     if( is_array( $column ) && is_array( $value ) )
