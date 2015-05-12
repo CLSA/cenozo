@@ -416,7 +416,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.viewEnabled = false;
 
         // override this method to use a custom identifier
-        object.getIdentifierFromRecord = function( record ) { return record.id; };
+        object.getIdentifierFromRecord = function( record ) { return String( record.id ); };
 
         // returns an object containing a subject => identifier pair
         object.getParentIdentifierObject = function() {

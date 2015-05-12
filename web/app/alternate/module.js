@@ -20,7 +20,7 @@ define( {
       type: 'string'
     },
     alternate: {
-      title: 'Alternate',
+      title: 'Alternate Contact',
       type: 'boolean'
     },
     informant: {

@@ -634,6 +634,8 @@ class database extends \cenozo\base_object
    */
   public function format_datetime( $datetime )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // convert string to datetime object
     if( is_string( $datetime ) && 0 < strlen( $datetime ) )
       $datetime = $util_class_name::get_datetime_object( $datetime );
@@ -652,9 +654,11 @@ class database extends \cenozo\base_object
    */
   public function format_date( $date )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // convert string to date object
     if( is_string( $date ) && 0 < strlen( $date ) )
-      $date = $util_class_name::get_date_object( $date );
+      $date = $util_class_name::get_datetime_object( $date );
     return $date instanceof \DateTime ? '"'.$date->format( 'Y-m-d' ).'"' : 'NULL';
   }
   
@@ -670,9 +674,11 @@ class database extends \cenozo\base_object
    */
   public function format_time( $time )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // convert string to time object
     if( is_string( $time ) && 0 < strlen( $time ) )
-      $time = $util_class_name::get_time_object( $time );
+      $time = $util_class_name::get_datetime_object( $time );
     return $time instanceof \DateTime ? '"'.$time->format( 'H:i:s' ).'"' : 'NULL';
   }
   
