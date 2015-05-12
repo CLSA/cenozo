@@ -52,6 +52,9 @@ define( [
 
         this.enableDelete( true );
         this.enableView( true );
+
+        // customize identifier
+        this.getIdentifierFromRecord = function( record ) { return 'code=' + record.code; };
       };
 
       return {

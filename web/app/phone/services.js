@@ -47,6 +47,9 @@ define( [
         this.enableDelete( true );
         this.enableView( true );
 
+        // customize identifier
+        this.getIdentifierFromRecord = function( record ) { return 'rank=' + record.rank; };
+
         // extend getMetadata
         var thisRef = this;
         this.getMetadata = function() {

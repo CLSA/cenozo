@@ -80,7 +80,7 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
   for( var i = 0; i < module.actions.length; i++ ) {
     var action = module.actions[i];
     var url = '/' + action;
-    if( 'view' == action ) url += '/{id}';
+    if( 'view' == action ) url += '/{identifier}';
     var templateUrl = baseUrl + action + '.tpl.html';
 
     $stateProvider.state( name + '.' + action, {
@@ -97,13 +97,13 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
     if( 0 <= cnFrameworkModuleList.indexOf( child ) ) baseChildUrl = cnCenozoUrl + '/' + baseChildUrl;
 
     $stateProvider.state( name + '.add_' + child, {
-      url: '/view/{parentId}/' + child,
+      url: '/view/{parentIdentifier}/' + child,
       controller: ( child + '_add_ctrl' ).snakeToCamel( true ),
       templateUrl: baseChildUrl + 'add.tpl.html'
     } );
 
     $stateProvider.state( name + '.view_' + child, {
-      url: '/view/{parentId}/' + child + '/{id}',
+      url: '/view/{parentIdentifier}/' + child + '/{identifier}',
       controller: ( child + '_view_ctrl' ).snakeToCamel( true ),
       templateUrl: baseChildUrl + 'view.tpl.html'
     } );

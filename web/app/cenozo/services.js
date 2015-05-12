@@ -202,10 +202,10 @@ cenozo.factory( 'CnBaseListFactory', [
 
           return record.chosen ?
             CnHttpFactory.instance( {
-              path: this.parentModel.getServiceResourcePath( record.id )
+              path: this.parentModel.getServiceResourcePath( record.getIdentifier() )
             } ).delete().then( function success( response ) { record.chosen = 0; } ) :
             CnHttpFactory.instance( {
-              path: this.parentModel.getServiceCollectionPath(), data: record.id
+              path: this.parentModel.getServiceCollectionPath(), data: record.getIdentifier()
             } ).post().then( function success( response ) { record.chosen = 1; } );
         };
 
@@ -213,18 +213,18 @@ cenozo.factory( 'CnBaseListFactory', [
          * Must be called by the onDelete() function in order to delete a record from the server.
          * This function should not be changed, override the onDelete() function instead.
          * 
-         * @param int id: The id of the record to delete
+         * @param object record: The record to delete
          * @return promise
          */
-        object.deleteRecord = function( id ) {
+        object.deleteRecord = function( record ) {
           if( !this.parentModel.deleteEnabled ) throw 'Calling deleteRecord() but deleteEnabled is false';
 
           var thisRef = this;
           return CnHttpFactory.instance( {
-            path: this.parentModel.getServiceResourcePath( id ),
+            path: this.parentModel.getServiceResourcePath( record.getIdentifier() ),
           } ).delete().then( function success( response ) {
             for( var i = 0; i < thisRef.cache.length; i++ ) {
-              if( thisRef.cache[i].id == id ) {
+              if( thisRef.cache[i].getIdentifier() == record.getIdentifier() ) {
                 thisRef.total--;
                 return thisRef.cache.splice( i, 1 );
               }
@@ -262,6 +262,10 @@ cenozo.factory( 'CnBaseListFactory', [
             path: this.parentModel.getServiceCollectionPath(),
             data: data
           } ).query().then( function success( response ) {
+            for( var i = 0; i < response.data.length; i++ )
+              response.data[i].getIdentifier = function() {
+                return thisRef.parentModel.getIdentifierFromRecord( this );
+              };
             thisRef.cache = thisRef.cache.concat( response.data );
             thisRef.total = response.headers( 'Total' );
           } ).then( function done() {
@@ -282,7 +286,7 @@ cenozo.factory( 'CnBaseListFactory', [
          * @return promise
          */
         object.onChoose = function( record ) { return this.chooseRecord( record ); };
-        object.onDelete = function( id ) { return this.deleteRecord( id ); };
+        object.onDelete = function( record ) { return this.deleteRecord( record ); };
         object.onList = function( replace ) { return this.listRecords( replace ); };
       }
     };
@@ -341,6 +345,9 @@ cenozo.factory( 'CnBaseViewFactory', [
             data: getServiceData( this.parentModel.subject, this.parentModel.inputList )
           } ).get().then( function success( response ) {
             thisRef.record = response.data;
+            thisRef.record.getIdentifier = function() {
+              return thisRef.parentModel.getIdentifierFromRecord( this );
+            };
             thisRef.parentModel.metadata.loadingCount++;
 
             return thisRef.parentModel.getMetadata().then( function() {
@@ -408,61 +415,73 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.deleteEnabled = false;
         object.viewEnabled = false;
 
-        object.getId = function() {
-          if( undefined === $stateParams.id ) throw 'Unable to determine id';
-          return $stateParams.id;
-        };
-        
-        object.getParentIdentifier = function() {
+        // override this method to use a custom identifier
+        object.getIdentifierFromRecord = function( record ) { return record.id; };
+
+        // returns an object containing a subject => identifier pair
+        object.getParentIdentifierObject = function() {
           var stateNameParts = $state.current.name.split( '.' );
           var len = stateNameParts.length;
           if( 2 > len ) throw 'State "' + $state.current.name + '" is expected to have at least 2 parts';
 
-          var parentIdentifier = {};
+          var identifierObject = {};
           if( stateNameParts[len-2] != this.subject ) {
             var parentSubject = stateNameParts[len-2];
-            var parentId = undefined !== $stateParams.parentId ? $stateParams.parentId : $stateParams.id;
-            parentIdentifier[parentSubject] = parentId;
+            var parentIdentifier = undefined !== $stateParams.parentIdentifier
+                                 ? $stateParams.parentIdentifier
+                                 : $stateParams.identifier;
+            identifierObject[parentSubject] = parentIdentifier;
           }
-          return parentIdentifier;
+
+          return identifierObject;
         };
         
         // Helper functions to get service paths
         object.getServiceCollectionPath = function() {
           var path = '';
-          var parentIdentifier = this.getParentIdentifier();
+          var parentIdentifier = this.getParentIdentifierObject();
           for( var property in parentIdentifier ) path += property + '/' + parentIdentifier[property] + '/';
           return path + module.subject;
         }
         object.getServiceResourcePath = function( resource ) {
-          var id = undefined === resource ? $stateParams.id : resource;
-          return this.getServiceCollectionPath() + '/' + id;
+          var identifier = undefined === resource ? $stateParams.identifier : resource;
+          return this.getServiceCollectionPath() + '/' + identifier;
         }
 
         // helper functions based on the state
+        object.reloadState = function( record ) {
+          if( undefined === record ) {
+            $state.reload();
+          } else {
+            $stateParams.identifier = record.getIdentifier();
+            $state.transitionTo( $state.current, $stateParams, { reload: true } );
+          }
+        };
         object.transitionToLastState = function() {
           var stateName = $state.current.name;
           var action = stateName.substring( stateName.lastIndexOf( '.' ) + 1 );
           if( 'add' == action || 'view' == action ) {
             $state.go( '^.list' );
           } else { // sub-view, return to parent view
-            $state.go( '^.view', { id: $stateParams.parentId } );
+            $state.go( '^.view', { identifier: $stateParams.parentIdentifier } );
           }
         };
         object.transitionToAddState = function() {
           var stateName = $state.current.name;
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
-            $state.go( '^.add_' + this.subject, { parentId: $stateParams.id } );
+            $state.go( '^.add_' + this.subject, { parentIdentifier: $stateParams.identifier } );
           } else { // adding to a view state
             $state.go( '^.add' );
           }
         };
-        object.transitionToViewState = function( id ) {
+        object.transitionToViewState = function( record ) {
           var stateName = $state.current.name;
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
-            $state.go( '^.view_' + this.subject, { parentId: $stateParams.id, id: id } );
+            $state.go( '^.view_' + this.subject, {
+              parentIdentifier: $stateParams.identifier, identifier: record.getIdentifier()
+            } );
           } else {
-            $state.go( this.subject + '.view', { id: id } );
+            $state.go( this.subject + '.view', { identifier: record.getIdentifier() } );
           }
         };
         object.transitionToErrorState = function( response ) {
@@ -479,7 +498,7 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           // make a copy of the input list and remove any parent column(s)
           var inputObjectList = cnCopy( this.inputList );
-          for( var property in this.getParentIdentifier() ) delete inputObjectList[property+'_id'];
+          for( var property in this.getParentIdentifierObject() ) delete inputObjectList[property+'_id'];
 
           // create an array out of the input list
           var inputArray = [];

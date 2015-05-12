@@ -540,8 +540,8 @@ cenozo.directive( 'cnRecordList', [
         }
 
         if( $scope.model.deleteEnabled ) {
-          $scope.deleteRecord = function( id ) {
-            $scope.model.cnList.onDelete( id ).catch( function error( response ) {
+          $scope.deleteRecord = function( record ) {
+            $scope.model.cnList.onDelete( record ).catch( function error( response ) {
               $scope.model.transitionToErrorState( response );
             } );
           };
@@ -558,8 +558,8 @@ cenozo.directive( 'cnRecordList', [
         }
         
         if( $scope.model.viewEnabled ) {
-          $scope.selectRecord = function( id ) {
-            $scope.model.transitionToViewState( id );
+          $scope.selectRecord = function( record ) {
+            $scope.model.transitionToViewState( record );
           };
         }
       },
@@ -622,27 +622,32 @@ cenozo.directive( 'cnRecordView',
           data[property] = $scope.model.cnView.record[property];
           $scope.model.cnView.onPatch( data ).then(
             function success( response ) { 
-              var scope = angular.element(
-                angular.element( document.querySelector( '#' + property ) ) ).scope();
-              // if a conflict has been resolved then clear it throughout the form
-              var currentItem = scope.$parent.innerForm.name;
-              if( currentItem.$error.conflict ) {
-                var sibling = scope.$parent.$parent.$$childHead;
-                while( null !== sibling ) {
-                  var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
-                  if( siblingItem.$error.conflict ) { 
-                    siblingItem.$dirty = false;
-                    siblingItem.$invalid = false;
-                    siblingItem.$error.conflict = false;
+              // if the data in the identifier was patched then reload with the new url
+              if( 0 <= $scope.model.cnView.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
+                $scope.model.reloadState( $scope.model.cnView.record );
+              } else {
+                var scope = angular.element(
+                  angular.element( document.querySelector( '#' + property ) ) ).scope();
+                // if a conflict has been resolved then clear it throughout the form
+                var currentItem = scope.$parent.innerForm.name;
+                if( currentItem.$error.conflict ) {
+                  var sibling = scope.$parent.$parent.$$childHead;
+                  while( null !== sibling ) {
+                    var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
+                    if( siblingItem.$error.conflict ) { 
+                      siblingItem.$dirty = false;
+                      siblingItem.$invalid = false;
+                      siblingItem.$error.conflict = false;
+                    }
+                    sibling = sibling.$$nextSibling;
                   }
-                  sibling = sibling.$$nextSibling;
                 }
-              }
 
-              /* Removing the following because it was interfering with $error.required
-              // now clean up this property's form elements
-              currentItem.$error = {};
-              */
+                /* Removing the following because it was interfering with $error.required
+                // now clean up this property's form elements
+                currentItem.$error = {};
+                */
+              }
             },
             function error( response ) { 
               if( 409 == response.status ) { 
@@ -695,7 +700,7 @@ cenozo.directive( 'cnRecordView',
                 input.enumList = 'boolean' === input.type
                                ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
                                : metadata.columnList[key].enumList.slice();
-                if( !metadata.columnList[key].required ) input.enumList.unshift( { value: '', name: '' } );
+                if( !metadata.columnList[key].required ) input.enumList.unshift( { value: '', name: '(none)' } );
               }
             }
             metadataLoaded = true;

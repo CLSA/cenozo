@@ -50,7 +50,7 @@
                    | limitTo: ( model.cnList.cnPagination.currentPage - 1 ) * model.cnList.cnPagination.itemsPerPage -
                               model.cnList.cache.length
                    | limitTo: model.cnList.cnPagination.itemsPerPage"
-        ng-click="model.chooseEnabled ? chooseRecord( record ) : selectRecord( record.id )"
+        ng-click="model.chooseEnabled ? chooseRecord( record ) : selectRecord( record )"
         ng-class="{ success:model.cnList.chooseMode && record.chosen }">
         <td ng-repeat="column in columnArray">
           <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
@@ -60,7 +60,7 @@
             <button class="btn btn-xs btn-danger"
                     cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
                                        item in the {{ model.name.singular }} list?"
-                    cn-really-click="deleteRecord( record.id )"
+                    cn-really-click="deleteRecord( record )"
                     ng-click="$event.stopPropagation()">
               <i class="glyphicon glyphicon-remove"></i>
             </button>

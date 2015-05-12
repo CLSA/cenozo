@@ -92,6 +92,9 @@ define( [
         this.enableDelete( true );
         this.enableView( true );
 
+        // customize identifier
+        this.getIdentifierFromRecord = function( record ) { return 'uid=' + record.uid; };
+
         // extend getMetadata
         var thisRef = this;
         this.getMetadata = function() {
