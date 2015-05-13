@@ -54,7 +54,7 @@ class delete extends write
         {
           if( $e->is_constrained() )
           {
-            $this->data = $e->get_duplicate_columns( $leaf_record->get_class_name() );
+            $this->data = $e->get_failed_constraint_table();
             $this->status->set_code( 409 );
           }
           else

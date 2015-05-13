@@ -33,6 +33,10 @@ define( {
     }
   },
   columnList: {
+    uid: {
+      column: 'participant.uid',
+      title: 'Participant'
+    },
     first_name: {
       column: 'alternate.first_name',
       title: 'First Name'
@@ -49,7 +53,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'last_name',
+    column: 'participant.uid',
     reverse: false
   } 
 } );

@@ -468,7 +468,7 @@ cenozo.directive( 'cnRecordAdd', [
               modifier: { where: where }
             }
           } ).get().then( function( response ) {
-            return response.data;
+            return cnCopy( response.data );
           } );
         };
       },
@@ -499,22 +499,45 @@ cenozo.directive( 'cnRecordAdd', [
         // watch for changes in metadata (created asynchronously by the service)
         scope.isComplete = false;
         scope.$watch( 'model.metadata', function( metadata ) {
-          if( undefined !== metadata &&
-              undefined !== metadata.columnList &&
-              0 === metadata.loadingCount &&
-              !scope.isComplete ) {
+          if( undefined !== metadata && 0 === metadata.loadingCount && !scope.isComplete ) {
+            for( var i = 0; i < scope.inputArray.length; i++ ) {
+              var input = scope.inputArray[i];
+              var meta = metadata.columnList[input.key];
+              if( undefined !== meta && undefined !== meta.enumList ) {
+                input.enumList = meta.enumList;
+                
+                input.enumList.unshift( {
+                  value: undefined,
+                  name: meta.required ? '(Select ' + input.title + ')' : '(none)'
+                } );
+
+                // add additional rank
+                if( 'rank' == input.key ) input.enumList.push( {
+                  value: input.enumList.length,
+                  name: input.enumList.length
+                } );
+              }
+            }
+
+/*
             for( var key in metadata.columnList ) {
+              console.log( 'key: ' + key );
               if( undefined !== metadata.columnList[key].enumList ) {
+                console.log( metadata.columnList[key].enumList );
                 var input = scope.inputArray.findByProperty( 'key', key );
+                console.log( input );
                 if( input && undefined === input.enumList ) {
                   input.enumList = metadata.columnList[key].enumList;
                   input.enumList.unshift( {
                     value: undefined,
                     name: metadata.columnList[key].required ? '(Select ' + input.title + ')' : '(none)'
                   } );
+                  console.log( input.enumList );
                 }
               }
             }
+*/
+
             scope.isComplete = true;
           }
         }, true );
@@ -529,8 +552,8 @@ cenozo.directive( 'cnRecordAdd', [
  * @attr removeColumns: An array of columns (by key) to remove from the list
  */
 cenozo.directive( 'cnRecordList', [
-  'CnModalRestrictFactory',
-  function( CnModalRestrictFactory ) {
+  'CnModalMessageFactory', 'CnModalRestrictFactory',
+  function( CnModalMessageFactory, CnModalRestrictFactory ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-list.tpl.html',
       restrict: 'E',
@@ -546,7 +569,17 @@ cenozo.directive( 'cnRecordList', [
         if( $scope.model.deleteEnabled ) {
           $scope.deleteRecord = function( record ) {
             $scope.model.cnList.onDelete( record ).catch( function error( response ) {
-              $scope.model.transitionToErrorState( response );
+              if( 409 == response.status ) {
+                CnModalMessageFactory.instance( {
+                  title: 'Unable to delete ' + $scope.model.name.singular + ' record',
+                  message: 'It is not possible to delete this ' + $scope.model.name.singular +
+                           ' record because it is being referenced by "' + response.data +
+                           '" in the database.',
+                  error: true
+                } ).show();
+              } else {
+                $scope.model.transitionToErrorState( response );
+              }
             } );
           };
         }
@@ -616,7 +649,7 @@ cenozo.directive( 'cnRecordView',
 
         $scope.delete = function() {
           $scope.model.cnView.onDelete().then(
-            function success( response ) { $scope.model.transitionToLastState(); },
+            function success() { $scope.model.transitionToLastState(); },
             function error( response ) { $scope.model.transitionToErrorState( response ); }
           );
         };
@@ -625,7 +658,7 @@ cenozo.directive( 'cnRecordView',
           var data = {};
           data[property] = $scope.model.cnView.record[property];
           $scope.model.cnView.onPatch( data ).then(
-            function success( response ) { 
+            function success() { 
               // if the data in the identifier was patched then reload with the new url
               if( 0 <= $scope.model.cnView.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
                 $scope.model.reloadState( $scope.model.cnView.record );

@@ -321,9 +321,11 @@ final class bootstrap
       foreach( $service->get_headers() as $name => $header )
         header( sprintf( '%s: %s', $name, $util_class_name::json_encode( $header ) ) );
 
-      if( 'HEAD' != $this->method && !is_null( $service->get_data() ) )
+      $data = $service->get_data();
+      if( 'HEAD' != $this->method && !is_null( $data ) )
       {
-        $json_output = $util_class_name::json_encode( $service->get_data() );
+        $json_output = is_string( $data ) ? $data : $util_class_name::json_encode( $data );
+
         header( 'Content-Type: application/json' );
         header( 'Content-Length: '.strlen( $json_output ) );
         print $json_output;

@@ -20,10 +20,10 @@ cenozo.factory( 'CnAppSingleton', [
       this.promise = CnHttpFactory.instance( {
         path: 'self/0'
       } ).get().then( function success( response ) {
-        thisRef.application = response.data.application;
-        thisRef.user = response.data.user;
-        thisRef.site = response.data.site;
-        thisRef.role = response.data.role;
+        thisRef.application = cnCopy( response.data.application );
+        thisRef.user = cnCopy( response.data.user );
+        thisRef.site = cnCopy( response.data.site );
+        thisRef.role = cnCopy( response.data.role );
         cnConvertFromDatabaseRecord( thisRef.user.last_activity );
 
         // process access records
@@ -109,26 +109,6 @@ cenozo.factory( 'CnBaseAddFactory', [
                                ? 1 == thisRef.parentModel.metadata.columnList[column].default
                                : thisRef.parentModel.metadata.columnList[column].default;
 
-            // get rank information, if needed, and set the default value to the highest rank
-            var promise = null;
-            if( undefined !== thisRef.parentModel.inputList.rank ) {
-              thisRef.parentModel.metadata.loadingCount++;
-              CnHttpFactory.instance( {
-                path: thisRef.parentModel.getServiceCollectionPath(),
-                data: { select: { column: { column: 'MAX(rank)', alias: 'max', table_prefix: false } } }
-              } ).query().then( function success( response ) {
-                if( 0 < response.data.length ) {
-                  var max = parseInt( response.data[0].max );
-                  thisRef.parentModel.metadata.columnList.rank.enumList = [];
-                  for( var rank = 1; rank <= max + 1; rank++ )
-                    thisRef.parentModel.metadata.columnList.rank.enumList.push( { value: rank, name: rank } );
-                  record.rank = thisRef.parentModel.metadata.columnList.rank.default = max + 1;
-                }
-                // signal that we are done loading metadata
-                thisRef.parentModel.metadata.loadingCount--;
-              } );
-            }
-
             // signal that we are done loading metadata
             thisRef.parentModel.metadata.loadingCount--;
           } );
@@ -203,10 +183,10 @@ cenozo.factory( 'CnBaseListFactory', [
           return record.chosen ?
             CnHttpFactory.instance( {
               path: this.parentModel.getServiceResourcePath( record.getIdentifier() )
-            } ).delete().then( function success( response ) { record.chosen = 0; } ) :
+            } ).delete().then( function success() { record.chosen = 0; } ) :
             CnHttpFactory.instance( {
               path: this.parentModel.getServiceCollectionPath(), data: record.getIdentifier()
-            } ).post().then( function success( response ) { record.chosen = 1; } );
+            } ).post().then( function success() { record.chosen = 1; } );
         };
 
         /**
@@ -222,7 +202,7 @@ cenozo.factory( 'CnBaseListFactory', [
           var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath( record.getIdentifier() ),
-          } ).delete().then( function success( response ) {
+          } ).delete().then( function success() {
             for( var i = 0; i < thisRef.cache.length; i++ ) {
               if( thisRef.cache[i].getIdentifier() == record.getIdentifier() ) {
                 thisRef.total--;
@@ -262,10 +242,12 @@ cenozo.factory( 'CnBaseListFactory', [
             path: this.parentModel.getServiceCollectionPath(),
             data: data
           } ).query().then( function success( response ) {
-            for( var i = 0; i < response.data.length; i++ )
+            // add the getIdentifier() method to each row before adding it to the cache
+            for( var i = 0; i < response.data.length; i++ ) {
               response.data[i].getIdentifier = function() {
                 return thisRef.parentModel.getIdentifierFromRecord( this );
               };
+            }
             thisRef.cache = thisRef.cache.concat( response.data );
             thisRef.total = response.headers( 'Total' );
           } ).then( function done() {
@@ -338,13 +320,13 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.viewRecord = function() {
           if( !this.parentModel.viewEnabled ) throw 'Calling viewRecord() but viewEnabled is false';
 
-          this.record = {};
+          //this.record = {};
           var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath(),
             data: getServiceData( this.parentModel.subject, this.parentModel.inputList )
           } ).get().then( function success( response ) {
-            thisRef.record = response.data;
+            thisRef.record = cnCopy( response.data );
             thisRef.record.getIdentifier = function() {
               return thisRef.parentModel.getIdentifierFromRecord( this );
             };
@@ -354,31 +336,10 @@ cenozo.factory( 'CnBaseViewFactory', [
               // convert blank enums into empty strings (for ng-options)
               for( var column in thisRef.parentModel.inputList ) {
                 var inputObject = thisRef.parentModel.inputList[column];
-                var metadata = thisRef.parentModel.metadata.columnList[column];
-                var notRequired =
-                  ( undefined !== metadata && !metadata.required ) ||
-                  undefined === inputObject.required ||
-                  !inputObject.required;
-                if( notRequired && 'enum' == inputObject.type && null === thisRef.record[column] )
-                  thisRef.record[column] = '';
-              }
-
-              // get rank information, if needed
-              var promise = null;
-              if( undefined !== thisRef.parentModel.inputList.rank ) {
-                thisRef.parentModel.metadata.loadingCount++;
-                CnHttpFactory.instance( {
-                  path: thisRef.parentModel.getServiceCollectionPath(),
-                  data: { select: { column: { column: 'MAX(rank)', alias: 'max', table_prefix: false } } }
-                } ).query().then( function success( response ) {
-                  if( 0 < response.data.length ) {
-                    thisRef.parentModel.metadata.columnList.rank.enumList = [];
-                    for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ )
-                      thisRef.parentModel.metadata.columnList.rank.enumList.push( { value: rank, name: rank } );
-                  }
-                  // signal that we are done loading metadata
-                  thisRef.parentModel.metadata.loadingCount--;
-                } );
+                if( 'enum' == inputObject.type && null === thisRef.record[column] ) {
+                  var metadata = thisRef.parentModel.metadata.columnList[column];
+                  if( undefined !== metadata && !metadata.required ) thisRef.record[column] = '';
+                }
               }
 
               // signal that we are done loading metadata
@@ -558,9 +519,8 @@ cenozo.factory( 'CnBaseModelFactory', [
           } ).head().then( function( response ) {
             var columnList = JSON.parse( response.headers( 'Columns' ) );
             for( var column in columnList ) {
-              // parse out the enum values
               columnList[column].required = '1' == columnList[column].required;
-              if( 'enum' == columnList[column].data_type ) {
+              if( 'enum' == columnList[column].data_type ) { // parse out the enum values
                 columnList[column].enumList = [];
                 var enumList = columnList[column].type.replace( /^enum\(['"]/i, '' )
                                                     .replace( /['"]\)$/, '' )
@@ -574,6 +534,23 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
             thisRef.metadata.columnList = columnList;
+
+            if( undefined !== thisRef.metadata.columnList.rank ) { // create enum for rank columns
+              thisRef.metadata.loadingCount++;
+              CnHttpFactory.instance( {
+                path: thisRef.getServiceCollectionPath(),
+                data: { select: { column: { column: 'MAX(rank)', alias: 'max', table_prefix: false } } }
+              } ).query().then( function success( response ) {
+                if( 0 < response.data.length ) {
+                  thisRef.metadata.columnList.rank.enumList = [];
+                  if( null !== response.data[0].max )
+                    for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ )
+                      thisRef.metadata.columnList.rank.enumList.push( { value: rank, name: rank } );
+                }
+                // signal that we are done loading metadata
+                thisRef.metadata.loadingCount--;
+              } );
+            }
             thisRef.metadata.loadingCount--;
           } );
         };
@@ -658,6 +635,7 @@ cenozo.service( 'CnModalMessageFactory', [
     var object = function( params ) {
       this.title = 'Title';
       this.message = 'Message';
+      this.error = false;
       cnCopyParams( this, params );
     };
 

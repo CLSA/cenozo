@@ -46,6 +46,30 @@ class database extends base_exception
   }
 
   /**
+   * Returns whether the exception was thrown because of a failed constrained key.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_constrained()
+  {
+    return DATABASE_CENOZO_BASE_ERRNO + 1451 == $this->get_number();
+  }
+  
+  /**
+   * Returns whether the exception was thrown because a column which cannot be null is not set.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_missing_data()
+  {
+    return DATABASE_CENOZO_BASE_ERRNO + 1048  == $this->get_number();
+  }
+
+  /**
    * If the exception is a duplicate entry this returns the columns in the unique key
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -74,27 +98,22 @@ class database extends base_exception
   }
 
   /**
-   * Returns whether the exception was thrown because of a failed constrained key.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return boolean
-   * @access public
+   * TODO: document
    */
-  public function is_constrained()
+  public function get_failed_constraint_table()
   {
-    return DATABASE_CENOZO_BASE_ERRNO + 1451 == $this->get_number();
-  }
-  
-  /**
-   * Returns whether the exception was thrown because a column which cannot be null is not set.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return boolean
-   * @access public
-   */
-  public function is_missing_data()
-  {
-    return DATABASE_CENOZO_BASE_ERRNO + 1048  == $this->get_number();
+    if( !$this->is_constrained() ) return NULL;
+
+    $matches = array();
+    $result = array();
+    $offset = 0;
+    while( preg_match( '/`[a-z_]+`/', $this->get_raw_message(), $result, PREG_OFFSET_CAPTURE, $offset ) )
+    {
+      $matches[] = substr( $result[0][0], 1, -1 );
+      $offset = $result[0][1] + 1;
+    }
+    
+    return 2 <= count( $matches ) ? $matches[1] : NULL;
   }
 
   /**

@@ -23,8 +23,8 @@ class module extends \cenozo\service\module
 
     if( $valid )
     {
-      // addresses can only be listed in the context of a participant
-      $valid = 'participant' == $this->get_parent_subject();
+      // addresses can only be listed in the context of an alternate or participant
+      $valid = in_array( $this->get_parent_subject(), array( 'alternate', 'participant' ) );
     }
 
     return $valid;

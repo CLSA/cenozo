@@ -151,8 +151,10 @@ class ui extends \cenozo\base_object
     // add child actions to certain modules
     if( array_key_exists( 'application', $module_list ) )
       $module_list['application']['children'] = array( 'cohort', 'role', 'site' );
+    if( array_key_exists( 'alternate', $module_list ) )
+      $module_list['alternate']['children'] = array( 'address', 'phone' );
     if( array_key_exists( 'participant', $module_list ) )
-      $module_list['participant']['children'] = array( 'address', 'alternate', 'consent', 'event', 'phone' );
+      $module_list['participant']['children'] = array( 'address', 'consent', 'event', 'phone' );
     if( array_key_exists( 'site', $module_list ) )
       $module_list['site']['children'] = array( 'access' );
     if( array_key_exists( 'state', $module_list ) )
@@ -178,6 +180,7 @@ class ui extends \cenozo\base_object
     $list = array(
       'activity' => 'Activities',
       'application' => 'Applications',
+      'alternate' => 'Alternates',
       'collection' => 'Collections',
       'language' => 'Languages',
       'participant' => 'Participants',

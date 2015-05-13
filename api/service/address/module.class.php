@@ -51,7 +51,8 @@ class module extends \cenozo\service\module
     if( $select->has_column( 'summary' ) )
     {
       if( !$modifier->has_join( 'region' ) ) $modifier->join( 'region', 'address.region_id', 'region.id' );
-      $select->add_column( 'CONCAT( rank, ". ", city, ", ", region.name )', 'summary', false );
+      $select->add_column(
+        'CONCAT( rank, ") ", CONCAT_WS( ", ", address1, address2, city, region.name ) )', 'summary', false );
     }
   }
 

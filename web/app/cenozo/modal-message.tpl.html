@@ -3,7 +3,7 @@
     <button type="button" class="close" ng-click="local.close()">&times;</button>
     <h4 class="modal-title">{{ local.title }}</h4>
   </div>
-  <div class="modal-body">{{ local.message }}</div>
+  <div class="modal-body" ng-class="{ 'text-danger': local.error }">{{ local.message }}</div>
   <div class="modal-footer">
     <button type="submit" class="btn btn-primary">Close</button>
   </div>

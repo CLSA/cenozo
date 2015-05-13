@@ -64,8 +64,8 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAlternateModelFactory', [
-    'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
-    function( CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory ) {
+    '$state', 'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
+    function( $state, CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnAlternateAddFactory.instance( this );
@@ -75,6 +75,11 @@ define( [
         this.enableAdd( true );
         this.enableDelete( true );
         this.enableView( true );
+
+        // override parent method to always go directly to the root alternate state
+        this.transitionToViewState = function( record ) {
+          $state.go( this.subject + '.view', { identifier: record.getIdentifier() } );
+        };
       };
 
       return {
