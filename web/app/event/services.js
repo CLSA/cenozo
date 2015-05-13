@@ -34,7 +34,9 @@ define( [
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnEventModelFactory', [
     'CnBaseModelFactory', 'CnEventListFactory', 'CnEventAddFactory', 'CnEventViewFactory',
-    function( CnBaseModelFactory, CnEventListFactory, CnEventAddFactory, CnEventViewFactory ) {
+    'CnHttpFactory',
+    function( CnBaseModelFactory, CnEventListFactory, CnEventAddFactory, CnEventViewFactory,
+              CnHttpFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnEventAddFactory.instance( this );
@@ -44,6 +46,31 @@ define( [
         this.enableAdd( true );
         this.enableDelete( true );
         this.enableView( true );
+
+        // extend getMetadata
+        var thisRef = this;
+        this.getMetadata = function() {
+          this.metadata.loadingCount++;
+          return this.loadMetadata().then( function() {
+            CnHttpFactory.instance( {
+              path: 'event_type',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name' }
+              }
+            } ).query().then( function success( response ) {
+              thisRef.metadata.columnList.event_type_id.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                thisRef.metadata.columnList.event_type_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].name
+                } );
+              }
+            } ).then( function() {
+              thisRef.metadata.loadingCount--;
+            } );
+          } );
+        };
       };
 
       return {
