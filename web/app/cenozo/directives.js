@@ -118,8 +118,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  'CnHttpFactory',
-  function( CnHttpFactory ) {
+  '$window', 'CnHttpFactory',
+  function( $window, CnHttpFactory ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -128,7 +128,7 @@ cenozo.directive( 'cnRecordAdd', [
         removeInputs: '@'
       },
       controller: function( $scope ) {
-        $scope.back = function() { $scope.model.transitionToLastState(); };
+        $scope.back = function() { $window.history.back(); };
         $scope.submit = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
@@ -144,7 +144,7 @@ cenozo.directive( 'cnRecordAdd', [
               function success( response ) { 
                 $scope.model.cnAdd.onNew( $scope.$parent.record );
                 $scope.form.$setPristine();
-                $scope.model.transitionToLastState();
+                $window.history.back();
               },
               function error( response ) { 
                 if( 409 == response.status ) { 
@@ -350,8 +350,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  'CnModalDatetimeFactory', 'CnAppSingleton',
-  function( CnModalDatetimeFactory, CnAppSingleton ) {
+  '$window', 'CnModalDatetimeFactory', 'CnAppSingleton',
+  function( $window, CnModalDatetimeFactory, CnAppSingleton ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
@@ -360,13 +360,11 @@ cenozo.directive( 'cnRecordView', [
         removeInputs: '@'
       },
       controller: function( $scope ) {
-        $scope.back = function() {
-          $scope.model.transitionToLastState();
-        };
+        $scope.back = function() { $window.history.back(); };
 
         $scope.delete = function() {
           $scope.model.cnView.onDelete().then(
-            function success() { $scope.model.transitionToLastState(); },
+            function success() { $window.history.back(); },
             function error( response ) { $scope.model.transitionToErrorState( response ); }
           );
         };
@@ -501,14 +499,14 @@ cenozo.directive( 'cnSiteRoleSwitcher', [
       controller: function( $scope ) {
         $scope.setSite = function( id ) {
           CnAppSingleton.setSite( id ).then( function() {
-            // relist and set the url to the home state
+            // reload and set the url to the home state
             $window.location.assign( $window.location.pathname );
           } );
         }
 
         $scope.setRole = function( id ) {
           CnAppSingleton.setRole( id ).then( function() {
-            // relist and set the url to the home state
+            // reload and set the url to the home state
             $window.location.assign( $window.location.pathname );
           } );
         }

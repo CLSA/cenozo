@@ -444,15 +444,6 @@ cenozo.factory( 'CnBaseModelFactory', [
             $state.transitionTo( $state.current, $stateParams, { reload: true } );
           }
         };
-        object.transitionToLastState = function() {
-          var stateName = $state.current.name;
-          var action = stateName.substring( stateName.lastIndexOf( '.' ) + 1 );
-          if( 'add' == action || 'view' == action ) {
-            $state.go( '^.list' );
-          } else { // sub-view, return to parent view
-            $state.go( '^.view', { identifier: $stateParams.parentIdentifier } );
-          }
-        };
         object.transitionToAddState = function() {
           var stateName = $state.current.name;
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
