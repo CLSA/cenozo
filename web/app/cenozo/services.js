@@ -61,14 +61,14 @@ cenozo.factory( 'CnAppSingleton', [
         } ).patch();
       };
 
-      this.formatDatetime = function formatDatetime( dtStr, type, utc ) {
+      this.formatDatetime = function formatDatetime( dtStr, type ) {
         if( 0 > ['datetimesecond','datetime','date','timesecond','time'].indexOf( type ) )
           throw 'Tried to format datetime for type "' + type + '" which is not supported';
         var formatted = dtStr;
         if( null !== dtStr ) {
           var obj = moment( dtStr );
           if( 'datetimesecond' == type || 'datetime' == type ) {
-            obj.tz( true === utc ? 'UTC' : this.site.timezone );
+            obj.tz( this.site.timezone );
             if( 'datetimesecond' == type ) formatted = obj.format( 'YYYY-MM-DD HH:mm:ss' );
             else /*if( 'datetime' == type )*/ formatted = obj.format( 'YYYY-MM-DD HH:mm' );
           } else {
@@ -784,8 +784,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
           controller: function( $scope, $modalInstance ) {
             $scope.local = thisRef;
             $scope.local.ok = function() {
-              $modalInstance.close( CnAppSingleton.formatDatetime(
-                $scope.local.date.format(), $scope.local.pickerType, true ) );
+              $modalInstance.close( null === $scope.local.date ? null : $scope.local.date.tz( 'utc' ).format() );
             };
             $scope.local.cancel = function() { $modalInstance.close( false ); };
 
