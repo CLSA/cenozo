@@ -1,7 +1,7 @@
 'use strict';
 
 try { var cenozo = angular.module( 'cenozo' ); }
-catch( err ) { var cenozo = angular.module( 'cenozo', ['ngAnimate'] ); }
+catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 
 /* ######################################################################################################## */
 cenozo.filter( 'cnComparator', function() {

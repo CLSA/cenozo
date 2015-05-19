@@ -254,26 +254,6 @@ cenozo.directive( 'cnRecordAdd', [
                 } );
               }
             }
-
-/*
-            for( var key in metadata.columnList ) {
-              console.log( 'key: ' + key );
-              if( undefined !== metadata.columnList[key].enumList ) {
-                console.log( metadata.columnList[key].enumList );
-                var input = scope.inputArray.findByProperty( 'key', key );
-                console.log( input );
-                if( input && undefined === input.enumList ) {
-                  input.enumList = metadata.columnList[key].enumList;
-                  input.enumList.unshift( {
-                    value: undefined,
-                    name: metadata.columnList[key].required ? '(Select ' + input.title + ')' : '(none)'
-                  } );
-                  console.log( input.enumList );
-                }
-              }
-            }
-*/
-
             scope.isComplete = true;
           }
         }, true );
@@ -369,8 +349,9 @@ cenozo.directive( 'cnRecordList', [
  * @attr model: An instance of the record's singleton model
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
-cenozo.directive( 'cnRecordView',
-  function() {
+cenozo.directive( 'cnRecordView', [
+  'CnModalDatetimeFactory', 'CnAppSingleton',
+  function( CnModalDatetimeFactory, CnAppSingleton ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
@@ -437,6 +418,20 @@ cenozo.directive( 'cnRecordView',
             }
           );
         };
+
+        $scope.selectDatetime = function( input ) {
+          CnModalDatetimeFactory.instance( {
+            title: input.title,
+            date: $scope.model.cnView.record[input.key],
+            pickerType: input.type
+          } ).show().then( function( response ) {
+            if( false !== response ) {
+              $scope.model.cnView.record[input.key] = response;
+              $scope.patch( input.key );
+              input.formattedValue = CnAppSingleton.formatDatetime( response, input.type );
+            }
+          } );
+        };
       },
       link: function( scope, element, attrs ) {
         scope.heading = attrs.heading;
@@ -453,8 +448,14 @@ cenozo.directive( 'cnRecordView',
           if( undefined !== record.id && !recordLoaded ) {
             for( var i = 0; i < scope.inputArray.length; i++ ) {
               var key = scope.inputArray[i].key;
-              if( 'date' == scope.inputArray[i].type && record[key].format )
-                record[key] = record[key].format( 'YYYY-MM-DD' );
+              if( 'datetimesecond' == scope.inputArray[i].type ||
+                  'datetime' == scope.inputArray[i].type ||
+                  'date' == scope.inputArray[i].type ||
+                  'timesecond' == scope.inputArray[i].type ||
+                  'time' == scope.inputArray[i].type ) {
+                scope.inputArray[i].formattedValue =
+                  CnAppSingleton.formatDatetime( record[key], scope.inputArray[i].type );
+              }
             }
             recordLoaded = true;
             if( recordLoaded && metadataLoaded ) scope.isComplete = true;
@@ -486,7 +487,7 @@ cenozo.directive( 'cnRecordView',
       }
     };
   }
-);
+] );
 
 /**
  * Site and role drop-downs which will switch the user's current role

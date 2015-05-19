@@ -36,20 +36,36 @@ window.cnCopyParams = function cnCopyParams( object, params ) {
 };
 
 window.cnConvertFromDatabaseRecord = function cnConvertFromDatabaseRecord( object ) {
+  /*
   for( var prop in object ) {
-    if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
-      object[prop] = null === object[prop] ? null : moment( object[prop] );
+    if( null !== object[prop] ) {
+      if( 0 <= prop.regexIndexOf( /^datetime|_datetime/ ) ) {
+        object[prop] = moment( object[prop] ).format();
+      } else if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
+        object[prop] = moment( object[prop] ).format( 'YYYY-MM-DD' );
+      } else if( 0 <= prop.regexIndexOf( /^time|_time/ ) ) {
+        object[prop] = moment( object[prop] ).format( 'HH:mm:ss' );
+      }
     }
   }
+  */
 };
 
 window.cnConvertToDatabaseRecord = function cnConvertToDatabaseRecord( object ) {
+  /*
   for( var prop in object ) {
     if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
+      if( null === object[prop] ) object[prop] = '';
+      else if( object[prop].format ) object[prop].format( 'YYYY-MM-DD' );
+    } else if( 0 <= prop.regexIndexOf( /^time|_time/ ) ) {
+      if( null === object[prop] ) object[prop] = '';
+      else if( object[prop].format ) object[prop].format( 'HH:mm:ss' );
+    } else if( 0 <= prop.regexIndexOf( /^datetime|_datetime/ ) ) {
       if( null === object[prop] ) object[prop] = '';
       else if( object[prop].format ) object[prop].format( 'YYYY-MM-DD HH:mm:ss' );
     }
   }
+  */
 };
 
 window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
@@ -149,6 +165,7 @@ window.cnToQueryString = function cnToQueryString( object ) {
 var cenozoApp = angular.module( 'cenozoApp', [
   'ui.bootstrap',
   'ui.router',
+  'ui.slider',
   'snap',
   'cenozo'
 ] );

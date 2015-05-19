@@ -5,6 +5,7 @@
   <title><?php print INSTANCE; ?></title>
   <link rel="shortcut icon" href="img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-snap/angular-snap.css">
 
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/app.css">
@@ -16,10 +17,10 @@
   <script src="<?php print LIB_URL; ?>/moment-timezone/builds/moment-timezone-with-data-2010-2020.js"></script>
   <script src="<?php print LIB_URL; ?>/snapjs/snap.js"></script>
   <script src="<?php print LIB_URL; ?>/angular/angular.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-bootstrap/ui-bootstrap.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-animate/angular-animate.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-snap/angular-snap.js"></script>
 
   <script src="<?php print APP_URL; ?>/cenozo/animations.js"></script>

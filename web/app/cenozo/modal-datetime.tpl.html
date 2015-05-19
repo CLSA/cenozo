@@ -1,0 +1,166 @@
+<form ng-submit="local.ok()">
+  <div class="modal-header">
+    <h4 class="modal-title">Select a value for {{ local.title }}</h4>
+  </div>
+  <div class="modal-body">
+    <div>
+      <div ng-if="'date' == local.pickerType ||
+                  'datetime' == local.pickerType ||
+                  'datetimesecond' == local.pickerType"
+           ng-switch="local.mode" class="container-fluid">
+        <table ng-switch-when="day" class="full-width">
+          <thead>
+            <tr>
+              <th>
+                <button type="button" class="btn btn-default full-width" ng-click="local.viewPrev()">
+                  <i class="glyphicon glyphicon-chevron-left"></i>
+                </button>
+              </th>
+              <th colspan="5">
+                <button id="{{uniqueId}}-title"
+                        type="button" class="btn btn-default full-width"
+                        ng-click="local.nextMode()">
+                  <strong>{{ local.modeTitle }}</strong>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="btn btn-default full-width" ng-click="local.viewNext()">
+                  <i class="glyphicon glyphicon-chevron-right"></i>
+                </button>
+              </th>
+            </tr>
+            <tr>
+              <th class="text-center"><small>Sun</small></th>
+              <th class="text-center"><small>Mon</small></th>
+              <th class="text-center"><small>Tue</small></th>
+              <th class="text-center"><small>Wed</small></th>
+              <th class="text-center"><small>Thu</small></th>
+              <th class="text-center"><small>Fri</small></th>
+              <th class="text-center"><small>Sat</small></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in local.cellList">
+              <td ng-repeat="cell in row" class="text-center">
+                <button type="button" class="btn btn-default full-width"
+                        ng-class="{'btn-muted':cell.weekend&&!cell.current,'btn-info':cell.current}"
+                        ng-click="local.select(cell.date)" ng-disabled="cell.disabled">
+                  <span ng-class="{'text-muted': cell.offMonth}">{{cell.label}}</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table ng-switch-when="month" class="full-width">
+          <thead>
+            <tr>
+              <th>
+                <button type="button" class="btn btn-default btn-sm full-width" ng-click="local.viewPrev()">
+                  <i class="glyphicon glyphicon-chevron-left"></i>
+                </button>
+              </th>
+              <th>
+                <button id="{{uniqueId}}-title"
+                        type="button" class="btn btn-default btn-sm full-width"
+                        ng-click="local.nextMode()">
+                  <strong>{{ local.modeTitle }}</strong>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="btn btn-default btn-sm full-width" ng-click="local.viewNext()">
+                  <i class="glyphicon glyphicon-chevron-right"></i>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in local.cellList track by $index">
+              <td ng-repeat="cell in row track by cell.date" class="text-center" id="{{cell.uid}}">
+                <button type="button" class="btn btn-default"
+                        ng-class="{'btn-info': cell.current, active: isActive(cell)}"
+                        ng-click="local.select(cell.date)" ng-disabled="cell.disabled">
+                  <span ng-class="{'text-info': cell.current}">{{cell.label}}</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table ng-switch-when="year" class="full-width">
+          <thead>
+            <tr>
+              <th>
+                <button type="button" class="btn btn-default btn-sm full-width" ng-click="local.viewPrev()">
+                  <i class="glyphicon glyphicon-chevron-left"></i>
+                </button>
+              </th>
+              <th colspan="3">
+                <button id="{{uniqueId}}-title" type="button"
+                        class="btn btn-default btn-sm full-width" disabled>
+                  <strong>{{ local.modeTitle }}</strong>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="btn btn-default btn-sm full-width" ng-click="local.viewNext()">
+                  <i class="glyphicon glyphicon-chevron-right"></i>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in local.cellList track by $index">
+              <td ng-repeat="cell in row track by cell.date" class="text-center" id="{{cell.uid}}">
+                <button type="button" class="btn btn-default"
+                        ng-class="{'btn-info': cell.current, active: isActive(cell)}"
+                        ng-click="local.select(cell.date)" ng-disabled="cell.disabled">
+                  <span ng-class="{'text-info': cell.current}">{{cell.label}}</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div ng-if="'datetime' == local.pickerType || 'datetimesecond' == local.pickerType"
+           class="vertical-spacer"></div>
+      <div ng-if="'timesecond' == local.pickerType ||
+                  'time' == local.pickerType ||
+                  'datetime' == local.pickerType ||
+                  'datetimesecond' == local.pickerType"
+           class="container-fluid timepicker">
+        <div class="row timepicker-row">
+          <div class="col-xs-2"><strong>Time:</strong></div>
+          <div class="col-xs-10">{{ local.displayTime }}</div>
+        </div>
+        <div class="vertical-spacer"></div>
+        <div class="row timepicker-row">
+          <div class="col-xs-2"><strong>Hour:</strong></div>
+          <div class="col-xs-10">
+            <slider ng-model="local.hourSliderValue" floor="0" ceiling="23" step="1"></slider>
+          </div>
+        </div>
+        <div class="vertical-spacer"></div>
+        <div class="row timepicker-row">
+          <div class="col-xs-2"><strong>Minute:</strong></div>
+          <div class="col-xs-10">
+            <slider ng-model="local.minuteSliderValue" floor="0" ceiling="59" step="1"></slider>
+          </div>
+        </div>
+        <div ng-if="'datetimesecond' == local.pickerType" class="vertical-spacer"></div>
+        <div ng-if="'datetimesecond' == local.pickerType" class="row timepicker-row">
+          <div class="col-xs-2"><strong>Second:</strong></div>
+          <div class="col-xs-10">
+            <slider ng-model="local.secondSliderValue" floor="0" ceiling="59" step="1"></slider>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <div class="btn-group pull-left">
+      <button type="button" class="btn btn-info" ng-click="local.select('now')">Now</button>
+      <button type="button" class="btn btn-info" ng-click="local.select('today')">Today</button>
+      <button type="button" class="btn btn-danger" ng-click="local.select(null)">Clear</button>
+    </div>
+    <button type="button" class="btn btn-default" ng-click="local.cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">OK</button>
+  </div>
+</form>

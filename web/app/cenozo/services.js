@@ -60,6 +60,25 @@ cenozo.factory( 'CnAppSingleton', [
           data: { role: { id: id } }
         } ).patch();
       };
+
+      this.formatDatetime = function formatDatetime( dtStr, type, utc ) {
+        if( 0 > ['datetimesecond','datetime','date','timesecond','time'].indexOf( type ) )
+          throw 'Tried to format datetime for type "' + type + '" which is not supported';
+        var formatted = dtStr;
+        if( null !== dtStr ) {
+          var obj = moment( dtStr );
+          if( 'datetimesecond' == type || 'datetime' == type ) {
+            obj.tz( true === utc ? 'UTC' : this.site.timezone );
+            if( 'datetimesecond' == type ) formatted = obj.format( 'YYYY-MM-DD HH:mm:ss' );
+            else /*if( 'datetime' == type )*/ formatted = obj.format( 'YYYY-MM-DD HH:mm' );
+          } else {
+            if( 'date' == type ) formatted = obj.format( 'YYYY-MM-DD' );
+            else if( 'timesecond' == type ) formatted = obj.format( 'HH:mm:ss' );
+            else /*if( 'time' == type )*/ formatted = obj.format( 'HH:mm' );
+          }
+        }
+        return formatted;
+      };
     } );
   }
 ] );
@@ -282,6 +301,7 @@ cenozo.factory( 'CnBaseViewFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
+        object.rawRecord = {};
         object.record = {};
 
         /**
@@ -326,6 +346,7 @@ cenozo.factory( 'CnBaseViewFactory', [
             path: this.parentModel.getServiceResourcePath(),
             data: getServiceData( this.parentModel.subject, this.parentModel.inputList )
           } ).get().then( function success( response ) {
+            thisRef.rawRecord = cnCopy( response.data );
             thisRef.record = cnCopy( response.data );
             thisRef.record.getIdentifier = function() {
               return thisRef.parentModel.getIdentifierFromRecord( this );
@@ -396,7 +417,7 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           return identifierObject;
         };
-        
+
         object.getParentSubject = function() {
           var subjectList = Object.keys( this.getParentIdentifierObject() );
           return 0 < subjectList.length ? subjectList[0] : null;
@@ -592,7 +613,7 @@ cenozo.factory( 'CnHttpFactory', [
       this.post = function() { return this.http( 'POST', 'api/' + this.path ); };
       this.query = function() { return this.http( 'GET', 'api/' + this.path ); };
     };
-    
+
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
   }
 ] );
@@ -619,6 +640,167 @@ cenozo.service( 'CnModalConfirmFactory', [
             $scope.local = thisRef;
             $scope.local.yes = function() { $modalInstance.close( true ); };
             $scope.local.no = function() { $modalInstance.close( false ); };
+          }
+        } ).result;
+      }
+    };
+
+    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+cenozo.service( 'CnModalDatetimeFactory', [
+  '$modal', 'CnAppSingleton',
+  function( $modal, CnAppSingleton ) {
+    var object = function( params ) {
+      var viewMoveGaps = {
+        day: { unit: 'months', amount: 1 },
+        month: { unit: 'years', amount: 1 },
+        year: { unit: 'years', amount: 20 },
+      };
+
+      function split( array, size ) {
+        var subArrays = [];
+        while( 0 < array.length ) subArrays.push( array.splice( 0, size ) );
+        return subArrays;
+      }
+
+      function addDate( list, date, currentDate, viewingDate, front ) {
+        var object = {
+          date: date,
+          label: date.format( 'DD' ),
+          current: null !== currentDate &&
+                   currentDate.isSame( date, 'year' ) &&
+                   currentDate.isSame( date, 'month' ) &&
+                   currentDate.isSame( date, 'day' ),
+          offMonth: !viewingDate.isSame( date, 'month' ),
+          weekend: 0 <= [0,6].indexOf( date.day() ),
+          disabled: false
+        };
+        if( true === front ) list.unshift( object );
+        else list.push( object );
+      }
+
+      // service vars which can be defined by the contructor's params
+      this.timezone = null;
+      this.date = null;
+      this.viewingDate = null;
+      this.title = 'Title';
+      this.pickerType = 'datetime';
+      this.mode = 'day';
+      cnCopyParams( this, params );
+
+      // service vars which cannot be defined by the constructor's params
+      if( null === this.timezone ) this.timezone = CnAppSingleton.site.timezone;
+      if( null === this.date ) {
+        this.viewingDate = moment();
+      } else {
+        this.date = moment( this.date );
+        if( 'datetime' == this.pickerType || 'datetimesecond' == this.pickerType ) this.date.tz( this.timezone );
+        this.viewingDate = moment( this.date );
+      }
+      this.modeTitle = '';
+      this.displayTime = '';
+      this.hourSliderValue = this.viewingDate.format( 'H' );
+      this.minuteSliderValue = this.viewingDate.format( 'm' );
+      this.secondSliderValue = this.viewingDate.format( 's' );
+
+      this.nextMode = function() {
+        this.mode = 'day' == this.mode ? 'month' : 'year';
+        this.update();
+      };
+      this.viewPrev = function() {
+        var gap = viewMoveGaps[this.mode];
+        this.viewingDate.subtract( gap.amount, gap.unit );
+        this.update();
+      };
+      this.viewNext = function() {
+        var gap = viewMoveGaps[this.mode];
+        this.viewingDate.add( gap.amount, gap.unit );
+        this.update();
+      };
+      this.select = function( when ) {
+        if( 'now' == when ) {
+          this.date = moment();
+        } else if( 'today' == when ) {
+          this.date.year( moment().year() );
+          this.date.month( moment().month() );
+          this.date.date( moment().date() );
+        } else {
+          this.date = when;
+        }
+
+        if( null !== this.date ) this.viewingDate = moment( this.date );
+        this.update();
+      };
+      this.updateDisplayTime = function() {
+        var format = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType
+                   ? 'HH:mm:ss'
+                   : 'HH:mm';
+        this.displayTime = this.date.format( format ) + ' (' + this.timezone + ')';
+      };
+      this.update = function() {
+        if( 'day' == this.mode ) {
+          this.modeTitle = this.viewingDate.format( 'MMMM YYYY' );
+
+          var cellList = [];
+
+          // get forward dates
+          var date = moment( this.viewingDate );
+          for( ; date.month() == this.viewingDate.month() || 0 < date.day(); date.add( 1, 'days' ) )
+            addDate( cellList, moment( date.format() ), this.date, this.viewingDate, false );
+
+          // get backward dates
+          var date = moment( this.viewingDate ).subtract( 1, 'days' );
+          for( ; date.month() == this.viewingDate.month() || 6 > date.day(); date.subtract( 1, 'days' ) )
+            addDate( cellList, moment( date.format() ), this.date, this.viewingDate, true );
+
+          this.cellList = split( cellList, 7 );
+        } else if( 'month' == this.mode ) {
+          this.modeTitle = this.viewingDate.format( 'YYYY' );
+        } else { // 'year' == this.mode
+          var baseYear = Math.floor( this.viewingDate.format( 'YYYY' ) / 20 ) * 20;
+          this.modeTitle = ( baseYear+1 ) + ' - ' + ( baseYear+20 );
+        }
+
+        this.updateDisplayTime();
+
+        // need to send a resize event so the sliders update
+        window.dispatchEvent( new Event( 'resize' ) );
+      };
+
+      this.update();
+    };
+
+    object.prototype = {
+      show: function() {
+        var thisRef = this;
+        return $modal.open( {
+          backdrop: true,
+          keyboard: true,
+          modalFade: true,
+          templateUrl: cnCenozoUrl + '/app/cenozo/modal-datetime.tpl.html',
+          controller: function( $scope, $modalInstance ) {
+            $scope.local = thisRef;
+            $scope.local.ok = function() {
+              $modalInstance.close( CnAppSingleton.formatDatetime(
+                $scope.local.date.format(), $scope.local.pickerType, true ) );
+            };
+            $scope.local.cancel = function() { $modalInstance.close( false ); };
+
+            $scope.$watch( 'local.hourSliderValue', function( hour ) {
+              $scope.local.date.hour( hour );
+              $scope.local.updateDisplayTime();
+            } );
+            $scope.$watch( 'local.minuteSliderValue', function( minute ) {
+              $scope.local.date.minute( minute );
+              $scope.local.updateDisplayTime();
+            } );
+            $scope.$watch( 'local.secondSliderValue', function( second ) {
+              $scope.local.date.second( second );
+              $scope.local.updateDisplayTime();
+            } );
           }
         } ).result;
       }
@@ -771,7 +953,7 @@ cenozo.factory( 'CnPaginationFactory',
         return this.currentPage * this.itemsPerPage - 1;
       }
     };
-    
+
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
   }
 );
@@ -834,7 +1016,7 @@ function getServiceData( subject, list ) {
       var test = list[key].restrict.test;
       var value = list[key].restrict.value;
       if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
-      
+
       // determine the column name
       var column = key;
       if( undefined !== list[key].column ) {
@@ -844,7 +1026,7 @@ function getServiceData( subject, list ) {
         if( 2 < len ) column = columnParts[len-2] + '.' + columnParts[len-1];
       }
 
-      whereList.push( { 
+      whereList.push( {
         column: column,
         operator: test,
         value: value

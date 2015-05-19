@@ -10,8 +10,9 @@
         <label for="name" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
         <div class="col-sm-9">
           <div class="input-group"
+               ng-switch="input.type"
                ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
-            <input ng-if="'string' == input.type"
+            <input ng-switch-when="string"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="model.cnView.record[input.key]"
@@ -21,7 +22,7 @@
               autocomplete="off"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></input>
-            <input ng-if="'typeahead' == input.type"
+            <input ng-switch-when="typeahead"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="model.cnView.record[input.key]"
@@ -35,19 +36,47 @@
               autocomplete="off"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></input>
-            <input ng-if="'date' == input.type"
+            <input ng-switch-when="date"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.cnView.record[input.key]"
-              ng-change="patch( input.key )"
+              ng-model="input.formattedValue"
               class="form-control"
               type="text"
-              datepicker-popup="yyyy-MM-dd"
-              is-open="isOpen"
-              ng-click="isOpen = true"
-              show-weeks="false"
+              ng-click="selectDatetime( input )"
               onkeydown="return false"></input>
-            <select ng-if="'boolean' == input.type || 'enum' == input.type || 'rank' == input.type"
+            <input ng-switch-when="time"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="input.formattedValue"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="timesecond"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="input.formattedValue"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="datetime"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="input.formattedValue"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="datetimesecond"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="input.formattedValue"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <select ng-switch-default
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-options="item.value as item.name for item in input.enumList"
@@ -56,7 +85,7 @@
               class="form-control"
               ng-readonly="input.constant || !input.enumList"
               ng-required="model.metadata.columnList[input.key].required"></select>
-            <textarea ng-if="'text' == input.type || 'constant text' == input.type"
+            <textarea ng-switch-when="text' == input.type || 'constant text"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="model.cnView.record[input.key]"
@@ -64,7 +93,7 @@
               class="form-control"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></textarea>
-            <div ng-if="'months' == input.type" class="row">
+            <div ng-switch-when="months" class="row">
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input
@@ -126,7 +155,7 @@
                 </label>
               </div>
             </div>
-            <div ng-if="'months' == input.type" class="row">
+            <div ng-switch-when="months" class="row">
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input

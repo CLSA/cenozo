@@ -6,6 +6,7 @@ td { border: 0px !important; }
 td.tiny { width: 1px; white-space: nowrap; }
 .btn { font-weight: bold; }
 .btn-narrow { padding-left: 6px; padding-right: 6px; }
+.btn-muted { background-color: #eaeaea; }
 .full-width { width: 100% !important; }
 .half-width { width: 50% !important; }
 .left { float: left }
@@ -137,3 +138,9 @@ snap-content {
 .table-hover > tbody > tr:hover > th {
   cursor: pointer;
 }
+
+.dropdown-menu { background: #eaeaea; }
+.timepicker { background: #fff; padding-top: 1em; }
+.timepicker-row { height: 2em; }
+slider, [slider] { margin: 0px; }
+slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }

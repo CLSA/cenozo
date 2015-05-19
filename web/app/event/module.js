@@ -13,7 +13,7 @@ define( {
     },
     datetime: {
       title: 'Date & Time',
-      type: 'datetime'
+      type: 'datetimesecond'
     }
   },
   columnList: {

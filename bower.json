@@ -2,21 +2,21 @@
   "name": "cenozo",
   "description": "An Angular/PHP framework used to build logistics web applications for scientific studies.",
   "version": "2.0",
-  "homepage": "",
-  "license": "",
+  "homepage": "https://github.com/patrickdemond/cenozo",
+  "license": "GPL",
   "private": true,
   "dependencies": {
-    "angular": "1.2.x",
-    "angular-bootstrap": "0.12.x",
-    "angular-ui-router": "0.2.x",
-    "jquery": "~2.1.1",
-    "bootstrap": "~3.1.1",
-    "moment": "2.x.x",
-    "moment-timezone": "latest",
-    "snapjs": "latest",
-    "requirejs": "2.1.x",
-    "angular-animate": "1.2.x",
-    "angular-snap": "1.8.x",
-    "angular-require": "1.0.x"
+    "angular": "1.2.x", // base js library
+    "angular-bootstrap": "0.12.x", // base angular library
+    "angular-ui-router": "0.2.x", // for state-based routing
+    "jquery": "~2.1.1", // needed by angular
+    "bootstrap": "~3.1.1", // base css library
+    "moment": "2.x.x", // for datetime manipulation
+    "moment-timezone": "latest", // for timezone manipulation
+    "snapjs": "latest", // for side menu
+    "requirejs": "2.1.x", // loads js on demand
+    "angular-animate": "1.2.x", // animates state transitions
+    "angular-snap": "1.8.x", // integrates snap with angular
+    "angular-slider": "0.2.x" // for time slider in datetime picker
   }
 }
