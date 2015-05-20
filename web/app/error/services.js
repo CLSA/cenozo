@@ -7,12 +7,12 @@ define( [], function() {
     'CnAppSingleton',
     function( CnAppSingleton ) {
       var object = function() {
-        var thisRef = this;
+        var self = this;
         this.promise = CnAppSingleton.promise.then( function() {
-          thisRef.application = CnAppSingleton.application;
-          thisRef.user = CnAppSingleton.user;
-          thisRef.role = CnAppSingleton.role;
-          thisRef.site = CnAppSingleton.site;
+          self.application = CnAppSingleton.application;
+          self.user = CnAppSingleton.user;
+          self.role = CnAppSingleton.role;
+          self.site = CnAppSingleton.site;
         } );
       };
 

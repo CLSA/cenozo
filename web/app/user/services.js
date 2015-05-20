@@ -34,13 +34,14 @@ define( [
 
         ////////////////////////////////////
         // factory customizations start here
+        var self = this;
         this.cnAccessModel = CnAccessModelFactory.instance();
         this.cnAccessModel.enableAdd( true );
         this.cnAccessModel.enableDelete( true );
-        var thisRef = this;
+
         this.onView = function view() { 
           return this.viewRecord().then( function() {
-            thisRef.cnAccessModel.cnList.onList( true );
+            self.cnAccessModel.cnList.onList( true );
           } );
         };
         // factory customizations end here

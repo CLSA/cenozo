@@ -40,6 +40,7 @@ define( [
               CnQuotaListFactory, CnQuotaAddFactory, CnQuotaViewFactory,
               CnHttpFactory, CnAppSingleton ) {
       var object = function() {
+        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnQuotaAddFactory.instance( this );
         this.cnList = CnQuotaListFactory.instance( this );
@@ -50,7 +51,6 @@ define( [
         this.enableView( true );
 
         // extend getMetadata
-        var thisRef = this;
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
@@ -61,9 +61,9 @@ define( [
                 modifier: { order: { lower: false } }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.columnList.age_group_id.enumList = [];
+              self.metadata.columnList.age_group_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.columnList.age_group_id.enumList.push( {
+                self.metadata.columnList.age_group_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].lower + ' to ' + response.data[i].upper
                 } );
@@ -83,9 +83,9 @@ define( [
                   }
                 }
               } ).query().then( function success( response ) {
-                thisRef.metadata.columnList.region_id.enumList = [];
+                self.metadata.columnList.region_id.enumList = [];
                 for( var i = 0; i < response.data.length; i++ ) {
-                  thisRef.metadata.columnList.region_id.enumList.push( {
+                  self.metadata.columnList.region_id.enumList.push( {
                     value: response.data[i].id,
                     name: response.data[i].name
                   } );
@@ -99,16 +99,16 @@ define( [
                   modifier: { order: 'name' }
                 }
               } ).query().then( function success( response ) {
-                thisRef.metadata.columnList.site_id.enumList = [];
+                self.metadata.columnList.site_id.enumList = [];
                 for( var i = 0; i < response.data.length; i++ ) {
-                  thisRef.metadata.columnList.site_id.enumList.push( {
+                  self.metadata.columnList.site_id.enumList.push( {
                     value: response.data[i].id,
                     name: response.data[i].name
                   } );
                 }
               } );
             } ).then( function() {
-              thisRef.metadata.loadingCount--;
+              self.metadata.loadingCount--;
             } );
           } );
         };

@@ -38,6 +38,7 @@ define( [
     function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory,
               CnHttpFactory ) {
       var object = function() {
+        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnPhoneAddFactory.instance( this );
         this.cnList = CnPhoneListFactory.instance( this );
@@ -51,26 +52,25 @@ define( [
         this.getIdentifierFromRecord = function( record ) { return 'rank=' + record.rank; };
 
         // extend getMetadata
-        var thisRef = this;
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
             CnHttpFactory.instance( {
-              path: thisRef.getServiceCollectionPath().replace( 'phone', 'address' ),
+              path: self.getServiceCollectionPath().replace( 'phone', 'address' ),
               data: {
                 select: { column: [ 'id', 'summary' ] },
                 modifier: { order: 'rank' }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.columnList.address_id.enumList = [];
+              self.metadata.columnList.address_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.columnList.address_id.enumList.push( {
+                self.metadata.columnList.address_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].summary
                 } );
               }
             } ).then( function() {
-              thisRef.metadata.loadingCount--;
+              self.metadata.loadingCount--;
             } );
           } );
         };

@@ -37,6 +37,7 @@ define( [
 
         ////////////////////////////////////
         // factory customizations start here
+        var self = this;
         this.cnAddressModel = CnAddressModelFactory.instance();
         this.cnAddressModel.enableAdd( true );
         this.cnAddressModel.enableDelete( true );
@@ -46,11 +47,10 @@ define( [
         this.cnPhoneModel.enableDelete( true );
         this.cnPhoneModel.enableView( true );
 
-        var thisRef = this;
         this.onView = function view() {
           return this.viewRecord().then( function() {
-            thisRef.cnAddressModel.cnList.onList( true );
-            thisRef.cnPhoneModel.cnList.onList( true );
+            self.cnAddressModel.cnList.onList( true );
+            self.cnPhoneModel.cnList.onList( true );
           } );
         };
         // factory customizations end here

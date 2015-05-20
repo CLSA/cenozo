@@ -27,10 +27,10 @@ define( [
     'CnBaseViewFactory', 'CnAppSingleton', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnAppSingleton, CnModalMessageFactory ) {
       var object = function( parentModel ) {
+        var self = this;
         CnBaseViewFactory.construct( this, parentModel );
 
         // do not allow changes to the international column
-        var thisRef = this;
         this.onPatch = function( data ) {
           if( undefined !== data.international ) {
             return CnModalMessageFactory.instance( {
@@ -39,7 +39,7 @@ define( [
                        'international address.  Please create a new address instead.',
               error: true
             } ).show().then( function() {
-              thisRef.record.international = !data.international;
+              self.record.international = !data.international;
             } );
           } else return this.patchRecord( data );
         };
@@ -55,6 +55,7 @@ define( [
     function( CnBaseModelFactory, CnAddressListFactory, CnAddressAddFactory, CnAddressViewFactory,
               CnHttpFactory, CnAppSingleton ) {
       var object = function() {
+        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnAddressAddFactory.instance( this );
         this.cnList = CnAddressListFactory.instance( this );
@@ -68,7 +69,6 @@ define( [
         this.getIdentifierFromRecord = function( record ) { return 'rank=' + record.rank; };
 
         // extend getMetadata
-        var thisRef = this;
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
@@ -85,16 +85,16 @@ define( [
                 modifier: { order: ['country','name'], limit: 100 }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.columnList.region_id.enumList = [];
+              self.metadata.columnList.region_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.columnList.region_id.enumList.push( {
+                self.metadata.columnList.region_id.enumList.push( {
                   value: response.data[i].id,
                   country: response.data[i].country,
                   name: response.data[i].name
                 } );
               }
             } ).then( function() {
-              thisRef.metadata.loadingCount--;
+              self.metadata.loadingCount--;
             } );
           } );
         };

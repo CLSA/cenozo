@@ -38,6 +38,7 @@ define( [
     function( CnBaseModelFactory, CnEventListFactory, CnEventAddFactory, CnEventViewFactory,
               CnHttpFactory ) {
       var object = function() {
+        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.cnAdd = CnEventAddFactory.instance( this );
         this.cnList = CnEventListFactory.instance( this );
@@ -48,7 +49,6 @@ define( [
         this.enableView( true );
 
         // extend getMetadata
-        var thisRef = this;
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
@@ -59,15 +59,15 @@ define( [
                 modifier: { order: 'name' }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.columnList.event_type_id.enumList = [];
+              self.metadata.columnList.event_type_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.columnList.event_type_id.enumList.push( {
+                self.metadata.columnList.event_type_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].name
                 } );
               }
             } ).then( function() {
-              thisRef.metadata.loadingCount--;
+              self.metadata.loadingCount--;
             } );
           } );
         };

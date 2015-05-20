@@ -8,6 +8,7 @@ cenozo.factory( 'CnAppSingleton', [
   '$state', 'CnHttpFactory',
   function( $state, CnHttpFactory ) {
     return new ( function() {
+      var self = this;
       this.promise = null;
       this.application = {};
       this.user = {};
@@ -16,15 +17,14 @@ cenozo.factory( 'CnAppSingleton', [
       this.siteList = [];
 
       // get the application, user, site and role details
-      var thisRef = this;
       this.promise = CnHttpFactory.instance( {
         path: 'self/0'
       } ).get().then( function success( response ) {
-        thisRef.application = cnCopy( response.data.application );
-        thisRef.user = cnCopy( response.data.user );
-        thisRef.site = cnCopy( response.data.site );
-        thisRef.role = cnCopy( response.data.role );
-        cnConvertFromDatabaseRecord( thisRef.user.last_activity );
+        self.application = cnCopy( response.data.application );
+        self.user = cnCopy( response.data.user );
+        self.site = cnCopy( response.data.site );
+        self.role = cnCopy( response.data.role );
+        cnConvertFromDatabaseRecord( self.user.last_activity );
 
         // process access records
         for( var i = 0; i < response.data.access.length; i++ ) {
@@ -32,15 +32,15 @@ cenozo.factory( 'CnAppSingleton', [
 
           // get the site's index
           var index = 0;
-          for( ; index < thisRef.siteList.length; index++ )
-            if( access.site_id == thisRef.siteList[index].id ) break;
+          for( ; index < self.siteList.length; index++ )
+            if( access.site_id == self.siteList[index].id ) break;
 
           // if the site isn't found, add it to the list
-          if( thisRef.siteList.length == index )
-            thisRef.siteList.push( { id: access.site_id, name: access.site_name, roleList: [] } );
+          if( self.siteList.length == index )
+            self.siteList.push( { id: access.site_id, name: access.site_name, roleList: [] } );
 
           // now add the role to the site's role list
-          thisRef.siteList[index].roleList.push( {
+          self.siteList[index].roleList.push( {
             id: access.role_id,
             name: access.role_name
           } );
@@ -115,21 +115,21 @@ cenozo.factory( 'CnBaseAddFactory', [
          * @return promise
          */
         object.newRecord = function( record ) {
+          var self = this;
           if( !this.parentModel.addEnabled ) throw 'Calling newRecord() but addEnabled is false';
 
           // load the metadata and use it to apply default values to the record
-          var thisRef = this;
           this.parentModel.metadata.loadingCount++;
           return this.parentModel.getMetadata().then( function() {
             // apply default values from the metadata
-            for( var column in thisRef.parentModel.metadata.columnList )
-              if( null !== thisRef.parentModel.metadata.columnList[column].default )
-                record[column] = 'tinyint' == thisRef.parentModel.metadata.columnList[column].data_type
-                               ? 1 == thisRef.parentModel.metadata.columnList[column].default
-                               : thisRef.parentModel.metadata.columnList[column].default;
+            for( var column in self.parentModel.metadata.columnList )
+              if( null !== self.parentModel.metadata.columnList[column].default )
+                record[column] = 'tinyint' == self.parentModel.metadata.columnList[column].data_type
+                               ? 1 == self.parentModel.metadata.columnList[column].default
+                               : self.parentModel.metadata.columnList[column].default;
 
             // signal that we are done loading metadata
-            thisRef.parentModel.metadata.loadingCount--;
+            self.parentModel.metadata.loadingCount--;
           } );
         };
 
@@ -181,10 +181,10 @@ cenozo.factory( 'CnBaseListFactory', [
         };
 
         object.checkCache = function() {
-          var thisRef = this;
+          var self = this;
           if( this.cache.length < this.total && this.cnPagination.getMaxIndex() >= this.cache.length )
             this.listRecords().catch( function exception( response ) {
-              thisRef.parentModel.transitionToErrorState( response );
+              self.parentModel.transitionToErrorState( response );
             } );
         };
 
@@ -216,16 +216,16 @@ cenozo.factory( 'CnBaseListFactory', [
          * @return promise
          */
         object.deleteRecord = function( record ) {
+          var self = this;
           if( !this.parentModel.deleteEnabled ) throw 'Calling deleteRecord() but deleteEnabled is false';
 
-          var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath( record.getIdentifier() ),
           } ).delete().then( function success() {
-            for( var i = 0; i < thisRef.cache.length; i++ ) {
-              if( thisRef.cache[i].getIdentifier() == record.getIdentifier() ) {
-                thisRef.total--;
-                return thisRef.cache.splice( i, 1 );
+            for( var i = 0; i < self.cache.length; i++ ) {
+              if( self.cache[i].getIdentifier() == record.getIdentifier() ) {
+                self.total--;
+                return self.cache.splice( i, 1 );
               }
             }
           } );
@@ -239,6 +239,7 @@ cenozo.factory( 'CnBaseListFactory', [
          * @return promise
          */
         object.listRecords = function( replace ) {
+          var self = this;
           if( undefined === replace ) replace = false;
           if( replace ) this.cache = [];
 
@@ -256,7 +257,6 @@ cenozo.factory( 'CnBaseListFactory', [
           }
 
           this.isLoading = true;
-          var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceCollectionPath(),
             data: data
@@ -264,13 +264,13 @@ cenozo.factory( 'CnBaseListFactory', [
             // add the getIdentifier() method to each row before adding it to the cache
             for( var i = 0; i < response.data.length; i++ ) {
               response.data[i].getIdentifier = function() {
-                return thisRef.parentModel.getIdentifierFromRecord( this );
+                return self.parentModel.getIdentifierFromRecord( this );
               };
             }
-            thisRef.cache = thisRef.cache.concat( response.data );
-            thisRef.total = response.headers( 'Total' );
+            self.cache = self.cache.concat( response.data );
+            self.total = response.headers( 'Total' );
           } ).then( function done() {
-            thisRef.isLoading = false;
+            self.isLoading = false;
           } );
         };
 
@@ -338,33 +338,33 @@ cenozo.factory( 'CnBaseViewFactory', [
          * @return promise
          */
         object.viewRecord = function() {
+          var self = this;
           if( !this.parentModel.viewEnabled ) throw 'Calling viewRecord() but viewEnabled is false';
 
           //this.record = {};
-          var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath(),
             data: getServiceData( this.parentModel.subject, this.parentModel.inputList )
           } ).get().then( function success( response ) {
-            thisRef.rawRecord = cnCopy( response.data );
-            thisRef.record = cnCopy( response.data );
-            thisRef.record.getIdentifier = function() {
-              return thisRef.parentModel.getIdentifierFromRecord( this );
+            self.rawRecord = cnCopy( response.data );
+            self.record = cnCopy( response.data );
+            self.record.getIdentifier = function() {
+              return self.parentModel.getIdentifierFromRecord( this );
             };
-            thisRef.parentModel.metadata.loadingCount++;
+            self.parentModel.metadata.loadingCount++;
 
-            return thisRef.parentModel.getMetadata().then( function() {
+            return self.parentModel.getMetadata().then( function() {
               // convert blank enums into empty strings (for ng-options)
-              for( var column in thisRef.parentModel.inputList ) {
-                var inputObject = thisRef.parentModel.inputList[column];
-                if( 'enum' == inputObject.type && null === thisRef.record[column] ) {
-                  var metadata = thisRef.parentModel.metadata.columnList[column];
-                  if( undefined !== metadata && !metadata.required ) thisRef.record[column] = '';
+              for( var column in self.parentModel.inputList ) {
+                var inputObject = self.parentModel.inputList[column];
+                if( 'enum' == inputObject.type && null === self.record[column] ) {
+                  var metadata = self.parentModel.metadata.columnList[column];
+                  if( undefined !== metadata && !metadata.required ) self.record[column] = '';
                 }
               }
 
               // signal that we are done loading metadata
-              thisRef.parentModel.metadata.loadingCount--;
+              self.parentModel.metadata.loadingCount--;
             } );
           } );
         };
@@ -522,10 +522,10 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @return promise
          */
         object.loadMetadata = function() {
+          var self = this;
           this.metadata.columnList = {};
           this.metadata.isComplete = false;
           this.metadata.loadingCount++;
-          var thisRef = this;
           return CnHttpFactory.instance( {
             path: this.subject
           } ).head().then( function( response ) {
@@ -545,25 +545,25 @@ cenozo.factory( 'CnBaseModelFactory', [
                 }
               }
             }
-            thisRef.metadata.columnList = columnList;
+            self.metadata.columnList = columnList;
 
-            if( undefined !== thisRef.metadata.columnList.rank ) { // create enum for rank columns
-              thisRef.metadata.loadingCount++;
+            if( undefined !== self.metadata.columnList.rank ) { // create enum for rank columns
+              self.metadata.loadingCount++;
               CnHttpFactory.instance( {
-                path: thisRef.getServiceCollectionPath(),
+                path: self.getServiceCollectionPath(),
                 data: { select: { column: { column: 'MAX(rank)', alias: 'max', table_prefix: false } } }
               } ).query().then( function success( response ) {
                 if( 0 < response.data.length ) {
-                  thisRef.metadata.columnList.rank.enumList = [];
+                  self.metadata.columnList.rank.enumList = [];
                   if( null !== response.data[0].max )
                     for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ )
-                      thisRef.metadata.columnList.rank.enumList.push( { value: rank, name: rank } );
+                      self.metadata.columnList.rank.enumList.push( { value: rank, name: rank } );
                 }
                 // signal that we are done loading metadata
-                thisRef.metadata.loadingCount--;
+                self.metadata.loadingCount--;
               } );
             }
-            thisRef.metadata.loadingCount--;
+            self.metadata.loadingCount--;
           } );
         };
 
@@ -614,26 +614,24 @@ cenozo.service( 'CnModalConfirmFactory', [
   '$modal',
   function( $modal ) {
     var object = function( params ) {
+      var self = this;
       this.title = 'Title';
       this.message = 'Message';
       cnCopyParams( this, params );
-    };
 
-    object.prototype = {
-      show: function() {
-        var thisRef = this;
+      this.show = function() {
         return $modal.open( {
           backdrop: true,
           keyboard: true,
           modalFade: true,
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-confirm.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = thisRef;
+            $scope.local = self;
             $scope.local.yes = function() { $modalInstance.close( true ); };
             $scope.local.no = function() { $modalInstance.close( false ); };
           }
         } ).result;
-      }
+      };
     };
 
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
@@ -645,6 +643,8 @@ cenozo.service( 'CnModalDatetimeFactory', [
   '$modal', 'CnAppSingleton',
   function( $modal, CnAppSingleton ) {
     var object = function( params ) {
+      var self = this;
+
       var viewMoveGaps = {
         day: { unit: 'months', amount: 1 },
         month: { unit: 'years', amount: 1 },
@@ -761,19 +761,14 @@ cenozo.service( 'CnModalDatetimeFactory', [
         window.dispatchEvent( new Event( 'resize' ) );
       };
 
-      this.update();
-    };
-
-    object.prototype = {
-      show: function() {
-        var thisRef = this;
+      this.show = function() {
         return $modal.open( {
           backdrop: true,
           keyboard: true,
           modalFade: true,
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-datetime.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = thisRef;
+            $scope.local = self;
             $scope.local.ok = function() {
               $modalInstance.close( null === $scope.local.date ? null : $scope.local.date.tz( 'utc' ).format() );
             };
@@ -793,7 +788,9 @@ cenozo.service( 'CnModalDatetimeFactory', [
             } );
           }
         } ).result;
-      }
+      };
+
+      this.update();
     };
 
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
@@ -805,26 +802,24 @@ cenozo.service( 'CnModalMessageFactory', [
   '$modal',
   function( $modal ) {
     var object = function( params ) {
+      var self = this;
       this.title = 'Title';
       this.message = 'Message';
       this.error = false;
       cnCopyParams( this, params );
-    };
 
-    object.prototype = {
-      show: function() {
-        var thisRef = this;
+      this.show = function() {
         return $modal.open( {
           backdrop: true,
           keyboard: true,
           modalFade: true,
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-message.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = thisRef;
+            $scope.local = self;
             $scope.local.close = function() { $modalInstance.close( false ); };
           }
         } ).result;
-      }
+      };
     };
 
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
@@ -836,6 +831,7 @@ cenozo.service( 'CnModalRestrictFactory', [
   '$modal',
   function( $modal ) {
     var object = function( params ) {
+      var self = this;
       if( undefined === params.column ) throw 'Tried to create CnModalRestrictFactory without a column';
       this.name = null;
       this.column = null;
@@ -844,24 +840,20 @@ cenozo.service( 'CnModalRestrictFactory', [
 
       if( undefined === this.comparison || null === this.comparison ) this.comparison = { test: '<=>' };
       this.preExisting = undefined !== this.comparison.value;
-    };
-
-    object.prototype = {
-      show: function() {
-        var thisRef = this;
+      this.show = function() {
         return $modal.open( {
           backdrop: true,
           keyboard: true,
           modalFade: true,
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-restrict.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = thisRef;
+            $scope.local = self;
             $scope.local.ok = function( comparison ) { $modalInstance.close( comparison ); };
             $scope.local.remove = function() { $modalInstance.close( null ); };
             $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
           }
         } ).result;
-      }
+      };
     };
 
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
@@ -873,23 +865,21 @@ cenozo.service( 'CnModalTimezoneCalculatorFactory', [
   '$modal',
   function( $modal ) {
     var object = function( params ) {
+      var self = this;
       cnCopyParams( this, params );
-    };
 
-    object.prototype = {
-      show: function() {
-        var thisRef = this;
+      this.show = function() {
         return $modal.open( {
           backdrop: 'static',
           keyboard: true,
           modalFade: false,
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-timezone-calculator.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = thisRef;
+            $scope.local = self;
             $scope.local.close = function() { $modalInstance.close(); };
           }
         } );
-      }
+      };
     };
 
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
@@ -901,28 +891,26 @@ cenozo.service( 'CnModalValueFactory', [
   '$modal',
   function( $modal ) {
     var object = function( params ) {
+      var self = this;
       this.title = 'Title';
       this.message = 'Message';
       this.enumList = null;
       this.value = null;
       cnCopyParams( this, params );
-    };
 
-    object.prototype = {
-      show: function() {
-        var thisRef = this;
+      this.show = function() {
         return $modal.open( {
           backdrop: true,
           keyboard: true,
           modalFade: true,
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-value.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = thisRef;
+            $scope.local = self;
             $scope.local.ok = function() { $modalInstance.close( $scope.local.value ); };
             $scope.local.cancel = function() { $modalInstance.close( false ); };
           }
         } ).result;
-      }
+      };
     };
 
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
@@ -938,12 +926,8 @@ cenozo.factory( 'CnPaginationFactory',
       this.itemsPerPage = 10;
       this.changePage = function() {};
       cnCopyParams( this, params );
-    };
 
-    object.prototype = {
-      getMaxIndex: function() {
-        return this.currentPage * this.itemsPerPage - 1;
-      }
+      this.getMaxIndex = function() { return this.currentPage * this.itemsPerPage - 1; }
     };
 
     return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };

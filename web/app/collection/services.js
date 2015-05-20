@@ -37,15 +37,16 @@ define( [
 
         ////////////////////////////////////
         // factory customizations start here
+        var self = this;
         this.cnParticipantModel = CnParticipantModelFactory.instance();
         this.cnParticipantModel.enableChoose( true );
         this.cnUserModel = CnUserModelFactory.instance();
         this.cnUserModel.enableChoose( true );
-        var thisRef = this;
+
         this.onView = function view() {
           return this.viewRecord().then( function() {
-            thisRef.cnParticipantModel.cnList.onList( true );
-            thisRef.cnUserModel.cnList.onList( true );
+            self.cnParticipantModel.cnList.onList( true );
+            self.cnUserModel.cnList.onList( true );
           } );
         };
         // factory customizations end here

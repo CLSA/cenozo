@@ -41,6 +41,7 @@ define( [
 
         ////////////////////////////////////
         // factory customizations start here
+        var self = this;
         this.cnAddressModel = CnAddressModelFactory.instance();
         this.cnAddressModel.enableAdd( true );
         this.cnAddressModel.enableDelete( true );
@@ -62,14 +63,13 @@ define( [
         this.cnEventModel.enableDelete( true );
         this.cnEventModel.enableView( true );
 
-        var thisRef = this;
         this.onView = function view() { 
           return this.viewRecord().then( function() {
-            thisRef.cnAddressModel.cnList.onList( true );
-            thisRef.cnPhoneModel.cnList.onList( true );
-            thisRef.cnConsentModel.cnList.onList( true );
-            thisRef.cnAlternateModel.cnList.onList( true );
-            thisRef.cnEventModel.cnList.onList( true );
+            self.cnAddressModel.cnList.onList( true );
+            self.cnPhoneModel.cnList.onList( true );
+            self.cnConsentModel.cnList.onList( true );
+            self.cnAlternateModel.cnList.onList( true );
+            self.cnEventModel.cnList.onList( true );
           } );
         };
         // factory customizations end here
@@ -85,6 +85,7 @@ define( [
     'CnBaseModelFactory', 'CnParticipantListFactory', 'CnParticipantViewFactory', 'CnHttpFactory',
     function( CnBaseModelFactory, CnParticipantListFactory, CnParticipantViewFactory, CnHttpFactory ) {
       var object = function() {
+        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.cnList = CnParticipantListFactory.instance( this );
         this.cnView = CnParticipantViewFactory.instance( this );
@@ -96,7 +97,6 @@ define( [
         this.getIdentifierFromRecord = function( record ) { return 'uid=' + record.uid; };
 
         // extend getMetadata
-        var thisRef = this;
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
@@ -107,9 +107,9 @@ define( [
                 modifier: { order: { lower: false } }
               }
             } ).query().then( function success( response ) {
-              thisRef.metadata.columnList.age_group_id.enumList = [];
+              self.metadata.columnList.age_group_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                thisRef.metadata.columnList.age_group_id.enumList.push( {
+                self.metadata.columnList.age_group_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].lower + ' to ' + response.data[i].upper
                 } );
@@ -129,9 +129,9 @@ define( [
                   }
                 }
               } ).query().then( function success( response ) {
-                thisRef.metadata.columnList.language_id.enumList = [];
+                self.metadata.columnList.language_id.enumList = [];
                 for( var i = 0; i < response.data.length; i++ ) {
-                  thisRef.metadata.columnList.language_id.enumList.push( {
+                  self.metadata.columnList.language_id.enumList.push( {
                     value: response.data[i].id,
                     name: response.data[i].name
                   } );
@@ -145,9 +145,9 @@ define( [
                   modifier: { order: 'name' }
                 }
               } ).query().then( function success( response ) {
-                thisRef.metadata.columnList.preferred_site_id = { enumList: [] };
+                self.metadata.columnList.preferred_site_id = { enumList: [] };
                 for( var i = 0; i < response.data.length; i++ ) {
-                  thisRef.metadata.columnList.preferred_site_id.enumList.push( {
+                  self.metadata.columnList.preferred_site_id.enumList.push( {
                     value: response.data[i].id,
                     name: response.data[i].name
                   } );
@@ -161,16 +161,16 @@ define( [
                   modifier: { order: 'rank' }
                 }
               } ).query().then( function success( response ) {
-                thisRef.metadata.columnList.state_id.enumList = [];
+                self.metadata.columnList.state_id.enumList = [];
                 for( var i = 0; i < response.data.length; i++ ) {
-                  thisRef.metadata.columnList.state_id.enumList.push( {
+                  self.metadata.columnList.state_id.enumList.push( {
                     value: response.data[i].id,
                     name: response.data[i].name
                   } );
                 }
               } );
             } ).then( function() {
-              thisRef.metadata.loadingCount--;
+              self.metadata.loadingCount--;
             } );
           } );
         };
