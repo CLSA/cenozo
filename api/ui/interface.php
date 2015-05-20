@@ -103,22 +103,20 @@
   </div>
 
   <snap-content snap-opt-tap-to-close="true" snap-opt-disable="'right'" snap-opt-hyperextensible="false">
-    <button snap-toggle="left" class="btn btn-primary menu-button rounded-right">
+    <button snap-toggle="left" class="btn btn-primary menu-button rounded-right" tooltip="Click or slide to the right to open the menu" tooltip-placement="right">
       <i class="glyphicon glyphicon-align-justify" aria-hidden="true"></i>
     </button>
-    <div snap-dragger class="container-fluid bg-info body-heading">
-      <div class="row">
-        <div class="col-xs-3 body-heading-title">
+    <div snap-dragger class="container-fluid bg-info nopadding row app-heading noselect">
+        <div class="col-xs-3 app-heading-title">
           <cn-application-title></cn-application-title>
         </div>
-        <div class="col-xs-5 body-heading-shortcuts">
+        <div class="col-xs-5 app-heading-shortcuts">
           <cn-clock></cn-clock>
           <cn-toolbelt></cn-toolbelt>
         </div>
-        <div class="col-xs-4 body-heading-state">
+        <div class="col-xs-4 app-heading-state">
           <cn-site-role-switcher></cn-site-role-switcher>
         </div>
-      </div>
     </div>
     <div ui-view class="container-fluid outer-view-frame fade-transition"></div>
   </snap-content>

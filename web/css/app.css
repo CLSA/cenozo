@@ -25,6 +25,8 @@ td.tiny { width: 1px; white-space: nowrap; }
 .rounded-bottom { border-top-left-radius: 0px !important; border-top-right-radius: 0px !important; }
 .rounded-left { border-top-right-radius: 0px !important; border-bottom-right-radius: 0px !important; }
 .rounded-right { border-top-left-radius: 0px !important; border-bottom-left-radius: 0px !important; }
+.col-slim { padding-left: 0px; padding-right: 0px; }
+.nopadding { padding: 0px; }
 
 /* make sure labels align well in forms */
 label {
@@ -47,13 +49,16 @@ input[type=number] { -moz-appearance: textfield; }
 /* needed by angular-bootstrap */
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
 
-/* needed by bootstrap-ui-datetime-picker */
-.datetime-picker div > table .btn-default { border: 0; }
-.body-heading { padding-top: 0.33em; padding-bottom: 0.33em; min-width: 750px; }
-.body-heading .row { margin-left: 10px; }
-.body-heading-title { font-size: 120%; font-weight: bold; top: 4px; }
-.body-heading-shortcuts { text-align: center; }
-.body-heading-state {}
+.app-heading {
+  padding-top: 0.33em;
+  padding-bottom: 0.33em;
+  padding-left: 3.5em;
+  min-width: 750px;
+  font-weight: bold;
+}
+.app-heading-title { font-size: 120%; padding-top: inherit; padding-bottom: inherit; }
+.app-heading-shortcuts { text-align: center; }
+.app-heading-state {}
 
 /* used by the ng-view so that animated transitions work correctly */
 .fade-transition {
@@ -87,11 +92,9 @@ input[type=number] { -moz-appearance: textfield; }
   z-index: 100;
   position: fixed;
   top: 0px;
-  height: 42px;
-  width: 40px;
+  height: 3em;
+  width: 3em;
   outline: none !important;
-
-  left: -5px;
 }
 snap-content {
   border-left: 1px solid #ccc;
@@ -144,3 +147,13 @@ snap-content {
 .timepicker-row { height: 2em; }
 slider, [slider] { margin: 0px; }
 slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: default;
+}
