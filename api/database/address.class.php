@@ -21,9 +21,17 @@ class address extends has_rank
   {
     // make sure the address is valid
     if( !$this->is_valid() )
+    {
+      $country = lib::create( 'business\session' )->get_application()->country;
+      $message = sprintf(
+        $this->international ?
+        'international addresses may not have a region in %s.' :
+        'local (non-international) addresses must have a region in %s and a valid postcode.',
+        $country );
       throw lib::create( 'exception\notice',
-        'Unable to save address since it is invalid.  Please check the region and postcode.',
+        'Unable to save address as requested. Please note that '.$message,
         __METHOD__ );
+    }
 
     // figure out whether alternate or participant is the rank parent
     static::$rank_parent = !is_null( $this->alternate_id ) ? 'alternate' : 'participant';
