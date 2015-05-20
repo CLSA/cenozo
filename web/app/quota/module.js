@@ -26,7 +26,9 @@ define( {
     },
     population: {
       title: 'Population',
-      type: 'string'
+      type: 'string',
+      format: 'integer',
+      minValue: 0
     }
   },
   columnList: {

@@ -13,7 +13,9 @@ define( {
     },
     name: {
       title: 'Username',
-      type: 'string'
+      type: 'string',
+      format: 'alpha_num',
+      help: 'May only contain numbers, letters and underscores'
     },
     first_name: {
       title: 'First Name',
@@ -25,7 +27,9 @@ define( {
     },
     email: {
       title: 'Email',
-      type: 'string'
+      type: 'string',
+      format: 'email',
+      help: 'Must be in the format "account@domain.name".'
     }
   },
   columnList: {

@@ -60,25 +60,6 @@ cenozo.factory( 'CnAppSingleton', [
           data: { role: { id: id } }
         } ).patch();
       };
-
-      this.formatDatetime = function formatDatetime( dtStr, type ) {
-        if( 0 > ['datetimesecond','datetime','date','timesecond','time'].indexOf( type ) )
-          throw 'Tried to format datetime for type "' + type + '" which is not supported';
-        var formatted = dtStr;
-        if( null !== dtStr ) {
-          var obj = moment( dtStr );
-          if( 'datetimesecond' == type || 'datetime' == type ) {
-            obj.tz( this.site.timezone );
-            if( 'datetimesecond' == type ) formatted = obj.format( 'YYYY-MM-DD HH:mm:ss' );
-            else /*if( 'datetime' == type )*/ formatted = obj.format( 'YYYY-MM-DD HH:mm' );
-          } else {
-            if( 'date' == type ) formatted = obj.format( 'YYYY-MM-DD' );
-            else if( 'timesecond' == type ) formatted = obj.format( 'HH:mm:ss' );
-            else /*if( 'time' == type )*/ formatted = obj.format( 'HH:mm' );
-          }
-        }
-        return formatted;
-      };
     } );
   }
 ] );
@@ -302,6 +283,24 @@ cenozo.factory( 'CnBaseViewFactory', [
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
         object.record = {};
+        object.formattedRecord = {};
+        object.backupRecord = {};
+
+        /**
+         * Updates a property of the formatted copy of the record
+         */
+        object.updateFormattedRecord = function( property ) {
+          if( angular.isDefined( property ) ) {
+            this.formattedRecord[property] =
+              this.parentModel.formatValue( property, this.record[property] );
+          } else {
+            // update all properties
+            for( var property in this.record ) {
+              this.formattedRecord[property] =
+                this.parentModel.formatValue( property, this.record[property] );
+            }
+          }
+        };
 
         /**
          * Must be called by the onDelete() function in order to delete the viewed record from the server.
@@ -340,15 +339,19 @@ cenozo.factory( 'CnBaseViewFactory', [
           var self = this;
           if( !this.parentModel.viewEnabled ) throw 'Calling viewRecord() but viewEnabled is false';
 
-          //this.record = {};
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath(),
             data: getServiceData( this.parentModel.subject, this.parentModel.inputList )
           } ).get().then( function success( response ) {
+            // create the record
             self.record = angular.copy( response.data );
             self.record.getIdentifier = function() {
               return self.parentModel.getIdentifierFromRecord( this );
             };
+
+            // create the backup record
+            self.backupRecord = angular.copy( self.record );
+
             self.parentModel.metadata.loadingCount++;
 
             return self.parentModel.getMetadata().then( function() {
@@ -357,9 +360,15 @@ cenozo.factory( 'CnBaseViewFactory', [
                 var inputObject = self.parentModel.inputList[column];
                 if( 'enum' == inputObject.type && null === self.record[column] ) {
                   var metadata = self.parentModel.metadata.columnList[column];
-                  if( angular.isDefined( metadata ) && !metadata.required ) self.record[column] = '';
+                  if( angular.isDefined( metadata ) && !metadata.required ) {
+                    self.record[column] = '';
+                    self.backupRecord[column] = '';
+                  }
                 }
               }
+
+              // update all properties in the formatted record
+              self.updateFormattedRecord();
 
               // signal that we are done loading metadata
               self.parentModel.metadata.loadingCount--;
@@ -580,6 +589,64 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @return promise
          */
         object.getMetadata = function() { return this.loadMetadata(); };
+
+        /**
+         * Applies special formatting to a record's value
+         */
+        object.formatValue = function formatValue( property, value ) {
+          var formatted = value;
+          if( null !== value ) {
+            var input = this.inputList[property];
+            if( input ) {
+              if( 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( input.type ) ) {
+                var obj = moment( value );
+                if( 'datetimesecond' == input.type || 'datetime' == input.type ) {
+                  obj.tz( this.site.timezone );
+                  if( 'datetimesecond' == input.type ) formatted = obj.format( 'YYYY-MM-DD HH:mm:ss' );
+                  else /*if( 'datetime' == input.type )*/ formatted = obj.format( 'YYYY-MM-DD HH:mm' );
+                } else {
+                  if( 'date' == input.type ) formatted = obj.format( 'YYYY-MM-DD' );
+                  else if( 'timesecond' == input.type ) formatted = obj.format( 'HH:mm:ss' );
+                  else /*if( 'time' == input.type )*/ formatted = obj.format( 'HH:mm' );
+                }
+              }
+            }
+          }
+          return formatted;
+        };
+
+        /**
+         * Determines whether a value meets its property's format
+         */
+        object.testFormat = function( property, value ) {
+          var input = this.inputList[property];
+          if( angular.isUndefined( input ) ) return true;
+
+          // check format
+          if( angular.isDefined( input.format ) ) {
+            // determine the regex
+            var re = undefined;
+            if( 'integer' == input.format ) re = /^-?[0-9]+$/;
+            else if( 'float' == input.format ) re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
+            else if( 'alphanum' == input.format ) re = /^[a-zA-Z0-9]+$/;
+            else if( 'alpha_num' == input.format ) re = /^[a-zA-Z0-9_]+$/;
+            else if( 'email' == input.format ) re = /^[^ ,]+@[^ ,]+\.[^ ,]+$/;
+
+            // test the regex, min and max values
+            if( angular.isDefined( re ) && !re.test( value ) ) return false;
+            if( angular.isDefined( input.minValue ) && input.minValue > value ) return false;
+            if( angular.isDefined( input.maxValue ) && input.maxValue < value ) return false;
+          }
+          
+          // check regex (note: escape character "\" must by typed FOUR times: \\\\
+          if( angular.isDefined( input.regex ) ) {
+            var re = new RegExp( input.regex );
+            if( !re.test( value ) ) return false;
+          }
+
+          // if we get here then the format is okay
+          return true;
+        };
       }
     };
   }

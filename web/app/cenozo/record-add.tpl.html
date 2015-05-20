@@ -8,56 +8,96 @@
         <label for="name" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
         <div class="col-sm-9">
           <div class="input-group"
+               ng-switch="input.type"
                ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
-            <input ng-if="'string' == input.type"
+            <input ng-switch-when="string"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              cn-change="check( input.key )"
               class="form-control"
               type="text"
               autocomplete="off"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></input>
-            <input ng-if="'typeahead' == input.type"
+            <input ng-switch-when="typeahead"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
               typeahead="item.value for item in getTypeaheadValues( input.key, $viewValue )"
               typeahead-loading="true"
               typeahead-min-length="2"
+              cn-change="check( input.key )"
               class="form-control"
               type="text"
               placeholder="(Type the first few letters to search possible values)"
               autocomplete="off"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></input>
-            <input ng-if="'date' == input.type"
+            <input ng-switch-when="date"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              cn-change="check( input.key )"
               class="form-control"
               type="text"
-              datepicker-popup="yyyy-MM-dd"
-              is-open="isOpen"
-              ng-click="isOpen = true"
-              show-weeks="false"
+              ng-click="selectDatetime( input )"
               onkeydown="return false"></input>
-            <select ng-if="'boolean' == input.type || 'enum' == input.type || 'rank' == input.type"
+            <input ng-switch-when="time"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="timesecond"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="datetime"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="datetimesecond"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <select ng-switch-default
+              ng-if="input.enumList"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-options="item.value as item.name for item in input.enumList"
               ng-model="record[input.key]"
+              cn-change="check( input.key )"
               class="form-control"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></select>
-            <textarea ng-if="'text' == input.type || 'constant text' == input.type"
+            <textarea ng-switch-when="text"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              cn-change="check( input.key )"
               class="form-control"
               ng-readonly="input.constant"
               ng-required="model.metadata.columnList[input.key].required"></textarea>
-            <div ng-if="'months' == input.type" class="row">
+            <div ng-switch-when="months" class="row">
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="january" name="name" ng-model="record.january" type="checkbox"> January
@@ -89,7 +129,7 @@
                 </label>
               </div>
             </div>
-            <div ng-if="'months' == input.type" class="row">
+            <div ng-switch-when="months" class="row">
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="july" name="name" ng-model="record.july" type="checkbox"> July
@@ -127,6 +167,9 @@
           </span>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.minlength">
             Isn't long enough
+          </span>
+          <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.format">
+            Invalid format
           </span>
           <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.conflict">
             Conflicts with existing record

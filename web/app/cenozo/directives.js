@@ -118,8 +118,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  'CnHttpFactory', 'CnModalMessageFactory',
-  function( CnHttpFactory, CnModalMessageFactory ) {
+  'CnModalDatetimeFactory', 'CnHttpFactory', 'CnModalMessageFactory',
+  function( CnModalDatetimeFactory, CnHttpFactory, CnModalMessageFactory ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -129,6 +129,18 @@ cenozo.directive( 'cnRecordAdd', [
       },
       controller: function( $scope ) {
         $scope.back = function() { $scope.model.transitionToLastState(); };
+        $scope.check = function( property ) {
+          // test the format
+          var item = angular.element(
+            angular.element( document.querySelector( '#' + property ) ) ).
+              scope().$parent.innerForm.name;
+          if( item ) {
+            var valid = $scope.model.testFormat( property, $scope.record[property] );
+            item.$dirty = !valid;
+            item.$invalid = !valid;
+            item.$error.format = !valid;
+          }
+        };
         $scope.submit = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
@@ -211,6 +223,17 @@ cenozo.directive( 'cnRecordAdd', [
             }
           } ).get().then( function( response ) {
             return angular.copy( response.data );
+          } );
+        };
+        $scope.selectDatetime = function( input ) {
+          CnModalDatetimeFactory.instance( {
+            title: input.title,
+            date: $scope.record[input.key],
+            pickerType: input.type
+          } ).show().then( function( response ) {
+            if( false !== response ) {
+              $scope.record[input.key] = response;
+            }
           } );
         };
       },
@@ -383,58 +406,90 @@ cenozo.directive( 'cnRecordView', [
           );
         };
 
-        $scope.patch = function( property ) {
-          var data = {};
-          data[property] = $scope.model.cnView.record[property];
-          $scope.model.cnView.onPatch( data ).then(
-            function success() { 
-              // if the data in the identifier was patched then reload with the new url
-              if( 0 <= $scope.model.cnView.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
-                $scope.model.reloadState( $scope.model.cnView.record );
-              } else {
-                var scope = angular.element(
-                  angular.element( document.querySelector( '#' + property ) ) ).scope();
-                // if a conflict has been resolved then clear it throughout the form
-                var currentItem = scope.$parent.innerForm.name;
-                if( currentItem.$error.conflict ) {
-                  var sibling = scope.$parent.$parent.$$childHead;
-                  while( null !== sibling ) {
-                    var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
-                    if( siblingItem.$error.conflict ) { 
-                      siblingItem.$dirty = false;
-                      siblingItem.$invalid = false;
-                      siblingItem.$error.conflict = false;
-                    }
-                    sibling = sibling.$$nextSibling;
-                  }
-                }
+        $scope.undo = function( property ) {
+          if( $scope.model.cnView.record[property] != $scope.model.cnView.backupRecord[property] ) {
+            $scope.model.cnView.record[property] = $scope.model.cnView.backupRecord[property];
+            $scope.patch( property );
+          }
+        };
 
-                /* Removing the following because it was interfering with $error.required
-                // now clean up this property's form elements
-                currentItem.$error = {};
-                */
-              }
-            },
-            function error( response ) { 
-              if( 406 == response.status ) {
-                CnModalMessageFactory.instance( {
-                  title: 'Please Note',
-                  message: response.data,
-                  error: true
-                } ).show();
-              } else if( 409 == response.status ) { 
-                // report which inputs are included in the conflict
-                for( var i = 0; i < response.data.length; i++ ) { 
-                  var item = angular.element(
-                    angular.element( document.querySelector( '#' + response.data[i] ) ) ).
-                      scope().$parent.innerForm.name;
-                  item.$dirty = true;
-                  item.$invalid = true;
-                  item.$error.conflict = true;
+        $scope.patch = function( property ) {
+          // test the format
+          if( !$scope.model.testFormat( property, $scope.model.cnView.record[property] ) ) {
+            var item = angular.element(
+              angular.element( document.querySelector( '#' + property ) ) ).
+                scope().$parent.innerForm.name;
+            item.$dirty = true;
+            item.$invalid = true;
+            item.$error.format = true;
+            return;
+          } else {
+            // validation passed, proceed with patch
+            var data = {};
+            data[property] = $scope.model.cnView.record[property];
+            $scope.model.cnView.onPatch( data ).then(
+              function success() { 
+                // if the data in the identifier was patched then reload with the new url
+                if( 0 <= $scope.model.cnView.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
+                  $scope.model.reloadState( $scope.model.cnView.record );
+                } else {
+                  var scope = angular.element(
+                    angular.element( document.querySelector( '#' + property ) ) ).scope();
+                  // if a conflict or format has been resolved then clear it throughout the form
+                  var currentItem = scope.$parent.innerForm.name;
+                  if( currentItem.$error.conflict ) {
+                    var sibling = scope.$parent.$parent.$$childHead;
+                    while( null !== sibling ) {
+                      var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
+                      if( siblingItem.$error.conflict ) { 
+                        siblingItem.$error.conflict = false;
+                        if( !siblingItem.$error.format ) {
+                          siblingItem.$dirty = false;
+                          siblingItem.$invalid = false;
+                        }
+                      }
+                      sibling = sibling.$$nextSibling;
+                    }
+                  }
+                  if( currentItem.$error.format ) {
+                    currentItem.$error.format = false;
+                    if( !currentItem.$error.conflict ) {
+                      currentItem.$dirty = false;
+                      currentItem.$invalid = false;
+                    }
+                  }
+
+                  // update the formatted value
+                  $scope.model.cnView.updateFormattedRecord( property );
+
+                  /* Removing the following because it was interfering with $error.required
+                  // now clean up this property's form elements
+                  currentItem.$error = {};
+                  */
                 }
-              } else { $scope.model.transitionToErrorState( response ); }
-            }
-          );
+              },
+              function error( response ) { 
+                if( 406 == response.status ) {
+                  $scope.model.cnView.record[property] = $scope.model.cnView.backupRecord[property];
+                  CnModalMessageFactory.instance( {
+                    title: 'Please Note',
+                    message: response.data,
+                    error: true
+                  } ).show();
+                } else if( 409 == response.status ) { 
+                  // report which inputs are included in the conflict
+                  for( var i = 0; i < response.data.length; i++ ) { 
+                    var item = angular.element(
+                      angular.element( document.querySelector( '#' + response.data[i] ) ) ).
+                        scope().$parent.innerForm.name;
+                    item.$dirty = true;
+                    item.$invalid = true;
+                    item.$error.conflict = true;
+                  }
+                } else { $scope.model.transitionToErrorState( response ); }
+              }
+            );
+          }
         };
 
         $scope.selectDatetime = function( input ) {
@@ -446,7 +501,6 @@ cenozo.directive( 'cnRecordView', [
             if( false !== response ) {
               $scope.model.cnView.record[input.key] = response;
               $scope.patch( input.key );
-              input.formattedValue = CnAppSingleton.formatDatetime( response, input.type );
             }
           } );
         };
@@ -464,17 +518,6 @@ cenozo.directive( 'cnRecordView', [
         scope.$watch( 'model.cnView.record', function( record ) {
           // convert datetimes
           if( angular.isDefined( record.id ) && !recordLoaded ) {
-            for( var i = 0; i < scope.inputArray.length; i++ ) {
-              var key = scope.inputArray[i].key;
-              if( 'datetimesecond' == scope.inputArray[i].type ||
-                  'datetime' == scope.inputArray[i].type ||
-                  'date' == scope.inputArray[i].type ||
-                  'timesecond' == scope.inputArray[i].type ||
-                  'time' == scope.inputArray[i].type ) {
-                scope.inputArray[i].formattedValue =
-                  CnAppSingleton.formatDatetime( record[key], scope.inputArray[i].type );
-              }
-            }
             recordLoaded = true;
             if( recordLoaded && metadataLoaded ) scope.isComplete = true;
           }

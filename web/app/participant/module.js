@@ -60,6 +60,7 @@ define( {
     email: {
       title: 'Email',
       type: 'string',
+      format: 'email',
       help: 'Must be in the format "account@domain.name".'
     },
     mass_email: {

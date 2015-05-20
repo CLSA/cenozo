@@ -9,11 +9,15 @@ define( {
   inputList: {
     lower: {
       title: 'Lower Age',
-      type: 'number'
+      type: 'string',
+      format: 'integer',
+      minValue: 0
     },
     upper: {
       title: 'Upper Age',
-      type: 'number'
+      type: 'string'
+      format: 'integer',
+      minValue: 0
     },
   },
   columnList: {

@@ -33,14 +33,13 @@ define( [
         // do not allow changes to the international column
         this.onPatch = function( data ) {
           if( angular.isDefined( data.international ) ) {
+            self.record.international = self.backupRecord.international;
             return CnModalMessageFactory.instance( {
               title: 'Cannot Change Address',
               message: 'Once an address has been created it cannot be changed to or from an ' +
                        'international address.  Please create a new address instead.',
               error: true
-            } ).show().then( function() {
-              self.record.international = !data.international;
-            } );
+            } ).show();
           } else return this.patchRecord( data );
         };
       };
