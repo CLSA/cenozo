@@ -118,7 +118,7 @@
           <cn-site-role-switcher></cn-site-role-switcher>
         </div>
     </div>
-    <div ui-view class="container-fluid outer-view-frame fade-transition"></div>
+    <div ui-view class="container-fluid outer-view-frame fade-transition noselect"></div>
   </snap-content>
 </body>
 </html>
