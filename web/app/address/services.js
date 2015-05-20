@@ -32,7 +32,7 @@ define( [
 
         // do not allow changes to the international column
         this.onPatch = function( data ) {
-          if( undefined !== data.international ) {
+          if( angular.isDefined( data.international ) ) {
             return CnModalMessageFactory.instance( {
               title: 'Cannot Change Address',
               message: 'Once an address has been created it cannot be changed to or from an ' +

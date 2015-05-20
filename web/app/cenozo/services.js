@@ -20,10 +20,10 @@ cenozo.factory( 'CnAppSingleton', [
       this.promise = CnHttpFactory.instance( {
         path: 'self/0'
       } ).get().then( function success( response ) {
-        self.application = cnCopy( response.data.application );
-        self.user = cnCopy( response.data.user );
-        self.site = cnCopy( response.data.site );
-        self.role = cnCopy( response.data.role );
+        self.application = angular.copy( response.data.application );
+        self.user = angular.copy( response.data.user );
+        self.site = angular.copy( response.data.site );
+        self.role = angular.copy( response.data.role );
         cnConvertFromDatabaseRecord( self.user.last_activity );
 
         // process access records
@@ -171,8 +171,8 @@ cenozo.factory( 'CnBaseListFactory', [
 
         object.restrict = function( column, restrict ) {
           var columnList = this.parentModel.columnList;
-          if( undefined === restrict ) {
-            if( undefined !== columnList[column].restrict ) delete columnList[column].restrict;
+          if( angular.isUndefined( restrict ) ) {
+            if( angular.isDefined( columnList[column].restrict ) ) delete columnList[column].restrict;
           } else {
             columnList[column].restrict = restrict;
           }
@@ -240,11 +240,11 @@ cenozo.factory( 'CnBaseListFactory', [
          */
         object.listRecords = function( replace ) {
           var self = this;
-          if( undefined === replace ) replace = false;
+          if( angular.isUndefined( replace ) ) replace = false;
           if( replace ) this.cache = [];
 
           var data = getServiceData( this.parentModel.subject, this.parentModel.columnList );
-          if( undefined === data.modifier ) data.modifier = {};
+          if( angular.isUndefined( data.modifier ) ) data.modifier = {};
           data.modifier.offset = replace ? 0 : this.cache.length;
           if( parentModel.chooseEnabled && this.chooseMode ) data.choosing = 1;
 
@@ -301,7 +301,6 @@ cenozo.factory( 'CnBaseViewFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
-        object.rawRecord = {};
         object.record = {};
 
         /**
@@ -346,8 +345,7 @@ cenozo.factory( 'CnBaseViewFactory', [
             path: this.parentModel.getServiceResourcePath(),
             data: getServiceData( this.parentModel.subject, this.parentModel.inputList )
           } ).get().then( function success( response ) {
-            self.rawRecord = cnCopy( response.data );
-            self.record = cnCopy( response.data );
+            self.record = angular.copy( response.data );
             self.record.getIdentifier = function() {
               return self.parentModel.getIdentifierFromRecord( this );
             };
@@ -359,7 +357,7 @@ cenozo.factory( 'CnBaseViewFactory', [
                 var inputObject = self.parentModel.inputList[column];
                 if( 'enum' == inputObject.type && null === self.record[column] ) {
                   var metadata = self.parentModel.metadata.columnList[column];
-                  if( undefined !== metadata && !metadata.required ) self.record[column] = '';
+                  if( angular.isDefined( metadata ) && !metadata.required ) self.record[column] = '';
                 }
               }
 
@@ -389,7 +387,7 @@ cenozo.factory( 'CnBaseModelFactory', [
   function( $state, $stateParams, CnHttpFactory ) {
     return {
       construct: function( object, module ) {
-        for( var property in module ) object[property] = cnCopy( module[property] );
+        for( var property in module ) object[property] = angular.copy( module[property] );
 
         object.metadata = { loadingCount: 0 };
         object.addEnabled = false;
@@ -409,7 +407,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           var identifierObject = {};
           if( stateNameParts[len-2] != this.subject ) {
             var parentSubject = stateNameParts[len-2];
-            var parentIdentifier = undefined !== $stateParams.parentIdentifier
+            var parentIdentifier = angular.isDefined( $stateParams.parentIdentifier )
                                  ? $stateParams.parentIdentifier
                                  : $stateParams.identifier;
             identifierObject[parentSubject] = parentIdentifier;
@@ -431,13 +429,13 @@ cenozo.factory( 'CnBaseModelFactory', [
           return path + module.subject;
         }
         object.getServiceResourcePath = function( resource ) {
-          var identifier = undefined === resource ? $stateParams.identifier : resource;
+          var identifier = angular.isUndefined( resource ) ? $stateParams.identifier : resource;
           return this.getServiceCollectionPath() + '/' + identifier;
         }
 
         // helper functions based on the state
         object.reloadState = function( record ) {
-          if( undefined === record ) {
+          if( angular.isUndefined( record ) ) {
             $state.reload();
           } else {
             $stateParams.identifier = record.getIdentifier();
@@ -472,7 +470,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
         };
         object.transitionToErrorState = function( response ) {
-          var type = undefined === response || undefined === response.status || 404 != response.status
+          var type = angular.isUndefined( response ) || angular.isUndefined( response.status ) || 404 != response.status
                    ? '500' : '404';
           $state.go( 'error.' + type );
         };
@@ -481,10 +479,10 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Makes an array containing COPIES of the model's input list
          */
         object.getInputArray = function( removeInputList ) {
-          if( undefined === removeInputList ) removeInputList = [];
+          if( angular.isUndefined( removeInputList ) ) removeInputList = [];
 
           // make a copy of the input list and remove any parent column(s)
-          var inputObjectList = cnCopy( this.inputList );
+          var inputObjectList = angular.copy( this.inputList );
           for( var property in this.getParentIdentifierObject() ) delete inputObjectList[property+'_id'];
 
           // create an array out of the input list
@@ -503,14 +501,14 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Makes an array containing REFERENCES to the model's column list
          */
         object.getColumnArray = function( removeColumnList ) {
-          if( undefined === removeColumnList ) removeColumnList = [];
+          if( angular.isUndefined( removeColumnList ) ) removeColumnList = [];
 
           // create an array out of the column list
           var columnArray = [];
           for( var key in this.columnList ) {
             if( 0 > removeColumnList.indexOf( key ) ) {
               var column = this.columnList[key];
-              if( undefined === column.allowRestrict ) column.allowRestrict = true;
+              if( angular.isUndefined( column.allowRestrict ) ) column.allowRestrict = true;
               column.key = key;
               columnArray.push( column );
             }
@@ -538,7 +536,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           return CnHttpFactory.instance( {
             path: this.subject
           } ).head().then( function( response ) {
-            var columnList = JSON.parse( response.headers( 'Columns' ) );
+            var columnList = angular.fromJson( response.headers( 'Columns' ) );
             for( var column in columnList ) {
               columnList[column].required = '1' == columnList[column].required;
               if( 'enum' == columnList[column].data_type ) { // parse out the enum values
@@ -556,7 +554,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             }
             self.metadata.columnList = columnList;
 
-            if( undefined !== self.metadata.columnList.rank ) { // create enum for rank columns
+            if( angular.isDefined( self.metadata.columnList.rank ) ) { // create enum for rank columns
               self.metadata.loadingCount++;
               CnHttpFactory.instance( {
                 path: self.getServiceCollectionPath(),
@@ -592,7 +590,7 @@ cenozo.factory( 'CnHttpFactory', [
   '$http',
   function CnHttpFactory( $http ) {
     var object = function( params ) {
-      if( undefined === params.path ) throw 'Tried to create CnHttpFactory without a path';
+      if( angular.isUndefined( params.path ) ) throw 'Tried to create CnHttpFactory without a path';
       this.path = null;
       this.data = {};
       cnCopyParams( this, params );
@@ -614,7 +612,7 @@ cenozo.factory( 'CnHttpFactory', [
       this.query = function() { return this.http( 'GET', 'api/' + this.path ); };
     };
 
-    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
@@ -643,7 +641,7 @@ cenozo.service( 'CnModalConfirmFactory', [
       };
     };
 
-    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
@@ -802,7 +800,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.update();
     };
 
-    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
@@ -831,7 +829,7 @@ cenozo.service( 'CnModalMessageFactory', [
       };
     };
 
-    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
@@ -841,14 +839,14 @@ cenozo.service( 'CnModalRestrictFactory', [
   function( $modal ) {
     var object = function( params ) {
       var self = this;
-      if( undefined === params.column ) throw 'Tried to create CnModalRestrictFactory without a column';
+      if( angular.isUndefined( params.column ) ) throw 'Tried to create CnModalRestrictFactory without a column';
       this.name = null;
       this.column = null;
       this.comparison = null;
       cnCopyParams( this, params );
 
-      if( undefined === this.comparison || null === this.comparison ) this.comparison = { test: '<=>' };
-      this.preExisting = undefined !== this.comparison.value;
+      if( angular.isUndefined( this.comparison ) || null === this.comparison ) this.comparison = { test: '<=>' };
+      this.preExisting = angular.isDefined( this.comparison.value );
       this.show = function() {
         return $modal.open( {
           backdrop: true,
@@ -865,7 +863,7 @@ cenozo.service( 'CnModalRestrictFactory', [
       };
     };
 
-    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
@@ -891,7 +889,7 @@ cenozo.service( 'CnModalTimezoneCalculatorFactory', [
       };
     };
 
-    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
@@ -922,7 +920,7 @@ cenozo.service( 'CnModalValueFactory', [
       };
     };
 
-    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
@@ -939,7 +937,7 @@ cenozo.factory( 'CnPaginationFactory',
       this.getMaxIndex = function() { return this.currentPage * this.itemsPerPage - 1; }
     };
 
-    return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 );
 
@@ -954,7 +952,7 @@ function getServiceData( subject, list ) {
   for( var key in list ) {
     var lastJoin = null;
     var parentTable = subject;
-    var columnParts = undefined === list[key].column ? [ key ] : list[key].column.split( '.' );
+    var columnParts = angular.isUndefined( list[key].column ) ? [ key ] : list[key].column.split( '.' );
     for( var k = 0; k < columnParts.length; k++ ) {
       if( k == columnParts.length - 1 ) {
         if( 'months' == list[key].type ) {
@@ -997,14 +995,14 @@ function getServiceData( subject, list ) {
       }
     }
 
-    if( undefined !== list[key].restrict && null !== list[key].restrict ) {
+    if( angular.isDefined( list[key].restrict ) && null !== list[key].restrict ) {
       var test = list[key].restrict.test;
       var value = list[key].restrict.value;
       if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
 
       // determine the column name
       var column = key;
-      if( undefined !== list[key].column ) {
+      if( angular.isDefined( list[key].column ) ) {
         var columnParts = list[key].column.split( '.' );
         var len = columnParts.length;
         column = list[key].column;

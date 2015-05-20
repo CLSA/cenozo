@@ -37,7 +37,7 @@ cenozo.filter( 'cnMetaFilter', [
   '$filter',
   function( $filter ) {
     return function( value, filterStr ) {
-      if( undefined !== filterStr && 0 < filterStr.length ) {
+      if( angular.isDefined( filterStr ) && 0 < filterStr.length ) {
         // convert string into array deliminating by : (but not inside double quotes)
         var args = [].concat.apply( [], filterStr.split( '"' ).map(
           function( v, i ) {
@@ -59,10 +59,10 @@ cenozo.filter( 'cnMomentDate', [
   function( CnAppSingleton ) {
     return function( input, format ) {
       var output = input;
-      if( undefined !== input &&
+      if( angular.isDefined( input ) &&
           null !== input &&
           'object' === typeof input &&
-          undefined !== input.format ) {
+          angular.isDefined( input.format ) ) {
         output = input.tz( CnAppSingleton.site.timezone ).format( format );
       }
 
@@ -91,8 +91,8 @@ cenozo.filter( 'cnPercent', function() {
 /* ######################################################################################################## */
 cenozo.filter( 'cnUCWords', function() {
   return function( input ) {
-    if( undefined !== input )
-      input = input.replace( /(?:^|\s)\S/g, function( a ) { return a.toUpperCase(); } );
+    if( angular.isDefined( input ) )
+      input = input.replace( /(?:^|\s)\S/g, function( a ) { return angular.uppercase( a ); } );
     return input;
   };
 } );

@@ -158,7 +158,7 @@ cenozo.directive( 'cnRecordAdd', [
                   for( var i = 0; i < response.data.length; i++ ) { 
                     var elementScope = angular.element( angular.element(
                       document.querySelector( '#' + response.data[i] ) ) ).scope();
-                    if( undefined !== elementScope ) {
+                    if( angular.isDefined( elementScope ) ) {
                       var item = elementScope.$parent.innerForm.name;
                       item.$dirty = true;
                       item.$invalid = true;
@@ -172,22 +172,22 @@ cenozo.directive( 'cnRecordAdd', [
         };
         $scope.getTypeaheadValues = function( key, viewValue ) {
           var input = $scope.model.inputList[key];
-          if( undefined === input )
+          if( angular.isUndefined( input ) )
             throw 'Typeahead used without a valid input key (' + key + ').';
-          if( undefined === input.table )
+          if( angular.isUndefined( input.table ) )
             throw 'Typeaheads require a value for "table" in the input list.';
           
           // create the where statement
           var where = {};
-          if( undefined === input.where ) {
+          if( angular.isUndefined( input.where ) ) {
             where = {
-              column: undefined === input.select ? 'name' : input.select,
+              column: angular.isUndefined( input.select ) ? 'name' : input.select,
               operator: 'like',
               value: viewValue + '%'
             };
           } else {
             where = [];
-            var whereList = Array === input.where.constructor ? input.where : [ input.where ];
+            var whereList = angular.isArray( input.where ) ? input.where : [ input.where ];
             for( var i = 0; i < whereList.length; i++ ) {
               where.push( {
                 column: whereList[i],
@@ -202,7 +202,7 @@ cenozo.directive( 'cnRecordAdd', [
             data: {
               select: {
                 column: {
-                  column: undefined === input.select ? 'name' : input.select,
+                  column: angular.isUndefined( input.select ) ? 'name' : input.select,
                   alias: 'value',
                   table_prefix: false
                 }
@@ -210,13 +210,13 @@ cenozo.directive( 'cnRecordAdd', [
               modifier: { where: where }
             }
           } ).get().then( function( response ) {
-            return cnCopy( response.data );
+            return angular.copy( response.data );
           } );
         };
       },
       link: function( scope, element, attrs ) {
         scope.heading = attrs.heading;
-        if( undefined === scope.heading ) {
+        if( angular.isUndefined( scope.heading ) ) {
           var parentSubject = scope.model.getParentSubject();
           scope.heading = 'Create ';
           scope.heading += parentSubject ? parentSubject.ucWords() + ' ' : '';
@@ -241,11 +241,11 @@ cenozo.directive( 'cnRecordAdd', [
         // watch for changes in metadata (created asynchronously by the service)
         scope.isComplete = false;
         scope.$watch( 'model.metadata', function( metadata ) {
-          if( undefined !== metadata && 0 === metadata.loadingCount && !scope.isComplete ) {
+          if( angular.isDefined( metadata ) && 0 === metadata.loadingCount && !scope.isComplete ) {
             for( var i = 0; i < scope.inputArray.length; i++ ) {
               var input = scope.inputArray[i];
               var meta = metadata.columnList[input.key];
-              if( undefined !== meta && undefined !== meta.enumList ) {
+              if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
                 input.enumList = meta.enumList;
                 
                 input.enumList.unshift( {
@@ -329,13 +329,13 @@ cenozo.directive( 'cnRecordList', [
         }
       },
       link: function( scope, element, attrs ) {
-        scope.heading = undefined === attrs.heading
+        scope.heading = angular.isUndefined( attrs.heading )
                       ? scope.model.name.singular.ucWords() + ' List'
                       : attrs.heading;
 
         scope.columnArray = scope.model.getColumnArray( scope.removeColumns );
 
-        if( undefined !== scope.model.cnList.restrict ) {
+        if( angular.isDefined( scope.model.cnList.restrict ) ) {
           scope.addRestrict = function( column ) {
             var column = scope.columnArray.findByProperty( 'key', column );
             CnModalRestrictFactory.instance( {
@@ -453,7 +453,7 @@ cenozo.directive( 'cnRecordView', [
       },
       link: function( scope, element, attrs ) {
         scope.heading = attrs.heading;
-        if( undefined === scope.heading ) {
+        if( angular.isUndefined( scope.heading ) ) {
           var parentSubject = scope.model.getParentSubject();
           scope.heading = parentSubject ? parentSubject.ucWords() + ' ' : '';
           scope.heading += scope.model.name.singular.ucWords() + ' Details';
@@ -463,7 +463,7 @@ cenozo.directive( 'cnRecordView', [
         scope.inputArray = scope.model.getInputArray( scope.removeInputs );
         scope.$watch( 'model.cnView.record', function( record ) {
           // convert datetimes
-          if( undefined !== record.id && !recordLoaded ) {
+          if( angular.isDefined( record.id ) && !recordLoaded ) {
             for( var i = 0; i < scope.inputArray.length; i++ ) {
               var key = scope.inputArray[i].key;
               if( 'datetimesecond' == scope.inputArray[i].type ||
@@ -484,8 +484,8 @@ cenozo.directive( 'cnRecordView', [
         var metadataLoaded = false;
         scope.isComplete = false;
         scope.$watch( 'model.metadata', function( metadata ) {
-          if( undefined !== metadata &&
-              undefined !== metadata.columnList &&
+          if( angular.isDefined( metadata ) &&
+              angular.isDefined( metadata.columnList ) &&
               0 === metadata.loadingCount &&
               !metadataLoaded ) {
             // build enum lists
@@ -494,7 +494,7 @@ cenozo.directive( 'cnRecordView', [
               if( input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
                 input.enumList = 'boolean' === input.type
                                ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
-                               : cnCopy( metadata.columnList[key].enumList );
+                               : angular.copy( metadata.columnList[key].enumList );
                 if( !metadata.columnList[key].required ) input.enumList.unshift( { value: '', name: '(none)' } );
               }
             }

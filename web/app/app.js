@@ -9,16 +9,6 @@ window.cnMonthList = [
   'july', 'august', 'september', 'october', 'november', 'december'
 ];
 
-window.cnCopy = function cnCopy( arg ) {
-  if( 'object' === typeof arg ) {
-    return JSON.parse( JSON.stringify( arg ) );
-  } else if( Array === arg.constructor ) {
-    return arg.slice();
-  } else {
-    return arg;
-  }
-};
-
 window.cnCopyParams = function cnCopyParams( object, params ) {
   for( var property in params ) {
     if( params.hasOwnProperty( property ) ) {
@@ -69,9 +59,9 @@ window.cnConvertToDatabaseRecord = function cnConvertToDatabaseRecord( object ) 
 };
 
 window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
-  if( undefined === $stateProvider ) throw 'cnRouteModule requires exactly 3 parameters';
-  if( undefined === name ) throw 'cnRouteModule requires exactly 3 parameters';
-  if( undefined === module ) throw 'cnRouteModule requires exactly 3 parameters';
+  if( angular.isUndefined( $stateProvider ) ) throw 'cnRouteModule requires exactly 3 parameters';
+  if( angular.isUndefined( name ) ) throw 'cnRouteModule requires exactly 3 parameters';
+  if( angular.isUndefined( module ) ) throw 'cnRouteModule requires exactly 3 parameters';
 
   // add base state
   $stateProvider.state( name, {
@@ -128,7 +118,7 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
 
 Array.prototype.findByProperty = function( property, value ) {
   for( var i = 0; i < this.length; i++ )
-    if( undefined !== this[i][property] && value == this[i][property] )
+    if( angular.isDefined( this[i][property] ) && value == this[i][property] )
       return this[i];
   return null;
 }
@@ -139,18 +129,18 @@ String.prototype.regexIndexOf = function( regex, startpos ) {
 }
 
 String.prototype.snakeToCamel = function cnSnakeToCamel( first ) {
-  if( undefined === first ) first = false;
-  var output = this.replace( /(\_\w)/g, function( $1 ) { return $1[1].toUpperCase(); } );
-  if( first ) output = output.charAt(0).toUpperCase() + output.slice(1);
+  if( angular.isUndefined( first ) ) first = false;
+  var output = this.replace( /(\_\w)/g, function( $1 ) { return angular.uppercase( $1[1] ); } );
+  if( first ) output = angular.uppercase( output.charAt(0) ) + output.slice(1);
   return output;
 };
 
 String.prototype.camelToSnake = function cnCamelToSnake() {
-  return this.replace( /([A-Z])/g, function( $1 ) { return '_'+$1.toLowerCase(); } ).replace( /^_/, '' );
+  return this.replace( /([A-Z])/g, function( $1 ) { return '_' + angular.lowercase( $1 ); } ).replace( /^_/, '' );
 };
 
 String.prototype.ucWords = function() {
-  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return $1.toUpperCase(); } ); 
+  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.lowercase( $1 ); } ); 
 }
 
 window.cnToQueryString = function cnToQueryString( object ) {
@@ -235,7 +225,7 @@ cenozoApp.config( [
         },
         response: function( response ) {
           if( 'api\/' == response.config.url.substring( 0, 4 ) ) {
-            if( Array === response.data.constructor ) {
+            if( angular.isArray( response.data ) ) {
               for( var i = 0; i < response.data.length; i++ ) {
                 cnConvertFromDatabaseRecord( response.data[i] );
               }
