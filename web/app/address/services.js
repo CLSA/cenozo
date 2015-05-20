@@ -24,9 +24,26 @@ define( [
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAddressViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+    'CnBaseViewFactory', 'CnAppSingleton', 'CnModalMessageFactory',
+    function( CnBaseViewFactory, CnAppSingleton, CnModalMessageFactory ) {
+      var object = function( parentModel ) {
+        CnBaseViewFactory.construct( this, parentModel );
+
+        // do not allow changes to the international column
+        var thisRef = this;
+        this.onPatch = function( data ) {
+          if( undefined !== data.international ) {
+            return CnModalMessageFactory.instance( {
+              title: 'Cannot Change Address',
+              message: 'Once an address has been created it cannot be changed to or from an ' +
+                       'international address.  Please create a new address instead.',
+              error: true
+            } ).show().then( function() {
+              thisRef.record.international = !data.international;
+            } );
+          } else return this.patchRecord( data );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -58,21 +75,21 @@ define( [
             CnHttpFactory.instance( {
               path: 'region',
               data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: {
-                  where: {
-                    column: 'country',
-                    operator: '=',
-                    value: CnAppSingleton.application.country
-                  },
-                  order: 'name'
-                }
+                select: {
+                  column: [
+                    'id',
+                    'country',
+                    { column: 'CONCAT_WS( ", ", name, country )', alias: 'name', table_prefix: false }
+                  ]
+                },
+                modifier: { order: ['country','name'], limit: 100 }
               }
             } ).query().then( function success( response ) {
               thisRef.metadata.columnList.region_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
                 thisRef.metadata.columnList.region_id.enumList.push( {
                   value: response.data[i].id,
+                  country: response.data[i].country,
                   name: response.data[i].name
                 } );
               }

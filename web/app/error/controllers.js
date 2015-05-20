@@ -4,9 +4,11 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'ErrorCtrl', [
-    '$scope', 'CnErrorModelFactory',
-    function( $scope, CnErrorModelFactory ) {
+    '$scope', '$window', 'CnErrorModelFactory',
+    function( $scope, $window, CnErrorModelFactory ) {
       $scope.model = CnErrorModelFactory.root;
+      $scope.back = function() { $window.history.back(); };
+      $scope.reload = function() { $window.location.reload(); };
     }
   ] );
 

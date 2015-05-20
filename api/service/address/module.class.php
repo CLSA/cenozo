@@ -47,12 +47,22 @@ class module extends \cenozo\service\module
       $select->add_column( $month, 'available' );
     }
 
-    // add the "summary" column if needed
-    if( $select->has_column( 'summary' ) )
+    // add the "summary" and "international_region" columns if needed
+    if( $select->has_column( 'summary' ) || $select->has_column( 'international_region' ) )
     {
-      if( !$modifier->has_join( 'region' ) ) $modifier->join( 'region', 'address.region_id', 'region.id' );
-      $select->add_column(
-        'CONCAT( rank, ") ", CONCAT_WS( ", ", address1, address2, city, region.name ) )', 'summary', false );
+      $modifier->left_join( 'region', 'address.region_id', 'region.id' );
+
+      if( $select->has_column( 'summary' ) )
+        $select->add_column(
+          'CONCAT( rank, ") ", CONCAT_WS( ", ", address1, address2, city, region.name ) )', 'summary', false );
+      if( $select->has_column( 'international_region' ) )
+        $select->add_column(
+          'IFNULL( region.name, "(international)" )', 'international_region', false );
+    }
+    else if( $modifier->has_join( 'region' ) )
+    {
+      // make sure the join to the region table is a left join
+      $modifier->left_join( 'region', 'address.region_id', 'region.id' );
     }
   }
 
@@ -62,6 +72,6 @@ class module extends \cenozo\service\module
   public function pre_write( $record )
   {
     // source the postcode
-    if( is_null( $record->region_id ) ) $record->source_postcode();
+    if( !$record->international && is_null( $record->region_id ) ) $record->source_postcode();
   }
 }

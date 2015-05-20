@@ -118,8 +118,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$window', 'CnHttpFactory',
-  function( $window, CnHttpFactory ) {
+  '$window', 'CnHttpFactory', 'CnModalMessageFactory',
+  function( $window, CnHttpFactory, CnModalMessageFactory ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -147,7 +147,13 @@ cenozo.directive( 'cnRecordAdd', [
                 $window.history.back();
               },
               function error( response ) { 
-                if( 409 == response.status ) { 
+                if( 406 == response.status ) {
+                  CnModalMessageFactory.instance( {
+                    title: 'Please Note',
+                    message: response.data,
+                    error: true
+                  } ).show();
+                } else if( 409 == response.status ) { 
                   // report which inputs are included in the conflict
                   for( var i = 0; i < response.data.length; i++ ) { 
                     var elementScope = angular.element( angular.element(
@@ -285,7 +291,13 @@ cenozo.directive( 'cnRecordList', [
         if( $scope.model.deleteEnabled ) {
           $scope.deleteRecord = function( record ) {
             $scope.model.cnList.onDelete( record ).catch( function error( response ) {
-              if( 409 == response.status ) {
+              if( 406 == response.status ) {
+                CnModalMessageFactory.instance( {
+                  title: 'Please Note',
+                  message: response.data,
+                  error: true
+                } ).show();
+              } else if( 409 == response.status ) { 
                 CnModalMessageFactory.instance( {
                   title: 'Unable to delete ' + $scope.model.name.singular + ' record',
                   message: 'It is not possible to delete this ' + $scope.model.name.singular +
@@ -350,8 +362,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  '$window', 'CnModalDatetimeFactory', 'CnAppSingleton',
-  function( $window, CnModalDatetimeFactory, CnAppSingleton ) {
+  '$window', 'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnAppSingleton',
+  function( $window, CnModalDatetimeFactory, CnModalMessageFactory, CnAppSingleton ) {
     return {
       templateUrl: cnCenozoUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
@@ -402,7 +414,13 @@ cenozo.directive( 'cnRecordView', [
               }
             },
             function error( response ) { 
-              if( 409 == response.status ) { 
+              if( 406 == response.status ) {
+                CnModalMessageFactory.instance( {
+                  title: 'Please Note',
+                  message: response.data,
+                  error: true
+                } ).show();
+              } else if( 409 == response.status ) { 
                 // report which inputs are included in the conflict
                 for( var i = 0; i < response.data.length; i++ ) { 
                   var item = angular.element(
@@ -474,7 +492,7 @@ cenozo.directive( 'cnRecordView', [
               if( input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
                 input.enumList = 'boolean' === input.type
                                ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
-                               : metadata.columnList[key].enumList.slice();
+                               : cnCopy( metadata.columnList[key].enumList );
                 if( !metadata.columnList[key].required ) input.enumList.unshift( { value: '', name: '(none)' } );
               }
             }

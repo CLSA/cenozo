@@ -59,7 +59,8 @@ class query extends read
       }
     }
 
-    $this->modifier->limit( $setting_manager->get_setting( 'db', 'query_limit' ) );
+    if( is_null( $this->modifier->get_limit() ) )
+      $this->modifier->limit( $setting_manager->get_setting( 'db', 'query_limit' ) );
   }
 
   /**

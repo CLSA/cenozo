@@ -19,6 +19,12 @@ class address extends has_rank
    */
   public function save()
   {
+    // make sure the address is valid
+    if( !$this->is_valid() )
+      throw lib::create( 'exception\notice',
+        'Unable to save address since it is invalid.  Please check the region and postcode.',
+        __METHOD__ );
+
     // figure out whether alternate or participant is the rank parent
     static::$rank_parent = !is_null( $this->alternate_id ) ? 'alternate' : 'participant';
     parent::save();
@@ -113,17 +119,19 @@ class address extends has_rank
    */
   public function is_valid()
   {
-    // make sure all mandatory address-based fields are filled in
-    if( is_null( $this->address1 ) ||
-        is_null( $this->city ) ||
-        is_null( $this->region_id ) ||
-        is_null( $this->postcode ) ) return false;
+    $session = lib::create( 'business\session' );
+
+    // if international then make sure the region doesn't belong to the application's country
+    if( $this->international )
+      return is_null( $this->region_id ) || $this->get_region()->country != $session->get_application()->country;
+
+    // not international, make sure the region and postcode are set
+    if( is_null( $this->region_id ) || is_null( $this->postcode ) ) return false;
 
     // look up the postal code for the correct region
     $postcode_class_name = lib::get_class_name( 'database\postcode' );
     $db_postcode = $postcode_class_name::get_match( $this->postcode );
-    if( is_null( $db_postcode ) ) return NULL;
-    return $db_postcode->region_id == $this->region_id;
+    return !is_null( $db_postcode ) ? $db_postcode->region_id == $this->region_id : false;
   }
 
   /**

@@ -337,6 +337,11 @@ abstract class service extends \cenozo\base_object
           {
             $record = new $record_class_name( $resource_value );
           }
+          catch( \cenozo\exception\notice $e )
+          {
+            $this->data = $e->get_notice();
+            $this->status->set_code( 406 );
+          }
           // ignore runtime exceptions and instead just return a null record
           catch( \cenozo\exception\runtime $e ) {}
         }

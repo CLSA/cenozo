@@ -3,7 +3,7 @@ DELIMITER //
 CREATE PROCEDURE patch_address()
   BEGIN
 
-    SELECT "Replacing person_id column with alternate_id and participant_id columns in address table" AS "";
+    SELECT "Replacing person_id column with alternate_id and participant_id columns and adding international column to address table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
@@ -45,6 +45,41 @@ CREATE PROCEDURE patch_address()
 
       ALTER TABLE address
       ADD UNIQUE INDEX uq_alternate_id_participant_id_rank (alternate_id, participant_id, rank);
+    END IF;
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "address"
+      AND COLUMN_NAME = "international" );
+    IF @test = 0 THEN
+      -- add columns
+      ALTER TABLE address
+      ADD COLUMN international TINYINT(1) NOT NULL DEFAULT 0 AFTER rank;
+    END IF;
+
+    SET @test = (
+      SELECT 'NO' = IS_NULLABLE
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "address"
+      AND COLUMN_NAME = "region_id" );
+    IF @test = 1 THEN
+      SELECT "here" AS "";
+      -- make column nullable
+      ALTER TABLE address MODIFY region_id INT UNSIGNED NULL;
+    END IF;
+
+    SET @test = (
+      SELECT 'NO' = IS_NULLABLE
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "address"
+      AND COLUMN_NAME = "postcode" );
+    IF @test = 1 THEN
+      -- make column nullable
+      ALTER TABLE address MODIFY postcode VARCHAR(10) NULL;
     END IF;
 
   END //

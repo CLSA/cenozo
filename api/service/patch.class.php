@@ -63,6 +63,11 @@ class patch extends write
         {
           $leaf_record->save();
         }
+        catch( \cenozo\exception\notice $e )
+        {
+          $this->data = $e->get_notice();
+          $this->status->set_code( 406 );
+        }
         catch( \cenozo\exception\database $e )
         {
           if( $e->is_duplicate_entry() )

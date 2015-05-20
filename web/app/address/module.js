@@ -15,6 +15,10 @@ define( {
       title: 'Rank',
       type: 'rank'
     },
+    international: {
+      title: 'International',
+      type: 'boolean'
+    },
     address1: {
       title: 'Address Line 1',
       type: 'string'
@@ -59,8 +63,7 @@ define( {
     city: {
       title: 'City'
     },
-    region: {
-      column: 'region.name',
+    international_region: {
       title: 'Region'
     },
     active: {

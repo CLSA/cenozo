@@ -821,9 +821,9 @@ cenozo.service( 'CnModalMessageFactory', [
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-message.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = thisRef;
-            $scope.local.close = function() { $modalInstance.dismiss(); };
+            $scope.local.close = function() { $modalInstance.close( false ); };
           }
-        } );
+        } ).result;
       }
     };
 
@@ -903,6 +903,8 @@ cenozo.service( 'CnModalValueFactory', [
     var object = function( params ) {
       this.title = 'Title';
       this.message = 'Message';
+      this.enumList = null;
+      this.value = null;
       cnCopyParams( this, params );
     };
 
@@ -916,10 +918,10 @@ cenozo.service( 'CnModalValueFactory', [
           templateUrl: cnCenozoUrl + '/app/cenozo/modal-value.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = thisRef;
-            $scope.local.ok = function( value ) { $modalInstance.close( value ); };
-            $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
+            $scope.local.ok = function() { $modalInstance.close( $scope.local.value ); };
+            $scope.local.cancel = function() { $modalInstance.close( false ); };
           }
-        } );
+        } ).result;
       }
     };
 

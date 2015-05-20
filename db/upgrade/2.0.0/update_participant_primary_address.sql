@@ -16,7 +16,10 @@ BEGIN
     -- Joining to region_site is used to exclude addresses which are not
     -- in region_site, actual linkage (and language) is irrelevant
     JOIN region_site ON region.id = region_site.region_id
-    WHERE address.active
+    WHERE address.active = true
+    AND address.international = false
+    AND address.region_id IS NOT NULL
+    AND address.postcode IS NOT NULL
     AND participant.id = address.participant_id
     GROUP BY address.participant_id
   )
