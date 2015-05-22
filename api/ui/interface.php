@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-snap/angular-snap.css">
 
-  <link rel="stylesheet" href="<?php print CSS_URL; ?>/app.css">
+  <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.js"></script>
@@ -22,22 +22,25 @@
   <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-snap/angular-snap.js"></script>
 
-  <script src="<?php print APP_URL; ?>/cenozo/animations.js"></script>
-  <script src="<?php print APP_URL; ?>/cenozo/directives.js"></script>
-  <script src="<?php print APP_URL; ?>/cenozo/filters.js"></script>
-  <script id="cenozoServices" src="<?php print APP_URL; ?>/cenozo/services.js"></script>
-
-  <script src="<?php print APP_URL; ?>/app.js"></script>
+  <script src="<?php print CENOZO_URL; ?>/cenozo.js" id="cenozo"></script>
+  <script src="<?php print LIB_URL; ?>/requirejs/require.js"
+          data-main="<?php print APP_URL; ?>/require.js"></script>
   <script>
-    var cenozoApp = angular.module( 'cenozoApp' );
-    window.cnFrameworkModuleList = <?php print $framework_module_string; ?>;
-    window.cnModuleList = <?php print $module_string; ?>;
+    cenozo.modules( <?php print $framework_module_string; ?> );
+    var cenozoApp = angular.module( 'cenozoApp', [
+      'ui.bootstrap',
+      'ui.router',
+      'ui.slider',
+      'snap',
+      'cenozo'
+    ] );
+    cenozoApp.moduleList = <?php print $module_string; ?>;
 
     cenozoApp.config( [
       '$stateProvider',
       function( $stateProvider ) {
-        for( var module in cnModuleList ) {
-          cenozoApp.routeModule( $stateProvider, module, cnModuleList[module] );
+        for( var module in cenozoApp.moduleList ) {
+          cenozo.routeModule( $stateProvider, module, cenozoApp.moduleList[module] );
         }
       }
     ] );
@@ -52,9 +55,6 @@
       }
     ] );
   </script>
-
-  <script data-main="<?php print APP_URL; ?>/main.js"
-          src="<?php print LIB_URL; ?>/requirejs/require.js"></script>
 
 </head>
 <body>
