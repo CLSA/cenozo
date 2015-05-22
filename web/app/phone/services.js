@@ -1,9 +1,5 @@
-define( [
-  cnCenozoUrl + '/app/phone/module.js'
-], function( module ) {
-
+define( [ cenozo.baseUrl + '/app/phone/module.js' ], function( module ) {
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneAddFactory', [
@@ -41,9 +37,9 @@ define( [
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnPhoneAddFactory.instance( this );
-        this.cnList = CnPhoneListFactory.instance( this );
-        this.cnView = CnPhoneViewFactory.instance( this );
+        this.addModel = CnPhoneAddFactory.instance( this );
+        this.listModel = CnPhoneListFactory.instance( this );
+        this.viewModel = CnPhoneViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

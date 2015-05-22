@@ -1,9 +1,5 @@
-define( [
-  cnCenozoUrl + '/app/quota/module.js'
-], function( module ) {
-
+define( [ cenozo.baseUrl + '/app/quota/module.js' ], function( module ) { 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQuotaAddFactory', [
@@ -43,9 +39,9 @@ define( [
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnQuotaAddFactory.instance( this );
-        this.cnList = CnQuotaListFactory.instance( this );
-        this.cnView = CnQuotaViewFactory.instance( this );
+        this.addModel = CnQuotaAddFactory.instance( this );
+        this.listModel = CnQuotaListFactory.instance( this );
+        this.viewModel = CnQuotaViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

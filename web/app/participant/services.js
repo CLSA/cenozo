@@ -1,24 +1,22 @@
 define( [
-  cnCenozoUrl + '/app/participant/module.js',
-  cnCenozoUrl + '/app/address/controllers.js',
-  cnCenozoUrl + '/app/address/directives.js',
-  cnCenozoUrl + '/app/address/services.js',
-  cnCenozoUrl + '/app/phone/controllers.js',
-  cnCenozoUrl + '/app/phone/directives.js',
-  cnCenozoUrl + '/app/phone/services.js',
-  cnCenozoUrl + '/app/consent/controllers.js',
-  cnCenozoUrl + '/app/consent/directives.js',
-  cnCenozoUrl + '/app/consent/services.js',
-  cnCenozoUrl + '/app/alternate/controllers.js',
-  cnCenozoUrl + '/app/alternate/directives.js',
-  cnCenozoUrl + '/app/alternate/services.js',
-  cnCenozoUrl + '/app/event/controllers.js',
-  cnCenozoUrl + '/app/event/directives.js',
-  cnCenozoUrl + '/app/event/services.js'
+  cenozo.baseUrl + '/app/participant/module.js',
+  cenozo.baseUrl + '/app/address/controllers.js',
+  cenozo.baseUrl + '/app/address/directives.js',
+  cenozo.baseUrl + '/app/address/services.js',
+  cenozo.baseUrl + '/app/phone/controllers.js',
+  cenozo.baseUrl + '/app/phone/directives.js',
+  cenozo.baseUrl + '/app/phone/services.js',
+  cenozo.baseUrl + '/app/consent/controllers.js',
+  cenozo.baseUrl + '/app/consent/directives.js',
+  cenozo.baseUrl + '/app/consent/services.js',
+  cenozo.baseUrl + '/app/alternate/controllers.js',
+  cenozo.baseUrl + '/app/alternate/directives.js',
+  cenozo.baseUrl + '/app/alternate/services.js',
+  cenozo.baseUrl + '/app/event/controllers.js',
+  cenozo.baseUrl + '/app/event/directives.js',
+  cenozo.baseUrl + '/app/event/services.js'
 ], function( module ) {
-
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantListFactory', [
@@ -66,11 +64,11 @@ define( [
 
         this.onView = function view() { 
           return this.viewRecord().then( function() {
-            self.cnAddressModel.cnList.onList( true );
-            self.cnPhoneModel.cnList.onList( true );
-            self.cnConsentModel.cnList.onList( true );
-            self.cnAlternateModel.cnList.onList( true );
-            self.cnEventModel.cnList.onList( true );
+            self.cnAddressModel.listModel.onList( true );
+            self.cnPhoneModel.listModel.onList( true );
+            self.cnConsentModel.listModel.onList( true );
+            self.cnAlternateModel.listModel.onList( true );
+            self.cnEventModel.listModel.onList( true );
           } );
         };
         // factory customizations end here
@@ -88,8 +86,8 @@ define( [
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.cnList = CnParticipantListFactory.instance( this );
-        this.cnView = CnParticipantViewFactory.instance( this );
+        this.listModel = CnParticipantListFactory.instance( this );
+        this.viewModel = CnParticipantViewFactory.instance( this );
 
         this.enableView( true );
 

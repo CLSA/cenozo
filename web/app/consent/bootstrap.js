@@ -1,7 +1,7 @@
 define( [
-    cnCenozoUrl + '/app/consent/controllers.js',
-    cnCenozoUrl + '/app/consent/directives.js',
-    cnCenozoUrl + '/app/consent/services.js'
+    cenozo.baseUrl + '/app/consent/controllers.js',
+    cenozo.baseUrl + '/app/consent/directives.js',
+    cenozo.baseUrl + '/app/consent/services.js'
   ],
   function() {}
 );

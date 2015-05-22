@@ -121,7 +121,7 @@ cenozo.directive( 'cnRecordAdd', [
   'CnModalDatetimeFactory', 'CnHttpFactory', 'CnModalMessageFactory',
   function( CnModalDatetimeFactory, CnHttpFactory, CnModalMessageFactory ) {
     return {
-      templateUrl: cnCenozoUrl + '/app/cenozo/record-add.tpl.html',
+      templateUrl: cenozo.baseUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
       scope: {
         model: '=',
@@ -152,9 +152,9 @@ cenozo.directive( 'cnRecordAdd', [
               scope = scope.$$nextSibling;
             }
           } else {
-            $scope.model.cnAdd.onAdd( $scope.$parent.record ).then(
+            $scope.model.addModel.onAdd( $scope.$parent.record ).then(
               function success( response ) { 
-                $scope.model.cnAdd.onNew( $scope.$parent.record );
+                $scope.model.addModel.onNew( $scope.$parent.record );
                 $scope.form.$setPristine();
                 $scope.model.transitionToLastState();
               },
@@ -304,7 +304,7 @@ cenozo.directive( 'cnRecordList', [
   'CnModalMessageFactory', 'CnModalRestrictFactory',
   function( CnModalMessageFactory, CnModalRestrictFactory ) {
     return {
-      templateUrl: cnCenozoUrl + '/app/cenozo/record-list.tpl.html',
+      templateUrl: cenozo.baseUrl + '/app/cenozo/record-list.tpl.html',
       restrict: 'E',
       scope: {
         model: '=',
@@ -317,7 +317,7 @@ cenozo.directive( 'cnRecordList', [
 
         if( $scope.model.deleteEnabled ) {
           $scope.deleteRecord = function( record ) {
-            $scope.model.cnList.onDelete( record ).catch( function error( response ) {
+            $scope.model.listModel.onDelete( record ).catch( function error( response ) {
               if( 406 == response.status ) {
                 CnModalMessageFactory.instance( {
                   title: 'Please Note',
@@ -341,8 +341,8 @@ cenozo.directive( 'cnRecordList', [
 
         if( $scope.model.chooseEnabled ) {
           $scope.chooseRecord = function( record ) {
-            if( $scope.model.cnList.chooseMode ) {
-              $scope.model.cnList.onChoose( record ).catch( function error( response ) {
+            if( $scope.model.listModel.chooseMode ) {
+              $scope.model.listModel.onChoose( record ).catch( function error( response ) {
                 $scope.model.transitionToErrorState( response );
               } );
             }
@@ -362,7 +362,7 @@ cenozo.directive( 'cnRecordList', [
 
         scope.columnArray = scope.model.getColumnArray( scope.removeColumns );
 
-        if( angular.isDefined( scope.model.cnList.restrict ) ) {
+        if( angular.isDefined( scope.model.listModel.restrict ) ) {
           scope.addRestrict = function( column ) {
             var column = scope.columnArray.findByProperty( 'key', column );
             CnModalRestrictFactory.instance( {
@@ -370,7 +370,7 @@ cenozo.directive( 'cnRecordList', [
               column: column.title,
               comparison: column.restrict
             } ).show().then( function( comparison ) {
-              scope.model.cnList.restrict( column.key, comparison );
+              scope.model.listModel.restrict( column.key, comparison );
             } );
           };
         }
@@ -392,7 +392,7 @@ cenozo.directive( 'cnRecordView', [
   'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnAppSingleton',
   function( CnModalDatetimeFactory, CnModalMessageFactory, CnAppSingleton ) {
     return {
-      templateUrl: cnCenozoUrl + '/app/cenozo/record-view.tpl.html',
+      templateUrl: cenozo.baseUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
       scope: {
         model: '=',
@@ -404,22 +404,22 @@ cenozo.directive( 'cnRecordView', [
         };
 
         $scope.delete = function() {
-          $scope.model.cnView.onDelete().then(
+          $scope.model.viewModel.onDelete().then(
             function success() { $scope.model.transitionToLastState(); },
             function error( response ) { $scope.model.transitionToErrorState( response ); }
           );
         };
 
         $scope.undo = function( property ) {
-          if( $scope.model.cnView.record[property] != $scope.model.cnView.backupRecord[property] ) {
-            $scope.model.cnView.record[property] = $scope.model.cnView.backupRecord[property];
+          if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
+            $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
             $scope.patch( property );
           }
         };
 
         $scope.patch = function( property ) {
           // test the format
-          if( !$scope.model.testFormat( property, $scope.model.cnView.record[property] ) ) {
+          if( !$scope.model.testFormat( property, $scope.model.viewModel.record[property] ) ) {
             var item = angular.element(
               angular.element( document.querySelector( '#' + property ) ) ).
                 scope().$parent.innerForm.name;
@@ -430,12 +430,12 @@ cenozo.directive( 'cnRecordView', [
           } else {
             // validation passed, proceed with patch
             var data = {};
-            data[property] = $scope.model.cnView.record[property];
-            $scope.model.cnView.onPatch( data ).then(
+            data[property] = $scope.model.viewModel.record[property];
+            $scope.model.viewModel.onPatch( data ).then(
               function success() { 
                 // if the data in the identifier was patched then reload with the new url
-                if( 0 <= $scope.model.cnView.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
-                  $scope.model.reloadState( $scope.model.cnView.record );
+                if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
+                  $scope.model.reloadState( $scope.model.viewModel.record );
                 } else {
                   var scope = angular.element(
                     angular.element( document.querySelector( '#' + property ) ) ).scope();
@@ -464,7 +464,7 @@ cenozo.directive( 'cnRecordView', [
                   }
 
                   // update the formatted value
-                  $scope.model.cnView.updateFormattedRecord( property );
+                  $scope.model.viewModel.updateFormattedRecord( property );
 
                   /* Removing the following because it was interfering with $error.required
                   // now clean up this property's form elements
@@ -474,7 +474,7 @@ cenozo.directive( 'cnRecordView', [
               },
               function error( response ) { 
                 if( 406 == response.status ) {
-                  $scope.model.cnView.record[property] = $scope.model.cnView.backupRecord[property];
+                  $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
                   CnModalMessageFactory.instance( {
                     title: 'Please Note',
                     message: response.data,
@@ -499,11 +499,11 @@ cenozo.directive( 'cnRecordView', [
         $scope.selectDatetime = function( input ) {
           CnModalDatetimeFactory.instance( {
             title: input.title,
-            date: $scope.model.cnView.record[input.key],
+            date: $scope.model.viewModel.record[input.key],
             pickerType: input.type
           } ).show().then( function( response ) {
             if( false !== response ) {
-              $scope.model.cnView.record[input.key] = response;
+              $scope.model.viewModel.record[input.key] = response;
               $scope.patch( input.key );
             }
           } );
@@ -519,7 +519,7 @@ cenozo.directive( 'cnRecordView', [
 
         var recordLoaded = false;
         scope.inputArray = scope.model.getInputArray( scope.removeInputs );
-        scope.$watch( 'model.cnView.record', function( record ) {
+        scope.$watch( 'model.viewModel.record', function( record ) {
           // convert datetimes
           if( angular.isDefined( record.id ) && !recordLoaded ) {
             recordLoaded = true;
@@ -561,7 +561,7 @@ cenozo.directive( 'cnSiteRoleSwitcher', [
   '$window', 'CnAppSingleton',
   function( $window, CnAppSingleton ) {
     return {
-      templateUrl: cnCenozoUrl + '/app/cenozo/site-role-switcher.tpl.html',
+      templateUrl: cenozo.baseUrl + '/app/cenozo/site-role-switcher.tpl.html',
       restrict: 'E',
       controller: function( $scope ) {
         $scope.setSite = function( id ) {
@@ -602,7 +602,7 @@ cenozo.directive( 'cnToolbelt', [
   function( CnAppSingleton, CnModalTimezoneCalculatorFactory ) {
     return {
       restrict: 'E',
-      templateUrl: cnCenozoUrl + '/app/cenozo/toolbelt.tpl.html',
+      templateUrl: cenozo.baseUrl + '/app/cenozo/toolbelt.tpl.html',
       controller: function( $scope ) {
         $scope.openTimezoneCalculator = function() {
           CnModalTimezoneCalculatorFactory.instance().show();

@@ -1,4 +1,4 @@
 require.config( {
   baseUrl: 'app',
-  deps: [ cnCenozoUrl + '/app/bootstrap.js' ]
+  deps: [ cenozo.baseUrl + '/app/bootstrap.js' ]
 } );

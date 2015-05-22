@@ -1,9 +1,5 @@
-define( [
-  cnCenozoUrl + '/app/region_site/module.js'
-], function( module ) {
-
+define( [ cenozo.baseUrl + '/app/region_site/module.js' ], function( module ) { 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnRegionSiteAddFactory', [
@@ -43,9 +39,9 @@ define( [
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnRegionSiteAddFactory.instance( this );
-        this.cnList = CnRegionSiteListFactory.instance( this );
-        this.cnView = CnRegionSiteViewFactory.instance( this );
+        this.addModel = CnRegionSiteAddFactory.instance( this );
+        this.listModel = CnRegionSiteListFactory.instance( this );
+        this.viewModel = CnRegionSiteViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

@@ -1,9 +1,5 @@
-define( [
-  cnCenozoUrl + '/app/event/module.js'
-], function( module ) {
-
+define( [ cenozo.baseUrl + '/app/event/module.js' ], function( module ) { 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnEventAddFactory', [
@@ -41,9 +37,9 @@ define( [
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnEventAddFactory.instance( this );
-        this.cnList = CnEventListFactory.instance( this );
-        this.cnView = CnEventViewFactory.instance( this );
+        this.addModel = CnEventAddFactory.instance( this );
+        this.listModel = CnEventListFactory.instance( this );
+        this.viewModel = CnEventViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

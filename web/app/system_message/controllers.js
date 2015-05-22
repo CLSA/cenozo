@@ -1,37 +1,36 @@
 define( [], function() {
 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cenozo.providerscontroller( 'SystemMessageAddCtrl', [
+  cenozo.providers.controller( 'SystemMessageAddCtrl', [
     '$scope', 'CnSystemMessageModelFactory',
     function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;
       $scope.record = {};
-      $scope.model.cnAdd.onNew( $scope.record ).catch( function exception( response ) {
+      $scope.model.addModel.onNew( $scope.record ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providerscontroller( 'SystemMessageListCtrl', [
+  cenozo.providers.controller( 'SystemMessageListCtrl', [
     '$scope', 'CnSystemMessageModelFactory',
     function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;
-      $scope.model.cnList.onList().catch( function exception( response ) {
+      $scope.model.listModel.onList().catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providerscontroller( 'SystemMessageViewCtrl', [
+  cenozo.providers.controller( 'SystemMessageViewCtrl', [
     '$scope', 'CnSystemMessageModelFactory',
     function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;
-      $scope.model.cnView.onView().catch( function exception( response ) {
+      $scope.model.viewModel.onView().catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }

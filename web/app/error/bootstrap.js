@@ -1,6 +1,6 @@
 define( [
-    cnCenozoUrl + '/app/error/controllers.js',
-    cnCenozoUrl + '/app/error/services.js'
+    cenozo.baseUrl + '/app/error/controllers.js',
+    cenozo.baseUrl + '/app/error/services.js'
   ],
   function() {}
 );

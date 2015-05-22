@@ -1,7 +1,6 @@
 define( [], function() {
 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnQuotaAdd', function () {

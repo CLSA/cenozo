@@ -1,18 +1,16 @@
 define( [
-  cnCenozoUrl + '/app/application/module.js',
-  cnCenozoUrl + '/app/participant/controllers.js',
-  cnCenozoUrl + '/app/participant/directives.js',
-  cnCenozoUrl + '/app/participant/services.js',
-  cnCenozoUrl + '/app/site/controllers.js',
-  cnCenozoUrl + '/app/site/directives.js',
-  cnCenozoUrl + '/app/site/services.js',
-  cnCenozoUrl + '/app/user/controllers.js',
-  cnCenozoUrl + '/app/user/directives.js',
-  cnCenozoUrl + '/app/user/services.js'
+  cenozo.baseUrl + '/app/application/module.js',
+  cenozo.baseUrl + '/app/participant/controllers.js',
+  cenozo.baseUrl + '/app/participant/directives.js',
+  cenozo.baseUrl + '/app/participant/services.js',
+  cenozo.baseUrl + '/app/site/controllers.js',
+  cenozo.baseUrl + '/app/site/directives.js',
+  cenozo.baseUrl + '/app/site/services.js',
+  cenozo.baseUrl + '/app/user/controllers.js',
+  cenozo.baseUrl + '/app/user/directives.js',
+  cenozo.baseUrl + '/app/user/services.js'
 ], function( module ) {
-
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationAddFactory', [
@@ -51,9 +49,9 @@ define( [
 
         this.view = function view() {
           return this.viewRecord().then( function() {
-            self.cnParticipantModel.cnList.onList( true );
-            self.cnSiteModel.cnList.onList( true );
-            self.cnUserModel.cnList.onList( true );
+            self.cnParticipantModel.listModel.onList( true );
+            self.cnSiteModel.listModel.onList( true );
+            self.cnUserModel.listModel.onList( true );
           } );
         };
         // factory customizations end here
@@ -70,9 +68,9 @@ define( [
     function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationAddFactory, CnApplicationViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnApplicationAddFactory.instance( this );
-        this.cnList = CnApplicationListFactory.instance( this );
-        this.cnView = CnApplicationViewFactory.instance( this );
+        this.addModel = CnApplicationAddFactory.instance( this );
+        this.listModel = CnApplicationListFactory.instance( this );
+        this.viewModel = CnApplicationViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

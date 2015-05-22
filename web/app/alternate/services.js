@@ -1,15 +1,13 @@
 define( [
-  cnCenozoUrl + '/app/alternate/module.js',
-  cnCenozoUrl + '/app/address/controllers.js',
-  cnCenozoUrl + '/app/address/directives.js',
-  cnCenozoUrl + '/app/address/services.js',
-  cnCenozoUrl + '/app/phone/controllers.js',
-  cnCenozoUrl + '/app/phone/directives.js',
-  cnCenozoUrl + '/app/phone/services.js'
+  cenozo.baseUrl + '/app/alternate/module.js',
+  cenozo.baseUrl + '/app/address/controllers.js',
+  cenozo.baseUrl + '/app/address/directives.js',
+  cenozo.baseUrl + '/app/address/services.js',
+  cenozo.baseUrl + '/app/phone/controllers.js',
+  cenozo.baseUrl + '/app/phone/directives.js',
+  cenozo.baseUrl + '/app/phone/services.js'
 ], function( module ) {
-
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateAddFactory', [
@@ -50,8 +48,8 @@ define( [
 
         this.onView = function view() {
           return this.viewRecord().then( function() {
-            self.cnAddressModel.cnList.onList( true );
-            self.cnPhoneModel.cnList.onList( true );
+            self.cnAddressModel.listModel.onList( true );
+            self.cnPhoneModel.listModel.onList( true );
           } );
         };
         // factory customizations end here
@@ -69,9 +67,9 @@ define( [
     function( $state, CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnAlternateAddFactory.instance( this );
-        this.cnList = CnAlternateListFactory.instance( this );
-        this.cnView = CnAlternateViewFactory.instance( this );
+        this.addModel = CnAlternateAddFactory.instance( this );
+        this.listModel = CnAlternateListFactory.instance( this );
+        this.viewModel = CnAlternateViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

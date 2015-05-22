@@ -1,7 +1,6 @@
 define( [], function() {
 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ApplicationAddCtrl', [
@@ -9,7 +8,7 @@ define( [], function() {
     function( $scope, CnApplicationModelFactory ) {
       $scope.model = CnApplicationModelFactory.root;
       $scope.record = {};
-      $scope.model.cnAdd.onNew( $scope.record ).catch( function exception( response ) {
+      $scope.model.addModel.onNew( $scope.record ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
@@ -20,7 +19,7 @@ define( [], function() {
     '$scope', 'CnApplicationModelFactory',
     function( $scope, CnApplicationModelFactory ) {
       $scope.model = CnApplicationModelFactory.root;
-      $scope.model.cnList.onList().catch( function exception( response ) {
+      $scope.model.listModel.onList().catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
@@ -31,7 +30,7 @@ define( [], function() {
     '$scope', 'CnApplicationModelFactory',
     function( $scope, CnApplicationModelFactory ) {
       $scope.model = CnApplicationModelFactory.root;
-      $scope.model.cnView.onView().catch( function exception( response ) {
+      $scope.model.viewModel.onView().catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }

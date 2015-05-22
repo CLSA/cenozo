@@ -50,7 +50,7 @@ cenozoApp.routeModule = function ( $stateProvider, name, module ) {
         var deferred = $q.defer();
         var bootstrapUrl = 'app/' + name + '/bootstrap.js';
         if( 0 <= cnFrameworkModuleList.indexOf( name ) )
-          bootstrapUrl = cnCenozoUrl + '/' + bootstrapUrl;
+          bootstrapUrl = cenozo.baseUrl + '/' + bootstrapUrl;
         require( [ bootstrapUrl ], function() { deferred.resolve(); } );
         return deferred.promise;
       } ]
@@ -59,7 +59,7 @@ cenozoApp.routeModule = function ( $stateProvider, name, module ) {
   
   // add action states
   var baseUrl = 'app/' + name + '/';
-  if( 0 <= cnFrameworkModuleList.indexOf( name ) ) baseUrl = cnCenozoUrl + '/' + baseUrl;
+  if( 0 <= cnFrameworkModuleList.indexOf( name ) ) baseUrl = cenozo.baseUrl + '/' + baseUrl;
   for( var i = 0; i < module.actions.length; i++ ) {
     var action = module.actions[i];
     var url = '/' + action;
@@ -77,7 +77,7 @@ cenozoApp.routeModule = function ( $stateProvider, name, module ) {
   for( var i = 0; i < module.children.length; i++ ) {
     var child = module.children[i];
     var baseChildUrl = 'app/' + child + '/';
-    if( 0 <= cnFrameworkModuleList.indexOf( child ) ) baseChildUrl = cnCenozoUrl + '/' + baseChildUrl;
+    if( 0 <= cnFrameworkModuleList.indexOf( child ) ) baseChildUrl = cenozo.baseUrl + '/' + baseChildUrl;
 
     $stateProvider.state( name + '.add_' + child, {
       url: '/view/{parentIdentifier}/' + child,
@@ -96,7 +96,6 @@ cenozoApp.routeModule = function ( $stateProvider, name, module ) {
 cenozoApp.config( [
   '$controllerProvider', '$compileProvider', '$filterProvider', '$provide',
   function( $controllerProvider, $compileProvider, $filterProvider, $provide ) {
-    var cenozo = angular.module( 'cenozo' );
     cenozo.providers.controller = $controllerProvider.register;
     cenozo.providers.directive = $compileProvider.directive;
     cenozo.providers.filter = $filterProvider.register;
@@ -113,7 +112,7 @@ cenozoApp.config( [
   '$stateProvider', '$urlRouterProvider',
   function( $stateProvider, $urlRouterProvider ) {
     // add the root states
-    var baseRootUrl = cnCenozoUrl + '/app/root/';
+    var baseRootUrl = cenozo.baseUrl + '/app/root/';
     $stateProvider.state( 'root', { // resolves application/
       url: '',
       controller: 'HomeCtrl',
@@ -129,7 +128,7 @@ cenozoApp.config( [
     $stateProvider.state( 'root.home', { url: '/' } ); // resolve application/#/
 
     // add the error states
-    var baseErrorUrl = cnCenozoUrl + '/app/error/';
+    var baseErrorUrl = cenozo.baseUrl + '/app/error/';
     $stateProvider.state( 'error', {
       controller: 'ErrorCtrl',
       template: '<div ui-view class="fade-transition"></div>',

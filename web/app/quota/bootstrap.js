@@ -1,7 +1,7 @@
 define( [
-    cnCenozoUrl + '/app/quota/controllers.js',
-    cnCenozoUrl + '/app/quota/directives.js',
-    cnCenozoUrl + '/app/quota/services.js'
+    cenozo.baseUrl + '/app/quota/controllers.js',
+    cenozo.baseUrl + '/app/quota/directives.js',
+    cenozo.baseUrl + '/app/quota/services.js'
   ],
   function() {}
 );

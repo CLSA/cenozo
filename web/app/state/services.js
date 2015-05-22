@@ -1,12 +1,8 @@
-define( [
-  cnCenozoUrl + '/app/state/module.js'
-], function( module ) {
-
+define( [ cenozo.baseUrl + '/app/state/module.js' ], function( module ) { 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnStateAddFactory', [
+  cenozo.providers.factory( 'CnStateAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
@@ -15,7 +11,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnStateListFactory', [
+  cenozo.providers.factory( 'CnStateListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -24,7 +20,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnStateViewFactory', [
+  cenozo.providers.factory( 'CnStateViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
@@ -33,14 +29,14 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnStateModelFactory', [
+  cenozo.providers.factory( 'CnStateModelFactory', [
     'CnBaseModelFactory', 'CnStateListFactory', 'CnStateAddFactory', 'CnStateViewFactory',
     function( CnBaseModelFactory, CnStateListFactory, CnStateAddFactory, CnStateViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnStateAddFactory.instance( this );
-        this.cnList = CnStateListFactory.instance( this );
-        this.cnView = CnStateViewFactory.instance( this );
+        this.addModel = CnStateAddFactory.instance( this );
+        this.listModel = CnStateListFactory.instance( this );
+        this.viewModel = CnStateViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

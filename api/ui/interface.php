@@ -10,7 +10,6 @@
 
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/app.css">
 
-  <script>window.cnCenozoUrl = "<?php print CENOZO_URL; ?>";</script>
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.js"></script>
   <script src="<?php print LIB_URL; ?>/moment/moment.js"></script>
@@ -26,7 +25,7 @@
   <script src="<?php print APP_URL; ?>/cenozo/animations.js"></script>
   <script src="<?php print APP_URL; ?>/cenozo/directives.js"></script>
   <script src="<?php print APP_URL; ?>/cenozo/filters.js"></script>
-  <script src="<?php print APP_URL; ?>/cenozo/services.js"></script>
+  <script id="cenozoServices" src="<?php print APP_URL; ?>/cenozo/services.js"></script>
 
   <script src="<?php print APP_URL; ?>/app.js"></script>
   <script>

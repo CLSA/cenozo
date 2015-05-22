@@ -8,7 +8,7 @@
       <div class="form-group"
            ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
         <label for="name" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
-        <div ng-class="model.cnView.record[input.key] == model.cnView.backupRecord[input.key] ?
+        <div ng-class="model.viewModel.record[input.key] == model.viewModel.backupRecord[input.key] ?
                        'col-sm-9' : 'col-sm-8'">
           <div class="input-group"
                ng-switch="input.type"
@@ -16,7 +16,7 @@
             <input ng-switch-when="string"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.cnView.record[input.key]"
+              ng-model="model.viewModel.record[input.key]"
               cn-change="patch( input.key )"
               class="form-control"
               type="text"
@@ -26,7 +26,7 @@
             <input ng-switch-when="typeahead"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.cnView.record[input.key]"
+              ng-model="model.viewModel.record[input.key]"
               typeahead="item.value for item in getTypeaheadValues( input.key, $viewValue )"
               typeahead-loading="true"
               typeahead-min-length="2"
@@ -40,7 +40,7 @@
             <input ng-switch-when="date"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.cnView.formattedRecord[input.key]"
+              ng-model="model.viewModel.formattedRecord[input.key]"
               class="form-control"
               type="text"
               ng-click="selectDatetime( input )"
@@ -48,7 +48,7 @@
             <input ng-switch-when="time"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.cnView.formattedRecord[input.key]"
+              ng-model="model.viewModel.formattedRecord[input.key]"
               class="form-control"
               type="text"
               ng-click="selectDatetime( input )"
@@ -56,7 +56,7 @@
             <input ng-switch-when="timesecond"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.cnView.formattedRecord[input.key]"
+              ng-model="model.viewModel.formattedRecord[input.key]"
               class="form-control"
               type="text"
               ng-click="selectDatetime( input )"
@@ -64,7 +64,7 @@
             <input ng-switch-when="datetime"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.cnView.formattedRecord[input.key]"
+              ng-model="model.viewModel.formattedRecord[input.key]"
               class="form-control"
               type="text"
               ng-click="selectDatetime( input )"
@@ -72,7 +72,7 @@
             <input ng-switch-when="datetimesecond"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.cnView.formattedRecord[input.key]"
+              ng-model="model.viewModel.formattedRecord[input.key]"
               class="form-control"
               type="text"
               ng-click="selectDatetime( input )"
@@ -81,7 +81,7 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-options="item.value as item.name for item in input.enumList"
-              ng-model="model.cnView.record[input.key]"
+              ng-model="model.viewModel.record[input.key]"
               ng-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant || !input.enumList"
@@ -89,7 +89,7 @@
             <textarea ng-switch-when="text"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.cnView.record[input.key]"
+              ng-model="model.viewModel.record[input.key]"
               cn-change="patch( input.key )"
               class="form-control"
               ng-readonly="input.constant"
@@ -98,7 +98,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="january" name="name"
-                    ng-model="model.cnView.record.january"
+                    ng-model="model.viewModel.record.january"
                     ng-change="patch( 'january' )"
                     type="checkbox"> January
                 </label>
@@ -106,7 +106,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="february" name="name"
-                    ng-model="model.cnView.record.february"
+                    ng-model="model.viewModel.record.february"
                     ng-change="patch( 'february' )"
                     type="checkbox"> February
                 </label>
@@ -114,7 +114,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="march" name="name"
-                    ng-model="model.cnView.record.march"
+                    ng-model="model.viewModel.record.march"
                     ng-change="patch( 'march' )"
                     type="checkbox"> March
                 </label>
@@ -122,7 +122,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="april" name="name"
-                    ng-model="model.cnView.record.april"
+                    ng-model="model.viewModel.record.april"
                     ng-change="patch( 'april' )"
                     type="checkbox"> April
                 </label>
@@ -130,7 +130,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="may" name="name"
-                    ng-model="model.cnView.record.may"
+                    ng-model="model.viewModel.record.may"
                     ng-change="patch( 'may' )"
                     type="checkbox"> May
                 </label>
@@ -138,7 +138,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="june" name="name"
-                    ng-model="model.cnView.record.june"
+                    ng-model="model.viewModel.record.june"
                     ng-change="patch( 'june' )"
                     type="checkbox"> June
                 </label>
@@ -148,7 +148,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="july" name="name"
-                    ng-model="model.cnView.record.july"
+                    ng-model="model.viewModel.record.july"
                     ng-change="patch( 'july' )"
                     type="checkbox"> July
                 </label>
@@ -156,7 +156,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="august" name="name"
-                    ng-model="model.cnView.record.august"
+                    ng-model="model.viewModel.record.august"
                     ng-change="patch( 'august' )"
                     type="checkbox"> August
                 </label>
@@ -164,7 +164,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="september" name="name"
-                    ng-model="model.cnView.record.september"
+                    ng-model="model.viewModel.record.september"
                     ng-change="patch( 'september' )"
                     type="checkbox"> September
                 </label>
@@ -172,7 +172,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="october" name="name"
-                    ng-model="model.cnView.record.october"
+                    ng-model="model.viewModel.record.october"
                     ng-change="patch( 'october' )"
                     type="checkbox"> October
                 </label>
@@ -180,7 +180,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="november" name="name"
-                    ng-model="model.cnView.record.november"
+                    ng-model="model.viewModel.record.november"
                     ng-change="patch( 'november' )"
                     type="checkbox"> November
                 </label>
@@ -188,7 +188,7 @@
               <div class="col-sm-2">
                 <label class="checkbox">
                   <input id="december" name="name"
-                    ng-model="model.cnView.record.december"
+                    ng-model="model.viewModel.record.december"
                     ng-change="patch( 'december' )"
                     type="checkbox"> December
                 </label>
@@ -208,7 +208,7 @@
             Conflicts with existing record
           </span>
         </div>
-        <div ng-if="model.cnView.record[input.key] != model.cnView.backupRecord[input.key]"
+        <div ng-if="model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
              class="col-sm-1 col-slim">
           <button class="btn btn-small btn-warning" ng-click="undo( input.key )">undo</button>
         </div>

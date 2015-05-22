@@ -1,9 +1,5 @@
-define( [
-  cnCenozoUrl + '/app/consent/module.js'
-], function( module ) {
-
+define( [ cenozo.baseUrl + '/app/consent/module.js' ], function( module ) {
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentAddFactory', [
@@ -38,9 +34,9 @@ define( [
     function( CnBaseModelFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnConsentAddFactory.instance( this );
-        this.cnList = CnConsentListFactory.instance( this );
-        this.cnView = CnConsentViewFactory.instance( this );
+        this.addModel = CnConsentAddFactory.instance( this );
+        this.listModel = CnConsentListFactory.instance( this );
+        this.viewModel = CnConsentViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

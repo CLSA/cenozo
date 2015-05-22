@@ -1,37 +1,36 @@
 define( [], function() {
 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cenozo.providerscontroller( 'SiteAddCtrl', [
+  cenozo.providers.controller( 'SiteAddCtrl', [
     '$scope', 'CnSiteModelFactory',
     function( $scope, CnSiteModelFactory ) {
       $scope.model = CnSiteModelFactory.root;
       $scope.record = {};
-      $scope.model.cnAdd.onNew( $scope.record ).catch( function exception( response ) {
+      $scope.model.addModel.onNew( $scope.record ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providerscontroller( 'SiteListCtrl', [
+  cenozo.providers.controller( 'SiteListCtrl', [
     '$scope', 'CnSiteModelFactory',
     function( $scope, CnSiteModelFactory ) {
       $scope.model = CnSiteModelFactory.root;
-      $scope.model.cnList.onList().catch( function exception( response ) {
+      $scope.model.listModel.onList().catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providerscontroller( 'SiteViewCtrl', [
+  cenozo.providers.controller( 'SiteViewCtrl', [
     '$scope', 'CnSiteModelFactory',
     function( $scope, CnSiteModelFactory ) {
       $scope.model = CnSiteModelFactory.root;
-      $scope.model.cnView.onView().catch( function exception( response ) {
+      $scope.model.viewModel.onView().catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }

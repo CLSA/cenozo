@@ -1,12 +1,10 @@
 define( [
-  cnCenozoUrl + '/app/language/module.js',
-  cnCenozoUrl + '/app/user/controllers.js',
-  cnCenozoUrl + '/app/user/directives.js',
-  cnCenozoUrl + '/app/user/services.js'
+  cenozo.baseUrl + '/app/language/module.js',
+  cenozo.baseUrl + '/app/user/controllers.js',
+  cenozo.baseUrl + '/app/user/directives.js',
+  cenozo.baseUrl + '/app/user/services.js'
 ], function( module ) {
-
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnLanguageListFactory', [
@@ -32,7 +30,7 @@ define( [
 
         this.onView = function view() {
           return this.viewRecord().then( function() {
-            self.cnUserModel.cnList.onList( true );
+            self.cnUserModel.listModel.onList( true );
           } );
         };
         // factory customizations end here
@@ -49,8 +47,8 @@ define( [
     function( CnBaseModelFactory, CnLanguageListFactory, CnLanguageViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
-        this.cnList = CnLanguageListFactory.instance( this );
-        this.cnView = CnLanguageViewFactory.instance( this );
+        this.listModel = CnLanguageListFactory.instance( this );
+        this.viewModel = CnLanguageViewFactory.instance( this );
 
         this.enableDelete( true );
         this.enableView( true );

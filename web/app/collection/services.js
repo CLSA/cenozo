@@ -1,15 +1,13 @@
 define( [
-  cnCenozoUrl + '/app/collection/module.js',
-  cnCenozoUrl + '/app/participant/controllers.js',
-  cnCenozoUrl + '/app/participant/directives.js',
-  cnCenozoUrl + '/app/participant/services.js',
-  cnCenozoUrl + '/app/user/controllers.js',
-  cnCenozoUrl + '/app/user/directives.js',
-  cnCenozoUrl + '/app/user/services.js'
+  cenozo.baseUrl + '/app/collection/module.js',
+  cenozo.baseUrl + '/app/participant/controllers.js',
+  cenozo.baseUrl + '/app/participant/directives.js',
+  cenozo.baseUrl + '/app/participant/services.js',
+  cenozo.baseUrl + '/app/user/controllers.js',
+  cenozo.baseUrl + '/app/user/directives.js',
+  cenozo.baseUrl + '/app/user/services.js'
 ], function( module ) {
-
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCollectionAddFactory', [
@@ -46,8 +44,8 @@ define( [
 
         this.onView = function view() {
           return this.viewRecord().then( function() {
-            self.cnParticipantModel.cnList.onList( true );
-            self.cnUserModel.cnList.onList( true );
+            self.cnParticipantModel.listModel.onList( true );
+            self.cnUserModel.listModel.onList( true );
           } );
         };
         // factory customizations end here
@@ -64,9 +62,9 @@ define( [
     function( CnBaseModelFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnCollectionAddFactory.instance( this );
-        this.cnList = CnCollectionListFactory.instance( this );
-        this.cnView = CnCollectionViewFactory.instance( this );
+        this.addModel = CnCollectionAddFactory.instance( this );
+        this.listModel = CnCollectionListFactory.instance( this );
+        this.viewModel = CnCollectionViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

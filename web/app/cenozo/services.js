@@ -4,6 +4,9 @@ try { var cenozo = angular.module( 'cenozo' ); }
 catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 
 cenozo.providers = {};
+var baseCenozoUrl = document.getElementById( 'cenozoServices' ).src;
+cenozo.baseUrl = baseCenozoUrl.substr( 0, baseCenozoUrl.indexOf( '/app/' ) );
+baseCenozoUrl = undefined;
 
 /* ######################################################################################################## */
 cenozo.factory( 'CnAppSingleton', [
@@ -702,7 +705,7 @@ cenozo.service( 'CnModalConfirmFactory', [
           backdrop: true,
           keyboard: true,
           modalFade: true,
-          templateUrl: cnCenozoUrl + '/app/cenozo/modal-confirm.tpl.html',
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-confirm.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
             $scope.local.yes = function() { $modalInstance.close( true ); };
@@ -895,7 +898,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
           backdrop: true,
           keyboard: true,
           modalFade: true,
-          templateUrl: cnCenozoUrl + '/app/cenozo/modal-datetime.tpl.html',
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-datetime.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
             $scope.local.ok = function() {
@@ -942,7 +945,7 @@ cenozo.service( 'CnModalMessageFactory', [
           backdrop: true,
           keyboard: true,
           modalFade: true,
-          templateUrl: cnCenozoUrl + '/app/cenozo/modal-message.tpl.html',
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-message.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
             $scope.local.close = function() { $modalInstance.close( false ); };
@@ -974,7 +977,7 @@ cenozo.service( 'CnModalRestrictFactory', [
           backdrop: true,
           keyboard: true,
           modalFade: true,
-          templateUrl: cnCenozoUrl + '/app/cenozo/modal-restrict.tpl.html',
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-restrict.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
             $scope.local.ok = function( comparison ) { $modalInstance.close( comparison ); };
@@ -1002,7 +1005,7 @@ cenozo.service( 'CnModalTimezoneCalculatorFactory', [
           backdrop: 'static',
           keyboard: true,
           modalFade: false,
-          templateUrl: cnCenozoUrl + '/app/cenozo/modal-timezone-calculator.tpl.html',
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-timezone-calculator.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
             $scope.local.close = function() { $modalInstance.close(); };
@@ -1032,7 +1035,7 @@ cenozo.service( 'CnModalValueFactory', [
           backdrop: true,
           keyboard: true,
           modalFade: true,
-          templateUrl: cnCenozoUrl + '/app/cenozo/modal-value.tpl.html',
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-value.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
             $scope.local.ok = function() { $modalInstance.close( $scope.local.value ); };

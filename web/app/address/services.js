@@ -1,9 +1,5 @@
-define( [
-  cnCenozoUrl + '/app/address/module.js'
-], function( module ) {
-
+define( [ cenozo.baseUrl + '/app/address/module.js' ], function( module ) { 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressAddFactory', [
@@ -57,9 +53,9 @@ define( [
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnAddressAddFactory.instance( this );
-        this.cnList = CnAddressListFactory.instance( this );
-        this.cnView = CnAddressViewFactory.instance( this );
+        this.addModel = CnAddressAddFactory.instance( this );
+        this.listModel = CnAddressListFactory.instance( this );
+        this.viewModel = CnAddressViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

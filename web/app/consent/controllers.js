@@ -1,7 +1,6 @@
 define( [], function() {
 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ConsentAddCtrl', [
@@ -9,7 +8,7 @@ define( [], function() {
     function( $scope, CnConsentModelFactory ) {
       $scope.model = CnConsentModelFactory.root;
       $scope.record = {};
-      $scope.model.cnAdd.onNew( $scope.record ).catch( function exception( response ) {
+      $scope.model.addModel.onNew( $scope.record ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
@@ -20,7 +19,7 @@ define( [], function() {
     '$scope', 'CnConsentModelFactory',
     function( $scope, CnConsentModelFactory ) {
       $scope.model = CnConsentModelFactory.root;
-      $scope.model.cnList.onList().catch( function exception( response ) {
+      $scope.model.listModel.onList().catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
@@ -31,7 +30,7 @@ define( [], function() {
     '$scope', 'CnConsentModelFactory',
     function( $scope, CnConsentModelFactory ) {
       $scope.model = CnConsentModelFactory.root;
-      $scope.model.cnView.onView().catch( function exception( response ) {
+      $scope.model.viewModel.onView().catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }

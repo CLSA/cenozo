@@ -1,7 +1,7 @@
 define( [
-    cnCenozoUrl + '/app/language/controllers.js',
-    cnCenozoUrl + '/app/language/directives.js',
-    cnCenozoUrl + '/app/language/services.js'
+    cenozo.baseUrl + '/app/language/controllers.js',
+    cenozo.baseUrl + '/app/language/directives.js',
+    cenozo.baseUrl + '/app/language/services.js'
   ],
   function() {}
 );

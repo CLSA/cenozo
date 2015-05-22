@@ -1,15 +1,13 @@
 define( [
-  cnCenozoUrl + '/app/user/module.js',
-  cnCenozoUrl + '/app/access/controllers.js',
-  cnCenozoUrl + '/app/access/directives.js',
-  cnCenozoUrl + '/app/access/services.js'
+  cenozo.baseUrl + '/app/user/module.js',
+  cenozo.baseUrl + '/app/access/controllers.js',
+  cenozo.baseUrl + '/app/access/directives.js',
+  cenozo.baseUrl + '/app/access/services.js'
 ], function( module ) {
-
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnUserAddFactory', [
+  cenozo.providers.factory( 'CnUserAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
@@ -18,7 +16,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnUserListFactory', [
+  cenozo.providers.factory( 'CnUserListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -27,7 +25,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnUserViewFactory', [
+  cenozo.providers.factory( 'CnUserViewFactory', [
     'CnBaseViewFactory', 'CnAccessModelFactory',
     function( CnBaseViewFactory, CnAccessModelFactory ) {
       var object = function( parentModel ) {
@@ -42,7 +40,7 @@ define( [
 
         this.onView = function view() { 
           return this.viewRecord().then( function() {
-            self.cnAccessModel.cnList.onList( true );
+            self.cnAccessModel.listModel.onList( true );
           } );
         };
         // factory customizations end here
@@ -54,14 +52,14 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnUserModelFactory', [
+  cenozo.providers.factory( 'CnUserModelFactory', [
     'CnBaseModelFactory', 'CnUserListFactory', 'CnUserAddFactory', 'CnUserViewFactory',
     function( CnBaseModelFactory, CnUserListFactory, CnUserAddFactory, CnUserViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnUserAddFactory.instance( this );
-        this.cnList = CnUserListFactory.instance( this );
-        this.cnView = CnUserViewFactory.instance( this );
+        this.addModel = CnUserAddFactory.instance( this );
+        this.listModel = CnUserListFactory.instance( this );
+        this.viewModel = CnUserViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

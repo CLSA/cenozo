@@ -1,12 +1,8 @@
-define( [
-  cnCenozoUrl + '/app/system_message/module.js'
-], function( module ) {
-
+define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module ) { 
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnSystemMessageAddFactory', [
+  cenozo.providers.factory( 'CnSystemMessageAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
@@ -15,7 +11,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnSystemMessageListFactory', [
+  cenozo.providers.factory( 'CnSystemMessageListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -24,7 +20,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnSystemMessageViewFactory', [
+  cenozo.providers.factory( 'CnSystemMessageViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
@@ -33,16 +29,16 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providersfactory( 'CnSystemMessageModelFactory', [
+  cenozo.providers.factory( 'CnSystemMessageModelFactory', [
     'CnBaseModelFactory',
     'CnSystemMessageListFactory', 'CnSystemMessageAddFactory', 'CnSystemMessageViewFactory',
     function( CnBaseModelFactory,
               CnSystemMessageListFactory, CnSystemMessageAddFactory, CnSystemMessageViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
-        this.cnAdd = CnSystemMessageAddFactory.instance( this );
-        this.cnList = CnSystemMessageListFactory.instance( this );
-        this.cnView = CnSystemMessageViewFactory.instance( this );
+        this.addModel = CnSystemMessageAddFactory.instance( this );
+        this.listModel = CnSystemMessageListFactory.instance( this );
+        this.viewModel = CnSystemMessageViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );

@@ -1,9 +1,5 @@
-define( [
-  cnCenozoUrl + '/app/activity/module.js'
-], function( module ) {
-
+define( [ cenozo.baseUrl + '/app/activity/module.js' ], function( module ) {
   'use strict';
-  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnActivityListFactory', [
@@ -20,7 +16,7 @@ define( [
     function( CnBaseModelFactory, CnActivityListFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
-        this.cnList = CnActivityListFactory.instance( this );
+        this.listModel = CnActivityListFactory.instance( this );
       };
 
       return {

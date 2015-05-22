@@ -1,18 +1,18 @@
 <div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
 <table class="table"
        ng-class="{
-         'table-hover':(model.viewEnabled && !model.chooseEnabled) || model.cnList.chooseMode,
-         'table-striped':!model.cnList.chooseMode
+         'table-hover':(model.viewEnabled && !model.chooseEnabled) || model.listModel.chooseMode,
+         'table-striped':!model.listModel.chooseMode
        } ">
   <thead>
     <tr class="info">
       <td ng-repeat="column in columnArray">
         <div class="btn-group" role="group" area-hidden="true" tooltip="{{ column.help }}">
           <button class="btn btn-narrow btn-info"
-                  ng-click="model.cnList.orderBy( column.key )">{{ column.title }}
-            <i ng-if="null !== model.cnList.order && model.cnList.order.column == column.key"
+                  ng-click="model.listModel.orderBy( column.key )">{{ column.title }}
+            <i ng-if="null !== model.listModel.order && model.listModel.order.column == column.key"
                class="glyphicon"
-               ng-class="model.cnList.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
+               ng-class="model.listModel.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
           </button>
           <button class="btn btn-narrow btn-info"
                   ng-if="column.allowRestrict"
@@ -34,24 +34,24 @@
     </tr>
   </thead>
   <tbody>
-    <tr ng-if="model.cnList.isLoading">
+    <tr ng-if="model.listModel.isLoading">
       <td colspan="{{ numColumns }}" style="background-color: #FFF">
         <div class="loader" tooltip="Loading..."></div>
       </td>
     </tr>
-    <tr ng-if="!model.cnList.isLoading && 0 == model.cnList.cache.length">
+    <tr ng-if="!model.listModel.isLoading && 0 == model.listModel.cache.length">
       <td colspan="{{ numColumns }}">
         There are no {{ model.name.plural }} found.
       </td>
     </tr>
-    <tr ng-if="!model.cnList.isLoading"
-        ng-repeat="record in model.cnList.cache
-                   | orderBy: model.cnList.order.column:model.cnList.order.reverse
-                   | limitTo: ( model.cnList.cnPagination.currentPage - 1 ) * model.cnList.cnPagination.itemsPerPage -
-                              model.cnList.cache.length
-                   | limitTo: model.cnList.cnPagination.itemsPerPage"
+    <tr ng-if="!model.listModel.isLoading"
+        ng-repeat="record in model.listModel.cache
+                   | orderBy: model.listModel.order.column:model.listModel.order.reverse
+                   | limitTo: ( model.listModel.cnPagination.currentPage - 1 ) * model.listModel.cnPagination.itemsPerPage -
+                              model.listModel.cache.length
+                   | limitTo: model.listModel.cnPagination.itemsPerPage"
         ng-click="model.chooseEnabled ? chooseRecord( record ) : selectRecord( record )"
-        ng-class="{ success:model.cnList.chooseMode && record.chosen }">
+        ng-class="{ success:model.listModel.chooseMode && record.chosen }">
         <td ng-repeat="column in columnArray">
           <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
         </td>
@@ -72,15 +72,15 @@
     <tr class="info">
       <td colspan="{{ numColumns }}" class="rounded-bottom">
         <pagination class="pagination left"
-                    ng-model="model.cnList.cnPagination.currentPage"
-                    ng-show="model.cnList.cache.length > model.cnList.cnPagination.itemsPerPage"
-                    ng-change="model.cnList.checkCache()"
-                    max-size="model.cnList.cnPagination.showPageLimit"
-                    items-per-page="model.cnList.cnPagination.itemsPerPage"
-                    total-items="model.cnList.total"
+                    ng-model="model.listModel.cnPagination.currentPage"
+                    ng-show="model.listModel.cache.length > model.listModel.cnPagination.itemsPerPage"
+                    ng-change="model.listModel.checkCache()"
+                    max-size="model.listModel.cnPagination.showPageLimit"
+                    items-per-page="model.listModel.cnPagination.itemsPerPage"
+                    total-items="model.listModel.total"
                     previous-text="&lsaquo;"
                     next-text="&rsaquo;"></pagination>
-        {{ model.cnList.total }} records total
+        {{ model.listModel.total }} records total
         <button class="btn btn-default right"
                 ng-if="model.addEnabled && !model.chooseEnabled"
                 ng-click="addRecord()">
@@ -88,11 +88,11 @@
         </button>
         <button class="btn btn-default right"
                 ng-if="model.chooseEnabled"
-                ng-class="model.cnList.chooseMode ? 'btn-success' : 'btn-default'"
-                ng-click="model.cnList.toggleChooseMode()">
+                ng-class="model.listModel.chooseMode ? 'btn-success' : 'btn-default'"
+                ng-click="model.listModel.toggleChooseMode()">
           <i class="glyphicon glyphicon-edit"
-             ng-class="model.cnList.chooseMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
-          {{ model.cnList.chooseMode ? 'Done' : 'Select' }}
+             ng-class="model.listModel.chooseMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
+          {{ model.listModel.chooseMode ? 'Done' : 'Select' }}
         </button>
       </td>
     </tr>
