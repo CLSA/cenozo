@@ -7,12 +7,15 @@ define( {
     pluralPossessive: 'event types\''
   },
   inputList: {
-    // TODO: fill out
+    // not used
   },
   columnList: {
-    // TODO: fill out
+    name: { title: 'Name' },
+    event_count: { title: 'Events' },
+    description: { title: 'Description' }
   },
   defaultOrder: {
-    // TODO: fill out
+    column: 'name',
+    reverse: false
   }
 } );
