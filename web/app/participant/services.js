@@ -41,34 +41,34 @@ define( [
         ////////////////////////////////////
         // factory customizations start here
         var self = this;
-        this.cnAddressModel = CnAddressModelFactory.instance();
-        this.cnAddressModel.enableAdd( true );
-        this.cnAddressModel.enableDelete( true );
-        this.cnAddressModel.enableView( true );
-        this.cnPhoneModel = CnPhoneModelFactory.instance();
-        this.cnPhoneModel.enableAdd( true );
-        this.cnPhoneModel.enableDelete( true );
-        this.cnPhoneModel.enableView( true );
-        this.cnConsentModel = CnConsentModelFactory.instance();
-        this.cnConsentModel.enableAdd( true );
-        this.cnConsentModel.enableDelete( true );
-        this.cnConsentModel.enableView( true );
-        this.cnAlternateModel = CnAlternateModelFactory.instance();
-        this.cnAlternateModel.enableAdd( true );
-        this.cnAlternateModel.enableDelete( true );
-        this.cnAlternateModel.enableView( true );
-        this.cnEventModel = CnEventModelFactory.instance();
-        this.cnEventModel.enableAdd( true );
-        this.cnEventModel.enableDelete( true );
-        this.cnEventModel.enableView( true );
+        this.addressModel = CnAddressModelFactory.instance();
+        this.addressModel.enableAdd( true );
+        this.addressModel.enableDelete( true );
+        this.addressModel.enableView( true );
+        this.phoneModel = CnPhoneModelFactory.instance();
+        this.phoneModel.enableAdd( true );
+        this.phoneModel.enableDelete( true );
+        this.phoneModel.enableView( true );
+        this.consentModel = CnConsentModelFactory.instance();
+        this.consentModel.enableAdd( true );
+        this.consentModel.enableDelete( true );
+        this.consentModel.enableView( true );
+        this.alternateModel = CnAlternateModelFactory.instance();
+        this.alternateModel.enableAdd( true );
+        this.alternateModel.enableDelete( true );
+        this.alternateModel.enableView( true );
+        this.eventModel = CnEventModelFactory.instance();
+        this.eventModel.enableAdd( true );
+        this.eventModel.enableDelete( true );
+        this.eventModel.enableView( true );
 
         this.onView = function view() { 
           return this.viewRecord().then( function() {
-            self.cnAddressModel.listModel.onList( true );
-            self.cnPhoneModel.listModel.onList( true );
-            self.cnConsentModel.listModel.onList( true );
-            self.cnAlternateModel.listModel.onList( true );
-            self.cnEventModel.listModel.onList( true );
+            self.addressModel.listModel.onList( true );
+            self.phoneModel.listModel.onList( true );
+            self.consentModel.listModel.onList( true );
+            self.alternateModel.listModel.onList( true );
+            self.eventModel.listModel.onList( true );
           } );
         };
         // factory customizations end here

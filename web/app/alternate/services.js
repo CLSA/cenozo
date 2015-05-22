@@ -37,19 +37,19 @@ define( [
         ////////////////////////////////////
         // factory customizations start here
         var self = this;
-        this.cnAddressModel = CnAddressModelFactory.instance();
-        this.cnAddressModel.enableAdd( true );
-        this.cnAddressModel.enableDelete( true );
-        this.cnAddressModel.enableView( true );
-        this.cnPhoneModel = CnPhoneModelFactory.instance();
-        this.cnPhoneModel.enableAdd( true );
-        this.cnPhoneModel.enableDelete( true );
-        this.cnPhoneModel.enableView( true );
+        this.addressModel = CnAddressModelFactory.instance();
+        this.addressModel.enableAdd( true );
+        this.addressModel.enableDelete( true );
+        this.addressModel.enableView( true );
+        this.phoneModel = CnPhoneModelFactory.instance();
+        this.phoneModel.enableAdd( true );
+        this.phoneModel.enableDelete( true );
+        this.phoneModel.enableView( true );
 
         this.onView = function view() {
           return this.viewRecord().then( function() {
-            self.cnAddressModel.listModel.onList( true );
-            self.cnPhoneModel.listModel.onList( true );
+            self.addressModel.listModel.onList( true );
+            self.phoneModel.listModel.onList( true );
           } );
         };
         // factory customizations end here

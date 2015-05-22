@@ -34,13 +34,13 @@ define( [
         ////////////////////////////////////
         // factory customizations start here
         var self = this;
-        this.cnAccessModel = CnAccessModelFactory.instance();
-        this.cnAccessModel.enableAdd( true );
-        this.cnAccessModel.enableDelete( true );
+        this.accessModel = CnAccessModelFactory.instance();
+        this.accessModel.enableAdd( true );
+        this.accessModel.enableDelete( true );
 
         this.onView = function view() { 
           return this.viewRecord().then( function() {
-            self.cnAccessModel.listModel.onList( true );
+            self.accessModel.listModel.onList( true );
           } );
         };
         // factory customizations end here

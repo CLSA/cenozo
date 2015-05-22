@@ -37,15 +37,15 @@ define( [
         ////////////////////////////////////
         // factory customizations start here
         var self = this;
-        this.cnParticipantModel = CnParticipantModelFactory.instance();
-        this.cnParticipantModel.enableChoose( true );
-        this.cnUserModel = CnUserModelFactory.instance();
-        this.cnUserModel.enableChoose( true );
+        this.participantModel = CnParticipantModelFactory.instance();
+        this.participantModel.enableChoose( true );
+        this.userModel = CnUserModelFactory.instance();
+        this.userModel.enableChoose( true );
 
         this.onView = function view() {
           return this.viewRecord().then( function() {
-            self.cnParticipantModel.listModel.onList( true );
-            self.cnUserModel.listModel.onList( true );
+            self.participantModel.listModel.onList( true );
+            self.userModel.listModel.onList( true );
           } );
         };
         // factory customizations end here

@@ -12,7 +12,8 @@
                   ng-click="model.listModel.orderBy( column.key )">{{ column.title }}
             <i ng-if="null !== model.listModel.order && model.listModel.order.column == column.key"
                class="glyphicon"
-               ng-class="model.listModel.order.reverse ? 'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
+               ng-class="model.listModel.order.reverse ?
+                         'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
           </button>
           <button class="btn btn-narrow btn-info"
                   ng-if="column.allowRestrict"
@@ -47,9 +48,9 @@
     <tr ng-if="!model.listModel.isLoading"
         ng-repeat="record in model.listModel.cache
                    | orderBy: model.listModel.order.column:model.listModel.order.reverse
-                   | limitTo: ( model.listModel.cnPagination.currentPage - 1 ) * model.listModel.cnPagination.itemsPerPage -
-                              model.listModel.cache.length
-                   | limitTo: model.listModel.cnPagination.itemsPerPage"
+                   | limitTo: ( model.listModel.paginationFactory.currentPage - 1 ) *
+                              model.listModel.paginationFactory.itemsPerPage - model.listModel.cache.length
+                   | limitTo: model.listModel.paginationFactory.itemsPerPage"
         ng-click="model.chooseEnabled ? chooseRecord( record ) : selectRecord( record )"
         ng-class="{ success:model.listModel.chooseMode && record.chosen }">
         <td ng-repeat="column in columnArray">
@@ -72,11 +73,11 @@
     <tr class="info">
       <td colspan="{{ numColumns }}" class="rounded-bottom">
         <pagination class="pagination left"
-                    ng-model="model.listModel.cnPagination.currentPage"
-                    ng-show="model.listModel.cache.length > model.listModel.cnPagination.itemsPerPage"
+                    ng-model="model.listModel.paginationFactory.currentPage"
+                    ng-show="model.listModel.cache.length > model.listModel.paginationFactory.itemsPerPage"
                     ng-change="model.listModel.checkCache()"
-                    max-size="model.listModel.cnPagination.showPageLimit"
-                    items-per-page="model.listModel.cnPagination.itemsPerPage"
+                    max-size="model.listModel.paginationFactory.showPageLimit"
+                    items-per-page="model.listModel.paginationFactory.itemsPerPage"
                     total-items="model.listModel.total"
                     previous-text="&lsaquo;"
                     next-text="&rsaquo;"></pagination>

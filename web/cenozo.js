@@ -1022,7 +1022,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.order = object.parentModel.defaultOrder;
         object.total = 0;
         object.cache = [];
-        object.cnPagination = CnPaginationFactory.instance();
+        object.paginationFactory = CnPaginationFactory.instance();
         object.isLoading = false;
 
         object.orderBy = function( column ) {
@@ -1032,7 +1032,7 @@ cenozo.factory( 'CnBaseListFactory', [
             this.order.reverse = !this.order.reverse;
           }
           if( this.cache.length < this.total ) this.listRecords( true );
-          this.cnPagination.currentPage = 1;
+          this.paginationFactory.currentPage = 1;
         };
 
         object.restrict = function( column, restrict ) {
@@ -1043,12 +1043,12 @@ cenozo.factory( 'CnBaseListFactory', [
             columnList[column].restrict = restrict;
           }
           this.listRecords( true );
-          this.cnPagination.currentPage = 1;
+          this.paginationFactory.currentPage = 1;
         };
 
         object.checkCache = function() {
           var self = this;
-          if( this.cache.length < this.total && this.cnPagination.getMaxIndex() >= this.cache.length )
+          if( this.cache.length < this.total && this.paginationFactory.getMaxIndex() >= this.cache.length )
             this.listRecords().catch( function exception( response ) {
               self.parentModel.transitionToErrorState( response );
             } );

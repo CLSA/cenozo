@@ -25,12 +25,12 @@ define( [
         ////////////////////////////////////
         // factory customizations start here
         var self = this;
-        this.cnUserModel = CnUserModelFactory.instance();
-        this.cnUserModel.enableChoose( true );
+        this.userModel = CnUserModelFactory.instance();
+        this.userModel.enableChoose( true );
 
         this.onView = function view() {
           return this.viewRecord().then( function() {
-            self.cnUserModel.listModel.onList( true );
+            self.userModel.listModel.onList( true );
           } );
         };
         // factory customizations end here
