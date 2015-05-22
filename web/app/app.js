@@ -140,7 +140,7 @@ String.prototype.camelToSnake = function cnCamelToSnake() {
 };
 
 String.prototype.ucWords = function() {
-  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.lowercase( $1 ); } ); 
+  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } ); 
 }
 
 window.cnToQueryString = function cnToQueryString( object ) {
@@ -207,6 +207,7 @@ cenozoApp.config( [
         } ]
       }
     } );
+    $stateProvider.state( 'error.400', { templateUrl: baseErrorUrl + '400.tpl.html' } );
     $stateProvider.state( 'error.403', { templateUrl: baseErrorUrl + '403.tpl.html' } );
     $stateProvider.state( 'error.404', { templateUrl: baseErrorUrl + '404.tpl.html' } );
     $stateProvider.state( 'error.500', { templateUrl: baseErrorUrl + '500.tpl.html' } );

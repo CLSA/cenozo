@@ -41,6 +41,9 @@ class query extends read
         if( $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )
         { // must have table1/<id>/table2 where table1 N-to-N table2
           $this->status->set_code( 400 );
+          throw lib::create( 'exception\runtime',
+            'Many-to-many relationship not found for choosing mode',
+            __METHOD__ );
         }
         else
         {

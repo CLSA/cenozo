@@ -58,14 +58,13 @@ cenozo.filter( 'cnMomentDate', [
   'CnAppSingleton',
   function( CnAppSingleton ) {
     return function( input, format ) {
-      var output = input;
-      if( angular.isDefined( input ) &&
-          null !== input &&
-          'object' === typeof input &&
-          angular.isDefined( input.format ) ) {
+      var output;
+      if( angular.isUndefined( input ) || null === input ) {
+        output = '(none)';
+      } else {
+        if( 'object' !== typeof input || angular.isUndefined( input.format ) ) input = moment( input );
         output = input.tz( CnAppSingleton.site.timezone ).format( format );
       }
-
       return output;
     };
   }

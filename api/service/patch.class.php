@@ -51,9 +51,8 @@ class patch extends write
         }
         catch( \cenozo\exception\argument $e )
         {
-          // argument exception means the column doesn't exist
           $this->status->set_code( 400 );
-          break;
+          throw $e;
         }
       }
 
@@ -75,10 +74,9 @@ class patch extends write
             $this->data = $e->get_duplicate_columns( $leaf_record->get_class_name() );
             $this->status->set_code( 409 );
           }
-          else if( $e->is_missing_data() ) $this->status->set_code( 400 );
           else
           {
-            $this->status->set_code( 500 );
+            $this->status->set_code( $e->is_missing_data() ? 400 : 500 );
             throw $e;
           }
         }

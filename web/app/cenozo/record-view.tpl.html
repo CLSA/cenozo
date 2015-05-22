@@ -78,7 +78,6 @@
               ng-click="selectDatetime( input )"
               onkeydown="return false"></input>
             <select ng-switch-default
-              ng-if="input.enumList"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-options="item.value as item.name for item in input.enumList"

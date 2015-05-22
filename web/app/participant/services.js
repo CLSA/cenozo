@@ -90,7 +90,6 @@ define( [
         this.cnList = CnParticipantListFactory.instance( this );
         this.cnView = CnParticipantViewFactory.instance( this );
 
-        this.enableDelete( true );
         this.enableView( true );
 
         // customize identifier

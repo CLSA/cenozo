@@ -40,6 +40,7 @@ class post extends write
         if( !is_int( $id ) && !is_array( $id ) )
         {
           $this->status->set_code( 400 );
+          throw lib::create( 'exception\argument', 'id', $id, __METHOD__ );
         }
         else
         {
@@ -74,10 +75,9 @@ class post extends write
             $this->data = $e->get_duplicate_columns( $record->get_class_name() );
             $this->status->set_code( 409 );
           }
-          else if( $e->is_missing_data() ) $this->status->set_code( 400 );
           else
           {
-            $this->status->set_code( 500 );
+            $this->status->set_code( $e->is_missing_data() ? 400 : 500 );
             throw $e;
           }
         }

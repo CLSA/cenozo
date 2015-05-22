@@ -77,10 +77,9 @@ class patch extends \cenozo\service\service
                 $this->data = $e->get_duplicate_columns( $db_user->get_class_name() );
                 $this->status->set_code( 409 );
               }
-              else if( $e->is_missing_data() ) $this->status->set_code( 400 );
               else
               {
-                $this->status->set_code( 500 );
+                $this->status->set_code( $e->is_missing_data() ? 400 : 500 );
                 throw $e;
               }
             }
@@ -115,6 +114,9 @@ class patch extends \cenozo\service\service
       else
       {
         $this->status->set_code( 400 );
+        throw lib::create( 'exception\runtime',
+          'Patch expecting an object, got '.gettype( $value ),
+          __METHOD__ );
       }
     }
   }

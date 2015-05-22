@@ -41,6 +41,7 @@ class read extends service
       catch( \cenozo\exception\base_exception $e )
       {
         $this->status->set_code( 400 );
+        throw $e;
       }
     }
 
@@ -59,6 +60,7 @@ class read extends service
       catch( \cenozo\exception\base_exception $e )
       {
         $this->status->set_code( 400 );
+        throw $e;
       }
     }
 

@@ -247,7 +247,6 @@ final class bootstrap
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    $error_code = NULL;
     $service = NULL;
 
     try
@@ -282,8 +281,11 @@ final class bootstrap
     }
     catch( exception\base_exception $e )
     {
-      $status = lib::create( 'service\status', 500 );
-      $error_code = $e->get_code();
+      $status = !is_null( $service ) &&
+                !is_null( $service->get_status() ) &&
+                400 <= $service->get_status()->get_code()
+              ? $service->get_status()
+              : lib::create( 'service\status', 500 );
     
       // log all but notice exceptions
       if( 'notice' != $e->get_type() )
@@ -296,9 +298,6 @@ final class bootstrap
     catch( \Exception $e )
     {
       $status = lib::create( 'service\status', 500 );
-      $error_code = class_exists( 'cenozo\util' )
-                  ? $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
-                  : 0;
     
       if( class_exists( 'cenozo\log' ) )
         log::err( sprintf( "For service \"%s\":\nLast minute %s",
@@ -309,7 +308,7 @@ final class bootstrap
     // make sure to fail any active transaction
     if( $this->session->use_transaction() )
     {
-      if( 500 == $status->get_code() ) $this->session->get_database()->fail_transaction();
+      if( 400 <= $status->get_code() ) $this->session->get_database()->fail_transaction();
       $this->session->get_database()->complete_transaction();
     }
 

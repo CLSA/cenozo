@@ -182,6 +182,7 @@ class ui extends \cenozo\base_object
       'application' => 'Applications',
       'alternate' => 'Alternates',
       'collection' => 'Collections',
+      'event_type' => 'Event Types',
       'language' => 'Languages',
       'participant' => 'Participants',
       'quota' => 'Quotas',

@@ -45,7 +45,11 @@ cenozo.factory( 'CnAppSingleton', [
             name: access.role_name
           } );
         }
-      } ).catch( function exception() { $state.go( 'error.500' ); } );
+      } ).catch( function exception( response ) {
+        var type = angular.isDefined( response ) || angular.isDefined( response.status )
+                 ? response.status : 500;
+        $state.go( 'error.' + type );
+      } );
 
       this.setSite = function setSite( id ) {
         return CnHttpFactory.instance( {
@@ -180,12 +184,13 @@ cenozo.factory( 'CnBaseListFactory', [
         object.chooseRecord = function( record ) {
           if( !this.parentModel.chooseEnabled ) throw 'Calling chooseRecord() but chooseEnabled is false';
 
+          // note: don't use the record's getIdentifier since choosing requires the ID only
           return record.chosen ?
             CnHttpFactory.instance( {
-              path: this.parentModel.getServiceResourcePath( record.getIdentifier() )
+              path: this.parentModel.getServiceResourcePath( record.id )
             } ).delete().then( function success() { record.chosen = 0; } ) :
             CnHttpFactory.instance( {
-              path: this.parentModel.getServiceCollectionPath(), data: record.getIdentifier()
+              path: this.parentModel.getServiceCollectionPath(), data: record.id
             } ).post().then( function success() { record.chosen = 1; } );
         };
 
@@ -392,8 +397,8 @@ cenozo.factory( 'CnBaseViewFactory', [
 
 /* ######################################################################################################## */
 cenozo.factory( 'CnBaseModelFactory', [
-  '$state', '$stateParams', 'CnHttpFactory',
-  function( $state, $stateParams, CnHttpFactory ) {
+  '$state', '$stateParams', 'CnAppSingleton', 'CnHttpFactory',
+  function( $state, $stateParams, CnAppSingleton, CnHttpFactory ) {
     return {
       construct: function( object, module ) {
         for( var property in module ) object[property] = angular.copy( module[property] );
@@ -479,8 +484,8 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
         };
         object.transitionToErrorState = function( response ) {
-          var type = angular.isUndefined( response ) || angular.isUndefined( response.status ) || 404 != response.status
-                   ? '500' : '404';
+          var type = angular.isDefined( response ) || angular.isDefined( response.status )
+                   ? response.status : 500;
           $state.go( 'error.' + type );
         };
 
@@ -601,7 +606,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               if( 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( input.type ) ) {
                 var obj = moment( value );
                 if( 'datetimesecond' == input.type || 'datetime' == input.type ) {
-                  obj.tz( this.site.timezone );
+                  obj.tz( CnAppSingleton.site.timezone );
                   if( 'datetimesecond' == input.type ) formatted = obj.format( 'YYYY-MM-DD HH:mm:ss' );
                   else /*if( 'datetime' == input.type )*/ formatted = obj.format( 'YYYY-MM-DD HH:mm' );
                 } else {
