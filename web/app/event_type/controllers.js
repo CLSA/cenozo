@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'EventTypeListCtrl', [
+  cenozo.providers.controller( 'EventTypeListCtrl', [
     '$scope', 'CnEventTypeModelFactory',
     function( $scope, CnEventTypeModelFactory ) {
       $scope.model = CnEventTypeModelFactory.root;

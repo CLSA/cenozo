@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'ErrorCtrl', [
+  cenozo.providers.controller( 'ErrorCtrl', [
     '$scope', '$window', 'CnErrorModelFactory',
     function( $scope, $window, CnErrorModelFactory ) {
       $scope.model = CnErrorModelFactory.root;

@@ -6,9 +6,10 @@ define( [
 ], function( module ) {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnLanguageListFactory', [
+  cenozo.providers.factory( 'CnLanguageListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -17,7 +18,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnLanguageViewFactory', [
+  cenozo.providers.factory( 'CnLanguageViewFactory', [
     'CnBaseViewFactory', 'CnUserModelFactory',
     function( CnBaseViewFactory, CnUserModelFactory ) {
       var object = function( parentModel ) {
@@ -43,7 +44,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnLanguageModelFactory', [
+  cenozo.providers.factory( 'CnLanguageModelFactory', [
     'CnBaseModelFactory', 'CnLanguageListFactory', 'CnLanguageViewFactory',
     function( CnBaseModelFactory, CnLanguageListFactory, CnLanguageViewFactory ) {
       var object = function() {

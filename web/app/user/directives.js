@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.directive( 'cnUserAdd', function () {
+  cenozo.providersdirective( 'cnUserAdd', function () {
     return {
       templateUrl: 'app/user/add.tpl.html',
       restrict: 'E'
@@ -11,7 +12,7 @@ define( [], function() {
   } );
 
   /* ######################################################################################################## */
-  cnCachedProviders.directive( 'cnUserView', function () {
+  cenozo.providersdirective( 'cnUserView', function () {
     return {
       templateUrl: 'app/user/view.tpl.html',
       restrict: 'E'

@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'CollectionAddCtrl', [
+  cenozo.providers.controller( 'CollectionAddCtrl', [
     '$scope', 'CnCollectionModelFactory',
     function( $scope, CnCollectionModelFactory ) {
       $scope.model = CnCollectionModelFactory.root;
@@ -15,7 +16,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'CollectionListCtrl', [
+  cenozo.providers.controller( 'CollectionListCtrl', [
     '$scope', 'CnCollectionModelFactory',
     function( $scope, CnCollectionModelFactory ) {
       $scope.model = CnCollectionModelFactory.root;
@@ -26,7 +27,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'CollectionViewCtrl', [
+  cenozo.providers.controller( 'CollectionViewCtrl', [
     '$scope', 'CnCollectionModelFactory',
     function( $scope, CnCollectionModelFactory ) {
       $scope.model = CnCollectionModelFactory.root;

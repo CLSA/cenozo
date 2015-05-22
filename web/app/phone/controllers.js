@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'PhoneAddCtrl', [
+  cenozo.providers.controller( 'PhoneAddCtrl', [
     '$scope', 'CnPhoneModelFactory',
     function( $scope, CnPhoneModelFactory ) {
       $scope.model = CnPhoneModelFactory.root;
@@ -15,7 +16,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'PhoneListCtrl', [
+  cenozo.providers.controller( 'PhoneListCtrl', [
     '$scope', 'CnPhoneModelFactory',
     function( $scope, CnPhoneModelFactory ) {
       $scope.model = CnPhoneModelFactory.root;
@@ -26,7 +27,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'PhoneViewCtrl', [
+  cenozo.providers.controller( 'PhoneViewCtrl', [
     '$scope', 'CnPhoneModelFactory',
     function( $scope, CnPhoneModelFactory ) {
       $scope.model = CnPhoneModelFactory.root;

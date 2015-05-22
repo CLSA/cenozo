@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'HomeCtrl', [
+  cenozo.providerscontroller( 'HomeCtrl', [
     '$scope', 'CnHomeModelFactory',
     function( $scope, CnHomeModelFactory ) {
       $scope.model = CnHomeModelFactory.root;

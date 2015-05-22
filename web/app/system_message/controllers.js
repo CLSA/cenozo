@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'SystemMessageAddCtrl', [
+  cenozo.providerscontroller( 'SystemMessageAddCtrl', [
     '$scope', 'CnSystemMessageModelFactory',
     function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;
@@ -15,7 +16,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'SystemMessageListCtrl', [
+  cenozo.providerscontroller( 'SystemMessageListCtrl', [
     '$scope', 'CnSystemMessageModelFactory',
     function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;
@@ -26,7 +27,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'SystemMessageViewCtrl', [
+  cenozo.providerscontroller( 'SystemMessageViewCtrl', [
     '$scope', 'CnSystemMessageModelFactory',
     function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;

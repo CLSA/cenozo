@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'UserAddCtrl', [
+  cenozo.providerscontroller( 'UserAddCtrl', [
     '$scope', 'CnUserModelFactory',
     function( $scope, CnUserModelFactory ) {
       $scope.model = CnUserModelFactory.root;
@@ -15,7 +16,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'UserListCtrl', [
+  cenozo.providerscontroller( 'UserListCtrl', [
     '$scope', 'CnUserModelFactory',
     function( $scope, CnUserModelFactory ) {
       $scope.model = CnUserModelFactory.root;
@@ -26,7 +27,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'UserViewCtrl', [
+  cenozo.providerscontroller( 'UserViewCtrl', [
     '$scope', 'CnUserModelFactory',
     function( $scope, CnUserModelFactory ) {
       $scope.model = CnUserModelFactory.root;

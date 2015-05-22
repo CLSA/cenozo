@@ -3,9 +3,10 @@ define( [
 ], function( module ) {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnEventTypeListFactory', [
+  cenozo.providers.factory( 'CnEventTypeListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -14,7 +15,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnEventTypeModelFactory', [
+  cenozo.providers.factory( 'CnEventTypeModelFactory', [
     'CnBaseModelFactory', 'CnEventTypeListFactory',
     function( CnBaseModelFactory, CnEventTypeListFactory ) {
       var object = function() {

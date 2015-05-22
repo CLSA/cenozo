@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'ConsentAddCtrl', [
+  cenozo.providers.controller( 'ConsentAddCtrl', [
     '$scope', 'CnConsentModelFactory',
     function( $scope, CnConsentModelFactory ) {
       $scope.model = CnConsentModelFactory.root;
@@ -15,7 +16,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'ConsentListCtrl', [
+  cenozo.providers.controller( 'ConsentListCtrl', [
     '$scope', 'CnConsentModelFactory',
     function( $scope, CnConsentModelFactory ) {
       $scope.model = CnConsentModelFactory.root;
@@ -26,7 +27,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'ConsentViewCtrl', [
+  cenozo.providers.controller( 'ConsentViewCtrl', [
     '$scope', 'CnConsentModelFactory',
     function( $scope, CnConsentModelFactory ) {
       $scope.model = CnConsentModelFactory.root;

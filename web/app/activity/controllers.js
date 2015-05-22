@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'ActivityListCtrl', [
+  cenozo.providers.controller( 'ActivityListCtrl', [
     '$scope', 'CnActivityModelFactory',
     function( $scope, CnActivityModelFactory ) {
       $scope.model = CnActivityModelFactory.root;

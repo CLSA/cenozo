@@ -3,9 +3,10 @@ define( [
 ], function( module ) {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAccessAddFactory', [
+  cenozo.providers.factory( 'CnAccessAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
@@ -14,7 +15,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAccessListFactory', [
+  cenozo.providers.factory( 'CnAccessListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -23,7 +24,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAccessViewFactory', [
+  cenozo.providers.factory( 'CnAccessViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
@@ -32,7 +33,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAccessModelFactory', [
+  cenozo.providers.factory( 'CnAccessModelFactory', [
     'CnBaseModelFactory',
     'CnAccessListFactory', 'CnAccessAddFactory', 'CnAccessViewFactory',
     'CnHttpFactory',

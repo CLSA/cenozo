@@ -3,6 +3,8 @@
 try { var cenozo = angular.module( 'cenozo' ); }
 catch( err ) { var cenozo = angular.module( 'cenozo', [] ); }
 
+cenozo.providers = {};
+
 /* ######################################################################################################## */
 cenozo.factory( 'CnAppSingleton', [
   '$state', 'CnHttpFactory',
@@ -24,7 +26,6 @@ cenozo.factory( 'CnAppSingleton', [
         self.user = angular.copy( response.data.user );
         self.site = angular.copy( response.data.site );
         self.role = angular.copy( response.data.role );
-        cnConvertFromDatabaseRecord( self.user.last_activity );
 
         // process access records
         for( var i = 0; i < response.data.access.length; i++ ) {
@@ -85,7 +86,6 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         object.addRecord = function( record ) {
           if( !this.parentModel.addEnabled ) throw 'Calling addRecord() but addEnabled is false';
-          cnConvertToDatabaseRecord( record );
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceCollectionPath(),
             data: record
@@ -327,7 +327,6 @@ cenozo.factory( 'CnBaseViewFactory', [
          * @return promise
          */
         object.patchRecord = function( data ) {
-          cnConvertToDatabaseRecord( data );
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath(),
             data: data
@@ -665,7 +664,7 @@ cenozo.factory( 'CnHttpFactory', [
       if( angular.isUndefined( params.path ) ) throw 'Tried to create CnHttpFactory without a path';
       this.path = null;
       this.data = {};
-      cnCopyParams( this, params );
+      angular.extend( this, params );
 
       this.http = function( method, url ) {
         var object = { url: url, method: method };
@@ -696,7 +695,7 @@ cenozo.service( 'CnModalConfirmFactory', [
       var self = this;
       this.title = 'Title';
       this.message = 'Message';
-      cnCopyParams( this, params );
+      angular.extend( this, params );
 
       this.show = function() {
         return $modal.open( {
@@ -719,8 +718,8 @@ cenozo.service( 'CnModalConfirmFactory', [
 
 /* ######################################################################################################## */
 cenozo.service( 'CnModalDatetimeFactory', [
-  '$modal', 'CnAppSingleton',
-  function( $modal, CnAppSingleton ) {
+  '$modal', '$window', 'CnAppSingleton',
+  function( $modal, $window, CnAppSingleton ) {
     var object = function( params ) {
       var self = this;
 
@@ -743,7 +742,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.title = 'Title';
       this.pickerType = 'datetime';
       this.mode = 'day';
-      cnCopyParams( this, params );
+      angular.extend( this, params );
 
       // service vars which cannot be defined by the constructor's params
       if( null === this.timezone ) this.timezone = CnAppSingleton.site.timezone;
@@ -888,7 +887,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
         this.updateDisplayTime();
 
         // need to send a resize event so the sliders update
-        window.dispatchEvent( new Event( 'resize' ) );
+        $window.dispatchEvent( new Event( 'resize' ) );
       };
 
       this.show = function() {
@@ -936,7 +935,7 @@ cenozo.service( 'CnModalMessageFactory', [
       this.title = 'Title';
       this.message = 'Message';
       this.error = false;
-      cnCopyParams( this, params );
+      angular.extend( this, params );
 
       this.show = function() {
         return $modal.open( {
@@ -966,7 +965,7 @@ cenozo.service( 'CnModalRestrictFactory', [
       this.name = null;
       this.column = null;
       this.comparison = null;
-      cnCopyParams( this, params );
+      angular.extend( this, params );
 
       if( angular.isUndefined( this.comparison ) || null === this.comparison ) this.comparison = { test: '<=>' };
       this.preExisting = angular.isDefined( this.comparison.value );
@@ -996,7 +995,7 @@ cenozo.service( 'CnModalTimezoneCalculatorFactory', [
   function( $modal ) {
     var object = function( params ) {
       var self = this;
-      cnCopyParams( this, params );
+      angular.extend( this, params );
 
       this.show = function() {
         return $modal.open( {
@@ -1026,7 +1025,7 @@ cenozo.service( 'CnModalValueFactory', [
       this.message = 'Message';
       this.enumList = null;
       this.value = null;
-      cnCopyParams( this, params );
+      angular.extend( this, params );
 
       this.show = function() {
         return $modal.open( {
@@ -1055,7 +1054,7 @@ cenozo.factory( 'CnPaginationFactory',
       this.showPageLimit = 10;
       this.itemsPerPage = 10;
       this.changePage = function() {};
-      cnCopyParams( this, params );
+      angular.extend( this, params );
 
       this.getMaxIndex = function() { return this.currentPage * this.itemsPerPage - 1; }
     };
@@ -1079,7 +1078,8 @@ function getServiceData( subject, list ) {
     for( var k = 0; k < columnParts.length; k++ ) {
       if( k == columnParts.length - 1 ) {
         if( 'months' == list[key].type ) {
-          selectList = selectList.concat( cnMonthList );
+          for( var month = 0; month < 12; month++ )
+            selectList.push( angular.lowercase( moment().month( month ).format( 'MMMM' ) ) );
         } else {
           // add this column to the select list
           var select = { column: columnParts[k], alias: key };

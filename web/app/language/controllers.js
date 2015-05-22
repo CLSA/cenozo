@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'LanguageListCtrl', [
+  cenozo.providers.controller( 'LanguageListCtrl', [
     '$scope', 'CnLanguageModelFactory',
     function( $scope, CnLanguageModelFactory ) {
       $scope.model = CnLanguageModelFactory.root;
@@ -14,7 +15,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'LanguageViewCtrl', [
+  cenozo.providers.controller( 'LanguageViewCtrl', [
     '$scope', 'CnLanguageModelFactory',
     function( $scope, CnLanguageModelFactory ) {
       $scope.model = CnLanguageModelFactory.root;

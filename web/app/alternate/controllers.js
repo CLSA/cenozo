@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'AlternateAddCtrl', [
+  cenozo.providers.controller( 'AlternateAddCtrl', [
     '$scope', 'CnAlternateModelFactory',
     function( $scope, CnAlternateModelFactory ) {
       $scope.model = CnAlternateModelFactory.root;
@@ -15,7 +16,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'AlternateListCtrl', [
+  cenozo.providers.controller( 'AlternateListCtrl', [
     '$scope', 'CnAlternateModelFactory',
     function( $scope, CnAlternateModelFactory ) {
       $scope.model = CnAlternateModelFactory.root;
@@ -26,7 +27,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'AlternateViewCtrl', [
+  cenozo.providers.controller( 'AlternateViewCtrl', [
     '$scope', 'CnAlternateModelFactory',
     function( $scope, CnAlternateModelFactory ) {
       $scope.model = CnAlternateModelFactory.root;

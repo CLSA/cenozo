@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnHomeModelFactory', [
+  cenozo.providersfactory( 'CnHomeModelFactory', [
     'CnAppSingleton',
     function( CnAppSingleton ) {
       var object = function() {

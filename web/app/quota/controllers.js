@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QuotaAddCtrl', [
+  cenozo.providers.controller( 'QuotaAddCtrl', [
     '$scope', 'CnQuotaModelFactory',
     function( $scope, CnQuotaModelFactory ) {
       $scope.model = CnQuotaModelFactory.root;
@@ -15,7 +16,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QuotaListCtrl', [
+  cenozo.providers.controller( 'QuotaListCtrl', [
     '$scope', 'CnQuotaModelFactory',
     function( $scope, CnQuotaModelFactory ) {
       $scope.model = CnQuotaModelFactory.root;
@@ -26,7 +27,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QuotaViewCtrl', [
+  cenozo.providers.controller( 'QuotaViewCtrl', [
     '$scope', 'CnQuotaModelFactory',
     function( $scope, CnQuotaModelFactory ) {
       $scope.model = CnQuotaModelFactory.root;

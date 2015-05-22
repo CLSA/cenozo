@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'RegionSiteAddCtrl', [
+  cenozo.providers.controller( 'RegionSiteAddCtrl', [
     '$scope', 'CnRegionSiteModelFactory',
     function( $scope, CnRegionSiteModelFactory ) {
       $scope.model = CnRegionSiteModelFactory.root;
@@ -15,7 +16,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'RegionSiteListCtrl', [
+  cenozo.providers.controller( 'RegionSiteListCtrl', [
     '$scope', 'CnRegionSiteModelFactory',
     function( $scope, CnRegionSiteModelFactory ) {
       $scope.model = CnRegionSiteModelFactory.root;
@@ -26,7 +27,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'RegionSiteViewCtrl', [
+  cenozo.providers.controller( 'RegionSiteViewCtrl', [
     '$scope', 'CnRegionSiteModelFactory',
     function( $scope, CnRegionSiteModelFactory ) {
       $scope.model = CnRegionSiteModelFactory.root;

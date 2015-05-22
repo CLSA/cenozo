@@ -38,7 +38,7 @@
       '$stateProvider',
       function( $stateProvider ) {
         for( var module in cnModuleList ) {
-          cnRouteModule( $stateProvider, module, cnModuleList[module] );
+          cenozoApp.routeModule( $stateProvider, module, cnModuleList[module] );
         }
       }
     ] );

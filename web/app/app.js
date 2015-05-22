@@ -1,67 +1,44 @@
 'use strict';
 
+// setup moment.timezone
 moment.tz.setDefault( 'UTC' );
 
-window.cnCachedProviders = {};
+// add some useful prototype functions
+Array.prototype.findByProperty = function( property, value ) {
+  for( var i = 0; i < this.length; i++ )
+    if( angular.isDefined( this[i][property] ) && value == this[i][property] )
+      return this[i];
+  return null;
+}
 
-window.cnMonthList = [
-  'january', 'february', 'march', 'april', 'may', 'june',
-  'july', 'august', 'september', 'october', 'november', 'december'
-];
-
-window.cnCopyParams = function cnCopyParams( object, params ) {
-  for( var property in params ) {
-    if( params.hasOwnProperty( property ) ) {
-      object[property] = params[property]; // copy non-object property
-      /* TODO: this may not be necessary, removing it for now
-      if( null !== params[property] && 'object' === typeof params[property] ) {
-        if( null !== object[property] && 'object' === typeof object[property] ) {
-          // both object and params have same object, so recursively apply
-          window.cnCopyParams( object[property], params[property] );
-        } else object[property] = params[property]; // copy object property
-      } else object[property] = params[property]; // copy non-object property
-      */
-    }
-  }
+String.prototype.snakeToCamel = function cnSnakeToCamel( first ) {
+  if( angular.isUndefined( first ) ) first = false;
+  var output = this.replace( /(\_\w)/g, function( $1 ) { return angular.uppercase( $1[1] ); } );
+  if( first ) output = angular.uppercase( output.charAt(0) ) + output.slice(1);
+  return output;
 };
 
-window.cnConvertFromDatabaseRecord = function cnConvertFromDatabaseRecord( object ) {
-  /*
-  for( var prop in object ) {
-    if( null !== object[prop] ) {
-      if( 0 <= prop.regexIndexOf( /^datetime|_datetime/ ) ) {
-        object[prop] = moment( object[prop] ).format();
-      } else if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
-        object[prop] = moment( object[prop] ).format( 'YYYY-MM-DD' );
-      } else if( 0 <= prop.regexIndexOf( /^time|_time/ ) ) {
-        object[prop] = moment( object[prop] ).format( 'HH:mm:ss' );
-      }
-    }
-  }
-  */
+String.prototype.camelToSnake = function cnCamelToSnake() {
+  return this.replace( /([A-Z])/g, function( $1 ) { return '_' + angular.lowercase( $1 ); } ).replace( /^_/, '' );
 };
 
-window.cnConvertToDatabaseRecord = function cnConvertToDatabaseRecord( object ) {
-  /*
-  for( var prop in object ) {
-    if( 0 <= prop.regexIndexOf( /^date|_date/ ) ) {
-      if( null === object[prop] ) object[prop] = '';
-      else if( object[prop].format ) object[prop].format( 'YYYY-MM-DD' );
-    } else if( 0 <= prop.regexIndexOf( /^time|_time/ ) ) {
-      if( null === object[prop] ) object[prop] = '';
-      else if( object[prop].format ) object[prop].format( 'HH:mm:ss' );
-    } else if( 0 <= prop.regexIndexOf( /^datetime|_datetime/ ) ) {
-      if( null === object[prop] ) object[prop] = '';
-      else if( object[prop].format ) object[prop].format( 'YYYY-MM-DD HH:mm:ss' );
-    }
-  }
-  */
-};
+String.prototype.ucWords = function() {
+  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } ); 
+}
 
-window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
-  if( angular.isUndefined( $stateProvider ) ) throw 'cnRouteModule requires exactly 3 parameters';
-  if( angular.isUndefined( name ) ) throw 'cnRouteModule requires exactly 3 parameters';
-  if( angular.isUndefined( module ) ) throw 'cnRouteModule requires exactly 3 parameters';
+/* ######################################################################################################## */
+var cenozoApp = angular.module( 'cenozoApp', [
+  'ui.bootstrap',
+  'ui.router',
+  'ui.slider',
+  'snap',
+  'cenozo'
+] );
+
+cenozoApp.routeModule = function ( $stateProvider, name, module ) {
+  if( angular.isUndefined( $stateProvider ) ) throw 'routeModule requires exactly 3 parameters';
+  if( angular.isUndefined( name ) ) throw 'routeModule requires exactly 3 parameters';
+  if( angular.isUndefined( module ) ) throw 'routeModule requires exactly 3 parameters';
 
   // add base state
   $stateProvider.state( name, {
@@ -116,68 +93,25 @@ window.cnRouteModule = function cnRouteModule( $stateProvider, name, module ) {
   }
 };
 
-Array.prototype.findByProperty = function( property, value ) {
-  for( var i = 0; i < this.length; i++ )
-    if( angular.isDefined( this[i][property] ) && value == this[i][property] )
-      return this[i];
-  return null;
-}
-
-String.prototype.regexIndexOf = function( regex, startpos ) {
-  var indexOf = this.substring( startpos || 0 ).search( regex );
-  return indexOf >= 0 ? indexOf + ( startpos || 0 ) : indexOf;
-}
-
-String.prototype.snakeToCamel = function cnSnakeToCamel( first ) {
-  if( angular.isUndefined( first ) ) first = false;
-  var output = this.replace( /(\_\w)/g, function( $1 ) { return angular.uppercase( $1[1] ); } );
-  if( first ) output = angular.uppercase( output.charAt(0) ) + output.slice(1);
-  return output;
-};
-
-String.prototype.camelToSnake = function cnCamelToSnake() {
-  return this.replace( /([A-Z])/g, function( $1 ) { return '_' + angular.lowercase( $1 ); } ).replace( /^_/, '' );
-};
-
-String.prototype.ucWords = function() {
-  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } ); 
-}
-
-window.cnToQueryString = function cnToQueryString( object ) {
-  var str = [];
-  for( var property in object )
-    if( object.hasOwnProperty( property ) )
-      str.push( encodeURIComponent( property ) + '=' + encodeURIComponent( object[property] ) );
-  return str.join( '&' );
-};
-
-/* ######################################################################################################## */
-var cenozoApp = angular.module( 'cenozoApp', [
-  'ui.bootstrap',
-  'ui.router',
-  'ui.slider',
-  'snap',
-  'cenozo'
-] );
-
 cenozoApp.config( [
   '$controllerProvider', '$compileProvider', '$filterProvider', '$provide',
   function( $controllerProvider, $compileProvider, $filterProvider, $provide ) {
-    cnCachedProviders.controller = $controllerProvider.register;
-    cnCachedProviders.directive = $compileProvider.directive;
-    cnCachedProviders.filter = $filterProvider.register;
-    cnCachedProviders.factory = $provide.factory;
-    cnCachedProviders.service = $provide.service;
-    cnCachedProviders.provider = $provide.provider;
-    cnCachedProviders.value = $provide.value;
-    cnCachedProviders.constant = $provide.constant;
-    cnCachedProviders.decorator = $provide.decorator;
+    var cenozo = angular.module( 'cenozo' );
+    cenozo.providers.controller = $controllerProvider.register;
+    cenozo.providers.directive = $compileProvider.directive;
+    cenozo.providers.filter = $filterProvider.register;
+    cenozo.providers.factory = $provide.factory;
+    cenozo.providers.service = $provide.service;
+    cenozo.providers.provider = $provide.provider;
+    cenozo.providers.value = $provide.value;
+    cenozo.providers.constant = $provide.constant;
+    cenozo.providers.decorator = $provide.decorator;
   }
 ] );
 
 cenozoApp.config( [
-  '$stateProvider', '$urlRouterProvider', '$httpProvider',
-  function( $stateProvider, $urlRouterProvider, $httpProvider ) {
+  '$stateProvider', '$urlRouterProvider',
+  function( $stateProvider, $urlRouterProvider ) {
     // add the root states
     var baseRootUrl = cnCenozoUrl + '/app/root/';
     $stateProvider.state( 'root', { // resolves application/
@@ -216,27 +150,6 @@ cenozoApp.config( [
     $urlRouterProvider.otherwise( function( $injector, $location ) {
       $injector.get( '$state' ).go( 'error.404' );
       return $location.path();
-    } );
-
-    // intercept http data to convert to/from server/client data formats
-    $httpProvider.interceptors.push( function() {
-      return {
-        request: function( request ) {
-          return request;
-        },
-        response: function( response ) {
-          if( 'api\/' == response.config.url.substring( 0, 4 ) ) {
-            if( angular.isArray( response.data ) ) {
-              for( var i = 0; i < response.data.length; i++ ) {
-                cnConvertFromDatabaseRecord( response.data[i] );
-              }
-            } else {
-              cnConvertFromDatabaseRecord( response.data );
-            }
-          }
-          return response;
-        }
-      };
     } );
   }
 ] );

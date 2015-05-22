@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'AddressAddCtrl', [
+  cenozo.providers.controller( 'AddressAddCtrl', [
     '$scope', 'CnAddressModelFactory',
     function( $scope, CnAddressModelFactory ) {
       $scope.model = CnAddressModelFactory.root;
@@ -15,7 +16,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'AddressListCtrl', [
+  cenozo.providers.controller( 'AddressListCtrl', [
     '$scope', 'CnAddressModelFactory',
     function( $scope, CnAddressModelFactory ) {
       $scope.model = CnAddressModelFactory.root;
@@ -26,7 +27,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'AddressViewCtrl', [
+  cenozo.providers.controller( 'AddressViewCtrl', [
     '$scope', 'CnAddressModelFactory',
     function( $scope, CnAddressModelFactory ) {
       $scope.model = CnAddressModelFactory.root;

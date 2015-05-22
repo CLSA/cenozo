@@ -1,9 +1,10 @@
 define( [], function() {
 
   'use strict';
+  var cenozo = angular.module( 'cenozo' );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'ParticipantListCtrl', [
+  cenozo.providers.controller( 'ParticipantListCtrl', [
     '$scope', 'CnParticipantModelFactory',
     function( $scope, CnParticipantModelFactory ) {
       $scope.model = CnParticipantModelFactory.root;
@@ -14,7 +15,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'ParticipantViewCtrl', [
+  cenozo.providers.controller( 'ParticipantViewCtrl', [
     '$scope', 'CnParticipantModelFactory',
     function( $scope, CnParticipantModelFactory ) {
       $scope.model = CnParticipantModelFactory.root;
