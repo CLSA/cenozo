@@ -233,11 +233,15 @@ cenozo.directive( 'cnRecordAdd', [
           } ).show().then( function( response ) {
             if( false !== response ) {
               $scope.record[input.key] = response;
+              $scope.formattedRecord[input.key] = $scope.model.formatValue( input.key, response );
             }
           } );
         };
       },
       link: function( scope, element, attrs ) {
+        scope.record = {};
+        scope.formattedRecord = {};
+
         scope.heading = attrs.heading;
         if( angular.isUndefined( scope.heading ) ) {
           var parentSubject = scope.model.getParentSubject();

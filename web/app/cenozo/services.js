@@ -736,22 +736,6 @@ cenozo.service( 'CnModalDatetimeFactory', [
         return subArrays;
       }
 
-      function addDate( list, date, currentDate, viewingDate, front ) {
-        var object = {
-          date: date,
-          label: date.format( 'DD' ),
-          current: null !== currentDate &&
-                   currentDate.isSame( date, 'year' ) &&
-                   currentDate.isSame( date, 'month' ) &&
-                   currentDate.isSame( date, 'day' ),
-          offMonth: !viewingDate.isSame( date, 'month' ),
-          weekend: 0 <= [0,6].indexOf( date.day() ),
-          disabled: false
-        };
-        if( true === front ) list.unshift( object );
-        else list.push( object );
-      }
-
       // service vars which can be defined by the contructor's params
       this.timezone = null;
       this.date = null;
@@ -776,6 +760,10 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.minuteSliderValue = this.viewingDate.format( 'm' );
       this.secondSliderValue = this.viewingDate.format( 's' );
 
+      this.prevMode = function() {
+        this.mode = 'year' == this.mode ? 'month' : 'day';
+        this.update();
+      };
       this.nextMode = function() {
         this.mode = 'day' == this.mode ? 'month' : 'year';
         this.update();
@@ -792,17 +780,15 @@ cenozo.service( 'CnModalDatetimeFactory', [
       };
       this.select = function( when ) {
         if( 'now' == when ) {
-          this.date = moment();
+          this.date = moment().tz( CnAppSingleton.site.timezone );
         } else if( 'today' == when ) {
-          this.date.year( moment().year() );
-          this.date.month( moment().month() );
-          this.date.date( moment().date() );
+          this.date.year( moment().year() ).month( moment().month() ).date( moment().date() );
         } else {
-          this.date = when;
+          this.date.year( when.year() ).month( when.month() ).date( when.date() );
         }
 
         if( null !== this.date ) this.viewingDate = moment( this.date );
-        this.update();
+        this.prevMode(); // will call update()
       };
       this.updateDisplayTime = function() {
         var format = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType
@@ -813,25 +799,90 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.update = function() {
         if( 'day' == this.mode ) {
           this.modeTitle = this.viewingDate.format( 'MMMM YYYY' );
-
           var cellList = [];
 
           // get forward dates
           var date = moment( this.viewingDate );
-          for( ; date.month() == this.viewingDate.month() || 0 < date.day(); date.add( 1, 'days' ) )
-            addDate( cellList, moment( date.format() ), this.date, this.viewingDate, false );
+          date.hour( 12 ).minute( 0 ).second( 0 );
+          for( ; date.month() == this.viewingDate.month() || 0 < date.day(); date.add( 1, 'days' ) ) {
+            var cellDate = moment( date );
+            cellList.push( {
+              date: cellDate,
+              label: cellDate.format( 'DD' ),
+              current: null !== this.date &&
+                       this.date.isSame( cellDate, 'year' ) &&
+                       this.date.isSame( cellDate, 'month' ) &&
+                       this.date.isSame( cellDate, 'day' ),
+              offMonth: !this.viewingDate.isSame( cellDate, 'month' ),
+              weekend: 0 <= [0,6].indexOf( cellDate.day() ),
+              disabled: false
+            } );
+          }
 
           // get backward dates
           var date = moment( this.viewingDate ).subtract( 1, 'days' );
-          for( ; date.month() == this.viewingDate.month() || 6 > date.day(); date.subtract( 1, 'days' ) )
-            addDate( cellList, moment( date.format() ), this.date, this.viewingDate, true );
+          date.hour( 12 ).minute( 0 ).second( 0 );
+          for( ; date.month() == this.viewingDate.month() || 6 > date.day(); date.subtract( 1, 'days' ) ) {
+            var cellDate = moment( date );
+            cellList.unshift( {
+              date: cellDate,
+              label: cellDate.format( 'DD' ),
+              current: null !== this.date &&
+                       this.date.isSame( cellDate, 'year' ) &&
+                       this.date.isSame( cellDate, 'month' ) &&
+                       this.date.isSame( cellDate, 'day' ),
+              offMonth: !this.viewingDate.isSame( cellDate, 'month' ),
+              weekend: 0 <= [0,6].indexOf( cellDate.day() ),
+              disabled: false
+            } );
+          }
 
           this.cellList = split( cellList, 7 );
         } else if( 'month' == this.mode ) {
           this.modeTitle = this.viewingDate.format( 'YYYY' );
+          var cellList = [];
+
+          // one date per month
+          var date = moment( this.viewingDate );
+          for( var month = 0; month < 12; month++ ) {
+            date.month( month );
+            var cellDate = moment( date );
+            cellList.push( {
+              date: cellDate,
+              label: cellDate.format( 'MMMM' ),
+              current: null !== this.date &&
+                       this.date.isSame( cellDate, 'year' ) &&
+                       this.date.isSame( cellDate, 'month' ),
+              offMonth: false,
+              weekend: false,
+              disabled: false
+            } );
+          }
+
+          this.cellList = split( cellList, 3 );
         } else { // 'year' == this.mode
-          var baseYear = Math.floor( this.viewingDate.format( 'YYYY' ) / 20 ) * 20;
-          this.modeTitle = ( baseYear+1 ) + ' - ' + ( baseYear+20 );
+          var lowerYear = Math.floor( this.viewingDate.year() / 20 ) * 20;
+          var upperYear = lowerYear + 20 - 1;
+          this.modeTitle = lowerYear + ' - ' + upperYear;
+          var cellList = [];
+
+          // one date per year
+          var date = moment( this.viewingDate );
+          for( var year = lowerYear; year <= upperYear; year++ ) {
+            date.year( year );
+            var cellDate = moment( date );
+            cellList.push( {
+              date: cellDate,
+              label: cellDate.format( 'YYYY' ),
+              current: null !== this.date &&
+                       this.date.isSame( cellDate, 'year' ),
+              offMonth: false,
+              weekend: false,
+              disabled: false
+            } );
+          }
+
+          this.cellList = split( cellList, 5 );
         }
 
         this.updateDisplayTime();

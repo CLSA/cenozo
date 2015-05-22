@@ -38,6 +38,9 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="date"
+              ng-model="formattedRecord[input.key]"
               cn-change="check( input.key )"
               class="form-control"
               type="text"
@@ -47,6 +50,9 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="time"
+              ng-model="formattedRecord[input.key]"
               cn-change="check( input.key )"
               class="form-control"
               type="text"
@@ -56,6 +62,9 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="timesecond"
+              ng-model="formattedRecord[input.key]"
               cn-change="check( input.key )"
               class="form-control"
               type="text"
@@ -65,6 +74,9 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="datetime"
+              ng-model="formattedRecord[input.key]"
               cn-change="check( input.key )"
               class="form-control"
               type="text"
@@ -74,6 +86,9 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="datetimesecond"
+              ng-model="formattedRecord[input.key]"
               cn-change="check( input.key )"
               class="form-control"
               type="text"
