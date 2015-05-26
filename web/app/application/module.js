@@ -23,7 +23,8 @@ define( {
     },
     version: {
       title: 'Version',
-      type: 'constant'
+      type: 'string',
+      constant: true
     },
     release_based: {
       title: 'Release Based',

@@ -9,11 +9,13 @@ define( {
   inputList: {
     name: {
       title: 'Name',
-      type: 'constant'
+      type: 'string',
+      constant: true
     },
     code: {
       title: 'Code',
-      type: 'constant'
+      type: 'string',
+      constant: true
     },
     active: {
       title: 'Active',
@@ -39,7 +41,7 @@ define( {
     user_count: { title: 'Users' }
   },
   defaultOrder: {
-    column: 'name',
-    reverse: false
+    column: 'active',
+    reverse: true
   }
 } );
