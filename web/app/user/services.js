@@ -1,6 +1,7 @@
 define( [
   cenozo.baseUrl + '/app/user/module.js',
-  cenozo.baseUrl + '/app/access/bootstrap.js'
+  cenozo.baseUrl + '/app/access/bootstrap.js',
+  cenozo.baseUrl + '/app/activity/bootstrap.js'
 ], function( module ) {
   'use strict';
 
@@ -24,8 +25,8 @@ define( [
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserViewFactory', [
-    'CnBaseViewFactory', 'CnAccessModelFactory',
-    function( CnBaseViewFactory, CnAccessModelFactory ) {
+    'CnBaseViewFactory', 'CnAccessModelFactory', 'CnActivityModelFactory',
+    function( CnBaseViewFactory, CnAccessModelFactory, CnActivityModelFactory ) {
       var object = function( parentModel ) {
         CnBaseViewFactory.construct( this, parentModel );
 
@@ -35,10 +36,12 @@ define( [
         this.accessModel = CnAccessModelFactory.instance();
         this.accessModel.enableAdd( true );
         this.accessModel.enableDelete( true );
+        this.activityModel = CnActivityModelFactory.instance();
 
         this.onView = function view() { 
           return this.viewRecord().then( function() {
             self.accessModel.listModel.onList( true );
+            self.activityModel.listModel.onList( true );
           } );
         };
         // factory customizations end here
