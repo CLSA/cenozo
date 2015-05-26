@@ -1,4 +1,7 @@
-define( [ cenozo.baseUrl + '/app/state/module.js' ], function( module ) { 
+define( [
+  cenozo.baseUrl + '/app/state/module.js',
+  cenozo.baseUrl + '/app/role/bootstrap.js'
+], function( module ) { 
   'use strict';
 
   /* ######################################################################################################## */
@@ -21,9 +24,28 @@ define( [ cenozo.baseUrl + '/app/state/module.js' ], function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnStateViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+    'CnBaseViewFactory', 'CnRoleModelFactory',
+    function( CnBaseViewFactory, CnRoleModelFactory ) {
+      var object = function( parentModel ) {
+        CnBaseViewFactory.construct( this, parentModel );
+
+        ////////////////////////////////////
+        // factory customizations start here
+        var self = this;
+        this.roleModel = CnRoleModelFactory.instance();
+        this.roleModel.enableChoose( true );
+        this.roleModel.enableAdd( true );
+        this.roleModel.enableDelete( true );
+
+        this.onView = function view() {
+          return this.viewRecord().then( function() {
+            self.roleModel.listModel.onList( true );
+          } );
+        };
+        // factory customizations end here
+        ////////////////////////////////////
+      };
+
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );

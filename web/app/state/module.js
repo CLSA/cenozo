@@ -7,7 +7,24 @@ define( {
     pluralPossessive: 'states\''
   },
   inputList: {
-    // TODO: fill out
+    name: {
+      title: 'Name',
+      type: 'string'
+    },
+    rank: {
+      title: 'Rank',
+      type: 'rank'
+    },
+    description: {
+      title: 'Description',
+      type: 'text'
+    },
+    participant_count: {
+      title: 'Participants',
+      type: 'string',
+      constant: true,
+      help: 'Participants can only be added to this state by going directly to participant details.'
+    }
   },
   columnList: {
     name: { title: 'Name' },
