@@ -7,12 +7,17 @@ define( {
     pluralPossessive: 'roles\''
   },
   inputList: {
-    // TODO: fill out
+    // not used
   },
   columnList: {
-    // TODO: fill out
+    name: {
+      column: 'role.name',
+      title: 'Name'
+    },
+    user_count: { title: 'Users' }
   },
   defaultOrder: {
-    // TODO: fill out
+    column: 'name',
+    reverse: false
   }
 } );
