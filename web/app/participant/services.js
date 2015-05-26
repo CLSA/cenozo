@@ -1,20 +1,10 @@
 define( [
   cenozo.baseUrl + '/app/participant/module.js',
-  cenozo.baseUrl + '/app/address/controllers.js',
-  cenozo.baseUrl + '/app/address/directives.js',
-  cenozo.baseUrl + '/app/address/services.js',
-  cenozo.baseUrl + '/app/phone/controllers.js',
-  cenozo.baseUrl + '/app/phone/directives.js',
-  cenozo.baseUrl + '/app/phone/services.js',
-  cenozo.baseUrl + '/app/consent/controllers.js',
-  cenozo.baseUrl + '/app/consent/directives.js',
-  cenozo.baseUrl + '/app/consent/services.js',
-  cenozo.baseUrl + '/app/alternate/controllers.js',
-  cenozo.baseUrl + '/app/alternate/directives.js',
-  cenozo.baseUrl + '/app/alternate/services.js',
-  cenozo.baseUrl + '/app/event/controllers.js',
-  cenozo.baseUrl + '/app/event/directives.js',
-  cenozo.baseUrl + '/app/event/services.js'
+  cenozo.baseUrl + '/app/address/bootstrap.js',
+  cenozo.baseUrl + '/app/phone/bootstrap.js',
+  cenozo.baseUrl + '/app/consent/bootstrap.js',
+  cenozo.baseUrl + '/app/alternate/bootstrap.js',
+  cenozo.baseUrl + '/app/event/bootstrap.js'
 ], function( module ) {
   'use strict';
 

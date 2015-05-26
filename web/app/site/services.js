@@ -1,11 +1,7 @@
 define( [
   cenozo.baseUrl + '/app/site/module.js',
-  cenozo.baseUrl + '/app/access/controllers.js',
-  cenozo.baseUrl + '/app/access/directives.js',
-  cenozo.baseUrl + '/app/access/services.js',
-  cenozo.baseUrl + '/app/activity/controllers.js',
-  cenozo.baseUrl + '/app/activity/directives.js',
-  cenozo.baseUrl + '/app/activity/services.js'
+  cenozo.baseUrl + '/app/access/bootstrap.js',
+  cenozo.baseUrl + '/app/activity/bootstrap.js'
 ], function( module ) {
   'use strict';
 
