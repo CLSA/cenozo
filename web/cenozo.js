@@ -1683,7 +1683,7 @@ cenozo.service( 'CnModalConfirmFactory', [
 
       this.show = function() {
         return $modal.open( {
-          backdrop: true,
+          backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-confirm.tpl.html',
@@ -1880,7 +1880,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
 
       this.show = function() {
         return $modal.open( {
-          backdrop: true,
+          backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-datetime.tpl.html',
@@ -1931,7 +1931,7 @@ cenozo.service( 'CnModalMessageFactory', [
 
       this.show = function() {
         return $modal.open( {
-          backdrop: true,
+          backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-message.tpl.html',
@@ -1967,7 +1967,7 @@ cenozo.service( 'CnModalRestrictFactory', [
       this.preExisting = angular.isDefined( this.comparison.value );
       this.show = function() {
         return $modal.open( {
-          backdrop: true,
+          backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-restrict.tpl.html',
@@ -2033,7 +2033,7 @@ cenozo.service( 'CnModalValueFactory', [
 
       this.show = function() {
         return $modal.open( {
-          backdrop: true,
+          backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-value.tpl.html',
