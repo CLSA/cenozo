@@ -12,6 +12,7 @@ define( [], function() {
           self.user = CnAppSingleton.user;
           self.role = CnAppSingleton.role;
           self.site = CnAppSingleton.site;
+          self.messageList = CnAppSingleton.messageList;
         } );
       };
 

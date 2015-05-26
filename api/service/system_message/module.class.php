@@ -23,15 +23,20 @@ class module extends \cenozo\service\module
 
     $session = lib::create( 'business\session' );
 
-    // only include system_messages which belong to this application (or by role)
+    // left join to application, site and role since they may be null
+    $modifier->left_join( 'application', 'system_message.application_id', 'application.id' );
     $modifier->left_join( 'site', 'system_message.site_id', 'site.id' );
+    $modifier->left_join( 'role', 'system_message.role_id', 'role.id' );
 
-    if( $session->get_role()->all_sites )
-      $modifier->where( 'site.application_id', '=', $session->get_application()->id );
-    else $modifier->where( 'system_message.site_id', '=', $session->get_site()->id );
+    $application_id = $session->get_application()->id;
+    $column = sprintf( 'IFNULL( system_message.application_id, %d )', $application_id );
+    $modifier->where( $column, '=', $application_id );
 
-    // include records where the site is null (they are meant for all sites)
-    $modifier->or_where( 'system_message.site_id', '=', NULL );
-
+    if( !$session->get_role()->all_sites )
+    {
+      $site_id = $session->get_site()->id;
+      $column = sprintf( 'IFNULL( system_message.site_id, %d )', $site_id );
+      $modifier->where( $column, '=', $site_id );
+    }
   }
 }

@@ -34,6 +34,7 @@ class get extends \cenozo\service\service
   {
     $util_class_name = lib::get_class_name( 'util' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
+    $system_message_class_name = lib::get_class_name( 'database\system_message' );
     $session = lib::create( 'business\session' );
 
     $application_sel = lib::create( 'database\select' );
@@ -115,6 +116,23 @@ class get extends \cenozo\service\service
     $modifier->where( 'end_datetime', '=', NULL );
     $modifier->where( 'site_id', '=', $session->get_site()->id );
     $pseudo_record['site']['active_users'] = $activity_class_name::count( $modifier );
+
+    // include the appropriate system messages
+    $select = lib::create( 'database\select' );
+    $select->add_column( 'title' );
+    $select->add_column( 'note' );
+    $modifier = lib::create( 'database\modifier' );
+    $application_id = $session->get_application()->id;
+    $column = sprintf( 'IFNULL( system_message.application_id, %d )', $application_id );
+    $modifier->where( $column, '=', $application_id );
+    $site_id = $session->get_site()->id;
+    $column = sprintf( 'IFNULL( system_message.site_id, %d )', $site_id );
+    $modifier->where( $column, '=', $site_id );
+    $role_id = $session->get_role()->id;
+    $column = sprintf( 'IFNULL( system_message.role_id, %d )', $role_id );
+    $modifier->where( $column, '=', $role_id );
+    $modifier->order_desc( 'id' );
+    $pseudo_record['system_message_list'] = $system_message_class_name::select( $select, $modifier );
 
     return $pseudo_record;
   }

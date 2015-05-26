@@ -201,6 +201,29 @@ cenozo.directive( 'cnClock', [
 /* ######################################################################################################## */
 
 /**
+ * Changes element height based on scroll height
+ */
+cenozo.directive( 'cnElastic', [
+  '$timeout',
+  function( $timeout ) {
+    return {
+      restrict: 'A',
+      link: function( $scope, element ) {
+        $scope.initialHeight = $scope.initialHeight || element[0].style.height;
+        var resize = function() {
+          element[0].style.height = $scope.initialHeight;
+          element[0].style.height = '' + element[0].scrollHeight + 'px';
+        };
+        element.on( 'blur keyup change', resize );
+        $timeout( resize, 200 );
+      }
+    };
+  }
+]);
+
+/* ######################################################################################################## */
+
+/**
  * A generic confirmation for risky actions.
  * @attr cn-really-message: The message to popup before proceeding
  * @attr cn-really-click: Callback function to call when action is confirmed
@@ -799,7 +822,9 @@ cenozo.filter( 'cnMetaFilter', [
         var filter = $filter( args.shift() );
         args.unshift( value );
         return filter.apply( null, args );
-      } else return value;
+      } else {
+        return angular.isUndefined( value ) || null === value ? '(none)' : value;
+      }
     };
   }
 ] );
@@ -891,6 +916,7 @@ cenozo.factory( 'CnAppSingleton', [
       this.site = {};
       this.role = {};
       this.siteList = [];
+      this.messageList = [];
 
       // get the application, user, site and role details
       this.promise = CnHttpFactory.instance( {
@@ -900,6 +926,7 @@ cenozo.factory( 'CnAppSingleton', [
         self.user = angular.copy( response.data.user );
         self.site = angular.copy( response.data.site );
         self.role = angular.copy( response.data.role );
+        self.messageList = angular.copy( response.data.system_message_list );
 
         // process access records
         for( var i = 0; i < response.data.access.length; i++ ) {

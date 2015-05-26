@@ -191,9 +191,19 @@ abstract class service extends \cenozo\base_object
           array( $method, $subject, $has_resource ) );
         
         // make sure the service exists, is allowed and the module validates
-        if( is_null( $db_service ) ||
-            !$session->is_service_allowed( $db_service ) ||
-            !( 'HEAD' == $this->method || $this->module_list[$index]->validate() ) )
+        if( is_null( $db_service ) )
+        {
+          $this->status->set_code( 404 );
+          break;
+        }
+        else if( is_null( $this->module_list[$index] ) )
+        {
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Service module for "%s" is not found', $subject ),
+            __METHOD__ );
+        }
+        else if( !$session->is_service_allowed( $db_service ) ||
+                 !( 'HEAD' == $this->method || $this->module_list[$index]->validate() ) )
         {
           $this->status->set_code( 403 );
           break;
@@ -266,8 +276,15 @@ abstract class service extends \cenozo\base_object
         if( 0 == $index % 2 )
         {
           $this->collection_name_list[] = $part;
-          $this->module_list[] =
-            lib::create( sprintf( 'service\%s\module', $part ), $module_index, $this );
+          try
+          {
+            $this->module_list[] = lib::create( sprintf( 'service\%s\module', $part ), $module_index, $this );
+          }
+          // ignore runtime exceptions and instead just return a null module
+          catch( \cenozo\exception\runtime $e )
+          {
+            $this->module_list[] = NULL;
+          }
           $module_index++;
         }
         else $this->resource_value_list[] = $part;

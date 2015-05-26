@@ -4,6 +4,7 @@ thead td, tbody td { text-align: center; }
 tfoot { text-align: center; }
 td { border: 0px !important; }
 td.tiny { width: 1px; white-space: nowrap; }
+blockquote { font-size: 100%; }
 .btn { font-weight: bold; }
 .btn-narrow { padding-left: 6px; padding-right: 6px; }
 .btn-muted { background-color: #eaeaea; }

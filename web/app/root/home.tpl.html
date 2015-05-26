@@ -11,7 +11,7 @@
       site.<br>
       <span class="text-warning">
         Use of any account other than your own is prohibited.
-        If this is not you please <a href="?logout">click here</a> to log in 
+        If this is not you please <a href="?logout">click here</a> to log in.
       </span>
     </div>
     <div class="vertical-spacer"></div>
@@ -36,6 +36,12 @@
       {{ model.application.active_users }} active user{{ 1 == model.application.active_users ? "" : "s" }},
       {{ model.site.active_users }} of which {{ 1 == model.application.active_users ? "is" : "are" }}
       logged into your site.
+    </div>
+    <div class="vertical-spacer"></div>
+    <h3 class="text-primary">System Messages</h3>
+    <div class="container-fluid" ng-repeat="message in model.messageList">
+      <h4><i class="glyphicon glyphicon-envelope"></i> {{ message.title }}</h4>
+      <blockquote class="text-info">{{ message.note }}</blockquote>
     </div>
   </div>
 </div>

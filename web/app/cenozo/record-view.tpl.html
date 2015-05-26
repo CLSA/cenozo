@@ -87,6 +87,7 @@
               ng-readonly="input.constant || !input.enumList"
               ng-required="model.metadata.columnList[input.key].required"></select>
             <textarea ng-switch-when="text"
+              cn-elastic
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="model.viewModel.record[input.key]"
