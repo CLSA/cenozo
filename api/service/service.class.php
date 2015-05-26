@@ -177,10 +177,12 @@ abstract class service extends \cenozo\base_object
         { // for the leaf it depends on whether there is a many-to-many relationship with the parent
           $method = $this->method;
         }
+        /* TODO: identify if the following has a use (probably defunct code)
         else if( $index == count( $this->collection_name_list ) - 2 && $many_to_many )
         { // for the parent it depends on whether there is a many-to-many relationship with the leaf
           $method = 'PATCH';
         }
+        */
 
         if( 'HEAD' == $method ) $method = 'GET'; // HEAD access is based on GET access
 
