@@ -463,9 +463,9 @@ abstract class service extends \cenozo\base_object
    * Returns the file provided to the service decoded as a JSON string
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function get_file_as_object()
+  public function get_file_as_object()
   {
     $util_class_name = lib::get_class_name( 'util' );
     return $util_class_name::json_decode( $this->file );
@@ -475,9 +475,9 @@ abstract class service extends \cenozo\base_object
    * Returns the file provided to the service (unchanged)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function get_file_as_raw()
+  public function get_file_as_raw()
   {
     return $this->file;
   }

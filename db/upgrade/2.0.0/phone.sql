@@ -47,6 +47,21 @@ CREATE PROCEDURE patch_phone()
       ADD UNIQUE INDEX uq_alternate_id_participant_id_rank (alternate_id, participant_id, rank);
     END IF;
 
+    SELECT "Adding international column to phone table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "phone"
+      AND COLUMN_NAME = "international" );
+    IF @test = 0 THEN
+      -- add column and lengthen number column to make room for international numbers
+      ALTER TABLE phone
+      ADD COLUMN international TINYINT(1) NOT NULL DEFAULT 0 AFTER rank,
+      MODIFY number VARCHAR(127) NOT NULL;
+    END IF;
+
   END //
 DELIMITER ;
 

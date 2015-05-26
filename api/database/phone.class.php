@@ -19,6 +19,14 @@ class phone extends has_rank
    */
   public function save()
   {
+    $util = lib::get_class_name( 'util' );
+
+    // make sure national numbers are in valid format
+    if( !$this->international && !$util::validate_north_american_phone_number( $this->number ) )
+      throw lib::create( 'exception\notice',
+        sprintf( 'The provided number "%s" is not a valid North American phone number', $this->number ),
+        __METHOD__ );
+
     // figure out whether alternate or participant is the rank parent
     static::$rank_parent = !is_null( $this->alternate_id ) ? 'alternate' : 'participant';
     parent::save();

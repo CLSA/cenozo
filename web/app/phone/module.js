@@ -16,6 +16,10 @@ define( {
       title: 'Active',
       type: 'boolean'
     },
+    international: {
+      title: 'International',
+      type: 'boolean'
+    },
     rank: {
       title: 'Rank',
       type: 'rank'
@@ -27,8 +31,7 @@ define( {
     number: {
       title: 'Number',
       type: 'string',
-      regex: '^[0-9]{3}-[0-9]{3}-[0-9]{4}$',
-      help: 'Must be in 000-000-0000 format.'
+      help: 'If not international then must be in 000-000-0000 format.'
     },
     note: {
       title: 'Note',

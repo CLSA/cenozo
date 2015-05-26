@@ -348,7 +348,7 @@ class util
    * @static
    * @access public
    */
-  public static function validate_phone_number( $number, $numeric_only = false )
+  public static function validate_north_american_phone_number( $number, $numeric_only = false )
   {
     $regex = $numeric_only
            ? '/[2-9](1[02-9]|[02-8]1|[02-8][02-9])[2-9](1[02-9]|[02-9]1|[02-9]{2})[0-9]{4}/'

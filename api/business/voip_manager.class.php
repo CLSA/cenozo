@@ -145,6 +145,9 @@ class voip_manager extends \cenozo\singleton
       if( !is_object( $db_phone ) )
         throw lib::create( 'exception\argument', 'db_phone', $db_phone, __METHOD__ );
 
+      if( $db_phone->international )
+        throw lib::create( 'exception\runtime', 'Tried to call an international phone number', __METHOD__ );
+      
       $number = $db_phone->number;
     }
 
