@@ -66,7 +66,6 @@ CREATE PROCEDURE patch_address()
       AND TABLE_NAME = "address"
       AND COLUMN_NAME = "region_id" );
     IF @test = 1 THEN
-      SELECT "here" AS "";
       -- make column nullable
       ALTER TABLE address MODIFY region_id INT UNSIGNED NULL;
     END IF;
