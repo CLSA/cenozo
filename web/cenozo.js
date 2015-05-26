@@ -661,7 +661,8 @@ cenozo.directive( 'cnRecordView', [
                 input.enumList = 'boolean' === input.type
                                ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
                                : angular.copy( metadata.columnList[key].enumList );
-                if( !metadata.columnList[key].required ) input.enumList.unshift( { value: '', name: '(none)' } );
+                if( angular.isArray( input.enumList ) && !metadata.columnList[key].required )
+                  input.enumList.unshift( { value: '', name: '(none)' } );
               }
             }
             metadataLoaded = true;
