@@ -30,13 +30,13 @@ CREATE PROCEDURE patch_participant_site()
         CONSTRAINT fk_participant_site_application_id
           FOREIGN KEY (application_id)
           REFERENCES application (id)
-          ON DELETE NO ACTION
-          ON UPDATE NO ACTION,
+          ON DELETE CASCADE
+          ON UPDATE CASCADE,
         CONSTRAINT fk_participant_site_participant_id
           FOREIGN KEY (participant_id)
           REFERENCES participant (id)
-          ON DELETE NO ACTION
-          ON UPDATE NO ACTION,
+          ON DELETE CASCADE
+          ON UPDATE CASCADE,
         CONSTRAINT fk_participant_site_site_id
           FOREIGN KEY (site_id)
           REFERENCES site (id)

@@ -58,3 +58,19 @@ DELIMITER ;
 
 CALL patch_participant();
 DROP PROCEDURE IF EXISTS patch_participant;
+
+SELECT "Adding new triggers to participant table" AS "";
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS participant_AFTER_INSERT $$
+CREATE DEFINER = CURRENT_USER TRIGGER participant_AFTER_INSERT AFTER INSERT ON participant FOR EACH ROW
+BEGIN
+  CALL update_participant_site_for_participant( NEW.id );
+  CALL update_participant_first_address( NEW.id );
+  CALL update_participant_primary_address( NEW.id );
+  CALL update_participant_last_consent( NEW.id );
+  CALL update_participant_last_written_consent( NEW.id );
+END;$$
+
+DELIMITER ;

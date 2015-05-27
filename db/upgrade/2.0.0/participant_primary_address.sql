@@ -25,8 +25,8 @@ CREATE PROCEDURE patch_participant_primary_address()
         CONSTRAINT fk_participant_primary_address_participant_id
           FOREIGN KEY (participant_id)
           REFERENCES participant (id)
-          ON DELETE NO ACTION
-          ON UPDATE NO ACTION,
+          ON DELETE CASCADE
+          ON UPDATE CASCADE,
         CONSTRAINT fk_participant_primary_address_address_id
           FOREIGN KEY (address_id)
           REFERENCES address (id)
