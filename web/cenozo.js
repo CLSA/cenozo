@@ -2153,6 +2153,7 @@ cenozo.config( [
     $stateProvider.state( 'error.403', { templateUrl: baseErrorUrl + '403.tpl.html' } );
     $stateProvider.state( 'error.404', { templateUrl: baseErrorUrl + '404.tpl.html' } );
     $stateProvider.state( 'error.500', { templateUrl: baseErrorUrl + '500.tpl.html' } );
+    $stateProvider.state( 'error.state', { templateUrl: baseErrorUrl + 'state.tpl.html' } );
 
     // load the 404 state when a state is not found for the provided path
     $urlRouterProvider.otherwise( function( $injector, $location ) {
@@ -2171,7 +2172,7 @@ cenozo.run( [
   '$state', '$rootScope',
   function( $state, $rootScope ) {
     $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
-      $state.go( 'error.500' );
+      $state.go( 'error.state' );
     } );
     $rootScope.$on( '$stateChangeError', function( event, toState, toParams, fromState, fromParams, error ) {
       $state.go( 'error.404' );
