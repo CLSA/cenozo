@@ -637,7 +637,8 @@ abstract class record extends \cenozo\base_object
       if( $relationship_class_name::ONE_TO_MANY == $relationship )
       {
         $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
-        $modifier->join( $table_name, $column_name, $primary_key_name );
+        if( !$modifier->has_join( $table_name ) )
+          $modifier->join( $table_name, $column_name, $primary_key_name );
         $modifier->where( $column_name, '=', $primary_key_value );
       }
       else // MANY_TO_MANY
@@ -647,8 +648,11 @@ abstract class record extends \cenozo\base_object
         $joining_primary_key_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
         $joining_foreign_key_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
     
-        $modifier->cross_join( $joining_table_name, $foreign_key_name, $joining_foreign_key_name );
-        $modifier->cross_join( $table_name, $joining_primary_key_name, $primary_key_name );
+        if( !$modifier->has_join( $table_name ) )
+        {
+          $modifier->cross_join( $joining_table_name, $foreign_key_name, $joining_foreign_key_name );
+          $modifier->cross_join( $table_name, $joining_primary_key_name, $primary_key_name );
+        }
         $modifier->where( $primary_key_name, '=', $primary_key_value );
       }
 
