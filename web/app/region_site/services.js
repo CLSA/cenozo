@@ -1,11 +1,11 @@
-define( [ cenozo.baseUrl + '/app/region_site/module.js' ], function( module ) { 
+define( [ cenozo.baseUrl + '/app/region_site/module.js' ], function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnRegionSiteAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );

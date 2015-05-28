@@ -5,7 +5,7 @@ define( [ cenozo.baseUrl + '/app/consent/module.js' ], function( module ) {
   cenozo.providers.factory( 'CnConsentAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );

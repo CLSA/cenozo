@@ -9,7 +9,7 @@ define( [
   cenozo.providers.factory( 'CnUserAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -38,7 +38,7 @@ define( [
         this.accessModel.enableDelete( true );
         this.activityModel = CnActivityModelFactory.instance();
 
-        this.onView = function view() { 
+        this.onView = function view() {
           return this.viewRecord().then( function() {
             self.accessModel.listModel.onList( true );
             self.activityModel.listModel.onList( true );
@@ -46,7 +46,7 @@ define( [
         };
         // factory customizations end here
         //////////////////////////////////
-      }   
+      }
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }

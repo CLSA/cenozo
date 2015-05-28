@@ -10,7 +10,7 @@ define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module )
 
         ////////////////////////////////////
         // factory customizations start here
-        this.onNew = function view( record ) { 
+        this.onNew = function view( record ) {
           return this.newRecord( record ).then( function() {
             // force the default application to be this application
             record.application_id = CnAppSingleton.application.id;

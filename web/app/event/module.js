@@ -29,5 +29,5 @@ define( {
   defaultOrder: {
     column: 'datetime',
     reverse: true
-  } 
+  }
 } );

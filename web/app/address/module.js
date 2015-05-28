@@ -85,5 +85,5 @@ define( {
   defaultOrder: {
     column: 'rank',
     reverse: false
-  } 
+  }
 } );

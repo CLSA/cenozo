@@ -5,7 +5,7 @@ define( [ cenozo.baseUrl + '/app/phone/module.js' ], function( module ) {
   cenozo.providers.factory( 'CnPhoneAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );

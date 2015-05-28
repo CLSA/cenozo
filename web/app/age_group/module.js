@@ -31,5 +31,5 @@ define( {
   defaultOrder: {
     column: 'lower',
     reverse: false
-  } 
+  }
 } );

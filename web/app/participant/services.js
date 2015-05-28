@@ -52,7 +52,7 @@ define( [
         this.eventModel.enableDelete( true );
         this.eventModel.enableView( true );
 
-        this.onView = function view() { 
+        this.onView = function view() {
           return this.viewRecord().then( function() {
             self.addressModel.listModel.onList( true );
             self.phoneModel.listModel.onList( true );

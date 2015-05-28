@@ -1,14 +1,14 @@
 define( [
   cenozo.baseUrl + '/app/state/module.js',
   cenozo.baseUrl + '/app/role/bootstrap.js'
-], function( module ) { 
+], function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnStateAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); }; 
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );

@@ -41,5 +41,5 @@ define( {
   defaultOrder: {
     column: 'date',
     reverse: true
-  } 
+  }
 } );

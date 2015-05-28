@@ -1,4 +1,4 @@
-define( [ cenozo.baseUrl + '/app/event_type/module.js' ], function( module ) { 
+define( [ cenozo.baseUrl + '/app/event_type/module.js' ], function( module ) {
   'use strict';
 
   /* ######################################################################################################## */

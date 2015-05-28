@@ -32,7 +32,7 @@ define( {
     note: {
       title: 'Note',
       type: 'text'
-    } 
+    }
   },
   columnList: {
     title: {

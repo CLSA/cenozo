@@ -32,7 +32,7 @@ String.prototype.camelToSnake = function cnCamelToSnake() {
 };
 
 String.prototype.ucWords = function() {
-  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } ); 
+  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
 }
 
 // Used to define which modules are part of the framework
@@ -63,7 +63,7 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
       } ]
     }
   } );
-  
+
   // add action states
   var baseUrl = 'app/' + name + '/';
   if( cenozo.isFrameworkModule( name ) ) baseUrl = this.baseUrl + '/' + baseUrl;
@@ -283,7 +283,7 @@ cenozo.directive( 'cnRecordAdd', [
       },
       controller: function( $scope ) {
         $scope.back = function() { $scope.model.transitionToLastState(); };
-        
+
         $scope.check = function( property ) {
           // test the format
           var item = angular.element(
@@ -295,7 +295,7 @@ cenozo.directive( 'cnRecordAdd', [
             cenozo.updateFormElement( item );
           }
         };
-        
+
         $scope.submit = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
@@ -308,21 +308,21 @@ cenozo.directive( 'cnRecordAdd', [
             }
           } else {
             $scope.model.addModel.onAdd( $scope.$parent.record ).then(
-              function success( response ) { 
+              function success( response ) {
                 $scope.model.addModel.onNew( $scope.$parent.record );
                 $scope.form.$setPristine();
                 $scope.model.transitionToLastState();
               },
-              function error( response ) { 
+              function error( response ) {
                 if( 406 == response.status ) {
                   CnModalMessageFactory.instance( {
                     title: 'Please Note',
                     message: response.data,
                     error: true
                   } ).show();
-                } else if( 409 == response.status ) { 
+                } else if( 409 == response.status ) {
                   // report which inputs are included in the conflict
-                  for( var i = 0; i < response.data.length; i++ ) { 
+                  for( var i = 0; i < response.data.length; i++ ) {
                     var elementScope = angular.element( angular.element(
                       document.querySelector( '#' + response.data[i] ) ) ).scope();
                     if( angular.isDefined( elementScope ) ) {
@@ -333,19 +333,19 @@ cenozo.directive( 'cnRecordAdd', [
                   }
                 } else { $scope.model.transitionToErrorState( response ); }
               }
-            );  
+            );
           }
         };
 
         $scope.getTypeaheadValues = function( key, viewValue ) {
           return $scope.model.getTypeaheadValues( key, viewValue );
         };
-        
+
         $scope.onSelectTypeahead = function( $item, $model, $label, key ) {
           $scope.formattedRecord[key] = $label;
           $scope.record[key] = $model;
         };
-        
+
         $scope.selectDatetime = function( input ) {
           CnModalDatetimeFactory.instance( {
             title: input.title,
@@ -395,7 +395,7 @@ cenozo.directive( 'cnRecordAdd', [
               var meta = metadata.columnList[input.key];
               if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
                 input.enumList = meta.enumList;
-                
+
                 input.enumList.unshift( {
                   value: undefined,
                   name: meta.required ? '(Select ' + input.title + ')' : '(none)'
@@ -447,7 +447,7 @@ cenozo.directive( 'cnRecordList', [
                   message: response.data,
                   error: true
                 } ).show();
-              } else if( 409 == response.status ) { 
+              } else if( 409 == response.status ) {
                 CnModalMessageFactory.instance( {
                   title: 'Unable to delete ' + $scope.model.name.singular + ' record',
                   message: 'It is not possible to delete this ' + $scope.model.name.singular +
@@ -471,7 +471,7 @@ cenozo.directive( 'cnRecordList', [
             }
           };
         }
-        
+
         if( $scope.model.viewEnabled ) {
           $scope.selectRecord = function( record ) {
             $scope.model.transitionToViewState( record );
@@ -558,7 +558,7 @@ cenozo.directive( 'cnRecordView', [
             var data = {};
             data[property] = $scope.model.viewModel.record[property];
             $scope.model.viewModel.onPatch( data ).then(
-              function success() { 
+              function success() {
                 // if the data in the identifier was patched then reload with the new url
                 if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
                   $scope.model.reloadState( $scope.model.viewModel.record );
@@ -571,7 +571,7 @@ cenozo.directive( 'cnRecordView', [
                     var sibling = scope.$parent.$parent.$$childHead;
                     while( null !== sibling ) {
                       var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
-                      if( siblingItem.$error.conflict ) { 
+                      if( siblingItem.$error.conflict ) {
                         siblingItem.$error.conflict = false;
                         cenozo.updateFormElement( siblingItem );
                       }
@@ -587,7 +587,7 @@ cenozo.directive( 'cnRecordView', [
                   $scope.model.viewModel.updateFormattedRecord( property );
                 }
               },
-              function error( response ) { 
+              function error( response ) {
                 if( 406 == response.status ) {
                   $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
                   CnModalMessageFactory.instance( {
@@ -595,9 +595,9 @@ cenozo.directive( 'cnRecordView', [
                     message: response.data,
                     error: true
                   } ).show();
-                } else if( 409 == response.status ) { 
+                } else if( 409 == response.status ) {
                   // report which inputs are included in the conflict
-                  for( var i = 0; i < response.data.length; i++ ) { 
+                  for( var i = 0; i < response.data.length; i++ ) {
                     var item = angular.element(
                       angular.element( document.querySelector( '#' + response.data[i] ) ) ).
                         scope().$parent.innerForm.name;
@@ -1203,7 +1203,7 @@ cenozo.factory( 'CnBaseViewFactory', [
                   delete this.record['formatted_'+property];
                 }
               } else {
-                this.formattedRecord[property] = 
+                this.formattedRecord[property] =
                   this.parentModel.formatValue( property, this.record[property] );
               }
             }
@@ -1535,7 +1535,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             throw 'Typeahead used without a valid input key (' + key + ').';
           if( angular.isUndefined( input.typeahead ) )
             throw 'Typeaheads require a value for "typeahead" in the input list.';
-          
+
           // create the where statement
           var where = {};
           if( angular.isUndefined( input.typeahead.where ) ) {
@@ -1690,7 +1690,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             if( angular.isDefined( input.minValue ) && input.minValue > value ) return false;
             if( angular.isDefined( input.maxValue ) && input.maxValue < value ) return false;
           }
-          
+
           // check regex (note: escape character "\" must by typed FOUR times: \\\\
           if( angular.isDefined( input.regex ) ) {
             var re = new RegExp( input.regex );
