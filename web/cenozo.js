@@ -1536,6 +1536,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( angular.isUndefined( input.typeahead ) )
             throw 'Typeaheads require a value for "typeahead" in the input list.';
 
+          // make note that we are loading the typeahead values
+          input.typeahead.isLoading = true;
+
           // create the where statement
           var where = {};
           if( angular.isUndefined( input.typeahead.where ) ) {
@@ -1574,6 +1577,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               modifier: { where: where }
             }
           } ).get().then( function( response ) {
+            input.typeahead.isLoading = false;
             return angular.copy( response.data );
           } );
         };

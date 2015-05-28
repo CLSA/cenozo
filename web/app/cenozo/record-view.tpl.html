@@ -32,6 +32,7 @@
               typeahead-on-select="onSelectTypeahead( $item, $model, $label, input.key )"
               typeahead-min-length="2"
               class="form-control"
+              ng-class="{ 'loading': model.inputList[input.key].typeahead.isLoading }"
               type="text"
               placeholder="(Type the first few letters to search possible values)"
               autocomplete="off"

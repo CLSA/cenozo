@@ -30,6 +30,7 @@
               typeahead-min-length="2"
               cn-change="check( input.key )"
               class="form-control"
+              ng-class="{ 'loading': model.inputList[input.key].typeahead.isLoading }"
               type="text"
               placeholder="(Type the first few letters to search possible values)"
               autocomplete="off"
@@ -96,14 +97,13 @@
               ng-click="selectDatetime( input )"
               onkeydown="return false"></input>
             <select ng-switch-default
-              ng-if="input.enumList"
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-options="item.value as item.name for item in input.enumList"
               ng-model="record[input.key]"
               cn-change="check( input.key )"
               class="form-control"
-              ng-readonly="input.constant"
+              ng-readonly="input.constant || !input.enumList"
               ng-required="model.metadata.columnList[input.key].required"></select>
             <textarea ng-switch-when="text"
               ng-attr-id="{{ input.key }}"
