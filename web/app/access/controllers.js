@@ -25,15 +25,4 @@ define( [], function() {
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.controller( 'AccessViewCtrl', [
-    '$scope', 'CnAccessModelFactory',
-    function( $scope, CnAccessModelFactory ) {
-      $scope.model = CnAccessModelFactory.root;
-      $scope.model.viewModel.onView().catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
-    }
-  ] );
-
 } );

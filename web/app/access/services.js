@@ -20,32 +20,21 @@ define( [ cenozo.baseUrl + '/app/access/module.js' ], function( module ) {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAccessViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAccessModelFactory', [
     'CnBaseModelFactory',
-    'CnAccessListFactory', 'CnAccessAddFactory', 'CnAccessViewFactory',
+    'CnAccessListFactory', 'CnAccessAddFactory',
     'CnHttpFactory',
     function( CnBaseModelFactory,
-              CnAccessListFactory, CnAccessAddFactory, CnAccessViewFactory,
+              CnAccessListFactory, CnAccessAddFactory,
               CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnAccessAddFactory.instance( this );
         this.listModel = CnAccessListFactory.instance( this );
-        this.viewModel = CnAccessViewFactory.instance( this );
 
         this.enableAdd( true );
         this.enableDelete( true );
-        this.enableView( true );
 
         // extend getMetadata
         this.getMetadata = function() {

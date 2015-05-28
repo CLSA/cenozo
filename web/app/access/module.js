@@ -10,9 +10,11 @@ define( {
     user_id: {
       title: 'User',
       type: 'typeahead',
-      table: 'user',
-      select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
-      where: [ 'first_name', 'last_name', 'name' ]
+      typeahead: {
+        table: 'user',
+        select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
+        where: [ 'first_name', 'last_name', 'name' ]
+      }
     },
     role_id: {
       title: 'Role',
