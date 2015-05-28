@@ -7,11 +7,23 @@ define( {
     pluralPossessive: 'alternates\''
   },
   inputList: {
+    participant_id: {
+      column: 'alternate.participant_id',
+      title: 'Participant',
+      type: 'typeahead',
+      typeahead: {
+        table: 'participant',
+        select: 'CONCAT( first_name, " ", last_name, " (", uid, ")" )',
+        where: [ 'first_name', 'last_name', 'uid' ]
+      }
+    },
     first_name: {
+      column: 'alternate.first_name',
       title: 'First Name',
       type: 'string'
     },
     last_name: {
+      column: 'alternate.last_name',
       title: 'Last Name',
       type: 'string'
     },

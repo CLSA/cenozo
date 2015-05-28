@@ -100,6 +100,17 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
   }
 };
 
+// Used to set up the routing for a module
+cenozo.updateFormElement = function updateFormElement( item ) {
+  var invalid = false;
+  for( var error in item.$error ) {
+    invalid = true === item.$error[error];
+    if( invalid ) break;
+  }
+  item.$dirty = invalid;
+  item.$invalid = invalid;
+};
+
 /* ######################################################################################################## */
 
 /**
@@ -272,6 +283,7 @@ cenozo.directive( 'cnRecordAdd', [
       },
       controller: function( $scope ) {
         $scope.back = function() { $scope.model.transitionToLastState(); };
+        
         $scope.check = function( property ) {
           // test the format
           var item = angular.element(
@@ -279,11 +291,11 @@ cenozo.directive( 'cnRecordAdd', [
               scope().$parent.innerForm.name;
           if( item ) {
             var valid = $scope.model.testFormat( property, $scope.record[property] );
-            item.$dirty = !valid;
-            item.$invalid = !valid;
             item.$error.format = !valid;
+            cenozo.updateFormElement( item );
           }
         };
+        
         $scope.submit = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
@@ -315,9 +327,8 @@ cenozo.directive( 'cnRecordAdd', [
                       document.querySelector( '#' + response.data[i] ) ) ).scope();
                     if( angular.isDefined( elementScope ) ) {
                       var item = elementScope.$parent.innerForm.name;
-                      item.$dirty = true;
-                      item.$invalid = true;
                       item.$error.conflict = true;
+                      cenozo.updateFormElement( item );
                     }
                   }
                 } else { $scope.model.transitionToErrorState( response ); }
@@ -325,49 +336,16 @@ cenozo.directive( 'cnRecordAdd', [
             );  
           }
         };
+
         $scope.getTypeaheadValues = function( key, viewValue ) {
-          var input = $scope.model.inputList[key];
-          if( angular.isUndefined( input ) )
-            throw 'Typeahead used without a valid input key (' + key + ').';
-          if( angular.isUndefined( input.table ) )
-            throw 'Typeaheads require a value for "table" in the input list.';
-          
-          // create the where statement
-          var where = {};
-          if( angular.isUndefined( input.where ) ) {
-            where = {
-              column: angular.isUndefined( input.select ) ? 'name' : input.select,
-              operator: 'like',
-              value: viewValue + '%'
-            };
-          } else {
-            where = [];
-            var whereList = angular.isArray( input.where ) ? input.where : [ input.where ];
-            for( var i = 0; i < whereList.length; i++ ) {
-              where.push( {
-                column: whereList[i],
-                operator: 'like',
-                value: viewValue + '%',
-                or: true
-              } );
-            }
-          }
-          return CnHttpFactory.instance( {
-            path: input.table,
-            data: {
-              select: {
-                column: {
-                  column: angular.isUndefined( input.select ) ? 'name' : input.select,
-                  alias: 'value',
-                  table_prefix: false
-                }
-              },
-              modifier: { where: where }
-            }
-          } ).get().then( function( response ) {
-            return angular.copy( response.data );
-          } );
+          return $scope.model.getTypeaheadValues( key, viewValue );
         };
+        
+        $scope.onSelectTypeahead = function( $item, $model, $label, key ) {
+          $scope.formattedRecord[key] = $label;
+          $scope.record[key] = $model;
+        };
+        
         $scope.selectDatetime = function( input ) {
           CnModalDatetimeFactory.instance( {
             title: input.title,
@@ -560,6 +538,9 @@ cenozo.directive( 'cnRecordView', [
         $scope.undo = function( property ) {
           if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
             $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
+            if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) )
+              $scope.model.viewModel.formattedRecord[property] =
+                $scope.model.viewModel.backupRecord['formatted_'+property];
             $scope.patch( property );
           }
         };
@@ -570,10 +551,8 @@ cenozo.directive( 'cnRecordView', [
             var item = angular.element(
               angular.element( document.querySelector( '#' + property ) ) ).
                 scope().$parent.innerForm.name;
-            item.$dirty = true;
-            item.$invalid = true;
             item.$error.format = true;
-            return;
+            cenozo.updateFormElement( item );
           } else {
             // validation passed, proceed with patch
             var data = {};
@@ -594,20 +573,14 @@ cenozo.directive( 'cnRecordView', [
                       var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
                       if( siblingItem.$error.conflict ) { 
                         siblingItem.$error.conflict = false;
-                        if( !siblingItem.$error.format ) {
-                          siblingItem.$dirty = false;
-                          siblingItem.$invalid = false;
-                        }
+                        cenozo.updateFormElement( siblingItem );
                       }
                       sibling = sibling.$$nextSibling;
                     }
                   }
                   if( currentItem.$error.format ) {
                     currentItem.$error.format = false;
-                    if( !currentItem.$error.conflict ) {
-                      currentItem.$dirty = false;
-                      currentItem.$invalid = false;
-                    }
+                    cenozo.updateFormElement( currentItem );
                   }
 
                   // update the formatted value
@@ -628,14 +601,23 @@ cenozo.directive( 'cnRecordView', [
                     var item = angular.element(
                       angular.element( document.querySelector( '#' + response.data[i] ) ) ).
                         scope().$parent.innerForm.name;
-                    item.$dirty = true;
-                    item.$invalid = true;
                     item.$error.conflict = true;
+                    cenozo.updateFormElement( item );
                   }
                 } else { $scope.model.transitionToErrorState( response ); }
               }
             );
           }
+        };
+
+        $scope.getTypeaheadValues = function( key, viewValue ) {
+          return $scope.model.getTypeaheadValues( key, viewValue );
+        };
+
+        $scope.onSelectTypeahead = function( $item, $model, $label, key ) {
+          $scope.model.viewModel.formattedRecord[key] = $label;
+          $scope.model.viewModel.record[key] = $model;
+          $scope.patch( key );
         };
 
         $scope.selectDatetime = function( input ) {
@@ -1209,14 +1191,25 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         object.updateFormattedRecord = function( property ) {
           if( angular.isDefined( property ) ) {
-            this.formattedRecord[property] =
-              this.parentModel.formatValue( property, this.record[property] );
+            var input = this.parentModel.inputList[property];
+            if( angular.isDefined( input ) ) {
+              if( angular.isDefined( input.typeahead ) ) {
+                // When typeaheads are first loaded move the formatted property from the record to
+                // the formatted record.  We must do this so that future calls to this function do
+                // not overrite the formatted typeahead property (the onSelectTypeahead callback is
+                // responsible for that)
+                if( angular.isDefined( this.record['formatted_'+property] ) ) {
+                  this.formattedRecord[property] = this.record['formatted_'+property];
+                  delete this.record['formatted_'+property];
+                }
+              } else {
+                this.formattedRecord[property] = 
+                  this.parentModel.formatValue( property, this.record[property] );
+              }
+            }
           } else {
             // update all properties
-            for( var property in this.record ) {
-              this.formattedRecord[property] =
-                this.parentModel.formatValue( property, this.record[property] );
-            }
+            for( var property in this.record ) this.updateFormattedRecord( property );
           }
         };
 
@@ -1487,7 +1480,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
         };
         object.transitionToErrorState = function( response ) {
-          var type = angular.isDefined( response ) || angular.isDefined( response.status )
+          var type = angular.isDefined( response ) && angular.isDefined( response.status )
                    ? response.status : 500;
           $state.go( 'error.' + type );
         };
@@ -1531,6 +1524,58 @@ cenozo.factory( 'CnBaseModelFactory', [
             }
           }
           return columnArray;
+        };
+
+        /**
+         * Returns an array of possible values for typeahead inputs
+         */
+        object.getTypeaheadValues = function( key, viewValue ) {
+          var input = this.inputList[key];
+          if( angular.isUndefined( input ) )
+            throw 'Typeahead used without a valid input key (' + key + ').';
+          if( angular.isUndefined( input.typeahead ) )
+            throw 'Typeaheads require a value for "typeahead" in the input list.';
+          
+          // create the where statement
+          var where = {};
+          if( angular.isUndefined( input.typeahead.where ) ) {
+            where = {
+              column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.select,
+              operator: 'like',
+              value: viewValue + '%'
+            };
+          } else {
+            where = [];
+            var whereList = angular.isArray( input.typeahead.where )
+                          ? input.typeahead.where
+                          : [ input.typeahead.where ];
+            for( var i = 0; i < whereList.length; i++ ) {
+              where.push( {
+                column: whereList[i],
+                operator: 'like',
+                value: viewValue + '%',
+                or: true
+              } );
+            }
+          }
+          return CnHttpFactory.instance( {
+            path: input.typeahead.table,
+            data: {
+              select: {
+                column: [
+                  'id',
+                  {
+                    column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.typeahead.select,
+                    alias: 'value',
+                    table_prefix: false
+                  }
+                ]
+              },
+              modifier: { where: where }
+            }
+          } ).get().then( function( response ) {
+            return angular.copy( response.data );
+          } );
         };
 
         // enable/disable module functionality

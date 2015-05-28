@@ -23,9 +23,10 @@
             <input ng-switch-when="typeahead"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="record[input.key]"
-              typeahead="item.value for item in getTypeaheadValues( input.key, $viewValue )"
-              typeahead-loading="true"
+              ng-model="formattedRecord[input.key]"
+              typeahead="item.id as item.value for item in getTypeaheadValues( input.key, $viewValue )"
+              typeahead-editable="false"
+              typeahead-on-select="onSelectTypeahead( $item, $model, $label, input.key )"
               typeahead-min-length="2"
               cn-change="check( input.key )"
               class="form-control"
@@ -177,17 +178,22 @@
               </div>
             </div>
           </div>
-          <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.required">
-            Cannot be blank
-          </span>
-          <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.minlength">
-            Isn't long enough
-          </span>
-          <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.format">
-            Invalid format
-          </span>
-          <span class="help-block" ng-if="innerForm.name.$dirty && innerForm.name.$error.conflict">
-            Conflicts with existing record
+          <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+            <span class="help-block" ng-if="innerForm.name.$error.required">
+              Cannot be blank
+            </span>
+            <span class="help-block" ng-if="innerForm.name.$error.minlength">
+              Isn't long enough
+            </span>
+            <span class="help-block" ng-if="innerForm.name.$error.format">
+              Invalid format
+            </span>
+            <span class="help-block" ng-if="innerForm.name.$error.conflict">
+              Conflicts with existing record
+            </span>
+            <span class="help-block" ng-if="innerForm.name.$error.editable">
+              Must be chosen from list
+            </span>
           </span>
         </div>
       </div>

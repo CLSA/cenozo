@@ -24,12 +24,16 @@ class module extends \cenozo\service\module
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
 
+    // include the participant first/last/uid as supplemental data
     $modifier->join( 'participant', 'alternate.participant_id', 'participant.id' );
+    $select->add_column(
+      'CONCAT( participant.first_name, " ", participant.last_name, " (", participant.uid, ")" )',
+      'formatted_participant_id',
+      false );
 
     // restrict to participants in this application
     if( $db_application->release_based )
     {
-
       $sub_mod = lib::create( 'database\modifier' );
       $sub_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
       $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );

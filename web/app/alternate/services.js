@@ -72,6 +72,9 @@ define( [
         this.enableView( true );
 
         // override parent method to always go directly to the root alternate state
+        this.transitionToAddState = function() {
+          $state.go( this.subject + '.add' );
+        };
         this.transitionToViewState = function( record ) {
           $state.go( this.subject + '.view', { identifier: record.getIdentifier() } );
         };
