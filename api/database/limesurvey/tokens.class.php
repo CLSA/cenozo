@@ -18,7 +18,7 @@ class tokens extends sid_record
    * Returns the token name for a particular interview.
    * If the survey's phase is repeated then the assignment must also be provided.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\interview $db_interview 
+   * @param database\interview $db_interview
    * @param database\interview $db_assignment (only used if the phase is repeated)
    * @static
    * @access public

@@ -28,8 +28,8 @@ class setting_manager extends \cenozo\singleton
 
     // get the survey database settings from the limesurvey config file
     $file = LIMESURVEY_PATH.'/config.php';
-    if( file_exists( $file ) ) 
-    {   
+    if( file_exists( $file ) )
+    {
       include $file;
       $args['survey_db'] =
         array( 'driver' => $databasetype,
@@ -37,13 +37,13 @@ class setting_manager extends \cenozo\singleton
                'username' => $databaseuser,
                'password' => $databasepass,
                'database' => $databasename );
-    }   
+    }
     else // no version 1.92 of the config file, try version 2.0
-    {   
+    {
       $file = LIMESURVEY_PATH.'/application/config/config.php';
 
-      if( file_exists( $file ) ) 
-      {   
+      if( file_exists( $file ) )
+      {
         define( 'BASEPATH', '' ); // needed to read the config file
         $config = require( $file );
         $db = explode( ';', $config['components']['db']['connectionString'] );
@@ -61,7 +61,7 @@ class setting_manager extends \cenozo\singleton
                  'username' => $config['components']['db']['username'],
                  'password' => $config['components']['db']['password'],
                  'database' => $database );
-      }   
+      }
       else throw lib::create( 'exception\runtime',
         'Cannot find limesurvey config.php file.', __METHOD__ );
     }
@@ -114,7 +114,7 @@ class setting_manager extends \cenozo\singleton
 
     // if we get here then the setting doesn't exist
     log::err( "Tried getting value for setting [$category][$name] which doesn't exist." );
-    
+
     return NULL;
   }
 

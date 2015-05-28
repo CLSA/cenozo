@@ -18,7 +18,7 @@ class status extends \cenozo\base_object
    * Constructor
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param integer $code The HTTP response code 
+   * @param integer $code The HTTP response code
    * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
    * @access public
    */
@@ -26,7 +26,7 @@ class status extends \cenozo\base_object
   {
     $this->set_code( $code );
   }
-  
+
   /**
    * Returns the status' current code
    * 

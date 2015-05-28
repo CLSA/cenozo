@@ -31,7 +31,7 @@ class voip_manager extends \cenozo\singleton
     $this->password = $setting_manager->get_setting( 'voip', 'password' );
     $this->prefix = $setting_manager->get_setting( 'voip', 'prefix' );
   }
-    
+
   /**
    * Initializes the voip manager.
    * 
@@ -55,7 +55,7 @@ class voip_manager extends \cenozo\singleton
       // get the current SIP info
       $peer = lib::create( 'business\session' )->get_user()->name;
       $s8_event = $this->manager->getSipPeer( $peer );
-      
+
       if( !is_null( $s8_event ) &&
           $peer == $s8_event->get( 'objectname' ) &&
           'OK' == substr( $s8_event->get( 'status' ), 0, 2 ) )
@@ -74,7 +74,7 @@ class voip_manager extends \cenozo\singleton
         'Failed to initialize Asterisk AJAM interface.', __METHOD__, $e );
     }
   }
-  
+
   /**
    * Reads the list of active calls from the server.
    * 
@@ -94,7 +94,7 @@ class voip_manager extends \cenozo\singleton
       if( 'Status' == $s8_event->get( 'event' ) )
         $this->call_list[] = lib::create( 'business\voip_call', $s8_event, $this->manager );
   }
-  
+
   /**
    * Gets a user's active call.  If the user isn't currently on a call then null is returned.
    * 
@@ -120,7 +120,7 @@ class voip_manager extends \cenozo\singleton
 
     return NULL;
   }
-  
+
   /**
    * Attempts to connect to a phone.
    * 
@@ -147,7 +147,7 @@ class voip_manager extends \cenozo\singleton
 
       if( $db_phone->international )
         throw lib::create( 'exception\runtime', 'Tried to call an international phone number', __METHOD__ );
-      
+
       $number = $db_phone->number;
     }
 
@@ -218,7 +218,7 @@ class voip_manager extends \cenozo\singleton
   public function sip_prune( $db_user )
   {
     if( !$this->enabled || is_null( $db_user ) ) return;
-    
+
     // there is no way to send a sip prune command to asterisk using AMI so we need to use the CLI
     $output = array();
     $return_value = 0;
@@ -237,7 +237,7 @@ class voip_manager extends \cenozo\singleton
   {
     return $this->enabled && is_array( $this->sip_info ) && 0 < count( $this->sip_info );
   }
-  
+
   /**
    * Whether VOIP is enabled.
    * 
@@ -284,28 +284,28 @@ class voip_manager extends \cenozo\singleton
    * @access private
    */
   private $enabled = false;
-  
+
   /**
    * The url that asterisk's AJAM is running on
    * @var string
    * @access private
    */
   private $url = '';
-  
+
   /**
    * Which username to use when connecting to the manager
    * @var string
    * @access private
    */
   private $username = '';
-  
+
   /**
    * Which password to use when connecting to the manager
    * @var string
    * @access private
    */
   private $password = '';
-  
+
   /**
    * The dialing prefix to use when making external calls.
    * @var string

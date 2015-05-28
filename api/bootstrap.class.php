@@ -13,7 +13,7 @@ use cenozo\lib, cenozo\log;
 /**
  * This class is responsible for bootstrapping the application's restful api and web interface.
  * 
- * Create the object, run the initialization() method then call 
+ * Create the object, run the initialization() method then call
  * 
  * @package cenozo\business
  */
@@ -55,7 +55,7 @@ final class bootstrap
       $this->file = file_get_contents( 'php://input' );
     }
   }
-  
+
   /**
    * Initialization
    * 
@@ -92,7 +92,7 @@ final class bootstrap
 
     // turn on output buffering from here on out
     ob_start();
-    
+
     $_SESSION['time']['script_start_time'] = microtime( true );
 
     // set up error handling
@@ -207,13 +207,13 @@ final class bootstrap
         'title' => strcasecmp( 'notice', $e->get_type() )
           ? 'Please Note:'
           : ucwords( $e->get_type() ).' Error!',
-        'message' => 0 < strlen( $e->get_raw_message() ) 
+        'message' => 0 < strlen( $e->get_raw_message() )
           ? $e->get_raw_message()
           : 'There was an error while trying to communicate with the server.<br>'.
             'Please notify a superior with the error code.',
         'code' => sprintf( '%s.%s', strtoupper( substr( $e->get_type(), 0, 1 ) ), $e->get_code() )
       );
-    
+
       // log all but notice exceptions
       if( 'notice' != $e->get_type() )
         log::err( sprintf( "When loading main UI:\n%s %s", ucwords( $e->get_type() ), $e ) );
@@ -228,7 +228,7 @@ final class bootstrap
             'Please notify a superior with the error code.',
         'code' => $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
       );
-    
+
       if( class_exists( 'cenozo\log' ) )
         log::err( sprintf( "When loading mainUI:\nLast minute %s", $e ) );
     }
@@ -286,7 +286,7 @@ final class bootstrap
                 400 <= $service->get_status()->get_code()
               ? $service->get_status()
               : lib::create( 'service\status', 500 );
-    
+
       // log all but notice exceptions
       if( 'notice' != $e->get_type() )
         log::err( sprintf( "For service \"%s:%s\":\n%s %s",
@@ -298,13 +298,13 @@ final class bootstrap
     catch( \Exception $e )
     {
       $status = lib::create( 'service\status', 500 );
-    
+
       if( class_exists( 'cenozo\log' ) )
         log::err( sprintf( "For service \"%s\":\nLast minute %s",
                            $this->path,
                            $e ) );
     }
-    
+
     // make sure to fail any active transaction
     if( $this->session->use_transaction() )
     {
@@ -334,7 +334,7 @@ final class bootstrap
       $service->close_writelog();
     }
   }
-  
+
   /**
    * Adds a list of key/value pairs to the settings
    * 
@@ -389,7 +389,7 @@ final class bootstrap
       foreach( $url_parts as $index => $part )
         if( 0 == $index % 2 ) $class_name .= sprintf( '\%s', $part );
     }
-    
+
     // If the method is GET and we have an odd number of url parts (ie: collection)
     // then change method to QUERY
     $effective_method = 'GET' == $this->method && 1 == count( $url_parts ) % 2
@@ -403,7 +403,7 @@ final class bootstrap
 
     return $class_name;
   }
-  
+
   /**
    * Contains all initialization parameters.
    * @var array

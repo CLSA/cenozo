@@ -326,7 +326,7 @@ class data_manager extends \cenozo\singleton
         $value = is_null( $db_hin ) || is_null( $db_hin->access )
                ? -1
                : ( $db_hin->access ? 1 : 0 );
-      } 
+      }
       else if( 'future_access' == $column )
       {
         // participant.hin.future_access (-1,0,1) or hin.future_access (-1,0,1)

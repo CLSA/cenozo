@@ -30,7 +30,7 @@ abstract class has_rank extends record
       log::warning( 'Tried to save read-only record.' );
       return;
     }
-    
+
     $rank_parent_key = is_null( static::$rank_parent ) ? false : static::$rank_parent.'_id';
 
     // see if there is already another record at the new rank
@@ -62,7 +62,7 @@ abstract class has_rank extends record
         $modifier->where( 'rank', $forward ? '<=' : '>=', $this->rank );
         $modifier->order( 'rank', !$forward );
         $records = static::select_objects( $modifier );
-        
+
         // temporarily set this record's rank to 0, preserving the new record
         $new_rank = $this->rank;
         $this->rank = 0;
@@ -84,7 +84,7 @@ abstract class has_rank extends record
         $modifier->where( 'rank', '>=', $this->rank );
         $modifier->order_desc( 'rank' );
         $records = static::select_objects( $modifier );
-        
+
         // and move their rank forward by one to make room for the new record
         foreach( $records as $record )
         {
@@ -114,7 +114,7 @@ abstract class has_rank extends record
       log::warning( 'Tried to delete read-only record.' );
       return;
     }
-    
+
     // delete the current record
     parent::delete();
 

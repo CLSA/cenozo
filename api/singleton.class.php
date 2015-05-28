@@ -45,7 +45,7 @@ abstract class singleton
 
     return self::$instance_list[$class_index];
   }
-  
+
   public static function exists()
   {
     $class_index = lib::get_class_name( get_called_class(), true );

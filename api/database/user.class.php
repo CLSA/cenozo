@@ -29,12 +29,12 @@ class user extends base_access
     {
       log::warning( 'Tried to determine access for user with no id.' );
       return 0;
-    } 
-    
+    }
+
     $class_name = lib::get_class_name( 'database\access' );
     return $class_name::exists( $this, $db_site, $db_role );
-  } 
- 
+  }
+
   /**
    * Adds a list of sites to the user with the given role.
    * 

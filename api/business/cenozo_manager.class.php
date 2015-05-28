@@ -27,7 +27,7 @@ class cenozo_manager extends \cenozo\factory
     $this->enabled = !is_null( $url );
     if( $this->enabled ) $this->base_url = $url.'/';
   }
-  
+
   /**
    * Determines if Cenozo is enabled.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -49,7 +49,7 @@ class cenozo_manager extends \cenozo\factory
   {
     $this->user_name = $user_name;
   }
-  
+
   /**
    * Set which password to use when making requests (or set to NULL to use the default)
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -60,7 +60,7 @@ class cenozo_manager extends \cenozo\factory
   {
     $this->password = $password;
   }
-  
+
   /**
    * Set which site to use when making requests (or set to NULL to use the default)
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -71,7 +71,7 @@ class cenozo_manager extends \cenozo\factory
   {
     $this->site_name = $site_name;
   }
-  
+
   /**
    * Set which role to use when making requests (or set to NULL to use the default)
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -82,7 +82,7 @@ class cenozo_manager extends \cenozo\factory
   {
     $this->role_name = $role_name;
   }
-  
+
   /**
    * Returns the httpauth string (user:pass) to use when making http requests
    * 
@@ -133,7 +133,7 @@ class cenozo_manager extends \cenozo\factory
     if( !$this->enabled ) return NULL;
 
     $util_class_name = lib::get_class_name( 'util' );
-    
+
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
@@ -141,7 +141,7 @@ class cenozo_manager extends \cenozo\factory
     $request->addHeaders( array( 'application' => APPLICATION ) );
     $request->addHeaders( array( 'instance' => INSTANCE ) );
     $request->setOptions( array( 'httpauth' => $this->get_httpauth() ) );
-    
+
     // validate the input arguments
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
@@ -151,7 +151,7 @@ class cenozo_manager extends \cenozo\factory
     $arguments = array_merge( $arguments, $this->get_site_and_role() );
 
     $request->setQueryData( static::prepare_arguments( $arguments ) );
-    
+
     try
     {
       $message = static::send( $request );
@@ -212,11 +212,11 @@ class cenozo_manager extends \cenozo\factory
     $code = $message->getResponseCode();
 
     $util_class_name = lib::get_class_name( 'util' );
-    
+
     if( 400 == $code )
     { // pass on the exception which was thrown by the application
       $body = $util_class_name::json_decode( $message->body );
-      
+
       $number = preg_replace( '/[^0-9]/', '', $body->error_code );
 
       throw 'Notice' == $body->error_type

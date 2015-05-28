@@ -78,14 +78,14 @@ class util
       '<font color="white"> ${3} </font>'.
       '<font color="red">)</font>',
       "\n".$output );
-      
+
     // replace => with html arrows
     $output = str_replace( '=>', ' &#8658;', $output );
-    
+
     // output as a pre
     echo '<pre style="font-weight: bold; color: #B0B0B0; background: black">'.$output.'</pre>';
   }
-  
+
   /**
    * Test whether a variable's string value matches its int value
    * 
@@ -208,7 +208,7 @@ class util
       if( !is_null( $db_user ) )
         $valid = self::encrypt( $password ) === self::encrypt( $db_user->password );
     }
-    
+
     return $valid;
   }
 
@@ -313,9 +313,9 @@ class util
     $key[] = ( $tmp[4] << 3 ) | ( $tmp[5] >> 5 );
     $key[] = ( $tmp[5] << 2 ) | ( $tmp[6] >> 6 );
     $key[] = $tmp[6] << 1;
-   
+
     $key0 = '';
-   
+
     foreach( $key as $k ) $key0 .= chr( $k );
     $crypt = mcrypt_encrypt(
       MCRYPT_DES, $key0, 'KGS!@#$%', MCRYPT_MODE_ECB,
@@ -380,7 +380,7 @@ class util
 
     // check for spaces
     if( preg_match( '/[ ,]/', $email ) ) return false;
-    
+
     // explode on the @ symbol
     $parts = explode( '@', $email );
     if( 2 != count( $parts ) || 0 == strlen( $parts[0] ) || 0 == strlen( $parts[1] ) ) return false;
@@ -434,10 +434,10 @@ class util
     // make a copy (clone if this is an object
     $encoded_arg = is_object( $arg ) ? clone $arg : $arg;
 
-    if( is_object( $arg ) ) 
+    if( is_object( $arg ) )
       foreach( get_object_vars( $arg ) as $key => $val )
         $encoded_arg->$key = self::utf8_encode( $val );
-    else if( is_array( $arg ) ) 
+    else if( is_array( $arg ) )
       foreach( $arg as $key => $val )
         $encoded_arg[$key] = self::utf8_encode( $val );
     else if( is_string( $arg ) )

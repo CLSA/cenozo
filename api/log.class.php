@@ -176,7 +176,7 @@ final class log extends singleton
    * @access public
    */
   public static function debug( $message ) { self::self()->send( $message, PEAR_LOG_DEBUG ); }
-  
+
   /**
    * Logging method
    * 
@@ -207,7 +207,7 @@ final class log extends singleton
              : ( $variable ? 'true' : 'false' ); // print_r doesn't display booleans
     self::debug( 'print_r'.( $label ? "($label)" : '' ).": $message" );
   }
-  
+
   /**
    * Returns the backtrace as a log-friendly string.
    * 
@@ -298,13 +298,13 @@ final class log extends singleton
         $firephp->$method_name( $firephp_message, $type_string );
       }
     }
-    
+
     // log to file
     if( $this->policy_list[$type]['log'] )
     {
       // convert the message
       if( $this->policy_list[$type]['convert'] ) $message = static::convert_message( $message );
-      
+
       // add a label
       if( $this->policy_list[$type]['label'] ) $message = static::label_message( $message );
 
@@ -523,7 +523,7 @@ final class log extends singleton
     {
       log::warning( $message );
     }
-    
+
     // from PHP docs:
     //   It is important to remember that the standard PHP error handler is completely bypassed for
     //   the error types specified by error_types unless the callback function returns FALSE.

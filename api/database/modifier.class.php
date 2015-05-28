@@ -191,7 +191,7 @@ class modifier extends \cenozo\base_object
                                  'format' => $format,
                                  'or' => $or );
   }
-  
+
   /**
    * Add where statement which will be "or" combined to the modifier.
    * 
@@ -278,7 +278,7 @@ class modifier extends \cenozo\base_object
                                  'format' => $format,
                                  'or' => $or );
   }
-  
+
   /**
    * Add having statement which will be "or" combined to the modifier.
    * 
@@ -389,7 +389,7 @@ class modifier extends \cenozo\base_object
   {
     return $this->limit;
   }
-  
+
   /**
    * Returns the modifier's limit offset value (0 if there is no offset)
    * 
@@ -401,7 +401,7 @@ class modifier extends \cenozo\base_object
   {
     return $this->offset;
   }
-  
+
   /**
    * Returns whether the modifier has a certain table (or alias) in its join clauses.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -467,7 +467,7 @@ class modifier extends \cenozo\base_object
   {
     return array_key_exists( $column, $this->order_list );
   }
-  
+
   /**
    * Get an array of where clauses.
    * 
@@ -779,7 +779,7 @@ class modifier extends \cenozo\base_object
           }
         }
       }
-      
+
       $logic_type = $where['or'] ? ' OR' : ' AND';
       if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
       $sql .= ' '.$statement;
@@ -789,7 +789,7 @@ class modifier extends \cenozo\base_object
 
     return $sql;
   }
-  
+
   /**
    * Returns an SQL group statement.
    * 
@@ -813,7 +813,7 @@ class modifier extends \cenozo\base_object
 
     return $sql;
   }
-  
+
   /**
    * Returns an SQL having statement.
    * 
@@ -912,7 +912,7 @@ class modifier extends \cenozo\base_object
           }
         }
       }
-      
+
       $logic_type = $having['or'] ? ' OR' : ' AND';
       if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
       $sql .= ' '.$statement;
@@ -922,7 +922,7 @@ class modifier extends \cenozo\base_object
 
     return $sql;
   }
-  
+
   /**
    * Returns an SQL order statement.
    * 
@@ -947,7 +947,7 @@ class modifier extends \cenozo\base_object
 
     return $sql;
   }
-  
+
   /**
    * Merges another modifier with this one.  Merging only includes join, where, group, having
    * and order items.
@@ -1034,7 +1034,7 @@ class modifier extends \cenozo\base_object
         {
           // convert a statement into an array (for single arguments or objects)
           if( !is_array( $value ) ) $value = array( $value );
-          
+
           foreach( $value as $join )
           {
             if( array_key_exists( 'table', $join ) &&
@@ -1051,7 +1051,7 @@ class modifier extends \cenozo\base_object
         {
           // convert a single statement to an array with that statement in it
           if( !is_array( $value ) ) $value = array( $value );
-          
+
           foreach( $value as $condition )
           {
             if( array_key_exists( 'bracket', $condition ) )
@@ -1127,42 +1127,42 @@ class modifier extends \cenozo\base_object
    * @access protected
    */
   protected $join_list = array();
-  
+
   /**
    * Holds all where clauses in an array of associative arrays
    * @var array
    * @access protected
    */
   protected $where_list = array();
-  
+
   /**
    * Holds all group clauses.
    * @var array( string )
    * @access protected
    */
   protected $group_list = array();
-  
+
   /**
    * Holds all having clauses in an array of associative arrays
    * @var array
    * @access protected
    */
   protected $having_list = array();
-  
+
   /**
    * Holds all order clauses.
    * @var array( column => desc )
    * @access protected
    */
   protected $order_list = array();
-  
+
   /**
    * The row limit value (null if there is no limit)
    * @var int
    * @access protected
    */
   protected $limit = NULL;
-  
+
   /**
    * The limit offset value.
    * @var int

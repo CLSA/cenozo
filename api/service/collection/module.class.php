@@ -55,7 +55,7 @@ class module extends \cenozo\service\module
         $sub_mod->where( 'collection_has_participant.participant_id', '=',
                          'participant_site.participant_id', false );
         $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
-          
+
         $join_mod->join_modifier( 'participant_site', $sub_mod );
         $join_mod->where( 'participant_site.site_id', '=', $db_site->id );
       }

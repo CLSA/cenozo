@@ -184,7 +184,7 @@ abstract class record extends \cenozo\base_object
 
     $util_class_name = lib::get_class_name( 'util' );
     $database_class_name = lib::get_class_name( 'database\database' );
-    
+
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
 
     foreach( $this->get_working_table_list() as $table )
@@ -192,7 +192,7 @@ abstract class record extends \cenozo\base_object
       // building the SET list since it is identical for inserts and updates
       $sets = '';
       $first = true;
-      
+
       if( $this->write_timestamps && static::get_table_name() == $table['name'] )
       {
         // add the create_timestamp column if this is a new record
@@ -221,7 +221,7 @@ abstract class record extends \cenozo\base_object
           $first = false;
         }
       }
-      
+
       // either insert or update the row based on whether the primary key is set
       if( static::get_table_name() == $table['name'] )
       {
@@ -243,7 +243,7 @@ abstract class record extends \cenozo\base_object
       }
 
       static::db()->execute( $sql );
-      
+
       // get the new primary key
       if( $table['name'] == static::get_table_name() &&
           is_null( $table['columns'][$table['key']] ) )
@@ -253,7 +253,7 @@ abstract class record extends \cenozo\base_object
       }
     }
   }
-  
+
   /**
    * Deletes the record.
    * 
@@ -275,7 +275,7 @@ abstract class record extends \cenozo\base_object
       log::warning( 'Tried to delete record with no id.' );
       return;
     }
-    
+
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
 
     // loop through the working tables in reverse order (to avoid reference problems)
@@ -320,7 +320,7 @@ abstract class record extends \cenozo\base_object
     // not an column from the extending table list, make sure the column exists in the main table
     if( !static::column_exists( $column_name ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
-    
+
     return isset( $this->column_values[$column_name] ) ?
       $this->column_values[$column_name] : NULL;
   }
@@ -356,7 +356,7 @@ abstract class record extends \cenozo\base_object
     // make sure the column exists
     if( !static::column_exists( $column_name ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
-    
+
     $this->column_values[$column_name] = $value;
   }
 
@@ -401,10 +401,10 @@ abstract class record extends \cenozo\base_object
         }
       }
     }
-  
+
     return $columns;
   }
-  
+
   /**
    * Magic call method.
    * 
@@ -437,11 +437,11 @@ abstract class record extends \cenozo\base_object
   public function __call( $name, $args )
   {
     $return_value = NULL;
-    
+
     // set up regular expressions
     $start = '/^add_|remove_|get_/';
     $end = '/(_list|_object_list|_count)$/';
-    
+
     // see if the start of the function name is a match
     if( !preg_match( $start, $name, $match ) )
       throw lib::create( 'exception\runtime',
@@ -453,14 +453,14 @@ abstract class record extends \cenozo\base_object
 
     // now get the subject by removing the start and end of the function name
     $subject = preg_replace( array( $start, $end ), '', $name );
-    
+
     // make sure the foreign table exists
     if( !static::db()->table_exists( $subject ) )
       throw lib::create( 'exception\runtime',
         sprintf( 'Call to undefined function: %s::%s() (foreign table does not exist)',
                  get_called_class(),
                  $name ), __METHOD__ );
-    
+
     if( 'add' == $action )
     { // calling: add_<record>( $ids )
       // make sure the first argument is an integer or non-empty array of ids
@@ -489,7 +489,7 @@ abstract class record extends \cenozo\base_object
     {
       // get the end of the function name
       $sub_action = preg_match( $end, $name, $match ) ? substr( $match[0], 1 ) : false;
-      
+
       if( !$sub_action )
       {
         // calling: get_<record>()
@@ -538,7 +538,7 @@ abstract class record extends \cenozo\base_object
                get_called_class(),
                $name ), __METHOD__ );
   }
-  
+
   /**
    * Returns the record with foreign keys referencing the record table.
    * This method is used to select a record's parent record in many-to-one relationships.
@@ -551,16 +551,16 @@ abstract class record extends \cenozo\base_object
   {
     // check the primary key value
     if( is_null( $this->column_values[static::get_primary_key_name()] ) )
-    { 
+    {
       log::warning( 'Tried to query record with no id.' );
       return NULL;
     }
-    
+
     $foreign_key_name = $record_type.'_id';
 
     // make sure this table has the correct foreign key
     if( !static::column_exists( $foreign_key_name ) )
-    { 
+    {
       log::warning( 'Tried to get invalid record type: '.$record_type );
       return NULL;
     }
@@ -606,11 +606,11 @@ abstract class record extends \cenozo\base_object
     // check the primary key value
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
     if( is_null( $primary_key_value ) )
-    { 
+    {
       log::warning( 'Tried to query record with no id.' );
       return array();
     }
-      
+
     $return_value = 'count' == $return_alternate ? 0 : array();
 
     // this method varies depending on the relationship type
@@ -647,7 +647,7 @@ abstract class record extends \cenozo\base_object
         $foreign_key_name = sprintf( '%s.%s', $record_type, $foreign_class_name::get_primary_key_name() );
         $joining_primary_key_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
         $joining_foreign_key_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
-    
+
         if( !$modifier->has_join( $table_name ) )
         {
           $modifier->cross_join( $joining_table_name, $foreign_key_name, $joining_foreign_key_name );
@@ -726,11 +726,11 @@ abstract class record extends \cenozo\base_object
     }
 
     $util_class_name = lib::get_class_name( 'util' );
-    
+
     // check the primary key value
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
     if( is_null( $primary_key_value ) )
-    { 
+    {
       log::warning( 'Tried to query record with no id.' );
       return;
     }
@@ -746,10 +746,10 @@ abstract class record extends \cenozo\base_object
                  static::get_table_name() ) );
       return;
     }
-    
+
     $database_class_name = lib::get_class_name( 'database\database' );
     $joining_table_name = static::get_joining_table_name( $record_type );
-    
+
     // if ids is not an array then create a single-element array with it
     if( !is_array( $ids ) ) $ids = array( $ids );
 
@@ -765,7 +765,7 @@ abstract class record extends \cenozo\base_object
                           static::db()->format_string( $foreign_key_value ) );
       $first = false;
     }
-    
+
     static::db()->execute(
       sprintf( $this->write_timestamps
                ? 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
@@ -798,7 +798,7 @@ abstract class record extends \cenozo\base_object
     // check the primary key value
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
     if( is_null( $primary_key_value ) )
-    { 
+    {
       log::warning( 'Tried to query record with no id.' );
       return;
     }
@@ -829,13 +829,13 @@ abstract class record extends \cenozo\base_object
     else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
       $joining_table_name = static::get_joining_table_name( $record_type );
-  
+
       $modifier = lib::create( 'database\modifier' );
       $column_name = sprintf( '%s.%s_id', $joining_table_name, static::get_table_name() );
       $modifier->where( $column_name, '=', $primary_key_value );
       $column_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
       $modifier->where( $column_name, '=', $id );
-  
+
       static::db()->execute(
         sprintf( 'DELETE FROM %s %s',
                  $joining_table_name,
@@ -850,7 +850,7 @@ abstract class record extends \cenozo\base_object
                  $record_type ) );
     }
   }
-  
+
   /**
    * Gets the name of the joining table between this record and another.
    * If no such table exists then an empty string is returned.
@@ -865,7 +865,7 @@ abstract class record extends \cenozo\base_object
     $table_name = static::get_table_name();
     $forward_joining_table_name = $table_name.'_has_'.$record_type;
     $reverse_joining_table_name = $record_type.'_has_'.$table_name;
-    
+
     $joining_table_name = "";
     if( static::db()->table_exists( $forward_joining_table_name ) )
     {
@@ -875,10 +875,10 @@ abstract class record extends \cenozo\base_object
     {
       $joining_table_name = $reverse_joining_table_name;
     }
-    
+
     return $joining_table_name;
   }
-  
+
   /**
    * Gets the type of relationship this record has to another record.
    * See the relationship class for return values.
@@ -1038,7 +1038,7 @@ abstract class record extends \cenozo\base_object
     // if the column is ID then there's no need to search for unique keys
     if( 'id' == $column || ( is_array( $column ) && 1 == count( $column ) && 'id' == $column[0] ) )
       return new static( $value );
-    
+
     // create an associative array from the column/value arguments and sort
     if( is_array( $column ) && is_array( $value ) )
       foreach( $column as $index => $col ) $columns[$col] = $value[$index];
@@ -1098,7 +1098,7 @@ abstract class record extends \cenozo\base_object
     // Table and class names (without namespaces) should always be identical
     return substr( strrchr( get_called_class(), '\\' ), 1 );
   }
-  
+
   /**
    * Returns an array of column names for this table.  Any columns in the database by the name
    * 'update_timestamp' or 'create_timestamp' are always ignored and left out of the active record.
@@ -1124,7 +1124,7 @@ abstract class record extends \cenozo\base_object
   {
     return static::$primary_key_name;
   }
-  
+
   /**
    * Returns an array of all enum values for a particular column.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -1143,7 +1143,7 @@ abstract class record extends \cenozo\base_object
 
     return $values;
   }
-  
+
   /**
    * Returns an array of all distinct values for a particular column.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -1164,7 +1164,7 @@ abstract class record extends \cenozo\base_object
                     $column_name );
     return static::db()->get_col( $sql );
   }
-  
+
   /**
    * Convenience method for database::column_exists(), but for this record
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -1262,7 +1262,7 @@ abstract class record extends \cenozo\base_object
     $tables[] = array( 'name' => static::get_table_name(),
                        'key' => static::get_primary_key_name(),
                        'columns' => & $this->column_values );
-    
+
     foreach( self::get_extending_table_list() as $extending_table )
     {
       // make sure the extending column values array exists

@@ -189,7 +189,7 @@ abstract class service extends \cenozo\base_object
         $db_service = $service_class_name::get_unique_record(
           array( 'method', 'subject', 'resource' ),
           array( $method, $subject, $has_resource ) );
-        
+
         // make sure the service exists, is allowed and the module validates
         if( is_null( $db_service ) )
         {
@@ -300,7 +300,7 @@ abstract class service extends \cenozo\base_object
    * @access public
    */
   public function get_method() { return $this->method; }
-  
+
   /**
    * Returns the subject for a particular index
    * 
@@ -388,7 +388,7 @@ abstract class service extends \cenozo\base_object
               $columns[] = sprintf( '%s_id', $parent_record->get_class_name() );
               $values[] = $parent_record->id;
             }
-            
+
             $record = $record_class_name::get_unique_record( $columns, $values );
           }
         }
@@ -592,7 +592,7 @@ abstract class service extends \cenozo\base_object
     $method = strtoupper( $method );
     return array_key_exists( $method, self::$method_list );
   }
-  
+
   /**
    * Returns whether or not a method is valid and read-based
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -606,7 +606,7 @@ abstract class service extends \cenozo\base_object
     $method = strtoupper( $method );
     return array_key_exists( $method, self::$method_list ) && !self::$method_list[$method];
   }
-  
+
   /**
    * Returns whether or not a method is valid and write-based
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -641,14 +641,14 @@ abstract class service extends \cenozo\base_object
    * @var string
    * @access private
    */
-  private $path = NULL; 
+  private $path = NULL;
 
   /**
    * The method used for the service
    * @var string
    * @access private
    */
-  private $method = NULL; 
+  private $method = NULL;
 
   /**
    * The url query arguments.
@@ -684,7 +684,7 @@ abstract class service extends \cenozo\base_object
    * @access protected
    */
   protected $data = NULL;
-  
+
   /**
    * A list of all collection names based on the service's path
    * @var array( string )

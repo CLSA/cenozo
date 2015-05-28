@@ -38,17 +38,17 @@ class withdraw_manager extends \cenozo\singleton
     if( !array_key_exists( $db_participant->id, $this->withdraw_sid_list )  )
     {
       $db_qnaire = $db_participant->get_effective_qnaire();
-      if( is_null( $db_qnaire ) ) 
+      if( is_null( $db_qnaire ) )
       { // finished all qnaires, find the last one completed
         $db_assignment = $db_participant->get_last_finished_assignment();
-        if( !is_null( $db_assignment ) ) 
-        {   
+        if( !is_null( $db_assignment ) )
+        {
           $db_qnaire = $db_assignment->get_interview()->get_qnaire();
-        }   
+        }
         else
         { // no interview means we'll just use the first qnaire
           $db_qnaire = $qnaire_class_name::get_unique_record( 'rank', 1 );
-        }   
+        }
       }
 
       $withdraw_sid = NULL;
@@ -79,7 +79,7 @@ class withdraw_manager extends \cenozo\singleton
     $withdraw_sid = $this->get_withdraw_sid( $db_participant );
 
     if( !is_null( $withdraw_sid ) )
-    {   
+    {
       $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
       $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
 
@@ -94,7 +94,7 @@ class withdraw_manager extends \cenozo\singleton
       $scripts_mod = lib::create( 'database\modifier' );
       $scripts_mod->where( 'token', '=', $db_participant->uid );
       foreach( $survey_class_name::select_objects( $scripts_mod ) as $db_survey ) $db_survey->delete();
-    }   
+    }
 
     $db_participant->withdraw_letter = NULL;
     $db_participant->save();
@@ -147,18 +147,18 @@ class withdraw_manager extends \cenozo\singleton
       if( 0 == $attributes['written consent received'] )
         $letter_type = 0 < $attributes['consented to provide HIN'] ? 'q' : 'r';
       else // written consent was received, write the letter type to the database
-      {   
+      {
         if( 'partial' == $attributes['provided data'] )
           $letter_type = 0 < $attributes['consented to provide HIN'] ? 's' : 't';
         else // full data received
-        {   
-          if( 'comprehensive' == $db_participant->get_cohort()->name &&  
+        {
+          if( 'comprehensive' == $db_participant->get_cohort()->name &&
               $attributes['last interview date'] == 'DATE UNKNOWN' ) // in-home only
             $letter_type = 0 < $attributes['consented to provide HIN'] ? 'o' : 'p';
           else // not in-home only
-          {   
+          {
             // from here we need to know whether default was applied or not
- 
+
             // get the code for the def and opt responses
             $code = 0 < $attributes['consented to provide HIN'] ? 'HIN' : 'NO_HIN';
             $code .= 0 < $attributes['DCS samples'] ? '_SAMP' : '_NO_SAMP';
@@ -173,12 +173,12 @@ class withdraw_manager extends \cenozo\singleton
                 'YES' == $response['def'] ||
                 'REFUSED' == $response['def'] ||
                 'REFUSED' == $response['opt'] )
-            {   
+            {
               if( 1 == $attributes['DCS samples'] )
                 $letter_type = 0 < $attributes['consented to provide HIN'] ? 'k' : 'm';
               else
                 $letter_type = 0 < $attributes['consented to provide HIN'] ? 'l' : 'n';
-            }   
+            }
             else
             {
               if( 'OPTION1' == $response['opt'] )

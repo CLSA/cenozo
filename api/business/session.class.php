@@ -32,14 +32,14 @@ class session extends \cenozo\singleton
 
     // the first argument is the settings array from an .ini file
     $setting_manager = lib::create( 'business\setting_manager', $arguments[0] );
-    
+
     // set error reporting
     error_reporting(
       $setting_manager->get_setting( 'general', 'development_mode' ) ? E_ALL | E_STRICT : E_ALL );
 
     $this->state = 'created';
   }
-  
+
   /**
    * Initializes the session.
    * 
@@ -109,7 +109,7 @@ class session extends \cenozo\singleton
 
     $this->state = 'initialized';
   }
-  
+
   /**
    * Ends the session.
    * 
@@ -258,7 +258,7 @@ class session extends \cenozo\singleton
 
     $this->set_site_and_role();
   }
-  
+
   /**
    * Updates the access record with the current time
    * 
@@ -329,7 +329,7 @@ class session extends \cenozo\singleton
 
   /**
    * Which state the session is in (one of 'created', 'initialized' or 'shutdown')
-   * @var string 
+   * @var string
    * @access private
    */
   private $state = NULL;

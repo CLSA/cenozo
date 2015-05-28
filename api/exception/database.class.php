@@ -32,7 +32,7 @@ class database extends base_exception
     $message .= is_null( $this->sql ) ? '' : ' for query'."\n".trim( $sql );
     parent::__construct( $message, $context, $previous );
   }
-  
+
   /**
    * Returns whether the exception was thrown because of a duplicate entry error.
    * 
@@ -56,7 +56,7 @@ class database extends base_exception
   {
     return DATABASE_CENOZO_BASE_ERRNO + 1451 == $this->get_number();
   }
-  
+
   /**
    * Returns whether the exception was thrown because a column which cannot be null is not set.
    * 
@@ -80,7 +80,7 @@ class database extends base_exception
   public function get_duplicate_columns( $table_name )
   {
     if( !$this->is_duplicate_entry() ) return NULL;
-    
+
     $db = lib::create( 'business\session' )->get_database();
     $column_list = array();
 
@@ -112,7 +112,7 @@ class database extends base_exception
       $matches[] = substr( $result[0][0], 1, -1 );
       $offset = $result[0][1] + 1;
     }
-    
+
     return 2 <= count( $matches ) ? $matches[1] : NULL;
   }
 

@@ -35,10 +35,10 @@ class database extends \cenozo\base_object
     $this->username = $username;
     $this->password = $password;
     $this->name = $database;
-    
+
     // set up the database connection
     $this->connection = new \mysqli( $this->server, $this->username, $this->password, $this->name );
-    
+
     if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
 
     // determine the framework name
@@ -65,7 +65,7 @@ class database extends \cenozo\base_object
                'FROM information_schema.columns %s ',
                $column_mod->get_sql() ),
       false ); // do not add table names
-    
+
     // record the tables, columns and types
     foreach( $rows as $row )
     {
@@ -99,7 +99,7 @@ class database extends \cenozo\base_object
     $constraint_mod->order( 'table_name' );
     $constraint_mod->order( 'constraint_name' );
     $constraint_mod->order( 'ordinal_position' );
-    
+
     $rows = $this->get_all(
       sprintf( 'SELECT TABLE_CONSTRAINTS.TABLE_NAME table_name, '.
                       'TABLE_CONSTRAINTS.CONSTRAINT_NAME AS constraint_name, '.
@@ -107,7 +107,7 @@ class database extends \cenozo\base_object
                'FROM information_schema.TABLE_CONSTRAINTS, information_schema.KEY_COLUMN_USAGE %s',
                $constraint_mod->get_sql() ),
       false ); // do not add table names
-    
+
     // record the constraints
     foreach( $rows as $row )
     {
@@ -137,7 +137,7 @@ class database extends \cenozo\base_object
       $this->connection->begin_transaction();
     }
   }
-  
+
   /**
    * Complete the database transaction.
    * 
@@ -210,7 +210,7 @@ class database extends \cenozo\base_object
     return array_key_exists( $table_name, $this->tables ) &&
            array_key_exists( $column_name, $this->tables[$table_name]['columns'] );
   }
-  
+
   /**
    * Returns an array of column names for the given table.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -246,7 +246,7 @@ class database extends \cenozo\base_object
 
     return $this->tables[$table_name]['columns'][$column_name]['type'];
   }
-  
+
   /**
    * Returns a column's data type (int, varchar, enum, etc)
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -265,7 +265,7 @@ class database extends \cenozo\base_object
 
     return $this->tables[$table_name]['columns'][$column_name]['data_type'];
   }
-  
+
   /**
    * Returns a column's key type.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -284,7 +284,7 @@ class database extends \cenozo\base_object
 
     return $this->tables[$table_name]['columns'][$column_name]['key'];
   }
-  
+
   /**
    * Returns an associative list of metadata for all columns
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -301,7 +301,7 @@ class database extends \cenozo\base_object
 
     return $this->tables[$table_name]['columns'];
   }
-  
+
   /**
    * Returns a column's default.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -320,7 +320,7 @@ class database extends \cenozo\base_object
 
     return $this->tables[$table_name]['columns'][$column_name]['default'];
   }
-  
+
   /**
    * This method returns an array of unique keys with the key-value pair being the key's name
    * and an array of column names belonging to that key, respectively.
@@ -340,7 +340,7 @@ class database extends \cenozo\base_object
          ? $this->tables[$table_name]['constraints']
          : array();
   }
-  
+
   /**
    * Gets the primary key names for a given table.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -377,7 +377,7 @@ class database extends \cenozo\base_object
     $util_class_name = lib::get_class_name( 'util' );
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
-    
+
     if( self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
@@ -408,7 +408,7 @@ class database extends \cenozo\base_object
 
     return $result;
   }
-  
+
   /**
    * Database convenience method.
    * 
@@ -446,7 +446,7 @@ class database extends \cenozo\base_object
                                             $util_class_name::get_elapsed_time() - $time ) );
     return $value;
   }
-  
+
   /**
    * Database convenience method.
    * 
@@ -488,7 +488,7 @@ class database extends \cenozo\base_object
 
     return $row;
   }
-  
+
   /**
    * Database convenience method.
    * 
@@ -527,7 +527,7 @@ class database extends \cenozo\base_object
                                             $util_class_name::get_elapsed_time() - $time ) );
     return $rows;
   }
-  
+
   /**
    * Database convenience method.
    * 
@@ -566,7 +566,7 @@ class database extends \cenozo\base_object
 
     return $cols;
   }
-  
+
   /**
    * Database convenience method.
    * 
@@ -581,7 +581,7 @@ class database extends \cenozo\base_object
     if( self::$debug ) log::debug( '(DB) insert ID = '.$id );
     return $id;
   }
-  
+
   /**
    * Database convenience method.
    * 
@@ -596,7 +596,7 @@ class database extends \cenozo\base_object
     if( self::$debug ) log::debug( '(DB) affected rows = '.$num );
     return $num;
   }
-  
+
   /**
    * Returns the string formatted for database queries.
    * 
@@ -611,17 +611,17 @@ class database extends \cenozo\base_object
   {
     // NULL values are returned as a MySQL NULL value
     if( is_null( $string ) ) return 'NULL';
-    
+
     // boolean values must be converted to strings (without double-quotes)
     if( is_bool( $string ) ) return $string ? 'true' : 'false';
 
     // trim whitespace from the begining and end of the string
     if( is_string( $string ) ) $string = trim( $string );
-    
+
     return 0 == strlen( $string ) ?
       'NULL' : sprintf( '"%s"', $this->connection->real_escape_string( $string ) );
   }
-  
+
   /**
    * Returns the datetime string formatted for database queries.
    * 
@@ -641,7 +641,7 @@ class database extends \cenozo\base_object
       $datetime = $util_class_name::get_datetime_object( $datetime );
     return $datetime instanceof \DateTime ? '"'.$datetime->format( 'Y-m-d H:i:s' ).'"' : 'NULL';
   }
-  
+
   /**
    * Returns the date string formatted for database queries.
    * 
@@ -661,7 +661,7 @@ class database extends \cenozo\base_object
       $date = $util_class_name::get_datetime_object( $date );
     return $date instanceof \DateTime ? '"'.$date->format( 'Y-m-d' ).'"' : 'NULL';
   }
-  
+
   /**
    * Returns the time string formatted for database queries.
    * 
@@ -681,7 +681,7 @@ class database extends \cenozo\base_object
       $time = $util_class_name::get_datetime_object( $time );
     return $time instanceof \DateTime ? '"'.$time->format( 'H:i:s' ).'"' : 'NULL';
   }
-  
+
   /**
    * Returns a version of the string with all framework and application table names prefixed
    * with their database name.
@@ -822,7 +822,7 @@ class database extends \cenozo\base_object
         }
       }
     }
-    
+
     return $output;
   }
 
@@ -902,14 +902,14 @@ class database extends \cenozo\base_object
    * @access private
    */
   private $server;
-  
+
   /**
    * Which username to use when connecting to the database
    * @var string
    * @access private
    */
   private $username;
-  
+
   /**
    * Which password to use when connecting to the database
    * @var string

@@ -114,7 +114,7 @@ abstract class has_note extends record
 
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    
+
     $sql = sprintf(
       'INSERT INTO %s_note( create_timestamp, %s, user_id, datetime, note ) '.
       'SELECT NULL, id, %s, %s, %s '.
@@ -128,7 +128,7 @@ abstract class has_note extends record
       $modifier->get_sql() );
     static::db()->execute( $sql );
   }
-  
+
   /**
    * Gets a note record (new or existing) for this record type.
    * @author Patrick Emond <emondpd@mcmaster.ca>

@@ -61,7 +61,7 @@ abstract class sid_record extends record
 
     return sprintf( '%s_%s', parent::get_table_name(), static::get_sid() );
   }
-  
+
   /**
    * The table's current sid.  This is an array since every class must track its own sid
    * separately.

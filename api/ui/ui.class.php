@@ -59,7 +59,7 @@ class ui extends \cenozo\base_object
       $list_items = $this->get_list_items();
       asort( $list_items );
       $list_item_string = $util_class_name::json_encode( $list_items );
-      
+
       $utility_items = $this->get_utility_items();
       asort( $utility_items );
       $utility_item_string = $util_class_name::json_encode( $utility_items );
@@ -118,7 +118,7 @@ class ui extends \cenozo\base_object
     $select->add_column( 'subject' );
     $select->add_column( 'method' );
     $select->add_column( 'resource' );
-    
+
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where( 'service.id', '=', 'role_has_service.service_id', false );
@@ -132,14 +132,14 @@ class ui extends \cenozo\base_object
     $modifier->where( 'method', 'IN', array( 'GET', 'POST' ) ); // only need add/list/view
     $modifier->order( 'subject' );
     $modifier->order( 'method' );
-    
+
     $module_list = array();
     foreach( $service_class_name::select( $select, $modifier ) as $service )
     {
       $subject = $service['subject'];
       if( !array_key_exists( $subject, $module_list ) )
         $module_list[$subject] = array( 'actions' => array(), 'children' => array() );
-      
+
       if( 'POST' == $service['method'] && !$service['resource'] )
         $module_list[$subject]['actions'][] = 'add';
       else if( 'GET' == $service['method'] && !$service['resource'] )

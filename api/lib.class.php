@@ -82,7 +82,7 @@ final class lib
                                                   $a[5], $a[6], $a[7] );
       if( 9 == $count ) return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4],
                                                   $a[5], $a[6], $a[7], $a[8] );
-  
+
       // limit to 10 arguments
       return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4],
                                 $a[5], $a[6], $a[7], $a[8], $a[9] );
@@ -183,7 +183,7 @@ final class lib
     // no such file
     return NULL;
   }
-  
+
   /**
    * Given a class name without base application/framework namespace name this method determines
    * where the class resides and returns the full namespace name (includeing application/framework)
@@ -257,7 +257,7 @@ final class lib
   {
     // replace back-slashes with forward-slashes
     $class_name = str_replace( '\\', '/', $class_name );
-    
+
     // if the base of the namespace is cenozo or the application name then remove it
     if( false !== strpos( $class_name, 'cenozo/' ) ||
         false !== strpos( $class_name, APPLICATION.'/' ) )
@@ -292,7 +292,7 @@ final class lib
   {
     // replace back-slashes with forward-slashes
     $class_name = str_replace( '\\', '/', $class_name );
-    
+
     // if the base of the namespace is cenozo or the application name then remove it
     if( false !== strpos( $class_name, 'cenozo/' ) ||
         false !== strpos( $class_name, APPLICATION.'/' ) )

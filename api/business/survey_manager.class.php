@@ -221,7 +221,7 @@ class survey_manager extends \cenozo\singleton
         $phase_sel->add_column( 'repeated' );
         $phase_mod = lib::create( 'database\modifier' );
         $phase_mod->order( 'rank' );
-        
+
         $phase_list = $db_qnaire->get_phase_list( $phase_sel, $phase_mod );
         if( 0 == count( $phase_list ) )
         {
@@ -240,14 +240,14 @@ class survey_manager extends \cenozo\singleton
             $sid = is_null( $db_source_survey ) ? $phase['sid'] : $db_source_survey->sid;
 
             $tokens_class_name::set_sid( $sid );
-    
+
             $token = $tokens_class_name::determine_token_string(
                        $db_interview,
                        $phase['repeated'] ? $db_assignment : NULL );
             $tokens_mod = lib::create( 'database\modifier' );
             $tokens_mod->where( 'token', '=', $token );
             $db_tokens = current( $tokens_class_name::select_objects( $tokens_mod ) );
-    
+
             if( false === $db_tokens )
             { // token not found, create it
               $db_tokens = lib::create( 'database\limesurvey\tokens' );
@@ -270,7 +270,7 @@ class survey_manager extends \cenozo\singleton
                 $db_tokens->attribute_10 = "UNKNOWN";
 
               $db_tokens->save();
-    
+
               $this->current_sid = $sid;
               $this->current_token = $token;
               break;
@@ -396,7 +396,7 @@ class survey_manager extends \cenozo\singleton
         $event_mod = lib::create( 'database\modifier' );
         $event_mod->where( 'event_type_id', '=',
           $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
-        
+
         if( 0 < $db_participant->get_event_count( $event_mod ) ) $provided_data = 'yes';
         else
         { // if the interview was never completed, see if it was partially completed
@@ -438,7 +438,7 @@ class survey_manager extends \cenozo\singleton
       $setting_manager = lib::create( 'business\setting_manager' );
       $opal_url = $setting_manager->get_setting( 'opal', 'server' );
       $opal_manager = lib::create( 'business\opal_manager', $opal_url );
-      
+
       $value = 0;
 
       if( $opal_manager->get_enabled() && 'comprehensive' == $db_participant->get_cohort()->name )
@@ -464,14 +464,14 @@ class survey_manager extends \cenozo\singleton
 
     return $value;
   }
-  
+
   /**
    * This assignment's current sid
    * @var int
    * @access private
    */
   private $current_sid = NULL;
-  
+
   /**
    * This assignment's current token
    * @var string

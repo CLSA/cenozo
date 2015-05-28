@@ -350,7 +350,7 @@ class select extends \cenozo\base_object
         {
           // convert a statement into an array (for single arguments or objects)
           if( !is_array( $value ) ) $value = array( $value );
-          
+
           foreach( $value as $column )
           {
             if( is_object( $column ) ) $column = (array) $column;

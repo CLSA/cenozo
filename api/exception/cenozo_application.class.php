@@ -49,6 +49,6 @@ class cenozo_application extends base_exception
   {
     return $this->code;
   }
-  
+
   protected $code;
 }

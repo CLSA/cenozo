@@ -39,7 +39,7 @@ class consent extends record
 
     parent::save();
   }
-  
+
   /**
    * Returns a string representation of the consent (eg: verbal deny, written accept, etc)
    * @author Patrick Emond <emondpd@mcmaster.ca>

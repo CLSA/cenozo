@@ -32,7 +32,7 @@ class survey extends sid_record
     $modifier->group( 'gid' );
     $modifier->group( 'qid' );
     $sql = sprintf( 'SELECT gid, qid FROM questions %s', $modifier->get_sql() );
-    
+
     $row = static::db()->get_row( $sql );
     if( 0 == count( $row ) )
       throw lib::create( 'exception\runtime', 'Question code not found in survey.', __METHOD__ );
@@ -59,7 +59,7 @@ class survey extends sid_record
     $modifier->group( 'gid' );
     $modifier->group( 'qid' );
     $sql = sprintf( 'SELECT gid, qid FROM questions %s', $modifier->get_sql() );
-    
+
     $row = static::db()->get_row( $sql );
     if( 0 == count( $row ) )
       throw lib::create( 'exception\runtime', 'Question code not found in survey.', __METHOD__ );

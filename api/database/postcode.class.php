@@ -36,7 +36,7 @@ class postcode extends record
     $modifier->order_desc( 'CHAR_LENGTH( name )' );
     $modifier->limit( 1 );
     $postcode_list = static::select_objects( $modifier );
-    
+
     return 0 == count( $postcode_list ) ? NULL : current( $postcode_list );
   }
 }

@@ -57,7 +57,7 @@ class query extends read
           $modifier->where( sprintf( '%s_id', $parent_record::get_table_name() ), '=', $parent_record->id );
           $modifier->where( sprintf( '%s_id', $leaf_subject ), '=', sprintf( '%s.id', $leaf_subject ), false );
           $sub_query = sprintf( '( %s %s )', $select->get_sql(), $modifier->get_sql() );
-          $this->select->add_column( $sub_query, 'chosen', false ); 
+          $this->select->add_column( $sub_query, 'chosen', false );
         }
       }
     }

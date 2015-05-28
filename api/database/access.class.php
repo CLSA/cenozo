@@ -55,7 +55,7 @@ class access extends record
 
     return !is_null( $id );
   }
-  
+
   /**
    * Override parent save method by making sure that higher tiers cannot be created
    * 
@@ -71,7 +71,7 @@ class access extends record
 
     parent::save();
   }
-  
+
   /**
    * Override parent delete method by making sure that higher tiers cannot be deleted
    * 

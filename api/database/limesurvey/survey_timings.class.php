@@ -90,7 +90,7 @@ class survey_timings extends sid_record
 
     return static::db()->get_row( $sql );
   }
-  
+
   /**
    * The name of the table's primary key column.
    * @var string
