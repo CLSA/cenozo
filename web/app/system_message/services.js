@@ -56,10 +56,6 @@ define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module )
         this.listModel = CnSystemMessageListFactory.instance( this );
         this.viewModel = CnSystemMessageViewFactory.instance( this );
 
-        this.enableAdd( true );
-        this.enableDelete( true );
-        this.enableView( true );
-
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;

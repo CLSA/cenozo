@@ -43,10 +43,6 @@ define( [ cenozo.baseUrl + '/app/region_site/module.js' ], function( module ) {
         this.listModel = CnRegionSiteListFactory.instance( this );
         this.viewModel = CnRegionSiteViewFactory.instance( this );
 
-        this.enableAdd( true );
-        this.enableDelete( true );
-        this.enableView( true );
-
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;

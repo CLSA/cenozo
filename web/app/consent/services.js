@@ -37,10 +37,6 @@ define( [ cenozo.baseUrl + '/app/consent/module.js' ], function( module ) {
         this.addModel = CnConsentAddFactory.instance( this );
         this.listModel = CnConsentListFactory.instance( this );
         this.viewModel = CnConsentViewFactory.instance( this );
-
-        this.enableAdd( true );
-        this.enableDelete( true );
-        this.enableView( true );
       };
 
       return {

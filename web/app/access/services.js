@@ -33,9 +33,6 @@ define( [ cenozo.baseUrl + '/app/access/module.js' ], function( module ) {
         this.addModel = CnAccessAddFactory.instance( this );
         this.listModel = CnAccessListFactory.instance( this );
 
-        this.enableAdd( true );
-        this.enableDelete( true );
-
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;

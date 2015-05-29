@@ -43,10 +43,6 @@ define( [ cenozo.baseUrl + '/app/quota/module.js' ], function( module ) {
         this.listModel = CnQuotaListFactory.instance( this );
         this.viewModel = CnQuotaViewFactory.instance( this );
 
-        this.enableAdd( true );
-        this.enableDelete( true );
-        this.enableView( true );
-
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;

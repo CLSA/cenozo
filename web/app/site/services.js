@@ -64,10 +64,6 @@ define( [
         this.listModel = CnSiteListFactory.instance( this );
         this.viewModel = CnSiteViewFactory.instance( this );
 
-        this.enableAdd( true );
-        this.enableDelete( true );
-        this.enableView( true );
-
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;

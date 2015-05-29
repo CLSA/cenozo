@@ -79,8 +79,6 @@ define( [
         this.listModel = CnParticipantListFactory.instance( this );
         this.viewModel = CnParticipantViewFactory.instance( this );
 
-        this.enableView( true );
-
         // customize identifier
         this.getIdentifierFromRecord = function( record ) { return 'uid=' + record.uid; };
 

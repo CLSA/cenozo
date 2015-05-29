@@ -41,10 +41,6 @@ define( [ cenozo.baseUrl + '/app/event/module.js' ], function( module ) {
         this.listModel = CnEventListFactory.instance( this );
         this.viewModel = CnEventViewFactory.instance( this );
 
-        this.enableAdd( true );
-        this.enableDelete( true );
-        this.enableView( true );
-
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;

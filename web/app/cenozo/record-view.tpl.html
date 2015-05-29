@@ -236,7 +236,9 @@
     </ng-form>
   </div>
   <div class="form-footer rounded-bottom">
-    <button type="button" class="btn btn-danger"
+    <button ng-if="model.deleteEnabled"
+            type="button"
+            class="btn btn-danger"
             cn-really-message="Are you sure you want to delete this {{ model.subject }}?"
             cn-really-click="delete()">
       <i class="glyphicon glyphicon-remove-sign"></i> Delete

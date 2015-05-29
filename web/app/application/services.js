@@ -44,10 +44,6 @@ define( [
         this.listModel = CnApplicationListFactory.instance( this );
         this.viewModel = CnApplicationViewFactory.instance( this );
 
-        this.enableAdd( true );
-        this.enableDelete( true );
-        this.enableView( true );
-
         // customize identifier
         this.getIdentifierFromRecord = function( record ) { return 'name=' + record.name; };
 

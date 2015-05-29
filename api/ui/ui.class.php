@@ -48,24 +48,34 @@ class ui extends \cenozo\base_object
       // prepare the framework module list (used to identify which modules are provided by the framework)
       $framework_module_list = $this->get_framework_module_list();
       sort( $framework_module_list );
-      $framework_module_string = $util_class_name::json_encode( $framework_module_list );
 
       // prepare the module list (used to create all necessary states needed by the active role)
       $module_list = $this->get_module_list();
       ksort( $module_list );
-      $module_string = $util_class_name::json_encode( $module_list );
 
-      // prepare which modules to show in the list, utility and report sections of the menu drawer
-      $list_items = $this->get_list_items();
+      // prepare which modules to show in the list
+      $list_items = $this->get_list_items( $module_list );
       asort( $list_items );
-      $list_item_string = $util_class_name::json_encode( $list_items );
+      
+      // remove list items the role doesn't have access to
+      foreach( $list_items as $subject => $item )
+        if( !array_key_exists( $subject, $module_list ) ||
+            !in_array( 'list', $module_list[$subject]['actions'] ) )
+          unset( $list_items[$subject] );
 
+      // prepare which utilities to show in the list
       $utility_items = $this->get_utility_items();
       asort( $utility_items );
-      $utility_item_string = $util_class_name::json_encode( $utility_items );
 
+      // prepare which reports to show in the list
       $report_items = $this->get_report_items();
       asort( $report_items );
+
+      // create the json strings for the interface
+      $framework_module_string = $util_class_name::json_encode( $framework_module_list );
+      $module_string = $util_class_name::json_encode( $module_list );
+      $list_item_string = $util_class_name::json_encode( $list_items );
+      $utility_item_string = $util_class_name::json_encode( $utility_items );
       $report_item_string = $util_class_name::json_encode( $report_items );
 
       // build the interface
@@ -129,7 +139,6 @@ class ui extends \cenozo\base_object
     $modifier->or_where( 'role_has_service.role_id', '!=', NULL );
     $modifier->where_bracket( false );
     $modifier->where( 'subject', '!=', 'self' );
-    $modifier->where( 'method', 'IN', array( 'GET', 'POST' ) ); // only need add/list/view
     $modifier->order( 'subject' );
     $modifier->order( 'method' );
 
@@ -140,12 +149,16 @@ class ui extends \cenozo\base_object
       if( !array_key_exists( $subject, $module_list ) )
         $module_list[$subject] = array( 'actions' => array(), 'children' => array() );
 
-      if( 'POST' == $service['method'] && !$service['resource'] )
-        $module_list[$subject]['actions'][] = 'add';
+      if( 'DELETE' == $service['method'] )
+        $module_list[$subject]['actions'][] = 'delete';
       else if( 'GET' == $service['method'] && !$service['resource'] )
         $module_list[$subject]['actions'][] = 'list';
       else if( 'GET' == $service['method'] && $service['resource'] )
         $module_list[$subject]['actions'][] = 'view';
+      else if( 'PATCH' == $service['method'] )
+        $module_list[$subject]['actions'][] = 'edit';
+      else if( 'POST' == $service['method'] )
+        $module_list[$subject]['actions'][] = 'add';
     }
 
     // add child actions to certain modules

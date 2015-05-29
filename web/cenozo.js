@@ -69,15 +69,19 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
   if( cenozo.isFrameworkModule( name ) ) baseUrl = this.baseUrl + '/' + baseUrl;
   for( var i = 0; i < module.actions.length; i++ ) {
     var action = module.actions[i];
-    var url = '/' + action;
-    if( 'view' == action ) url += '/{identifier}';
-    var templateUrl = baseUrl + action + '.tpl.html';
+    if( 0 > ['add', 'list', 'view'].indexOf( action ) ) {
+      stateProvider.state( name + '.' + action, { abstract: true } );
+    } else {
+      var url = '/' + action;
+      if( 'view' == action ) url += '/{identifier}';
+      var templateUrl = baseUrl + action + '.tpl.html';
 
-    stateProvider.state( name + '.' + action, {
-      url: url,
-      controller: ( name + '_' + action + '_ctrl' ).snakeToCamel( true ),
-      templateUrl: templateUrl
-    } );
+      stateProvider.state( name + '.' + action, {
+        url: url,
+        controller: ( name + '_' + action + '_ctrl' ).snakeToCamel( true ),
+        templateUrl: templateUrl
+      } );
+    }
   }
 
   // add child states to the list
@@ -1352,6 +1356,15 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.chooseEnabled = false;
         object.deleteEnabled = false;
         object.viewEnabled = false;
+
+        // search the state enumeration for which actions are available
+        var stateList = $state.get();
+        for( var i = 0; i < stateList.length; i++ ) {
+          if( module.subject + '.add' == stateList[i].name ) object.addEnabled = true;
+          if( module.subject + '.delete' == stateList[i].name ) object.deleteEnabled = true;
+          if( module.subject + '.edit' == stateList[i].name ) object.editEnabled = true;
+          if( module.subject + '.view' == stateList[i].name ) object.viewEnabled = true;
+        }
 
         // override this method to use a custom identifier
         object.getIdentifierFromRecord = function( record ) { return String( record.id ); };

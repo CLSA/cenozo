@@ -57,10 +57,6 @@ define( [ cenozo.baseUrl + '/app/address/module.js' ], function( module ) {
         this.listModel = CnAddressListFactory.instance( this );
         this.viewModel = CnAddressViewFactory.instance( this );
 
-        this.enableAdd( true );
-        this.enableDelete( true );
-        this.enableView( true );
-
         // customize identifier
         this.getIdentifierFromRecord = function( record ) { return 'rank=' + record.rank; };
 
