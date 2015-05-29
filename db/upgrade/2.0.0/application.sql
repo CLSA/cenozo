@@ -16,6 +16,7 @@ CREATE PROCEDURE patch_application()
 
       -- rename keys
       ALTER TABLE application
+      MODIFY language_id INT(10) UNSIGNED NOT NULL,
       DROP FOREIGN KEY fk_service_language_id,
       ADD CONSTRAINT fk_application_language_id
       FOREIGN KEY (language_id) REFERENCES language (id)

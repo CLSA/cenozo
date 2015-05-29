@@ -1,8 +1,5 @@
 define( [
   cenozo.baseUrl + '/app/application/module.js',
-  cenozo.baseUrl + '/app/participant/bootstrap.js',
-  cenozo.baseUrl + '/app/site/bootstrap.js',
-  cenozo.baseUrl + '/app/user/bootstrap.js'
 ], function( module ) {
   'use strict';
 
@@ -26,31 +23,9 @@ define( [
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantModelFactory', 'CnSiteModelFactory', 'CnUserModelFactory',
-    function( CnBaseViewFactory, CnParticipantModelFactory, CnSiteModelFactory, CnUserModelFactory ) {
-      var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel );
-
-        ////////////////////////////////////
-        // factory customizations start here
-        var self = this;
-        this.participantModel = CnParticipantModelFactory.instance();
-        this.participantModel.enableChoose( true );
-        this.siteModel = CnSiteModelFactory.instance();
-        this.siteModel.enableChoose( true );
-        this.userModel = CnUserModelFactory.instance();
-        this.userModel.enableChoose( true );
-
-        this.view = function view() {
-          return this.viewRecord().then( function() {
-            self.participantModel.listModel.onList( true );
-            self.siteModel.listModel.onList( true );
-            self.userModel.listModel.onList( true );
-          } );
-        };
-        // factory customizations end here
-        //////////////////////////////////
-      };
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
@@ -59,8 +34,11 @@ define( [
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationModelFactory', [
     'CnBaseModelFactory', 'CnApplicationListFactory', 'CnApplicationAddFactory', 'CnApplicationViewFactory',
-    function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationAddFactory, CnApplicationViewFactory ) {
+    'CnHttpFactory',
+    function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationAddFactory, CnApplicationViewFactory,
+              CnHttpFactory ) {
       var object = function() {
+        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnApplicationAddFactory.instance( this );
         this.listModel = CnApplicationListFactory.instance( this );
@@ -72,6 +50,37 @@ define( [
 
         // customize identifier
         this.getIdentifierFromRecord = function( record ) { return 'name=' + record.name; };
+
+        // extend getMetadata
+        this.getMetadata = function() {
+          this.metadata.loadingCount++;
+          return this.loadMetadata().then( function() {
+            return CnHttpFactory.instance( {
+              path: 'language',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: {
+                  where: {
+                    column: 'active',
+                    operator: '=',
+                    value: true
+                  },
+                  order: 'name'
+                }
+              }
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.language_id.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                self.metadata.columnList.language_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].name
+                } );
+              }
+            } ).then( function() {
+              self.metadata.loadingCount--;
+            } );
+          } );
+        };
       };
 
       return {

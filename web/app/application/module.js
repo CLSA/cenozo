@@ -17,10 +17,6 @@ define( {
       type: 'string',
       help: 'A user-friendly name for the service, may contain any characters.'
     },
-    language_id: {
-      title: 'Default Language',
-      type: 'enum'
-    },
     version: {
       title: 'Version',
       type: 'string',
@@ -35,11 +31,30 @@ define( {
       title: 'Country',
       type: 'string'
     },
+    language_id: {
+      title: 'Default Language',
+      type: 'enum'
+    },
     timezone: {
       title: 'Default Time Zone',
       type: 'typeahead',
       typeahead: moment.tz.names()
     },
+    participant_count: {
+      title: 'Participants',
+      type: 'string',
+      constant: true
+    },
+    site_count: {
+      title: 'Sites',
+      type: 'string',
+      constant: true
+    },
+    user_count: {
+      title: 'Users',
+      type: 'string',
+      constant: true
+    }
   },
   columnList: {
     title: { title: 'Title' },
