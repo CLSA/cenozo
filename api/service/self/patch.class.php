@@ -61,7 +61,7 @@ class patch extends \cenozo\service\service
         $value = current( $value );
         if( 'user' == $key )
         {
-          if( in_array( $column, array( 'first_name', 'last_name', 'email' ) ) )
+          if( in_array( $column, array( 'first_name', 'last_name', 'email', 'timezone' ) ) )
           {
             $db_user = $session->get_user();
             $db_user->$column = $value;

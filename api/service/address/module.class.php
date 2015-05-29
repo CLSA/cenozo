@@ -43,7 +43,7 @@ class module extends \cenozo\service\module
     if( $select->has_column( 'available' ) )
     {
       // check if the address is available this month
-      $month = strtolower( $util_class_name::get_datetime_object( NULL, true )->format( 'F' ) );
+      $month = strtolower( $util_class_name::get_datetime_object()->format( 'F' ) );
       $select->add_column( $month, 'available' );
     }
 

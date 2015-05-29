@@ -62,6 +62,7 @@ class get extends \cenozo\service\service
     $user_sel->add_column( 'name' );
     $user_sel->add_column( 'first_name' );
     $user_sel->add_column( 'last_name' );
+    $user_sel->add_column( 'timezone' );
 
     // include the user's access
     $access_sel = lib::create( 'database\select' );

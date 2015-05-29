@@ -5,9 +5,7 @@
   <title><?php print INSTANCE; ?></title>
   <link rel="shortcut icon" href="img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
-  <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-snap/angular-snap.css">
-
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>
@@ -25,6 +23,8 @@
   <script src="<?php print CENOZO_URL; ?>/cenozo.js" id="cenozo"></script>
   <script src="<?php print LIB_URL; ?>/requirejs/require.js"
           data-main="<?php print APP_URL; ?>/require.js"></script>
+</head>
+<body>
   <script>
     cenozo.modules( <?php print $framework_module_string; ?> );
     var cenozoApp = angular.module( 'cenozoApp', [
@@ -56,8 +56,6 @@
     ] );
   </script>
 
-</head>
-<body>
   <div class="span-drawers">
     <div class="snap-drawer snap-drawer-left" ng-controller="CnMenuCtrl">
       <accordion close-others="true">
@@ -102,10 +100,10 @@
   </div>
 
   <snap-content snap-opt-tap-to-close="true" snap-opt-disable="'right'" snap-opt-hyperextensible="false">
-    <button snap-toggle="left" class="btn btn-primary menu-button rounded-right" tooltip="Click or slide to the right to open the menu" tooltip-placement="right">
+    <button snap-toggle="left" class="btn btn-primary menu-button rounded-right">
       <i class="glyphicon glyphicon-align-justify" aria-hidden="true"></i>
     </button>
-    <div snap-dragger class="container-fluid bg-info nopadding row app-heading noselect">
+    <div class="container-fluid bg-info nopadding row app-heading noselect">
         <div class="col-xs-3 app-heading-title">
           <cn-application-title></cn-application-title>
         </div>

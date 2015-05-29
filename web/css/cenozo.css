@@ -28,6 +28,7 @@ blockquote { font-size: 100%; }
 .rounded-right { border-top-left-radius: 0px !important; border-bottom-left-radius: 0px !important; }
 .col-slim { padding-left: 0px; padding-right: 0px; }
 .nopadding { padding: 0px; }
+.greyout { background: #000; opacity: 0.5; }
 
 /* make sure labels align well in forms */
 label {
@@ -49,7 +50,6 @@ input[type=number] { -moz-appearance: textfield; }
 
 /* needed by angular-bootstrap */
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
-
 .app-heading {
   padding-top: 0.33em;
   padding-bottom: 0.33em;
@@ -118,7 +118,7 @@ snap-content {
 }
 
 /* modal tweaking */
-.modal-body { display: block; overflow: auto; }
+.modal-body { display: block; overflow: visible; }
 .modal-header, .modal-footer { background: #EAEAEA; }
 .modal-header {
   border-top-left-radius: 6px;
@@ -128,6 +128,7 @@ snap-content {
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
 }
+.modal-title { font-weight: bold; }
 
 .loader {
   padding: 3em;

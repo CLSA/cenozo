@@ -188,16 +188,32 @@ cenozo.directive( 'cnChange', [
  * that the user is currently logged into).
  */
 cenozo.directive( 'cnClock', [
-  'CnAppSingleton', '$interval',
-  function( CnAppSingleton, $interval ) {
+  '$interval', '$timeout', '$window', 'CnAppSingleton', 'CnModalTimezoneFactory',
+  function( $interval, $timeout, $window, CnAppSingleton, CnModalTimezoneFactory ) {
     return {
       restrict: 'E',
-      link: function( scope, element, attrs ) {
+      templateUrl: cenozo.baseUrl + '/app/cenozo/clock.tpl.html',
+      link: function( scope, element ) {
         CnAppSingleton.promise.then( function() {
+          scope.chooseTimezone = function() {
+            CnModalTimezoneFactory.instance( {
+              timezone: CnAppSingleton.user.timezone
+            } ).show().then( function( response ) {
+              if( response && response != CnAppSingleton.user.timezone ) {
+                // fade the body while we reload
+                $timeout( function() {
+                  var body = document.getElementsByTagName( 'body' )[0];
+                  body.className = body.className + ' greyout';
+                }, 200 );
+                CnAppSingleton.setTimezone( response ).then( function() { $window.location.reload(); } );
+              }
+            } );
+          };
+
           function updateTime() {
             var now = moment();
-            now.tz( CnAppSingleton.site.timezone );
-            element.text( now.format( 'HH:mm z' ) );
+            now.tz( CnAppSingleton.user.timezone );
+            scope.time = now.format( 'HH:mm z' );
           }
 
           updateTime();
@@ -692,17 +708,21 @@ cenozo.directive( 'cnSiteRoleSwitcher', [
       restrict: 'E',
       controller: function( $scope ) {
         $scope.setSite = function( id ) {
-          CnAppSingleton.setSite( id ).then( function() {
-            // relist and set the url to the home state
-            $window.location.assign( $window.location.pathname );
-          } );
+          if( id != CnAppSingleton.site.id ) {
+            CnAppSingleton.setSite( id ).then( function() {
+              // relist and set the url to the home state
+              $window.location.assign( $window.location.pathname );
+            } );
+          }
         }
 
         $scope.setRole = function( id ) {
-          CnAppSingleton.setRole( id ).then( function() {
-            // relist and set the url to the home state
-            $window.location.assign( $window.location.pathname );
-          } );
+          if( id != CnAppSingleton.role.id ) {
+            CnAppSingleton.setRole( id ).then( function() {
+              // relist and set the url to the home state
+              $window.location.assign( $window.location.pathname );
+            } );
+          }
         }
       },
       link: function( scope ) {
@@ -825,7 +845,7 @@ cenozo.filter( 'cnMomentDate', [
         output = '(none)';
       } else {
         if( 'object' !== typeof input || angular.isUndefined( input.format ) ) input = moment( input );
-        output = input.tz( CnAppSingleton.site.timezone ).format( format );
+        output = input.tz( CnAppSingleton.user.timezone ).format( format );
       }
       return output;
     };
@@ -946,6 +966,13 @@ cenozo.factory( 'CnAppSingleton', [
         return CnHttpFactory.instance( {
           path: 'self/0',
           data: { role: { id: id } }
+        } ).patch();
+      };
+
+      this.setTimezone = function setTimezone( timezone ) {
+        return CnHttpFactory.instance( {
+          path: 'self/0',
+          data: { user: { timezone: timezone } }
         } ).patch();
       };
     } );
@@ -1658,7 +1685,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               if( 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( input.type ) ) {
                 var obj = moment( value );
                 if( 'datetimesecond' == input.type || 'datetime' == input.type ) {
-                  obj.tz( CnAppSingleton.site.timezone );
+                  obj.tz( CnAppSingleton.user.timezone );
                   if( 'datetimesecond' == input.type ) formatted = obj.format( 'YYYY-MM-DD HH:mm:ss' );
                   else /*if( 'datetime' == input.type )*/ formatted = obj.format( 'YYYY-MM-DD HH:mm' );
                 } else {
@@ -1810,7 +1837,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       angular.extend( this, params );
 
       // service vars which cannot be defined by the constructor's params
-      if( null === this.timezone ) this.timezone = CnAppSingleton.site.timezone;
+      if( null === this.timezone ) this.timezone = CnAppSingleton.user.timezone;
       if( null === this.date ) {
         this.viewingDate = moment();
       } else {
@@ -1844,7 +1871,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       };
       this.select = function( when ) {
         if( 'now' == when ) {
-          this.date = moment().tz( CnAppSingleton.site.timezone );
+          this.date = moment().tz( CnAppSingleton.user.timezone );
         } else if( 'today' == when ) {
           this.date.year( moment().year() ).month( moment().month() ).date( moment().date() );
         } else {
@@ -2053,6 +2080,53 @@ cenozo.service( 'CnModalRestrictFactory', [
             $scope.local.ok = function( comparison ) { $modalInstance.close( comparison ); };
             $scope.local.remove = function() { $modalInstance.close( null ); };
             $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
+          }
+        } ).result;
+      };
+    };
+
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.service( 'CnModalTimezoneFactory', [
+  '$modal', 'CnAppSingleton',
+  function( $modal, CnAppSingleton ) {
+    var object = function( params ) {
+      var self = this;
+
+      // service vars which can be defined by the contructor's params
+      this.timezone = null;
+      angular.extend( this, params );
+
+      // service vars which cannot be defined by the constructor's params
+      this.timezoneList = moment.tz.names();
+
+      this.getTypeaheadValues = function( viewValue ) {
+        var re = new RegExp( angular.lowercase( viewValue ) );
+        return this.timezoneList.filter( function( value ) { return re.test( angular.lowercase( value ) ); } );
+      };
+
+      this.show = function() {
+        return $modal.open( {
+          backdrop: 'static',
+          keyboard: true,
+          modalFade: true,
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-timezone.tpl.html',
+          controller: function( $scope, $modalInstance ) {
+            $scope.local = self;
+            $scope.local.ok = function() {
+              $modalInstance.close( $scope.local.timezone );
+            };
+            $scope.local.cancel = function() { $modalInstance.close( false ); };
+            $scope.local.siteTimezone = function() {
+              $scope.local.timezone = CnAppSingleton.site.timezone;
+            };
           }
         } ).result;
       };

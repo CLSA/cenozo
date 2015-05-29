@@ -123,32 +123,16 @@ class util
   }
 
   /**
-   * Returns a DateTimeZone object for the user's current site's timezone
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $sitetime Whether to return the session's timezone or UTC
-   * @param database\site $db_site Override the session's site with another.
-   * @return DateTimeZone
-   * @access public
-   */
-  public static function get_timezone_object( $sitetime = false, $db_site = NULL )
-  {
-    if( is_null( $db_site ) ) $db_site = lib::create( 'business\session' )->get_site();
-    return new \DateTimeZone( !$sitetime || !$db_site ? 'UTC' : $db_site->timezone );
-  }
-
-  /**
-   * Returns a DateTime object in the user's current site's timezone
+   * Returns a DateTime object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $datetime A date string in any valid PHP date time format.
-   * @param boolean $sitetime Whether to return the datetime in the session's timezone or UTC
    * @return DateTime
    * @access public
    */
-  public static function get_datetime_object( $datetime = NULL, $sitetime = false )
+  public static function get_datetime_object( $datetime = NULL )
   {
-    return new \DateTime( $datetime, self::get_timezone_object( $sitetime ) );
+    return new \DateTime( $datetime, \new \DateTimeZip( 'UTC' ) );
   }
 
   /**

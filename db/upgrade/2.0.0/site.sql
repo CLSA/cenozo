@@ -40,3 +40,6 @@ DELIMITER ;
 
 CALL patch_site();
 DROP PROCEDURE IF EXISTS patch_site;
+
+SELECT "Modifying site.timezone to be VARCHAR instead of ENUM" AS "";
+ALTER TABLE site MODIFY timezone VARCHAR(45) NOT NULL DEFAULT 'Canada/Eastern';
