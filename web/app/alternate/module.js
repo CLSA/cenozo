@@ -10,7 +10,7 @@ define( {
     participant_id: {
       column: 'alternate.participant_id',
       title: 'Participant',
-      type: 'typeahead',
+      type: 'lookup-typeahead',
       typeahead: {
         table: 'participant',
         select: 'CONCAT( first_name, " ", last_name, " (", uid, ")" )',

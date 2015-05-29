@@ -353,13 +353,17 @@ cenozo.directive( 'cnRecordAdd', [
           }
         };
 
-        $scope.getTypeaheadValues = function( key, viewValue ) {
-          return $scope.model.getTypeaheadValues( key, viewValue );
+        $scope.getTypeaheadValues = function( input, viewValue ) {
+          return $scope.model.getTypeaheadValues( input, viewValue );
         };
 
-        $scope.onSelectTypeahead = function( $item, $model, $label, key ) {
-          $scope.formattedRecord[key] = $label;
-          $scope.record[key] = $model;
+        $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
+          if( 'lookup-typeahead' == input.type ) {
+            $scope.formattedRecord[input.key] = $label;
+            $scope.record[input.key] = $model;
+          } else {
+            $scope.record[input.key] = $item;
+          }
         };
 
         $scope.selectDatetime = function( input ) {
@@ -626,14 +630,18 @@ cenozo.directive( 'cnRecordView', [
           }
         };
 
-        $scope.getTypeaheadValues = function( key, viewValue ) {
-          return $scope.model.getTypeaheadValues( key, viewValue );
+        $scope.getTypeaheadValues = function( input, viewValue ) {
+          return $scope.model.getTypeaheadValues( input, viewValue );
         };
 
-        $scope.onSelectTypeahead = function( $item, $model, $label, key ) {
-          $scope.model.viewModel.formattedRecord[key] = $label;
-          $scope.model.viewModel.record[key] = $model;
-          $scope.patch( key );
+        $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
+          if( 'lookup-typeahead' == input.type ) {
+            $scope.model.viewModel.formattedRecord[input.key] = $label;
+            $scope.model.viewModel.record[input.key] = $model;
+          } else {
+            $scope.model.viewModel.record[input.key] = $item;
+          }
+          $scope.patch( input.key );
         };
 
         $scope.selectDatetime = function( input ) {
@@ -1220,9 +1228,9 @@ cenozo.factory( 'CnBaseViewFactory', [
           if( angular.isDefined( property ) ) {
             var input = this.parentModel.inputList[property];
             if( angular.isDefined( input ) ) {
-              if( angular.isDefined( input.typeahead ) ) {
-                // When typeaheads are first loaded move the formatted property from the record to
-                // the formatted record.  We must do this so that future calls to this function do
+              if( angular.isDefined( 'lookup-typeahead' == input.type ) ) {
+                // When lookup-typeaheads are first loaded move the formatted property from the record
+                // to the formatted record.  We must do this so that future calls to this function do
                 // not overrite the formatted typeahead property (the onSelectTypeahead callback is
                 // responsible for that)
                 if( angular.isDefined( this.record['formatted_'+property] ) ) {
@@ -1438,6 +1446,11 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
 
+            // make sure the identifier's column is also selected
+            this.getIdentifierFromRecord( {} ).split( ';' ).forEach( function( value ) {
+              if( 0 <= value.indexOf( '=' ) ) selectList.push( value.split( '=' )[0] );
+            } );
+
             if( angular.isDefined( list[key].restrict ) && null !== list[key].restrict ) {
               var test = list[key].restrict.test;
               var value = list[key].restrict.value;
@@ -1556,57 +1569,71 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * Returns an array of possible values for typeahead inputs
          */
-        object.getTypeaheadValues = function( key, viewValue ) {
-          var input = this.inputList[key];
+        object.getTypeaheadValues = function( input, viewValue ) {
+          // sanity checking
           if( angular.isUndefined( input ) )
             throw 'Typeahead used without a valid input key (' + key + ').';
-          if( angular.isUndefined( input.typeahead ) )
-            throw 'Typeaheads require a value for "typeahead" in the input list.';
-
-          // make note that we are loading the typeahead values
-          input.typeahead.isLoading = true;
-
-          // create the where statement
-          var where = {};
-          if( angular.isUndefined( input.typeahead.where ) ) {
-            where = {
-              column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.select,
-              operator: 'like',
-              value: viewValue + '%'
-            };
+          if( 0 > ['typeahead','lookup-typeahead'].indexOf( input.type ) )
+            throw 'Tried getting typeahead values for input of type "' + input.type + '"';
+          if( 'typeahead' == input.type ) {
+            if( !angular.isArray( input.typeahead ) )
+              throw 'Typeaheads require the input list\'s "typeahead" property to be an array';
+          } else if ( 'lookup-typeahead' == input.type ) {
+            if( !angular.isObject( input.typeahead ) )
+              throw 'Lookup-typeaheads require the input list\'s "typeahead" property to be an object';
           } else {
-            where = [];
-            var whereList = angular.isArray( input.typeahead.where )
-                          ? input.typeahead.where
-                          : [ input.typeahead.where ];
-            for( var i = 0; i < whereList.length; i++ ) {
-              where.push( {
-                column: whereList[i],
-                operator: 'like',
-                value: viewValue + '%',
-                or: true
-              } );
-            }
+            throw 'Tried getting typeahead values for input of type "' + input.type + '"';
           }
-          return CnHttpFactory.instance( {
-            path: input.typeahead.table,
-            data: {
-              select: {
-                column: [
-                  'id',
-                  {
-                    column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.typeahead.select,
-                    alias: 'value',
-                    table_prefix: false
-                  }
-                ]
-              },
-              modifier: { where: where }
+
+          if( 'typeahead' == input.type ) {
+            var re = new RegExp( angular.lowercase( viewValue ) );
+            return input.typeahead.filter( function( value ) { return re.test( angular.lowercase( value ) ); } );
+          } else { // 'lookup-typeahead' == input.type
+            // make note that we are loading the typeahead values
+            input.typeahead.isLoading = true;
+
+            // create the where statement
+            var where = {};
+            if( angular.isUndefined( input.typeahead.where ) ) {
+              where = {
+                column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.select,
+                operator: 'like',
+                value: viewValue + '%'
+              };
+            } else {
+              where = [];
+              var whereList = angular.isArray( input.typeahead.where )
+                            ? input.typeahead.where
+                            : [ input.typeahead.where ];
+              for( var i = 0; i < whereList.length; i++ ) {
+                where.push( {
+                  column: whereList[i],
+                  operator: 'like',
+                  value: viewValue + '%',
+                  or: true
+                } );
+              }
             }
-          } ).get().then( function( response ) {
-            input.typeahead.isLoading = false;
-            return angular.copy( response.data );
-          } );
+            return CnHttpFactory.instance( {
+              path: input.typeahead.table,
+              data: {
+                select: {
+                  column: [
+                    'id',
+                    {
+                      column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.typeahead.select,
+                      alias: 'value',
+                      table_prefix: false
+                    }
+                  ]
+                },
+                modifier: { where: where }
+              }
+            } ).get().then( function( response ) {
+              input.typeahead.isLoading = false;
+              return angular.copy( response.data );
+            } );
+          }
         };
 
         // enable/disable module functionality

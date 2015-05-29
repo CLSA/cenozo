@@ -30,7 +30,16 @@ define( {
       title: 'Release Based',
       type: 'boolean',
       help: 'Whether the application only has access to participants once they are released.'
-    }
+    },
+    country: {
+      title: 'Country',
+      type: 'string'
+    },
+    timezone: {
+      title: 'Default Time Zone',
+      type: 'typeahead',
+      typeahead: moment.tz.names()
+    },
   },
   columnList: {
     title: { title: 'Title' },

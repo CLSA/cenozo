@@ -26,17 +26,30 @@
             <input ng-switch-when="typeahead"
               ng-attr-id="{{ input.key }}"
               name="name"
-              ng-model="model.viewModel.formattedRecord[input.key]"
-              typeahead="item.id as item.value for item in getTypeaheadValues( input.key, $viewValue )"
+              ng-model="model.viewModel.record[input.key]"
+              typeahead="item for item in getTypeaheadValues( input, $viewValue )"
               typeahead-editable="false"
-              typeahead-on-select="onSelectTypeahead( $item, $model, $label, input.key )"
+              typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
               typeahead-min-length="2"
               class="form-control"
               ng-class="{ 'loading': model.inputList[input.key].typeahead.isLoading }"
               type="text"
               placeholder="(Type the first few letters to search possible values)"
               autocomplete="off"
-              ng-readonly="input.constant"
+              ng-required="model.metadata.columnList[input.key].required"></input>
+            <input ng-switch-when="lookup-typeahead"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="model.viewModel.formattedRecord[input.key]"
+              typeahead="item.id as item.value for item in getTypeaheadValues( input, $viewValue )"
+              typeahead-editable="false"
+              typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
+              typeahead-min-length="2"
+              class="form-control"
+              ng-class="{ 'loading': model.inputList[input.key].typeahead.isLoading }"
+              type="text"
+              placeholder="(Type the first few letters to search possible values)"
+              autocomplete="off"
               ng-required="model.metadata.columnList[input.key].required"></input>
             <input ng-switch-when="date"
               ng-attr-id="{{ input.key }}"
@@ -211,7 +224,7 @@
               Conflicts with existing record
             </span>
             <span class="help-block" ng-if="innerForm.name.$error.editable">
-              Must be chosen from list
+              Must be chosen from type-ahead list
             </span>
           </span>
         </div>

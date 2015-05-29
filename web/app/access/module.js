@@ -9,7 +9,7 @@ define( {
   inputList: {
     user_id: {
       title: 'User',
-      type: 'typeahead',
+      type: 'lookup-typeahead',
       typeahead: {
         table: 'user',
         select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',

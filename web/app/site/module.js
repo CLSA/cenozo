@@ -13,7 +13,8 @@ define( {
     },
     timezone: {
       title: 'Time Zone',
-      type: 'enum'
+      type: 'typeahead',
+      typeahead: moment.tz.names()
     },
     title: {
       title: 'Institution',
