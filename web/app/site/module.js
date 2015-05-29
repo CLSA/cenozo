@@ -46,7 +46,10 @@ define( {
     }
   },
   columnList: {
-    name: { title: 'Name' },
+    name: {
+      column: 'site.name',
+      title: 'Name'
+    },
     role_count: { title: 'Roles' },
     user_count: { title: 'Users' },
     last_access_datetime: {
