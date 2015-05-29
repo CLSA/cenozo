@@ -561,7 +561,7 @@ cenozo.directive( 'cnRecordView', [
             if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) )
               $scope.model.viewModel.formattedRecord[property] =
                 $scope.model.viewModel.backupRecord['formatted_'+property];
-            $scope.patch( property );
+            $scope.patch( $scope.model.viewModel.record[property] );
           }
         };
 

@@ -136,6 +136,10 @@ class address extends has_rank
     // not international, make sure the region and postcode are set
     if( is_null( $this->region_id ) || is_null( $this->postcode ) ) return false;
 
+    // make sure postcode is in A0A 0A0 or 00000 format
+    if( 0 == preg_match( '/([A-Za-z][0-9][A-Za-z]) ([0-9][A-Za-z][0-9])/', $this->postcode ) &&
+        0 == preg_match( '/[0-9]{5}/', $this->postcode ) ) return false;
+
     // look up the postal code for the correct region
     $postcode_class_name = lib::get_class_name( 'database\postcode' );
     $db_postcode = $postcode_class_name::get_match( $this->postcode );
