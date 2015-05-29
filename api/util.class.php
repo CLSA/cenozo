@@ -132,7 +132,7 @@ class util
    */
   public static function get_datetime_object( $datetime = NULL )
   {
-    return new \DateTime( $datetime, \new \DateTimeZip( 'UTC' ) );
+    return new \DateTime( $datetime, new \DateTimeZone( 'UTC' ) );
   }
 
   /**
