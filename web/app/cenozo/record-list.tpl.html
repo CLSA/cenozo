@@ -18,12 +18,12 @@
           <button class="btn btn-narrow btn-info"
                   ng-if="column.allowRestrict"
                   ng-click="addRestrict( column.key )">
-            <i class="glyphicon glyphicon-flag"></i>
+            <i class="glyphicon glyphicon-filter"></i>
           </button>
         </div>
         <div class="text-center text-info full-width" ng-if="column.restrict">
           <p class="restrict"
-             tooltip="To remove click the flag, then remove button"
+             tooltip="To remove click the filter, then remove button"
              tooltip-placement="bottom"
              tooltip-popup-delay="750">
             {{ column.restrict.test | cnComparator }}
