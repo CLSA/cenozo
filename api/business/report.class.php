@@ -37,7 +37,7 @@ class report extends \cenozo\base_object
     }
     $this->php_excel->getActiveSheet()->getPageSetup()->setHorizontalCentered( true );
   }
-  
+
   /**
    * Magic call method.
    * 
@@ -57,15 +57,15 @@ class report extends \cenozo\base_object
       sprintf( 'Call to undefined function: %s::%s().',
                get_called_class(),
                $name ), __METHOD__ );
-    
+
     $name_tokens = explode( '_', $name, 2 );
     if( 2 > count( $name_tokens ) ) throw $exception;
-    
+
     // determine if we are getting or setting
     if( 'get' == $name_tokens[0] ) $setting = false;
     else if( 'set' == $name_tokens[0] ) $setting = true;
     else throw $exception;
-    
+
     // make sure the second part of the token is one of the possible format values
     if( !array_key_exists( $name_tokens[1], $this->current_format ) ) throw $exception;
     $format_type = $name_tokens[1];
@@ -74,7 +74,7 @@ class report extends \cenozo\base_object
     if( ( !$setting && 0 != count( $args ) ) || // get takes 0 arguments
         (  $setting && 1 != count( $args ) ) )  // set takes 1 argument
       throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
-    
+
     if( $setting )
     {
       $this->current_format[ $format_type ] = $args[0];
@@ -142,7 +142,7 @@ class report extends \cenozo\base_object
 
     return $cell_obj;
   }
-  
+
   /**
    * Merges a range of cells into a single cell.
    * 
@@ -197,35 +197,35 @@ class report extends \cenozo\base_object
    */
   public function get_file( $format )
   {
-    // create the desired file writer type 
+    // create the desired file writer type
     if( 'xlsx' == $format )
     {
       $writer = new \PHPExcel_Writer_Excel2007( $this->php_excel );
-    } 
+    }
     else if( 'xls' == $format )
     {
       $writer = new \PHPExcel_Writer_Excel5( $this->php_excel );
-    } 
+    }
     else if( 'html' == $format )
     {
       $writer = new \PHPExcel_Writer_HTML( $this->php_excel );
-    } 
+    }
     else if( 'pdf' == $format )
     {
       $writer = new \PHPExcel_Writer_PDF( $this->php_excel );
-    } 
+    }
     else // csv
     {
       $writer = new \PHPExcel_Writer_CSV( $this->php_excel );
-    } 
-    
+    }
+
     ob_start();
     $writer->save( 'php://output' );
     $data = ob_get_contents();
     ob_end_clean();
     return $data;
   }
-  
+
   /**
    * Sets the orientation of the report
    * 

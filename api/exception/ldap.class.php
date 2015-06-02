@@ -44,7 +44,7 @@ class ldap extends base_exception
     $number = LDAP_CENOZO_BASE_ERRNO + self::convert_context( 68 );
     return $this->get_number() == $number;
   }
-  
+
   /**
    * Returns whether the exception was thrown because of refering to a user which doesn't exist.
    * 
@@ -57,7 +57,7 @@ class ldap extends base_exception
     $number = LDAP_CENOZO_BASE_ERRNO + self::convert_context( 32 );
     return $this->get_number() == $number;
   }
-  
+
   /**
    * Converts the context to an error number.
    * This is necessary because some native LDAP errors are negative.

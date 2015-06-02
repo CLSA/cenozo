@@ -44,7 +44,7 @@ abstract class factory
       throw lib::create( 'exception\runtime',
         'Tried to call self() method without at least one argument.', __METHOD__ );
     }
-    
+
     $class_index = lib::get_class_name( get_called_class(), true );
 
     $arguments = func_get_args();
@@ -56,7 +56,7 @@ abstract class factory
     }
     return self::$instance_list[$class_index][serialize( $arguments[0] )];
   }
-  
+
   public static function exists( $arg )
   {
     $class_index = lib::get_class_name( get_called_class(), true );
@@ -73,7 +73,7 @@ abstract class factory
                  '(must be one of boolean, integer, double, string or NULL).',
                  $type ), __METHOD__ );
     }
-    
+
     return isset( self::$instance_list[$class_index][serialize( $arg )]  );
   }
 

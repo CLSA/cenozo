@@ -1,0 +1,167 @@
+table { margin-bottom: 0px !important; }
+thead, tfoot { font-weight: bold; }
+thead td, tbody td { text-align: center; }
+tfoot { text-align: center; }
+td { border: 0px !important; }
+td.tiny { width: 1px; white-space: nowrap; }
+blockquote { font-size: 100%; }
+.btn { font-weight: bold; }
+.btn-narrow { padding-left: 6px; padding-right: 6px; }
+.btn-muted { background-color: #eaeaea; }
+.full-width { width: 100% !important; }
+.half-width { width: 50% !important; }
+.left { float: left }
+.right { float: right }
+.restrict { margin: 0px; font-size: 1.2em; }
+.pagination { margin: 0; }
+.input-group { width: 100%; }
+.checkbox { display: inline-block; font-weight: normal; }
+.form-body { padding-top: 1em; }
+.form-footer { padding: 1em; background: #EAEAEA; text-align: right; }
+.spacer { margin: 0.5em; }
+.vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
+.horizontal-spacer { margin-left: 0.5em; margin-right: 0.5em; }
+.rounded, .rounded-top, .rounded-bottom, .rounded-left, .rounded-right { border-radius: 6px !important; }
+.rounded-top { border-bottom-left-radius: 0px !important; border-bottom-right-radius: 0px !important; }
+.rounded-bottom { border-top-left-radius: 0px !important; border-top-right-radius: 0px !important; }
+.rounded-left { border-top-right-radius: 0px !important; border-bottom-right-radius: 0px !important; }
+.rounded-right { border-top-left-radius: 0px !important; border-bottom-left-radius: 0px !important; }
+.col-slim { padding-left: 0px; padding-right: 0px; }
+.nopadding { padding: 0px; }
+.greyout { background: #000; opacity: 0.5; }
+
+/* make sure labels align well in forms */
+label {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-top: 7px;
+}
+
+/* get rid of input spinners */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type=number] { -moz-appearance: textfield; }
+
+/* use pointer while hovering over element */
+.pointer { cursor: pointer !important; }
+
+/* needed by angular-bootstrap */
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+.app-heading {
+  padding-top: 0.33em;
+  padding-bottom: 0.33em;
+  padding-left: 3.5em;
+  min-width: 750px;
+  font-weight: bold;
+}
+.app-heading-title { font-size: 120%; padding-top: inherit; padding-bottom: inherit; }
+.app-heading-shortcuts { text-align: center; }
+.app-heading-state {}
+
+/* used by the ng-view so that animated transitions work correctly */
+.fade-transition {
+  position: absolute;
+  width: 100%;
+}
+
+.outer-view-frame {
+  padding: 0px;
+  min-width: 750px;
+}
+
+/* main frame showing */
+.inner-view-frame {
+  padding: 0.5em 0.5em 1.0em;
+  background: #fff;
+}
+
+.gradient-footer {
+  height: 4em;
+  background: -moz-linear-gradient(top, white,  transparent);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, white), color-stop(100%, transparent));
+  background: -webkit-linear-gradient(top, white, transparent);
+  background: -o-linear-gradient(top, white, transparent);
+  background: -ms-linear-gradient(top, white, transparent);
+  background: linear-gradient(to bottom, white, transparent);
+}
+
+/* snap content, drawers and toggle buttons */
+.menu-button {
+  z-index: 100;
+  position: fixed;
+  top: 0px;
+  height: 3em;
+  width: 3em;
+  outline: none !important;
+}
+snap-content {
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  box-shadow: 2px 0px 5px #000;
+  background-image: url('../img/background.gif');
+  background-size: 60px;
+  background-repeat: repeat;
+}
+.snap-drawer, accordian-heading { background-color: #EAEAEA; }
+
+/* accordion tweaking */
+.panel { border: 0px; box-shadow: none; }
+.panel-heading { padding: 0px }
+.panel-collapse { background-color: #EAEAEA; }
+.btn-accordion {
+  border: 0px;
+  border-radius: 0px;
+  outline: none !important;
+}
+
+/* modal tweaking */
+.modal-body { display: block; overflow: auto; }
+.modal-header, .modal-footer { background: #EAEAEA; }
+.modal-header {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+.modal-footer {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+.modal-title { font-weight: bold; }
+
+.loader {
+  padding: 3em;
+  height: 16px;
+  background-image: url( ../img/loading.gif );
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* pointer cursor when hovering over selectable table rows */
+.table-hover > tbody > tr:hover > td,
+.table-hover > tbody > tr:hover > th {
+  cursor: pointer;
+}
+
+.dropdown-menu { background: #eaeaea; }
+.timepicker { background: #fff; padding-top: 1em; }
+.timepicker-row { height: 2em; }
+slider, [slider] { margin: 0px; }
+slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+.loading {
+  background: url( ../img/loading.gif );
+  background-repeat: no-repeat;
+  background-position: center center;
+}

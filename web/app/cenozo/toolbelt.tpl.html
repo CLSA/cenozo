@@ -1,0 +1,26 @@
+<div class="btn-group">
+  <a ui-sref="root.home"
+     class="btn btn-default"
+     tooltip="Go to home screen"
+     tooltip-placement="bottom">
+    <i class="glyphicon glyphicon-home"></i>
+  </a>
+  <a class="btn btn-default"
+     ng-click="startBreak()"
+     tooltip="Go on Break"
+     tooltip-placement="bottom">
+    <i class="glyphicon glyphicon-pause"></i>
+  </a>
+  <a href="?logout"
+     class="btn btn-default"
+     tooltip="Logout"
+     tooltip-placement="bottom">
+    <i class="glyphicon glyphicon-off"></i>
+  </a>
+  <button class="btn btn-default"
+          ng-click="openTimezoneCalculator()"
+          tooltip="Timezone Calculator"
+          tooltip-placement="bottom">
+    <i class="glyphicon glyphicon-time"></i>
+  </button>
+</div>

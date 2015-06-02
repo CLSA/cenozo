@@ -157,7 +157,7 @@ class data_manager extends \cenozo\singleton
 
           $modifier = lib::create( 'database\modifier' );
           $modifier->where( 'rank', '=', $rank );
-          $address_list = $db_participant->get_address_list( $modifier );
+          $address_list = $db_participant->get_address_object_list( $modifier );
           if( 1 == count( $address_list ) ) $db_address = current( $address_list );
         }
         else if( 'primary_address' == $subject )
@@ -246,8 +246,9 @@ class data_manager extends \cenozo\singleton
 
           $modifier = lib::create( 'database\modifier' );
           $modifier->order( 'date' );
-          $modifier->limit( 1, $rank - 1 );
-          $consent_list = $db_participant->get_consent_list( $modifier );
+          $modifier->limit( 1 );
+          $modifier->offset( $rank - 1 );
+          $consent_list = $db_participant->get_consent_object_list( $modifier );
           if( 1 == count( $consent_list ) ) $db_consent = current( $consent_list );
         }
         else if( 'last_consent' == $subject )
@@ -304,11 +305,12 @@ class data_manager extends \cenozo\singleton
       $event_mod->where( 'event_type.name', '=', $type );
       $event_mod->order( 'datetime', $last ); // last means order by descending
       $event_mod->limit( 1 );
-      $event_list = $db_participant->get_event_list( $event_mod );
+      $event_list = $db_participant->get_event_list( NULL, $event_mod );
       if( 0 < count( $event_list ) )
       {
-        $db_event = current( $event_list );
-        $value = $db_event->$column;
+        if( array_key_exists( $column, $event_list[0] ) )
+          throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
+        $value = $event_list[0][$column];
       }
     }
     else if( 'hin' == $subject )
@@ -324,7 +326,7 @@ class data_manager extends \cenozo\singleton
         $value = is_null( $db_hin ) || is_null( $db_hin->access )
                ? -1
                : ( $db_hin->access ? 1 : 0 );
-      } 
+      }
       else if( 'future_access' == $column )
       {
         // participant.hin.future_access (-1,0,1) or hin.future_access (-1,0,1)
@@ -387,12 +389,9 @@ class data_manager extends \cenozo\singleton
       if( 'age()' == $column )
       {
         // participant.participant.age() or participant.age()
-        $value = '';
-        if( 0 < strlen( $db_participant->date_of_birth ) )
-        {
-          $value = $util_class_name::get_interval(
-            $util_class_name::get_datetime_object( $db_participant->date_of_birth ) )->y;
-        }
+        $value = is_null( $db_participant->date_of_birth )
+               ? ''
+               : $util_class_name::get_interval( $db_participant->date_of_birth )->y;
       }
       else
       {
@@ -423,14 +422,13 @@ class data_manager extends \cenozo\singleton
 
         $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'rank', '=', $rank );
-        $phone_list = $db_participant->get_phone_list( $modifier );
-        $db_phone = current( $phone_list );
+        $phone_list = $db_participant->get_phone_list( NULL, $modifier );
 
-        if( $db_phone )
+        if( 0 < count( $phone_list ) )
         {
-          if( !$db_phone->column_exists( $column ) )
-            throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-          $value = $db_phone->$column;
+          if( array_key_exists( $column, $phone_list[0] ) )
+            throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
+          $value = $phone_list[0][$column];
         }
       }
     }

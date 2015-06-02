@@ -1,0 +1,22 @@
+<form ng-submit="local.ok( value )" class="noselect">
+  <div class="modal-header">
+    <h4 class="modal-title">{{ local.title }}</h4>
+  </div>
+  <div class="modal-body">
+    <label for="value" class="control-label">{{ local.message }}</label>
+    <input ng-if="!local.enumList"
+      name="value"
+      ng-model="local.value"
+      class="form-control"
+      type="text"
+      required />
+    <select ng-if="local.enumList"
+      ng-options="item.value as item.name for item in local.enumList"
+      ng-model="local.value"
+      class="form-control"></select>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="local.cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">OK</button>
+  </div>
+</form>

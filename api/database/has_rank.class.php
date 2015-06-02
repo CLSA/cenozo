@@ -30,7 +30,7 @@ abstract class has_rank extends record
       log::warning( 'Tried to save read-only record.' );
       return;
     }
-    
+
     $rank_parent_key = is_null( static::$rank_parent ) ? false : static::$rank_parent.'_id';
 
     // see if there is already another record at the new rank
@@ -39,10 +39,8 @@ abstract class has_rank extends record
     if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
     $modifier->where( 'rank', '=', $this->rank );
 
-    $result = static::select( $modifier );
-
     // if a record is found then there is already a record in this slot
-    if( 0 < count( $result ) )
+    if( 0 < static::count( $modifier ) )
     {
       // check to see if this record is being moved or added to the list
       if( !is_null( $this->id ) )
@@ -63,8 +61,8 @@ abstract class has_rank extends record
         $modifier->where( 'rank', $forward ? '>'  : '<' , $current_rank );
         $modifier->where( 'rank', $forward ? '<=' : '>=', $this->rank );
         $modifier->order( 'rank', !$forward );
-        $records = static::select( $modifier );
-        
+        $records = static::select_objects( $modifier );
+
         // temporarily set this record's rank to 0, preserving the new record
         $new_rank = $this->rank;
         $this->rank = 0;
@@ -85,8 +83,8 @@ abstract class has_rank extends record
         if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
         $modifier->where( 'rank', '>=', $this->rank );
         $modifier->order_desc( 'rank' );
-        $records = static::select( $modifier );
-        
+        $records = static::select_objects( $modifier );
+
         // and move their rank forward by one to make room for the new record
         foreach( $records as $record )
         {
@@ -116,7 +114,7 @@ abstract class has_rank extends record
       log::warning( 'Tried to delete read-only record.' );
       return;
     }
-    
+
     // delete the current record
     parent::delete();
 
@@ -127,7 +125,7 @@ abstract class has_rank extends record
     if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
     $modifier->where( 'rank', '>=', $this->rank );
     $modifier->order( 'rank' );
-    $records = static::select( $modifier );
+    $records = static::select_objects( $modifier );
 
     // and now decrement the rank for all records from the list above
     foreach( $records as $record )

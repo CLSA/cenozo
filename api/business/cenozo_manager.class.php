@@ -10,7 +10,7 @@ namespace cenozo\business;
 use cenozo\lib, cenozo\log;
 
 /**
- * Manages communication with other cenozo services.
+ * Manages communication with other cenozo applications.
  */
 class cenozo_manager extends \cenozo\factory
 {
@@ -22,12 +22,12 @@ class cenozo_manager extends \cenozo\factory
    */
   protected function __construct( $arguments )
   {
-    // determine whether connecting to cenozo service is enabled
+    // determine whether connecting to the application is enabled
     $url = $arguments[0];
     $this->enabled = !is_null( $url );
     if( $this->enabled ) $this->base_url = $url.'/';
   }
-  
+
   /**
    * Determines if Cenozo is enabled.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -49,7 +49,7 @@ class cenozo_manager extends \cenozo\factory
   {
     $this->user_name = $user_name;
   }
-  
+
   /**
    * Set which password to use when making requests (or set to NULL to use the default)
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -60,7 +60,7 @@ class cenozo_manager extends \cenozo\factory
   {
     $this->password = $password;
   }
-  
+
   /**
    * Set which site to use when making requests (or set to NULL to use the default)
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -71,7 +71,7 @@ class cenozo_manager extends \cenozo\factory
   {
     $this->site_name = $site_name;
   }
-  
+
   /**
    * Set which role to use when making requests (or set to NULL to use the default)
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -82,7 +82,7 @@ class cenozo_manager extends \cenozo\factory
   {
     $this->role_name = $role_name;
   }
-  
+
   /**
    * Returns the httpauth string (user:pass) to use when making http requests
    * 
@@ -133,16 +133,15 @@ class cenozo_manager extends \cenozo\factory
     if( !$this->enabled ) return NULL;
 
     $util_class_name = lib::get_class_name( 'util' );
-    $service_name = lib::create( 'business\session' )->get_service()->name;
-    
+
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_GET );
-    $request->addHeaders( array( 'application_name' => APPNAME ) );
-    $request->addHeaders( array( 'service_name' => $service_name ) );
+    $request->addHeaders( array( 'application' => APPLICATION ) );
+    $request->addHeaders( array( 'instance' => INSTANCE ) );
     $request->setOptions( array( 'httpauth' => $this->get_httpauth() ) );
-    
+
     // validate the input arguments
     if( is_null( $arguments ) ) $arguments = array();
     if( !is_array( $arguments ) )
@@ -152,7 +151,7 @@ class cenozo_manager extends \cenozo\factory
     $arguments = array_merge( $arguments, $this->get_site_and_role() );
 
     $request->setQueryData( static::prepare_arguments( $arguments ) );
-    
+
     try
     {
       $message = static::send( $request );
@@ -179,14 +178,12 @@ class cenozo_manager extends \cenozo\factory
   {
     if( !$this->enabled ) return;
 
-    $service_name = lib::create( 'business\session' )->get_service()->name;
-
     $request = new \HttpRequest();
     $request->enableCookies();
     $request->setUrl( $this->base_url.$subject.'/'.$name );
     $request->setMethod( \HttpRequest::METH_POST );
-    $request->addHeaders( array( 'application_name' => APPNAME ) );
-    $request->addHeaders( array( 'service_name' => $service_name ) );
+    $request->addHeaders( array( 'application' => APPLICATION ) );
+    $request->addHeaders( array( 'instance' => INSTANCE ) );
     $request->setOptions( array( 'httpauth' => $this->get_httpauth() ) );
 
     if( is_null( $arguments ) ) $arguments = array();
@@ -215,22 +212,22 @@ class cenozo_manager extends \cenozo\factory
     $code = $message->getResponseCode();
 
     $util_class_name = lib::get_class_name( 'util' );
-    
+
     if( 400 == $code )
-    { // pass on the exception which was thrown by the service
+    { // pass on the exception which was thrown by the application
       $body = $util_class_name::json_decode( $message->body );
-      
+
       $number = preg_replace( '/[^0-9]/', '', $body->error_code );
 
       throw 'Notice' == $body->error_type
          ? lib::create( 'exception\notice', $body->error_message, $number - 400000 )
-         : lib::create( 'exception\cenozo_service',
+         : lib::create( 'exception\cenozo_application',
              $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
     { // A non-cenozo error has happened
       throw lib::create( 'exception\runtime', sprintf(
-        'Unable to connect to Cenozo service at %s (code: %s)',
+        'Unable to connect to Cenozo application at %s (code: %s)',
         $request->getUrl(),
         $code ), __METHOD__ );
     }

@@ -15,72 +15,62 @@ use cenozo\lib, cenozo\log;
 class phone extends has_rank
 {
   /**
-   * Refer to the participant or alternate instead of the person record
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $key A primary key value for the table.
-   * @return associative array
-   * @static
-   * @access public
+   * Override parent method
    */
-  public static function get_unique_from_primary_key( $key )
+  public function save()
   {
-    $unique_key_array = parent::get_unique_from_primary_key( $key );
+    $util = lib::get_class_name( 'util' );
 
-    $record = new static( $key );
-    $db_participant = $record->get_person()->get_participant();
-    $db_alternate = $record->get_person()->get_alternate();
-    if( !is_null( $db_participant ) ) 
-    {   
-      $participant_class_name = lib::get_class_name( 'database\participant' );
-      $unique_key_array['participant_id'] =
-        $participant_class_name::get_unique_from_primary_key( $db_participant->id );
-      unset( $unique_key_array['person_id'] );
-    }   
-    else if( !is_null( $db_alternate ) ) 
-    {   
-      $alternate_class_name = lib::get_class_name( 'database\alternate' );
-      $unique_key_array['alternate_id'] =
-        $alternate_class_name::get_unique_from_primary_key( $db_alternate->id );
-      unset( $unique_key_array['person_id'] );
-    }   
+    // make sure national numbers are in valid format
+    if( !$this->international && !$util::validate_north_american_phone_number( $this->number ) )
+      throw lib::create( 'exception\notice',
+        sprintf( 'The provided number "%s" is not a valid North American phone number', $this->number ),
+        __METHOD__ );
 
-    return $unique_key_array;
+    // figure out whether alternate or participant is the rank parent
+    static::$rank_parent = !is_null( $this->alternate_id ) ? 'alternate' : 'participant';
+    parent::save();
+    static::$rank_parent = NULL;
   }
 
   /**
-   * Replace alternate_id/participant_id with person_id in unique key
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param associative array
-   * @return int
-   * @static
-   * @access public
+   * Override parent method
    */
-  public static function get_primary_from_unique_key( $key )
+  public function delete()
   {
-    // we may have a stdObject, so convert to an array if we do
-    if( is_object( $key ) ) $key = (array) $key;
-    if( !is_array( $key ) ) return NULL;
+    // figure out whether alternate or participant is the rank parent
+    static::$rank_parent = !is_null( $this->alternate_id ) ? 'alternate' : 'participant';
+    parent::delete();
+    static::$rank_parent = NULL;
+  }
 
-    if( array_key_exists( 'participant_id', $key ) )
+  /**
+   * Extend parent method
+   */
+  public static function get_unique_record( $column, $value )
+  {
+    $record = NULL;
+
+    // make use of the uq_alternate_id_participant_id_rank pseudo unique key
+    if( is_array( $column ) && 2 == count( $column ) && in_array( 'rank', $column ) &&
+        ( in_array( 'participant_id', $column ) || in_array( 'alternate_id', $column ) ) )
     {
-      $participant_class_name = lib::get_class_name( 'database\participant' );
-      $db_participant = lib::create( 'database\participant',
-        $participant_class_name::get_primary_from_unique_key( $key['participant_id'] ) );
-      $key['person_id'] = !is_null( $db_participant ) ? $db_participant->person_id : NULL;
-      unset( $key['participant_id'] );
+      $select = lib::create( 'database\select' );
+      $select->from( static::get_table_name() );
+      $select->add_column( static::get_primary_key_name() );
+      $modifier = lib::create( 'database\modifier' );
+      foreach( $column as $index => $name ) $modifier->where( $name, '=', $value[$index] );
+
+      // this returns null if no records are found
+      $id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+      if( !is_null( $id ) ) $record = new static( $id );
     }
-    else if( array_key_exists( 'alternate_id', $key ) )
+    else
     {
-      $alternate_class_name = lib::get_class_name( 'database\alternate' );
-      $db_alternate = lib::create( 'database\alternate',
-        $alternate_class_name::get_primary_from_unique_key( $key['alternate_id'] ) );
-      $key['person_id'] = !is_null( $db_alternate ) ? $db_alternate->person_id : NULL;
-      unset( $key['alternate_id'] );
+      $record = parent::get_unique_record( $column, $value );
     }
 
-    return parent::get_primary_from_unique_key( $key );
+    return $record;
   }
 
   /**
@@ -89,5 +79,5 @@ class phone extends has_rank
    * @access protected
    * @static
    */
-  protected static $rank_parent = 'person';
+  protected static $rank_parent = NULL;
 }

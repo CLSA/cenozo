@@ -26,7 +26,7 @@ final class lib
    * Registers this class with PHP as an autoloader.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $operation_type The type of operation being performe
+   * @param string $operation_type The type of operation being performed
    * @param boolean $development_mode Whether the system is in development mode
    * @static
    * @access public
@@ -82,7 +82,7 @@ final class lib
                                                   $a[5], $a[6], $a[7] );
       if( 9 == $count ) return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4],
                                                   $a[5], $a[6], $a[7], $a[8] );
-  
+
       // limit to 10 arguments
       return $class_name::self( $a[0], $a[1], $a[2], $a[3], $a[4],
                                 $a[5], $a[6], $a[7], $a[8], $a[9] );
@@ -121,18 +121,18 @@ final class lib
   {
     // only work on classes in the cenozo or application namespace
     $is_framework_class = false !== strpos( $class_name, 'cenozo\\' );
-    $is_application_class = false !== strpos( $class_name, APPNAME.'\\' );
+    $is_application_class = false !== strpos( $class_name, APPLICATION.'\\' );
 
     if( !$is_framework_class && !$is_application_class ) return;
 
     $framework_path = self::get_framework_class_path( $class_name );
     $framework_name = $is_framework_class
                     ? $class_name
-                    : 'cenozo'.substr( $class_name, strlen( APPNAME ) );
+                    : 'cenozo'.substr( $class_name, strlen( APPLICATION ) );
     $application_path = self::get_application_class_path( $class_name );
     $application_name = $is_application_class
                     ? $class_name
-                    : APPNAME.substr( $class_name, strlen( 'cenozo' ) );
+                    : APPLICATION.substr( $class_name, strlen( 'cenozo' ) );
 
     // always include the framework's class if it exists
     if( !is_null( $framework_path ) )
@@ -183,7 +183,7 @@ final class lib
     // no such file
     return NULL;
   }
-  
+
   /**
    * Given a class name without base application/framework namespace name this method determines
    * where the class resides and returns the full namespace name (includeing application/framework)
@@ -206,7 +206,7 @@ final class lib
     if( $reverse )
     {
       // find and remove the application or framework name at the beginning of the string
-      $retval = preg_replace( sprintf( '/\\\?(%s|cenozo)\\\/', APPNAME ), '', $class_name );
+      $retval = preg_replace( sprintf( '/\\\?(%s|cenozo)\\\/', APPLICATION ), '', $class_name );
     }
     else
     {
@@ -222,11 +222,26 @@ final class lib
       }
 
       $retval = sprintf( '\\%s\\%s',
-                         $class_in_application ? APPNAME : 'cenozo',
+                         $class_in_application ? APPLICATION : 'cenozo',
                          $class_name );
     }
 
     return $retval;
+  }
+
+  /**
+   * Returns whether or not a class exists in either the application or framework
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $class_name The name of the class including namespace
+   * @return boolean
+   * @access public
+   * @static
+   */
+  public static function class_exists( $class_name )
+  {
+    return !is_null( self::get_application_class_path( $class_name ) ) ||
+           !is_null( self::get_framework_class_path( $class_name ) );
   }
 
   /**
@@ -242,10 +257,10 @@ final class lib
   {
     // replace back-slashes with forward-slashes
     $class_name = str_replace( '\\', '/', $class_name );
-    
+
     // if the base of the namespace is cenozo or the application name then remove it
     if( false !== strpos( $class_name, 'cenozo/' ) ||
-        false !== strpos( $class_name, APPNAME.'/' ) )
+        false !== strpos( $class_name, APPLICATION.'/' ) )
     {
       $class_name = substr( $class_name, strpos( $class_name, '/' ) + 1 );
     }
@@ -277,10 +292,10 @@ final class lib
   {
     // replace back-slashes with forward-slashes
     $class_name = str_replace( '\\', '/', $class_name );
-    
+
     // if the base of the namespace is cenozo or the application name then remove it
     if( false !== strpos( $class_name, 'cenozo/' ) ||
-        false !== strpos( $class_name, APPNAME.'/' ) )
+        false !== strpos( $class_name, APPLICATION.'/' ) )
     {
       $class_name = substr( $class_name, strpos( $class_name, '/' ) + 1 );
     }

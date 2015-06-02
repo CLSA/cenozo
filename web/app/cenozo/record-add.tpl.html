@@ -1,0 +1,222 @@
+<div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
+<form name="form" class="form-horizontal" novalidate>
+  <div class="form-body">
+    <ng-form ng-repeat="input in inputArray"
+             name="innerForm">
+      <div class="form-group"
+           ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
+        <label for="name" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
+        <div class="col-sm-9">
+          <div class="input-group"
+               ng-switch="input.type"
+               ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
+            <input ng-switch-when="string"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              autocomplete="off"
+              ng-readonly="input.constant"
+              ng-required="model.metadata.columnList[input.key].required"></input>
+            <input ng-switch-when="typeahead"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              typeahead="item for item in getTypeaheadValues( input, $viewValue )"
+              typeahead-editable="false"
+              typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
+              typeahead-min-length="2"
+              cn-change="check( input.key )"
+              class="form-control"
+              ng-class="{ 'loading': input.typeahead.isLoading }"
+              type="text"
+              placeholder="(Type the first few letters to search possible values)"
+              autocomplete="off"
+              ng-required="model.metadata.columnList[input.key].required"></input>
+            <input ng-switch-when="lookup-typeahead"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="formattedRecord[input.key]"
+              typeahead="item.id as item.value for item in getTypeaheadValues( input, $viewValue )"
+              typeahead-editable="false"
+              typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
+              typeahead-min-length="2"
+              cn-change="check( input.key )"
+              class="form-control"
+              ng-class="{ 'loading': input.typeahead.isLoading }"
+              type="text"
+              placeholder="(Type the first few letters to search possible values)"
+              autocomplete="off"
+              ng-required="model.metadata.columnList[input.key].required"></input>
+            <input ng-switch-when="date"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="date"
+              ng-model="formattedRecord[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="time"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="time"
+              ng-model="formattedRecord[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="timesecond"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="timesecond"
+              ng-model="formattedRecord[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="datetime"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="datetime"
+              ng-model="formattedRecord[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <input ng-switch-when="datetimesecond"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              type="hidden"></input>
+            <input ng-switch-when="datetimesecond"
+              ng-model="formattedRecord[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              ng-click="selectDatetime( input )"
+              onkeydown="return false"></input>
+            <select ng-switch-default
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-options="item.value as item.name for item in input.enumList"
+              ng-model="record[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              ng-readonly="input.constant || !input.enumList"
+              ng-required="model.metadata.columnList[input.key].required"></select>
+            <textarea ng-switch-when="text"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              ng-readonly="input.constant"
+              ng-required="model.metadata.columnList[input.key].required"></textarea>
+            <div ng-switch-when="months" class="row">
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="january" name="name" ng-model="record.january" type="checkbox"> January
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="february" name="name" ng-model="record.february" type="checkbox"> February
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="march" name="name" ng-model="record.march" type="checkbox"> March
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="april" name="name" ng-model="record.april" type="checkbox"> April
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="may" name="name" ng-model="record.may" type="checkbox"> May
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="june" name="name" ng-model="record.june" type="checkbox"> June
+                </label>
+              </div>
+            </div>
+            <div ng-switch-when="months" class="row">
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="july" name="name" ng-model="record.july" type="checkbox"> July
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="august" name="name" ng-model="record.august" type="checkbox"> August
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="september" name="name" ng-model="record.september" type="checkbox"> September
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="october" name="name" ng-model="record.october" type="checkbox"> October
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="november" name="name" ng-model="record.november" type="checkbox"> November
+                </label>
+              </div>
+              <div class="col-sm-2">
+                <label class="checkbox">
+                  <input id="december" name="name" ng-model="record.december" type="checkbox"> December
+                </label>
+              </div>
+            </div>
+          </div>
+          <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+            <span class="help-block" ng-if="innerForm.name.$error.required">
+              Cannot be blank
+            </span>
+            <span class="help-block" ng-if="innerForm.name.$error.minlength">
+              Isn't long enough
+            </span>
+            <span class="help-block" ng-if="innerForm.name.$error.format">
+              Invalid format
+            </span>
+            <span class="help-block" ng-if="innerForm.name.$error.conflict">
+              Conflicts with existing record
+            </span>
+            <span class="help-block" ng-if="innerForm.name.$error.editable">
+              Must be chosen from type-ahead list
+            </span>
+          </span>
+        </div>
+      </div>
+    </ng-form>
+  </div>
+  <div class="form-footer rounded-bottom">
+    <button type="button" class="btn btn-default" ng-click="back()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="submit()">
+      <i class="glyphicon glyphicon-cloud-upload"></i> Save
+    </button>
+  </div>
+</form>

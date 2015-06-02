@@ -35,7 +35,7 @@ class argument extends base_exception
                         $util_class_name::var_dump( $value ) );
     parent::__construct( $message, $context, $previous );
   }
-  
+
   /**
    * The name of the missing argument.
    * @var string

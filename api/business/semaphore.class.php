@@ -35,7 +35,7 @@ class semaphore extends \cenozo\base_object
     $backtrace = debug_backtrace( false );
     $this->key = self::get_key( $backtrace[1]['file'], $name );
   }
-  
+
   /**
    * Acquire a semaphore
    * 
@@ -162,7 +162,7 @@ class semaphore extends \cenozo\base_object
         'The server is busy, please wait a few seconds then click the refresh button.',
         __METHOD__ );
     }
-    
+
     $value = 0;
     if( shm_has_var( $memory, self::PROCESS_COUNT_INDEX ) )
     {

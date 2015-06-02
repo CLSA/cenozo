@@ -54,8 +54,7 @@ abstract class record extends \cenozo\base_object
         if( 'start_datetime' == $name ||
             ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) )
         {
-          $date_obj = $util_class_name::get_datetime_object();
-          $table['columns'][$name] = $date_obj->format( 'Y-m-d H:i:s' );
+          $table['columns'][$name] = $util_class_name::get_datetime_object();
         }
         else
         {
@@ -126,7 +125,7 @@ abstract class record extends \cenozo\base_object
 
         if( 0 == count( $row ) )
         {
-          if( static::get_table_name() == $table )
+          if( static::get_table_name() == $table['name'] )
           {
             throw lib::create( 'exception\runtime',
               sprintf( 'Load failed to find record for %s with %s = %d.',
@@ -143,16 +142,21 @@ abstract class record extends \cenozo\base_object
         }
         else
         {
-          // convert any date, time or datetime columns
           foreach( $row as $key => $val )
           {
             if( array_key_exists( $key, $table['columns'] ) )
-            {
-              if( $database_class_name::is_time_column( $key ) )
-                $table['columns'][$key] = $util_class_name::from_server_datetime( $val, 'H:i:s' );
-              else if( $database_class_name::is_datetime_column( $key ) )
-                $table['columns'][$key] = $util_class_name::from_server_datetime( $val );
-              else $table['columns'][$key] = $val;
+            { // convert data types
+              if( !is_null( $val ) )
+              {
+                $type = static::db()->get_column_data_type( static::get_table_name(), $key );
+                if( 'int' == $type ) $val = intval( $val );
+                else if( 'float' == $type ) $val = floatval( $val );
+                else if( 'tinyint' == $type ) $val = (boolean) $val;
+                else if( 'date' == $type || 'time' == $type || 'datetime' == $type )
+                  $val = !$val ? NULL : $util_class_name::get_datetime_object( $val );
+              }
+
+              $table['columns'][$key] = $val;
             }
           }
         }
@@ -180,48 +184,16 @@ abstract class record extends \cenozo\base_object
 
     $util_class_name = lib::get_class_name( 'util' );
     $database_class_name = lib::get_class_name( 'database\database' );
-    
+
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
 
     foreach( $this->get_working_table_list() as $table )
     {
-      // if we have start and end time or datetime columns (which can't be null), make sure the end
-      // time comes after start time
-      if( static::db()->column_exists( $table['name'], 'start_time' ) &&
-          static::db()->column_exists( $table['name'], 'end_time' ) &&
-          !is_null( static::db()->get_column_default( $table['name'], 'end_time' ) ) )
-      {
-        $start_obj = $util_class_name::get_datetime_object( $table['columns']['start_time'] );
-        $end_obj = $util_class_name::get_datetime_object( $table['columns']['end_time'] );
-        $interval = $start_obj->diff( $end_obj );
-        if( 0 != $interval->invert ||
-          ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
-        {
-          throw lib::create( 'exception\runtime',
-            'Tried to set end time which is not after the start time.', __METHOD__ );
-        }
-      }
-      else if(
-        static::db()->column_exists( $table['name'], 'start_datetime' ) &&
-        static::db()->column_exists( $table['name'], 'end_datetime' ) &&
-        !is_null( static::db()->get_column_default( $table['name'], 'end_datetime' ) ) )
-      {
-        $start_obj = $util_class_name::get_datetime_object( $table['columns']['start_datetime'] );
-        $end_obj = $util_class_name::get_datetime_object( $table['columns']['end_datetime'] );
-        $interval = $start_obj->diff( $end_obj );
-        if( 0 != $interval->invert ||
-          ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
-        {
-          throw lib::create( 'exception\runtime',
-            'Tried to set end datetime which is not after the start datetime.', __METHOD__ );
-        }
-      }
-
       // building the SET list since it is identical for inserts and updates
       $sets = '';
       $first = true;
-      
-      if( $this->include_timestamps && static::get_table_name() == $table['name'] )
+
+      if( $this->write_timestamps && static::get_table_name() == $table['name'] )
       {
         // add the create_timestamp column if this is a new record
         if( is_null( $table['columns'][$table['key']] ) )
@@ -236,21 +208,20 @@ abstract class record extends \cenozo\base_object
       {
         if( static::get_table_name() != $table['name'] || $table['key'] != $key )
         {
-          // convert any time or datetime columns
-          if( $database_class_name::is_time_column( $key ) )
-            $val = $util_class_name::to_server_datetime( $val, 'H:i:s' );
-          else if( $database_class_name::is_datetime_column( $key ) )
-            $val = $util_class_name::to_server_datetime( $val );
-          
-          $sets .= sprintf( '%s %s = %s',
-                            $first ? '' : ',',
-                            $key,
-                            $database_class_name::format_string( $val ) );
+          $type = static::db()->get_column_data_type( static::get_table_name(), $key );
+
+          // convert from datetime object to mysql-valid datetime string
+          if( 'datetime' == $type ) $val = static::db()->format_datetime( $val );
+          else if( 'date' == $type ) $val = static::db()->format_date( $val );
+          else if( 'time' == $type ) $val = static::db()->format_time( $val );
+          else $val = static::db()->format_string( $val );
+
+          $sets .= sprintf( '%s %s = %s', $first ? '' : ',', $key, $val );
 
           $first = false;
         }
       }
-      
+
       // either insert or update the row based on whether the primary key is set
       if( static::get_table_name() == $table['name'] )
       {
@@ -272,7 +243,7 @@ abstract class record extends \cenozo\base_object
       }
 
       static::db()->execute( $sql );
-      
+
       // get the new primary key
       if( $table['name'] == static::get_table_name() &&
           is_null( $table['columns'][$table['key']] ) )
@@ -282,7 +253,7 @@ abstract class record extends \cenozo\base_object
       }
     }
   }
-  
+
   /**
    * Deletes the record.
    * 
@@ -304,7 +275,7 @@ abstract class record extends \cenozo\base_object
       log::warning( 'Tried to delete record with no id.' );
       return;
     }
-    
+
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
 
     // loop through the working tables in reverse order (to avoid reference problems)
@@ -349,7 +320,7 @@ abstract class record extends \cenozo\base_object
     // not an column from the extending table list, make sure the column exists in the main table
     if( !static::column_exists( $column_name ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
-    
+
     return isset( $this->column_values[$column_name] ) ?
       $this->column_values[$column_name] : NULL;
   }
@@ -385,10 +356,55 @@ abstract class record extends \cenozo\base_object
     // make sure the column exists
     if( !static::column_exists( $column_name ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
-    
+
     $this->column_values[$column_name] = $value;
   }
-  
+
+  /**
+   * Returns all column values in the record as an associative array
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\select $select Defines which columns to return
+   * @param database\modifier $modifier Modifications used to access columns
+   * @return array
+   * @access public
+   */
+  public function get_column_values( $select = NULL, $modifier = NULL )
+  {
+    if( !is_null( $select ) && !is_a( $select, lib::get_class_name( 'database\select' ) ) )
+      throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
+    if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
+      throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
+
+    $columns = array();
+    if( is_null( $select ) )
+    {
+      $columns = $this->column_values;
+    }
+    else
+    {
+      // select this table if one hasn't been selected yet
+      if( is_null( $select->get_table_name() ) ) $select->from( static::get_table_name() );
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $modifier->where( sprintf( '%s.id', $this->get_table_name() ), '=', $this->id );
+      $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
+      $columns = static::db()->get_row( $sql );
+
+      foreach( $columns as $column => $value )
+      {
+        if( static::column_exists( $column ) && !is_null( $value ) )
+        {
+          $type = static::db()->get_column_data_type( static::get_table_name(), $column );
+          if( 'int' == $type ) $columns[$column] = intval( $value );
+          else if( 'float' == $type ) $columns[$column] = floatval( $value );
+          else if( 'tinyint' == $type ) $columns[$column] = (boolean) $value;
+        }
+      }
+    }
+
+    return $columns;
+  }
+
   /**
    * Magic call method.
    * 
@@ -406,21 +422,12 @@ abstract class record extends \cenozo\base_object
    * @method array get_<record>() Returns the record with foreign keys referencing the <record>
    *               table.  For instance, if a record has a foreign key "other_id", then
    *               get_other() will return the "other" record with the id equal to other_id.
-   * @method array get_record_list() Returns an array of records from the joining <record> table
-   *               given the provided modifier.  If a record has a joining "has" table then
-   *               calling get_other_list() will return an array of "other" records which are
-   *               linked in the joining table, and get_other_count() will return the number of
-   *               "other" recrods found in the joining table.
-   * @method array get_<record>_list_inverted() This is the same as the non-inverted method but it
-   *               returns all items which are NOT linked to the joining table.
-   * @method array get_<record>_id_list() Returns an array of primary ids from the joining <record>
-                   table.
-   * @method array get_<record>_id_list_inverted() This is the same as the non-inverted method but
-   *               returns all ids which are NOT linked to the joining table.
+   * @method array get_<record>_list() Returns an array of records (as associative arrays) from the
+   *               joining <record> table given the provided modifier.
+   * @method array get_<record>_object_list() Returns an array of records (as objects) from the
+   *               joining <record> table given the provided modifier.
    * @method int get_<record>_count() Returns the number of records in the joining <record> table
    *             given the provided modifier.
-   * @method int get_<record>_count_inverted() This is the same as the non-inverted method but it
-   *             returns the number of records NOT in the joining table.
    * @method null add_<record>() Given an array of ids, this method adds associations between the
    *              current and foreign <record> by adding rows into the joining "has" table.
    * @method null remove_<record>() Given an id, this method removes the association between the
@@ -429,32 +436,37 @@ abstract class record extends \cenozo\base_object
    */
   public function __call( $name, $args )
   {
-    // create an exception which will be thrown if anything bad happens
-    $exception = lib::create( 'exception\runtime',
-      sprintf( 'Call to undefined function: %s::%s().',
-               get_called_class(),
-               $name ), __METHOD__ );
-
     $return_value = NULL;
-    
+
     // set up regular expressions
     $start = '/^add_|remove_|get_/';
-    $end = '/(_list|_idlist|_count)(_inverted)?$/';
-    
+    $end = '/(_list|_object_list|_count)$/';
+
     // see if the start of the function name is a match
-    if( !preg_match( $start, $name, $match ) ) throw $exception;
+    if( !preg_match( $start, $name, $match ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Call to undefined function: %s::%s()',
+                 get_called_class(),
+                 $name ), __METHOD__ );
+
     $action = substr( $match[0], 0, -1 ); // remove underscore
 
     // now get the subject by removing the start and end of the function name
     $subject = preg_replace( array( $start, $end ), '', $name );
-    
+
     // make sure the foreign table exists
-    if( !static::db()->table_exists( $subject ) ) throw $exception;
-    
+    if( !static::db()->table_exists( $subject ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Call to undefined function: %s::%s() (foreign table does not exist)',
+                 get_called_class(),
+                 $name ), __METHOD__ );
+
     if( 'add' == $action )
     { // calling: add_<record>( $ids )
-      // make sure the first argument is a non-empty array of ids
-      if( 1 != count( $args ) || !is_array( $args[0] ) || 0 == count( $args[0] ) )
+      // make sure the first argument is an integer or non-empty array of ids
+      if( 1 != count( $args ) ||
+          is_object( $args[0] ) ||
+          ( is_array( $args[0] ) && 0 < count( $args[0] ) ) )
         throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $ids = $args[0];
@@ -463,8 +475,10 @@ abstract class record extends \cenozo\base_object
     }
     else if( 'remove' == $action )
     { // calling: remove_<record>( $ids )
-      // make sure the first argument is a non-empty array of ids
-      if( 1 != count( $args ) || 0 >= $args[0] )
+      // make sure the first argument is an integer or non-empty array of ids
+      if( 1 != count( $args ) ||
+          is_object( $args[0] ) ||
+          ( is_array( $args[0] ) && 0 < count( $args[0] ) ) )
         throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $id = $args[0];
@@ -475,78 +489,56 @@ abstract class record extends \cenozo\base_object
     {
       // get the end of the function name
       $sub_action = preg_match( $end, $name, $match ) ? substr( $match[0], 1 ) : false;
-      
+
       if( !$sub_action )
       {
         // calling: get_<record>()
         // make sure this table has the correct foreign key
-        if( !static::column_exists( $subject.'_id' ) ) throw $exception;
+        if( !static::column_exists( $subject.'_id' ) )
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Call to undefined function: %s::%s() (foreign key not found)',
+                     get_called_class(),
+                     $name ), __METHOD__ );
         return $this->get_record( $subject );
       }
       else
-      { // calling one of: get_<record>_list( $modifier = NULL )
-        //                 get_<record>_list_inverted( $modifier = NULL )
-        //                 get_<record>_idlist( $modifier = NULL )
-        //                 get_<record>_idlist_inverted( $modifier = NULL )
-        //                 get_<record>_count( $modifier = NULL )
-        //                 get_<record>_count_inverted( $modifier = NULL )
-  
-        // if there is an argument, make sure it is a modifier
-        if( 0 < count( $args ) &&
-            !is_null( $args[0] ) &&
-            is_object( $args[0] ) &&
-            'cenozo\database\modifier' != get_class( $args[0] ) )
-          throw lib::create( 'exception\argument', 'args', $args, __METHOD );
-        
-        // determine the sub action and whether to invert the result
-        $inverted = false;
-        if( 'list' == $sub_action || 'idlist' == $sub_action || 'count' == $sub_action ) {}
-        else if( 'idlist_inverted' == $sub_action )
-        {
-          $sub_action = 'idlist';
-          $inverted = true;
-        }
-        else if( 'list_inverted' == $sub_action )
-        {
-          $sub_action = 'list';
-          $inverted = true;
-        }
-        else if( 'count_inverted' == $sub_action )
-        {
-          $sub_action = 'count';
-          $inverted = true;
-        }
-        else throw $exception;
-        
-        // execute the function
-        $modifier = 0 == count( $args ) ? NULL : $args[0];
-        $distinct = 1 >= count( $args ) ? NULL : $args[1];
-
+      {
         if( 'list' == $sub_action )
-        {
-          return is_null( $distinct )
-            ? $this->get_record_list( $subject, $modifier, $inverted )
-            : $this->get_record_list( $subject, $modifier, $inverted, false, $distinct );
+        { // calling: get_<record>_list( $select = NULL, $modifier = NULL )
+          return $this->get_record_list(
+            $subject,
+            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL,
+            1 < count( $args ) && !is_null( $args[1] ) ? $args[1] : NULL );
         }
-        if( 'idlist' == $sub_action )
-        {
-          return is_null( $distinct )
-            ? $this->get_record_idlist( $subject, $modifier, $inverted, false, true, true )
-            : $this->get_record_idlist( $subject, $modifier, $inverted, false, $distinct, true );
+        else if( 'object_list' == $sub_action )
+        { // calling: get_<record>_object_list( $modifier = NULL )
+          return $this->get_record_object_list(
+            $subject,
+            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL );
         }
         else if( 'count' == $sub_action )
+        { // calling: get_<record>_count( $modifier = NULL )
+          return $this->get_record_count(
+            $subject,
+            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL );
+        }
+        else
         {
-          return is_null( $distinct )
-            ? $this->get_record_count( $subject, $modifier, $inverted )
-            : $this->get_record_count( $subject, $modifier, $inverted, $distinct );
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Call to undefined function: %s::%s() (invalid sub-action)',
+                     get_called_class(),
+                     $name ), __METHOD__ );
         }
       }
     }
 
     // if we get here then something went wrong
-    throw $exception;
+    throw lib::create( 'exception\runtime',
+      sprintf( 'Call to undefined function: %s::%s() (failed to recoginize method)',
+               get_called_class(),
+               $name ), __METHOD__ );
   }
-  
+
   /**
    * Returns the record with foreign keys referencing the record table.
    * This method is used to select a record's parent record in many-to-one relationships.
@@ -559,16 +551,16 @@ abstract class record extends \cenozo\base_object
   {
     // check the primary key value
     if( is_null( $this->column_values[static::get_primary_key_name()] ) )
-    { 
+    {
       log::warning( 'Tried to query record with no id.' );
       return NULL;
     }
-    
+
     $foreign_key_name = $record_type.'_id';
 
     // make sure this table has the correct foreign key
     if( !static::column_exists( $foreign_key_name ) )
-    { 
+    {
       log::warning( 'Tried to get invalid record type: '.$record_type );
       return NULL;
     }
@@ -576,35 +568,37 @@ abstract class record extends \cenozo\base_object
     // create the record using the foreign key
     $record = NULL;
     if( !is_null( $this->column_values[$foreign_key_name] ) )
-    {
       $record = lib::create( 'database\\'.$record_type, $this->column_values[$foreign_key_name] );
-    }
 
     return $record;
   }
 
   /**
-   * Returns an array of records (or primary keys of those records) from the joining record table.
+   * Returns an array of records (as arrays or objects) from the joining record table.
    * This method is used to select a record's child records in one-to-many or many-to-many
    * relationships.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the list or count.
-   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
-   * @param boolean $count If true then this method returns the count instead of list of records.
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param boolean $id_only Whether to return a list of primary ids instead of active records
-   * @return array( record ) | array( int ) | int
+   * @param database\select $select Which columns to select
+   * @param database\modifier $modifier A modifier to apply to the list
+   * @param boolean $return_alternate One of "object" or "count" to return objects or a count total
+   * @return array( associative or array ) | int
    * @access protected
    */
-  public function get_record_list(
-    $record_type,
-    $modifier = NULL,
-    $inverted = false,
-    $count = false,
-    $distinct = true,
-    $id_only = false )
+  protected function get_record_list( $record_type, $select = NULL, $modifier = NULL, $return_alternate = '' )
   {
+    if( !is_string( $record_type ) || 0 == strlen( $record_type ) )
+      throw lib::create( 'exception\argument', 'record_type', $record_type, __METHOD__ );
+    if( !is_null( $select ) && !is_a( $select, lib::get_class_name( 'database\select' ) ) )
+      throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
+    if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
+      throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
+    if( !is_string( $return_alternate ) )
+      throw lib::create( 'exception\argument', 'return_alternate', $return_alternate, __METHOD__ );
+
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+
     $table_name = static::get_table_name();
     $primary_key_name = sprintf( '%s.%s', $table_name, static::get_primary_key_name() );
     $foreign_class_name = lib::get_class_name( 'database\\'.$record_type );
@@ -612,11 +606,13 @@ abstract class record extends \cenozo\base_object
     // check the primary key value
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
     if( is_null( $primary_key_value ) )
-    { 
+    {
       log::warning( 'Tried to query record with no id.' );
-      return $count ? 0 : array();
+      return array();
     }
-      
+
+    $return_value = 'count' == $return_alternate ? 0 : array();
+
     // this method varies depending on the relationship type
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $relationship = static::get_relationship( $record_type );
@@ -626,7 +622,6 @@ abstract class record extends \cenozo\base_object
         sprintf( 'Tried to get a %s list from a %s, but there is no relationship between the two.',
                  $record_type,
                  $table_name ) );
-      return $count ? 0 : array();
     }
     else if( $relationship_class_name::ONE_TO_ONE == $relationship )
     {
@@ -635,177 +630,79 @@ abstract class record extends \cenozo\base_object
                  'one-to-one relationship between the two.',
                  $record_type,
                  $table_name ) );
-      return $count ? 0 : array();
     }
-    else if( $relationship_class_name::ONE_TO_MANY == $relationship )
+    else if( $relationship_class_name::ONE_TO_MANY == $relationship ||
+             $relationship_class_name::MANY_TO_MANY == $relationship )
     {
-      $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      if( $inverted )
+      if( $relationship_class_name::ONE_TO_MANY == $relationship )
       {
-        $modifier->where( $column_name, '=', NULL );
-        $modifier->or_where( $column_name, '!=', $primary_key_value );
+        $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
+        if( !$modifier->has_join( $table_name ) )
+          $modifier->join( $table_name, $column_name, $primary_key_name );
+        $modifier->where( $column_name, '=', $primary_key_value );
       }
-      else $modifier->where( $column_name, '=', $primary_key_value );
-
-      return $count
-        ? $foreign_class_name::count( $modifier )
-        : $foreign_class_name::select( $modifier );
-    }
-    else if( $relationship_class_name::MANY_TO_MANY == $relationship )
-    {
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $joining_table_name = static::get_joining_table_name( $record_type );
-
-      // check to see if the modifier is sorting a value in a foreign table
-      $table_list = array( $table_name, $joining_table_name, $record_type );
-      if( !is_null( $modifier ) )
+      else // MANY_TO_MANY
       {
-        // build an array of all foreign tables in the modifier
-        $columns = $modifier->get_where_columns();
-        $columns = array_merge( $columns, $modifier->get_order_columns() );
-        $tables = array();
-        foreach( $columns as $index => $column ) $tables[] = strstr( $column, '.', true );
-        $tables = array_unique( $tables, SORT_STRING );
+        $joining_table_name = static::get_joining_table_name( $record_type );
+        $foreign_key_name = sprintf( '%s.%s', $record_type, $foreign_class_name::get_primary_key_name() );
+        $joining_primary_key_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
+        $joining_foreign_key_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
 
-        foreach( $tables as $table )
+        if( !$modifier->has_join( $table_name ) )
         {
-          if( $table && 0 < strlen( $table ) &&
-              // skip joins which are done below
-              !in_array( $table, $table_list ) &&
-              // check to see if the joined table has a foreign key for this table and join if it
-              // does but make sure not to do this check for N-to-N joining tables
-              false === strpos( $table, '_has_' ) &&
-              // don't add joins that already exist
-              !$modifier->has_join( $table ) )
-          {
-            $foreign_key_name = $table.'_id';
-            $table_class_name = lib::get_class_name( 'database\\'.$table );
-            if( static::db()->column_exists( $record_type, $foreign_key_name ) )
-            {
-              $modifier->cross_join(
-                $table, 
-                sprintf( '%s.%s', $record_type, $foreign_key_name ),
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
-            }
-            // check to see if the joining table has this table as a foreign key
-            else if( static::db()->column_exists( $joining_table_name, $foreign_key_name ) )
-            {
-              $modifier->where(
-                $table,
-                sprintf( '%s.%s', $joining_table_name, $foreign_key_name ),
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
-            }
-            // check to see if the origin table has this table as a foreign key
-            else if( static::column_exists( $foreign_key_name ) )
-            {
-              $modifier->where(
-                $table,
-                sprintf( '%s.%s', $table_name, $foreign_key_name ),
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
-            }
-          }
+          $modifier->cross_join( $joining_table_name, $foreign_key_name, $joining_foreign_key_name );
+          $modifier->cross_join( $table_name, $joining_primary_key_name, $primary_key_name );
         }
-      }
-
-      $foreign_key_name =
-        sprintf( '%s.%s', $record_type, $foreign_class_name::get_primary_key_name() );
-      $joining_primary_key_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
-      $joining_foreign_key_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
-  
-      if( $inverted )
-      { // we need to invert the list
-        // first create SQL to match all records in the joining table
-        $sub_modifier = lib::create( 'database\modifier' );
-        $sub_modifier->cross_join( $joining_table_name, $primary_key_name, $joining_primary_key_name );
-        $sub_modifier->cross_join( $record_type, $joining_foreign_key_name, $foreign_key_name );
-        $sub_modifier->where( $primary_key_name, '=', $primary_key_value );
-        $sub_select_sql =
-          sprintf( 'SELECT %s FROM %s %s',
-                   $joining_foreign_key_name,
-                   $table_name,
-                   $sub_modifier->get_sql() );
-  
-        // now create SQL that gets all primary ids that are NOT in that list
-        $modifier->where( $foreign_key_name, 'NOT IN', $sub_select_sql, false );
-        $sql = sprintf( $count
-                          ? 'SELECT COUNT( %s%s ) FROM %s %s'
-                          : 'SELECT %s%s FROM %s %s',
-                        $distinct ? 'DISTINCT ' : '',
-                        $foreign_key_name,
-                        $record_type,
-                        $modifier->get_sql() );
-      }
-      else
-      { // no inversion, just select the records from the joining table
-        $modifier->cross_join( $joining_table_name, $primary_key_name, $joining_primary_key_name );
-        $modifier->cross_join( $record_type, $joining_foreign_key_name, $foreign_key_name );
         $modifier->where( $primary_key_name, '=', $primary_key_value );
-        $sql = sprintf( $count
-                          ? 'SELECT COUNT( %s%s ) FROM %s %s'
-                          : 'SELECT %s%s FROM %s %s',
-                        $distinct ? 'DISTINCT ' : '',
-                        $joining_foreign_key_name,
-                        $table_name,
-                        $modifier->get_sql() );
       }
-      
-      if( $count )
+
+      if( 'count' == $return_alternate )
       {
-        return intval( static::db()->get_one( $sql ) );
+        $return_value = $foreign_class_name::count( $modifier );
       }
       else
       {
-        $ids = static::db()->get_col( $sql );
-        if( $id_only) return $ids; // requested to return a list of ids only
-
-        // create records from the ids
-        $records = array();
-        foreach( $ids as $id ) $records[] = lib::create( 'database\\'.$record_type, $id );
-        return $records;
+        $return_value = 'object' == $return_alternate
+                      ? $foreign_class_name::select_objects( $modifier )
+                      : $foreign_class_name::select( $select, $modifier );
       }
+
     }
-    
-    // if we get here then the relationship type is unknown
-    log::crit(
-      sprintf( 'Record %s has an unknown relationship to %s.',
-               $table_name,
-               $record_type ) );
-    return $count ? 0 : array();
+    else
+    {
+      // if we get here then the relationship type is unknown
+      log::crit( sprintf( 'Record %s has an unknown relationship to %s.', $table_name, $record_type ) );
+    }
+
+    return $return_value;
   }
 
   /**
-   * Returns an array of primary keys from the joining record table.
-   * This method is used to select a record's child records in one-to-many or many-to-many
-   * relationships.
+   * 
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the count.
-   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
-   * @return int
+   * @param database\modifier $modifier A modifier to apply to the list
+   * @return array( record )
    * @access protected
    */
-  protected function get_record_idlist(
-    $record_type, $modifier = NULL, $inverted = false, $distinct = true )
+  public function get_record_object_list( $record_type, $modifier = NULL )
   {
-    return $this->get_record_list( $record_type, $modifier, $inverted, false, $distinct, true );
+    return $this->get_record_list( $record_type, NULL, $modifier, 'object' );
   }
 
   /**
-   * Returns the number of records in the joining record table.
-   * This method is used to count a record's child records in one-to-many or many-to-many
-   * relationships.
+   * 
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the count.
-   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
-   * @return int
+   * @param database\modifier $modifier A modifier to apply to the list or count.
+   * @return associative array
    * @access protected
    */
-  protected function get_record_count(
-    $record_type, $modifier = NULL, $inverted = false, $distinct = true )
+  public function get_record_count( $record_type, $modifier = NULL )
   {
-    return $this->get_record_list( $record_type, $modifier, $inverted, true, $distinct );
+    return $this->get_record_list( $record_type, NULL, $modifier, 'count' );
   }
 
   /**
@@ -829,11 +726,11 @@ abstract class record extends \cenozo\base_object
     }
 
     $util_class_name = lib::get_class_name( 'util' );
-    
+
     // check the primary key value
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
     if( is_null( $primary_key_value ) )
-    { 
+    {
       log::warning( 'Tried to query record with no id.' );
       return;
     }
@@ -849,10 +746,10 @@ abstract class record extends \cenozo\base_object
                  static::get_table_name() ) );
       return;
     }
-    
+
     $database_class_name = lib::get_class_name( 'database\database' );
     $joining_table_name = static::get_joining_table_name( $record_type );
-    
+
     // if ids is not an array then create a single-element array with it
     if( !is_array( $ids ) ) $ids = array( $ids );
 
@@ -861,16 +758,16 @@ abstract class record extends \cenozo\base_object
     foreach( $ids as $foreign_key_value )
     {
       if( !$first ) $values .= ', ';
-      $values .= sprintf( $this->include_timestamps
+      $values .= sprintf( $this->write_timestamps
                           ? '(NULL, %s, %s)'
                           : '(%s, %s)',
-                          $database_class_name::format_string( $primary_key_value ),
-                          $database_class_name::format_string( $foreign_key_value ) );
+                          static::db()->format_string( $primary_key_value ),
+                          static::db()->format_string( $foreign_key_value ) );
       $first = false;
     }
-    
+
     static::db()->execute(
-      sprintf( $this->include_timestamps
+      sprintf( $this->write_timestamps
                ? 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
                : 'INSERT INTO %s (%s_id, %s_id) VALUES %s',
                $joining_table_name,
@@ -901,7 +798,7 @@ abstract class record extends \cenozo\base_object
     // check the primary key value
     $primary_key_value = $this->column_values[static::get_primary_key_name()];
     if( is_null( $primary_key_value ) )
-    { 
+    {
       log::warning( 'Tried to query record with no id.' );
       return;
     }
@@ -932,13 +829,13 @@ abstract class record extends \cenozo\base_object
     else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
       $joining_table_name = static::get_joining_table_name( $record_type );
-  
+
       $modifier = lib::create( 'database\modifier' );
       $column_name = sprintf( '%s.%s_id', $joining_table_name, static::get_table_name() );
       $modifier->where( $column_name, '=', $primary_key_value );
       $column_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
       $modifier->where( $column_name, '=', $id );
-  
+
       static::db()->execute(
         sprintf( 'DELETE FROM %s %s',
                  $joining_table_name,
@@ -953,22 +850,22 @@ abstract class record extends \cenozo\base_object
                  $record_type ) );
     }
   }
-  
+
   /**
    * Gets the name of the joining table between this record and another.
    * If no such table exists then an empty string is returned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @static
-   * @access protected
+   * @access public
    */
-  protected static function get_joining_table_name( $record_type )
+  public static function get_joining_table_name( $record_type )
   {
     // the joining table may be <table>_has_<foreign_table> or <foreign>_has_<table>
     $table_name = static::get_table_name();
     $forward_joining_table_name = $table_name.'_has_'.$record_type;
     $reverse_joining_table_name = $record_type.'_has_'.$table_name;
-    
+
     $joining_table_name = "";
     if( static::db()->table_exists( $forward_joining_table_name ) )
     {
@@ -978,10 +875,10 @@ abstract class record extends \cenozo\base_object
     {
       $joining_table_name = $reverse_joining_table_name;
     }
-    
+
     return $joining_table_name;
   }
-  
+
   /**
    * Gets the type of relationship this record has to another record.
    * See the relationship class for return values.
@@ -1011,264 +908,115 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * Select a number of records.
+   * Selects a number of records as array data
    * 
-   * This method returns an array of records.
-   * The modifier may include any columns from tables which this record has a foreign key
-   * relationship with.  To sort by such columns make sure to include the table name along with
-   * the column name (for instance 'table.column') as the sort column value.
-   * Be careful when calling this method.  Based on the modifier object a record is created for
-   * every row being selected, so selecting a very large number of rows (100+) isn't a good idea.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param boolean $id_only Whether to return a list of primary ids instead of active records
-   * @return array( record ) | int
+   * @param database\select $select Defines which columns to select
+   * @param database\modifier $modifier Modifications to the selection
+   * @return associative array
    * @static
    * @access public
    */
-  public static function select(
-    $modifier = NULL, $count = false, $distinct = true, $id_only = false )
+  public static function select( $select = NULL, $modifier = NULL, $return_alternate = '' )
   {
-    $class_index = lib::get_class_name( get_called_class(), true );
-    $this_table = static::get_table_name();
-    
-    // check to see if the modifier is sorting a value in a foreign table
-    if( !is_null( $modifier ) )
-    {
-      // build an array of all foreign tables in the modifier
-      $columns = $modifier->get_where_columns();
-      $columns = array_merge( $columns, $modifier->get_order_columns() );
-      $tables = array();
-      foreach( $columns as $index => $column ) $tables[] = strstr( $column, '.', true );
-      $tables = array_unique( $tables, SORT_STRING );
+    if( !is_null( $select ) && !is_a( $select, lib::get_class_name( 'database\select' ) ) )
+      throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
+    if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
+      throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
 
-      foreach( $tables as $table )
+    $return_value = 'count' == $return_alternate ? 0 : array();
+
+    // create the select statement one isn't provided
+    if( is_null( $select ) )
+    {
+      $select = lib::create( 'database\select' );
+      if( 'count' == $return_alternate )
       {
-        if( $table && 0 < strlen( $table ) &&
-            // don't join this table to itself
-            $table != $this_table &&
-            // don't add joins that already exist
-            !$modifier->has_join( $table ) )
+        $select->add_column( 'COUNT(*)', 'total', false );
+      }
+      else if( 'object' == $return_alternate )
+      {
+        $select->add_column( static::get_primary_key_name() );
+      }
+      else
+      {
+        $select->add_all_table_columns();
+      }
+    }
+
+    // select this table if one hasn't been selected yet
+    if( is_null( $select->get_table_name() ) ) $select->from( static::get_table_name() );
+
+    if( 'count' == $return_alternate )
+    {
+      $sql = sprintf( '%s %s',
+                      $select->get_sql(),
+                      is_null( $modifier ) ? '' : $modifier->get_sql( true ) );
+
+      // if the modifier has a group statement then we want the number of returned rows
+      $return_value = 0 < count( $modifier->get_group_columns() )
+                    ? count( static::db()->get_all( $sql ) )
+                    : intval( static::db()->get_one( $sql ) );
+    }
+    else
+    {
+      $sql = sprintf( '%s %s',
+                      $select->get_sql(),
+                      is_null( $modifier ) ? '' : $modifier->get_sql() );
+      $return_value = static::db()->get_all( $sql );
+      if( 'object' == $return_alternate )
+      { // convert ids to records
+        $records = array();
+        foreach( $return_value as $row ) $records[] = new static( $row['id'] );
+        $return_value = $records;
+      }
+      else
+      { // convert data types
+        foreach( $return_value as $index => $row )
         {
-          // check to see if we have a predefined join for this table
-          if( array_key_exists( $class_index, self::$custom_join_list ) &&
-              array_key_exists( $table, self::$custom_join_list[$class_index] ) )
+          foreach( $row as $column => $value )
           {
-            // merge the defined join modifier
-            $modifier->merge( self::$custom_join_list[$class_index][$table] );
-          }
-          else
-          {
-            // check to see if we have a foreign key for this table and join if we do
-            $foreign_key_name = $table.'_id';
-            if( static::column_exists( $foreign_key_name ) )
+            if( static::column_exists( $column ) && !is_null( $value ) )
             {
-              $table_class_name = lib::get_class_name( 'database\\'.$table );
-              // add the table to the list to select and join it in the modifier
-              $modifier->cross_join(
-                $table,
-                sprintf( '%s.%s', $this_table, $foreign_key_name ),
-                sprintf( '%s.%s', $table, $table_class_name::get_primary_key_name() ) );
-            }
-            // check to see if the foreign table has this table as a foreign key
-            else if( static::db()->column_exists( $table, $this_table.'_id' ) )
-            {
-              // add the table to the list to select and join it in the modifier
-              $modifier->cross_join(
-                $table,
-                sprintf( '%s.%s_id', $table, $this_table ),
-                sprintf( '%s.%s', $this_table, static::get_primary_key_name() ) );
+              $type = static::db()->get_column_data_type( static::get_table_name(), $column );
+              if( 'int' == $type ) $return_value[$index][$column] = intval( $value );
+              else if( 'float' == $type ) $return_value[$index][$column] = floatval( $value );
+              else if( 'tinyint' == $type ) $return_value[$index][$column] = (boolean) $value;
             }
           }
         }
       }
     }
-    
-    $sql = sprintf( 'SELECT%s %s %s.%s %sFROM %s %s',
-                    $count ? ' COUNT(' : '',
-                    $distinct ? 'DISTINCT' : '',
-                    $this_table,
-                    static::get_primary_key_name(),
-                    $count ? ') ' : '',
-                    $this_table,
-                    is_null( $modifier ) ? '' : $modifier->get_sql() );
 
-    if( $count )
-    {
-      return intval( static::db()->get_one( $sql ) );
-    }
-    else
-    {
-      $id_list = static::db()->get_col( $sql );
-      if( $id_only ) return $id_list;
-
-      // create records from the ids
-      $records = array();
-      foreach( $id_list as $id ) $records[] = new static( $id );
-      return $records;
-    }
+    return $return_value;
   }
 
   /**
-   * Select a number of record ids.
+   * Selects a number of records and returns them as an array of active record objects
    * 
-   * A convenience method that returns an array of record primary ids.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @return array( int )
+   * @return array( record )
    * @static
    * @access public
    */
-  public static function idselect( $modifier = NULL, $count = false, $distinct = true )
+  public static function select_objects( $modifier = NULL )
   {
-    return static::select( $modifier, $count, $distinct, true );
+    return static::select( NULL, $modifier, 'object' );
   }
 
   /**
-   * Count the total number of rows in the table.
+   * Count the total number of rows in the table
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the count.
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
+   * @param database\modifier $modifier Modifications to the selection.
    * @return int
    * @static
    * @access public
    */
-  public static function count( $modifier = NULL, $distinct = true )
+  public static function count( $modifier = NULL )
   {
-    return static::select( $modifier, true, $distinct );
-  }
-
-  /**
-   * Returns a unique key in the form of an array given a primary key value.
-   * The returned array will have a value for every column which is included in the unique key.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $key A primary key value for the table.
-   * @return associative array
-   * @static
-   * @access public
-   */
-  public static function get_unique_from_primary_key( $key )
-  {
-    $key = intval( $key );
-    if( 0 == $key ) return NULL;
-
-    $record = new static( $key );
-    $unique_key_array = array();
-    foreach( static::get_unique_key_columns() as $column )
-    {
-      // if the column is a foreign key, then get the unique key from the corresponding record
-      if( substr( $column, -3 ) == '_id' )
-      {
-        $subject = substr( $column, 0, -3 );
-        $table_class_name = lib::get_class_name( 'database\\'.$subject );
-        $unique_key_array[$column] =
-          $table_class_name::get_unique_from_primary_key( $record->$column );
-      }
-      else // otherwise just set the value of the column
-      {
-        $unique_key_array[$column] = $record->$column;
-      }
-    }
-    return $unique_key_array;
-  }
-
-  /**
-   * Returns a primary key value given a unique key array.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param associative array
-   * @return int
-   * @static
-   * @access public
-   */
-  public static function get_primary_from_unique_key( $key )
-  {
-    // we may have a stdObject, so convert to an array if we do
-    if( is_object( $key ) ) $key = (array) $key;
-
-    if( !is_array( $key ) ) return NULL;
-
-    // build the modifier for record selection
-    $modifier = lib::create( 'database\modifier' );
-    foreach( static::get_unique_key_columns() as $column )
-    {
-      if( !array_key_exists( $column, $key ) )
-        throw lib::create( 'exception\runtime',
-          sprintf( 'Missing column %s from unique key.', $column ),
-          __METHOD__ );
-
-      if( is_array( $key[$column] ) || is_object( $key[$column] ) )
-      {
-        $subject = substr( $column, 0, -3 );
-        $table_class_name = lib::get_class_name( 'database\\'.$subject );
-        $modifier->where( $column, '=', $table_class_name::get_primary_from_unique_key( $key[$column] ) );
-      }
-      else // otherwise just add the value to the modifier
-      {
-        $modifier->where( $column, '=', $key[$column] );
-      }
-    }
-
-    $sql = sprintf( 'SELECT id FROM %s %s', static::get_table_name(), $modifier->get_sql() );
-    $id = static::db()->get_one( $sql );
-
-    if( is_null( $id ) )
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Load failed to find record for %s using columns "%s".',
-                 static::get_table_name(),
-                 implode( ', ', static::get_unique_key_columns() ) ),
-        __METHOD__ );
-
-    return $id;
-  }
-  
-  /**
-   * Returns an array of columns which define this table's unique key.  If the table has more than
-   * one unique key then primary unique key is used, or the first if no primary unique key has
-   * been set.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array( string )
-   * @static
-   * @access public
-   */
-  public static function get_unique_key_columns()
-  {
-    // determine the column list from the unique keys (possibly the primary one) or fall
-    // back on the full column list if no unique key exists
-    $column_list = array();
-    $unique_keys = static::db()->get_unique_keys( static::get_table_name() );
-    if( count( $unique_keys ) )
-    {
-      $primary_unique_key = static::get_primary_unique_key();
-      if( !is_null( $primary_unique_key ) )
-      {
-        // make sure the primary unique key exists
-        if( !array_key_exists( $primary_unique_key, $unique_keys ) )
-          throw lib::create( 'exception\runtime',
-            sprintf( 'Primary unique key %s does not exist', $primary_unique_key_list ),
-            __METHOD__ );
-
-        $column_list = $unique_keys[$primary_unique_key];
-      }
-      else // no primary unique key, just grab the first one
-      {
-        $column_list = current( $unique_keys );
-      }
-    }
-    else
-    {
-      $column_list = static::db()->get_column_names( static::get_table_name() );
-      $column_list = array_diff( $column_list, array( 'id' ) );
-    }
-
-    return $column_list;
+    return static::select( NULL, $modifier, 'count' );
   }
 
   /**
@@ -1286,16 +1034,15 @@ abstract class record extends \cenozo\base_object
   public static function get_unique_record( $column, $value )
   {
     $record = NULL;
-    
+
+    // if the column is ID then there's no need to search for unique keys
+    if( 'id' == $column || ( is_array( $column ) && 1 == count( $column ) && 'id' == $column[0] ) )
+      return new static( $value );
+
     // create an associative array from the column/value arguments and sort
     if( is_array( $column ) && is_array( $value ) )
-    {
       foreach( $column as $index => $col ) $columns[$col] = $value[$index];
-    }
-    else
-    {
-      $columns[$column] = $value;
-    }
+    else $columns[$column] = $value;
     ksort( $columns );
 
     // make sure the column(s) complete a unique key
@@ -1304,6 +1051,7 @@ abstract class record extends \cenozo\base_object
     {
       if( count( $columns ) == count( $unique_key ) )
       {
+        sort( $unique_key );
         reset( $unique_key );
         foreach( $columns as $col => $val )
         {
@@ -1324,16 +1072,14 @@ abstract class record extends \cenozo\base_object
     }
     else
     {
+      $select = lib::create( 'database\select' );
+      $select->from( static::get_table_name() );
+      $select->add_column( static::get_primary_key_name() );
       $modifier = lib::create( 'database\modifier' );
       foreach( $columns as $col => $val ) $modifier->where( $col, '=', $val );
 
       // this returns null if no records are found
-      $id = static::db()->get_one(
-        sprintf( 'SELECT %s FROM %s %s',
-                 static::get_primary_key_name(),
-                 static::get_table_name(),
-                 $modifier->get_sql() ) );
-
+      $id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
       if( !is_null( $id ) ) $record = new static( $id );
     }
 
@@ -1349,15 +1095,13 @@ abstract class record extends \cenozo\base_object
    */
   public static function get_table_name()
   {
-    // Table and class names (without namespaces) should always be identical (with the exception
-    // of the table prefix
-    $prefix = static::db()->get_prefix();
-    return $prefix.substr( strrchr( get_called_class(), '\\' ), 1 );
+    // Table and class names (without namespaces) should always be identical
+    return substr( strrchr( get_called_class(), '\\' ), 1 );
   }
-  
+
   /**
    * Returns an array of column names for this table.  Any columns in the database by the name
-   * 'timestamp' are always ignored and left out of the active record.
+   * 'update_timestamp' or 'create_timestamp' are always ignored and left out of the active record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @access public
@@ -1380,7 +1124,7 @@ abstract class record extends \cenozo\base_object
   {
     return static::$primary_key_name;
   }
-  
+
   /**
    * Returns an array of all enum values for a particular column.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -1399,7 +1143,7 @@ abstract class record extends \cenozo\base_object
 
     return $values;
   }
-  
+
   /**
    * Returns an array of all distinct values for a particular column.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -1420,7 +1164,7 @@ abstract class record extends \cenozo\base_object
                     $column_name );
     return static::db()->get_col( $sql );
   }
-  
+
   /**
    * Convenience method for database::column_exists(), but for this record
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -1462,31 +1206,8 @@ abstract class record extends \cenozo\base_object
    */
   public static function db()
   {
-    return lib::create( 'business\session' )->get_database();
-  }
-
-  /**
-   * Add a customized join definition between this and another table.
-   * 
-   * Joins are automatically created when tables have direct 1-to-1, 1-to-N or N-to-N
-   * relationships.  Use this method to define extra joins such as those that span multiple
-   * tables.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $table The name of the table to join to.
-   * @param database\modifier $modifier The modifier necessary to join the table.
-   * @param boolean $override Whether to replace an existing join to the table.
-   * @static
-   * @access public
-   */
-  public static function customize_join( $table, $modifier, $override = false )
-  {
-    $class_index = lib::get_class_name( get_called_class(), true );
-    if( !array_key_exists( $class_index, self::$custom_join_list ) )
-      self::$custom_join_list[$class_index] = array();
-
-    if( !array_key_exists( $table, self::$custom_join_list[$class_index] ) || $override )
-      self::$custom_join_list[$class_index][$table] = $modifier;
+    if( is_null( static::$db ) ) static::$db = lib::create( 'business\session' )->get_database();
+    return static::$db;
   }
 
   /**
@@ -1512,7 +1233,6 @@ abstract class record extends \cenozo\base_object
 
   /**
    * Returns an array of all extending tables, or an empty array if there are no extending tables.
-   * Note, these names do not include the table_ prefix
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @static
@@ -1523,34 +1243,6 @@ abstract class record extends \cenozo\base_object
     $class_index = lib::get_class_name( get_called_class(), true );
     return array_key_exists( $class_index, self::$extending_table_list ) ?
       self::$extending_table_list[$class_index] : array();
-  }
-
-  /**
-   * Defines which primary unique key to use when get_unique_key_columns() is called.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name The database name for the unique key.
-   * @static
-   * @access public
-   */
-  public static function set_primary_unique_key( $name )
-  {
-    $class_index = lib::get_class_name( get_called_class(), true );
-    if( !array_key_exists( $class_index, self::$primary_unique_key_list ) )
-      self::$primary_unique_key_list[$class_index] = $name;
-  }
-
-  /**
-   * Returns the primary unique key to use when get_unique_key_columns() is called.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function get_primary_unique_key()
-  {
-    $class_index = lib::get_class_name( get_called_class(), true );
-    return array_key_exists( $class_index, self::$primary_unique_key_list ) ?
-      self::$primary_unique_key_list[$class_index] : NULL;
   }
 
   /**
@@ -1570,7 +1262,7 @@ abstract class record extends \cenozo\base_object
     $tables[] = array( 'name' => static::get_table_name(),
                        'key' => static::get_primary_key_name(),
                        'columns' => & $this->column_values );
-    
+
     foreach( self::get_extending_table_list() as $extending_table )
     {
       // make sure the extending column values array exists
@@ -1586,6 +1278,14 @@ abstract class record extends \cenozo\base_object
 
     return $tables;
   }
+
+  /**
+   * An instance to the database object the record belongs to
+   * @var database\database
+   * @access protected
+   * @static
+   */
+  protected static $db = null;
 
   /**
    * Determines whether the record is read only (no modifying the database).
@@ -1609,7 +1309,7 @@ abstract class record extends \cenozo\base_object
    * @static
    * @access protected
    */
-  protected $include_timestamps = true;
+  protected $write_timestamps = true;
 
   /**
    * The name of the table's primary key column.
@@ -1626,15 +1326,6 @@ abstract class record extends \cenozo\base_object
    * @access private
    */
   private static $primary_unique_key_list = array();
-
-  /**
-   * An associative array containing all of the custom joins.  The key is the name of the table
-   * being joined and the value a modifier object which defines the join.
-   * @var array( database\modifier )
-   * @static
-   * @access private
-   */
-  private static $custom_join_list = array();
 
   /**
    * A list of tables which extend this record's data.  See add_extending_table() for more details.

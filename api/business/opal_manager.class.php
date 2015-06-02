@@ -59,7 +59,7 @@ class opal_manager extends \cenozo\factory
       'AGE_DOB_TRM',
       'SDC_MRTL_COM',
       'SDC_MRTL_TRM' );
-    
+
     $value = NULL;
     if( in_array( $variable, $cached_variables ) )
     {
@@ -72,7 +72,7 @@ class opal_manager extends \cenozo\factory
         $variable,
         $modifier->get_sql() );
       $value = $participant_class_name::db()->get_one( $sql );
-      
+
       if( false === $value )
         throw lib::create( 'exception\runtime',
           sprintf( 'Unable to retrieve cached opal value for %s, data is missing.',
@@ -98,7 +98,7 @@ class opal_manager extends \cenozo\factory
         $db_participant->uid,
         rawurlencode( $variable ) );
       $request->setUrl( $url );
-      
+
       try
       {
         $message = $request->send();
@@ -157,9 +157,9 @@ class opal_manager extends \cenozo\factory
     else if( 0 == strlen( $value ) )
       throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
 
-    // if no language is specified then use the service's default
+    // if no language is specified then use the application's default
     if( is_null( $db_language ) )
-      $db_language = lib::create( 'business\session' )->get_service()->get_language();
+      $db_language = lib::create( 'business\session' )->get_application()->get_language();
 
     // NOTE: as a temporary fix to Opal not responding promptly to queries the following
     // variables have been cached into the local database and are to be accessed directly
@@ -167,7 +167,7 @@ class opal_manager extends \cenozo\factory
     $cached_variables = array(
       'SDC_MRTL_COM',
       'SDC_MRTL_TRM' );
-    
+
     $label = NULL;
     if( in_array( $variable, $cached_variables ) )
     {
@@ -229,7 +229,7 @@ class opal_manager extends \cenozo\factory
         rawurlencode( $table ),
         rawurlencode( $variable ) );
       $request->setUrl( $url );
-      
+
       try
       {
         $message = $request->send();
@@ -303,21 +303,21 @@ class opal_manager extends \cenozo\factory
    * @access protected
    */
   protected $server = 'localhost';
-  
+
   /**
    * The Opal port to connect to.
    * @var integer
    * @access protected
    */
   protected $port = 8843;
-  
+
   /**
    * Which username to use when connecting to the server
    * @var string
    * @access protected
    */
   protected $username = '';
-  
+
   /**
    * Which password to use when connecting to the server
    * @var string

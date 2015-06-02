@@ -49,14 +49,14 @@ class base_exception extends \Exception
                                    $context ) );
       $code = defined( $constant_name ) ? constant( $constant_name ) : $base_code;
     }
-    
+
     $this->error_number_constant_name = $constant_name;
     parent::__construct( sprintf( "\n%s (%s):\n%s\n",
                                   $constant_name,
                                   $code,
                                   $this->raw_message ), $code, $previous );
   }
-  
+
   /**
    * Returns the type of exception as a string.
    * @author Patrick Emond <emondpd@mcmaster.ca>

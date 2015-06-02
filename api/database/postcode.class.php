@@ -30,13 +30,13 @@ class postcode extends record
       throw lib::create( 'exception\argument', 'postcode', $postcode, __METHOD__ );
 
     $database_class_name = lib::get_class_name( 'database\database' );
-    $postcode = $database_class_name::format_string( $postcode );
+    $postcode = static::db()->format_string( $postcode );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( $postcode, 'LIKE', 'CONCAT( name, "%" )', false );
     $modifier->order_desc( 'CHAR_LENGTH( name )' );
     $modifier->limit( 1 );
-    $postcode_list = static::select( $modifier );
-    
+    $postcode_list = static::select_objects( $modifier );
+
     return 0 == count( $postcode_list ) ? NULL : current( $postcode_list );
   }
 }

@@ -15,6 +15,90 @@ use cenozo\lib, cenozo\log;
 class address extends has_rank
 {
   /**
+   * Override parent method
+   */
+  public function save()
+  {
+    // make sure the address is valid
+    if( !$this->is_valid() )
+    {
+      $country = lib::create( 'business\session' )->get_application()->country;
+      $message = sprintf(
+        $this->international ?
+        'international addresses may not have a region in %s.' :
+        'local (non-international) addresses must have a region in %s and a valid postcode.',
+        $country );
+      throw lib::create( 'exception\notice',
+        'Unable to save address as requested. Please note that '.$message,
+        __METHOD__ );
+    }
+
+    // figure out whether alternate or participant is the rank parent
+    static::$rank_parent = !is_null( $this->alternate_id ) ? 'alternate' : 'participant';
+    parent::save();
+    static::$rank_parent = NULL;
+  }
+
+  /**
+   * Override parent method
+   */
+  public function delete()
+  {
+    // figure out whether alternate or participant is the rank parent
+    static::$rank_parent = !is_null( $this->alternate_id ) ? 'alternate' : 'participant';
+    parent::delete();
+    static::$rank_parent = NULL;
+  }
+
+  /**
+   * Extend parent method
+   */
+  public static function get_unique_record( $column, $value )
+  {
+    $record = NULL;
+
+    // make use of the uq_alternate_id_participant_id_rank pseudo unique key
+    if( is_array( $column ) && 2 == count( $column ) && in_array( 'rank', $column ) &&
+        ( in_array( 'participant_id', $column ) || in_array( 'alternate_id', $column ) ) )
+    {
+      $select = lib::create( 'database\select' );
+      $select->from( static::get_table_name() );
+      $select->add_column( static::get_primary_key_name() );
+      $modifier = lib::create( 'database\modifier' );
+      foreach( $column as $index => $name ) $modifier->where( $name, '=', $value[$index] );
+
+      // this returns null if no records are found
+      $id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+      if( !is_null( $id ) ) $record = new static( $id );
+    }
+    else
+    {
+      $record = parent::get_unique_record( $column, $value );
+    }
+
+    return $record;
+  }
+
+  /**
+   * Add space in postcodes if needed by overriding the magic __set method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name The name of the column
+   * @param mixed $value The value to set the contents of a column to
+   * @throws exception\argument
+   * @access public
+   */
+  public function __set( $column_name, $value )
+  {
+    if( 'postcode' == $column_name )
+      $value = preg_replace_callback(
+        '/([A-Za-z][0-9][A-Za-z]) ?([0-9][A-Za-z][0-9])/',
+        function( $match ) { return strtoupper( sprintf( '%s %s', $match[1], $match[2] ) ); },
+        $value );
+
+    parent::__set( $column_name, $value );
+  }
+
+  /**
    * Sets the region, timezone offset and daylight savings columns based on the postcode.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
@@ -35,34 +119,6 @@ class address extends has_rank
   }
 
   /**
-   * Determines the difference in hours between the user's timezone and the address's timezone
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return float (NULL if it is not possible to get the time difference)
-   * @access public
-   */
-  public function get_time_diff()
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-
-    // get the user's timezone differential from UTC
-    $user_offset = $util_class_name::get_datetime_object()->getOffset() / 3600;
-
-    // determine if we are currently under daylight savings
-    $summer_offset = $util_class_name::get_datetime_object( '2000-07-01' )->getOffset() / 3600;
-    $under_daylight_savings = $user_offset == $summer_offset;
-
-    if( !is_null( $this->timezone_offset ) && !is_null( $this->daylight_savings ) )
-    {
-      $offset = $this->timezone_offset;
-      if( $under_daylight_savings && $this->daylight_savings ) $offset += 1;
-      return $offset - $user_offset;
-    }
-
-    // if we get here then there is no way to get the time difference
-    return NULL;
-  }
-
-  /**
    * Determines if the address is valid by making sure all address-based manditory fields
    * are filled and checking for postcode-region mismatches.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -71,90 +127,23 @@ class address extends has_rank
    */
   public function is_valid()
   {
-    // make sure all mandatory address-based fields are filled in
-    if( is_null( $this->address1 ) ||
-        is_null( $this->city ) ||
-        is_null( $this->region_id ) ||
-        is_null( $this->postcode ) ) return false;
+    $session = lib::create( 'business\session' );
+
+    // if international then make sure the region doesn't belong to the application's country
+    if( $this->international )
+      return is_null( $this->region_id ) || $this->get_region()->country != $session->get_application()->country;
+
+    // not international, make sure the region and postcode are set
+    if( is_null( $this->region_id ) || is_null( $this->postcode ) ) return false;
+
+    // make sure postcode is in A0A 0A0 or 00000 format
+    if( 0 == preg_match( '/([A-Za-z][0-9][A-Za-z]) ([0-9][A-Za-z][0-9])/', $this->postcode ) &&
+        0 == preg_match( '/[0-9]{5}/', $this->postcode ) ) return false;
 
     // look up the postal code for the correct region
     $postcode_class_name = lib::get_class_name( 'database\postcode' );
     $db_postcode = $postcode_class_name::get_match( $this->postcode );
-    if( is_null( $db_postcode ) ) return NULL;
-    return $db_postcode->region_id == $this->region_id;
-  }
-
-  /**
-   * Refer to the participant or alternate instead of the person record
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $key A primary key value for the table.
-   * @return associative array
-   * @static
-   * @access public
-   */
-  public static function get_unique_from_primary_key( $key )
-  {
-    $unique_key_array = parent::get_unique_from_primary_key( $key );
-
-    $record = new static( $key );
-    $db_person = $record->get_person();
-    if( !is_null( $db_person ) )
-    {
-      $db_participant = $db_person->get_participant();
-      $db_alternate = $db_person->get_alternate();
-      if( !is_null( $db_participant ) )
-      {
-        $participant_class_name = lib::get_class_name( 'database\participant' );
-        $unique_key_array['participant_id'] =
-          $participant_class_name::get_unique_from_primary_key( $db_participant->id );
-        unset( $unique_key_array['person_id'] );
-      }
-      else if( !is_null( $db_alternate ) )
-      {
-        $alternate_class_name = lib::get_class_name( 'database\alternate' );
-        $unique_key_array['alternate_id'] =
-          $alternate_class_name::get_unique_from_primary_key( $db_alternate->id );
-        unset( $unique_key_array['person_id'] );
-      }
-    }
-
-    return $unique_key_array;
-  }
-
-  /**
-   * Replace alternate_id/participant_id with person_id in unique key
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param associative array
-   * @return int
-   * @static
-   * @access public
-   */
-  public static function get_primary_from_unique_key( $key )
-  {
-    // we may have a stdObject, so convert to an array if we do
-    if( is_object( $key ) ) $key = (array) $key;
-    if( !is_array( $key ) ) return NULL;
-
-    if( array_key_exists( 'participant_id', $key ) )
-    {
-      $participant_class_name = lib::get_class_name( 'database\participant' );
-      $db_participant = lib::create( 'database\participant',
-        $participant_class_name::get_primary_from_unique_key( $key['participant_id'] ) );
-      $key['person_id'] = !is_null( $db_participant ) ? $db_participant->person_id : NULL;
-      unset( $key['participant_id'] );
-    }
-    else if( array_key_exists( 'alternate_id', $key ) )
-    {
-      $alternate_class_name = lib::get_class_name( 'database\alternate' );
-      $db_alternate = lib::create( 'database\alternate',
-        $alternate_class_name::get_primary_from_unique_key( $key['alternate_id'] ) );
-      $key['person_id'] = !is_null( $db_alternate ) ? $db_alternate->person_id : NULL;
-      unset( $key['alternate_id'] );
-    }
-
-    return parent::get_primary_from_unique_key( $key );
+    return !is_null( $db_postcode ) ? $db_postcode->region_id == $this->region_id : false;
   }
 
   /**
@@ -163,5 +152,5 @@ class address extends has_rank
    * @access protected
    * @static
    */
-  protected static $rank_parent = 'person';
+  protected static $rank_parent = NULL;
 }

@@ -43,7 +43,7 @@ class ldap_manager extends \cenozo\singleton
     if( is_resource( $this->resource ) ) @ldap_unbind( $this->resource );
     $this->resource = NULL;
   }
-    
+
   /**
    * Initializes the ldap manager.
    * This method is called internally by the class whenever necessary.
@@ -69,7 +69,7 @@ class ldap_manager extends \cenozo\singleton
       throw lib::create( 'exception\ldap',
         ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
-  
+
   /**
    * Creates a new user.
    * 
@@ -97,7 +97,7 @@ class ldap_manager extends \cenozo\singleton
         'passwordHolder' ),
       'description' => 'clsa',
       'userpassword' => $util_class_name::sha1_hash( $password ) );
-    
+
     $dn = sprintf( 'uid=%s,ou=Users,%s', $username, $this->base );
     if( !( @ldap_add( $this->resource, $dn, $data ) ) )
       if( 68 != ldap_errno( $this->resource ) ) // ignore already exists errors
@@ -117,7 +117,7 @@ class ldap_manager extends \cenozo\singleton
   {
     if( !$this->enabled ) return;
     $this->connect();
-    
+
     $dn = sprintf( 'uid=%s,ou=Users,%s', $username, $this->base );
     if( !( @ldap_delete( $this->resource, $dn ) ) )
       throw lib::create( 'exception\ldap',
@@ -143,24 +143,24 @@ class ldap_manager extends \cenozo\singleton
     if( !$search )
       throw lib::create( 'exception\ldap',
         ldap_error( $this->resource ), ldap_errno( $this->resource ) );
-  
+
     $entries = @ldap_get_entries( $this->resource, $search );
     ldap_free_result( $search );
     if( !$entries )
       throw lib::create( 'exception\ldap',
         ldap_error( $this->resource ), ldap_errno( $this->resource ) );
-  
+
     if( 0 == $entries['count'] )
       throw lib::create( 'exception\runtime',
         sprintf( 'User %s not found.', $username ), __METHOD__ );
-  
+
     $dn = $entries[0]['dn'];
     $test = @ldap_bind( $this->resource, $dn, $password );
 
     if( !$test && 49 != ldap_errno( $this->resource ) )
       throw lib::create( 'exception\ldap',
         ldap_error( $this->resource ), ldap_errno( $this->resource ) );
-    
+
     return $test;
   }
 
@@ -183,18 +183,18 @@ class ldap_manager extends \cenozo\singleton
     if( !$search )
       throw lib::create( 'exception\ldap',
         ldap_error( $this->resource ), ldap_errno( $this->resource ) );
-    
+
     $entries = @ldap_get_entries( $this->resource, $search );
     ldap_free_result( $search );
     if( !$entries )
       throw lib::create( 'exception\ldap',
         ldap_error( $this->resource ), ldap_errno( $this->resource ) );
-    
+
     if( 0 == $entries['count'] )
       throw lib::create( 'exception\runtime', 'LDAP user '.$username.' not found.', __METHOD__ );
-    
+
     $data = array( 'userpassword' => $util_class_name::sha1_hash( $password ) );
-  
+
     $dn = $entries[0]['dn'];
     if( !( @ldap_mod_replace( $this->resource, $dn, $data ) ) )
       throw lib::create( 'exception\ldap',
@@ -216,7 +216,7 @@ class ldap_manager extends \cenozo\singleton
    * @access protected
    */
   protected $resource = NULL;
-  
+
   /** Whether LDAP is enabled.
    * @var boolean
    * @access private
@@ -229,35 +229,35 @@ class ldap_manager extends \cenozo\singleton
    * @access protected
    */
   protected $server = 'localhost';
-  
+
   /**
    * The LDAP port to connect to.
    * @var integer
    * @access protected
    */
   protected $port = 389;
-  
+
   /**
    * The base dn to use when searching
    * @var string
    * @access protected
    */
   protected $base = '';
-  
+
   /**
    * Which username to use when connecting to the manager
    * @var string
    * @access protected
    */
   protected $username = '';
-  
+
   /**
    * Which password to use when connecting to the manager
    * @var string
    * @access protected
    */
   protected $password = '';
-  
+
   /**
    * Whether the server is in active directory mode.
    * @var bool

@@ -11,11 +11,6 @@ namespace cenozo\database;
 use cenozo\lib, cenozo\log;
 
 /**
- * @category external
- */
-require_once ADODB_PATH.'/adodb.inc.php';
-
-/**
  * The database class represents a database connection and information.
  */
 class database extends \cenozo\base_object
@@ -25,31 +20,25 @@ class database extends \cenozo\base_object
    * 
    * The constructor either creates a new connection to a database.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $driver The type of database (only mysql is tested)
    * @param string $server The name of the database's server
    * @param string $username The username to connect with.
    * @param string $password The password to connect with.
    * @param string $database The name of the database.
-   * @param string $prefix The prefix to add before every table name.
    * @throws exception\runtime
    * @access public
    */
-  public function __construct( $driver, $server, $username, $password, $database, $prefix )
+  public function __construct( $server, $username, $password, $database )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
 
-    $this->driver = 'mysql' == $driver ? 'mysqlt' : $driver;
     $this->server = $server;
     $this->username = $username;
     $this->password = $password;
     $this->name = $database;
-    $this->prefix = $prefix;
-    
+
     // set up the database connection
-    $this->connection = ADONewConnection( $this->driver );
-    $this->connection->SetFetchMode( ADODB_FETCH_ASSOC );
-    
-    $this->connect();
+    $this->connection = new \mysqli( $this->server, $this->username, $this->password, $this->name );
+
     if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
 
     // determine the framework name
@@ -57,25 +46,26 @@ class database extends \cenozo\base_object
       '%s%s',
       $setting_manager->get_setting( 'db', 'database_prefix' ),
       $setting_manager->get_setting( 'general', 'framework_name' ) );
+    $schema_list = array( '"'.$this->name.'"', '"'.$framework_name.'"' );
 
     $column_mod = lib::create( 'database\modifier' );
-    $column_mod->where( 'table_schema', 'IN', array( $this->name, $framework_name ) );
-    $column_mod->where( 'column_name', '!=', 'update_timestamp' ); // ignore timestamp columns
-    $column_mod->where( 'column_name', '!=', 'create_timestamp' );
-    $column_mod->where( 'column_type', '!=', 'mediumtext' ); // ignore really big data types
-    $column_mod->where( 'column_type', '!=', 'longtext' );
-    $column_mod->where( 'column_type', '!=', 'mediumblob' );
-    $column_mod->where( 'column_type', '!=', 'longblob' );
+    $column_mod->where( 'table_schema', 'IN', $schema_list, false );
+    $column_mod->where( 'column_name', '!=', '"update_timestamp"', false ); // ignore timestamp columns
+    $column_mod->where( 'column_name', '!=', '"create_timestamp"', false );
+    $column_mod->where( 'column_type', '!=', '"mediumtext"', false ); // ignore really big data types
+    $column_mod->where( 'column_type', '!=', '"longtext"', false );
+    $column_mod->where( 'column_type', '!=', '"mediumblob"', false );
+    $column_mod->where( 'column_type', '!=', '"longblob"', false );
     $column_mod->order( 'table_name' );
     $column_mod->order( 'column_name' );
 
     $rows = $this->get_all(
       sprintf( 'SELECT table_schema, table_name, column_name, column_type, '.
-                      'data_type, column_key, column_default '.
+                      'data_type, column_key, column_default, is_nullable != "YES" AS is_nullable '.
                'FROM information_schema.columns %s ',
                $column_mod->get_sql() ),
       false ); // do not add table names
-    
+
     // record the tables, columns and types
     foreach( $rows as $row )
     {
@@ -95,25 +85,21 @@ class database extends \cenozo\base_object
         array( 'data_type' => $data_type,
                'type' => $column_type,
                'default' => $column_default,
+               'required' => $is_nullable,
                'key' => $column_key );
     }
 
     $constraint_mod = lib::create( 'database\modifier' );
-    $constraint_mod->where(
-      'TABLE_CONSTRAINTS.TABLE_SCHEMA', 'IN', array( $this->name, $framework_name ) );
-    $constraint_mod->where(
-      'KEY_COLUMN_USAGE.TABLE_SCHEMA', 'IN', array( $this->name, $framework_name ) );
-    $constraint_mod->where(
-      'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', 'UNIQUE' );
-    $constraint_mod->where(
-      'TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'KEY_COLUMN_USAGE.CONSTRAINT_NAME', false );
+    $constraint_mod->where( 'TABLE_CONSTRAINTS.TABLE_SCHEMA', 'IN', $schema_list, false );
+    $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', '"UNIQUE"', false );
+    $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'KEY_COLUMN_USAGE.CONSTRAINT_NAME', false );
     $constraint_mod->group( 'table_name' );
     $constraint_mod->group( 'constraint_name' );
     $constraint_mod->group( 'column_name' );
     $constraint_mod->order( 'table_name' );
     $constraint_mod->order( 'constraint_name' );
-    $constraint_mod->order( 'column_name' );
-    
+    $constraint_mod->order( 'ordinal_position' );
+
     $rows = $this->get_all(
       sprintf( 'SELECT TABLE_CONSTRAINTS.TABLE_NAME table_name, '.
                       'TABLE_CONSTRAINTS.CONSTRAINT_NAME AS constraint_name, '.
@@ -121,7 +107,7 @@ class database extends \cenozo\base_object
                'FROM information_schema.TABLE_CONSTRAINTS, information_schema.KEY_COLUMN_USAGE %s',
                $constraint_mod->get_sql() ),
       false ); // do not add table names
-    
+
     // record the constraints
     foreach( $rows as $row )
     {
@@ -140,19 +126,18 @@ class database extends \cenozo\base_object
    */
   public function start_transaction()
   {
-    $service_name = lib::create( 'business\session' )->get_service()->name;
     $setting_manager = lib::create( 'business\setting_manager' );
 
     // only start a transaction for the main database (this is an ADOdb limitation)
     $database = sprintf(
-      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), $service_name );
+      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE );
     if( $database == $this->name )
     {
       if( self::$debug ) log::debug( '(DB) starting transaction' );
-      $this->connection->StartTrans();
+      $this->connection->begin_transaction();
     }
   }
-  
+
   /**
    * Complete the database transaction.
    * 
@@ -161,19 +146,18 @@ class database extends \cenozo\base_object
    */
   public function complete_transaction()
   {
-    $service_name = lib::create( 'business\session' )->get_service()->name;
     $setting_manager = lib::create( 'business\setting_manager' );
 
     // only complete a transaction for the main database (this is an ADOdb limitation)
     $database = sprintf(
-      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), $service_name );
+      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE );
     $class_name = lib::get_class_name( 'business\setting_manager' );
     if( class_exists( 'cenozo\business\setting_manager' ) &&
         $class_name::exists() &&
         $database == $this->name )
     {
       if( self::$debug ) log::debug( '(DB) completing transaction' );
-      $this->connection->CompleteTrans();
+      $this->connection->commit();
     }
   }
 
@@ -190,7 +174,7 @@ class database extends \cenozo\base_object
   public function fail_transaction()
   {
     if( self::$debug ) log::debug( '(DB) failing transaction' );
-    $this->connection->FailTrans();
+    $this->connection->rollback();
   }
 
   /**
@@ -202,14 +186,6 @@ class database extends \cenozo\base_object
   public function get_name() { return $this->name; }
 
   /**
-   * Get's the prefix of the database.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_prefix() { return $this->prefix; }
-
-  /**
    * Determines whether a particular table exists.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
@@ -218,7 +194,6 @@ class database extends \cenozo\base_object
    */
   public function table_exists( $table_name )
   {
-    $table_name = $this->prefix.$table_name;
     return array_key_exists( $table_name, $this->tables );
   }
 
@@ -232,11 +207,10 @@ class database extends \cenozo\base_object
    */
   public function column_exists( $table_name, $column_name )
   {
-    $table_name = $this->prefix.$table_name;
     return array_key_exists( $table_name, $this->tables ) &&
            array_key_exists( $column_name, $this->tables[$table_name]['columns'] );
   }
-  
+
   /**
    * Returns an array of column names for the given table.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -251,12 +225,11 @@ class database extends \cenozo\base_object
         sprintf( 'Tried to get column names for table "%s" which doesn\'t exist.',
                  $table_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return array_keys( $this->tables[$table_name]['columns'] );
   }
 
   /**
-   * Returns a column's type (int, varchar, enum, etc)
+   * Returns a column's type (int(10) unsigned, varchar(45), enum( 'a', 'b', 'c' ), etc)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
@@ -271,12 +244,11 @@ class database extends \cenozo\base_object
                  $table_name,
                  $column_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return $this->tables[$table_name]['columns'][$column_name]['type'];
   }
-  
+
   /**
-   * Returns a column's data type (int(10) unsigned, varchar(45), enum( 'a', 'b', 'c' ), etc)
+   * Returns a column's data type (int, varchar, enum, etc)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
@@ -291,10 +263,9 @@ class database extends \cenozo\base_object
                  $table_name,
                  $column_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return $this->tables[$table_name]['columns'][$column_name]['data_type'];
   }
-  
+
   /**
    * Returns a column's key type.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -311,10 +282,26 @@ class database extends \cenozo\base_object
                  $table_name,
                  $column_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return $this->tables[$table_name]['columns'][$column_name]['key'];
   }
-  
+
+  /**
+   * Returns an associative list of metadata for all columns
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table_name The name of the table to check for.
+   * @return string
+   * @access public
+   */
+  public function get_column_details( $table_name )
+  {
+    if( !$this->table_exists( $table_name ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Tried to get unique keys for table "%s" which doesn\'t exist.', $table_name ),
+        __METHOD__ );
+
+    return $this->tables[$table_name]['columns'];
+  }
+
   /**
    * Returns a column's default.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -331,10 +318,9 @@ class database extends \cenozo\base_object
                  $table_name,
                  $column_name ), __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return $this->tables[$table_name]['columns'][$column_name]['default'];
   }
-  
+
   /**
    * This method returns an array of unique keys with the key-value pair being the key's name
    * and an array of column names belonging to that key, respectively.
@@ -350,15 +336,13 @@ class database extends \cenozo\base_object
         sprintf( 'Tried to get unique keys for table "%s" which doesn\'t exist.', $table_name ),
         __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return array_key_exists( $table_name, $this->tables )
          ? $this->tables[$table_name]['constraints']
          : array();
   }
-  
+
   /**
    * Gets the primary key names for a given table.
-   * Note: This is a wrapper for ADOdb::MetaPrimaryKeys()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @param string $table_name A table name.
@@ -371,7 +355,6 @@ class database extends \cenozo\base_object
         sprintf( 'Tried to get primary key for table "%s" which doesn\'t exist.', $table_name ),
         __METHOD__ );
 
-    $table_name = $this->prefix.$table_name;
     return array_key_exists( $table_name, $this->tables )
          ? $this->tables[$table_name]['primary']
          : array();
@@ -383,7 +366,6 @@ class database extends \cenozo\base_object
    * Execute SQL statement $sql and return derived class of ADORecordSet if successful. Note that a
    * record set is always returned on success, even if we are executing an insert or update
    * statement.
-   * Note: This is a wrapper for ADOdb::Execute()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @return ADORecordSet
@@ -394,23 +376,18 @@ class database extends \cenozo\base_object
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
-    
+
     if( self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
       log::debug( sprintf( '(DB) executing "%s"', $sql ) );
     }
-    $result = $this->connection->Execute( $sql );
-    if( self::$debug ) log::debug( sprintf( '(DB) result "%s" [%0.2fs]',
-                                            $result ? 'y' : 'n',
-                                            $util_class_name::get_elapsed_time() - $time ) );
-
+    $result = $this->connection->query( $sql );
     if( false === $result )
     {
       // if a deadlock or lock-wait timout has occurred then notify the user with a notice
-      if( 1213 == $this->connection->ErrorNo() || 1205 == $this->connection->ErrorNo() )
+      if( 1213 == $this->connection->errno || 1205 == $this->connection->errno )
       {
         log::warning( 'Deadlock has prevented an update to the database.' );
         throw lib::create( 'exception\notice',
@@ -421,18 +398,21 @@ class database extends \cenozo\base_object
       {
         // pass the db error code instead of a class error code
         throw lib::create( 'exception\database',
-          $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
+          $this->connection->error, $sql, $this->connection->errno );
       }
     }
 
+    if( self::$debug ) log::debug( sprintf( '(DB) result "%s" [%0.2fs]',
+                                            $result ? 'y' : 'n',
+                                            $util_class_name::get_elapsed_time() - $time ) );
+
     return $result;
   }
-  
+
   /**
    * Database convenience method.
    * 
    * Executes the SQL and returns the first field of the first row.
-   * Note: This is a wrapper for ADOdb::GetOne()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @return native or NULL if no records were found.
@@ -443,7 +423,6 @@ class database extends \cenozo\base_object
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
     if( self::$debug )
@@ -451,25 +430,27 @@ class database extends \cenozo\base_object
       $time = $util_class_name::get_elapsed_time();
       log::debug( sprintf( '(DB) getting one "%s"', $sql ) );
     }
-    $result = $this->connection->GetOne( $sql );
-    if( self::$debug ) log::debug( sprintf( '(DB) result "%s" [%0.2fs]',
-                                            $result,
-                                            $util_class_name::get_elapsed_time() - $time ) );
+    $result = $this->connection->query( $sql );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
       throw lib::create( 'exception\database',
-        $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
+        $this->connection->error, $sql, $this->connection->errno );
     }
 
-    return $result;
+    $array = $result->fetch_array( MYSQLI_NUM );
+    $result->free();
+    $value = is_null( $array ) ? NULL : current( $array );
+    if( self::$debug ) log::debug( sprintf( '(DB) result "%s" [%0.2fs]',
+                                            $value,
+                                            $util_class_name::get_elapsed_time() - $time ) );
+    return $value;
   }
-  
+
   /**
    * Database convenience method.
    * 
    * Executes the SQL and returns the first row as an array.
-   * Note: This is a wrapper for ADOdb::GetRow()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @return array (empty if no records are found)
@@ -480,7 +461,6 @@ class database extends \cenozo\base_object
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
     if( self::$debug )
@@ -488,25 +468,31 @@ class database extends \cenozo\base_object
       $time = $util_class_name::get_elapsed_time();
       log::debug( sprintf( '(DB) getting row "%s"', $sql ) );
     }
-    $result = $this->connection->GetRow( $sql );
-    if( self::$debug ) log::debug( sprintf( '(DB) returned %d row(s) [%0.2fs]',
-                                            $result ? ( count( $result ) ? 1 : 0 ) : 0,
-                                            $util_class_name::get_elapsed_time() - $time ) );
+    $result = $this->connection->query( $sql );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
       throw lib::create( 'exception\database',
-        $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
+        $this->connection->error, $sql, $this->connection->errno );
     }
 
-    return $result;
+    $row = $result->fetch_assoc();
+    $result->free();
+    if( self::$debug )
+      log::debug( is_null( $row )
+        ? sprintf( '(DB) did not return a row [%0.2fs]',
+                   $util_class_name::get_elapsed_time() - $time )
+        : sprintf( '(DB) returned row with %d column(s) [%0.2fs]',
+                   count( $row ),
+                   $util_class_name::get_elapsed_time() - $time ) );
+
+    return $row;
   }
-  
+
   /**
    * Database convenience method.
    * 
    * Executes the SQL and returns the all the rows as a 2-dimensional array.
-   * Note: This is a wrapper for ADOdb::GetAll()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @return array (empty if no records are found)
@@ -517,7 +503,6 @@ class database extends \cenozo\base_object
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
     if( self::$debug )
@@ -525,37 +510,38 @@ class database extends \cenozo\base_object
       $time = $util_class_name::get_elapsed_time();
       log::debug( sprintf( '(DB) getting all "%s"', $sql ) );
     }
-    $result = $this->connection->GetAll( $sql );
-    if( self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
-                                            $result ? count( $result ) : 0,
-                                            $util_class_name::get_elapsed_time() - $time ) );
+    $result = $this->connection->query( $sql );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
       throw lib::create( 'exception\database',
-        $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
+        $this->connection->error, $sql, $this->connection->errno );
     }
 
-    return $result;
+    $rows = array();
+    while( $row = $result->fetch_assoc() ) $rows[] = $row;
+    $result->free();
+
+    if( self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
+                                            $rows ? count( $rows ) : 0,
+                                            $util_class_name::get_elapsed_time() - $time ) );
+    return $rows;
   }
-  
+
   /**
    * Database convenience method.
    * 
    * Executes the SQL and returns all elements of the first column as a 1-dimensional array.
-   * Note: This is a wrapper for ADOdb::GetCol()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
-   * @param boolean $trim determines whether to right trim CHAR fields
    * @return array (empty if no records are found)
    * @throws exception\database
    * @access public
    */
-  public function get_col( $sql, $trim = false, $add_database_names = true )
+  public function get_col( $sql, $add_database_names = true )
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    $this->connect();
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
     if( self::$debug )
@@ -563,54 +549,54 @@ class database extends \cenozo\base_object
       $time = $util_class_name::get_elapsed_time();
       log::debug( sprintf( '(DB) getting col "%s"', $sql ) );
     }
-    $result = $this->connection->GetCol( $sql, $trim );
-    if( self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
-                                            $result ? count( $result ) : 0,
-                                            $util_class_name::get_elapsed_time() - $time ) );
+    $result = $this->connection->query( $sql );
     if( false === $result )
     {
       // pass the database error code instead of a class error code
       throw lib::create( 'exception\database',
-        $this->connection->ErrorMsg(), $sql, $this->connection->ErrorNo() );
+        $this->connection->error, $sql, $this->connection->errno );
     }
 
-    return $result;
+    $cols = array();
+    while( $row = $result->fetch_array( MYSQLI_NUM ) ) $cols[] = current( $row );
+    $result->free();
+    if( self::$debug ) log::debug( sprintf( '(DB) returned %d values [%0.2fs]',
+                                            count( $cols ),
+                                            $util_class_name::get_elapsed_time() - $time ) );
+
+    return $cols;
   }
-  
+
   /**
    * Database convenience method.
    * 
    * Returns the last autonumbering ID inserted.
-   * Note: This is a wrapper for ADOdb::Insert_ID()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
   public function insert_id()
   {
-    $this->connect();
-    $id = $this->connection->Insert_ID();
+    $id = $this->connection->insert_id;
     if( self::$debug ) log::debug( '(DB) insert ID = '.$id );
     return $id;
   }
-  
+
   /**
    * Database convenience method.
    * 
    * Returns the number of rows affected by a update or delete statement.
-   * Note: This is a wrapper for ADOdb::Affected_Rows()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
   public function affected_rows()
   {
-    $this->connect();
-    $num = $this->connection->Affected_Rows();
+    $num = $this->connection->affected_rows;
     if( self::$debug ) log::debug( '(DB) affected rows = '.$num );
     return $num;
   }
-  
+
   /**
    * Returns the string formatted for database queries.
    * 
@@ -619,23 +605,83 @@ class database extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The string to format for use in a query.
    * @return string
-   * @static
    * @access public
    */
-  public static function format_string( $string )
+  public function format_string( $string )
   {
     // NULL values are returned as a MySQL NULL value
     if( is_null( $string ) ) return 'NULL';
-    
+
     // boolean values must be converted to strings (without double-quotes)
     if( is_bool( $string ) ) return $string ? 'true' : 'false';
 
     // trim whitespace from the begining and end of the string
     if( is_string( $string ) ) $string = trim( $string );
-    
-    return 0 == strlen( $string ) ? 'NULL' : sprintf( '"%s"', mysql_real_escape_string( $string ) );
+
+    return 0 == strlen( $string ) ?
+      'NULL' : sprintf( '"%s"', $this->connection->real_escape_string( $string ) );
   }
-  
+
+  /**
+   * Returns the datetime string formatted for database queries.
+   * 
+   * The returned value will be put in double quotes unless the input is null in which case NULL
+   * is returned.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|DateTime $datetime The string or DateTime object to format for use in a query.
+   * @return string
+   * @access public
+   */
+  public function format_datetime( $datetime )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    // convert string to datetime object
+    if( is_string( $datetime ) && 0 < strlen( $datetime ) )
+      $datetime = $util_class_name::get_datetime_object( $datetime );
+    return $datetime instanceof \DateTime ? '"'.$datetime->format( 'Y-m-d H:i:s' ).'"' : 'NULL';
+  }
+
+  /**
+   * Returns the date string formatted for database queries.
+   * 
+   * The returned value will be put in double quotes unless the input is null in which case NULL
+   * is returned.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|DateTime $date The string or DateTime object to format for use in a query.
+   * @return string
+   * @access public
+   */
+  public function format_date( $date )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    // convert string to date object
+    if( is_string( $date ) && 0 < strlen( $date ) )
+      $date = $util_class_name::get_datetime_object( $date );
+    return $date instanceof \DateTime ? '"'.$date->format( 'Y-m-d' ).'"' : 'NULL';
+  }
+
+  /**
+   * Returns the time string formatted for database queries.
+   * 
+   * The returned value will be put in double quotes unless the input is null in which case NULL
+   * is returned.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|DateTime $time The string or DateTime object to format for use in a query.
+   * @return string
+   * @access public
+   */
+  public function format_time( $time )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    // convert string to time object
+    if( is_string( $time ) && 0 < strlen( $time ) )
+      $time = $util_class_name::get_datetime_object( $time );
+    return $time instanceof \DateTime ? '"'.$time->format( 'H:i:s' ).'"' : 'NULL';
+  }
+
   /**
    * Returns a version of the string with all framework and application table names prefixed
    * with their database name.
@@ -776,7 +822,7 @@ class database extends \cenozo\base_object
         }
       }
     }
-    
+
     return $output;
   }
 
@@ -821,27 +867,6 @@ class database extends \cenozo\base_object
   }
 
   /**
-   * Since ADODB does not support multiple database with the same driver this method must be
-   * called before using the connection member.
-   * This method is necessary because ADODB cannot connect to more than one database of the
-   * same driver at the same time:
-   * http://php.bigresource.com/ADODB-Multiple-Database-Connection-wno2zASC.html
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access private
-   */
-  private function connect()
-  {
-    if( $this->name != static::$current_database )
-    {
-      if( false == $this->connection->Connect(
-        $this->server, $this->username, $this->password, $this->name ) )
-        throw lib::create( 'exception\runtime',
-          sprintf( 'Unable to connect to the "%s" database.', $this->name ), __METHOD__ );
-      static::$current_database = $this->name;
-    }
-  }
-
-  /**
    * When set to true all queries will be sent to the debug log
    * @var boolean
    * @static
@@ -857,7 +882,7 @@ class database extends \cenozo\base_object
   protected $tables = array();
 
   /**
-   * A reference to the ADODB resource.
+   * A reference to the mysqli resource.
    * @var resource
    * @access protected
    */
@@ -872,26 +897,19 @@ class database extends \cenozo\base_object
   protected static $current_database = '';
 
   /**
-   * The database driver (see ADODB for possible values)
-   * @var string
-   * @access private
-   */
-  private $driver;
-
-  /**
    * The server that the database is located
    * @var string
    * @access private
    */
   private $server;
-  
+
   /**
    * Which username to use when connecting to the database
    * @var string
    * @access private
    */
   private $username;
-  
+
   /**
    * Which password to use when connecting to the database
    * @var string
@@ -905,11 +923,4 @@ class database extends \cenozo\base_object
    * @access private
    */
   private $name;
-
-  /**
-   * The table name prefix.
-   * @var string
-   * @access private
-   */
-  private $prefix;
 }

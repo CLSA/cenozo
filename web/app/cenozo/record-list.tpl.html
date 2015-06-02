@@ -1,0 +1,101 @@
+<div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
+<table class="table"
+       ng-class="{
+         'table-hover':(model.viewEnabled && !model.chooseEnabled) || model.listModel.chooseMode,
+         'table-striped':!model.listModel.chooseMode
+       } ">
+  <thead>
+    <tr class="info">
+      <td ng-repeat="column in columnArray">
+        <div class="btn-group" role="group" area-hidden="true" tooltip="{{ column.help }}">
+          <button class="btn btn-narrow btn-info"
+                  ng-click="model.listModel.orderBy( column.key )">{{ column.title }}
+            <i ng-if="null !== model.listModel.order && model.listModel.order.column == column.key"
+               class="glyphicon"
+               ng-class="model.listModel.order.reverse ?
+                         'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
+          </button>
+          <button class="btn btn-narrow btn-info"
+                  ng-if="column.allowRestrict"
+                  ng-click="addRestrict( column.key )">
+            <i class="glyphicon glyphicon-filter"></i>
+          </button>
+        </div>
+        <div class="text-center text-info full-width" ng-if="column.restrict">
+          <p class="restrict"
+             tooltip="To remove click the filter, then remove button"
+             tooltip-placement="bottom"
+             tooltip-popup-delay="750">
+            {{ column.restrict.test | cnComparator }}
+            "{{ column.restrict.value }}"
+          </p>
+        </div>
+      </td>
+      <td class="tiny" ng-if="model.deleteEnabled && !model.chooseEnabled"></td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-if="model.listModel.isLoading">
+      <td colspan="{{ numColumns }}" style="background-color: #FFF">
+        <div class="loader" tooltip="Loading..."></div>
+      </td>
+    </tr>
+    <tr ng-if="!model.listModel.isLoading && 0 == model.listModel.cache.length">
+      <td colspan="{{ numColumns }}">
+        There are no {{ model.name.plural }} found.
+      </td>
+    </tr>
+    <tr ng-if="!model.listModel.isLoading"
+        ng-repeat="record in model.listModel.cache
+                   | orderBy: model.listModel.order.column:model.listModel.order.reverse
+                   | limitTo: ( model.listModel.paginationFactory.currentPage - 1 ) *
+                              model.listModel.paginationFactory.itemsPerPage - model.listModel.cache.length
+                   | limitTo: model.listModel.paginationFactory.itemsPerPage"
+        ng-click="model.chooseEnabled ? chooseRecord( record ) : selectRecord( record )"
+        ng-class="{ success:model.listModel.chooseMode && record.chosen }">
+        <td ng-repeat="column in columnArray">
+          <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
+        </td>
+        <td class="tiny" ng-if="model.deleteEnabled && !model.chooseEnabled">
+          <div>
+            <button class="btn btn-xs btn-danger"
+                    cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
+                                       item in the {{ model.name.singular }} list?"
+                    cn-really-click="deleteRecord( record )"
+                    ng-click="$event.stopPropagation()">
+              <i class="glyphicon glyphicon-remove"></i>
+            </button>
+          </div>
+        </td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr class="info">
+      <td colspan="{{ numColumns }}" class="rounded-bottom">
+        <pagination class="pagination left"
+                    ng-model="model.listModel.paginationFactory.currentPage"
+                    ng-show="model.listModel.cache.length > model.listModel.paginationFactory.itemsPerPage"
+                    ng-change="model.listModel.checkCache()"
+                    max-size="model.listModel.paginationFactory.showPageLimit"
+                    items-per-page="model.listModel.paginationFactory.itemsPerPage"
+                    total-items="model.listModel.total"
+                    previous-text="&lsaquo;"
+                    next-text="&rsaquo;"></pagination>
+        {{ model.listModel.total }} records total
+        <button class="btn btn-default right"
+                ng-if="model.addEnabled && !model.chooseEnabled"
+                ng-click="addRecord()">
+          <i class="glyphicon glyphicon-plus"></i> Add
+        </button>
+        <button class="btn btn-default right"
+                ng-if="model.chooseEnabled"
+                ng-class="model.listModel.chooseMode ? 'btn-success' : 'btn-default'"
+                ng-click="model.listModel.toggleChooseMode()">
+          <i class="glyphicon glyphicon-edit"
+             ng-class="model.listModel.chooseMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
+          {{ model.listModel.chooseMode ? 'Done' : 'Choose' }}
+        </button>
+      </td>
+    </tr>
+  </tfoot>
+</table>

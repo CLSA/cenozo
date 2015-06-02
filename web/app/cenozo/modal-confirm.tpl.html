@@ -1,0 +1,10 @@
+<form ng-submit="local.yes()" class="noselect">
+  <div class="modal-header">
+    <h4 class="modal-title">{{ local.title }}</h4>
+  </div>
+  <div class="modal-body">{{ local.message }}</div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="local.no()">&#x2718 No</button>
+    <button type="submit" class="btn btn-primary">&#x2714 Yes</button>
+  </div>
+</form>

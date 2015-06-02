@@ -24,13 +24,15 @@ class modifier extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to join to.
    * @param modifier $modifier The modifier containing a where statement that defines how the
-   *                           join is made.
+   *        join is made.
    * @param string $type The type of join to use.  May be blank or include inner, cross, straight,
-   *                     left, left outer, right or right outer
+   *        left, left outer, right or right outer
+   * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function join_modifier( $table, $modifier, $type = '' )
+  public function join_modifier( $table, $modifier, $type = '', $alias = NULL, $prepend = false )
   {
     $type = strtoupper( $type );
 
@@ -44,6 +46,13 @@ class modifier extends \cenozo\base_object
           false === strpos( get_class( $modifier ), 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
 
+    if( !is_string( $type ) )
+      throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
+    if( !is_null( $alias ) && !is_string( $alias ) )
+      throw lib::create( 'exception\argument', 'alias', $alias, __METHOD__ );
+    if( !is_bool( $prepend ) )
+      throw lib::create( 'exception\argument', 'prepend', $prepend, __METHOD__ );
+
     $valid_types = array(
       '',
       'INNER',
@@ -56,9 +65,18 @@ class modifier extends \cenozo\base_object
     if( !is_string( $table) || !in_array( $type, $valid_types ) )
       throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
 
-    $this->join_list[] = array( 'table' => $table,
-                                'modifier' => $modifier,
-                                'type' => strtoupper( $type ) );
+    // index the join under the table's alias (or the table name if there is none)
+    if( is_null( $alias ) ) $alias = $table;
+
+    // replace existing joins (because order matters)
+    if( array_key_exists( $alias, $this->join_list ) ) unset( $this->join_list[$alias] );
+
+    $join = array( $alias => array( 'table' => $table,
+                                    'modifier' => $modifier,
+                                    'type' => strtoupper( $type ) ) );
+
+    if( $prepend ) $this->join_list = array_merge( $join, $this->join_list );
+    else $this->join_list = array_merge( $this->join_list, $join );
   }
 
   /**
@@ -69,28 +87,16 @@ class modifier extends \cenozo\base_object
    * @param string $on_right The right column of the join rule.
    * @param string $type The type of join to use.  May be blank or include inner, cross, straight,
    *                     left, left outer, right or right outer
+   * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function join( $table, $on_left, $on_right, $type = '' )
+  public function join( $table, $on_left, $on_right, $type = '', $alias = NULL, $prepend = false )
   {
     $on_mod = new static();
     $on_mod->where( $on_left, '=', $on_right, false );
-    $this->join_modifier( $table, $on_mod, $type );
-  }
-
-  /**
-   * A convenience left join method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $table The table to join to.
-   * @param modifier $modifier The modifier containing a where statement that defines how the
-   *                           join is made.
-   * @throws exception\argument
-   * @access public
-   */
-  public function left_join_modifier( $table, $modifier )
-  {
-    $this->join_modifier( $table, $modifier, 'left' );
+    $this->join_modifier( $table, $on_mod, $type, $alias, $prepend );
   }
 
   /**
@@ -98,26 +104,14 @@ class modifier extends \cenozo\base_object
    * @param string $table The table to join to.
    * @param string $on_left The left column of the join rule.
    * @param string $on_right The right column of the join rule.
+   * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function left_join( $table, $on_left, $on_right )
+  public function left_join( $table, $on_left, $on_right, $alias = NULL, $prepend = false )
   {
-    $this->join( $table, $on_left, $on_right, 'left' );
-  }
-
-  /**
-   * A convenience right join method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $table The table to join to.
-   * @param modifier $modifier The modifier containing a where statement that defines how the
-   *                           join is made.
-   * @throws exception\argument
-   * @access public
-   */
-  public function right_join_modifier( $table, $modifier )
-  {
-    $this->join_modifier( $table, $modifier, 'right' );
+    $this->join( $table, $on_left, $on_right, 'left', $alias, $prepend );
   }
 
   /**
@@ -125,24 +119,14 @@ class modifier extends \cenozo\base_object
    * @param string $table The table to join to.
    * @param string $on_left The left column of the join rule.
    * @param string $on_right The right column of the join rule.
+   * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function right_join( $table, $on_left, $on_right )
+  public function right_join( $table, $on_left, $on_right, $alias = NULL, $prepend = false )
   {
-    $this->join( $table, $on_left, $on_right, 'right' );
-  }
-
-  /**
-   * A convenience cross join method.
-   * @param string $table The table to join to.
-   * @param modifier $modifier Unlike other join types this can be left NULL
-   * @throws exception\argument
-   * @access public
-   */
-  public function cross_join_modifier( $table, $modifier = NULL )
-  {
-    $this->join( $table, $modifier, 'cross' );
+    $this->join( $table, $on_left, $on_right, 'right', $alias, $prepend );
   }
 
   /**
@@ -150,24 +134,28 @@ class modifier extends \cenozo\base_object
    * @param string $table The table to join to.
    * @param string $on_left The left column of the join rule.
    * @param string $on_right The right column of the join rule.
+   * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function cross_join( $table, $on_left, $on_right )
+  public function cross_join( $table, $on_left, $on_right, $alias = NULL, $prepend = false )
   {
-    $this->join( $table, $on_left, $on_right, 'cross' );
+    $this->join( $table, $on_left, $on_right, 'cross', $alias, $prepend );
   }
 
   /**
    * A convenience inner join method.
    * @param string $table The table to join to.
    * @param modifier $modifier Unlike other join types this can be left NULL
+   * @param string $alias The alias of the table (optional)
+   * @param boolean $prepend Whether to prepend instead of append the join to the existing list
    * @throws exception\argument
    * @access public
    */
-  public function inner_join( $table, $modifier = NULL )
+  public function inner_join( $table, $modifier = NULL, $alias = NULL, $prepend = false )
   {
-    $this->join( $table, $modifier, 'inner' );
+    $this->join( $table, $modifier, 'inner', $alias, $prepend );
   }
 
   /**
@@ -203,7 +191,7 @@ class modifier extends \cenozo\base_object
                                  'format' => $format,
                                  'or' => $or );
   }
-  
+
   /**
    * Add where statement which will be "or" combined to the modifier.
    * 
@@ -290,7 +278,7 @@ class modifier extends \cenozo\base_object
                                  'format' => $format,
                                  'or' => $or );
   }
-  
+
   /**
    * Add having statement which will be "or" combined to the modifier.
    * 
@@ -360,29 +348,62 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Sets a limit to how many rows are returned.
+   * Sets a limit to how many rows are returned (set to NULL for no limit).
    * 
-   * This method sets the total number of rows and offset to begin selecting by.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $count The number of rows to limit by.
+   * @param int $limit The number of rows to limit by.
+   * @throws exception\argument
+   * @access public
+   */
+  public function limit( $limit )
+  {
+    if( !is_null( $limit ) && 0 > $limit )
+      throw lib::create( 'exception\argument', 'limit', $limit, __METHOD__ );
+
+    $this->limit = $limit;
+  }
+
+  /**
+   * Sets the offset to use when returning rows.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param int $offset The offset to begin the selection.
    * @throws exception\argument
    * @access public
    */
-  public function limit( $count, $offset = 0 )
+  public function offset( $offset = 0 )
   {
-    if( 0 > $count )
-      throw lib::create( 'exception\argument', 'count', $count, __METHOD__ );
+    if( 0 > $offset ) throw lib::create( 'exception\argument', 'offset', $offset, __METHOD__ );
 
-    if( 0 > $offset )
-      throw lib::create( 'exception\argument', 'offset', $offset, __METHOD__ );
-
-    $this->limit_count = $count;
-    $this->limit_offset = $offset;
+    $this->offset = $offset;
   }
-  
+
   /**
-   * Returns whether the modifier has a certain table in its join clauses.
+   * Returns the modifier's limit count value (NULL if there is no limit)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_limit()
+  {
+    return $this->limit;
+  }
+
+  /**
+   * Returns the modifier's limit offset value (0 if there is no offset)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_offset()
+  {
+    return $this->offset;
+  }
+
+  /**
+   * Returns whether the modifier has a certain table (or alias) in its join clauses.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to search for.
    * @return boolean
@@ -390,10 +411,7 @@ class modifier extends \cenozo\base_object
    */
   public function has_join( $table )
   {
-    foreach( $this->join_list as $join )
-      if( array_key_exists( 'table', $join ) &&
-          $table == $join['table'] ) return true;
-    return false;
+    return array_key_exists( $table, $this->join_list );
   }
 
   /**
@@ -449,7 +467,7 @@ class modifier extends \cenozo\base_object
   {
     return array_key_exists( $column, $this->order_list );
   }
-  
+
   /**
    * Get an array of where clauses.
    * 
@@ -547,81 +565,94 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Changes the column name of all where statements of a given name
+   * Removes all join statements to a particular table (or alias)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $old The name of the column to change
-   * @param string $new The name to change the column to
+   * @param string $table Which table to remove all joins to
    * @access public
    */
-  public function change_where_column( $old, $new )
+  public function remove_join( $table )
+  {
+    unset( $this->join_list[$table] );
+  }
+
+  /**
+   * Removes all where statements affecting a particular column
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column Which column to remove all where statements from the modifier
+   * @access public
+   */
+  public function remove_where( $column )
   {
     foreach( $this->where_list as $index => $where )
-      if( array_key_exists( 'column', $where ) && $old == $where['column'] )
-         $this->where_list[$index]['column'] = $new;
+      if( array_key_exists( 'column', $where ) && $column == $where['column'] )
+        unset( $this->where_list[$index] );
   }
 
   /**
-   * Changes the column name of all group statements of a given name
+   * Removes all group statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $old The name of the column to change
-   * @param string $new The name to change the column to
+   * @param string $column Which column to remove all where statements from the modifier
    * @access public
    */
-  public function change_group_column( $old, $new )
+  public function remove_group( $column )
   {
     foreach( $this->group_list as $index => $group )
-      if( $old == $group ) $this->group_list[$index] = $new;
+      if( $column == $group )
+        unset( $this->group_list[$index] );
   }
 
   /**
-   * Changes the column name of all having statements of a given name
+   * Removes all having statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $old The name of the column to change
-   * @param string $new The name to change the column to
+   * @param string $column Which column to remove all where statements from the modifier
    * @access public
    */
-  public function change_having_column( $old, $new )
+  public function remove_having( $column )
   {
     foreach( $this->having_list as $index => $having )
-      if( array_key_exists( 'column', $having ) && $old == $having['column'] )
-         $this->having_list[$index]['column'] = $new;
+      if( array_key_exists( 'column', $having ) && $column == $having['column'] )
+         unset( $this->having_list[$index] );
   }
 
   /**
-   * Changes the column name of all order statements of a given name
+   * Removes all order statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $old The name of the column to change
-   * @param string $new The name to change the column to
+   * @param string $column Which column to remove all where statements from the modifier
    * @access public
    */
-  public function change_order_column( $old, $new )
+  public function remove_order( $column )
   {
-    $keys = array_keys( $this->order_list );
-    foreach( $keys as $index => $key ) if( $old == $key ) $keys[$index] = $new;
-    $this->order_list = array_combine( $keys, array_values( $this->order_list ) );
+    if( array_key_exists( $column, $this->order_list ) )
+      unset( $this->order_list[$column] );
   }
 
   /**
    * Returns the modifier as an SQL statement (same as calling each individual get_*() method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $appending Whether this modifier is being appended to an existing where clause
+   * @param boolean $count Whether the modifier is to be used for a single-value COUNT query
    * @return string
    * @access public
    */
-  public function get_sql( $appending = false )
+  public function get_sql( $count = false )
   {
-    return sprintf( '%s %s %s %s %s %s',
-                    $appending ? '' : $this->get_join(),
-                    $this->get_where( $appending ),
-                    $this->get_group(),
-                    $this->get_having(),
-                    $this->get_order(),
-                    $this->get_limit() );
+    $sql = $this->get_join();
+    if( $where = $this->get_where() ) $sql .= sprintf( ' WHERE %s', $where );
+    if( $group = $this->get_group() ) $sql .= sprintf( ' GROUP BY %s', $group );
+    if( $having = $this->get_having() ) $sql .= sprintf( ' HAVING %s', $having );
+    if( !$count )
+    {
+      if( $order = $this->get_order() ) $sql .= sprintf( ' ORDER BY %s', $order );
+      if( !is_null( $this->limit ) )
+        $sql .= sprintf( ' LIMIT %d OFFSET %d', $this->limit, $this->offset );
+    }
+
+    return $sql;
   }
 
   /**
@@ -636,17 +667,13 @@ class modifier extends \cenozo\base_object
   public function get_join()
   {
     $sql = '';
-    foreach( $this->join_list as $join )
+    foreach( $this->join_list as $alias => $join )
     {
       $type = sprintf( '%s%sJOIN', $join['type'], 'STRAIGHT' == $join['type'] ? '_' : ' ' );
-      $on_clause = $join['modifier']->get_where( true );
-      // remove the " AND " at the beginning of the appended where clause
-      $on_clause = preg_replace( '/^ AND /', '', $on_clause );
-
-      $sql .= sprintf( '%s %s ON %s ',
-                       $type,
-                       $join['table'],
-                       $on_clause );
+      $on_clause = $join['modifier']->get_where();
+      $table = $join['table'];
+      if( $alias != $join['table'] ) $table .= ' AS '.$alias;
+      $sql .= sprintf( '%s %s ON%s ', $type, $table, $on_clause );
     }
 
     return $sql;
@@ -658,12 +685,13 @@ class modifier extends \cenozo\base_object
    * This method should only be called by a record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $appending Whether this modifier is being appended to an existing where clause
    * @return string
    * @access public
    */
-  public function get_where( $appending = false )
+  public function get_where()
   {
+    $db = lib::create( 'business\session' )->get_database();
+
     $util_class_name = lib::get_class_name( 'util' );
     $database_class_name = lib::get_class_name( 'database\database' );
     $sql = '';
@@ -680,8 +708,9 @@ class modifier extends \cenozo\base_object
       }
       else
       {
-        $convert_time = $database_class_name::is_time_column( $where['column'] );
-        $convert_datetime = $database_class_name::is_datetime_column( $where['column'] );
+        $is_datetime = $database_class_name::is_datetime_column( $where['column'] );
+        $is_date = $database_class_name::is_date_column( $where['column'] );
+        $is_time = $database_class_name::is_time_column( $where['column'] );
 
         if( 'IN' == $where['operator'] || 'NOT IN' == $where['operator'] )
         {
@@ -692,11 +721,10 @@ class modifier extends \cenozo\base_object
             {
               if( $where['format'] )
               {
-                if( $convert_time )
-                  $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-                else if( $convert_datetime )
-                  $value = $util_class_name::to_server_datetime( $value );
-                $value = $database_class_name::format_string( $value );
+                if( $is_datetime ) $value = $db->format_datetime( $value );
+                else if( $is_date ) $value = $db->format_date( $value );
+                else if( $is_time ) $value = $db->format_time( $value );
+                else $value = $db->format_string( $value );
               }
 
               $statement .= $first_value
@@ -712,9 +740,10 @@ class modifier extends \cenozo\base_object
             $value = $where['value'];
             if( $where['format'] )
             {
-              if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-              else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
-              $value = $database_class_name::format_string( $value );
+              if( $is_datetime ) $value = $db->format_datetime( $value );
+              else if( $is_date ) $value = $db->format_date( $value );
+              else if( $is_time ) $value = $db->format_time( $value );
+              else $value = $db->format_string( $value );
             }
 
             $statement = sprintf( '%s %s( %s )',
@@ -728,11 +757,12 @@ class modifier extends \cenozo\base_object
           $value = $where['value'];
           if( $where['format'] )
           {
-            if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-            else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
-            $value = $database_class_name::format_string( $value );
+            if( $is_datetime ) $value = $db->format_datetime( $value );
+            else if( $is_date ) $value = $db->format_date( $value );
+            else if( $is_time ) $value = $db->format_time( $value );
+            else $value = $db->format_string( $value );
           }
-          
+
           if( 'NULL' == $value )
           {
             if( '=' == $where['operator'] ) $statement = $where['column'].' IS NULL';
@@ -749,18 +779,17 @@ class modifier extends \cenozo\base_object
           }
         }
       }
-      
+
       $logic_type = $where['or'] ? ' OR' : ' AND';
-      if( ( !$first_item || $appending ) &&
-          ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
+      if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
       $sql .= ' '.$statement;
       $first_item = false;
       $last_open_bracket = '(' == $statement;
     }
 
-    return ( $appending || 0 == strlen( $sql ) ? '' : 'WHERE ' ).$sql;
+    return $sql;
   }
-  
+
   /**
    * Returns an SQL group statement.
    * 
@@ -776,27 +805,28 @@ class modifier extends \cenozo\base_object
     $first = true;
     foreach( $this->group_list as $column )
     {
-      $sql .= sprintf( '%s %s',
-                       $first ? 'GROUP BY' : ',',
+      $sql .= sprintf( '%s%s',
+                       $first ? '' : ', ',
                        $column );
       $first = false;
     }
 
     return $sql;
   }
-  
+
   /**
    * Returns an SQL having statement.
    * 
    * This method should only be called by a record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $appending Whether this modifier is being appended to an existing having clause
    * @return string
    * @access public
    */
-  public function get_having( $appending = false )
+  public function get_having()
   {
+    $db = lib::create( 'business\session' )->get_database();
+
     $util_class_name = lib::get_class_name( 'util' );
     $database_class_name = lib::get_class_name( 'database\database' );
     $sql = '';
@@ -813,8 +843,7 @@ class modifier extends \cenozo\base_object
       }
       else
       {
-        $convert_time = $database_class_name::is_time_column( $having['column'] );
-        $convert_datetime = $database_class_name::is_datetime_column( $having['column'] );
+        $is_datetime = $database_class_name::is_datetime_column( $having['column'] );
 
         if( 'IN' == $having['operator'] || 'NOT IN' == $having['operator'] )
         {
@@ -825,11 +854,10 @@ class modifier extends \cenozo\base_object
             {
               if( $having['format'] )
               {
-                if( $convert_time )
-                  $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-                else if( $convert_datetime )
-                  $value = $util_class_name::to_server_datetime( $value );
-                $value = $database_class_name::format_string( $value );
+                if( $is_datetime ) $value = $db->format_datetime( $value );
+                else if( $is_date ) $value = $db->format_date( $value );
+                else if( $is_time ) $value = $db->format_time( $value );
+                else $value = $db->format_string( $value );
               }
 
               $statement .= $first_value
@@ -845,9 +873,10 @@ class modifier extends \cenozo\base_object
             $value = $having['value'];
             if( $having['format'] )
             {
-              if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-              else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
-              $value = $database_class_name::format_string( $value );
+              if( $is_datetime ) $value = $db->format_datetime( $value );
+              else if( $is_date ) $value = $db->format_date( $value );
+              else if( $is_time ) $value = $db->format_time( $value );
+              else $value = $db->format_string( $value );
             }
 
             $statement = sprintf( '%s %s( %s )',
@@ -861,11 +890,12 @@ class modifier extends \cenozo\base_object
           $value = $having['value'];
           if( $having['format'] )
           {
-            if( $convert_time ) $value = $util_class_name::to_server_datetime( $value, 'H:i:s' );
-            else if( $convert_datetime ) $value = $util_class_name::to_server_datetime( $value );
-            $value = $database_class_name::format_string( $value );
+            if( $is_datetime ) $value = $db->format_datetime( $value );
+            else if( $is_date ) $value = $db->format_date( $value );
+            else if( $is_time ) $value = $db->format_time( $value );
+            else $value = $db->format_string( $value );
           }
-          
+
           if( 'NULL' == $value )
           {
             if( '=' == $having['operator'] ) $statement = $having['column'].' IS NULL';
@@ -882,18 +912,17 @@ class modifier extends \cenozo\base_object
           }
         }
       }
-      
+
       $logic_type = $having['or'] ? ' OR' : ' AND';
-      if( ( !$first_item || $appending ) &&
-          ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
+      if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
       $sql .= ' '.$statement;
       $first_item = false;
       $last_open_bracket = '(' == $statement;
     }
 
-    return ( $appending || 0 == strlen( $sql ) ? '' : 'HAVING ' ).$sql;
+    return $sql;
   }
-  
+
   /**
    * Returns an SQL order statement.
    * 
@@ -909,33 +938,11 @@ class modifier extends \cenozo\base_object
     $first = true;
     foreach( $this->order_list as $column => $value )
     {
-      $sql .= sprintf( '%s %s %s',
-                       $first ? 'ORDER BY' : ',',
+      $sql .= sprintf( '%s%s %s',
+                       $first ? '' : ', ',
                        $column,
                        $value ? 'DESC' : '' );
       $first = false;
-    }
-
-    return $sql;
-  }
-  
-  /**
-   * Returns an SQL limit statement.
-   * 
-   * This method should only be called by a record class and only after all modifications
-   * have been set.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_limit()
-  {
-    $sql = '';
-    if( 0 < $this->limit_count )
-    {
-      $sql .= sprintf( 'LIMIT %d OFFSET %d',
-                       $this->limit_count,
-                       $this->limit_offset );
     }
 
     return $sql;
@@ -962,51 +969,204 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * JSON-based modifier expected in the form:
+   * {
+   *   join:
+   *   [
+   *     {
+   *       table:   <table>
+   *       onleft:  <column>
+   *       onright: <column>
+   *     }
+   *   ],
+   *   having|where:
+   *   [
+   *     {
+   *       bracket: true,
+   *       open: true
+   *     },
+   *     {
+   *       column:   <column>
+   *       operator: =,!=,<,>,LIKE,NOT LIKE,etc
+   *       value:    <value>
+   *     },
+   *     {
+   *       bracket: true,
+   *       open: false
+   *     },
+   *     {
+   *       bracket: true,
+   *       open: true,
+   *       or: true
+   *     },
+   *     {
+   *       column:   <column>
+   *       operator: =|!=|<|>|LIKE|NOT LIKE|etc
+   *       value:    <value>
+   *     },
+   *     {
+   *       bracket: true,
+   *       open: false
+   *     }
+   *   ],
+   *   order:
+   *   [
+   *     <column>,
+   *     { <column>: true|false (whether to sort descending) }
+   *   ],
+   *   limit: N,
+   *   offset: N
+   * }
+   */
+  public static function from_json( $json_string )
+  {
+    $modifier = lib::create( 'database\modifier' );
+    $limit = NULL;
+    $offset = NULL;
+
+    $util_class_name = lib::get_class_name( 'util' );
+    $json_object = $util_class_name::json_decode( $json_string );
+    if( is_object( $json_object ) || is_array( $json_object ) )
+    {
+      foreach( (array) $json_object as $key => $value )
+      {
+        if( 'join' == $key )
+        {
+          // convert a statement into an array (for single arguments or objects)
+          if( !is_array( $value ) ) $value = array( $value );
+
+          foreach( $value as $join )
+          {
+            if( array_key_exists( 'table', $join ) &&
+                array_key_exists( 'onleft', $join ) &&
+                array_key_exists( 'onright', $join ) )
+            {
+              if( !array_key_exists( 'type', $join ) ) $join->type = 'cross';
+              $modifier->join( $join->table, $join->onleft, $join->onright, $join->type );
+            }
+            else throw lib::create( 'exception\runtime', 'Invalid join sub-statement', __METHOD__ );
+          }
+        }
+        else if( 'having' == $key || 'where' == $key )
+        {
+          // convert a single statement to an array with that statement in it
+          if( !is_array( $value ) ) $value = array( $value );
+
+          foreach( $value as $condition )
+          {
+            if( array_key_exists( 'bracket', $condition ) )
+            {
+              $or = array_key_exists( 'or', $condition ) ? $condition->or : false;
+              $method = sprintf( '%s_bracket', $key );
+              $modifier->$method( $condition->open, $or );
+            }
+            else if( array_key_exists( 'column', $condition ) &&
+                     array_key_exists( 'operator', $condition ) &&
+                     array_key_exists( 'value', $condition ) )
+            {
+              // sanitize the operator value
+              $operator = strtoupper( $condition->operator );
+              $valid_operator_list = array(
+                '=', '<=>', '!=', '<>',
+                '<', '<=', '>', '>=',
+                'RLIKE', 'NOT RLIKE',
+                'IN', 'NOT IN',
+                'LIKE', 'NOT LIKE' );
+              if( in_array( $operator, $valid_operator_list ) )
+              {
+                $or = array_key_exists( 'or', $condition ) ? $condition->or : false;
+                // here $key is either where or having (using it as a method call)
+                $modifier->$key( $condition->column, $condition->operator, $condition->value, true, $or );
+              }
+              else throw lib::create( 'exception\runtime',
+                sprintf( 'Invalid %s operator', $key ), __METHOD__ );
+            }
+            else throw lib::create( 'exception\runtime',
+              sprintf( 'Invalid %s sub-statement', $key ), __METHOD__ );
+          }
+        }
+        else if( 'order' == $key )
+        {
+          // convert a string to an array with that string in it
+          if( is_string( $value ) || is_object( $value ) ) $value = array( $value );
+
+          foreach( $value as $val )
+          {
+            if( is_string( $val ) ) $modifier->order( $val );
+            else if( is_object( $val ) )
+            {
+              $array = (array) $val;
+              $modifier->order( key( $array ), current( $array ) );
+            }
+            else throw lib::create( 'exception\runtime', 'Invalid order statement', __METHOD__ );
+          }
+        }
+        else if( 'limit' == $key )
+        {
+          if( $util_class_name::string_matches_int( $value ) && 0 < $value ) $limit = $value;
+          else throw lib::create( 'exception\runtime', 'Invalid limit', __METHOD__ );
+        }
+        else if( 'offset' == $key )
+        {
+          if( $util_class_name::string_matches_int( $value ) && 0 <= $value ) $offset = $value;
+          else throw lib::create( 'exception\runtime', 'Invalid offset', __METHOD__ );
+        }
+      }
+
+      $modifier->limit( $limit );
+      if( !is_null( $offset ) ) $modifier->offset( $offset );
+    }
+    else throw lib::create( 'exception\runtime', 'Invalid format', __METHOD__ );
+
+    return $modifier;
+  }
+
+  /**
    * Holds all join clauses in an array of associative arrays
    * @var array
    * @access protected
    */
   protected $join_list = array();
-  
+
   /**
    * Holds all where clauses in an array of associative arrays
    * @var array
    * @access protected
    */
   protected $where_list = array();
-  
+
   /**
    * Holds all group clauses.
    * @var array( string )
    * @access protected
    */
   protected $group_list = array();
-  
+
   /**
    * Holds all having clauses in an array of associative arrays
    * @var array
    * @access protected
    */
   protected $having_list = array();
-  
+
   /**
    * Holds all order clauses.
    * @var array( column => desc )
    * @access protected
    */
   protected $order_list = array();
-  
+
   /**
-   * The row limit value.
+   * The row limit value (null if there is no limit)
    * @var int
    * @access protected
    */
-  protected $limit_count = 0;
-  
+  protected $limit = NULL;
+
   /**
    * The limit offset value.
-   * @var array( column => value )
+   * @var int
    * @access protected
    */
-  protected $limit_offset = 0;
+  protected $offset = 0;
 }

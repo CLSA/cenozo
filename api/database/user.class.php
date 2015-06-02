@@ -15,71 +15,6 @@ use cenozo\lib, cenozo\log;
 class user extends base_access
 {
   /**
-   * Returns the user's theme for a particular service, or NULL if they have not specified one.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param service $db_service
-   * @return string
-   * @access public
-   */
-  public function get_theme( $db_service )
-  {
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to get theme for user with no id.' );
-      return 0;
-    } 
-    
-    $database_class_name = lib::get_class_name( 'database\database' );
-
-    return static::db()->get_one( sprintf(
-      'SELECT theme FROM user_has_service '.
-      'WHERE user_id = %s '.
-      'AND service_id = %s',
-      $database_class_name::format_string( $this->id ),
-      $database_class_name::format_string( $db_service->id ) ) );
-  }
-
-  /**
-   * Sets the user's theme for a particular service.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param service $db_service
-   * @param string $theme
-   * @access public
-   */
-  public function set_theme( $db_service, $theme )
-  {
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to set theme for user with no id.' );
-      return;
-    } 
-    
-    $database_class_name = lib::get_class_name( 'database\database' );
-
-    if( is_null( $theme ) || !$theme )
-    { // remove the theme
-      static::db()->execute( sprintf(
-        'DELETE FROM user_has_service '.
-        'WHERE user_id = %s '.
-        'AND service_id = %s',
-        $database_class_name::format_string( $this->id ),
-        $database_class_name::format_string( $db_service->id ) ) );
-    }
-    else
-    {
-      static::db()->execute( sprintf(
-        'INSERT INTO user_has_service '.
-        'SET user_id = %s, service_id = %s, theme = %s '.
-        'ON DUPLICATE KEY UPDATE theme = VALUES( theme )',
-        $database_class_name::format_string( $this->id ),
-        $database_class_name::format_string( $db_service->id ),
-        $database_class_name::format_string( $theme ) ) );
-    }
-  }
-
-   /**
    * Returns whether the user has the role for the given site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -94,12 +29,12 @@ class user extends base_access
     {
       log::warning( 'Tried to determine access for user with no id.' );
       return 0;
-    } 
-    
+    }
+
     $class_name = lib::get_class_name( 'database\access' );
     return $class_name::exists( $this, $db_site, $db_role );
-  } 
- 
+  }
+
   /**
    * Adds a list of sites to the user with the given role.
    * 
@@ -119,17 +54,15 @@ class user extends base_access
     if( 0 >= $role_id )
       throw lib::create( 'exception\argument', 'role_id', $role_id, __METHOD__ );
 
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     $values = '';
     $first = true;
     foreach( $site_id_list as $id )
     {
       if( !$first ) $values .= ', ';
       $values .= sprintf( '(NULL, %s, %s, %s)',
-                       $database_class_name::format_string( $id ),
-                       $database_class_name::format_string( $role_id ),
-                       $database_class_name::format_string( $this->id ) );
+                       static::db()->format_string( $id ),
+                       static::db()->format_string( $role_id ),
+                       static::db()->format_string( $this->id ) );
       $first = false;
     }
 

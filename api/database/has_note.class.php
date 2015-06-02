@@ -39,7 +39,7 @@ abstract class has_note extends record
    * @return array( record )
    * @access public
    */
-  public function get_note_list( $modifier = NULL )
+  public function get_note_list( $select = NULL, $modifier = NULL )
   {
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
@@ -49,7 +49,27 @@ abstract class has_note extends record
     $modifier->where( $subject_key_name, '=', $this->id );
     $modifier->order( 'sticky', true );
     $modifier->order_desc( 'datetime' );
-    return $note_class_name::select( $modifier );
+    return $note_class_name::select( $select, $modifier );
+  }
+
+  /**
+   * Gets the list of notes associated with this record.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param modifier $modifier
+   * @return array( record )
+   * @access public
+   */
+  public function get_note_object_list( $modifier = NULL )
+  {
+    $table_name = static::get_table_name();
+    $subject_key_name = $table_name.'_'.static::get_primary_key_name();
+    $note_class_name = lib::get_class_name( 'database\\'.$table_name.'_note' );
+
+    if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( $subject_key_name, '=', $this->id );
+    $modifier->order( 'sticky', true );
+    $modifier->order_desc( 'datetime' );
+    return $note_class_name::select_objects( $modifier );
   }
 
   /**
@@ -62,13 +82,12 @@ abstract class has_note extends record
   public function add_note( $db_user, $note )
   {
     $util_class_name = lib::get_class_name( 'util' );
-    $date_obj = $util_class_name::get_datetime_object();
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
     $db_note = lib::create( 'database\\'.$table_name.'_note' );
     $db_note->user_id = $db_user->id;
     $db_note->$subject_key_name = $this->id;
-    $db_note->datetime = $date_obj->format( 'Y-m-d H:i:s' );
+    $db_note->datetime = $util_class_name::get_datetime_object();
     $db_note->note = $note;
     $db_note->save();
   }
@@ -93,26 +112,23 @@ abstract class has_note extends record
     $database_class_name = lib::get_class_name( 'database\database' );
     $util_class_name = lib::get_class_name( 'util' );
 
-    $date_obj = $util_class_name::get_datetime_object();
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    
+
     $sql = sprintf(
       'INSERT INTO %s_note( create_timestamp, %s, user_id, datetime, note ) '.
       'SELECT NULL, id, %s, %s, %s '.
       'FROM %s %s',
       $table_name,
       $subject_key_name,
-      $database_class_name::format_string( $db_user->id ),
-      $database_class_name::format_string(
-        $util_class_name::to_server_datetime(
-          $date_obj->format( 'Y-m-d H:i:s' ) ) ),
-      $database_class_name::format_string( $note ),
+      static::db()->format_string( $db_user->id ),
+      static::db()->format_string( $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' ) ),
+      static::db()->format_string( $note ),
       $table_name,
       $modifier->get_sql() );
     static::db()->execute( $sql );
   }
-  
+
   /**
    * Gets a note record (new or existing) for this record type.
    * @author Patrick Emond <emondpd@mcmaster.ca>
