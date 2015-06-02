@@ -30,7 +30,7 @@ CREATE PROCEDURE patch_participant_primary_address()
         CONSTRAINT fk_participant_primary_address_address_id
           FOREIGN KEY (address_id)
           REFERENCES address (id)
-          ON DELETE NO ACTION
+          ON DELETE SET NULL
           ON UPDATE NO ACTION)
       ENGINE = InnoDB;
 

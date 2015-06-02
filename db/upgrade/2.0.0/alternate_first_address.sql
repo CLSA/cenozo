@@ -29,7 +29,7 @@ CREATE PROCEDURE patch_alternate_first_address()
         CONSTRAINT fk_alternate_first_address_address_id
           FOREIGN KEY (address_id)
           REFERENCES address (id)
-          ON DELETE NO ACTION
+          ON DELETE SET NULL
           ON UPDATE NO ACTION)
       ENGINE = InnoDB;
 

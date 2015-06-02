@@ -173,18 +173,6 @@ BEGIN
 END;$$
 
 
-DROP TRIGGER IF EXISTS address_BEFORE_DELETE $$
-CREATE DEFINER = CURRENT_USER TRIGGER address_BEFORE_DELETE BEFORE DELETE ON address FOR EACH ROW
-BEGIN
-  IF OLD.alternate_id IS NOT NULL THEN
-    DELETE FROM alternate_first_address WHERE alternate_id = OLD.alternate_id;
-  ELSE
-    DELETE FROM participant_first_address WHERE participant_id = OLD.participant_id;
-    DELETE FROM participant_primary_address WHERE participant_id = OLD.participant_id;
-  END IF;
-END;$$
-
-
 DROP TRIGGER IF EXISTS address_AFTER_DELETE $$
 CREATE DEFINER = CURRENT_USER TRIGGER address_AFTER_DELETE AFTER DELETE ON address FOR EACH ROW
 BEGIN

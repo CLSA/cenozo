@@ -29,7 +29,7 @@ CREATE PROCEDURE patch_participant_last_written_consent()
         CONSTRAINT fk_participant_last_written_consent_consent_id
           FOREIGN KEY (consent_id)
           REFERENCES consent (id)
-          ON DELETE NO ACTION
+          ON DELETE SET NULL
           ON UPDATE NO ACTION)
       ENGINE = InnoDB;
 
