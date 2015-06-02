@@ -50,7 +50,9 @@ class patch extends \cenozo\service\service
    */
   protected function execute()
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
+
     $object = $this->get_file_as_object();
     foreach( get_object_vars( $object ) as $key => $value )
     {
@@ -61,9 +63,10 @@ class patch extends \cenozo\service\service
         $value = current( $value );
         if( 'user' == $key )
         {
+          $db_user = $session->get_user();
+
           if( in_array( $column, array( 'first_name', 'last_name', 'email', 'timezone' ) ) )
           {
-            $db_user = $session->get_user();
             $db_user->$column = $value;
 
             try
@@ -81,6 +84,24 @@ class patch extends \cenozo\service\service
               {
                 $this->status->set_code( $e->is_missing_data() ? 400 : 500 );
                 throw $e;
+              }
+            }
+          }
+          else if( 'break' == $column )
+          {
+            if( $value )
+            { // close the current activity
+              $activity_mod = lib::create( 'database\modifier' );
+              $activity_mod->where( 'user_id', '=', $db_user->id );
+              $activity_mod->where( 'site_id', '=', $session->get_site()->id );
+              $activity_mod->where( 'role_id', '=', $session->get_role()->id );
+              $activity_mod->where( 'end_datetime', '=', NULL );
+              $activity_list = $db_user->get_activity_object_list( $activity_mod );
+              foreach( $activity_list as $db_activity )
+              {
+                $db_activity = current( $activity_list );
+                $db_activity->end_datetime = $util_class_name::get_datetime_object();
+                $db_activity->save();
               }
             }
           }
