@@ -552,114 +552,118 @@ cenozo.directive( 'cnRecordView', [
           $scope.model.transitionToLastState();
         };
 
-        $scope.delete = function() {
-          $scope.model.viewModel.onDelete().then(
-            function success() { $scope.model.transitionToLastState(); },
-            function error( response ) { $scope.model.transitionToErrorState( response ); }
-          );
-        };
-
-        $scope.undo = function( property ) {
-          if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
-            $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
-            if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) )
-              $scope.model.viewModel.formattedRecord[property] =
-                $scope.model.viewModel.backupRecord['formatted_'+property];
-            $scope.patch( $scope.model.viewModel.record[property] );
-          }
-        };
-
-        $scope.patch = function( property ) {
-          // test the format
-          if( !$scope.model.testFormat( property, $scope.model.viewModel.record[property] ) ) {
-            var item = angular.element(
-              angular.element( document.querySelector( '#' + property ) ) ).
-                scope().$parent.innerForm.name;
-            item.$error.format = true;
-            cenozo.updateFormElement( item );
-          } else {
-            // validation passed, proceed with patch
-            var data = {};
-            data[property] = $scope.model.viewModel.record[property];
-            $scope.model.viewModel.onPatch( data ).then(
-              function success() {
-                // if the data in the identifier was patched then reload with the new url
-                if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
-                  $scope.model.reloadState( $scope.model.viewModel.record );
-                } else {
-                  var scope = angular.element(
-                    angular.element( document.querySelector( '#' + property ) ) ).scope();
-                  // if a conflict or format has been resolved then clear it throughout the form
-                  var currentItem = scope.$parent.innerForm.name;
-                  if( currentItem.$error.conflict ) {
-                    var sibling = scope.$parent.$parent.$$childHead;
-                    while( null !== sibling ) {
-                      var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
-                      if( siblingItem.$error.conflict ) {
-                        siblingItem.$error.conflict = false;
-                        cenozo.updateFormElement( siblingItem );
-                      }
-                      sibling = sibling.$$nextSibling;
-                    }
-                  }
-                  if( currentItem.$error.format ) {
-                    currentItem.$error.format = false;
-                    cenozo.updateFormElement( currentItem );
-                  }
-
-                  // update the formatted value
-                  $scope.model.viewModel.updateFormattedRecord( property );
-                }
-              },
-              function error( response ) {
-                if( 406 == response.status ) {
-                  $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
-                  CnModalMessageFactory.instance( {
-                    title: 'Please Note',
-                    message: response.data,
-                    error: true
-                  } ).show();
-                } else if( 409 == response.status ) {
-                  // report which inputs are included in the conflict
-                  for( var i = 0; i < response.data.length; i++ ) {
-                    var item = angular.element(
-                      angular.element( document.querySelector( '#' + response.data[i] ) ) ).
-                        scope().$parent.innerForm.name;
-                    item.$error.conflict = true;
-                    cenozo.updateFormElement( item );
-                  }
-                } else { $scope.model.transitionToErrorState( response ); }
-              }
+        if( $scope.model.deleteEnabled ) {
+          $scope.delete = function() {
+            $scope.model.viewModel.onDelete().then(
+              function success() { $scope.model.transitionToLastState(); },
+              function error( response ) { $scope.model.transitionToErrorState( response ); }
             );
-          }
-        };
+          };
+        }
 
-        $scope.getTypeaheadValues = function( input, viewValue ) {
-          return $scope.model.getTypeaheadValues( input, viewValue );
-        };
-
-        $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
-          if( 'lookup-typeahead' == input.type ) {
-            $scope.model.viewModel.formattedRecord[input.key] = $label;
-            $scope.model.viewModel.record[input.key] = $model;
-          } else {
-            $scope.model.viewModel.record[input.key] = $item;
-          }
-          $scope.patch( input.key );
-        };
-
-        $scope.selectDatetime = function( input ) {
-          CnModalDatetimeFactory.instance( {
-            title: input.title,
-            date: $scope.model.viewModel.record[input.key],
-            pickerType: input.type
-          } ).show().then( function( response ) {
-            if( false !== response ) {
-              $scope.model.viewModel.record[input.key] = response;
-              $scope.patch( input.key );
+        if( $scope.model.editEnabled ) {
+          $scope.undo = function( property ) {
+            if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
+              $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
+              if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) )
+                $scope.model.viewModel.formattedRecord[property] =
+                  $scope.model.viewModel.backupRecord['formatted_'+property];
+              $scope.patch( $scope.model.viewModel.record[property] );
             }
-          } );
-        };
+          };
+
+          $scope.patch = function( property ) {
+            // test the format
+            if( !$scope.model.testFormat( property, $scope.model.viewModel.record[property] ) ) {
+              var item = angular.element(
+                angular.element( document.querySelector( '#' + property ) ) ).
+                  scope().$parent.innerForm.name;
+              item.$error.format = true;
+              cenozo.updateFormElement( item );
+            } else {
+              // validation passed, proceed with patch
+              var data = {};
+              data[property] = $scope.model.viewModel.record[property];
+              $scope.model.viewModel.onPatch( data ).then(
+                function success() {
+                  // if the data in the identifier was patched then reload with the new url
+                  if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
+                    $scope.model.reloadState( $scope.model.viewModel.record );
+                  } else {
+                    var scope = angular.element(
+                      angular.element( document.querySelector( '#' + property ) ) ).scope();
+                    // if a conflict or format has been resolved then clear it throughout the form
+                    var currentItem = scope.$parent.innerForm.name;
+                    if( currentItem.$error.conflict ) {
+                      var sibling = scope.$parent.$parent.$$childHead;
+                      while( null !== sibling ) {
+                        var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
+                        if( siblingItem.$error.conflict ) {
+                          siblingItem.$error.conflict = false;
+                          cenozo.updateFormElement( siblingItem );
+                        }
+                        sibling = sibling.$$nextSibling;
+                      }
+                    }
+                    if( currentItem.$error.format ) {
+                      currentItem.$error.format = false;
+                      cenozo.updateFormElement( currentItem );
+                    }
+
+                    // update the formatted value
+                    $scope.model.viewModel.updateFormattedRecord( property );
+                  }
+                },
+                function error( response ) {
+                  if( 406 == response.status ) {
+                    $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
+                    CnModalMessageFactory.instance( {
+                      title: 'Please Note',
+                      message: response.data,
+                      error: true
+                    } ).show();
+                  } else if( 409 == response.status ) {
+                    // report which inputs are included in the conflict
+                    for( var i = 0; i < response.data.length; i++ ) {
+                      var item = angular.element(
+                        angular.element( document.querySelector( '#' + response.data[i] ) ) ).
+                          scope().$parent.innerForm.name;
+                      item.$error.conflict = true;
+                      cenozo.updateFormElement( item );
+                    }
+                  } else { $scope.model.transitionToErrorState( response ); }
+                }
+              );
+            }
+          };
+
+          $scope.getTypeaheadValues = function( input, viewValue ) {
+            return $scope.model.getTypeaheadValues( input, viewValue );
+          };
+
+          $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
+            if( 'lookup-typeahead' == input.type ) {
+              $scope.model.viewModel.formattedRecord[input.key] = $label;
+              $scope.model.viewModel.record[input.key] = $model;
+            } else {
+              $scope.model.viewModel.record[input.key] = $item;
+            }
+            $scope.patch( input.key );
+          };
+
+          $scope.selectDatetime = function( input ) {
+            CnModalDatetimeFactory.instance( {
+              title: input.title,
+              date: $scope.model.viewModel.record[input.key],
+              pickerType: input.type
+            } ).show().then( function( response ) {
+              if( false !== response ) {
+                $scope.model.viewModel.record[input.key] = response;
+                $scope.patch( input.key );
+              }
+            } );
+          };
+        }
       },
       link: function( scope, element, attrs ) {
         scope.heading = attrs.heading;
@@ -1259,6 +1263,8 @@ cenozo.factory( 'CnBaseViewFactory', [
          * @return promise
          */
         object.deleteRecord = function() {
+          if( !this.parentModel.deleteEnabled ) throw 'Calling deleteRecord() but deleteEnabled is false';
+
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath()
           } ).delete();
@@ -1272,6 +1278,8 @@ cenozo.factory( 'CnBaseViewFactory', [
          * @return promise
          */
         object.patchRecord = function( data ) {
+          if( !this.parentModel.editEnabled ) throw 'Calling patchRecord() but editEnabled is false';
+
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath(),
             data: data
@@ -1355,6 +1363,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.addEnabled = false;
         object.chooseEnabled = false;
         object.deleteEnabled = false;
+        object.editEnabled = false;
         object.viewEnabled = false;
 
         // search the state enumeration for which actions are available
@@ -1362,8 +1371,8 @@ cenozo.factory( 'CnBaseModelFactory', [
         for( var i = 0; i < stateList.length; i++ ) {
           if( module.subject + '.add' == stateList[i].name ) object.addEnabled = true;
           if( module.subject + '.delete' == stateList[i].name ) object.deleteEnabled = true;
-          if( module.subject + '.edit' == stateList[i].name ) object.editEnabled = true;
           if( module.subject + '.view' == stateList[i].name ) object.viewEnabled = true;
+          if( module.subject + '.edit' == stateList[i].name ) object.editEnabled = true;
         }
 
         // override this method to use a custom identifier
@@ -1653,6 +1662,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.enableAdd = function( enable ) { this.addEnabled = enable; };
         object.enableChoose = function( enable ) { this.chooseEnabled = enable; };
         object.enableDelete = function( enable ) { this.deleteEnabled = enable; };
+        object.enableEdit = function( enable ) { this.editEnabled = enable; };
         object.enableView = function( enable ) { this.viewEnabled = enable; };
 
         /**
@@ -1736,6 +1746,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
           }
+          console.log( [property, value, formatted] );
           return formatted;
         };
 
