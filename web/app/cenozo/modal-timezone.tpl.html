@@ -2,39 +2,36 @@
   <div class="modal-header">
     <h4 class="modal-title">Select a timezone</h4>
   </div>
-  <div class="modal-body">
-    <div>
-      <div class="container-fluid">
-        <p class="text-info">
-          Select which timezone you would like all times to be displayed in.<br/>
-          Note that most timezones have multiple names, you may choose any.
-        </p>
-        <hr/>
-          <div class="form-group"
-               ng-class="{ 'has-feedback has-error': form.timezone.$dirty && form.timezone.$invalid }">
-            <label for="timezone" class="col-sm-3 control-label">Timezone</label>
-            <div class="col-sm-9">
-              <div class="input-group"
-                   ng-class="{ 'has-feedback has-error': form.timezone.$dirty && form.timezone.$invalid }">
-                <input id="timezone"
-                       name="timezone"
-                       ng-model="local.timezone"
-                       typeahead="item for item in local.getTypeaheadValues( $viewValue )"
-                       typeahead-editable="false"
-                       typeahead-min-length="2"
-                       class="form-control"
-                       type="text"
-                       placeholder="(Type the first few letters to search possible values)"
-                       autocomplete="off"
-                       autofocus
-                       required></input>
-              </div>
-              <span ng-if="form.timezone.$invalid && form.timezone.$dirty">
-                <span class="help-block" ng-if="form.timezone.$error.required">Cannot be blank</span>
-                <span class="help-block" ng-if="form.timezone.$error.editable">Must be chosen from list</span>
-              </span>
-            </div>
-          </div>
+  <!-- this model-body requires a specialized style so that the typeahead displays correctly -->
+  <div class="modal-body" style="overflow: visible; margin-bottom: 4em;">
+    <p class="text-info">
+      Select which timezone you would like all times to be displayed in.<br/>
+      Note that most timezones have multiple names, you may choose any.
+    </p>
+    <hr/>
+    <div class="form-group"
+         ng-class="{ 'has-feedback has-error': form.timezone.$dirty && form.timezone.$invalid }">
+      <label for="timezone" class="col-sm-3 control-label">Timezone</label>
+      <div class="col-sm-9">
+        <div class="input-group"
+             ng-class="{ 'has-feedback has-error': form.timezone.$dirty && form.timezone.$invalid }">
+          <input id="timezone"
+                 name="timezone"
+                 ng-model="local.timezone"
+                 typeahead="item for item in local.getTypeaheadValues( $viewValue )"
+                 typeahead-editable="false"
+                 typeahead-min-length="2"
+                 class="form-control"
+                 type="text"
+                 placeholder="(Type the first few letters to search possible values)"
+                 autocomplete="off"
+                 autofocus
+                 required></input>
+        </div>
+        <span ng-if="form.timezone.$invalid && form.timezone.$dirty">
+          <span class="help-block" ng-if="form.timezone.$error.required">Cannot be blank</span>
+          <span class="help-block" ng-if="form.timezone.$error.editable">Must be chosen from list</span>
+        </span>
       </div>
     </div>
   </div>

@@ -118,7 +118,7 @@ snap-content {
 }
 
 /* modal tweaking */
-.modal-body { display: block; overflow: visible; }
+.modal-body { display: block; overflow: auto; }
 .modal-header, .modal-footer { background: #EAEAEA; }
 .modal-header {
   border-top-left-radius: 6px;
