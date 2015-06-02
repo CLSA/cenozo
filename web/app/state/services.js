@@ -33,9 +33,7 @@ define( [
         // factory customizations start here
         var self = this;
         this.roleModel = CnRoleModelFactory.instance();
-        this.roleModel.enableChoose( true );
-        this.roleModel.enableAdd( true );
-        this.roleModel.enableDelete( true );
+        this.roleModel.enableChoose( this.parentModel.editEnabled );
 
         this.onView = function view() {
           return this.viewRecord().then( function() {

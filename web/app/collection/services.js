@@ -26,22 +26,71 @@ define( [
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCollectionViewFactory', [
     'CnBaseViewFactory', 'CnParticipantModelFactory', 'CnUserModelFactory',
-    function( CnBaseViewFactory, CnParticipantModelFactory, CnUserModelFactory ) {
+    'CnAppSingleton', 'CnHttpFactory',
+    function( CnBaseViewFactory, CnParticipantModelFactory, CnUserModelFactory,
+              CnAppSingleton, CnHttpFactory ) {
       var object = function( parentModel ) {
         CnBaseViewFactory.construct( this, parentModel );
 
         ////////////////////////////////////
         // factory customizations start here
         var self = this;
-        this.participantModel = CnParticipantModelFactory.instance();
-        this.participantModel.enableChoose( true );
-        this.userModel = CnUserModelFactory.instance();
-        this.userModel.enableChoose( true );
+        var defaultEditEnabled = this.parentModel.editEnabled;
 
-        this.onView = function view() {
+        this.participantModel = CnParticipantModelFactory.instance();
+        // need to disable all functionality since choose mode depends on the record
+        this.participantModel.enableAdd( false );
+        this.participantModel.enableDelete( false );
+        this.participantModel.enableEdit( false );
+        this.participantModel.enableView( false );
+
+        this.userModel = CnUserModelFactory.instance();
+        // need to disable all functionality since choose mode depends on the record
+        this.userModel.enableAdd( false );
+        this.userModel.enableDelete( false );
+        this.userModel.enableEdit( false );
+        this.userModel.enableView( false );
+
+        this.onView = function() {
           return this.viewRecord().then( function() {
             self.participantModel.listModel.onList( true );
             self.userModel.listModel.onList( true );
+
+            // if the collection is locked then don't allow users/participants to be changed
+            self.participantModel.enableChoose( !self.record.locked );
+            self.userModel.enableChoose( !self.record.locked );
+
+            // only allow users belonging to this collection to edit it when it is locked
+            if( self.record.locked ) {
+              return CnHttpFactory.instance( {
+                path: 'collection/' + self.record.getIdentifier() + '/user/' + CnAppSingleton.user.id
+              } ).get().catch( function() {
+                // 404 when searching for current user in collection means we should turn off editing
+                self.parentModel.enableEdit( false );
+              } );
+            }
+          } );
+        };
+
+        this.onPatch = function( data ) {
+          return this.patchRecord( data ).then( function() {
+            if( angular.isDefined( data.locked ) ) {
+              // update the choose and edit modes
+              self.participantModel.enableChoose( !self.record.locked );
+              self.userModel.enableChoose( !self.record.locked );
+
+              if( self.record.locked ) {
+                return CnHttpFactory.instance( {
+                  path: 'collection/' + self.record.getIdentifier() + '/user/' + CnAppSingleton.user.id
+                } ).get().then( function() {
+                  // if the user is found then they may edit
+                  self.parentModel.enableEdit( defaultEditEnabled );
+                } ).catch( function() {
+                  // 404 when searching for current user in collection means we should turn off editing
+                  self.parentModel.enableEdit( false );
+                } );
+              }
+            }
           } );
         };
         // factory customizations end here

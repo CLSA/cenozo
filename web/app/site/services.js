@@ -35,8 +35,8 @@ define( [
         // factory customizations start here
         var self = this;
         this.accessModel = CnAccessModelFactory.instance();
-        this.accessModel.enableAdd( true );
-        this.accessModel.enableDelete( true );
+        this.accessModel.enableAdd( this.parentModel.editEnabled );
+        this.accessModel.enableDelete( this.parentModel.editEnabled );
         this.activityModel = CnActivityModelFactory.instance();
 
         this.onView = function view() {

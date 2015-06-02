@@ -34,13 +34,13 @@ define( [
         // factory customizations start here
         var self = this;
         this.addressModel = CnAddressModelFactory.instance();
-        this.addressModel.enableAdd( true );
-        this.addressModel.enableDelete( true );
-        this.addressModel.enableView( true );
+        this.addressModel.enableAdd( this.parentModel.editEnabled );
+        this.addressModel.enableDelete( this.parentModel.editEnabled );
+        this.addressModel.enableView( this.parentModel.viewEnabled );
         this.phoneModel = CnPhoneModelFactory.instance();
-        this.phoneModel.enableAdd( true );
-        this.phoneModel.enableDelete( true );
-        this.phoneModel.enableView( true );
+        this.phoneModel.enableAdd( this.parentModel.editEnabled );
+        this.phoneModel.enableDelete( this.parentModel.editEnabled );
+        this.phoneModel.enableView( this.parentModel.viewEnabled );
 
         this.onView = function view() {
           return this.viewRecord().then( function() {

@@ -24,7 +24,7 @@ define( [
         // factory customizations start here
         var self = this;
         this.userModel = CnUserModelFactory.instance();
-        this.userModel.enableChoose( true );
+        this.userModel.enableChoose( this.parentModel.editEnabled );
 
         this.onView = function view() {
           return this.viewRecord().then( function() {

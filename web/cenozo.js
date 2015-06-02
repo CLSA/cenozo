@@ -458,12 +458,12 @@ cenozo.directive( 'cnRecordList', [
         removeColumns: '@'
       },
       controller: function( $scope ) {
-        if( $scope.model.addEnabled ) {
-          $scope.addRecord = function() { $scope.model.transitionToAddState(); };
-        }
+        $scope.addRecord = function() {
+          if( $scope.model.addEnabled ) $scope.model.transitionToAddState();
+        };
 
-        if( $scope.model.deleteEnabled ) {
-          $scope.deleteRecord = function( record ) {
+        $scope.deleteRecord = function( record ) {
+          if( $scope.model.deleteEnabled ) {
             $scope.model.listModel.onDelete( record ).catch( function error( response ) {
               if( 406 == response.status ) {
                 CnModalMessageFactory.instance( {
@@ -483,11 +483,11 @@ cenozo.directive( 'cnRecordList', [
                 $scope.model.transitionToErrorState( response );
               }
             } );
-          };
-        }
+          }
+        };
 
-        if( $scope.model.chooseEnabled ) {
-          $scope.chooseRecord = function( record ) {
+        $scope.chooseRecord = function( record ) {
+          if( $scope.model.chooseEnabled ) {
             if( $scope.model.listModel.chooseMode ) {
               $scope.model.listModel.onChoose( record ).catch( function error( response ) {
                 $scope.model.transitionToErrorState( response );
@@ -496,8 +496,8 @@ cenozo.directive( 'cnRecordList', [
           };
         }
 
-        if( $scope.model.viewEnabled ) {
-          $scope.selectRecord = function( record ) {
+        $scope.selectRecord = function( record ) {
+          if( $scope.model.viewEnabled ) {
             $scope.model.transitionToViewState( record );
           };
         }
@@ -552,17 +552,17 @@ cenozo.directive( 'cnRecordView', [
           $scope.model.transitionToLastState();
         };
 
-        if( $scope.model.deleteEnabled ) {
-          $scope.delete = function() {
+        $scope.delete = function() {
+          if( $scope.model.deleteEnabled ) {
             $scope.model.viewModel.onDelete().then(
               function success() { $scope.model.transitionToLastState(); },
               function error( response ) { $scope.model.transitionToErrorState( response ); }
             );
-          };
-        }
+          }
+        };
 
-        if( $scope.model.editEnabled ) {
-          $scope.undo = function( property ) {
+        $scope.undo = function( property ) {
+          if( $scope.model.editEnabled ) {
             if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
               $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
               if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) )
@@ -570,9 +570,11 @@ cenozo.directive( 'cnRecordView', [
                   $scope.model.viewModel.backupRecord['formatted_'+property];
               $scope.patch( property );
             }
-          };
+          }
+        };
 
-          $scope.patch = function( property ) {
+        $scope.patch = function( property ) {
+          if( $scope.model.editEnabled ) {
             // test the format
             if( !$scope.model.testFormat( property, $scope.model.viewModel.record[property] ) ) {
               var item = angular.element(
@@ -635,13 +637,17 @@ cenozo.directive( 'cnRecordView', [
                 }
               );
             }
-          };
+          }
+        };
 
-          $scope.getTypeaheadValues = function( input, viewValue ) {
+        $scope.getTypeaheadValues = function( input, viewValue ) {
+          if( $scope.model.editEnabled ) {
             return $scope.model.getTypeaheadValues( input, viewValue );
-          };
+          }
+        };
 
-          $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
+        $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
+          if( $scope.model.editEnabled ) {
             if( 'lookup-typeahead' == input.type ) {
               $scope.model.viewModel.formattedRecord[input.key] = $label;
               $scope.model.viewModel.record[input.key] = $model;
@@ -649,9 +655,11 @@ cenozo.directive( 'cnRecordView', [
               $scope.model.viewModel.record[input.key] = $item;
             }
             $scope.patch( input.key );
-          };
+          }
+        };
 
-          $scope.selectDatetime = function( input ) {
+        $scope.selectDatetime = function( input ) {
+          if( $scope.model.editEnabled ) {
             CnModalDatetimeFactory.instance( {
               title: input.title,
               date: $scope.model.viewModel.record[input.key],
@@ -662,8 +670,8 @@ cenozo.directive( 'cnRecordView', [
                 $scope.patch( input.key );
               }
             } );
-          };
-        }
+          }
+        };
       },
       link: function( scope, element, attrs ) {
         scope.heading = attrs.heading;

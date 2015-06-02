@@ -246,7 +246,8 @@
             </span>
           </span>
         </div>
-        <div ng-if="model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
+        <div ng-if="model.editEnabled &&
+                    model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
              class="col-sm-1 col-slim">
           <button class="btn btn-small btn-warning" ng-click="undo( input.key )">undo</button>
         </div>

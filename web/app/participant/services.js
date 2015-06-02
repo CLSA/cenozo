@@ -32,25 +32,25 @@ define( [
         // factory customizations start here
         var self = this;
         this.addressModel = CnAddressModelFactory.instance();
-        this.addressModel.enableAdd( true );
-        this.addressModel.enableDelete( true );
-        this.addressModel.enableView( true );
+        this.addressModel.enableAdd( this.parentModel.editEnabled );
+        this.addressModel.enableDelete( this.parentModel.editEnabled );
+        this.addressModel.enableView( this.parentModel.viewEnabled );
         this.phoneModel = CnPhoneModelFactory.instance();
-        this.phoneModel.enableAdd( true );
-        this.phoneModel.enableDelete( true );
-        this.phoneModel.enableView( true );
+        this.phoneModel.enableAdd( this.parentModel.editEnabled );
+        this.phoneModel.enableDelete( this.parentModel.editEnabled );
+        this.phoneModel.enableView( this.parentModel.viewEnabled );
         this.consentModel = CnConsentModelFactory.instance();
-        this.consentModel.enableAdd( true );
-        this.consentModel.enableDelete( true );
-        this.consentModel.enableView( true );
+        this.consentModel.enableAdd( this.parentModel.editEnabled );
+        this.consentModel.enableDelete( this.parentModel.editEnabled );
+        this.consentModel.enableView( this.parentModel.viewEnabled );
         this.alternateModel = CnAlternateModelFactory.instance();
-        this.alternateModel.enableAdd( true );
-        this.alternateModel.enableDelete( true );
-        this.alternateModel.enableView( true );
+        this.alternateModel.enableAdd( this.parentModel.editEnabled );
+        this.alternateModel.enableDelete( this.parentModel.editEnabled );
+        this.alternateModel.enableView( this.parentModel.viewEnabled );
         this.eventModel = CnEventModelFactory.instance();
-        this.eventModel.enableAdd( true );
-        this.eventModel.enableDelete( true );
-        this.eventModel.enableView( true );
+        this.eventModel.enableAdd( this.parentModel.editEnabled );
+        this.eventModel.enableDelete( this.parentModel.editEnabled );
+        this.eventModel.enableView( this.parentModel.viewEnabled );
 
         this.onView = function view() {
           return this.viewRecord().then( function() {

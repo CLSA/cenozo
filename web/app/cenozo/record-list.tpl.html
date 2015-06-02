@@ -88,12 +88,12 @@
           <i class="glyphicon glyphicon-plus"></i> Add
         </button>
         <button class="btn btn-default right"
-                ng-if="model.chooseEnabled && model.editEnabled"
+                ng-if="model.chooseEnabled"
                 ng-class="model.listModel.chooseMode ? 'btn-success' : 'btn-default'"
                 ng-click="model.listModel.toggleChooseMode()">
           <i class="glyphicon glyphicon-edit"
              ng-class="model.listModel.chooseMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
-          {{ model.listModel.chooseMode ? 'Done' : 'Select' }}
+          {{ model.listModel.chooseMode ? 'Done' : 'Choose' }}
         </button>
       </td>
     </tr>
