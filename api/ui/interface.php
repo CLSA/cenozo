@@ -6,6 +6,7 @@
   <link rel="shortcut icon" href="img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-snap/angular-snap.css">
+  <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>

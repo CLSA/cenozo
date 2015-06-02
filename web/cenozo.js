@@ -1236,7 +1236,7 @@ cenozo.factory( 'CnBaseViewFactory', [
           if( angular.isDefined( property ) ) {
             var input = this.parentModel.inputList[property];
             if( angular.isDefined( input ) ) {
-              if( angular.isDefined( 'lookup-typeahead' == input.type ) ) {
+              if( 'lookup-typeahead' == input.type ) {
                 // When lookup-typeaheads are first loaded move the formatted property from the record
                 // to the formatted record.  We must do this so that future calls to this function do
                 // not overrite the formatted typeahead property (the onSelectTypeahead callback is
@@ -1746,7 +1746,6 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
           }
-          console.log( [property, value, formatted] );
           return formatted;
         };
 
