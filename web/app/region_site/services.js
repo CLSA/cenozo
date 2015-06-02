@@ -32,10 +32,10 @@ define( [ cenozo.baseUrl + '/app/region_site/module.js' ], function( module ) {
   cenozo.providers.factory( 'CnRegionSiteModelFactory', [
     'CnBaseModelFactory',
     'CnRegionSiteListFactory', 'CnRegionSiteAddFactory', 'CnRegionSiteViewFactory',
-    'CnHttpFactory', 'CnAppSingleton',
+    'CnHttpFactory', 'CnSession',
     function( CnBaseModelFactory,
               CnRegionSiteListFactory, CnRegionSiteAddFactory, CnRegionSiteViewFactory,
-              CnHttpFactory, CnAppSingleton ) {
+              CnHttpFactory, CnSession ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -77,7 +77,7 @@ define( [ cenozo.baseUrl + '/app/region_site/module.js' ], function( module ) {
                     where: {
                       column: 'country',
                       operator: '=',
-                      value: CnAppSingleton.application.country
+                      value: CnSession.application.country
                     },
                     order: 'name'
                   }
@@ -93,7 +93,7 @@ define( [ cenozo.baseUrl + '/app/region_site/module.js' ], function( module ) {
               } );
             } ).then( function() {
               return CnHttpFactory.instance( {
-                path: 'application/' + CnAppSingleton.application.id + '/site',
+                path: 'application/' + CnSession.application.id + '/site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
                   modifier: { order: 'name' }

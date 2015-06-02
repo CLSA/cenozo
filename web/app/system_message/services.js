@@ -3,8 +3,8 @@ define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module )
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSystemMessageAddFactory', [
-    'CnBaseAddFactory', 'CnAppSingleton',
-    function( CnBaseAddFactory, CnAppSingleton ) {
+    'CnBaseAddFactory', 'CnSession',
+    function( CnBaseAddFactory, CnSession ) {
       var object = function( parentModel ) {
         CnBaseAddFactory.construct( this, parentModel );
 
@@ -13,7 +13,7 @@ define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module )
         this.onNew = function view( record ) {
           return this.newRecord( record ).then( function() {
             // force the default application to be this application
-            record.application_id = CnAppSingleton.application.id;
+            record.application_id = CnSession.application.id;
           } );
         };
         // factory customizations ends here
@@ -45,10 +45,10 @@ define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module )
   cenozo.providers.factory( 'CnSystemMessageModelFactory', [
     'CnBaseModelFactory',
     'CnSystemMessageListFactory', 'CnSystemMessageAddFactory', 'CnSystemMessageViewFactory',
-    'CnAppSingleton', 'CnHttpFactory',
+    'CnSession', 'CnHttpFactory',
     function( CnBaseModelFactory,
               CnSystemMessageListFactory, CnSystemMessageAddFactory, CnSystemMessageViewFactory,
-              CnAppSingleton, CnHttpFactory ) {
+              CnSession, CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -94,8 +94,8 @@ define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module )
               // create metadata for application_id (this application only)
               self.metadata.columnList.application_id = {
                 enumList: [ {
-                  value: CnAppSingleton.application.id,
-                  name: CnAppSingleton.application.title
+                  value: CnSession.application.id,
+                  name: CnSession.application.title
                 } ]
               };
               self.metadata.loadingCount--;

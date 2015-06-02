@@ -26,9 +26,9 @@ define( [
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCollectionViewFactory', [
     'CnBaseViewFactory', 'CnParticipantModelFactory', 'CnUserModelFactory',
-    'CnAppSingleton', 'CnHttpFactory',
+    'CnSession', 'CnHttpFactory',
     function( CnBaseViewFactory, CnParticipantModelFactory, CnUserModelFactory,
-              CnAppSingleton, CnHttpFactory ) {
+              CnSession, CnHttpFactory ) {
       var object = function( parentModel ) {
         CnBaseViewFactory.construct( this, parentModel );
 
@@ -63,7 +63,7 @@ define( [
             // only allow users belonging to this collection to edit it when it is locked
             if( self.record.locked ) {
               return CnHttpFactory.instance( {
-                path: 'collection/' + self.record.getIdentifier() + '/user/' + CnAppSingleton.user.id
+                path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id
               } ).get().catch( function() {
                 // 404 when searching for current user in collection means we should turn off editing
                 self.parentModel.enableEdit( false );
@@ -81,7 +81,7 @@ define( [
 
               if( self.record.locked ) {
                 return CnHttpFactory.instance( {
-                  path: 'collection/' + self.record.getIdentifier() + '/user/' + CnAppSingleton.user.id
+                  path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id
                 } ).get().then( function() {
                   // if the user is found then they may edit
                   self.parentModel.enableEdit( defaultEditEnabled );

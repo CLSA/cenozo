@@ -4,7 +4,7 @@ define( [
   'use strict';
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnApplicationAddFactory', [
+  cenozo.providers.factory( 'CnSessionlicationAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
@@ -13,7 +13,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnApplicationListFactory', [
+  cenozo.providers.factory( 'CnSessionlicationListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -22,7 +22,7 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnApplicationViewFactory', [
+  cenozo.providers.factory( 'CnSessionlicationViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
@@ -32,17 +32,17 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnApplicationModelFactory', [
-    'CnBaseModelFactory', 'CnApplicationListFactory', 'CnApplicationAddFactory', 'CnApplicationViewFactory',
+  cenozo.providers.factory( 'CnSessionlicationModelFactory', [
+    'CnBaseModelFactory', 'CnSessionlicationListFactory', 'CnSessionlicationAddFactory', 'CnSessionlicationViewFactory',
     'CnHttpFactory',
-    function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationAddFactory, CnApplicationViewFactory,
+    function( CnBaseModelFactory, CnSessionlicationListFactory, CnSessionlicationAddFactory, CnSessionlicationViewFactory,
               CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnApplicationAddFactory.instance( this );
-        this.listModel = CnApplicationListFactory.instance( this );
-        this.viewModel = CnApplicationViewFactory.instance( this );
+        this.addModel = CnSessionlicationAddFactory.instance( this );
+        this.listModel = CnSessionlicationListFactory.instance( this );
+        this.viewModel = CnSessionlicationViewFactory.instance( this );
 
         // customize identifier
         this.getIdentifierFromRecord = function( record ) { return 'name=' + record.name; };

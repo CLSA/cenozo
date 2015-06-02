@@ -32,10 +32,10 @@ define( [ cenozo.baseUrl + '/app/quota/module.js' ], function( module ) {
   cenozo.providers.factory( 'CnQuotaModelFactory', [
     'CnBaseModelFactory',
     'CnQuotaListFactory', 'CnQuotaAddFactory', 'CnQuotaViewFactory',
-    'CnHttpFactory', 'CnAppSingleton',
+    'CnHttpFactory', 'CnSession',
     function( CnBaseModelFactory,
               CnQuotaListFactory, CnQuotaAddFactory, CnQuotaViewFactory,
-              CnHttpFactory, CnAppSingleton ) {
+              CnHttpFactory, CnSession ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -70,7 +70,7 @@ define( [ cenozo.baseUrl + '/app/quota/module.js' ], function( module ) {
                     where: {
                       column: 'country',
                       operator: '=',
-                      value: CnAppSingleton.application.country
+                      value: CnSession.application.country
                     },
                     order: 'name'
                   }
@@ -86,7 +86,7 @@ define( [ cenozo.baseUrl + '/app/quota/module.js' ], function( module ) {
               } );
             } ).then( function() {
               return CnHttpFactory.instance( {
-                path: 'application/' + CnAppSingleton.application.id + '/site',
+                path: 'application/' + CnSession.application.id + '/site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
                   modifier: { order: 'name' }

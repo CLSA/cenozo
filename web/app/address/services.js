@@ -21,8 +21,8 @@ define( [ cenozo.baseUrl + '/app/address/module.js' ], function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressViewFactory', [
-    'CnBaseViewFactory', 'CnAppSingleton', 'CnModalMessageFactory',
-    function( CnBaseViewFactory, CnAppSingleton, CnModalMessageFactory ) {
+    'CnBaseViewFactory', 'CnSession', 'CnModalMessageFactory',
+    function( CnBaseViewFactory, CnSession, CnModalMessageFactory ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel );
@@ -47,9 +47,9 @@ define( [ cenozo.baseUrl + '/app/address/module.js' ], function( module ) {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressModelFactory', [
     'CnBaseModelFactory', 'CnAddressListFactory', 'CnAddressAddFactory', 'CnAddressViewFactory',
-    'CnHttpFactory', 'CnAppSingleton',
+    'CnHttpFactory', 'CnSession',
     function( CnBaseModelFactory, CnAddressListFactory, CnAddressAddFactory, CnAddressViewFactory,
-              CnHttpFactory, CnAppSingleton ) {
+              CnHttpFactory, CnSession ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );

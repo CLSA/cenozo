@@ -3,15 +3,15 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnErrorModelFactory', [
-    'CnAppSingleton',
-    function( CnAppSingleton ) {
+    'CnSession',
+    function( CnSession ) {
       var object = function() {
         var self = this;
-        this.promise = CnAppSingleton.promise.then( function() {
-          self.application = CnAppSingleton.application;
-          self.user = CnAppSingleton.user;
-          self.role = CnAppSingleton.role;
-          self.site = CnAppSingleton.site;
+        this.promise = CnSession.promise.then( function() {
+          self.application = CnSession.application;
+          self.user = CnSession.user;
+          self.role = CnSession.role;
+          self.site = CnSession.site;
         } );
       };
 
