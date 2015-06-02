@@ -15,6 +15,7 @@ BEGIN
     WHERE consent.written = true
     AND participant.id = consent.participant_id
     GROUP BY consent.participant_id
+    LIMIT 1
   )
   WHERE participant.id = proc_participant_id;
 END$$

@@ -44,6 +44,7 @@ CREATE PROCEDURE patch_participant_last_consent()
         FROM consent
         WHERE participant.id = consent.participant_id
         GROUP BY consent.participant_id
+        LIMIT 1
       );
 
     END IF;
