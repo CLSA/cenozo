@@ -135,7 +135,7 @@ abstract class service extends \cenozo\base_object
     }
 
     if( 404 != $this->status->get_code() &&
-        self::is_write_method( $this->method ) &&
+        in_array( $this->method, array( 'DELETE', 'POST' ) ) &&
         'self' != $this->get_leaf_subject() )
     { // record to the write log if the method is of write type
       $this->db_writelog = lib::create( 'database\writelog' );
