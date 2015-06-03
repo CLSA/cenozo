@@ -64,7 +64,7 @@ define( [ cenozo.baseUrl + '/app/address/module.js' ], function( module ) {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            CnHttpFactory.instance( {
+            return CnHttpFactory.instance( {
               path: 'region',
               data: {
                 select: {

@@ -48,7 +48,7 @@ define( [ cenozo.baseUrl + '/app/phone/module.js' ], function( module ) {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            CnHttpFactory.instance( {
+            return CnHttpFactory.instance( {
               path: self.getServiceCollectionPath().replace( 'phone', 'address' ),
               data: {
                 select: { column: [ 'id', 'summary' ] },

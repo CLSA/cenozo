@@ -45,7 +45,7 @@ define( [ cenozo.baseUrl + '/app/event/module.js' ], function( module ) {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            CnHttpFactory.instance( {
+            return CnHttpFactory.instance( {
               path: 'event_type',
               data: {
                 select: { column: [ 'id', 'name' ] },

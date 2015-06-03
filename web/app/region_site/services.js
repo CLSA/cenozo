@@ -47,7 +47,7 @@ define( [ cenozo.baseUrl + '/app/region_site/module.js' ], function( module ) {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            CnHttpFactory.instance( {
+            return CnHttpFactory.instance( {
               path: 'language',
               data: {
                 select: { column: [ 'id', 'name' ] },

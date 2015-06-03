@@ -86,7 +86,7 @@ define( [
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            CnHttpFactory.instance( {
+            return CnHttpFactory.instance( {
               path: 'age_group',
               data: {
                 select: { column: [ 'id', 'lower', 'upper' ] },

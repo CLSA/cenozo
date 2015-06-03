@@ -60,7 +60,7 @@ define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module )
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            CnHttpFactory.instance( {
+            return CnHttpFactory.instance( {
               path: 'site',
               data: {
                 select: { column: [ 'id', 'name' ] },
