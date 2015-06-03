@@ -1113,32 +1113,48 @@ cenozo.factory( 'CnBaseListFactory', [
         object.isLoading = false;
 
         object.orderBy = function( column ) {
+          var self = this;
           if( null === this.order || column != this.order.column ) {
             this.order = { column: column, reverse: false };
           } else {
             this.order.reverse = !this.order.reverse;
           }
-          if( this.cache.length < this.total ) this.listRecords( true );
-          this.paginationFactory.currentPage = 1;
+          var promise = this.cache.length < this.total ? this.listRecords( true ) : null;
+
+          if( promise ) {
+            promise.then( function() {
+              self.paginationFactory.currentPage = 1;
+            } ).catch( function exception( response ) {
+              self.parentModel.transitionToErrorState( response );
+            } );
+          } else {
+            this.paginationFactory.currentPage = 1;
+          }
         };
 
         object.restrict = function( column, restrict ) {
+          var self = this;
           var columnList = this.parentModel.columnList;
           if( angular.isUndefined( restrict ) ) {
             if( angular.isDefined( columnList[column].restrict ) ) delete columnList[column].restrict;
           } else {
             columnList[column].restrict = restrict;
           }
-          this.listRecords( true );
-          this.paginationFactory.currentPage = 1;
+          this.listRecords( true ).then( function() {
+            self.paginationFactory.currentPage = 1;
+          } ).catch( function exception( response ) {
+            self.parentModel.transitionToErrorState( response );
+          } );
         };
 
+        // should be called by pagination when the page is changed
         object.checkCache = function() {
           var self = this;
-          if( this.cache.length < this.total && this.paginationFactory.getMaxIndex() >= this.cache.length )
+          if( this.cache.length < this.total && this.paginationFactory.getMaxIndex() >= this.cache.length ) {
             this.listRecords().catch( function exception( response ) {
               self.parentModel.transitionToErrorState( response );
             } );
+          }
         };
 
         /**
@@ -1231,7 +1247,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.chooseMode = false;
         object.toggleChooseMode = function() {
           this.chooseMode = !this.chooseMode;
-          this.listRecords( true );
+          return this.listRecords( true );
         };
 
         /**
