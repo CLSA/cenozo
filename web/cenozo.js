@@ -448,8 +448,8 @@ cenozo.directive( 'cnRecordAdd', [
  * @attr removeColumns: An array of columns (by key) to remove from the list
  */
 cenozo.directive( 'cnRecordList', [
-  'CnModalMessageFactory', 'CnModalRestrictFactory',
-  function( CnModalMessageFactory, CnModalRestrictFactory ) {
+  'CnSession', 'CnModalMessageFactory', 'CnModalRestrictFactory',
+  function( CnSession, CnModalMessageFactory, CnModalRestrictFactory ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-list.tpl.html',
       restrict: 'E',
@@ -507,6 +507,10 @@ cenozo.directive( 'cnRecordList', [
                       ? scope.model.name.singular.ucWords() + ' List'
                       : attrs.heading;
 
+        // add site to removeColumns if role doesn't allow for all sites
+        if( angular.isUndefined( scope.removeColumns ) ) scope.removeColumns = [];
+        if( !CnSession.role.all_sites && 0 > scope.removeColumns.indexOf( 'site' ) )
+          scope.removeColumns.push( 'site' );
         scope.columnArray = scope.model.getColumnArray( scope.removeColumns );
 
         if( angular.isDefined( scope.model.listModel.restrict ) ) {
