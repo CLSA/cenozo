@@ -62,6 +62,10 @@ define( {
     }
   },
   columnList: {
+    rank: {
+      title: 'Rank',
+      filter: 'cnOrdinal'
+    },
     city: {
       title: 'City'
     },
@@ -76,10 +80,6 @@ define( {
     available: {
       title: 'Available',
       filter: 'cnYesNo'
-    },
-    rank: {
-      title: 'Rank',
-      filter: 'cnOrdinal'
     }
   },
   defaultOrder: {

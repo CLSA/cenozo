@@ -27,8 +27,8 @@ define( {
     }
   },
   columnList: {
+    rank: { title: 'Rank', filter: 'cnOrdinal' },
     name: { title: 'Name' },
-    rank: { title: 'Rank' },
     participant_count: { title: 'Participants' },
     role_count: { title: 'Roles' }
   },
