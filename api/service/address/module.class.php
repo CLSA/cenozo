@@ -17,22 +17,6 @@ class module extends \cenozo\service\module
   /**
    * Extend parent method
    */
-  public function validate()
-  {
-    $valid = parent::validate();
-
-    if( $valid )
-    {
-      // addresses can only be listed in the context of an alternate or participant
-      $valid = in_array( $this->get_parent_subject(), array( 'alternate', 'participant' ) );
-    }
-
-    return $valid;
-  }
-
-  /**
-   * Extend parent method
-   */
   public function prepare_read( $select, $modifier )
   {
     $util_class_name = lib::get_class_name( 'util' );

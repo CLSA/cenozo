@@ -1,0 +1,8 @@
+<ol class="breadcrumb">
+  <li><a>test1</a></li>
+  <li><a>test2</a></li>
+  <li ng-repeat="breadcrumb in breadcrumbTrail">
+    <a ng-if="!$last" ng-click="breadcrumb.go()">{{ breadcrumb.title }}</a>
+    <span ng-if="$last">{{ breadcrumb.title }}</span>
+  </li>
+</ol>

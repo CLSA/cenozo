@@ -72,7 +72,7 @@
   <tfoot>
     <tr class="info">
       <td colspan="{{ numColumns }}" class="rounded-bottom">
-        <pagination class="pagination left"
+        <pagination class="pagination pull-left"
                     ng-model="model.listModel.paginationFactory.currentPage"
                     ng-show="model.listModel.cache.length > model.listModel.paginationFactory.itemsPerPage"
                     ng-change="model.listModel.checkCache()"
@@ -82,12 +82,12 @@
                     previous-text="&lsaquo;"
                     next-text="&rsaquo;"></pagination>
         {{ model.listModel.total }} records total
-        <button class="btn btn-default right"
+        <button class="btn btn-default pull-right"
                 ng-if="model.addEnabled && !model.chooseEnabled"
                 ng-click="addRecord()">
           <i class="glyphicon glyphicon-plus"></i> Add
         </button>
-        <button class="btn btn-default right"
+        <button class="btn btn-default pull-right"
                 ng-if="model.chooseEnabled"
                 ng-class="model.listModel.chooseMode ? 'btn-success' : 'btn-default'"
                 ng-click="model.listModel.toggleChooseMode()">

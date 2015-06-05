@@ -7,6 +7,14 @@ define( {
     pluralPossessive: 'addresses\''
   },
   inputList: {
+    alternate_id: {
+      title: 'Alternate',
+      type: 'parent'
+    },
+    participant_id: {
+      title: 'Participant',
+      type: 'parent'
+    },
     active: {
       title: 'Active',
       type: 'boolean'

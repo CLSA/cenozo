@@ -13,10 +13,8 @@
     "bootstrap": "~3.1.1", // base css library
     "moment": "2.x.x", // for datetime manipulation
     "moment-timezone": "latest", // for timezone manipulation
-    "snapjs": "latest", // for side menu
     "requirejs": "2.1.x", // loads js on demand
     "angular-animate": "1.2.x", // animates state transitions
-    "angular-snap": "1.8.x", // integrates snap with angular
     "angular-slider": "0.2.x" // for time slider in datetime picker
   }
 }

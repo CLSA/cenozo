@@ -9,14 +9,11 @@ blockquote { font-size: 100%; }
 .btn-narrow { padding-left: 6px; padding-right: 6px; }
 .btn-muted { background-color: #eaeaea; }
 .full-width { width: 100% !important; }
-.half-width { width: 50% !important; }
-.left { float: left }
-.right { float: right }
-.restrict { margin: 0px; font-size: 1.2em; }
-.pagination { margin: 0; }
+.restrict, .pagination { margin: 0; }
 .input-group { width: 100%; }
 .checkbox { display: inline-block; font-weight: normal; }
-.form-body { padding-top: 1em; }
+.form-body { padding-top: 1em; background: #F9F9F9; }
+.form-horizontal .form-group { margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
 .form-footer { padding: 1em; background: #EAEAEA; text-align: right; }
 .spacer { margin: 0.5em; }
 .vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
@@ -26,9 +23,28 @@ blockquote { font-size: 100%; }
 .rounded-bottom { border-top-left-radius: 0px !important; border-top-right-radius: 0px !important; }
 .rounded-left { border-top-right-radius: 0px !important; border-bottom-right-radius: 0px !important; }
 .rounded-right { border-top-left-radius: 0px !important; border-bottom-left-radius: 0px !important; }
+.no-rounding { border-radius: 0px !important; }
 .col-slim { padding-left: 0px; padding-right: 0px; }
 .nopadding { padding: 0px; }
-.greyout { background: #000; opacity: 0.5; }
+.greyout {
+  background: #000 !important;
+  opacity: 0.5 !important;
+}
+
+.breadcrumb {
+  padding-top: 15px;
+  padding-bottom: 14px;
+  padding-right: 0px;
+  padding-left: 0px;
+  margin: 0px;
+  list-style: outside none none;
+  background-color: transparent;
+  border-radius: 0px;
+  font-size: 16px;
+}
+.breadcrumb > li + li:before {
+  content: "/";
+}
 
 /* make sure labels align well in forms */
 label {
@@ -45,22 +61,6 @@ input[type=number]::-webkit-outer-spin-button {
 }
 input[type=number] { -moz-appearance: textfield; }
 
-/* use pointer while hovering over element */
-.pointer { cursor: pointer !important; }
-
-/* needed by angular-bootstrap */
-.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
-.app-heading {
-  padding-top: 0.33em;
-  padding-bottom: 0.33em;
-  padding-left: 3.5em;
-  min-width: 750px;
-  font-weight: bold;
-}
-.app-heading-title { font-size: 120%; padding-top: inherit; padding-bottom: inherit; }
-.app-heading-shortcuts { text-align: center; }
-.app-heading-state {}
-
 /* used by the ng-view so that animated transitions work correctly */
 .fade-transition {
   position: absolute;
@@ -70,6 +70,7 @@ input[type=number] { -moz-appearance: textfield; }
 .outer-view-frame {
   padding: 0px;
   min-width: 750px;
+  margin-top: 50px;
 }
 
 /* main frame showing */
@@ -86,35 +87,6 @@ input[type=number] { -moz-appearance: textfield; }
   background: -o-linear-gradient(top, white, transparent);
   background: -ms-linear-gradient(top, white, transparent);
   background: linear-gradient(to bottom, white, transparent);
-}
-
-/* snap content, drawers and toggle buttons */
-.menu-button {
-  z-index: 100;
-  position: fixed;
-  top: 0px;
-  height: 3em;
-  width: 3em;
-  outline: none !important;
-}
-snap-content {
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  box-shadow: 2px 0px 5px #000;
-  background-image: url('../img/background.gif');
-  background-size: 60px;
-  background-repeat: repeat;
-}
-.snap-drawer, accordian-heading { background-color: #EAEAEA; }
-
-/* accordion tweaking */
-.panel { border: 0px; box-shadow: none; }
-.panel-heading { padding: 0px }
-.panel-collapse { background-color: #EAEAEA; }
-.btn-accordion {
-  border: 0px;
-  border-radius: 0px;
-  outline: none !important;
 }
 
 /* modal tweaking */
@@ -144,7 +116,70 @@ snap-content {
   cursor: pointer;
 }
 
-.dropdown-menu { background: #eaeaea; }
+/* navigation bar (always at top of page) */
+.navigation-header {
+  z-index: 10;
+  position: fixed;
+  width: 100%;
+  top: 0px;
+}
+
+.open > .navigation-menu {
+  opacity: 1;
+  visibility: visible;
+}
+
+.navigation-menu {
+  margin: 0px;
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  border: white;
+  border-radius: 0px;
+  width: 100%;
+  background: #eaeaea;
+  -webkit-transition: opacity 500ms ease, visibility 500ms ease;
+  -moz-transition: opacity 500ms ease, visibility 500ms ease;
+  -o-transition: opacity 500ms ease, visibility 500ms ease;
+  transition: opacity 500ms ease, visibility 500ms ease;
+}
+
+.navigation-group {
+  list-style: none;
+  padding-top: 2px;
+  padding-bottom: 7px;
+  padding-right: 7px;
+  padding-left: 7px;
+}
+
+/* navbar tweaks */
+.navbar-link, .dropdown { cursor: pointer; }
+.navbar-default {
+  background: #eaeaea;
+  border: #eaeaea;
+  border-radius: 0px;
+}
+.navbar-brand {
+  font-weight: bold;
+  color: #428bca !important;
+}
+.navbar-brand:hover, .navbar-brand:focus {
+  color: #333 !important;
+}
+
+@media (min-width: 768px) {
+  .navbar-brand {
+    padding: 15px 0px;
+  }
+  .navbar > .container .navbar-brand, .navbar > .container-fluid .navbar-brand {
+    margin-left: 0px;
+  }
+}
+
+.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {
+  background-color: white;
+}
+
 .timepicker { background: #fff; padding-top: 1em; }
 .timepicker-row { height: 2em; }
 slider, [slider] { margin: 0px; }
@@ -164,4 +199,10 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
   background: url( ../img/loading.gif );
   background-repeat: no-repeat;
   background-position: center center;
+}
+
+.background {
+  background-image: url('../img/background.gif');
+  background-size: 60px;
+  background-repeat: repeat;
 }
