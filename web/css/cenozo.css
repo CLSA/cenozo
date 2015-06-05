@@ -8,6 +8,7 @@ blockquote { font-size: 100%; }
 .btn { font-weight: bold; }
 .btn-narrow { padding-left: 6px; padding-right: 6px; }
 .btn-muted { background-color: #eaeaea; }
+.full-page { width: 100vw !important; height: 100vh !important; }
 .full-width { width: 100% !important; }
 .restrict, .pagination { margin: 0; }
 .input-group { width: 100%; }
@@ -15,7 +16,7 @@ blockquote { font-size: 100%; }
 .form-body { padding-top: 1em; background: #F9F9F9; }
 .form-horizontal .form-group { margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
 .form-footer { padding: 1em; background: #EAEAEA; text-align: right; }
-.spacer { margin: 0.5em; }
+.spacer { margin: 0.5em; content: "&nbsp;" }
 .vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
 .horizontal-spacer { margin-left: 0.5em; margin-right: 0.5em; }
 .rounded, .rounded-top, .rounded-bottom, .rounded-left, .rounded-right { border-radius: 6px !important; }
@@ -26,10 +27,6 @@ blockquote { font-size: 100%; }
 .no-rounding { border-radius: 0px !important; }
 .col-slim { padding-left: 0px; padding-right: 0px; }
 .nopadding { padding: 0px; }
-.greyout {
-  background: #000 !important;
-  opacity: 0.5 !important;
-}
 
 .breadcrumb {
   padding-top: 15px;
@@ -124,12 +121,27 @@ input[type=number] { -moz-appearance: textfield; }
   top: 0px;
 }
 
-.open > .navigation-menu {
+.open > .navigation-menu, .open > .site-role-menu {
   opacity: 1;
   visibility: visible;
 }
 
 .navigation-menu {
+  margin: 0px;
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  border: white;
+  border-radius: 0px;
+  width: 100%;
+  background: #eaeaea;
+  -webkit-transition: opacity 500ms ease, visibility 500ms ease;
+  -moz-transition: opacity 500ms ease, visibility 500ms ease;
+  -o-transition: opacity 500ms ease, visibility 500ms ease;
+  transition: opacity 500ms ease, visibility 500ms ease;
+}
+
+.site-role-menu {
   margin: 0px;
   display: block;
   opacity: 0;

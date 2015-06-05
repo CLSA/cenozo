@@ -1,0 +1,36 @@
+<form ng-submit="local.ok()" novalidate name="form" class="noselect">
+  <div class="modal-header">
+    <h4 class="modal-title">Select a Site and Role</h4>
+  </div>
+  <div class="modal-body">
+    <p class="text-info">
+      Select which site and role you would like to switch to.
+    </p>
+    <hr/>
+    <div class="row container-fluid">
+      <label for="timezone" class="col-sm-3 control-label">Site</label>
+      <div class="col-sm-9">
+        <select
+          name="site_id"
+          ng-options="site.id as site.name for site in local.siteList"
+          ng-model="local.site_id"
+          ng-change="local.refreshRoleList()"
+          class="form-control"></select>
+      </div>
+    </div>
+    <div class="row container-fluid">
+      <label for="timezone" class="col-sm-3 control-label">Role</label>
+      <div class="col-sm-9">
+        <select
+          name="role_id"
+          ng-options="role.id as role.name for role in local.roleList"
+          ng-model="local.role_id"
+          class="form-control"></select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="local.cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">OK</button>
+  </div>
+</form>

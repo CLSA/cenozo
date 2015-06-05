@@ -140,19 +140,13 @@ cenozo.animation( '.fade-transition', function() {
  * Prints the application title and version
  */
 cenozo.controller( 'HeaderCtrl', [
-  '$rootScope', '$scope', '$state', '$window', 'CnSession',
-  function( $rootScope, $scope, $state, $window, CnSession ) {
+  '$rootScope', '$scope', '$state', '$window', 'CnSession', 'CnModalSiteRoleFactory',
+  function( $rootScope, $scope, $state, $window, CnSession, CnModalSiteRoleFactory ) {
     $scope.isCollapsed = false;
     CnSession.promise.then( function() {
       $scope.application = CnSession.application;
       $scope.site = CnSession.site;
       $scope.role = CnSession.role;
-      $scope.siteList = CnSession.siteList;
-
-      // pre-select the role list
-      for( var i = 0; i < $scope.siteList.length; i++ )
-        if( $scope.site.id == $scope.siteList[i].id )
-          $scope.roleList = $scope.siteList[i].roleList;
     } );
 
     $rootScope.$on( '$stateChangeSuccess', function( event, toState, toParams, fromState, fromParams ) {
@@ -193,22 +187,18 @@ cenozo.controller( 'HeaderCtrl', [
       }
     } );
 
-    $scope.setSite = function( id ) {
-      if( id != CnSession.site.id ) {
-        CnSession.setSite( id ).then( function() {
-          // relist and set the url to the home state
-          $window.location.assign( $window.location.pathname );
-        } );
-      }
-    }
-
-    $scope.setRole = function( id ) {
-      if( id != CnSession.role.id ) {
-        CnSession.setRole( id ).then( function() {
-          // relist and set the url to the home state
-          $window.location.assign( $window.location.pathname );
-        } );
-      }
+    $scope.setSiteRole = function() {
+      CnModalSiteRoleFactory.instance().show().then( function( response ) {
+        if( angular.isObject( response ) ) {
+          if( response.site_id != CnSession.site.id || response.role_id != CnSession.role.id ) {
+            // blank content
+            document.getElementById( 'view' ).innerHTML = '';
+            CnSession.setSiteRole( response.site_id, response.role_id ).then( function() {
+              $window.location.assign( $window.location.pathname );
+            } );
+          }
+        }
+      } );
     }
   }
 ] );
@@ -271,8 +261,8 @@ cenozo.directive( 'cnChange', [
  * that the user is currently logged into).
  */
 cenozo.directive( 'cnClock', [
-  '$interval', '$timeout', '$window', 'CnSession', 'CnModalTimezoneFactory',
-  function( $interval, $timeout, $window, CnSession, CnModalTimezoneFactory ) {
+  '$interval', '$window', 'CnSession', 'CnModalTimezoneFactory',
+  function( $interval, $window, CnSession, CnModalTimezoneFactory ) {
     return {
       restrict: 'E',
       templateUrl: cenozo.baseUrl + '/app/cenozo/clock.tpl.html',
@@ -283,11 +273,8 @@ cenozo.directive( 'cnClock', [
               timezone: CnSession.user.timezone
             } ).show().then( function( response ) {
               if( response && response != CnSession.user.timezone ) {
-                // fade the body while we reload
-                $timeout( function() {
-                  var body = document.getElementsByTagName( 'body' )[0];
-                  body.className = body.className + ' greyout';
-                }, 200 );
+                // blank content
+                document.getElementById( 'view' ).innerHTML = '';
                 CnSession.setTimezone( response ).then( function() { $window.location.reload(); } );
               }
             } );
@@ -326,25 +313,6 @@ cenozo.directive( 'cnElastic', [
         };
         element.on( 'blur keyup change', resize );
         $timeout( resize, 200 );
-      }
-    };
-  }
-]);
-
-/* ######################################################################################################## */
-
-/**
- * Shows a breadcrumb navigation trail
- */
-cenozo.directive( 'cnNavigation', [
-  '$state', '$stateParams',
-  function( $state, $stateParams ) {
-    return {
-      templateUrl: cenozo.baseUrl + '/app/cenozo/navigation.tpl.html',
-      restrict: 'E',
-      controller: function( $scope ) {
-      },
-      link: function( $scope, element ) {
       }
     };
   }
@@ -1062,17 +1030,10 @@ cenozo.factory( 'CnSession', [
         $state.go( 'error.' + type );
       } );
 
-      this.setSite = function setSite( id ) {
+      this.setSiteRole = function setSiteRole( site_id, role_id ) {
         return CnHttpFactory.instance( {
           path: 'self/0',
-          data: { site: { id: id } }
-        } ).patch();
-      };
-
-      this.setRole = function setRole( id ) {
-        return CnHttpFactory.instance( {
-          path: 'self/0',
-          data: { role: { id: id } }
+          data: { site: { id: site_id }, role: { id: role_id } }
         } ).patch();
       };
 
@@ -2251,6 +2212,54 @@ cenozo.service( 'CnModalRestrictFactory', [
 /**
  * TODO: document
  */
+cenozo.service( 'CnModalSiteRoleFactory', [
+  '$modal', 'CnSession',
+  function( $modal, CnSession ) {
+    var object = function() {
+      var self = this;
+      this.refreshRoleList = function() {
+        for( var i = 0; i < this.siteList.length; i++ )
+          if( this.site_id == this.siteList[i].id ) 
+            this.roleList = this.siteList[i].roleList;
+        this.role_id = this.roleList[0].id;
+      };
+
+      CnSession.promise.then( function() {
+        self.siteList = CnSession.siteList;
+        self.site_id = CnSession.site.id;
+        self.refreshRoleList();
+        self.role_id = CnSession.role.id;
+      } );
+
+      this.show = function() {
+        return $modal.open( {
+          backdrop: 'static',
+          keyboard: true,
+          modalFade: true,
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-site-role.tpl.html',
+          controller: function( $scope, $modalInstance ) {
+            $scope.local = self;
+            $scope.local.ok = function() {
+              $modalInstance.close( {
+                site_id: $scope.local.site_id,
+                role_id: $scope.local.role_id
+              } );
+            };
+            $scope.local.cancel = function() { $modalInstance.close( false ); };
+          }
+        } ).result;
+      };
+    };
+
+    return { instance: function() { return new object(); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.service( 'CnModalTimezoneFactory', [
   '$modal', 'CnSession',
   function( $modal, CnSession ) {
@@ -2419,8 +2428,8 @@ cenozo.config( [
  * TODO: document
  */
 cenozo.run( [
-  '$state', '$rootScope', '$anchorScroll', '$location', '$timeout',
-  function( $state, $rootScope, $anchorScroll, $location, $timeout ) {
+  '$state', '$rootScope',
+  function( $state, $rootScope ) {
     $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
       $state.go( 'error.state' );
     } );

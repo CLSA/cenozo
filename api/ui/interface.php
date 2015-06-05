@@ -62,36 +62,33 @@
           <li ng-controller="MenuCtrl">
             <div class="container-fluid row">
               <ul class="navigation-group col-sm-4">
-                <li role="presentation" class="container-fluid bg-primary rounded-top">
+                <li class="container-fluid bg-primary rounded-top">
                   <h4 class="text-center">Lists</h4>
                 </li>
                 <li ng-repeat="(module,title) in lists">
                   <a class="btn btn-default btn-default full-width"
                      ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                     ui-sref="{{ module }}.list"
-                     snap-close>{{ title }}</a>
+                     ui-sref="{{ module }}.list">{{ title }}</a>
                 </li>
               </ul>
               <ul class="navigation-group col-sm-4">
-                <li role="presentation" class="container-fluid bg-primary rounded-top">
+                <li class="container-fluid bg-primary rounded-top">
                   <h4 class="text-center">Utilities</h4>
                 </li>
                 <li ng-repeat="(module,title) in utilities">
                   <a class="btn btn-default btn-default full-width"
                      ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                     ui-sref="{{ module }}.list"
-                     snap-close>{{ title }}</a>
+                     ui-sref="{{ module }}.list">{{ title }}</a>
                 </li>
               </ul>
               <ul class="navigation-group col-sm-4">
-                <li role="presentation" class="container-fluid bg-primary rounded-top">
+                <li class="container-fluid bg-primary rounded-top">
                   <h4 class="text-center">Reports</h4>
                 </li>
                 <li ng-repeat="(module,title) in reports">
                   <a class="btn btn-default btn-default full-width"
                      ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                     ui-sref="{{ module }}.list"
-                     snap-close>{{ title }}</a>
+                     ui-sref="{{ module }}.list">{{ title }}</a>
                 </li>
               </ul>
             </div>
@@ -117,25 +114,11 @@
           </ul>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" role="button">
-              {{ site.name }} <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu" role="menu">
-              <li ng-repeat="s in siteList">
-                <a ng-click="setSite( s.id )">{{ s.name }}</a>
-              </li>
-            </ul>
-          </li>
-          <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" role="button">
-              {{ role.name | cnUCWords }} <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu" role="menu">
-              <li ng-repeat="r in roleList">
-                <a ng-click="setRole( r.id )">{{ r.name | cnUCWords }}</a>
-              </li>
-            </ul>
+          <li>
+            <button class="btn btn-default navbar-btn"
+                    ng-click="setSiteRole()">
+              {{ role.name | cnUCWords }} @ {{ site.name }}
+            </button>
           </li>
           <li><cn-toolbelt class="nav navbar-nav navbar-btn"></cn-toolbelt></li>
           <li><cn-clock class="nav navbar-nav navbar-btn"></cn-clock></li>
@@ -144,6 +127,6 @@
     </div>
   </nav>
 
-  <div ui-view class="container-fluid outer-view-frame fade-transition noselect"></div>
+  <div id="view" ui-view class="container-fluid outer-view-frame fade-transition noselect"></div>
 </body>
 </html>
