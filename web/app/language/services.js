@@ -47,9 +47,6 @@ define( [
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnLanguageListFactory.instance( this );
         this.viewModel = CnLanguageViewFactory.instance( this );
-
-        // customize identifier
-        this.getIdentifierFromRecord = function( record ) { return 'code=' + record.code; };
       };
 
       return {

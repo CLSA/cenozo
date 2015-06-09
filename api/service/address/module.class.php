@@ -23,6 +23,10 @@ class module extends \cenozo\service\module
 
     parent::prepare_read( $select, $modifier );
 
+    // add the "participant_uid" column if needed
+    if( $select->has_column( 'participant_uid' ) )
+      $modifier->left_join( 'participant', 'address.participant_id', 'participant.id' );
+
     // add the "available" column if needed
     if( $select->has_column( 'available' ) )
     {

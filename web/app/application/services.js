@@ -44,9 +44,6 @@ define( [
         this.listModel = CnSessionlicationListFactory.instance( this );
         this.viewModel = CnSessionlicationViewFactory.instance( this );
 
-        // customize identifier
-        this.getIdentifierFromRecord = function( record ) { return 'name=' + record.name; };
-
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;

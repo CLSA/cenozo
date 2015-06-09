@@ -66,14 +66,6 @@ define( [
         this.addModel = CnAlternateAddFactory.instance( this );
         this.listModel = CnAlternateListFactory.instance( this );
         this.viewModel = CnAlternateViewFactory.instance( this );
-
-        // override parent method to always go directly to the root alternate state
-        this.transitionToAddState = function() {
-          $state.go( this.subject + '.add' );
-        };
-        this.transitionToViewState = function( record ) {
-          $state.go( this.subject + '.view', { identifier: record.getIdentifier() } );
-        };
       };
 
       return {

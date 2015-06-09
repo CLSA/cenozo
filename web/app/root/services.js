@@ -7,6 +7,9 @@ define( [], function() {
     function( CnSession ) {
       var object = function() {
         var self = this;
+        this.setupBreadcrumbTrail = function() {
+          CnSession.setBreadcrumbTrail(); // no trail to show
+        };
         this.promise = CnSession.promise.then( function() {
           self.application = CnSession.application;
           self.user = CnSession.user;

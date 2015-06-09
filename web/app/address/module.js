@@ -1,5 +1,14 @@
 define( {
   subject: 'address',
+  identifier: {
+    parent: [ {
+      subject: 'participant',
+      column: 'participant.uid'
+    }, {
+      subject: 'alternate',
+      column: 'alternate_id'
+    } ]
+  },
   name: {
     singular: 'address',
     plural: 'addresses',
@@ -7,14 +16,6 @@ define( {
     pluralPossessive: 'addresses\''
   },
   inputList: {
-    alternate_id: {
-      title: 'Alternate',
-      type: 'parent'
-    },
-    participant_id: {
-      title: 'Participant',
-      type: 'parent'
-    },
     active: {
       title: 'Active',
       type: 'boolean'

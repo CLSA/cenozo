@@ -1,5 +1,6 @@
 define( {
   subject: 'role',
+  identifier: {}, // standard
   name: {
     singular: 'role',
     plural: 'roles',

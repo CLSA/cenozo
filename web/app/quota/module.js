@@ -1,5 +1,6 @@
 define( {
   subject: 'quota',
+  identifier: {}, // standard
   name: {
     singular: 'quota',
     plural: 'quotas',

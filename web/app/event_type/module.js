@@ -1,5 +1,6 @@
 define( {
   subject: 'event_type',
+  identifier: {}, // standard
   name: {
     singular: 'event type',
     plural: 'event types',

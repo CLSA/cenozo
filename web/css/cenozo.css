@@ -37,7 +37,6 @@ blockquote { font-size: 100%; }
   list-style: outside none none;
   background-color: transparent;
   border-radius: 0px;
-  font-size: 16px;
 }
 .breadcrumb > li + li:before {
   content: "/";

@@ -1,5 +1,6 @@
 define( {
   subject: 'system_message',
+  identifier: {}, // standard
   name: {
     singular: 'system message',
     plural: 'system messages',

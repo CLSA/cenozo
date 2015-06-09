@@ -6,7 +6,7 @@
     <ng-form ng-repeat="input in inputArray"
              name="innerForm">
       <div class="form-group"
-           ng-if="'parent' != input.type"
+           ng-if="'identifier' != input.type"
            ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
         <label for="name" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
         <div ng-class="model.viewModel.record[input.key] == model.viewModel.backupRecord[input.key] ?
@@ -264,10 +264,12 @@
       <i class="glyphicon glyphicon-remove-sign"></i> Delete
     </button>
     <button ng-if="!hasParent()" type="button" class="btn btn-default btn-primary" ng-click="back()">Back</button>
-    <button ng-repeat="input in inputArray"
-            ng-if="hasParent() && 'parent' == input.type && model.viewModel.record[input.key]"
+    <button ng-repeat="parent in model.identifier.parent"
+            ng-if="parentExists( parent.subject )"
             type="button"
             class="btn btn-default btn-primary"
-            ng-click="viewParent( input.key )">View {{ input.title }}</button>
+            ng-click="viewParent( parent.subject )">
+      View {{ parent.subject.replace( '_', ' ' ) | cnUCWords }}
+    </button>
   </div> 
 </form>

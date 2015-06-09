@@ -7,7 +7,9 @@ define( [], function() {
     '$scope', 'CnActivityModelFactory',
     function( $scope, CnActivityModelFactory ) {
       $scope.model = CnActivityModelFactory.root;
-      $scope.model.listModel.onList().catch( function exception( response ) {
+      $scope.model.listModel.onList().then( function() {
+        $scope.model.setupBreadcrumbTrail( 'list' );
+      } ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }

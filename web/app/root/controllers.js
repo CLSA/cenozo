@@ -7,6 +7,7 @@ define( [], function() {
     '$scope', 'CnHomeModelFactory',
     function( $scope, CnHomeModelFactory ) {
       $scope.model = CnHomeModelFactory.root;
+      $scope.model.setupBreadcrumbTrail();
     }
   ] );
 

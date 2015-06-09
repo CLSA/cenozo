@@ -41,9 +41,6 @@ define( [ cenozo.baseUrl + '/app/phone/module.js' ], function( module ) {
         this.listModel = CnPhoneListFactory.instance( this );
         this.viewModel = CnPhoneViewFactory.instance( this );
 
-        // customize identifier
-        this.getIdentifierFromRecord = function( record ) { return 'rank=' + record.rank; };
-
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;

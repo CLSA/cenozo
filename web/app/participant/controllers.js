@@ -7,7 +7,9 @@ define( [], function() {
     '$scope', 'CnParticipantModelFactory',
     function( $scope, CnParticipantModelFactory ) {
       $scope.model = CnParticipantModelFactory.root;
-      $scope.model.listModel.onList().catch( function exception( response ) {
+      $scope.model.listModel.onList().then( function() {
+        $scope.model.setupBreadcrumbTrail( 'list' );
+      } ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
@@ -18,7 +20,9 @@ define( [], function() {
     '$scope', 'CnParticipantModelFactory',
     function( $scope, CnParticipantModelFactory ) {
       $scope.model = CnParticipantModelFactory.root;
-      $scope.model.viewModel.onView().catch( function exception( response ) {
+      $scope.model.viewModel.onView().then( function() {
+        $scope.model.setupBreadcrumbTrail( 'view' );
+      } ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }

@@ -3,10 +3,13 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnErrorModelFactory', [
-    'CnSession',
-    function( CnSession ) {
+    '$state', 'CnSession',
+    function( $state, CnSession ) {
       var object = function() {
         var self = this;
+        this.setupBreadcrumbTrail = function() {
+          CnSession.setBreadcrumbTrail( [ { title: $state.current.name.replace( '.', ' ' ).ucWords() } ] );
+        };
         this.promise = CnSession.promise.then( function() {
           self.application = CnSession.application;
           self.user = CnSession.user;

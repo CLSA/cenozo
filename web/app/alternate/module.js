@@ -1,5 +1,11 @@
 define( {
   subject: 'alternate',
+  identifier: {
+    parent: {
+      subject: 'participant',
+      column: 'participant.uid'
+    }
+  },
   name: {
     singular: 'alternate',
     plural: 'alternates',

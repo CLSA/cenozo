@@ -57,9 +57,6 @@ define( [
         this.addModel = CnStateAddFactory.instance( this );
         this.listModel = CnStateListFactory.instance( this );
         this.viewModel = CnStateViewFactory.instance( this );
-
-        // customize identifier
-        this.getIdentifierFromRecord = function( record ) { return 'name=' + record.name; };
       };
 
       return {

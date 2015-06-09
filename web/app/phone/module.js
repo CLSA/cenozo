@@ -1,5 +1,14 @@
 define( {
   subject: 'phone',
+  identifier: {
+    parent: [ {
+      subject: 'participant',
+      column: 'participant.uid'
+    }, {
+      subject: 'alternate',
+      column: 'alternate_id'
+    } ]
+  },
   name: {
     singular: 'phone',
     plural: 'phones',

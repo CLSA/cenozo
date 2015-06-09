@@ -1,5 +1,6 @@
 define( {
   subject: 'participant',
+  identifier: { column: 'uid' },
   name: {
     singular: 'participant',
     plural: 'participants',

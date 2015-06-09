@@ -1,5 +1,6 @@
 define( {
   subject: 'region_site',
+  identifier: {}, // standard
   name: {
     singular: 'region site',
     plural: 'region sites',

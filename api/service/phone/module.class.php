@@ -17,16 +17,12 @@ class module extends \cenozo\service\module
   /**
    * Extend parent method
    */
-  public function validate()
+  public function prepare_read( $select, $modifier )
   {
-    $valid = parent::validate();
+    parent::prepare_read( $select, $modifier );
 
-    if( $valid )
-    {
-      // addresses can only be listed in the context of an alternate or participant
-      $valid = in_array( $this->get_parent_subject(), array( 'alternate', 'participant' ) );
-    }
-
-    return $valid;
+    // add the "participant_uid" column if needed
+    if( $select->has_table_column( 'participant', 'participant_uid' ) )
+      $modifier->left_join( 'participant', 'phone.participant_id', 'participant.id' );
   }
 }

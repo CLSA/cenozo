@@ -1,5 +1,6 @@
 define( {
   subject: 'state',
+  identifier: { column: 'name' },
   name: {
     singular: 'state',
     plural: 'states',

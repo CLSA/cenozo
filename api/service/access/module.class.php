@@ -17,22 +17,6 @@ class module extends \cenozo\service\module
   /**
    * Extend parent method
    */
-  public function validate()
-  {
-    $valid = parent::validate();
-
-    if( $valid )
-    {
-      // access can only be listed in the context of a user, role or site
-      $valid = in_array( $this->get_parent_subject(), array( 'user', 'role', 'site' ) );
-    }
-
-    return $valid;
-  }
-
-  /**
-   * Extend parent method
-   */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );

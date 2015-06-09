@@ -61,9 +61,6 @@ define( [
         this.addModel = CnUserAddFactory.instance( this );
         this.listModel = CnUserListFactory.instance( this );
         this.viewModel = CnUserViewFactory.instance( this );
-
-        // customize identifier
-        this.getIdentifierFromRecord = function( record ) { return 'name=' + record.name; };
       };
 
       return {

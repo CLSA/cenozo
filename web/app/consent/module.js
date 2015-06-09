@@ -1,5 +1,11 @@
 define( {
   subject: 'consent',
+  identifier: {
+    parent: {
+      subject: 'participant',
+      column: 'participant.uid'
+    }
+  },
   name: {
     singular: 'consent',
     plural: 'consents',

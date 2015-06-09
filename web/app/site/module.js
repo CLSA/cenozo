@@ -1,5 +1,6 @@
 define( {
   subject: 'site',
+  identifier: {}, // standard
   name: {
     singular: 'site',
     plural: 'sites',

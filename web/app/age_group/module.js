@@ -1,5 +1,6 @@
 define( {
   subject: 'age_group',
+  identifier: {}, // standard
   name: {
     singular: 'age group',
     plural: 'age groups',

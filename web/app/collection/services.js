@@ -110,9 +110,6 @@ define( [
         this.addModel = CnCollectionAddFactory.instance( this );
         this.listModel = CnCollectionListFactory.instance( this );
         this.viewModel = CnCollectionViewFactory.instance( this );
-
-        // customize identifier
-        this.getIdentifierFromRecord = function( record ) { return 'name=' + record.name; };
       };
 
       return {

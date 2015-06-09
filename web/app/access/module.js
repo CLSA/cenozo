@@ -1,5 +1,14 @@
 define( {
   subject: 'access',
+  identifier: {
+    parent: [ {
+      subject: 'site',
+      column: 'site.name'
+    }, {
+      subject: 'user',
+      column: 'user.name'
+    } ]
+  },
   name: {
     singular: 'access',
     plural: 'accesses',

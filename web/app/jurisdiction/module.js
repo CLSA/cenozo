@@ -1,5 +1,6 @@
 define( {
   subject: 'jurisdiction',
+  identifier: {}, // standard
   name: {
     singular: 'jurisdiction',
     plural: 'jurisdictions',

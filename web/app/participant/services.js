@@ -79,9 +79,6 @@ define( [
         this.listModel = CnParticipantListFactory.instance( this );
         this.viewModel = CnParticipantViewFactory.instance( this );
 
-        // customize identifier
-        this.getIdentifierFromRecord = function( record ) { return 'uid=' + record.uid; };
-
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
