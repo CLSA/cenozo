@@ -1433,6 +1433,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           return valueOnly || 'id' == column ? String( record[column] ) : column + '=' + record[column];
         };
 
+        // get the state's subject
         object.getSubjectFromState = function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
@@ -1440,25 +1441,58 @@ cenozo.factory( 'CnBaseModelFactory', [
           return stateNameParts[0];
         };
 
-        object.getParentIdentifierFromState = function() {
-          return this.getSubjectFromState() != this.subject ?
-            ( angular.isDefined( $state.params.parentIdentifier ) ?
-              $state.params.parentIdentifier :
-              $state.params.identifier ) :
-            null;
+        // get the state's action
+        object.getActionFromState = function() {
+          var stateNameParts = $state.current.name.split( '.' );
+          if( 2 != stateNameParts.length )
+            throw 'State "' + $state.current.name + '" is expected to have exactly 2 parts';
+          return stateNameParts[1];
+        };
+
+        // get the parent identifier (either from the state or the module)
+        // NOTE: when viewing this will return the first parent that is set in the view record
+        //       (there may be multiple)
+        object.getParentSubjectAndIdentifier = function() {
+          var subject = this.getSubjectFromState();
+          var identifier = $state.params.parentIdentifier;
+          if( angular.isUndefined( identifier ) ) {
+            var action = this.getActionFromState();
+            if( 'view' == action && angular.isDefined( this.identifier.parent ) ) {
+              // return the FIRST "set" parent
+              for( var i = 0; i < this.identifier.parent.length; i++ ) {
+                var parent = this.identifier.parent[i];
+                if( this.viewModel.record[parent.alias] ) {
+                  subject = parent.subject;
+                  identifier = parent.getIdentifier( this.viewModel.record );
+                  break;
+                }
+              }
+            } // no need to test the add states as they always have a parentIdentifier in the state params
+          }
+
+          // the subject is incorrect if we haven't got a parent identifier
+          if( angular.isUndefined( identifier ) ) subject = undefined;
+          
+          return { subject: subject, identifier: identifier };
         };
 
         // Helper functions to get service paths and data
         object.getServiceCollectionPath = function() {
           var path = '';
-          if( this.getSubjectFromState() != this.subject )
-            path += this.getSubjectFromState() + '/' + this.getParentIdentifierFromState() + '/';
+          if( this.getSubjectFromState() != this.subject ) {
+            var identifier = $state.params.parentIdentifier
+                           ? $state.params.parentIdentifier
+                           : $state.params.identifier;
+            path += this.getSubjectFromState() + '/' + identifier + '/';
+          }
           return path + module.subject;
         }
+
         object.getServiceResourcePath = function( resource ) {
           var identifier = angular.isUndefined( resource ) ? $state.params.identifier : resource;
           return this.getServiceCollectionPath() + '/' + identifier;
         }
+
         object.getServiceData = function( type ) {
           if( angular.isUndefined( type ) || 0 > ['list','view'].indexOf( type ) )
             throw 'getServiceData requires one argument which is either "list" or "view"';
@@ -1499,7 +1533,6 @@ cenozo.factory( 'CnBaseModelFactory', [
                   // add this column to the select list
                   var select = { column: columnParts[k], alias: key };
                   if( 0 < k ) select.table = columnParts[k-1];
-//                  else select.table_prefix = false; TODO: removing this may break things
                   selectList.push( select );
                 }
               } else { // part of table list
@@ -1575,13 +1608,12 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
         };
         object.transitionToLastState = function() {
-          // TODO: if parent state, go to parent, otherwise go to list
-          var stateName = $state.current.name;
-          var action = stateName.substring( stateName.lastIndexOf( '.' ) + 1 );
-          if( 'add' == action || 'view' == action ) {
+          var parent = this.getParentSubjectAndIdentifier();
+          if( angular.isDefined( parent.subject ) ) {
+            // return to viewing the parent model
+            $state.go( parent.subject + '.view', { identifier: parent.identifier } );
+          } else {
             $state.go( '^.list' );
-          } else { // sub-view, return to parent view
-            $state.go( '^.view', { identifier: $state.params.parentIdentifier } );
           }
         };
         object.transitionToAddState = function() {
@@ -1612,34 +1644,18 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Creates the breadcrumb trail using this module and a specific type (add, list or view)
          */
         object.setupBreadcrumbTrail = function( type ) {
-          // check the module for parents
           var trail = [];
-          if( angular.isDefined( this.identifier.parent ) ) {
-            // see if the state has a parent
-            var subject = this.getSubjectFromState();
-            var identifier = this.getParentIdentifierFromState();
-            if( null === identifier ) {
-              // no identifier in the state, get it from the view record using the first parent
-              // whose subject matches the state's parent subject
-              for( var i = 0; i < this.identifier.parent.length; i++ ) {
-                var parent = this.identifier.parent[i];
-                if( this.viewModel.record[parent.alias] ) {
-                  subject = parent.subject;
-                  identifier = parent.getIdentifier( this.viewModel.record );
-                  break;
-                }
-              }
-            }
 
-            if( subject && identifier ) {
-              trail = trail.concat( [ {
-                title: subject.replace( '_', ' ' ).ucWords(),
-                go: function() { $state.go( subject + '.list' ); }
-              }, {
-                title: String( identifier ).split( '=' ).pop(),
-                go: function() { $state.go( subject + '.view', { identifier: identifier } ); }
-              } ] );
-            }
+          // check the module for parents
+          var parent = this.getParentSubjectAndIdentifier();
+          if( angular.isDefined( parent.subject ) ) {
+            trail = trail.concat( [ {
+              title: parent.subject.replace( '_', ' ' ).ucWords(),
+              go: function() { $state.go( parent.subject + '.list' ); }
+            }, {
+              title: String( parent.identifier ).split( '=' ).pop(),
+              go: function() { $state.go( parent.subject + '.view', { identifier: parent.identifier } ); }
+            } ] );
           }
 
           if( 'add' == type ) {
