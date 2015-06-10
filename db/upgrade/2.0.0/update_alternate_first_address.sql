@@ -3,7 +3,7 @@ SELECT "Creating new update_alternate_first_address procedure" AS "";
 DROP procedure IF EXISTS update_alternate_first_address;
 
 DELIMITER $$
-CREATE PROCEDURE update_alternate_first_address(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_alternate_first_address(IN proc_alternate_id INT(10) UNSIGNED)
 BEGIN
   REPLACE INTO alternate_first_address( alternate_id, address_id )
   SELECT alternate.id, address.id

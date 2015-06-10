@@ -39,7 +39,7 @@ DELIMITER $$
 DROP TRIGGER IF EXISTS alternate_AFTER_INSERT $$
 CREATE DEFINER = CURRENT_USER TRIGGER alternate_AFTER_INSERT AFTER INSERT ON alternate FOR EACH ROW
 BEGIN
-  CALL update_alterante_first_address( NEW.id );
+  CALL update_alternate_first_address( NEW.id );
 END;$$
 
 DELIMITER ;
