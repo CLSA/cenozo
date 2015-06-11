@@ -1,8 +1,4 @@
-define( [
-  cenozo.baseUrl + '/app/alternate/module.js',
-  cenozo.baseUrl + '/app/address/bootstrap.js',
-  cenozo.baseUrl + '/app/phone/bootstrap.js'
-], function( module ) {
+define( cenozo.getServicesIncludeList( 'alternate' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -24,38 +20,14 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAlternateViewFactory', [
-    'CnBaseViewFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory',
-    function( CnBaseViewFactory, CnAddressModelFactory, CnPhoneModelFactory ) {
-      var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel );
-
-        ////////////////////////////////////
-        // factory customizations start here
-        var self = this;
-        this.addressModel = CnAddressModelFactory.instance();
-        this.addressModel.enableAdd( this.parentModel.editEnabled );
-        this.addressModel.enableDelete( this.parentModel.editEnabled );
-        this.addressModel.enableView( this.parentModel.viewEnabled );
-        this.phoneModel = CnPhoneModelFactory.instance();
-        this.phoneModel.enableAdd( this.parentModel.editEnabled );
-        this.phoneModel.enableDelete( this.parentModel.editEnabled );
-        this.phoneModel.enableView( this.parentModel.viewEnabled );
-
-        this.onView = function view() {
-          return this.viewRecord().then( function() {
-            self.addressModel.listModel.onList( true );
-            self.phoneModel.listModel.onList( true );
-          } );
-        };
-        // factory customizations end here
-        //////////////////////////////////
-
-      };
-
+  cenozo.providers.factory( 'CnAlternateViewFactory',
+    cenozo.getListModelInjectionList( 'alternate' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateModelFactory', [

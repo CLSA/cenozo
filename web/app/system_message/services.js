@@ -1,4 +1,4 @@
-define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module ) {
+define( cenozo.getServicesIncludeList( 'system_message' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -33,13 +33,14 @@ define( [ cenozo.baseUrl + '/app/system_message/module.js' ], function( module )
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSystemMessageViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+  cenozo.providers.factory( 'CnSystemMessageViewFactory',
+    cenozo.getListModelInjectionList( 'system_message' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSystemMessageModelFactory', [

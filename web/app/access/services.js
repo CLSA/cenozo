@@ -1,4 +1,4 @@
-define( [ cenozo.baseUrl + '/app/access/module.js' ], function( module ) {
+define( cenozo.getServicesIncludeList( 'access' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */

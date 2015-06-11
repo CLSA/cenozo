@@ -147,7 +147,7 @@ class ui extends \cenozo\base_object
     {
       $subject = $service['subject'];
       if( !array_key_exists( $subject, $module_list ) )
-        $module_list[$subject] = array( 'actions' => array(), 'children' => array() );
+        $module_list[$subject] = array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
 
       if( 'DELETE' == $service['method'] )
         $module_list[$subject]['actions'][] = 'delete';
@@ -167,13 +167,17 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'alternate', $module_list ) )
       $module_list['alternate']['children'] = array( 'address', 'phone' );
     if( array_key_exists( 'participant', $module_list ) )
-      $module_list['participant']['children'] = array( 'address', 'consent', 'event', 'phone' );
+      $module_list['participant']['children'] = array( 'address', 'phone', 'consent', 'alternate', 'event' );
     if( array_key_exists( 'site', $module_list ) )
       $module_list['site']['children'] = array( 'access' );
     if( array_key_exists( 'state', $module_list ) )
       $module_list['state']['children'] = array( 'role' );
     if( array_key_exists( 'user', $module_list ) )
       $module_list['user']['children'] = array( 'access', 'language' );
+
+    // add choose actions to certain modules
+    if( array_key_exists( 'collection', $module_list ) )
+      $module_list['collection']['choosing'] = array( 'participant', 'user' );
 
     return $module_list;
   }

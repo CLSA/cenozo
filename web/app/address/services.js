@@ -1,4 +1,4 @@
-define( [ cenozo.baseUrl + '/app/address/module.js' ], function( module ) {
+define( cenozo.getServicesIncludeList( 'address' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -20,14 +20,16 @@ define( [ cenozo.baseUrl + '/app/address/module.js' ], function( module ) {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAddressViewFactory', [
-    'CnBaseViewFactory', 'CnSession', 'CnModalMessageFactory',
-    function( CnBaseViewFactory, CnSession, CnModalMessageFactory ) {
+  cenozo.providers.factory( 'CnAddressViewFactory',
+    cenozo.getListModelInjectionList( 'address' ).concat( [ 'CnModalMessageFactory', function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
       var object = function( parentModel ) {
-        var self = this;
-        CnBaseViewFactory.construct( this, parentModel );
+        CnBaseViewFactory.construct( this, parentModel, args );
 
         // do not allow changes to the international column
+        var self = this;
+        var CnModalMessageFactory = args[args.length-1];
         this.onPatch = function( data ) {
           if( angular.isDefined( data.international ) ) {
             self.record.international = self.backupRecord.international;
@@ -41,15 +43,15 @@ define( [ cenozo.baseUrl + '/app/address/module.js' ], function( module ) {
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } ] )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressModelFactory', [
     'CnBaseModelFactory', 'CnAddressListFactory', 'CnAddressAddFactory', 'CnAddressViewFactory',
-    'CnHttpFactory', 'CnSession',
+    'CnHttpFactory',
     function( CnBaseModelFactory, CnAddressListFactory, CnAddressAddFactory, CnAddressViewFactory,
-              CnHttpFactory, CnSession ) {
+              CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );

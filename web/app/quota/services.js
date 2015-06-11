@@ -1,4 +1,4 @@
-define( [ cenozo.baseUrl + '/app/quota/module.js' ], function( module ) {
+define( cenozo.getServicesIncludeList( 'quota' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -20,13 +20,14 @@ define( [ cenozo.baseUrl + '/app/quota/module.js' ], function( module ) {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnQuotaViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+  cenozo.providers.factory( 'CnQuotaViewFactory',
+    cenozo.getListModelInjectionList( 'quota' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQuotaModelFactory', [

@@ -1,6 +1,4 @@
-define( [
-  cenozo.baseUrl + '/app/application/module.js',
-], function( module ) {
+define( cenozo.getServicesIncludeList( 'application' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -22,14 +20,14 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnApplicationViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
-
+  cenozo.providers.factory( 'CnApplicationViewFactory',
+    cenozo.getListModelInjectionList( 'application' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationModelFactory', [

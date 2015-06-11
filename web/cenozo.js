@@ -35,13 +35,34 @@ String.prototype.ucWords = function() {
   return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
 }
 
-// Used to define which modules are part of the framework
+// Defines which modules are part of the framework
 cenozo.modules = function( modules ) { this.moduleList = angular.copy( modules ); };
 
-// Used to determine whether a module is part of the framework
-cenozo.isFrameworkModule = function( moduleName ) { return 0 <= this.moduleList.indexOf( moduleName ); };
+// Gets the base url for a module
+cenozo.getModuleUrl = function( moduleName ) {
+  return ( 0 <= this.moduleList.indexOf( moduleName ) ? this.baseUrl + '/' : '' ) + 'app/' + moduleName + '/';
+};
 
-// Used to set up the routing for a module
+// Returns a list of includes needed by a module's service file
+cenozo.getServicesIncludeList = function( moduleName ) {
+  var module = cenozoApp.moduleList[moduleName];
+  var dependents = module.children.concat( module.choosing );
+  var list = [ cenozo.getModuleUrl( moduleName ) + 'module.js' ];
+  for( var i = 0; i < dependents.length; i++ )
+    list.push( cenozo.getModuleUrl( dependents[i].snake ) + 'bootstrap.js' );
+  return list;
+};
+
+// Returns a list of includes needed by a module's list model factory
+cenozo.getListModelInjectionList = function( moduleName ) {
+  var module = cenozoApp.moduleList[moduleName];
+  var dependents = module.children.concat( module.choosing );
+  var list = ['CnBaseViewFactory'];
+  for( var i = 0; i < dependents.length; i++ ) list.push( 'Cn' + dependents[i].Camel + 'ModelFactory' );
+  return list;
+};
+
+// Sets up the routing for a module
 cenozo.routeModule = function ( stateProvider, name, module ) {
   if( angular.isUndefined( stateProvider ) ) throw 'routeModule requires exactly 3 parameters';
   if( angular.isUndefined( name ) ) throw 'routeModule requires exactly 3 parameters';
@@ -55,18 +76,14 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
     resolve: {
       data: [ '$q', function( $q ) {
         var deferred = $q.defer();
-        var bootstrapUrl = 'app/' + name + '/bootstrap.js';
-        if( cenozo.isFrameworkModule( name ) )
-          bootstrapUrl = cenozo.baseUrl + '/' + bootstrapUrl;
-        require( [ bootstrapUrl ], function() { deferred.resolve(); } );
+        require( [ cenozo.getModuleUrl( name ) + 'bootstrap.js' ], function() { deferred.resolve(); } );
         return deferred.promise;
       } ]
     }
   } );
 
   // add action states
-  var baseUrl = 'app/' + name + '/';
-  if( cenozo.isFrameworkModule( name ) ) baseUrl = this.baseUrl + '/' + baseUrl;
+  var baseUrl = this.getModuleUrl( name );
   for( var i = 0; i < module.actions.length; i++ ) {
     var action = module.actions[i];
     if( 0 > ['add', 'list', 'view'].indexOf( action ) ) {
@@ -87,18 +104,16 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
   // add child states to the list
   for( var i = 0; i < module.children.length; i++ ) {
     var child = module.children[i];
-    var baseChildUrl = 'app/' + child + '/';
-    if( cenozo.isFrameworkModule( child ) ) baseChildUrl = this.baseUrl + '/' + baseChildUrl;
-
-    stateProvider.state( name + '.add_' + child, {
-      url: '/view/{parentIdentifier}/' + child,
-      controller: ( child + '_add_ctrl' ).snakeToCamel( true ),
+    var baseChildUrl = this.getModuleUrl( child.snake );
+    stateProvider.state( name + '.add_' + child.snake, {
+      url: '/view/{parentIdentifier}/' + child.snake,
+      controller: child.Camel + 'AddCtrl',
       templateUrl: baseChildUrl + 'add.tpl.html'
     } );
 
-    stateProvider.state( name + '.view_' + child, {
-      url: '/view/{parentIdentifier}/' + child + '/{identifier}',
-      controller: ( child + '_view_ctrl' ).snakeToCamel( true ),
+    stateProvider.state( name + '.view_' + child.snake, {
+      url: '/view/{parentIdentifier}/' + child.snake + '/{identifier}',
+      controller: child.Camel + 'ViewCtrl',
       templateUrl: baseChildUrl + 'view.tpl.html'
     } );
   }
@@ -1259,11 +1274,35 @@ cenozo.factory( 'CnBaseViewFactory', [
   'CnHttpFactory',
   function( CnHttpFactory ) {
     return {
-      construct: function( object, parentModel ) {
+      construct: function( object, parentModel, args ) {
+        var args = args ? Array.prototype.slice.call( args ) : [];
+
         object.parentModel = parentModel;
         object.record = {};
         object.formattedRecord = {};
         object.backupRecord = {};
+        
+        // set up factories
+        object.childrenFactoryList = args.splice( 1, parentModel.children.length );
+        object.choosingFactoryList = args.splice( 1, parentModel.choosing.length );
+
+        // setup child models
+        for( var i = 0; i < parentModel.children.length; i++ ) {
+          var model = object.childrenFactoryList[i].instance();
+          if( !parentModel.editEnabled ) model.enableAdd( false );
+          if( !parentModel.editEnabled ) model.enableDelete( false );
+          if( !parentModel.viewEnabled ) model.enableView( false );
+          object[parentModel.children[i].camel+'Model'] = model;
+        }
+        for( var i = 0; i < parentModel.choosing.length; i++ ) {
+          var model = object.choosingFactoryList[i].instance();
+          model.enableChoose( true );
+          model.enableAdd( false );
+          model.enableDelete( false );
+          model.enableEdit( false );
+          model.enableView( false );
+          object[parentModel.choosing[i].camel+'Model'] = model;
+        }
 
         /**
          * Updates a property of the formatted copy of the record
@@ -1331,6 +1370,13 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.viewRecord = function() {
           var self = this;
           if( !this.parentModel.viewEnabled ) throw 'Calling viewRecord() but viewEnabled is false';
+
+          for( var i = 0; i < this.parentModel.children.length; i++ )
+            if( this[this.parentModel.children[i].camel+'Model'] )
+              this[this.parentModel.children[i].camel+'Model'].listModel.onList( true );
+          for( var i = 0; i < this.parentModel.choosing.length; i++ )
+            if( this[this.parentModel.choosing[i].camel+'Model'] )
+              this[this.parentModel.choosing[i].camel+'Model'].listModel.onList( true );
 
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath(),
@@ -1410,30 +1456,28 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
         }
 
+        var moduleProperties = cenozoApp.moduleList[module.subject];
+        object.children = angular.copy( moduleProperties.children );
+        object.choosing = angular.copy( moduleProperties.choosing );
         object.metadata = { loadingCount: 0 };
-        object.addEnabled = false;
+        object.addEnabled = 0 <= moduleProperties.actions.indexOf( 'add' );
         object.chooseEnabled = false;
-        object.deleteEnabled = false;
-        object.editEnabled = false;
-        object.viewEnabled = false;
+        object.deleteEnabled = 0 <= moduleProperties.actions.indexOf( 'delete' );
+        object.editEnabled = 0 <= moduleProperties.actions.indexOf( 'edit' );
+        object.viewEnabled = 0 <= moduleProperties.actions.indexOf( 'view' );
 
-        // search the state enumeration for which actions are available
-        var stateList = $state.get();
-        for( var i = 0; i < stateList.length; i++ ) {
-          if( module.subject + '.add' == stateList[i].name ) object.addEnabled = true;
-          if( module.subject + '.delete' == stateList[i].name ) object.deleteEnabled = true;
-          if( module.subject + '.view' == stateList[i].name ) object.viewEnabled = true;
-          if( module.subject + '.edit' == stateList[i].name ) object.editEnabled = true;
-        }
-
-        // get the identifier based on what is in the model's module
+        /**
+         * get the identifier based on what is in the model's module
+         */
         object.getIdentifierFromRecord = function( record, valueOnly ) {
           var valueOnly = undefined === valueOnly ? false : valueOnly;
           var column = angular.isDefined( module.identifier.column ) ? module.identifier.column : 'id';
           return valueOnly || 'id' == column ? String( record[column] ) : column + '=' + record[column];
         };
 
-        // get the state's subject
+        /**
+         * get the state's subject
+         */
         object.getSubjectFromState = function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
@@ -1441,7 +1485,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           return stateNameParts[0];
         };
 
-        // get the state's action
+        /*
+         * get the state's action
+         */
         object.getActionFromState = function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
@@ -1449,9 +1495,11 @@ cenozo.factory( 'CnBaseModelFactory', [
           return stateNameParts[1];
         };
 
-        // get the parent identifier (either from the state or the module)
-        // NOTE: when viewing this will return the first parent that is set in the view record
-        //       (there may be multiple)
+        /**
+         * get the parent identifier (either from the state or the module)
+         * NOTE: when viewing this will return the first parent that is set in the view record
+         *       (there may be multiple)
+         */
         object.getParentSubjectAndIdentifier = function() {
           var subject = this.getSubjectFromState();
           var identifier = $state.params.parentIdentifier;
@@ -1476,7 +1524,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           return { subject: subject, identifier: identifier };
         };
 
-        // Helper functions to get service paths and data
+        /**
+         * TODO: document
+         */
         object.getServiceCollectionPath = function() {
           var path = '';
           if( this.getSubjectFromState() != this.subject ) {
@@ -1488,11 +1538,17 @@ cenozo.factory( 'CnBaseModelFactory', [
           return path + module.subject;
         }
 
+        /**
+         * TODO: document
+         */
         object.getServiceResourcePath = function( resource ) {
           var identifier = angular.isUndefined( resource ) ? $state.params.identifier : resource;
           return this.getServiceCollectionPath() + '/' + identifier;
         }
 
+        /**
+         * TODO: document
+         */
         object.getServiceData = function( type ) {
           if( angular.isUndefined( type ) || 0 > ['list','view'].indexOf( type ) )
             throw 'getServiceData requires one argument which is either "list" or "view"';
@@ -1598,7 +1654,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           return data;
         }
 
-        // helper functions based on the state
+        /**
+         * TODO: document
+         */
         object.reloadState = function( record ) {
           if( angular.isUndefined( record ) ) {
             $state.reload();
@@ -1607,6 +1665,10 @@ cenozo.factory( 'CnBaseModelFactory', [
             $state.transitionTo( $state.current, $state.params, { reload: true } );
           }
         };
+
+        /**
+         * TODO: document
+         */
         object.transitionToLastState = function() {
           var parent = this.getParentSubjectAndIdentifier();
           if( angular.isDefined( parent.subject ) ) {
@@ -1616,6 +1678,10 @@ cenozo.factory( 'CnBaseModelFactory', [
             $state.go( '^.list' );
           }
         };
+        
+        /**
+         * TODO: document
+         */
         object.transitionToAddState = function() {
           var stateName = $state.current.name;
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
@@ -1624,6 +1690,10 @@ cenozo.factory( 'CnBaseModelFactory', [
             $state.go( '^.add' );
           }
         };
+        
+        /**
+         * TODO: document
+         */
         object.transitionToViewState = function( record ) {
           var stateName = $state.current.name;
           var stateParams = { identifier: record.getIdentifier() };
@@ -1631,9 +1701,17 @@ cenozo.factory( 'CnBaseModelFactory', [
             stateParams.parentIdentifier = $state.params.identifier;
           $state.go( this.subject + '.view', stateParams );
         };
+        
+        /**
+         * TODO: document
+         */
         object.transitionToParentViewState = function( subject, identifier ) {
           $state.go( subject + '.view', { identifier: identifier } );
         };
+        
+        /**
+         * TODO: document
+         */
         object.transitionToErrorState = function( response ) {
           var type = angular.isDefined( response ) && angular.isDefined( response.status )
                    ? response.status : 500;

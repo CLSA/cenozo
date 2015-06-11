@@ -1,4 +1,4 @@
-define( [ cenozo.baseUrl + '/app/role/module.js' ], function( module ) {
+define( cenozo.getServicesIncludeList( 'role' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */

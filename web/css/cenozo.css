@@ -13,9 +13,9 @@ blockquote { font-size: 100%; }
 .restrict, .pagination { margin: 0; }
 .input-group { width: 100%; }
 .checkbox { display: inline-block; font-weight: normal; }
-.form-body { padding-top: 1em; background: #F9F9F9; }
+.form-body { padding-top: 1em; background: #f9f9f9; }
 .form-horizontal .form-group { margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
-.form-footer { padding: 1em; background: #EAEAEA; text-align: right; }
+.form-footer { padding: 1em; background: #eaeaea; text-align: right; }
 .spacer { margin: 0.5em; content: "&nbsp;" }
 .vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
 .horizontal-spacer { margin-left: 0.5em; margin-right: 0.5em; }
@@ -87,7 +87,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 /* modal tweaking */
 .modal-body { display: block; overflow: auto; }
-.modal-header, .modal-footer { background: #EAEAEA; }
+.modal-header, .modal-footer { background: #eaeaea; }
 .modal-header {
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
@@ -118,6 +118,7 @@ input[type=number] { -moz-appearance: textfield; }
   position: fixed;
   width: 100%;
   top: 0px;
+  box-shadow: 0px 3px 3px #a0a0a0;
 }
 
 .open > .navigation-menu, .open > .site-role-menu {
@@ -134,6 +135,7 @@ input[type=number] { -moz-appearance: textfield; }
   border-radius: 0px;
   width: 100%;
   background: #eaeaea;
+  box-shadow: 0px 3px 3px #a0a0a0;
   -webkit-transition: opacity 500ms ease, visibility 500ms ease;
   -moz-transition: opacity 500ms ease, visibility 500ms ease;
   -o-transition: opacity 500ms ease, visibility 500ms ease;
@@ -217,3 +219,5 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
   background-size: 60px;
   background-repeat: repeat;
 }
+
+.record-list, .record-view { box-shadow: 0px 2px 2px #A0A0A0; }

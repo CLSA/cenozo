@@ -1,4 +1,4 @@
-define( [ cenozo.baseUrl + '/app/activity/module.js' ], function( module ) {
+define( cenozo.getServicesIncludeList( 'activity' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */

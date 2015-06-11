@@ -1,4 +1,4 @@
-define( [ cenozo.baseUrl + '/app/consent/module.js' ], function( module ) {
+define( cenozo.getServicesIncludeList( 'consent' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -20,13 +20,14 @@ define( [ cenozo.baseUrl + '/app/consent/module.js' ], function( module ) {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+  cenozo.providers.factory( 'CnConsentViewFactory',
+    cenozo.getListModelInjectionList( 'consent' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentModelFactory', [

@@ -1,8 +1,4 @@
-define( [
-  cenozo.baseUrl + '/app/site/module.js',
-  cenozo.baseUrl + '/app/access/bootstrap.js',
-  cenozo.baseUrl + '/app/activity/bootstrap.js'
-], function( module ) {
+define( cenozo.getServicesIncludeList( 'site' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -24,34 +20,14 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSiteViewFactory', [
-    'CnBaseViewFactory',
-    'CnAccessModelFactory', 'CnActivityModelFactory',
-    function( CnBaseViewFactory, CnAccessModelFactory, CnActivityModelFactory ) {
-      var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel );
-
-        ////////////////////////////////////
-        // factory customizations start here
-        var self = this;
-        this.accessModel = CnAccessModelFactory.instance();
-        this.accessModel.enableAdd( this.parentModel.editEnabled );
-        this.accessModel.enableDelete( this.parentModel.editEnabled );
-        this.activityModel = CnActivityModelFactory.instance();
-
-        this.onView = function view() {
-          return this.viewRecord().then( function() {
-            self.accessModel.listModel.onList( true );
-            self.activityModel.listModel.onList( true );
-          } );
-        };
-        // factory customizations end here
-        //////////////////////////////////
-      };
-
+  cenozo.providers.factory( 'CnSiteViewFactory',
+    cenozo.getListModelInjectionList( 'site' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSiteModelFactory', [

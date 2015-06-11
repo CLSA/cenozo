@@ -1,11 +1,4 @@
-define( [
-  cenozo.baseUrl + '/app/participant/module.js',
-  cenozo.baseUrl + '/app/address/bootstrap.js',
-  cenozo.baseUrl + '/app/phone/bootstrap.js',
-  cenozo.baseUrl + '/app/consent/bootstrap.js',
-  cenozo.baseUrl + '/app/alternate/bootstrap.js',
-  cenozo.baseUrl + '/app/event/bootstrap.js'
-], function( module ) {
+define( cenozo.getServicesIncludeList( 'participant' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -18,56 +11,14 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnParticipantViewFactory', [
-    'CnBaseViewFactory',
-    'CnAddressModelFactory', 'CnPhoneModelFactory', 'CnConsentModelFactory',
-    'CnAlternateModelFactory', 'CnEventModelFactory',
-    function( CnBaseViewFactory,
-              CnAddressModelFactory, CnPhoneModelFactory, CnConsentModelFactory,
-              CnAlternateModelFactory, CnEventModelFactory ) {
-      var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel );
-
-        ////////////////////////////////////
-        // factory customizations start here
-        var self = this;
-        this.addressModel = CnAddressModelFactory.instance();
-        this.addressModel.enableAdd( this.parentModel.editEnabled );
-        this.addressModel.enableDelete( this.parentModel.editEnabled );
-        this.addressModel.enableView( this.parentModel.viewEnabled );
-        this.phoneModel = CnPhoneModelFactory.instance();
-        this.phoneModel.enableAdd( this.parentModel.editEnabled );
-        this.phoneModel.enableDelete( this.parentModel.editEnabled );
-        this.phoneModel.enableView( this.parentModel.viewEnabled );
-        this.consentModel = CnConsentModelFactory.instance();
-        this.consentModel.enableAdd( this.parentModel.editEnabled );
-        this.consentModel.enableDelete( this.parentModel.editEnabled );
-        this.consentModel.enableView( this.parentModel.viewEnabled );
-        this.alternateModel = CnAlternateModelFactory.instance();
-        this.alternateModel.enableAdd( this.parentModel.editEnabled );
-        this.alternateModel.enableDelete( this.parentModel.editEnabled );
-        this.alternateModel.enableView( this.parentModel.viewEnabled );
-        this.eventModel = CnEventModelFactory.instance();
-        this.eventModel.enableAdd( this.parentModel.editEnabled );
-        this.eventModel.enableDelete( this.parentModel.editEnabled );
-        this.eventModel.enableView( this.parentModel.viewEnabled );
-
-        this.onView = function view() {
-          return this.viewRecord().then( function() {
-            self.addressModel.listModel.onList( true );
-            self.phoneModel.listModel.onList( true );
-            self.consentModel.listModel.onList( true );
-            self.alternateModel.listModel.onList( true );
-            self.eventModel.listModel.onList( true );
-          } );
-        };
-        // factory customizations end here
-        //////////////////////////////////
-      };
-
+  cenozo.providers.factory( 'CnParticipantViewFactory',
+    cenozo.getListModelInjectionList( 'participant' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantModelFactory', [

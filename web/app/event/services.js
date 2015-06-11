@@ -1,4 +1,4 @@
-define( [ cenozo.baseUrl + '/app/event/module.js' ], function( module ) {
+define( cenozo.getServicesIncludeList( 'event' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -20,13 +20,14 @@ define( [ cenozo.baseUrl + '/app/event/module.js' ], function( module ) {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnEventViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+  cenozo.providers.factory( 'CnEventViewFactory',
+    cenozo.getListModelInjectionList( 'event' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnEventModelFactory', [

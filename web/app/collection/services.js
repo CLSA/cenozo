@@ -1,8 +1,4 @@
-define( [
-  cenozo.baseUrl + '/app/collection/module.js',
-  cenozo.baseUrl + '/app/participant/bootstrap.js',
-  cenozo.baseUrl + '/app/user/bootstrap.js'
-], function( module ) {
+define( cenozo.getServicesIncludeList( 'collection' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
@@ -24,38 +20,19 @@ define( [
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnCollectionViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantModelFactory', 'CnUserModelFactory',
-    'CnSession', 'CnHttpFactory',
-    function( CnBaseViewFactory, CnParticipantModelFactory, CnUserModelFactory,
-              CnSession, CnHttpFactory ) {
+  cenozo.providers.factory( 'CnCollectionViewFactory',
+    cenozo.getListModelInjectionList( 'collection' ).concat( [ 'CnSession', 'CnHttpFactory', function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var CnSession = args[args.length-2];
+      var CnHttpFactory = args[args.length-1];
       var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel );
-
-        ////////////////////////////////////
-        // factory customizations start here
+        CnBaseViewFactory.construct( this, parentModel, args );
+        
         var self = this;
         var defaultEditEnabled = this.parentModel.editEnabled;
-
-        this.participantModel = CnParticipantModelFactory.instance();
-        // need to disable all functionality since choose mode depends on the record
-        this.participantModel.enableAdd( false );
-        this.participantModel.enableDelete( false );
-        this.participantModel.enableEdit( false );
-        this.participantModel.enableView( false );
-
-        this.userModel = CnUserModelFactory.instance();
-        // need to disable all functionality since choose mode depends on the record
-        this.userModel.enableAdd( false );
-        this.userModel.enableDelete( false );
-        this.userModel.enableEdit( false );
-        this.userModel.enableView( false );
-
         this.onView = function() {
           return this.viewRecord().then( function() {
-            self.participantModel.listModel.onList( true );
-            self.userModel.listModel.onList( true );
-
             // if the collection is locked then don't allow users/participants to be changed
             self.participantModel.enableChoose( !self.record.locked );
             self.userModel.enableChoose( !self.record.locked );
@@ -93,13 +70,11 @@ define( [
             }
           } );
         };
-        // factory customizations end here
-        //////////////////////////////////
       };
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } ] )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCollectionModelFactory', [

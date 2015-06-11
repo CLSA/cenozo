@@ -33,6 +33,27 @@
     ] );
     cenozoApp.moduleList = <?php print $module_string; ?>;
 
+    // pre-create snake, camel, title, etc strings for children and choosing lists
+    for( var name in cenozoApp.moduleList ) {
+      var module = cenozoApp.moduleList[name];
+      for( var c = 0; c < module.children.length; c++ ) {
+        module.children[c] = {
+          snake: module.children[c],
+          camel: module.children[c].snakeToCamel( false ),
+          Camel: module.children[c].snakeToCamel( true ),
+          title: module.children[c].replace( '_', ' ' ).ucWords()
+        };
+      }
+      for( var c = 0; c < module.choosing.length; c++ ) {
+        module.choosing[c] = {
+          snake: module.choosing[c],
+          camel: module.choosing[c].snakeToCamel( false ),
+          Camel: module.choosing[c].snakeToCamel( true ),
+          title: module.choosing[c].replace( '_', ' ' ).ucWords()
+        };
+      }
+    }
+
     cenozoApp.config( [
       '$stateProvider',
       function( $stateProvider ) {
