@@ -131,7 +131,13 @@ class data_manager extends \cenozo\singleton
     $subject = $parts[0];
 
     $value = NULL;
-    if( 'address' == $subject ||
+    if( 'alternate' == $subject ||
+        'informant' == $subject ||
+        'proxy' == $subject )
+    {
+      // TODO: implement
+    }
+    else if( 'address' == $subject ||
         'primary_address' == $subject ||
         'first_address' == $subject )
     {

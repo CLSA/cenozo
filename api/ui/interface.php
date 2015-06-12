@@ -78,11 +78,34 @@
     <div class="container-fluid">
       <!-- Brand and toggle get grouped for better mobile display -->
       <div class="navbar-header">
-        <a class="navbar-brand dropdown-toggle" data-toggle="dropdown">{{ application.title }}</a>
+        <a class="navbar-brand dropdown-toggle" data-toggle="dropdown"
+           tooltip-placement="bottom" tooltip="Click to open the menu">{{ application.title }}</a>
         <ul class="dropdown-menu navigation-menu">
           <li ng-controller="MenuCtrl">
+            <div class="container-fluid well" style="margin: -14px 7px 7px;">
+                <div class="btn-group col-sm-12">
+                  <button class="btn btn-default col-sm-2"
+                          ng-click="setSiteRole()"
+                          tooltip="Change which site and role you are logged in as">Site/Role</button>
+                  <button class="btn btn-default col-sm-2"
+                          ng-click="setTimezone()"
+                          tooltip="Change which timezone to display">Timezone</button>
+                  <button class="btn btn-default col-sm-2"
+                          ng-click="editAccount()"
+                          tooltip="Edit your account details">Account</button>
+                  <button class="btn btn-default col-sm-2"
+                          ng-click="setPassword"
+                          tooltip="Change your password">Password</button>
+                  <button class="btn btn-default col-sm-2"
+                          ng-click="startBreak()"
+                          tooltip="Go on break">Break</button>
+                  <button class="btn btn-danger col-sm-2"
+                          ng-click="logout()"
+                          tooltip="Click and close window to logout the system">Logout</button>
+                </div>
+            </div>
             <div class="container-fluid row">
-              <ul class="navigation-group col-sm-4">
+              <ul class="navigation-group col-xs-4">
                 <li class="container-fluid bg-primary rounded-top">
                   <h4 class="text-center">Lists</h4>
                 </li>
@@ -92,7 +115,7 @@
                      ui-sref="{{ module }}.list">{{ title }}</a>
                 </li>
               </ul>
-              <ul class="navigation-group col-sm-4">
+              <ul class="navigation-group col-xs-4">
                 <li class="container-fluid bg-primary rounded-top">
                   <h4 class="text-center">Utilities</h4>
                 </li>
@@ -102,7 +125,7 @@
                      ui-sref="{{ module }}.list">{{ title }}</a>
                 </li>
               </ul>
-              <ul class="navigation-group col-sm-4">
+              <ul class="navigation-group col-xs-4">
                 <li class="container-fluid bg-primary rounded-top">
                   <h4 class="text-center">Reports</h4>
                 </li>
@@ -136,13 +159,11 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li>
-            <button class="btn btn-default navbar-btn"
-                    ng-click="setSiteRole()">
-              {{ role.name | cnUCWords }} @ {{ site.name }}
-            </button>
+            <p class="navbar-text">
+              <span ng-click="setSiteRole()">{{ role.name | cnUCWords }} @ {{ site.name }}</span>
+              <span ng-click="setTimezone()"><i class="glyphicon glyphicon-time"></i> {{ time }}</span>
+            </p>
           </li>
-          <li><cn-toolbelt class="nav navbar-nav navbar-btn"></cn-toolbelt></li>
-          <li><cn-clock class="nav navbar-nav navbar-btn"></cn-clock></li>
         </ul>
       </div>
     </div>

@@ -155,29 +155,85 @@ cenozo.animation( '.fade-transition', function() {
  * Prints the application title and version
  */
 cenozo.controller( 'HeaderCtrl', [
-  '$scope', '$state', '$window', 'CnSession', 'CnModalSiteRoleFactory',
-  function( $scope, $state, $window, CnSession, CnModalSiteRoleFactory ) {
+  '$scope', '$state', '$interval', '$window', 'CnSession', 'CnHttpFactory',
+  'CnModalMessageFactory', 'CnModalAccountFactory', 'CnModalSiteRoleFactory', 'CnModalTimezoneFactory',
+  function( $scope, $state, $interval, $window, CnSession, CnHttpFactory,
+            CnModalMessageFactory, CnModalAccountFactory, CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
     $scope.isCollapsed = false;
     $scope.breadcrumbTrail = CnSession.breadcrumbTrail;
     CnSession.promise.then( function() {
       $scope.application = CnSession.application;
       $scope.site = CnSession.site;
       $scope.role = CnSession.role;
+
+      $scope.setTimezone = function() {
+        CnModalTimezoneFactory.instance( {
+          timezone: CnSession.user.timezone
+        } ).show().then( function( response ) {
+          if( response && response != CnSession.user.timezone )
+            CnSession.setTimezone( response ).then( function() { $window.location.reload(); } );
+        } );
+      };
+
+      function updateTime() {
+        var now = moment();
+        now.tz( CnSession.user.timezone );
+        $scope.time = now.format( 'HH:mm z' );
+      }
+
+      updateTime();
+      $interval( updateTime, 10000 );
     } );
 
     $scope.setSiteRole = function() {
       CnModalSiteRoleFactory.instance().show().then( function( response ) {
         if( angular.isObject( response ) ) {
           if( response.site_id != CnSession.site.id || response.role_id != CnSession.role.id ) {
-            // blank content
-            document.getElementById( 'view' ).innerHTML = '';
             CnSession.setSiteRole( response.site_id, response.role_id ).then( function() {
               $window.location.assign( $window.location.pathname );
             } );
           }
         }
       } );
-    }
+    };
+
+    $scope.editAccount = function() {
+      CnModalAccountFactory.instance().show().then( function( response ) {
+        if( angular.isObject( response ) ) {
+          // TODO: make changes to account here
+        }
+      } );
+    };
+
+    $scope.setPassword = function() {
+      alert( 'TODO' );
+    };
+
+    $scope.startBreak = function() {
+      return CnHttpFactory.instance( {
+        path: 'self/0',
+        data: { user: { break: true } }
+      } ).patch().then( function() {
+        CnModalMessageFactory.instance( {
+          title: 'On Break',
+          message: 'You are currently on break, to continue working click the "Close" button. ' +
+                   'Your activity will continue to be logged as soon as you perform an action ' +
+                   'or reload your web browser.'
+        } ).show();
+      } ).catch( function() {
+        CnModalMessageFactory.instance( {
+          title: 'Error',
+          message: 'Sorry, there was an error while trying to put you on break. ' +
+                   'As a result your time will continue to be logged. ' +
+                   'Please contact support for help with this error.',
+          error: true
+        } ).show();
+      } );
+    };
+
+    $scope.logout = function() {
+      $window.location.assign( '?logout' );
+    };
   }
 ] );
 
@@ -765,46 +821,6 @@ cenozo.directive( 'cnRecordView', [
             if( recordLoaded && metadataLoaded ) scope.isComplete = true;
           }
         }, true );
-      }
-    };
-  }
-] );
-
-/* ######################################################################################################## */
-
-/**
- * Displays a group of buttons that provide various tools which may be used in any state.
- */
-cenozo.directive( 'cnToolbelt', [
-  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
-  function( CnSession, CnHttpFactory, CnModalMessageFactory ) {
-    return {
-      restrict: 'E',
-      templateUrl: cenozo.baseUrl + '/app/cenozo/toolbelt.tpl.html',
-      controller: function( $scope ) {
-        $scope.startBreak = function() {
-          return CnHttpFactory.instance( {
-            path: 'self/0',
-            data: { user: { break: true } }
-          } ).patch().then( function() {
-            CnModalMessageFactory.instance( {
-              title: 'On Break',
-              message: 'You are currently on break, to continue working click the "Close" button. ' +
-                       'Your activity will continue to be logged as soon as you perform an action ' +
-                       'or reload your web browser.'
-            } ).show();
-          } ).catch( function() {
-            CnModalMessageFactory.instance( {
-              title: 'Error',
-              message: 'Sorry, there was an error while trying to put you on break. ' +
-                       'As a result your time will continue to be logged. ' +
-                       'Please contact support for help with this error.',
-              error: true
-            } ).show();
-          } );
-        };
-      },
-      link: function( scope, element, attrs ) {
       }
     };
   }
@@ -2390,6 +2406,41 @@ cenozo.service( 'CnModalSiteRoleFactory', [
                 site_id: $scope.local.site_id,
                 role_id: $scope.local.role_id
               } );
+            };
+            $scope.local.cancel = function() { $modalInstance.close( false ); };
+          }
+        } ).result;
+      };
+    };
+
+    return { instance: function() { return new object(); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.service( 'CnModalAccountFactory', [
+  '$modal', 'CnSession',
+  function( $modal, CnSession ) {
+    var object = function() {
+      var self = this;
+      CnSession.promise.then( function() {
+        // TODO setup dialog variables
+      } );
+
+      this.show = function() {
+        return $modal.open( {
+          backdrop: 'static',
+          keyboard: true,
+          modalFade: true,
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-account.tpl.html',
+          controller: function( $scope, $modalInstance ) {
+            $scope.local = self;
+            $scope.local.ok = function() {
+              $modalInstance.close( /* TODO return data */ );
             };
             $scope.local.cancel = function() { $modalInstance.close( false ); };
           }
