@@ -87,7 +87,8 @@ class get extends \cenozo\service\service
       'role' => $session->get_role()->get_column_values( $role_sel ),
       'site' => $session->get_site()->get_column_values( $site_sel ),
       'user' => $session->get_user()->get_column_values( $user_sel ),
-      'access' => $session->get_user()->get_access_list( $access_sel, $access_mod ) );
+      'access' => $session->get_user()->get_access_list( $access_sel, $access_mod ),
+      'no_password' => 'password' === $_SERVER[ 'PHP_AUTH_PW' ] );
 
     // include the last (closed) activity for this user
     $activity_sel = lib::create( 'database\select' );

@@ -120,13 +120,14 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
 };
 
 // Used to set up the routing for a module
-cenozo.updateFormElement = function updateFormElement( item ) {
+cenozo.updateFormElement = function updateFormElement( item, clean ) {
+  if( undefined === clean ) clean = false;
   var invalid = false;
   for( var error in item.$error ) {
     invalid = true === item.$error[error];
     if( invalid ) break;
   }
-  item.$dirty = invalid;
+  if( clean ) item.$dirty = invalid;
   item.$invalid = invalid;
 };
 
@@ -156,9 +157,11 @@ cenozo.animation( '.fade-transition', function() {
  */
 cenozo.controller( 'HeaderCtrl', [
   '$scope', '$state', '$interval', '$window', 'CnSession', 'CnHttpFactory',
-  'CnModalMessageFactory', 'CnModalAccountFactory', 'CnModalSiteRoleFactory', 'CnModalTimezoneFactory',
+  'CnModalMessageFactory', 'CnModalAccountFactory', 'CnModalPasswordFactory',
+  'CnModalSiteRoleFactory', 'CnModalTimezoneFactory',
   function( $scope, $state, $interval, $window, CnSession, CnHttpFactory,
-            CnModalMessageFactory, CnModalAccountFactory, CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
+            CnModalMessageFactory, CnModalAccountFactory, CnModalPasswordFactory,
+            CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
     $scope.isCollapsed = false;
     $scope.breadcrumbTrail = CnSession.breadcrumbTrail;
     CnSession.promise.then( function() {
@@ -206,7 +209,24 @@ cenozo.controller( 'HeaderCtrl', [
     };
 
     $scope.setPassword = function() {
-      alert( 'TODO' );
+      CnModalPasswordFactory.instance().show().then( function( response ) {
+        if( angular.isObject( response ) ) {
+          CnSession.setPassword( response.currentPass, response.requestedPass ).catch(
+            function error( response ) {
+              console.log( response );
+              CnModalMessageFactory.instance( {
+                title: 'Unable To Change Password',
+                message: 401 == response.status
+                       ? 'Sorry, the current password you provided is incorrect, please try again. ' +
+                         'If you have forgotten your current password an administrator can reset it.'
+                       : 'Sorry, there was an error while trying to change your password. ' +
+                         'Please contact support for help with this error.',
+                error: true
+              } ).show();
+            }
+          );
+        }
+      } );
     };
 
     $scope.startBreak = function() {
@@ -275,8 +295,8 @@ cenozo.directive( 'cnChange', [
  * that the user is currently logged into).
  */
 cenozo.directive( 'cnClock', [
-  '$interval', '$window', 'CnSession', 'CnModalTimezoneFactory',
-  function( $interval, $window, CnSession, CnModalTimezoneFactory ) {
+  '$document', '$interval', '$window', 'CnSession', 'CnModalTimezoneFactory',
+  function( $document, $interval, $window, CnSession, CnModalTimezoneFactory ) {
     return {
       restrict: 'E',
       templateUrl: cenozo.baseUrl + '/app/cenozo/clock.tpl.html',
@@ -288,7 +308,7 @@ cenozo.directive( 'cnClock', [
             } ).show().then( function( response ) {
               if( response && response != CnSession.user.timezone ) {
                 // blank content
-                document.getElementById( 'view' ).innerHTML = '';
+                $document.getElementById( 'view' ).innerHTML = '';
                 CnSession.setTimezone( response ).then( function() { $window.location.reload(); } );
               }
             } );
@@ -372,8 +392,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  'CnModalDatetimeFactory', 'CnHttpFactory', 'CnModalMessageFactory',
-  function( CnModalDatetimeFactory, CnHttpFactory, CnModalMessageFactory ) {
+  '$document', 'CnModalDatetimeFactory', 'CnHttpFactory', 'CnModalMessageFactory',
+  function( $document, CnModalDatetimeFactory, CnHttpFactory, CnModalMessageFactory ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -387,12 +407,12 @@ cenozo.directive( 'cnRecordAdd', [
         $scope.check = function( property ) {
           // test the format
           var item = angular.element(
-            angular.element( document.querySelector( '#' + property ) ) ).
+            angular.element( $document.querySelector( '#' + property ) ) ).
               scope().$parent.innerForm.name;
           if( item ) {
             var valid = $scope.model.testFormat( property, $scope.record[property] );
             item.$error.format = !valid;
-            cenozo.updateFormElement( item );
+            cenozo.updateFormElement( item, true );
           }
         };
 
@@ -400,7 +420,7 @@ cenozo.directive( 'cnRecordAdd', [
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
             var scope = angular.element(
-              angular.element( document.querySelector( 'form' ) ) ).scope().$$childHead;
+              angular.element( $document.querySelector( 'form' ) ) ).scope().$$childHead;
             while( null !== scope ) {
               var item = scope.$$childHead.$$nextSibling.$parent.innerForm.name;
               item.$dirty = true;
@@ -424,11 +444,11 @@ cenozo.directive( 'cnRecordAdd', [
                   // report which inputs are included in the conflict
                   for( var i = 0; i < response.data.length; i++ ) {
                     var elementScope = angular.element( angular.element(
-                      document.querySelector( '#' + response.data[i] ) ) ).scope();
+                      $document.querySelector( '#' + response.data[i] ) ) ).scope();
                     if( angular.isDefined( elementScope ) ) {
                       var item = elementScope.$parent.innerForm.name;
                       item.$error.conflict = true;
-                      cenozo.updateFormElement( item );
+                      cenozo.updateFormElement( item, true );
                     }
                   }
                 } else { $scope.model.transitionToErrorState( response ); }
@@ -622,8 +642,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnSession',
-  function( CnModalDatetimeFactory, CnModalMessageFactory, CnSession ) {
+  '$document', 'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnSession',
+  function( $document, CnModalDatetimeFactory, CnModalMessageFactory, CnSession ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
@@ -685,10 +705,10 @@ cenozo.directive( 'cnRecordView', [
             // test the format
             if( !$scope.model.testFormat( property, $scope.model.viewModel.record[property] ) ) {
               var item = angular.element(
-                angular.element( document.querySelector( '#' + property ) ) ).
+                angular.element( $document.querySelector( '#' + property ) ) ).
                   scope().$parent.innerForm.name;
               item.$error.format = true;
-              cenozo.updateFormElement( item );
+              cenozo.updateFormElement( item, true );
             } else {
               // validation passed, proceed with patch
               var data = {};
@@ -700,7 +720,7 @@ cenozo.directive( 'cnRecordView', [
                     $scope.model.reloadState( $scope.model.viewModel.record );
                   } else {
                     var scope = angular.element(
-                      angular.element( document.querySelector( '#' + property ) ) ).scope();
+                      angular.element( $document.querySelector( '#' + property ) ) ).scope();
                     // if a conflict or format has been resolved then clear it throughout the form
                     var currentItem = scope.$parent.innerForm.name;
                     if( currentItem.$error.conflict ) {
@@ -709,14 +729,14 @@ cenozo.directive( 'cnRecordView', [
                         var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
                         if( siblingItem.$error.conflict ) {
                           siblingItem.$error.conflict = false;
-                          cenozo.updateFormElement( siblingItem );
+                          cenozo.updateFormElement( siblingItem, true );
                         }
                         sibling = sibling.$$nextSibling;
                       }
                     }
                     if( currentItem.$error.format ) {
                       currentItem.$error.format = false;
-                      cenozo.updateFormElement( currentItem );
+                      cenozo.updateFormElement( currentItem, true );
                     }
 
                     // update the formatted value
@@ -735,10 +755,10 @@ cenozo.directive( 'cnRecordView', [
                     // report which inputs are included in the conflict
                     for( var i = 0; i < response.data.length; i++ ) {
                       var item = angular.element(
-                        angular.element( document.querySelector( '#' + response.data[i] ) ) ).
+                        angular.element( $document.querySelector( '#' + response.data[i] ) ) ).
                           scope().$parent.innerForm.name;
                       item.$error.conflict = true;
-                      cenozo.updateFormElement( item );
+                      cenozo.updateFormElement( item, true );
                     }
                   } else { $scope.model.transitionToErrorState( response ); }
                 }
@@ -971,8 +991,8 @@ cenozo.filter( 'cnYesNo', function() {
  * TODO: document
  */
 cenozo.factory( 'CnSession', [
-  '$state', 'CnHttpFactory',
-  function( $state, CnHttpFactory ) {
+  '$state', 'CnHttpFactory', 'CnModalPasswordFactory',
+  function( $state, CnHttpFactory, CnModalPasswordFactory ) {
     return new ( function() {
       var self = this;
       this.promise = null;
@@ -1004,6 +1024,9 @@ cenozo.factory( 'CnSession', [
         self.role = angular.copy( response.data.role );
         self.messageList = angular.copy( response.data.system_message_list );
 
+        // sanitize the timezone
+        if( !moment.tz.zone( self.user.timezone ) ) self.user.timezone = 'UTC';
+
         // process access records
         for( var i = 0; i < response.data.access.length; i++ ) {
           var access = response.data.access[i];
@@ -1023,11 +1046,25 @@ cenozo.factory( 'CnSession', [
             name: access.role_name
           } );
         }
+
+        // if the password isn't set then open the password dialog
+        if( response.data.no_password ) {
+          CnModalPasswordFactory.instance( { confirm: false } ).show().then( function() {
+            console.log( 'TODO' );
+          } );
+        }
       } ).catch( function exception( response ) {
         var type = angular.isDefined( response ) || angular.isDefined( response.status )
                  ? response.status : 500;
         $state.go( 'error.' + type );
       } );
+
+      this.setPassword = function setPassword( currentPass, requestedPass ) {
+        return CnHttpFactory.instance( {
+          path: 'self/0',
+          data: { user: { password: { current: currentPass, requested: requestedPass } } }
+        } ).patch();
+      };
 
       this.setSiteRole = function setSiteRole( site_id, role_id ) {
         return CnHttpFactory.instance( {
@@ -2056,6 +2093,43 @@ cenozo.factory( 'CnHttpFactory', [
 /**
  * TODO: document
  */
+cenozo.service( 'CnModalAccountFactory', [
+  '$modal', 'CnSession',
+  function( $modal, CnSession ) {
+    var object = function() {
+      var self = this;
+      CnSession.promise.then( function() {
+        self.first_name = CnSession.user.first_name;
+        self.last_name = CnSession.user.last_name;
+        self.email = CnSession.user.email;
+      } );
+
+      this.show = function() {
+        return $modal.open( {
+          backdrop: 'static',
+          keyboard: true,
+          modalFade: true,
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-account.tpl.html',
+          controller: function( $scope, $modalInstance ) {
+            $scope.local = self;
+            $scope.local.ok = function() {
+              $modalInstance.close( /* TODO return data */ );
+            };
+            $scope.local.cancel = function() { $modalInstance.close( false ); };
+          }
+        } ).result;
+      };
+    };
+
+    return { instance: function() { return new object(); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.service( 'CnModalConfirmFactory', [
   '$modal',
   function( $modal ) {
@@ -2336,6 +2410,64 @@ cenozo.service( 'CnModalMessageFactory', [
 /**
  * TODO: document
  */
+cenozo.service( 'CnModalPasswordFactory', [
+  '$modal',
+  function( $modal ) {
+    var object = function( params ) {
+      var self = this;
+      this.confirm = true;
+      this.showPasswords = false;
+      angular.extend( this, params );
+
+      this.show = function() {
+        return $modal.open( {
+          backdrop: 'static',
+          keyboard: this.confirm,
+          modalFade: true,
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-password.tpl.html',
+          controller: function( $scope, $modalInstance ) {
+            $scope.local = self;
+            $scope.local.ok = function() {
+              $modalInstance.close( {
+                currentPass: $scope.local.currentPass,
+                requestedPass: $scope.local.newPass1
+              } );
+            };
+            $scope.local.cancel = function() { if( this.confirm ) $modalInstance.close( false ); };
+            $scope.local.checkPasswordMatch = function() {
+              var match = true;
+              var item1 = $scope.form.newPass1;
+              var item2 = $scope.form.newPass2;
+              if( item1.$dirty && item2.$dirty ) {
+                if( ( item1.$error.noMatch || !item1.$invalid ) &&
+                    ( item2.$error.noMatch || !item2.$invalid ) ) {
+                  var match = $scope.local.newPass1 === $scope.local.newPass2;
+                  item1.$error.noMatch = !match;
+                  cenozo.updateFormElement( item1, false );
+                  item2.$error.noMatch = !match;
+                  cenozo.updateFormElement( item2, false );
+                }
+              }
+
+              return match;
+            };
+            $scope.local.toggleShowPasswords = function() {
+              $scope.local.showPasswords = !$scope.local.showPasswords;
+            };
+          }
+        } ).result;
+      };
+    };
+
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.service( 'CnModalRestrictFactory', [
   '$modal',
   function( $modal ) {
@@ -2406,41 +2538,6 @@ cenozo.service( 'CnModalSiteRoleFactory', [
                 site_id: $scope.local.site_id,
                 role_id: $scope.local.role_id
               } );
-            };
-            $scope.local.cancel = function() { $modalInstance.close( false ); };
-          }
-        } ).result;
-      };
-    };
-
-    return { instance: function() { return new object(); } };
-  }
-] );
-
-/* ######################################################################################################## */
-
-/**
- * TODO: document
- */
-cenozo.service( 'CnModalAccountFactory', [
-  '$modal', 'CnSession',
-  function( $modal, CnSession ) {
-    var object = function() {
-      var self = this;
-      CnSession.promise.then( function() {
-        // TODO setup dialog variables
-      } );
-
-      this.show = function() {
-        return $modal.open( {
-          backdrop: 'static',
-          keyboard: true,
-          modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-account.tpl.html',
-          controller: function( $scope, $modalInstance ) {
-            $scope.local = self;
-            $scope.local.ok = function() {
-              $modalInstance.close( /* TODO return data */ );
             };
             $scope.local.cancel = function() { $modalInstance.close( false ); };
           }

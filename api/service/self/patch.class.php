@@ -51,16 +51,17 @@ class patch extends \cenozo\service\service
   protected function execute()
   {
     $util_class_name = lib::get_class_name( 'util' );
+    $user_class_name = lib::get_class_name( 'database/user' );
     $session = lib::create( 'business\session' );
 
-    $object = $this->get_file_as_object();
-    foreach( get_object_vars( $object ) as $key => $value )
+    $data = $this->get_file_as_object();
+    foreach( get_object_vars( $data ) as $key => $object )
     {
-      if( is_object( $value ) )
+      if( is_object( $object ) )
       {
-        $value = (array) $value;
-        $column = key( $value );
-        $value = current( $value );
+        $array = (array) $object;
+        $column = key( $array );
+        $value = current( $array );
         if( 'user' == $key )
         {
           $db_user = $session->get_user();
@@ -107,7 +108,29 @@ class patch extends \cenozo\service\service
           }
           else if( 'password' == $column )
           {
-            // TODO: edit password
+            $password = $object->password;
+            if( !property_exists( $password, 'current' ) || !property_exists( $password, 'requested' ) )
+            {
+              $this->status->set_code( 400 );
+            }
+            else
+            {
+              // validate the user's current password
+              if( !$util_class_name::validate_user( $db_user->name, $password->current ) )
+              {
+                $this->status->set_code( 401 );
+              }
+              else
+              {
+                $ldap_manager = lib::create( 'business\ldap_manager' );
+                $ldap_manager->set_user_password( $db_user->name, $password->requested );
+                if( $user_class_name::column_exists( 'password' ) )
+                {
+                  $db_user->password = $util_class_name::encrypt( $password->requested );
+                  $db_user->save();
+                }
+              }
+            }
           }
         }
         else if( 'site' == $key || 'role' == $key )
@@ -136,7 +159,7 @@ class patch extends \cenozo\service\service
       {
         $this->status->set_code( 400 );
         throw lib::create( 'exception\runtime',
-          'Patch expecting an object, got '.gettype( $value ),
+          'Patch expecting an object, got '.gettype( $object ),
           __METHOD__ );
       }
     }

@@ -94,7 +94,7 @@
                           ng-click="editAccount()"
                           tooltip="Edit your account details">Account</button>
                   <button class="btn btn-default col-sm-2"
-                          ng-click="setPassword"
+                          ng-click="setPassword()"
                           tooltip="Change your password">Password</button>
                   <button class="btn btn-default col-sm-2"
                           ng-click="startBreak()"
