@@ -173,8 +173,12 @@ cenozo.controller( 'HeaderCtrl', [
         CnModalTimezoneFactory.instance( {
           timezone: CnSession.user.timezone
         } ).show().then( function( response ) {
-          if( response && response != CnSession.user.timezone )
-            CnSession.setTimezone( response ).then( function() { $window.location.reload(); } );
+          if( response && response != CnSession.user.timezone ) {
+            CnSession.setTimezone( response ).then(
+              function success() { $window.location.reload(); },
+              CnSession.errorHandler
+            );
+          }
         } );
       };
 
@@ -192,9 +196,10 @@ cenozo.controller( 'HeaderCtrl', [
       CnModalSiteRoleFactory.instance().show().then( function( response ) {
         if( angular.isObject( response ) ) {
           if( response.site_id != CnSession.site.id || response.role_id != CnSession.role.id ) {
-            CnSession.setSiteRole( response.site_id, response.role_id ).then( function() {
-              $window.location.assign( $window.location.pathname );
-            } );
+            CnSession.setSiteRole( response.site_id, response.role_id ).then(
+              function success() { $window.location.assign( $window.location.pathname ); },
+              CnSession.errorHandler
+            );
           }
         }
       } );
@@ -204,11 +209,12 @@ cenozo.controller( 'HeaderCtrl', [
       CnModalAccountFactory.instance().show().then( function( response ) {
         if( angular.isObject( response ) ) {
           CnSession.setUserDetails( response.firstName, response.lastName, response.email ).then(
-            function() {
+            function success() {
               CnSession.user.first_name = response.firstName;
               CnSession.user.last_name = response.lastName;
               CnSession.user.email = response.email;
-            }
+            },
+            CnSession.errorHandler
           );
         }
       } );
@@ -219,16 +225,14 @@ cenozo.controller( 'HeaderCtrl', [
         if( angular.isObject( response ) ) {
           CnSession.setPassword( response.currentPass, response.requestedPass ).catch(
             function error( response ) {
-              console.log( response );
-              CnModalMessageFactory.instance( {
-                title: 'Unable To Change Password',
-                message: 401 == response.status
-                       ? 'Sorry, the current password you provided is incorrect, please try again. ' +
-                         'If you have forgotten your current password an administrator can reset it.'
-                       : 'Sorry, there was an error while trying to change your password. ' +
-                         'Please contact support for help with this error.',
-                error: true
-              } ).show();
+              if( 401 == response.status ) {
+                CnModalMessageFactory.instance( {
+                  title: 'Unable To Change Password',
+                  message: 'Sorry, the current password you provided is incorrect, please try again. ' +
+                           'If you have forgotten your current password an administrator can reset it.',
+                  error: true
+                } ).show();
+              } else { CnSession.errorHandler( response ); }
             }
           );
         }
@@ -315,7 +319,10 @@ cenozo.directive( 'cnClock', [
               if( response && response != CnSession.user.timezone ) {
                 // blank content
                 $document.getElementById( 'view' ).innerHTML = '';
-                CnSession.setTimezone( response ).then( function() { $window.location.reload(); } );
+                CnSession.setTimezone( response ).then(
+                  function success() { $window.location.reload(); },
+                  CnSession.errorHandler
+                );
               }
             } );
           };
@@ -398,8 +405,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$document', 'CnModalDatetimeFactory', 'CnHttpFactory', 'CnModalMessageFactory',
-  function( $document, CnModalDatetimeFactory, CnHttpFactory, CnModalMessageFactory ) {
+  '$document', 'CnSession', 'CnModalDatetimeFactory', 'CnHttpFactory', 'CnModalMessageFactory',
+  function( $document, CnSession, CnModalDatetimeFactory, CnHttpFactory, CnModalMessageFactory ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -457,7 +464,7 @@ cenozo.directive( 'cnRecordAdd', [
                       cenozo.updateFormElement( item, true );
                     }
                   }
-                } else { $scope.model.transitionToErrorState( response ); }
+                } else { CnSession.errorHandler( response ); }
               }
             );
           }
@@ -585,9 +592,7 @@ cenozo.directive( 'cnRecordList', [
                            '" in the database.',
                   error: true
                 } ).show();
-              } else {
-                $scope.model.transitionToErrorState( response );
-              }
+              } else { CnSession.errorHandler( response ); }
             } );
           }
         };
@@ -595,9 +600,7 @@ cenozo.directive( 'cnRecordList', [
         $scope.chooseRecord = function( record ) {
           if( $scope.model.chooseEnabled ) {
             if( $scope.model.listModel.chooseMode ) {
-              $scope.model.listModel.onChoose( record ).catch( function error( response ) {
-                $scope.model.transitionToErrorState( response );
-              } );
+              $scope.model.listModel.onChoose( record ).catch( CnSession.errorHandler );
             }
           };
         }
@@ -689,7 +692,7 @@ cenozo.directive( 'cnRecordView', [
           if( $scope.model.deleteEnabled ) {
             $scope.model.viewModel.onDelete().then(
               function success() { $scope.model.transitionToLastState(); },
-              function error( response ) { $scope.model.transitionToErrorState( response ); }
+              CnSession.errorHandler
             );
           }
         };
@@ -766,7 +769,7 @@ cenozo.directive( 'cnRecordView', [
                       item.$error.conflict = true;
                       cenozo.updateFormElement( item, true );
                     }
-                  } else { $scope.model.transitionToErrorState( response ); }
+                  } else { CnSession.errorHandler( response ); }
                 }
               );
             }
@@ -1059,11 +1062,7 @@ cenozo.factory( 'CnSession', [
             console.log( 'TODO' );
           } );
         }
-      } ).catch( function exception( response ) {
-        var type = angular.isDefined( response ) || angular.isDefined( response.status )
-                 ? response.status : 500;
-        $state.go( 'error.' + type );
-      } );
+      } ).catch( this.errorHandler );
 
       this.setPassword = function setPassword( currentPass, requestedPass ) {
         return CnHttpFactory.instance( {
@@ -1093,18 +1092,10 @@ cenozo.factory( 'CnSession', [
         } ).patch();
       };
 
-      this.setTimezone = function setTimezone( timezone ) {
-        return CnHttpFactory.instance( {
-          path: 'self/0',
-          data: { user: { timezone: timezone } }
-        } ).patch();
-      };
-
-      this.setTimezone = function setTimezone( timezone ) {
-        return CnHttpFactory.instance( {
-          path: 'self/0',
-          data: { user: { timezone: timezone } }
-        } ).patch();
+      this.errorHandler = function errorHandler( response ) {
+        var type = angular.isDefined( response ) && angular.isDefined( response.status )
+                 ? response.status : 500;
+        $state.go( 'error.' + type );
       };
     } );
   }
@@ -1116,8 +1107,8 @@ cenozo.factory( 'CnSession', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseAddFactory', [
-  'CnHttpFactory',
-  function( CnHttpFactory ) {
+  'CnSession', 'CnHttpFactory',
+  function( CnSession, CnHttpFactory ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
@@ -1150,7 +1141,7 @@ cenozo.factory( 'CnBaseAddFactory', [
 
           // load the metadata and use it to apply default values to the record
           this.parentModel.metadata.loadingCount++;
-          return this.parentModel.getMetadata().then( function() {
+          return this.parentModel.getMetadata().then( function success() {
             // apply default values from the metadata
             for( var column in self.parentModel.metadata.columnList )
               if( null !== self.parentModel.metadata.columnList[column].default )
@@ -1160,7 +1151,7 @@ cenozo.factory( 'CnBaseAddFactory', [
 
             // signal that we are done loading metadata
             self.parentModel.metadata.loadingCount--;
-          } );
+          } ).catch( CnSession.errorHandler );
         };
 
         /**
@@ -1182,8 +1173,8 @@ cenozo.factory( 'CnBaseAddFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseListFactory', [
-  'CnPaginationFactory', 'CnHttpFactory',
-  function( CnPaginationFactory, CnHttpFactory ) {
+  'CnSession', 'CnPaginationFactory', 'CnHttpFactory',
+  function( CnSession, CnPaginationFactory, CnHttpFactory ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
@@ -1203,11 +1194,10 @@ cenozo.factory( 'CnBaseListFactory', [
           var promise = this.cache.length < this.total ? this.listRecords( true ) : null;
 
           if( promise ) {
-            promise.then( function() {
-              self.paginationFactory.currentPage = 1;
-            } ).catch( function exception( response ) {
-              self.parentModel.transitionToErrorState( response );
-            } );
+            promise.then(
+              function success() { self.paginationFactory.currentPage = 1; },
+              CnSession.errorHandler
+            );
           } else {
             this.paginationFactory.currentPage = 1;
           }
@@ -1221,20 +1211,17 @@ cenozo.factory( 'CnBaseListFactory', [
           } else {
             columnList[column].restrict = restrict;
           }
-          this.listRecords( true ).then( function() {
-            self.paginationFactory.currentPage = 1;
-          } ).catch( function exception( response ) {
-            self.parentModel.transitionToErrorState( response );
-          } );
+          this.listRecords( true ).then(
+            function success() { self.paginationFactory.currentPage = 1; },
+            CnSession.errorHandler
+          );
         };
 
         // should be called by pagination when the page is changed
         object.checkCache = function() {
           var self = this;
           if( this.cache.length < this.total && this.paginationFactory.getMaxIndex() >= this.cache.length ) {
-            this.listRecords().catch( function exception( response ) {
-              self.parentModel.transitionToErrorState( response );
-            } );
+            this.listRecords().catch( CnSession.errorHandler );
           }
         };
 
@@ -1351,8 +1338,8 @@ cenozo.factory( 'CnBaseListFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseViewFactory', [
-  'CnHttpFactory',
-  function( CnHttpFactory ) {
+  'CnSession', 'CnHttpFactory',
+  function( CnSession, CnHttpFactory ) {
     return {
       construct: function( object, parentModel, args ) {
         var args = args ? Array.prototype.slice.call( args ) : [];
@@ -1491,7 +1478,7 @@ cenozo.factory( 'CnBaseViewFactory', [
 
               // signal that we are done loading metadata
               self.parentModel.metadata.loadingCount--;
-            } );
+            } ).catch( CnSession.errorHandler );
           } );
         };
 
@@ -1789,15 +1776,6 @@ cenozo.factory( 'CnBaseModelFactory', [
           $state.go( subject + '.view', { identifier: identifier } );
         };
         
-        /**
-         * TODO: document
-         */
-        object.transitionToErrorState = function( response ) {
-          var type = angular.isDefined( response ) && angular.isDefined( response.status )
-                   ? response.status : 500;
-          $state.go( 'error.' + type );
-        };
-
         /**
          * Creates the breadcrumb trail using this module and a specific type (add, list or view)
          */

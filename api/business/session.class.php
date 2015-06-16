@@ -193,9 +193,9 @@ class session extends \cenozo\singleton
     if( !is_null( $this->db_user ) )
     {
       $access_class_name = lib::get_class_name( 'database\access' );
-      $util_class_name = lib::get_class_name( 'util' );
 
       // automatically determine site or role if either is not provided
+      $db_access = NULL;
       if( is_null( $db_site ) || is_null( $db_role ) )
       {
         // find the most recent access restricted to the given site/role (if any)
@@ -207,27 +207,21 @@ class session extends \cenozo\singleton
         $access_mod->limit( 1 );
         if( !is_null( $db_site ) ) $access_mod->where( 'site_id', '=', $db_site->id );
         if( !is_null( $db_role ) ) $access_mod->where( 'role_id', '=', $db_role->id );
-        $this->db_access = current( $this->db_user->get_access_object_list( $access_mod ) );
-        if( !is_null( $this->db_access ) )
-        {
-          $db_site = $this->db_access->get_site();
-          $db_role = $this->db_access->get_role();
-        }
+        $db_access = current( $this->db_user->get_access_object_list( $access_mod ) );
+      }
+      else
+      {
+        $db_access = $access_class_name::get_unique_record(
+          array( 'user_id', 'role_id', 'site_id' ),
+          array( $this->db_user->id, $db_role->id, $db_site->id ) );
       }
 
-      // may not have resolved a site/role pair, so double check
-      if( !is_null( $db_site ) && !is_null( $db_role ) )
+      if( !is_null( $db_access ) )
       {
-        $has_access = $this->db_user->has_access( $db_site, $db_role );
-        if( $has_access )
-        {
-          $this->db_site = $db_site;
-          $this->db_role = $db_role;
-          if( is_null( $this->db_access ) )
-            $this->db_access = $access_class_name::get_unique_record(
-              array( 'user_id', 'site_id', 'role_id' ),
-              array( $this->db_user->id, $this->db_site->id, $this->db_role->id ) );
-        }
+        $this->db_access = $db_access;
+        $this->db_site = $this->db_access->get_site();
+        $this->db_role = $this->db_access->get_role();
+        $has_access = true;
       }
     }
 

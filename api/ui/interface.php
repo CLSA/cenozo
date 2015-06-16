@@ -78,8 +78,7 @@
     <div class="container-fluid">
       <!-- Brand and toggle get grouped for better mobile display -->
       <div class="navbar-header">
-        <a class="navbar-brand dropdown-toggle" data-toggle="dropdown"
-           tooltip-placement="bottom" tooltip="Click to open the menu">{{ application.title }}</a>
+        <a class="navbar-brand dropdown-toggle" data-toggle="dropdown">{{ application.title }}</a>
         <ul class="dropdown-menu navigation-menu">
           <li ng-controller="MenuCtrl">
             <div class="container-fluid well" style="margin: -14px 7px 7px;">
