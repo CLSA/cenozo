@@ -203,7 +203,13 @@ cenozo.controller( 'HeaderCtrl', [
     $scope.editAccount = function() {
       CnModalAccountFactory.instance().show().then( function( response ) {
         if( angular.isObject( response ) ) {
-          // TODO: make changes to account here
+          CnSession.setUserDetails( response.firstName, response.lastName, response.email ).then(
+            function() {
+              CnSession.user.first_name = response.firstName;
+              CnSession.user.last_name = response.lastName;
+              CnSession.user.email = response.email;
+            }
+          );
         }
       } );
     };
@@ -1070,6 +1076,27 @@ cenozo.factory( 'CnSession', [
         return CnHttpFactory.instance( {
           path: 'self/0',
           data: { site: { id: site_id }, role: { id: role_id } }
+        } ).patch();
+      };
+
+      this.setUserDetails = function setUserDetails( firstName, lastName, email ) {
+        return CnHttpFactory.instance( {
+          path: 'self/0',
+          data: { user: { first_name: firstName, last_name: lastName, email: email } }
+        } ).patch();
+      };
+
+      this.setTimezone = function setTimezone( timezone ) {
+        return CnHttpFactory.instance( {
+          path: 'self/0',
+          data: { user: { timezone: timezone } }
+        } ).patch();
+      };
+
+      this.setTimezone = function setTimezone( timezone ) {
+        return CnHttpFactory.instance( {
+          path: 'self/0',
+          data: { user: { timezone: timezone } }
         } ).patch();
       };
 
@@ -2099,8 +2126,8 @@ cenozo.service( 'CnModalAccountFactory', [
     var object = function() {
       var self = this;
       CnSession.promise.then( function() {
-        self.first_name = CnSession.user.first_name;
-        self.last_name = CnSession.user.last_name;
+        self.firstName = CnSession.user.first_name;
+        self.lastName = CnSession.user.last_name;
         self.email = CnSession.user.email;
       } );
 
@@ -2113,9 +2140,17 @@ cenozo.service( 'CnModalAccountFactory', [
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
             $scope.local.ok = function() {
-              $modalInstance.close( /* TODO return data */ );
+              $modalInstance.close( {
+                firstName: $scope.local.firstName,
+                lastName: $scope.local.lastName,
+                email: $scope.local.email
+              } );
             };
             $scope.local.cancel = function() { $modalInstance.close( false ); };
+            $scope.local.testEmailFormat = function() {
+              $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]+$/.test( $scope.local.email );
+              cenozo.updateFormElement( $scope.form.email, true );
+            };
           }
         } ).result;
       };
