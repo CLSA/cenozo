@@ -196,8 +196,11 @@ cenozo.controller( 'HeaderCtrl', [
       CnModalSiteRoleFactory.instance().show().then( function( response ) {
         if( angular.isObject( response ) ) {
           if( response.site_id != CnSession.site.id || response.role_id != CnSession.role.id ) {
+            $state.go( 'wait' ); // show a waiting screen while we're changing the site/role
             CnSession.setSiteRole( response.site_id, response.role_id ).then(
-              function success() { $window.location.assign( $window.location.pathname ); },
+              function success() {
+                $window.location.assign( $window.location.pathname );
+              },
               CnSession.errorHandler
             );
           }
@@ -2701,6 +2704,7 @@ cenozo.config( [
       }
     } );
     $stateProvider.state( 'root.home', { url: '/' } ); // resolve application/#/
+    $stateProvider.state( 'wait', { templateUrl: baseRootUrl + 'wait.tpl.html' } );
 
     // add the error states
     var baseErrorUrl = cenozo.baseUrl + '/app/error/';
