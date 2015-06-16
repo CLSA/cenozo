@@ -379,8 +379,8 @@ class participant extends record
   public function get_full_name()
   {
     return 0 < strlen( $this->other_name ) ?
-      sprintf( '%s (%s) %s', $this->first_name, $this->other_name, $this->last_name ) :
-      sprintf( '%s %s', $this->first_name, $this->last_name );
+      sprintf( '%s %s (%s) %s', $this->honorific, $this->first_name, $this->other_name, $this->last_name ) :
+      sprintf( '%s %s %s', $this->honorific, $this->first_name, $this->last_name );
   }
 
   /**

@@ -161,7 +161,7 @@ class survey_manager extends \cenozo\singleton
 
       $db_tokens = lib::create( 'database\limesurvey\tokens' );
       $db_tokens->token = $token;
-      $db_tokens->firstname = $db_participant->first_name;
+      $db_tokens->firstname = $db_participant->honorific.' '.$db_participant->first_name;
       $db_tokens->lastname = $db_participant->last_name;
       $db_tokens->email = $db_participant->email;
 
@@ -252,7 +252,7 @@ class survey_manager extends \cenozo\singleton
             { // token not found, create it
               $db_tokens = lib::create( 'database\limesurvey\tokens' );
               $db_tokens->token = $token;
-              $db_tokens->firstname = $db_participant->first_name;
+              $db_tokens->firstname = $db_participant->honorific.' '.$db_participant->first_name;
               $db_tokens->lastname = $db_participant->last_name;
               $db_tokens->email = $db_participant->email;
 
@@ -324,7 +324,7 @@ class survey_manager extends \cenozo\singleton
     { // token not found, create it
       $db_tokens = lib::create( 'database\limesurvey\tokens' );
       $db_tokens->token = $token;
-      $db_tokens->firstname = $db_participant->first_name;
+      $db_tokens->firstname = $db_participant->honorific.' '.$db_participant->first_name;
       $db_tokens->lastname = $db_participant->last_name;
       $db_tokens->email = $db_participant->email;
 

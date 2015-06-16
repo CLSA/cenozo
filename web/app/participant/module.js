@@ -29,6 +29,10 @@ define( {
       type: 'string',
       constant: true
     },
+    honorific: {
+      title: 'Honorific',
+      type: 'string'
+    },
     first_name: {
       title: 'First Name',
       type: 'string'
