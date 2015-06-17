@@ -87,9 +87,18 @@
   </div>
   <div class="modal-footer">
     <div class="btn-group pull-left">
-      <button type="button" class="btn btn-info" ng-click="local.select('now')">Now</button>
-      <button type="button" class="btn btn-info" ng-click="local.select('today')">Today</button>
-      <button type="button" class="btn btn-danger" ng-click="local.select(null)">Clear</button>
+      <button ng-if="'date' != local.pickerType"
+              type="button"
+              class="btn btn-info"
+              ng-click="local.select('now')">Now</button>
+      <button ng-if="'time' != local.pickerType && 'timesecond' != local.pickerType"
+              type="button"
+              class="btn btn-info"
+              ng-click="local.select('today')">Today</button>
+      <button ng-if="local.emptyAllowed"
+              type="button"
+              class="btn btn-danger"
+              ng-click="local.select(null)">Clear</button>
     </div>
     <button type="button" class="btn btn-default" ng-click="local.cancel()">Cancel</button>
     <button type="submit" class="btn btn-primary">OK</button>

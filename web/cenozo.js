@@ -493,7 +493,8 @@ cenozo.directive( 'cnRecordAdd', [
           CnModalDatetimeFactory.instance( {
             title: input.title,
             date: $scope.record[input.key],
-            pickerType: input.type
+            pickerType: input.type,
+            emptyAllowed: true
           } ).show().then( function( response ) {
             if( false !== response ) {
               $scope.record[input.key] = response;
@@ -805,7 +806,8 @@ cenozo.directive( 'cnRecordView', [
             CnModalDatetimeFactory.instance( {
               title: input.title,
               date: $scope.model.viewModel.record[input.key],
-              pickerType: input.type
+              pickerType: input.type,
+              emptyAllowed: !$scope.model.metadata.columnList[input.key].required
             } ).show().then( function( response ) {
               if( false !== response ) {
                 $scope.model.viewModel.record[input.key] = response;
@@ -2238,6 +2240,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.title = 'Title';
       this.pickerType = 'datetime';
       this.mode = 'day';
+      this.emptyAllowed = true;
       angular.extend( this, params );
 
       // service vars which cannot be defined by the constructor's params
@@ -2277,9 +2280,11 @@ cenozo.service( 'CnModalDatetimeFactory', [
         if( 'now' == when ) {
           this.date = moment().tz( CnSession.user.timezone );
         } else if( 'today' == when ) {
+          if( null === this.date ) this.date = moment();
           this.date.year( moment().year() ).month( moment().month() ).date( moment().date() );
         } else {
-          this.date.year( when.year() ).month( when.month() ).date( when.date() );
+          if( null === when ) this.date = null;
+          else this.date.year( when.year() ).month( when.month() ).date( when.date() );
         }
 
         if( null !== this.date ) this.viewingDate = moment( this.date );
@@ -2288,7 +2293,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.updateDisplayTime = function() {
         var format = CnSession.getTimeFormat(
           'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType );
-        this.displayTime = this.date.format( format ) + ' (' + this.timezone + ')';
+        this.displayTime = null === this.date ? '(none)' : this.date.format( format + ' z' );
       };
       this.update = function() {
         if( 'day' == this.mode ) {
