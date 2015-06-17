@@ -24,7 +24,7 @@ define( {
     },
     datetime: {
       title: 'Date & Time',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm:ss"'
+      filter: 'cnDatetime:datetimesecond'
     }
   },
   defaultOrder: {

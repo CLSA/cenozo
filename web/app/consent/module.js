@@ -41,7 +41,7 @@ define( {
     },
     date: {
       title: 'Date',
-      filter: 'cnMomentDate:YYYY-MM-DD'
+      filter: 'cnDatetime:date'
     }
   },
   defaultOrder: {

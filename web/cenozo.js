@@ -162,6 +162,12 @@ cenozo.controller( 'HeaderCtrl', [
   function( $scope, $state, $interval, $window, CnSession, CnHttpFactory,
             CnModalMessageFactory, CnModalAccountFactory, CnModalPasswordFactory,
             CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
+    function updateTime() {
+      var now = moment();
+      now.tz( CnSession.user.timezone );
+      $scope.time = now.format( CnSession.getTimeFormat( false ) + ' z' );
+    }
+
     $scope.isCollapsed = false;
     $scope.breadcrumbTrail = CnSession.breadcrumbTrail;
     CnSession.promise.then( function() {
@@ -181,12 +187,6 @@ cenozo.controller( 'HeaderCtrl', [
           }
         } );
       };
-
-      function updateTime() {
-        var now = moment();
-        now.tz( CnSession.user.timezone );
-        $scope.time = now.format( 'HH:mm z' );
-      }
 
       updateTime();
       $interval( updateTime, 10000 );
@@ -211,11 +211,14 @@ cenozo.controller( 'HeaderCtrl', [
     $scope.editAccount = function() {
       CnModalAccountFactory.instance().show().then( function( response ) {
         if( angular.isObject( response ) ) {
-          CnSession.setUserDetails( response.firstName, response.lastName, response.email ).then(
+          CnSession.setUserDetails(
+            response.firstName, response.lastName, response.email, response.use12HourClock ).then(
             function success() {
               CnSession.user.first_name = response.firstName;
               CnSession.user.last_name = response.lastName;
               CnSession.user.email = response.email;
+              CnSession.user.use_12hour_clock = 1 == response.use12HourClock;
+              updateTime();
             },
             CnSession.errorHandler
           );
@@ -333,7 +336,7 @@ cenozo.directive( 'cnClock', [
           function updateTime() {
             var now = moment();
             now.tz( CnSession.user.timezone );
-            scope.time = now.format( 'HH:mm z' );
+            scope.time = now.format( CnSession.getTimeFormat( false ) + ' z' );
           }
 
           updateTime();
@@ -931,7 +934,7 @@ cenozo.filter( 'cnMetaFilter', [
 /**
  * TODO: document
  */
-cenozo.filter( 'cnMomentDate', [
+cenozo.filter( 'cnDatetime', [
   'CnSession',
   function( CnSession ) {
     return function( input, format ) {
@@ -939,6 +942,19 @@ cenozo.filter( 'cnMomentDate', [
       if( angular.isUndefined( input ) || null === input ) {
         output = '(none)';
       } else {
+        // convert cenozo-based datetime formats
+        if( 'datetimesecond' == format ) {
+          format = 'MMM D, YYYY @ ' + CnSession.getTimeFormat( true );
+        } else if( 'datetime' == format ) {
+          format = 'MMM D, YYYY @ ' + CnSession.getTimeFormat( false );
+        } else if( 'date' == format ) {
+          format = 'MMM D, YYYY';
+        } else if( 'timesecond' == format ) {
+          format = CnSession.getTimeFormat( true );
+        } else if( 'time' == format ) {
+          format = CnSession.getTimeFormat( false );
+        }
+
         if( 'object' !== typeof input || angular.isUndefined( input.format ) ) input = moment( input );
         output = input.tz( CnSession.user.timezone ).format( format );
       }
@@ -1081,11 +1097,25 @@ cenozo.factory( 'CnSession', [
         } ).patch();
       };
 
-      this.setUserDetails = function setUserDetails( firstName, lastName, email ) {
+      this.setUserDetails = function setUserDetails( firstName, lastName, email, use12HourClock ) {
         return CnHttpFactory.instance( {
           path: 'self/0',
-          data: { user: { first_name: firstName, last_name: lastName, email: email } }
+          data: {
+            user: {
+              first_name: firstName,
+              last_name: lastName,
+              email: email,
+              use_12hour_clock: use12HourClock
+            }
+          }
         } ).patch();
+      };
+
+      this.getTimeFormat = function getTimeFormat( seconds ) {
+        if( undefined == seconds ) seconds = false;
+        return self.user.use_12hour_clock ?
+          'h:mm' + ( seconds ? ':ss' : '' ) + ' a' :
+          'H:mm' + ( seconds ? ':ss' : '' );
       };
 
       this.setTimezone = function setTimezone( timezone ) {
@@ -2011,12 +2041,14 @@ cenozo.factory( 'CnBaseModelFactory', [
                 var obj = moment( value );
                 if( 'datetimesecond' == input.type || 'datetime' == input.type ) {
                   obj.tz( CnSession.user.timezone );
-                  if( 'datetimesecond' == input.type ) formatted = obj.format( 'YYYY-MM-DD HH:mm:ss' );
-                  else /*if( 'datetime' == input.type )*/ formatted = obj.format( 'YYYY-MM-DD HH:mm' );
+                  formatted = obj.format(
+                    'dddd, MMMM Do, YYYY @ ' + CnSession.getTimeFormat( 'datetimesecond' == input.type ) + ' z' );
                 } else {
-                  if( 'date' == input.type ) formatted = obj.format( 'YYYY-MM-DD' );
-                  else if( 'timesecond' == input.type ) formatted = obj.format( 'HH:mm:ss' );
-                  else /*if( 'time' == input.type )*/ formatted = obj.format( 'HH:mm' );
+                  if( 'date' == input.type ) formatted = obj.format( 'dddd, MMMM Do, YYYY' );
+                  else if( 'timesecond' == input.type )
+                    formatted = obj.format( CnSession.getTimeFormat( true ) + ' z' );
+                  else /*if( 'time' == input.type )*/
+                    formatted = obj.format( CnSession.getTimeFormat( false ) + ' z' );
                 }
               }
             }
@@ -2110,6 +2142,7 @@ cenozo.service( 'CnModalAccountFactory', [
         self.firstName = CnSession.user.first_name;
         self.lastName = CnSession.user.last_name;
         self.email = CnSession.user.email;
+        self.use12HourClock = CnSession.user.use_12hour_clock ? 1 : 0;
       } );
 
       this.show = function() {
@@ -2124,7 +2157,8 @@ cenozo.service( 'CnModalAccountFactory', [
               $modalInstance.close( {
                 firstName: $scope.local.firstName,
                 lastName: $scope.local.lastName,
-                email: $scope.local.email
+                email: $scope.local.email,
+                use12HourClock: $scope.local.use12HourClock
               } );
             };
             $scope.local.cancel = function() { $modalInstance.close( false ); };
@@ -2252,9 +2286,8 @@ cenozo.service( 'CnModalDatetimeFactory', [
         this.prevMode(); // will call update()
       };
       this.updateDisplayTime = function() {
-        var format = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType
-                   ? 'HH:mm:ss'
-                   : 'HH:mm';
+        var format = CnSession.getTimeFormat(
+          'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType );
         this.displayTime = this.date.format( format ) + ' (' + this.timezone + ')';
       };
       this.update = function() {

@@ -17,9 +17,9 @@
     <div class="vertical-spacer"></div>
     <div ng-if="model.user.last_activity" class="container-fluid">
       You were last logged in from
-      <strong>{{ model.user.last_activity.start_datetime | cnMomentDate:"MMM D, YYYY @ HH:mm z" }}</strong>
+      <strong>{{ model.user.last_activity.start_datetime | cnDatetime:datetime }}</strong>
       until
-      <strong>{{ model.user.last_activity.end_datetime | cnMomentDate:"MMM D, YYYY @ HH:mm z" }}</strong>
+      <strong>{{ model.user.last_activity.end_datetime | cnDatetime:datetime }}</strong>
       under the role of 
       <strong>{{ model.user.last_activity.role_name }}</strong>
       for the

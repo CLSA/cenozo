@@ -54,7 +54,7 @@ define( {
     },
     expiry: {
       title: 'Expiry',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"'
+      filter: 'cnDatetime:datetime'
     }
   },
   defaultOrder: {

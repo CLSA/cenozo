@@ -114,7 +114,7 @@ class patch extends \cenozo\service\service
         $modified = false;
         foreach( $array as $column => $value )
         {
-          if( !in_array( $column, array( 'first_name', 'last_name', 'email', 'timezone' ) ) )
+          if( !in_array( $column, array( 'first_name', 'last_name', 'email', 'timezone', 'use_12hour_clock' ) ) )
           {
             $modified = false;
             $this->status->set_code( 400 );

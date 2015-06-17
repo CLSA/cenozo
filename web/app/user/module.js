@@ -30,7 +30,17 @@ define( {
       title: 'Email',
       type: 'string',
       format: 'email',
-      help: 'Must be in the format "account@domain.name".'
+      help: 'Must be in the format "account@domain.name"'
+    },
+    timezone: {
+      title: 'Timezone',
+      type: 'string',
+      help: 'Which timezone the user displays times in'
+    },
+    use_12hour_clock: {
+      title: 'Use 12-Hour Clock',
+      type: 'boolean',
+      help: 'Whether to display times using the 12-hour clock (am/pm)'
     }
   },
   columnList: {
@@ -64,7 +74,7 @@ define( {
     },
     last_access_datetime: {
       title: 'Last Access',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
+      filter: 'cnDatetime:datetime',
       help: 'The last time the user accessed this application.'
     }
   },

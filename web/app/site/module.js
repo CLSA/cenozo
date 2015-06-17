@@ -55,7 +55,7 @@ define( {
     user_count: { title: 'Users' },
     last_access_datetime: {
       title: 'Last Access',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"'
+      filter: 'cnDatetime:datetime'
     }
   },
   defaultOrder: {

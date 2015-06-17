@@ -25,11 +25,11 @@ define( {
     },
     start_datetime: {
       title: 'Start',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm:ss"'
+      filter: 'cnDatetime:datetimesecond'
     },
     end_datetime: {
       title: 'End',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm:ss"'
+      filter: 'cnDatetime:datetimesecond'
     }
   },
   defaultOrder: {
