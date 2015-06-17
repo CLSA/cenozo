@@ -22,7 +22,7 @@ $settings['general']['maintenance_mode'] = false;
 $settings['general']['development_mode'] = false;
 
 // how much inactivity before activity logs are considered closed (in mysql interval format)
-$settings['general']['activity_timeout'] = '1 HOUR';
+$settings['general']['activity_timeout'] = '2 HOUR';
 
 // cenozo's sub-directory urls
 $settings['url']['APP'] = $this->settings['url']['CENOZO'].'/app';
