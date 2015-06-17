@@ -44,7 +44,8 @@
     </div>
     <div class="form-group"
          ng-class="{ 'has-feedback has-error': form.email.$invalid }">
-      <label for="email" class="col-sm-4 control-label">Email</label>
+      <label for="email" class="col-sm-4 control-label"
+             tooltip='Must be in the format "account@domain.name"'>Email</label>
       <div class="col-sm-8">
         <div class="input-group"
              ng-class="{ 'has-feedback has-error': form.email.$invalid }">
@@ -62,7 +63,8 @@
       </div>
     </div>
     <div class="form-group">
-      <label for="use12HourClock" class="col-sm-4 control-label">Use 12-Hour Clock</label>
+      <label for="use12HourClock" class="col-sm-4 control-label"
+             tooltip="Whether to display times using the 12-hour clock (am/pm)">Use 12-Hour Clock</label>
       <div class="col-sm-8">
         <div class="input-group">
           <select name="name" ng-model="local.use12HourClock" class="form-control" required>
