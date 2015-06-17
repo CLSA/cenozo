@@ -35,6 +35,10 @@ String.prototype.ucWords = function() {
   return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
 }
 
+cenozo.isDateType = function( type ) {        
+  return 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type );
+};
+
 // Defines which modules are part of the framework
 cenozo.modules = function( modules ) { this.moduleList = angular.copy( modules ); };
 
@@ -635,6 +639,7 @@ cenozo.directive( 'cnRecordList', [
             CnModalRestrictFactory.instance( {
               name: scope.model.name,
               column: column.title,
+              type: column.type,
               comparison: column.restrict
             } ).show().then( function( comparison ) {
               scope.model.listModel.restrict( column.key, comparison );
@@ -1132,6 +1137,29 @@ cenozo.factory( 'CnSession', [
                  ? response.status : 500;
         $state.go( 'error.' + type );
       };
+
+      this.formatValue = function formatValue( value, type ) {
+        var formatted = value;
+        if( null !== value ) {
+          if( type ) {
+            if( cenozo.isDateType( type ) ) {
+              var obj = moment( value );
+              if( 'datetimesecond' == type || 'datetime' == type ) {
+                obj.tz( this.user.timezone );
+                formatted = obj.format(
+                  'dddd, MMMM Do, YYYY @ ' + this.getTimeFormat( 'datetimesecond' == type ) + ' z' );
+              } else {
+                if( 'date' == type ) formatted = obj.format( 'dddd, MMMM Do, YYYY' );
+                else if( 'timesecond' == type )
+                  formatted = obj.format( this.getTimeFormat( true ) + ' z' );
+                else /*if( 'time' == type )*/
+                  formatted = obj.format( this.getTimeFormat( false ) + ' z' );
+              }
+            }
+          }
+        }
+        return formatted;
+      };
     } );
   }
 ] );
@@ -1564,7 +1592,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             object.columnList[property].type = 'string';
 
           var type = object.columnList[property].type;
-          if( 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type ) ) {
+          if( cenozo.isDateType( type ) ) {
             object.columnList[property].filter = 'cnDatetime:' + type;
           } else if( 'rank' == type ) {
             object.columnList[property].filter = 'cnOrdinal';
@@ -2050,27 +2078,8 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Applies special formatting to a record's value
          */
         object.formatValue = function formatValue( property, value ) {
-          var formatted = value;
-          if( null !== value ) {
-            var input = this.inputList[property];
-            if( input ) {
-              if( 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( input.type ) ) {
-                var obj = moment( value );
-                if( 'datetimesecond' == input.type || 'datetime' == input.type ) {
-                  obj.tz( CnSession.user.timezone );
-                  formatted = obj.format(
-                    'dddd, MMMM Do, YYYY @ ' + CnSession.getTimeFormat( 'datetimesecond' == input.type ) + ' z' );
-                } else {
-                  if( 'date' == input.type ) formatted = obj.format( 'dddd, MMMM Do, YYYY' );
-                  else if( 'timesecond' == input.type )
-                    formatted = obj.format( CnSession.getTimeFormat( true ) + ' z' );
-                  else /*if( 'time' == input.type )*/
-                    formatted = obj.format( CnSession.getTimeFormat( false ) + ' z' );
-                }
-              }
-            }
-          }
-          return formatted;
+          var input = this.inputList[property];
+          return input ? CnSession.formatValue( value, input.type ) : value;
         };
 
         /**
@@ -2538,15 +2547,19 @@ cenozo.service( 'CnModalPasswordFactory', [
  * TODO: document
  */
 cenozo.service( 'CnModalRestrictFactory', [
-  '$modal',
-  function( $modal ) {
+  '$modal', 'CnModalDatetimeFactory', 'CnSession',
+  function( $modal, CnModalDatetimeFactory, CnSession ) {
     var object = function( params ) {
       var self = this;
       if( angular.isUndefined( params.column ) ) throw 'Tried to create CnModalRestrictFactory without a column';
       this.name = null;
       this.column = null;
+      this.type = 'string';
       this.comparison = null;
       angular.extend( this, params );
+
+      // handle datetime types
+      if( cenozo.isDateType( this.type ) ) this.formattedValue = null;
 
       if( angular.isUndefined( this.comparison ) || null === this.comparison ) this.comparison = { test: '<=>' };
       this.preExisting = angular.isDefined( this.comparison.value );
@@ -2561,6 +2574,23 @@ cenozo.service( 'CnModalRestrictFactory', [
             $scope.local.ok = function( comparison ) { $modalInstance.close( comparison ); };
             $scope.local.remove = function() { $modalInstance.close( null ); };
             $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
+
+            if( cenozo.isDateType( $scope.local.type ) ) {
+              $scope.local.selectDatetime = function() {
+                var self = this;
+                CnModalDatetimeFactory.instance( {
+                  title: this.column,
+                  date: this.comparison.value,
+                  pickerType: this.type,
+                  emptyAllowed: true
+                } ).show().then( function( response ) {
+                  if( false !== response ) {
+                    self.comparison.value = response;
+                    self.formattedValue = CnSession.formatValue( self.comparison.value, self.type );
+                  }
+                } );
+              };
+            }
           }
         } ).result;
       };
