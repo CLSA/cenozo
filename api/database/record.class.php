@@ -41,9 +41,12 @@ abstract class record extends \cenozo\base_object
       // Because mysql does not allow setting the default value for a DATETIME column to be
       // NOW() we need to set the default here manually
       $default = static::db()->get_column_default( $table_name, $name );
-      $this->column_values[$name] =
-        'start_datetime' == $name || ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) ?
-        $util_class_name::get_datetime_object() : $default;
+      $this->passive_column_values[$name] = NULL;
+      
+      if( 'start_datetime' == $name || ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) )
+        $this->active_column_values[$name] = $util_class_name::get_datetime_object();
+      else if( !is_null( $default ) )
+        $this->active_column_values[$name] = $default;
     }
 
     if( NULL != $id )
@@ -70,7 +73,7 @@ abstract class record extends \cenozo\base_object
           static::$primary_key_name.'".', __METHOD__ );
       }
 
-      $this->column_values[static::$primary_key_name] = intval( $id );
+      $this->passive_column_values[static::$primary_key_name] = intval( $id );
     }
 
     // now load the data from the database
@@ -92,15 +95,16 @@ abstract class record extends \cenozo\base_object
     $util_class_name = lib::get_class_name( 'util' );
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    if( isset( $this->column_values[static::$primary_key_name] ) )
+    if( isset( $this->passive_column_values[static::$primary_key_name] ) )
     {
       $table_name = static::get_table_name();
+      $primary_key_value = $this->passive_column_values[static::$primary_key_name];
 
       // not using a modifier here is ok since we're forcing id to be an integer
       $sql = sprintf( 'SELECT * FROM %s WHERE %s = %d',
                       $table_name,
                       static::$primary_key_name,
-                      $this->column_values[static::$primary_key_name] );
+                      $primary_key_value );
 
       $row = static::db()->get_row( $sql );
 
@@ -110,14 +114,14 @@ abstract class record extends \cenozo\base_object
           sprintf( 'Load failed to find record for %s with %s = %d.',
                    $table_name,
                    static::$primary_key_name,
-                   $this->column_values[static::$primary_key_name] ),
+                   $primary_key_value ),
           __METHOD__ );
       }
       else
       {
         foreach( $row as $column => $value )
         {
-          if( array_key_exists( $column, $this->column_values ) )
+          if( array_key_exists( $column, $this->passive_column_values ) )
           { // convert data types
             if( !is_null( $value ) )
             {
@@ -129,11 +133,14 @@ abstract class record extends \cenozo\base_object
                 $value = !$value ? NULL : $util_class_name::get_datetime_object( $value );
             }
 
-            $this->column_values[$column] = $value;
+            $this->passive_column_values[$column] = $value;
           }
         }
       }
     }
+
+    // clean out active values
+    $this->active_column_values = array();
   }
 
   /**
@@ -154,8 +161,11 @@ abstract class record extends \cenozo\base_object
       return;
     }
 
+    // do not save anything if there are no active values
+    if( 0 == count( $this->active_column_values ) ) return;
+
     $table_name = static::get_table_name();
-    $primary_key_value = $this->column_values[static::$primary_key_name];
+    $primary_key_value = $this->passive_column_values[static::$primary_key_name];
 
     // building the SET list since it is identical for inserts and updates
     $sets = '';
@@ -172,7 +182,7 @@ abstract class record extends \cenozo\base_object
     }
 
     // now add the rest of the columns
-    foreach( $this->column_values as $column => $value )
+    foreach( $this->active_column_values as $column => $value )
     {
       if( static::$primary_key_name != $column )
       {
@@ -204,7 +214,12 @@ abstract class record extends \cenozo\base_object
 
     // get the new primary key
     if( is_null( $primary_key_value ) )
-      $this->column_values[static::$primary_key_name] = static::db()->insert_id();
+      $this->passive_column_values[static::$primary_key_name] = static::db()->insert_id();
+
+    // transfer active to passive values
+    foreach( $this->active_column_values as $column => $value )
+      $this->passive_column_values[$column] = $value;
+    $this->active_column_values = array();
   }
 
   /**
@@ -223,7 +238,7 @@ abstract class record extends \cenozo\base_object
     }
 
     // check the primary key value
-    if( is_null( $this->column_values[static::$primary_key_name] ) )
+    if( is_null( $this->passive_column_values[static::$primary_key_name] ) )
     {
       log::warning( 'Tried to delete record with no id.' );
       return;
@@ -234,8 +249,10 @@ abstract class record extends \cenozo\base_object
     $sql = sprintf( 'DELETE FROM %s WHERE %s = %d',
                     static::get_table_name(),
                     static::$primary_key_name,
-                    $this->column_values[static::$primary_key_name] );
+                    $this->passive_column_values[static::$primary_key_name] );
     static::db()->execute( $sql );
+
+    $this->passive_column_values[static::$primary_key_name] = NULL;
   }
 
   /**
@@ -254,8 +271,9 @@ abstract class record extends \cenozo\base_object
     if( !static::column_exists( $column_name ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
 
-    return isset( $this->column_values[$column_name] ) ?
-      $this->column_values[$column_name] : NULL;
+    return array_key_exists( $column_name, $this->active_column_values ) ?
+           $this->active_column_values[$column_name] :
+           $this->passive_column_values[$column_name];
   }
 
   /**
@@ -271,11 +289,18 @@ abstract class record extends \cenozo\base_object
    */
   public function __set( $column_name, $value )
   {
-    // make sure the column exists
+    // make sure the column exists and isn't the primary key
     if( !static::column_exists( $column_name ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
+    if( static::get_primary_key_name() == $column_name )
+      throw lib::create( 'exception\runtime',
+        'Tried to write to record\'s primary key which is forbidden',
+        __METHOD__ );
 
-    $this->column_values[$column_name] = $value;
+    if( $this->passive_column_values[$column_name] != $value )
+      $this->active_column_values[$column_name] = $value;
+    else if( array_key_exists( $column_name, $this->active_column_values ) )
+      unset( $this->active_column_values[$column_name] );
   }
 
   /**
@@ -297,7 +322,7 @@ abstract class record extends \cenozo\base_object
     $columns = array();
     if( is_null( $select ) )
     {
-      $columns = $this->column_values;
+      $columns = $this->passive_column_values;
     }
     else
     {
@@ -321,6 +346,11 @@ abstract class record extends \cenozo\base_object
         }
       }
     }
+
+    // apply the active values
+    foreach( array_keys( $columns ) as $column )
+      if( array_key_exists( $column, $this->active_column_values ) )
+        $columns[$column] = $this->active_column_values[$column];
 
     return $columns;
   }
@@ -377,9 +407,11 @@ abstract class record extends \cenozo\base_object
     // make sure the foreign table exists
     if( !static::db()->table_exists( $subject ) )
       throw lib::create( 'exception\runtime',
-        sprintf( 'Call to undefined function: %s::%s() (foreign table does not exist)',
+        sprintf( 'Call to undefined function: %s::%s() (foreign table "%s" does not exist)',
                  get_called_class(),
-                 $name ), __METHOD__ );
+                 $name,
+                 $subject ),
+        __METHOD__ );
 
     if( 'add' == $action )
     { // calling: add_<record>( $ids )
@@ -470,7 +502,7 @@ abstract class record extends \cenozo\base_object
   protected function get_record( $record_type )
   {
     // check the primary key value
-    if( is_null( $this->column_values[static::$primary_key_name] ) )
+    if( is_null( $this->passive_column_values[static::$primary_key_name] ) )
     {
       log::warning( 'Tried to query record with no id.' );
       return NULL;
@@ -487,8 +519,9 @@ abstract class record extends \cenozo\base_object
 
     // create the record using the foreign key
     $record = NULL;
-    if( !is_null( $this->column_values[$foreign_key_name] ) )
-      $record = lib::create( 'database\\'.$record_type, $this->column_values[$foreign_key_name] );
+    $foreign_key_value = $this->{ $foreign_key_name };
+    if( !is_null( $foreign_key_value ) )
+      $record = lib::create( 'database\\'.$record_type, $foreign_key_value );
 
     return $record;
   }
@@ -520,11 +553,11 @@ abstract class record extends \cenozo\base_object
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
     $table_name = static::get_table_name();
-    $primary_key_name = sprintf( '%s.%s', $table_name, static::$primary_key_name );
+    $full_primary_key_name = sprintf( '%s.%s', $table_name, static::$primary_key_name );
     $foreign_class_name = lib::get_class_name( 'database\\'.$record_type );
 
     // check the primary key value
-    $primary_key_value = $this->column_values[static::$primary_key_name];
+    $primary_key_value = $this->passive_column_values[static::$primary_key_name];
     if( is_null( $primary_key_value ) )
     {
       log::warning( 'Tried to query record with no id.' );
@@ -558,7 +591,7 @@ abstract class record extends \cenozo\base_object
       {
         $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
         if( !$modifier->has_join( $table_name ) )
-          $modifier->join( $table_name, $column_name, $primary_key_name );
+          $modifier->join( $table_name, $column_name, $full_primary_key_name );
         $modifier->where( $column_name, '=', $primary_key_value );
       }
       else // MANY_TO_MANY
@@ -571,9 +604,9 @@ abstract class record extends \cenozo\base_object
         if( !$modifier->has_join( $table_name ) )
         {
           $modifier->cross_join( $joining_table_name, $foreign_key_name, $joining_foreign_key_name );
-          $modifier->cross_join( $table_name, $joining_primary_key_name, $primary_key_name );
+          $modifier->cross_join( $table_name, $joining_primary_key_name, $full_primary_key_name );
         }
-        $modifier->where( $primary_key_name, '=', $primary_key_value );
+        $modifier->where( $full_primary_key_name, '=', $primary_key_value );
       }
 
       if( 'count' == $return_alternate )
@@ -649,7 +682,7 @@ abstract class record extends \cenozo\base_object
     $table_name = static::get_table_name();
 
     // check the primary key value
-    $primary_key_value = $this->column_values[static::$primary_key_name];
+    $primary_key_value = $this->passive_column_values[static::$primary_key_name];
     if( is_null( $primary_key_value ) )
     {
       log::warning( 'Tried to query record with no id.' );
@@ -717,7 +750,7 @@ abstract class record extends \cenozo\base_object
     }
 
     // check the primary key value
-    $primary_key_value = $this->column_values[static::$primary_key_name];
+    $primary_key_value = $this->passive_column_values[static::$primary_key_name];
     if( is_null( $primary_key_value ) )
     {
       log::warning( 'Tried to query record with no id.' );
@@ -1132,12 +1165,24 @@ abstract class record extends \cenozo\base_object
   protected $read_only = false;
 
   /**
-   * Holds all table column values in an associative array where key=>value is
-   * column_name=>column_value
+   * Holds all table column values in an associative array where keys are the column names and values
+   * are the column values.  These values only change of the save() method is called at which time all
+   * active values overwrite passive values.
    * @var array
    * @access private
    */
-  private $column_values = array();
+  private $passive_column_values = array();
+
+  /**
+   * Holds all modified table column values in an associative array where keys are the column names and
+   * values are the column values.  These values change whenever the active record (object) is changed.
+   * Column values will only appear in this array when they have been changed and are different from the
+   * passive values.
+   * 
+   * @var array
+   * @access private
+   */
+  private $active_column_values = array();
 
   /**
    * Determines whether or not to include create_timestamp and update_timestamp when writing
