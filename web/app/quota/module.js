@@ -43,7 +43,10 @@ define( {
     },
     sex: { title: 'Gender' },
     age_group_range: { title: 'Age Group' },
-    population: { title: 'Population' }
+    population: {
+      title: 'Population',
+      type: 'number'
+    }
   },
   defaultOrder: {
     column: 'site',

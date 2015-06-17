@@ -1558,6 +1558,21 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
         }
 
+        // create filters for each column in the module's columnList
+        for( var property in object.columnList ) {
+          if( angular.isUndefined( object.columnList[property].type ) )
+            object.columnList[property].type = 'string';
+
+          var type = object.columnList[property].type;
+          if( 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type ) ) {
+            object.columnList[property].filter = 'cnDatetime:' + type;
+          } else if( 'rank' == type ) {
+            object.columnList[property].filter = 'cnOrdinal';
+          } else if( 'boolean' == type ) {
+            object.columnList[property].filter = 'cnYesNo';
+          }
+        }
+
         var moduleProperties = cenozoApp.moduleList[module.subject];
         object.children = angular.copy( moduleProperties.children );
         object.choosing = angular.copy( moduleProperties.choosing );

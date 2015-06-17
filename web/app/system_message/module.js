@@ -54,7 +54,7 @@ define( {
     },
     expiry: {
       title: 'Expiry',
-      filter: 'cnDatetime:datetime'
+      type: 'datetime'
     }
   },
   defaultOrder: {

@@ -33,15 +33,15 @@ define( {
   columnList: {
     accept: {
       title: 'Accept',
-     filter: 'cnYesNo'
+     type: 'boolean'
     },
     written: {
       title: 'Written',
-      filter: 'cnYesNo'
+      type: 'boolean'
     },
     date: {
       title: 'Date',
-      filter: 'cnDatetime:date'
+      type: 'date'
     }
   },
   defaultOrder: {

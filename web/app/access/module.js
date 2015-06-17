@@ -49,7 +49,7 @@ define( {
     },
     datetime: {
       title: 'Last Used',
-      filter: 'cnDatetime:datetimesecond'
+      type: 'datetimesecond'
     }
   },
   defaultOrder: {

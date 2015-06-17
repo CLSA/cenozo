@@ -28,10 +28,19 @@ define( {
     }
   },
   columnList: {
-    rank: { title: 'Rank', filter: 'cnOrdinal' },
+    rank: {
+      title: 'Rank',
+      type: 'rank'
+    },
     name: { title: 'Name' },
-    participant_count: { title: 'Participants' },
-    role_count: { title: 'Roles' }
+    participant_count: {
+      title: 'Participants',
+      type: 'number'
+    },
+    role_count: {
+      title: 'Roles',
+      type: 'number'
+    }
   },
   defaultOrder: {
     column: 'rank',

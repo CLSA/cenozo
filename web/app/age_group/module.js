@@ -24,9 +24,11 @@ define( {
   columnList: {
     lower: {
       title: 'Lower Age',
+      type: 'number'
     },
     upper: {
       title: 'Upper Age',
+      type: 'number'
     }
   },
   defaultOrder: {

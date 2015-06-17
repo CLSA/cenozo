@@ -50,7 +50,7 @@ define( {
   columnList: {
     rank: {
       title: 'Rank',
-      filter: 'cnOrdinal'
+      type: 'rank'
     },
     number: {
       title: 'Number'
@@ -61,7 +61,7 @@ define( {
     active: {
       column: 'phone.active',
       title: 'Active',
-      filter: 'cnYesNo'
+      type: 'boolean'
     }
   },
   defaultOrder: {

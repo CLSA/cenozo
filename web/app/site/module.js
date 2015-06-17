@@ -51,11 +51,17 @@ define( {
       column: 'site.name',
       title: 'Name'
     },
-    role_count: { title: 'Roles' },
-    user_count: { title: 'Users' },
+    role_count: {
+      title: 'Roles',
+      type: 'number'
+    },
+    user_count: {
+      title: 'Users',
+      type: 'number'
+    },
     last_access_datetime: {
       title: 'Last Access',
-      filter: 'cnDatetime:datetime'
+      type: 'datetime'
     }
   },
   defaultOrder: {

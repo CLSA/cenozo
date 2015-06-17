@@ -33,14 +33,20 @@ define( {
     name: { title: 'Name' },
     active: {
       title: 'Active',
-      filter: 'cnYesNo'
+      type: 'boolean'
     },
     locked: {
       title: 'Locked',
-      filter: 'cnYesNo'
+      type: 'boolean'
     },
-    participant_count: { title: 'Participants' },
-    user_count: { title: 'Users' }
+    participant_count: {
+      title: 'Participants',
+      type: 'number'
+    },
+    user_count: {
+      title: 'Users',
+      type: 'number'
+    }
   },
   defaultOrder: {
     column: 'name',

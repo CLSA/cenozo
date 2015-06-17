@@ -73,7 +73,7 @@ define( {
   columnList: {
     rank: {
       title: 'Rank',
-      filter: 'cnOrdinal'
+      type: 'rank'
     },
     city: {
       title: 'City'
@@ -84,11 +84,11 @@ define( {
     active: {
       column: 'address.active',
       title: 'Active',
-      filter: 'cnYesNo'
+      type: 'boolean'
     },
     available: {
       title: 'Available',
-      filter: 'cnYesNo'
+      type: 'boolean'
     }
   },
   defaultOrder: {

@@ -112,7 +112,7 @@ define( {
     active: {
       column: 'participant.active',
       title: 'Active',
-      filter: 'cnYesNo'
+      type: 'boolean'
     },
     source: {
       column: 'source.name',

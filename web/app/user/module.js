@@ -46,35 +46,34 @@ define( {
   columnList: {
     name: {
       column: 'user.name',
-      title: 'Name',
-      filter: 'cnCrop:16'
+      title: 'Name'
     },
     active: {
       column: 'user.active',
       title: 'Active',
-      filter: 'cnYesNo'
+      type: 'boolean'
     },
     first_name: {
       column: 'user.first_name',
-      title: 'First',
-      filter: 'cnCrop:16'
+      title: 'First'
     },
     last_name: {
       column: 'user.last_name',
-      title: 'Last',
-      filter: 'cnCrop:16'
+      title: 'Last'
     },
     role_count: {
       title: 'Roles',
+      type: 'number',
       help: 'The number of roles the user has access to for this application.'
     },
     site_count: {
       title: 'Sites',
+      type: 'number',
       help: 'The number of sites the user has access to for this application.'
     },
     last_access_datetime: {
       title: 'Last Access',
-      filter: 'cnDatetime:datetime',
+      type: 'datetime',
       help: 'The last time the user accessed this application.'
     }
   },

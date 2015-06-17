@@ -12,7 +12,10 @@ define( {
   },
   columnList: {
     name: { title: 'Name' },
-    event_count: { title: 'Events' },
+    event_count: {
+      title: 'Events',
+      type: 'number'
+    },
     description: { title: 'Description' }
   },
   defaultOrder: {

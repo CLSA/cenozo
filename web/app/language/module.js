@@ -36,10 +36,16 @@ define( {
     active: {
       column: 'language.active',
       title: 'Active',
-      filter: 'cnYesNo'
+      type: 'boolean'
     },
-    participant_count: { title: 'Participants' },
-    user_count: { title: 'Users' }
+    participant_count: {
+      title: 'Participants',
+      type: 'number'
+    },
+    user_count: {
+      title: 'Users',
+      type: 'number'
+    }
   },
   defaultOrder: {
     column: 'active',

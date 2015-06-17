@@ -25,11 +25,11 @@ define( {
     },
     start_datetime: {
       title: 'Start',
-      filter: 'cnDatetime:datetimesecond'
+      type: 'datetimesecond'
     },
     end_datetime: {
       title: 'End',
-      filter: 'cnDatetime:datetimesecond'
+      type: 'datetimesecond'
     }
   },
   defaultOrder: {

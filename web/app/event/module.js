@@ -24,7 +24,7 @@ define( {
     },
     datetime: {
       title: 'Date & Time',
-      filter: 'cnDatetime:datetimesecond'
+      type: 'datetimesecond'
     }
   },
   defaultOrder: {

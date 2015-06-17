@@ -62,11 +62,20 @@ define( {
     version: { title: 'Version' },
     release_based: {
       title: 'Release Based',
-      filter: 'cnYesNo'
+      type: 'boolean'
     },
-    participant_count: { title: 'Participants' },
-    site_count: { title: 'Sites' },
-    user_count: { title: 'Users' }
+    participant_count: {
+      title: 'Participants',
+      type: 'number'
+    },
+    site_count: {
+      title: 'Sites',
+      type: 'number'
+    },
+    user_count: {
+      title: 'Users',
+      type: 'number'
+    }
   },
   defaultOrder: {
     column: 'name',

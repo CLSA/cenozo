@@ -15,7 +15,10 @@ define( {
       column: 'role.name',
       title: 'Name'
     },
-    user_count: { title: 'Users' }
+    user_count: {
+      title: 'Users',
+      type: 'number'
+    }
   },
   defaultOrder: {
     column: 'name',
