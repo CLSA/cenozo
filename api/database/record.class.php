@@ -33,13 +33,14 @@ abstract class record extends \cenozo\base_object
     $util_class_name = lib::get_class_name( 'util' );
 
     // set the default value for all columns
-    foreach( static::get_column_names() as $name )
+    $table_name = static::get_table_name();
+    foreach( static::db()->get_column_names( $table_name ) as $name )
     {
       // If the default is CURRENT_TIMESTAMP, or if there is a DATETIME column by the name
       // 'start_datetime' then make the default the current date and time.
       // Because mysql does not allow setting the default value for a DATETIME column to be
       // NOW() we need to set the default here manually
-      $default = static::db()->get_column_default( static::get_table_name(), $name );
+      $default = static::db()->get_column_default( $table_name, $name );
       $this->column_values[$name] =
         'start_datetime' == $name || ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) ?
         $util_class_name::get_datetime_object() : $default;
@@ -48,12 +49,12 @@ abstract class record extends \cenozo\base_object
     if( NULL != $id )
     {
       // make sure this table has an id column as the primary key
-      $primary_key_names = static::db()->get_primary_key( static::get_table_name() );
+      $primary_key_names = static::db()->get_primary_key( $table_name );
       if( 0 == count( $primary_key_names ) )
       {
         throw lib::create( 'exception\runtime',
           'Unable to create record, single-column primary key "'.
-          static::get_primary_key_name().'" does not exist.', __METHOD__ );
+          static::$primary_key_name.'" does not exist.', __METHOD__ );
       }
       else if( 1 < count( $primary_key_names ) )
       {
@@ -61,15 +62,15 @@ abstract class record extends \cenozo\base_object
           'Unable to create record, multiple primary keys found (there may be tables in the '.
           'application and framework with the same name).', __METHOD__ );
       }
-      else if( static::get_primary_key_name() != $primary_key_names[0] )
+      else if( static::$primary_key_name != $primary_key_names[0] )
       {
         throw lib::create( 'exception\runtime',
           'Unable to create record, the table\'s primary key name, "'.
           $primary_key_names[0].'", does not match the class\' primary key name, "'.
-          static::get_primary_key_name().'".', __METHOD__ );
+          static::$primary_key_name.'".', __METHOD__ );
       }
 
-      $this->column_values[static::get_primary_key_name()] = intval( $id );
+      $this->column_values[static::$primary_key_name] = intval( $id );
     }
 
     // now load the data from the database
@@ -91,13 +92,15 @@ abstract class record extends \cenozo\base_object
     $util_class_name = lib::get_class_name( 'util' );
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    if( isset( $this->column_values[static::get_primary_key_name()] ) )
+    if( isset( $this->column_values[static::$primary_key_name] ) )
     {
+      $table_name = static::get_table_name();
+
       // not using a modifier here is ok since we're forcing id to be an integer
       $sql = sprintf( 'SELECT * FROM %s WHERE %s = %d',
-                      static::get_table_name(),
-                      static::get_primary_key_name(),
-                      $this->column_values[static::get_primary_key_name()] );
+                      $table_name,
+                      static::$primary_key_name,
+                      $this->column_values[static::$primary_key_name] );
 
       $row = static::db()->get_row( $sql );
 
@@ -105,9 +108,9 @@ abstract class record extends \cenozo\base_object
       {
         throw lib::create( 'exception\runtime',
           sprintf( 'Load failed to find record for %s with %s = %d.',
-                   static::get_table_name(),
-                   static::get_primary_key_name(),
-                   $this->column_values[static::get_primary_key_name()] ),
+                   $table_name,
+                   static::$primary_key_name,
+                   $this->column_values[static::$primary_key_name] ),
           __METHOD__ );
       }
       else
@@ -118,7 +121,7 @@ abstract class record extends \cenozo\base_object
           { // convert data types
             if( !is_null( $value ) )
             {
-              $type = static::db()->get_column_data_type( static::get_table_name(), $column );
+              $type = static::db()->get_column_data_type( $table_name, $column );
               if( 'int' == $type ) $value = intval( $value );
               else if( 'float' == $type ) $value = floatval( $value );
               else if( 'tinyint' == $type ) $value = (boolean) $value;
@@ -151,7 +154,8 @@ abstract class record extends \cenozo\base_object
       return;
     }
 
-    $primary_key_value = $this->column_values[static::get_primary_key_name()];
+    $table_name = static::get_table_name();
+    $primary_key_value = $this->column_values[static::$primary_key_name];
 
     // building the SET list since it is identical for inserts and updates
     $sets = '';
@@ -170,9 +174,9 @@ abstract class record extends \cenozo\base_object
     // now add the rest of the columns
     foreach( $this->column_values as $column => $value )
     {
-      if( static::get_primary_key_name() != $column )
+      if( static::$primary_key_name != $column )
       {
-        $type = static::db()->get_column_data_type( static::get_table_name(), $column );
+        $type = static::db()->get_column_data_type( $table_name, $column );
 
         // convert from datetime object to mysql-valid datetime string
         if( 'datetime' == $type ) $value = static::db()->format_datetime( $value );
@@ -191,16 +195,16 @@ abstract class record extends \cenozo\base_object
       is_null( $primary_key_value ) ?
       'INSERT INTO %s SET %s' :
       'UPDATE %s SET %s WHERE %s = %d',
-      static::get_table_name(),
+      $table_name,
       $sets,
-      static::get_primary_key_name(),
+      static::$primary_key_name,
       $primary_key_value );
 
     static::db()->execute( $sql );
 
     // get the new primary key
     if( is_null( $primary_key_value ) )
-      $this->column_values[static::get_primary_key_name()] = static::db()->insert_id();
+      $this->column_values[static::$primary_key_name] = static::db()->insert_id();
   }
 
   /**
@@ -219,7 +223,7 @@ abstract class record extends \cenozo\base_object
     }
 
     // check the primary key value
-    if( is_null( $this->column_values[static::get_primary_key_name()] ) )
+    if( is_null( $this->column_values[static::$primary_key_name] ) )
     {
       log::warning( 'Tried to delete record with no id.' );
       return;
@@ -229,8 +233,8 @@ abstract class record extends \cenozo\base_object
     // not using a modifier here is ok since we're forcing id to be an integer
     $sql = sprintf( 'DELETE FROM %s WHERE %s = %d',
                     static::get_table_name(),
-                    static::get_primary_key_name(),
-                    $this->column_values[static::get_primary_key_name()] );
+                    static::$primary_key_name,
+                    $this->column_values[static::$primary_key_name] );
     static::db()->execute( $sql );
   }
 
@@ -297,8 +301,10 @@ abstract class record extends \cenozo\base_object
     }
     else
     {
+      $table_name = static::get_table_name();
+
       // select this table if one hasn't been selected yet
-      if( is_null( $select->get_table_name() ) ) $select->from( static::get_table_name() );
+      if( is_null( $select->get_table_name() ) ) $select->from( $table_name );
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( sprintf( '%s.id', $this->get_table_name() ), '=', $this->id );
       $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
@@ -308,7 +314,7 @@ abstract class record extends \cenozo\base_object
       {
         if( static::column_exists( $column ) && !is_null( $value ) )
         {
-          $type = static::db()->get_column_data_type( static::get_table_name(), $column );
+          $type = static::db()->get_column_data_type( $table_name, $column );
           if( 'int' == $type ) $columns[$column] = intval( $value );
           else if( 'float' == $type ) $columns[$column] = floatval( $value );
           else if( 'tinyint' == $type ) $columns[$column] = (boolean) $value;
@@ -464,7 +470,7 @@ abstract class record extends \cenozo\base_object
   protected function get_record( $record_type )
   {
     // check the primary key value
-    if( is_null( $this->column_values[static::get_primary_key_name()] ) )
+    if( is_null( $this->column_values[static::$primary_key_name] ) )
     {
       log::warning( 'Tried to query record with no id.' );
       return NULL;
@@ -514,11 +520,11 @@ abstract class record extends \cenozo\base_object
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
     $table_name = static::get_table_name();
-    $primary_key_name = sprintf( '%s.%s', $table_name, static::get_primary_key_name() );
+    $primary_key_name = sprintf( '%s.%s', $table_name, static::$primary_key_name );
     $foreign_class_name = lib::get_class_name( 'database\\'.$record_type );
 
     // check the primary key value
-    $primary_key_value = $this->column_values[static::get_primary_key_name()];
+    $primary_key_value = $this->column_values[static::$primary_key_name];
     if( is_null( $primary_key_value ) )
     {
       log::warning( 'Tried to query record with no id.' );
@@ -640,9 +646,10 @@ abstract class record extends \cenozo\base_object
     }
 
     $util_class_name = lib::get_class_name( 'util' );
+    $table_name = static::get_table_name();
 
     // check the primary key value
-    $primary_key_value = $this->column_values[static::get_primary_key_name()];
+    $primary_key_value = $this->column_values[static::$primary_key_name];
     if( is_null( $primary_key_value ) )
     {
       log::warning( 'Tried to query record with no id.' );
@@ -657,7 +664,7 @@ abstract class record extends \cenozo\base_object
       log::err(
         sprintf( 'Tried to add %s to a %s without a many-to-many relationship between the two.',
                  $util_class_name::prulalize( $record_type ),
-                 static::get_table_name() ) );
+                 $table_name ) );
       return;
     }
 
@@ -685,7 +692,7 @@ abstract class record extends \cenozo\base_object
                ? 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
                : 'INSERT INTO %s (%s_id, %s_id) VALUES %s',
                $joining_table_name,
-               static::get_table_name(),
+               $table_name,
                $record_type,
                $values ) );
   }
@@ -710,12 +717,14 @@ abstract class record extends \cenozo\base_object
     }
 
     // check the primary key value
-    $primary_key_value = $this->column_values[static::get_primary_key_name()];
+    $primary_key_value = $this->column_values[static::$primary_key_name];
     if( is_null( $primary_key_value ) )
     {
       log::warning( 'Tried to query record with no id.' );
       return;
     }
+
+    $table_name = static::get_table_name();
 
     // this method varies depending on the relationship type
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
@@ -725,7 +734,7 @@ abstract class record extends \cenozo\base_object
       log::err(
         sprintf( 'Tried to remove a %s from a %s, but there is no relationship between the two.',
                  $record_type,
-                 static::get_table_name() ) );
+                 $table_name ) );
     }
     else if( $relationship_class_name::ONE_TO_ONE == $relationship )
     {
@@ -733,7 +742,7 @@ abstract class record extends \cenozo\base_object
         sprintf( 'Tried to remove a %s from a %s, but there is a '.
                  'one-to-one relationship between the two.',
                  $record_type,
-                 static::get_table_name() ) );
+                 $table_name ) );
     }
     else if( $relationship_class_name::ONE_TO_MANY == $relationship )
     {
@@ -745,7 +754,7 @@ abstract class record extends \cenozo\base_object
       $joining_table_name = static::get_joining_table_name( $record_type );
 
       $modifier = lib::create( 'database\modifier' );
-      $column_name = sprintf( '%s.%s_id', $joining_table_name, static::get_table_name() );
+      $column_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
       $modifier->where( $column_name, '=', $primary_key_value );
       $column_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
       $modifier->where( $column_name, '=', $id );
@@ -760,7 +769,7 @@ abstract class record extends \cenozo\base_object
       // if we get here then the relationship type is unknown
       log::crit(
         sprintf( 'Record %s has an unknown relationship to %s.',
-                 static::get_table_name(),
+                 $table_name,
                  $record_type ) );
     }
   }
@@ -838,6 +847,7 @@ abstract class record extends \cenozo\base_object
     if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
 
+    $table_name = static::get_table_name();
     $return_value = 'count' == $return_alternate ? 0 : array();
 
     // create the select statement one isn't provided
@@ -850,7 +860,7 @@ abstract class record extends \cenozo\base_object
       }
       else if( 'object' == $return_alternate )
       {
-        $select->add_column( static::get_primary_key_name() );
+        $select->add_column( static::$primary_key_name );
       }
       else
       {
@@ -859,7 +869,7 @@ abstract class record extends \cenozo\base_object
     }
 
     // select this table if one hasn't been selected yet
-    if( is_null( $select->get_table_name() ) ) $select->from( static::get_table_name() );
+    if( is_null( $select->get_table_name() ) ) $select->from( $table_name );
 
     if( 'count' == $return_alternate )
     {
@@ -892,7 +902,7 @@ abstract class record extends \cenozo\base_object
           {
             if( static::column_exists( $column ) && !is_null( $value ) )
             {
-              $type = static::db()->get_column_data_type( static::get_table_name(), $column );
+              $type = static::db()->get_column_data_type( $table_name, $column );
               if( 'int' == $type ) $return_value[$index][$column] = intval( $value );
               else if( 'float' == $type ) $return_value[$index][$column] = floatval( $value );
               else if( 'tinyint' == $type ) $return_value[$index][$column] = (boolean) $value;
@@ -947,6 +957,7 @@ abstract class record extends \cenozo\base_object
    */
   public static function get_unique_record( $column, $value )
   {
+    $table_name = static::get_table_name();
     $record = NULL;
 
     // if the column is ID then there's no need to search for unique keys
@@ -961,7 +972,7 @@ abstract class record extends \cenozo\base_object
 
     // make sure the column(s) complete a unique key
     $found = false;
-    foreach( static::db()->get_unique_keys( static::get_table_name() ) as $unique_key )
+    foreach( static::db()->get_unique_keys( $table_name ) as $unique_key )
     {
       if( count( $columns ) == count( $unique_key ) )
       {
@@ -982,13 +993,13 @@ abstract class record extends \cenozo\base_object
     if( !$found )
     {
       log::err( 'Trying to get unique record from table "'.
-                static::get_table_name().'" using invalid columns.' );
+                $table_name.'" using invalid columns.' );
     }
     else
     {
       $select = lib::create( 'database\select' );
-      $select->from( static::get_table_name() );
-      $select->add_column( static::get_primary_key_name() );
+      $select->from( $table_name );
+      $select->add_column( static::$primary_key_name );
       $modifier = lib::create( 'database\modifier' );
       foreach( $columns as $col => $val ) $modifier->where( $col, '=', $val );
 
