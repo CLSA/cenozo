@@ -308,8 +308,8 @@ cenozo.directive( 'cnChange', [
  * that the user is currently logged into).
  */
 cenozo.directive( 'cnClock', [
-  '$document', '$interval', '$window', 'CnSession', 'CnModalTimezoneFactory',
-  function( $document, $interval, $window, CnSession, CnModalTimezoneFactory ) {
+  '$interval', '$window', 'CnSession', 'CnModalTimezoneFactory',
+  function( $interval, $window, CnSession, CnModalTimezoneFactory ) {
     return {
       restrict: 'E',
       templateUrl: cenozo.baseUrl + '/app/cenozo/clock.tpl.html',
@@ -321,7 +321,7 @@ cenozo.directive( 'cnClock', [
             } ).show().then( function( response ) {
               if( response && response != CnSession.user.timezone ) {
                 // blank content
-                $document.getElementById( 'view' ).innerHTML = '';
+                document.getElementById( 'view' ).innerHTML = '';
                 CnSession.setTimezone( response ).then(
                   function success() { $window.location.reload(); },
                   CnSession.errorHandler
@@ -408,8 +408,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$document', 'CnSession', 'CnModalDatetimeFactory', 'CnHttpFactory', 'CnModalMessageFactory',
-  function( $document, CnSession, CnModalDatetimeFactory, CnHttpFactory, CnModalMessageFactory ) {
+  'CnSession', 'CnModalDatetimeFactory', 'CnHttpFactory', 'CnModalMessageFactory',
+  function( CnSession, CnModalDatetimeFactory, CnHttpFactory, CnModalMessageFactory ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -423,7 +423,7 @@ cenozo.directive( 'cnRecordAdd', [
         $scope.check = function( property ) {
           // test the format
           var item = angular.element(
-            angular.element( $document.querySelector( '#' + property ) ) ).
+            angular.element( document.querySelector( '#' + property ) ) ).
               scope().$parent.innerForm.name;
           if( item ) {
             var valid = $scope.model.testFormat( property, $scope.record[property] );
@@ -436,7 +436,7 @@ cenozo.directive( 'cnRecordAdd', [
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
             var scope = angular.element(
-              angular.element( $document.querySelector( 'form' ) ) ).scope().$$childHead;
+              angular.element( document.querySelector( 'form' ) ) ).scope().$$childHead;
             while( null !== scope ) {
               var item = scope.$$childHead.$$nextSibling.$parent.innerForm.name;
               item.$dirty = true;
@@ -460,7 +460,7 @@ cenozo.directive( 'cnRecordAdd', [
                   // report which inputs are included in the conflict
                   for( var i = 0; i < response.data.length; i++ ) {
                     var elementScope = angular.element( angular.element(
-                      $document.querySelector( '#' + response.data[i] ) ) ).scope();
+                      document.querySelector( '#' + response.data[i] ) ) ).scope();
                     if( angular.isDefined( elementScope ) ) {
                       var item = elementScope.$parent.innerForm.name;
                       item.$error.conflict = true;
@@ -654,8 +654,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  '$document', 'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnSession',
-  function( $document, CnModalDatetimeFactory, CnModalMessageFactory, CnSession ) {
+  'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnSession',
+  function( CnModalDatetimeFactory, CnModalMessageFactory, CnSession ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
@@ -717,7 +717,7 @@ cenozo.directive( 'cnRecordView', [
             // test the format
             if( !$scope.model.testFormat( property, $scope.model.viewModel.record[property] ) ) {
               var item = angular.element(
-                angular.element( $document.querySelector( '#' + property ) ) ).
+                angular.element( document.querySelector( '#' + property ) ) ).
                   scope().$parent.innerForm.name;
               item.$error.format = true;
               cenozo.updateFormElement( item, true );
@@ -732,7 +732,7 @@ cenozo.directive( 'cnRecordView', [
                     $scope.model.reloadState( $scope.model.viewModel.record );
                   } else {
                     var scope = angular.element(
-                      angular.element( $document.querySelector( '#' + property ) ) ).scope();
+                      angular.element( document.querySelector( '#' + property ) ) ).scope();
                     // if a conflict or format has been resolved then clear it throughout the form
                     var currentItem = scope.$parent.innerForm.name;
                     if( currentItem.$error.conflict ) {
@@ -767,7 +767,7 @@ cenozo.directive( 'cnRecordView', [
                     // report which inputs are included in the conflict
                     for( var i = 0; i < response.data.length; i++ ) {
                       var item = angular.element(
-                        angular.element( $document.querySelector( '#' + response.data[i] ) ) ).
+                        angular.element( document.querySelector( '#' + response.data[i] ) ) ).
                           scope().$parent.innerForm.name;
                       item.$error.conflict = true;
                       cenozo.updateFormElement( item, true );
