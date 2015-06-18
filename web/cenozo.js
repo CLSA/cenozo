@@ -45,9 +45,6 @@ cenozo.isMoment = function( variable ) {
   return angular.isObject( variable ) && variable._isAMomentObject;
 };
 
-var test = moment();
-cenozo.isMoment( test );
-
 // Defines which modules are part of the framework
 cenozo.modules = function( modules ) { this.moduleList = angular.copy( modules ); };
 
@@ -1125,7 +1122,10 @@ cenozo.factory( 'CnSession', [
         if( angular.isUndefined( longForm ) ) longForm = false;
         if( 'datetimesecond' == format || 'datetime' == format || 'date' == format) {
           format = ( longForm ? 'dddd, MMMM Do' : 'MMM D' ) + ', YYYY';
-          if( 'date' != format ) format += ' @ ' + this.getTimeFormat( 'datetimesecond' == format );
+          if( 'date' != format ) {
+            format += ' @ ' + this.getTimeFormat( 'datetimesecond' == format );
+            if( longForm ) format += ' z';
+          }
         } else if( 'timesecond' == format || 'time' == format ) {
           format = this.getTimeFormat( 'timesecond' == format );
           if( longForm ) format += ' z';
@@ -1146,12 +1146,12 @@ cenozo.factory( 'CnSession', [
         $state.go( 'error.' + type );
       };
 
-      this.formatValue = function formatValue( value, type, longFormat ) {
-        if( angular.isUndefined( longFormat ) ) longFormat = false;
+      this.formatValue = function formatValue( value, type, longForm ) {
+        if( angular.isUndefined( longForm ) ) longForm = false;
         var formatted = value;
         if( null !== value && cenozo.isDateType( type ) ) {
           if( !cenozo.isMoment( value ) ) value = moment( value );
-          formatted = value.format( this.getDatetimeFormat( type, longFormat ) );
+          formatted = value.tz( this.user.timezone ).format( this.getDatetimeFormat( type, longForm ) );
         }
         return formatted;
       };
@@ -1264,7 +1264,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.restrict = function( column, restrict ) {
           var self = this;
           var columnList = this.parentModel.columnList;
-          if( angular.isUndefined( restrict ) ) {
+          if( !restrict ) {
             if( angular.isDefined( columnList[column].restrict ) ) delete columnList[column].restrict;
           } else {
             columnList[column].restrict = angular.copy( restrict );
@@ -2552,6 +2552,8 @@ cenozo.service( 'CnModalRestrictFactory', [
 
       if( angular.isUndefined( this.comparison ) || null === this.comparison ) this.comparison = { test: '<=>' };
       this.preExisting = angular.isDefined( this.comparison.value );
+      if( this.preExisting )
+        this.formattedValue = CnSession.formatValue( this.comparison.value, this.type, true );
       this.show = function() {
         return $modal.open( {
           backdrop: 'static',
