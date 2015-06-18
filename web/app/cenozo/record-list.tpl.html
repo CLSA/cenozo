@@ -27,8 +27,7 @@
                tooltip="To remove click the filter, then remove button"
                tooltip-placement="bottom"
                tooltip-popup-delay="750">
-              {{ column.restrict.test | cnComparator }}
-              "{{ column.restrict.value }}"
+              {{ column.restrict.test | cnComparator }} {{ column.restrict.formattedValue }}
             </p>
           </div>
         </td>

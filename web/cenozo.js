@@ -35,9 +35,18 @@ String.prototype.ucWords = function() {
   return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
 }
 
+// determines whether a type is one of the datetime types
 cenozo.isDateType = function( type ) {        
   return 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type );
 };
+
+// determines whether a variable is a moment object
+cenozo.isMoment = function( variable ) {
+  return angular.isObject( variable ) && variable._isAMomentObject;
+};
+
+var test = moment();
+cenozo.isMoment( test );
 
 // Defines which modules are part of the framework
 cenozo.modules = function( modules ) { this.moduleList = angular.copy( modules ); };
@@ -125,7 +134,7 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
 
 // Used to set up the routing for a module
 cenozo.updateFormElement = function updateFormElement( item, clean ) {
-  if( undefined === clean ) clean = false;
+  if( angular.isUndefined( clean ) ) clean = false;
   var invalid = false;
   for( var error in item.$error ) {
     invalid = true === item.$error[error];
@@ -169,7 +178,7 @@ cenozo.controller( 'HeaderCtrl', [
     function updateTime() {
       var now = moment();
       now.tz( CnSession.user.timezone );
-      $scope.time = now.format( CnSession.getTimeFormat( false ) + ' z' );
+      $scope.time = now.format( CnSession.getDatetimeFormat( 'time', true ) );
     }
 
     $scope.isCollapsed = false;
@@ -340,7 +349,7 @@ cenozo.directive( 'cnClock', [
           function updateTime() {
             var now = moment();
             now.tz( CnSession.user.timezone );
-            scope.time = now.format( CnSession.getTimeFormat( false ) + ' z' );
+            scope.time = now.format( CnSession.getDatetimeFormat( 'time', true ) );
           }
 
           updateTime();
@@ -502,7 +511,7 @@ cenozo.directive( 'cnRecordAdd', [
           } ).show().then( function( response ) {
             if( false !== response ) {
               $scope.record[input.key] = response;
-              $scope.formattedRecord[input.key] = $scope.model.formatValue( input.key, response );
+              $scope.formattedRecord[input.key] = CnSession.formatValue( response, input.type, true );
             }
           } );
         };
@@ -949,21 +958,8 @@ cenozo.filter( 'cnDatetime', [
       if( angular.isUndefined( input ) || null === input ) {
         output = '(none)';
       } else {
-        // convert cenozo-based datetime formats
-        if( 'datetimesecond' == format ) {
-          format = 'MMM D, YYYY @ ' + CnSession.getTimeFormat( true );
-        } else if( 'datetime' == format ) {
-          format = 'MMM D, YYYY @ ' + CnSession.getTimeFormat( false );
-        } else if( 'date' == format ) {
-          format = 'MMM D, YYYY';
-        } else if( 'timesecond' == format ) {
-          format = CnSession.getTimeFormat( true );
-        } else if( 'time' == format ) {
-          format = CnSession.getTimeFormat( false );
-        }
-
-        if( 'object' !== typeof input || angular.isUndefined( input.format ) ) input = moment( input );
-        output = input.tz( CnSession.user.timezone ).format( format );
+        if( !cenozo.isMoment( input ) ) input = moment( input );
+        output = input.tz( CnSession.user.timezone ).format( CnSession.getDatetimeFormat( format, false ) );
       }
       return output;
     };
@@ -1119,10 +1115,22 @@ cenozo.factory( 'CnSession', [
       };
 
       this.getTimeFormat = function getTimeFormat( seconds ) {
-        if( undefined == seconds ) seconds = false;
+        if( angular.isUndefined( seconds ) ) seconds = false;
         return self.user.use_12hour_clock ?
-          'h:mm' + ( seconds ? ':ss' : '' ) + ' a' :
+          'h:mm' + ( seconds ? ':ss' : '' ) + 'a' :
           'H:mm' + ( seconds ? ':ss' : '' );
+      };
+
+      this.getDatetimeFormat = function getDatetimeFormat( format, longForm ) {
+        if( angular.isUndefined( longForm ) ) longForm = false;
+        if( 'datetimesecond' == format || 'datetime' == format || 'date' == format) {
+          format = ( longForm ? 'dddd, MMMM Do' : 'MMM D' ) + ', YYYY';
+          if( 'date' != format ) format += ' @ ' + this.getTimeFormat( 'datetimesecond' == format );
+        } else if( 'timesecond' == format || 'time' == format ) {
+          format = this.getTimeFormat( 'timesecond' == format );
+          if( longForm ) format += ' z';
+        }
+        return format;
       };
 
       this.setTimezone = function setTimezone( timezone ) {
@@ -1138,25 +1146,12 @@ cenozo.factory( 'CnSession', [
         $state.go( 'error.' + type );
       };
 
-      this.formatValue = function formatValue( value, type ) {
+      this.formatValue = function formatValue( value, type, longFormat ) {
+        if( angular.isUndefined( longFormat ) ) longFormat = false;
         var formatted = value;
-        if( null !== value ) {
-          if( type ) {
-            if( cenozo.isDateType( type ) ) {
-              var obj = moment( value );
-              if( 'datetimesecond' == type || 'datetime' == type ) {
-                obj.tz( this.user.timezone );
-                formatted = obj.format(
-                  'dddd, MMMM Do, YYYY @ ' + this.getTimeFormat( 'datetimesecond' == type ) + ' z' );
-              } else {
-                if( 'date' == type ) formatted = obj.format( 'dddd, MMMM Do, YYYY' );
-                else if( 'timesecond' == type )
-                  formatted = obj.format( this.getTimeFormat( true ) + ' z' );
-                else /*if( 'time' == type )*/
-                  formatted = obj.format( this.getTimeFormat( false ) + ' z' );
-              }
-            }
-          }
+        if( null !== value && cenozo.isDateType( type ) ) {
+          if( !cenozo.isMoment( value ) ) value = moment( value );
+          formatted = value.format( this.getDatetimeFormat( type, longFormat ) );
         }
         return formatted;
       };
@@ -1272,7 +1267,9 @@ cenozo.factory( 'CnBaseListFactory', [
           if( angular.isUndefined( restrict ) ) {
             if( angular.isDefined( columnList[column].restrict ) ) delete columnList[column].restrict;
           } else {
-            columnList[column].restrict = restrict;
+            columnList[column].restrict = angular.copy( restrict );
+            columnList[column].restrict.formattedValue =
+              CnSession.formatValue( columnList[column].restrict.value, columnList[column].type, false );
           }
           this.listRecords( true ).then(
             function success() { self.paginationFactory.currentPage = 1; },
@@ -1452,7 +1449,7 @@ cenozo.factory( 'CnBaseViewFactory', [
                 }
               } else {
                 this.formattedRecord[property] =
-                  this.parentModel.formatValue( property, this.record[property] );
+                  CnSession.formatValue( this.record[property], input.type, true );
               }
             }
           } else {
@@ -1615,7 +1612,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          * get the identifier based on what is in the model's module
          */
         object.getIdentifierFromRecord = function( record, valueOnly ) {
-          var valueOnly = undefined === valueOnly ? false : valueOnly;
+          var valueOnly = angular.isUndefined( valueOnly ) ? false : valueOnly;
           var column = angular.isDefined( module.identifier.column ) ? module.identifier.column : 'id';
           return valueOnly || 'id' == column ? String( record[column] ) : column + '=' + record[column];
         };
@@ -2073,14 +2070,6 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @return promise
          */
         object.getMetadata = function() { return this.loadMetadata(); };
-
-        /**
-         * Applies special formatting to a record's value
-         */
-        object.formatValue = function formatValue( property, value ) {
-          var input = this.inputList[property];
-          return input ? CnSession.formatValue( value, input.type ) : value;
-        };
 
         /**
          * Determines whether a value meets its property's format
@@ -2586,7 +2575,7 @@ cenozo.service( 'CnModalRestrictFactory', [
                 } ).show().then( function( response ) {
                   if( false !== response ) {
                     self.comparison.value = response;
-                    self.formattedValue = CnSession.formatValue( self.comparison.value, self.type );
+                    self.formattedValue = CnSession.formatValue( self.comparison.value, self.type, true );
                   }
                 } );
               };
@@ -2758,9 +2747,9 @@ cenozo.factory( 'CnPaginationFactory',
  */
 cenozo.config( [
   '$controllerProvider', '$compileProvider', '$filterProvider', '$provide',
-  '$stateProvider', '$urlRouterProvider',
+  '$stateProvider', '$tooltipProvider', '$urlRouterProvider',
   function( $controllerProvider, $compileProvider, $filterProvider, $provide,
-            $stateProvider, $urlRouterProvider ) {
+            $stateProvider, $tooltipProvider, $urlRouterProvider ) {
     // create an object containing all providers
     cenozo.providers.controller = $controllerProvider.register;
     cenozo.providers.directive = $compileProvider.directive;
@@ -2813,6 +2802,9 @@ cenozo.config( [
       $injector.get( '$state' ).go( 'error.404' );
       return $location.path();
     } );
+
+    // make tooltip delay default to 200ms
+    $tooltipProvider.options( { popupDelay: 500 } );
   }
 ] );
 
