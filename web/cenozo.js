@@ -639,29 +639,17 @@ cenozo.directive( 'cnRecordList', [
           scope.removeColumns.push( 'site' );
         scope.columnArray = scope.model.getColumnArray( scope.removeColumns );
 
-        if( angular.isDefined( scope.model.listModel.restrict ) ) {
-          scope.addRestrict = function( column ) {
-            var column = scope.columnArray.findByProperty( 'key', column );
-            CnModalRestrictFactory.instance( {
-              name: scope.model.name,
-              column: column.title,
-              type: column.type,
-              restrict: column.restrict ? { test: column.restrict.test, value: column.restrict.value } : null
-            } ).show().then( function( restrict ) {
-              // only update the list model's restriction if we are defining a new restriction
-              var defineNew = !angular.isObject( column.restrict ) && null !== restrict;
-              // or changing the pre-existing restriction
-              var changeExisting = angular.isObject( column.restrict ) &&
-                                   ( null === restrict ||
-                                     restrict.test != column.restrict.test ||
-                                     restrict.value != column.restrict.value );
-
-              console.log( [restrict, column.restrict] );
-              if( defineNew || changeExisting )
-                scope.model.listModel.restrict( column.key, restrict );
-            } );
-          };
-        }
+        scope.setRestrictList = function( column ) {
+          var column = scope.columnArray.findByProperty( 'key', column );
+          CnModalRestrictFactory.instance( {
+            name: scope.model.name,
+            column: column.title,
+            type: column.type,
+            restrictList: angular.copy( column.restrictList )
+          } ).show().then( function( restrictList ) {
+            scope.model.listModel.setRestrictList( column.key, restrictList );
+          } );
+        };
 
         // get the total number of columns in the table
         scope.numColumns = scope.columnArray.length;
@@ -1246,8 +1234,8 @@ cenozo.factory( 'CnBaseAddFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseListFactory', [
-  'CnSession', 'CnPaginationFactory', 'CnHttpFactory',
-  function( CnSession, CnPaginationFactory, CnHttpFactory ) {
+  '$filter', 'CnSession', 'CnPaginationFactory', 'CnHttpFactory',
+  function( $filter, CnSession, CnPaginationFactory, CnHttpFactory ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
@@ -1276,23 +1264,47 @@ cenozo.factory( 'CnBaseListFactory', [
           }
         };
 
-        object.restrict = function( column, restrict ) {
+        object.setRestrictList = function( column, newList ) {
           var self = this;
-          var columnList = this.parentModel.columnList;
-          if( !restrict ) {
-            if( angular.isDefined( columnList[column].restrict ) ) delete columnList[column].restrict;
+
+          // sanity check
+          if( !angular.isArray( newList ) )
+            throw 'Tried to set restrict list for column "' + column + '" to a non-array';
+
+          // see if the new list is different from the current list
+          var changed = false;
+          var currentList = this.parentModel.columnList[column].restrictList;
+          if( newList.length != currentList.length ) {
+            changed = true;
           } else {
-            columnList[column].restrict = {
-              test: restrict.test,
-              value: restrict.value,
-              formattedValue: CnSession.formatValue( restrict.value, columnList[column].type, false ),
-              description: 'TODO: describe all filters'
-            };
+            for( var i = 0; i < newList.length; i++ ) {
+              if( i >= currentList.length ||
+                  newList[i].test != currentList[i].test ||
+                  newList[i].value != currentList[i].value ) {
+                changed = true;
+                break;
+              }
+            }
           }
-          this.listRecords( true ).then(
-            function success() { self.paginationFactory.currentPage = 1; },
-            CnSession.errorHandler
-          );
+
+          // if the new list is different then re-describe and re-list records
+          if( changed ) {
+            this.parentModel.columnList[column].restrictList = angular.copy( newList );
+            currentList = this.parentModel.columnList[column].restrictList;
+
+            // describe each restriction
+            for( var i = 0; i < currentList.length; i++ ) {
+              currentList[i].description =
+                $filter( 'cnComparator' )( currentList[i].test ) + ' ' +
+                CnSession.formatValue( currentList[i].value, this.parentModel.columnList[column].type, false );
+            }
+
+            // describe the restrict list
+            this.listRecords( true ).then(
+              function success() { self.paginationFactory.currentPage = 1; },
+              CnSession.errorHandler
+            );
+          }
         };
 
         // should be called by pagination when the page is changed
@@ -1601,8 +1613,10 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
         }
 
-        // create filters for each column in the module's columnList
+        // create empty restrict lists and filters for each column in the module's columnList
         for( var property in object.columnList ) {
+          object.columnList[property].restrictList = [];
+
           if( angular.isUndefined( object.columnList[property].type ) )
             object.columnList[property].type = 'string';
 
@@ -1782,25 +1796,27 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
 
-            if( angular.isDefined( list[key].restrict ) && null !== list[key].restrict ) {
-              var test = list[key].restrict.test;
-              var value = list[key].restrict.value;
-              if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
+            if( 'list' == type ) {
+              for( var i = 0; i < list[key].restrictList.length; i++ ) {
+                var test = list[key].restrictList[i].test;
+                var value = list[key].restrictList[i].value;
+                if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
 
-              // determine the column name
-              var column = key;
-              if( angular.isDefined( list[key].column ) ) {
-                var columnParts = list[key].column.split( '.' );
-                var len = columnParts.length;
-                column = list[key].column;
-                if( 2 < len ) column = columnParts[len-2] + '.' + columnParts[len-1];
+                // determine the column name
+                var column = key;
+                if( angular.isDefined( list[key].column ) ) {
+                  var columnParts = list[key].column.split( '.' );
+                  var len = columnParts.length;
+                  column = list[key].column;
+                  if( 2 < len ) column = columnParts[len-2] + '.' + columnParts[len-1];
+                }
+
+                whereList.push( {
+                  column: column,
+                  operator: test,
+                  value: value
+                } );
               }
-
-              whereList.push( {
-                column: column,
-                operator: test,
-                value: value
-              } );
             }
           }
 
@@ -2594,16 +2610,17 @@ cenozo.service( 'CnModalRestrictFactory', [
       this.name = null;
       this.column = null;
       this.type = 'string';
-      this.restrict = null;
+      this.restrictList = [];
       angular.extend( this, params );
 
       // handle datetime types
-      if( cenozo.isDatetimeType( this.type ) ) this.formattedValue = null;
+      if( 0 == this.restrictList.length ) this.restrictList = [ { test: '<=>' } ];
+      this.preExisting = angular.isDefined( this.restrictList[0].value );
+      this.formattedValueList = [];
+      for( var i = 0; i < this.restrictList.length; i++ )
+        if( angular.isDefined( this.restrictList[i].value ) )
+          this.formattedValueList[i] = CnSession.formatValue( this.restrictList[i].value, this.type, true );
 
-      if( angular.isUndefined( this.restrict ) || null === this.restrict ) this.restrict = { test: '<=>' };
-      this.preExisting = angular.isDefined( this.restrict.value );
-      if( this.preExisting )
-        this.formattedValue = CnSession.formatValue( this.restrict.value, this.type, true );
       this.show = function() {
         return $modal.open( {
           backdrop: 'static',
@@ -2612,24 +2629,38 @@ cenozo.service( 'CnModalRestrictFactory', [
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-restrict.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
-            $scope.local.ok = function( restrict ) {
-              $modalInstance.close( angular.isDefined( restrict.value ) ? restrict : null );
+            $scope.local.ok = function( restrictList ) {
+              // remove restrictions with no values before returning the list
+              for( var i = restrictList.length - 1; i >= 0; i-- )
+                if( angular.isUndefined( restrictList[i].value ) )
+                  restrictList.splice( i, 1 );
+
+              $modalInstance.close( restrictList );
             };
-            $scope.local.remove = function() { $modalInstance.close( null ); };
+            $scope.local.remove = function() { $modalInstance.close( [] ); };
             $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
 
+            $scope.local.addRestriction = function() {
+              $scope.local.restrictList.push( { test: '<=>', logic: 'and' } );
+            };
+
+            $scope.local.removeRestriction = function( index ) {
+              $scope.local.restrictList.splice( index, 1 );
+            };
+
             if( cenozo.isDatetimeType( $scope.local.type ) ) {
-              $scope.local.selectDatetime = function() {
+              $scope.local.selectDatetime = function( index ) {
                 var self = this;
                 CnModalDatetimeFactory.instance( {
                   title: this.column,
-                  date: this.restrict.value,
+                  date: this.restrictList[index].value,
                   pickerType: this.type,
                   emptyAllowed: true
                 } ).show().then( function( response ) {
                   if( false !== response ) {
-                    self.restrict.value = response;
-                    self.formattedValue = CnSession.formatValue( self.restrict.value, self.type, true );
+                    self.restrictList[index].value = response;
+                    self.formattedValueList[index] =
+                      CnSession.formatValue( self.restrictList[index].value, self.type, true );
                   }
                 } );
               };

@@ -17,21 +17,24 @@
                            'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
             </button>
             <button class="btn btn-narrow"
-                    ng-class="column.restrict ? 'btn-success' : 'btn-info'"
+                    ng-class="0 < column.restrictList.length ? 'btn-success' : 'btn-info'"
                     ng-if="column.allowRestrict"
-                    ng-click="addRestrict( column.key )"
-                    tooltip="{{ column.restrict ?
-                                'Click to modify existing filter applied to the ' + column.title + ' column' :
-                                'Click to filter this list based on the ' + column.title + ' column' }}">
+                    ng-click="setRestrictList( column.key )"
+                    tooltip="{{ 0 < column.restrictList.length ?
+                                'Click to modify existing restriction applied to the ' + column.title + ' column' :
+                                'Click to restrict this list based on the ' + column.title + ' column' }}">
               <i class="glyphicon glyphicon-filter"></i>
             </button>
           </div>
-          <div class="text-center text-info full-width" ng-if="column.restrict">
-            <p class="restrict"
-               tooltip="To remove click the filter, then remove button"
+          <div class="text-center text-info full-width" ng-if="0 < column.restrictList.length">
+            <p class="restrict-description"
+               ng-if="0 < column.restrictList.length"
+               tooltip="To remove the restriction click the filter icon, then the remove button"
                tooltip-placement="bottom"
                tooltip-popup-delay="750">
-              {{ column.restrict.description }}
+              <span ng-repeat="restrict in column.restrictList">
+                {{ ( restrict.logic ? restrict.logic + ' ' : '' ) + restrict.description }}<br ng-if"!$last">
+              </span>
             </p>
           </div>
         </td>
@@ -63,6 +66,8 @@
           <td class="tiny" ng-if="model.deleteEnabled && !model.chooseEnabled">
             <div>
               <button class="btn btn-xs btn-danger"
+                      tooltip="Delete {{ model.name.singular }}"
+                      tooltip-placement="left"
                       cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
                                          item in the {{ model.name.singular }} list?"
                       cn-really-click="deleteRecord( record )"
