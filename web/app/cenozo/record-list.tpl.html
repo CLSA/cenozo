@@ -16,9 +16,13 @@
                  ng-class="model.listModel.order.reverse ?
                            'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
             </button>
-            <button class="btn btn-narrow btn-info"
+            <button class="btn btn-narrow"
+                    ng-class="column.restrict ? 'btn-success' : 'btn-info'"
                     ng-if="column.allowRestrict"
-                    ng-click="addRestrict( column.key )">
+                    ng-click="addRestrict( column.key )"
+                    tooltip="{{ column.restrict ?
+                                'Click to modify existing filter applied to the ' + column.title + ' column' :
+                                'Click to filter this list based on the ' + column.title + ' column' }}">
               <i class="glyphicon glyphicon-filter"></i>
             </button>
           </div>
@@ -27,7 +31,7 @@
                tooltip="To remove click the filter, then remove button"
                tooltip-placement="bottom"
                tooltip-popup-delay="750">
-              {{ column.restrict.test | cnComparator }} {{ column.restrict.formattedValue }}
+              {{ column.restrict.description }}
             </p>
           </div>
         </td>

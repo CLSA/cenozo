@@ -36,7 +36,7 @@ String.prototype.ucWords = function() {
 }
 
 // determines whether a type is one of the datetime types
-cenozo.isDateType = function( type ) {        
+cenozo.isDatetimeType = function( type ) {        
   return 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type );
 };
 
@@ -646,9 +646,19 @@ cenozo.directive( 'cnRecordList', [
               name: scope.model.name,
               column: column.title,
               type: column.type,
-              comparison: column.restrict
-            } ).show().then( function( comparison ) {
-              scope.model.listModel.restrict( column.key, comparison );
+              restrict: column.restrict ? { test: column.restrict.test, value: column.restrict.value } : null
+            } ).show().then( function( restrict ) {
+              // only update the list model's restriction if we are defining a new restriction
+              var defineNew = !angular.isObject( column.restrict ) && null !== restrict;
+              // or changing the pre-existing restriction
+              var changeExisting = angular.isObject( column.restrict ) &&
+                                   ( null === restrict ||
+                                     restrict.test != column.restrict.test ||
+                                     restrict.value != column.restrict.value );
+
+              console.log( [restrict, column.restrict] );
+              if( defineNew || changeExisting )
+                scope.model.listModel.restrict( column.key, restrict );
             } );
           };
         }
@@ -1120,17 +1130,18 @@ cenozo.factory( 'CnSession', [
 
       this.getDatetimeFormat = function getDatetimeFormat( format, longForm ) {
         if( angular.isUndefined( longForm ) ) longForm = false;
-        if( 'datetimesecond' == format || 'datetime' == format || 'date' == format) {
-          format = ( longForm ? 'dddd, MMMM Do' : 'MMM D' ) + ', YYYY';
+        var resolvedFormat = format;
+        if( 'datetimesecond' == format || 'datetime' == format || 'date' == format ) {
+          resolvedFormat = ( longForm ? 'dddd, MMMM Do' : 'MMM D' ) + ', YYYY';
           if( 'date' != format ) {
-            format += ' @ ' + this.getTimeFormat( 'datetimesecond' == format );
-            if( longForm ) format += ' z';
+            resolvedFormat += ' @ ' + this.getTimeFormat( 'datetimesecond' == format );
+            if( longForm ) resolvedFormat += ' z';
           }
         } else if( 'timesecond' == format || 'time' == format ) {
-          format = this.getTimeFormat( 'timesecond' == format );
-          if( longForm ) format += ' z';
+          resolvedFormat = this.getTimeFormat( 'timesecond' == format );
+          if( longForm ) resolvedFormat += ' z';
         }
-        return format;
+        return resolvedFormat;
       };
 
       this.setTimezone = function setTimezone( timezone ) {
@@ -1149,9 +1160,13 @@ cenozo.factory( 'CnSession', [
       this.formatValue = function formatValue( value, type, longForm ) {
         if( angular.isUndefined( longForm ) ) longForm = false;
         var formatted = value;
-        if( null !== value && cenozo.isDateType( type ) ) {
-          if( !cenozo.isMoment( value ) ) value = moment( value );
-          formatted = value.tz( this.user.timezone ).format( this.getDatetimeFormat( type, longForm ) );
+        if( cenozo.isDatetimeType( type ) ) {
+          if( null === value ) {
+            formatted = '(none)';
+          } else {
+            if( !cenozo.isMoment( value ) ) value = moment( value );
+            formatted = value.tz( this.user.timezone ).format( this.getDatetimeFormat( type, longForm ) );
+          }
         }
         return formatted;
       };
@@ -1267,9 +1282,12 @@ cenozo.factory( 'CnBaseListFactory', [
           if( !restrict ) {
             if( angular.isDefined( columnList[column].restrict ) ) delete columnList[column].restrict;
           } else {
-            columnList[column].restrict = angular.copy( restrict );
-            columnList[column].restrict.formattedValue =
-              CnSession.formatValue( columnList[column].restrict.value, columnList[column].type, false );
+            columnList[column].restrict = {
+              test: restrict.test,
+              value: restrict.value,
+              formattedValue: CnSession.formatValue( restrict.value, columnList[column].type, false ),
+              description: 'TODO: describe all filters'
+            };
           }
           this.listRecords( true ).then(
             function success() { self.paginationFactory.currentPage = 1; },
@@ -1589,7 +1607,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             object.columnList[property].type = 'string';
 
           var type = object.columnList[property].type;
-          if( cenozo.isDateType( type ) ) {
+          if( cenozo.isDatetimeType( type ) ) {
             object.columnList[property].filter = 'cnDatetime:' + type;
           } else if( 'rank' == type ) {
             object.columnList[property].filter = 'cnOrdinal';
@@ -2249,6 +2267,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       // service vars which can be defined by the contructor's params
       this.timezone = null;
       this.date = null;
+      this.dateBackup = null;
       this.viewingDate = null;
       this.title = 'Title';
       this.pickerType = 'datetime';
@@ -2292,12 +2311,26 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.select = function( when ) {
         if( 'now' == when ) {
           this.date = moment().tz( CnSession.user.timezone );
+          // make seconds 0 if the type does not track seconds
+          if( 'datetimesecond' != this.pickerType && 'timeseond' != this.pickerType ) this.date.second( 0 );
         } else if( 'today' == when ) {
           if( null === this.date ) this.date = moment();
           this.date.year( moment().year() ).month( moment().month() ).date( moment().date() );
         } else {
-          if( null === when ) this.date = null;
-          else this.date.year( when.year() ).month( when.month() ).date( when.date() );
+          if( null === when ) {
+            this.dateBackup = angular.copy( this.date );
+            this.date = null;
+          } else {
+            if( null === this.date ) {
+              this.date = moment().tz( CnSession.user.timezone );
+              this.date.hour( this.hourSliderValue );
+              this.date.minute( this.minuteSliderValue );
+              this.date.second(
+                'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType ?
+                this.secondSliderValue : 0 );
+            }
+            this.date.year( when.year() ).month( when.month() ).date( when.date() );
+          }
         }
 
         if( null !== this.date ) this.viewingDate = moment( this.date );
@@ -2416,15 +2449,32 @@ cenozo.service( 'CnModalDatetimeFactory', [
             };
             $scope.local.cancel = function() { $modalInstance.close( false ); };
 
+            function guaranteeDate() {
+              if( null === $scope.local.date ) {
+                $scope.local.date = null !== $scope.local.dateBackup
+                                  ? angular.copy( $scope.local.dateBackup )
+                                  : moment().tz( CnSession.user.timezone );
+                $scope.local.date.hour( $scope.local.hourSliderValue );
+                $scope.local.date.minute( $scope.local.minuteSliderValue );
+                $scope.local.date.second(
+                  'datetimesecond' == $scope.local.pickerType || 'timesecond' == $scope.local.pickerType ?
+                  $scope.local.secondSliderValue : 0 );
+                $scope.local.update();
+              }
+            }
+
             $scope.$watch( 'local.hourSliderValue', function( hour ) {
+              guaranteeDate();
               $scope.local.date.hour( hour );
               $scope.local.updateDisplayTime();
             } );
             $scope.$watch( 'local.minuteSliderValue', function( minute ) {
+              guaranteeDate();
               $scope.local.date.minute( minute );
               $scope.local.updateDisplayTime();
             } );
             $scope.$watch( 'local.secondSliderValue', function( second ) {
+              guaranteeDate();
               $scope.local.date.second( second );
               $scope.local.updateDisplayTime();
             } );
@@ -2544,16 +2594,16 @@ cenozo.service( 'CnModalRestrictFactory', [
       this.name = null;
       this.column = null;
       this.type = 'string';
-      this.comparison = null;
+      this.restrict = null;
       angular.extend( this, params );
 
       // handle datetime types
-      if( cenozo.isDateType( this.type ) ) this.formattedValue = null;
+      if( cenozo.isDatetimeType( this.type ) ) this.formattedValue = null;
 
-      if( angular.isUndefined( this.comparison ) || null === this.comparison ) this.comparison = { test: '<=>' };
-      this.preExisting = angular.isDefined( this.comparison.value );
+      if( angular.isUndefined( this.restrict ) || null === this.restrict ) this.restrict = { test: '<=>' };
+      this.preExisting = angular.isDefined( this.restrict.value );
       if( this.preExisting )
-        this.formattedValue = CnSession.formatValue( this.comparison.value, this.type, true );
+        this.formattedValue = CnSession.formatValue( this.restrict.value, this.type, true );
       this.show = function() {
         return $modal.open( {
           backdrop: 'static',
@@ -2562,22 +2612,24 @@ cenozo.service( 'CnModalRestrictFactory', [
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-restrict.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
-            $scope.local.ok = function( comparison ) { $modalInstance.close( comparison ); };
+            $scope.local.ok = function( restrict ) {
+              $modalInstance.close( angular.isDefined( restrict.value ) ? restrict : null );
+            };
             $scope.local.remove = function() { $modalInstance.close( null ); };
             $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
 
-            if( cenozo.isDateType( $scope.local.type ) ) {
+            if( cenozo.isDatetimeType( $scope.local.type ) ) {
               $scope.local.selectDatetime = function() {
                 var self = this;
                 CnModalDatetimeFactory.instance( {
                   title: this.column,
-                  date: this.comparison.value,
+                  date: this.restrict.value,
                   pickerType: this.type,
                   emptyAllowed: true
                 } ).show().then( function( response ) {
                   if( false !== response ) {
-                    self.comparison.value = response;
-                    self.formattedValue = CnSession.formatValue( self.comparison.value, self.type, true );
+                    self.restrict.value = response;
+                    self.formattedValue = CnSession.formatValue( self.restrict.value, self.type, true );
                   }
                 } );
               };

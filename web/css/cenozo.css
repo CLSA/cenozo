@@ -10,7 +10,7 @@ blockquote { font-size: 100%; }
 .btn-muted { background-color: #eaeaea; }
 .full-page { width: 100vw !important; height: 100vh !important; }
 .full-width { width: 100% !important; }
-.restrict, .pagination { margin: 0; }
+.restrict, .pagination { font-size: 80%; margin: 0; }
 .input-group { width: 100%; }
 .checkbox { display: inline-block; font-weight: normal; }
 .form-body { padding-top: 1em; background: #f9f9f9; }
@@ -27,6 +27,7 @@ blockquote { font-size: 100%; }
 .no-rounding { border-radius: 0px !important; }
 .col-slim { padding-left: 0px; padding-right: 0px; }
 .nopadding { padding: 0px; }
+.tooltip-inner { width: 350px; }
 
 .breadcrumb {
   padding-top: 15px;

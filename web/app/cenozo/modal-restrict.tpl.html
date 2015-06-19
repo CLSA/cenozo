@@ -1,4 +1,4 @@
-<form ng-submit="local.ok( local.comparison )" class="noselect">
+<form ng-submit="local.ok( local.restrict )" class="noselect">
   <div class="modal-header">
     <h4 class="modal-title">Restrict listing</h4>
   </div>
@@ -10,9 +10,9 @@
     <hr />
     <div ng-switch-when="string">
       <div class="form-group">
-        <label for="comparison" class="col-sm-3 control-label">Comparison</label>
+        <label for="restrict" class="col-sm-3 control-label">Comparison</label>
         <div class="col-sm-9">
-          <select name="comparison" ng-model="local.comparison.test" class="form-control">
+          <select name="restrict" ng-model="local.restrict.test" class="form-control">
             <option value="&lt;=&gt;">is</option>
             <option value="&lt;&gt;">is not</option>
             <option value="like">is like</option>
@@ -24,7 +24,7 @@
         <label for="value" class="col-sm-3 control-label">Value</label>
         <div class="col-sm-9">
           <input name="value"
-                 ng-model="local.comparison.value"
+                 ng-model="local.restrict.value"
                  class="form-control"
                  type="text"
                  placeholder="restriction value" />
@@ -35,11 +35,11 @@
       <div class="form-group">
         <label for="value" class="col-sm-3 control-label">Value</label>
         <div class="col-sm-9">
-          <select name="comparison" ng-model="local.comparison.test" class="form-control">
+          <select name="restrict" ng-model="local.restrict.test" class="form-control">
             <option value="&lt;=&gt;">is</option>
             <option value="&lt;&gt;">is not</option>
           </select>
-          <select name="value" ng-model="local.comparison.value" class="form-control">
+          <select name="value" ng-model="local.restrict.value" class="form-control">
             <option value="1">Yes</option>
             <option value="0">No</option>
           </select>
@@ -48,9 +48,9 @@
     </div>
     <div ng-switch-when="number">
       <div class="form-group">
-        <label for="comparison" class="col-sm-3 control-label">Comparison</label>
+        <label for="restrict" class="col-sm-3 control-label">Comparison</label>
         <div class="col-sm-9">
-          <select name="comparison" ng-model="local.comparison.test" class="form-control">
+          <select name="restrict" ng-model="local.restrict.test" class="form-control">
             <option value="&lt;=&gt;">is</option>
             <option value="&lt;&gt;">is not</option>
             <option value="&gt;">greater than</option>
@@ -64,7 +64,7 @@
         <label for="value" class="col-sm-3 control-label">Value</label>
         <div class="col-sm-9">
           <input name="value"
-                 ng-model="local.comparison.value"
+                 ng-model="local.restrict.value"
                  class="form-control"
                  type="text"
                  placeholder="restriction number" />
@@ -73,9 +73,9 @@
     </div>
     <div ng-switch-when="rank">
       <div class="form-group">
-        <label for="comparison" class="col-sm-3 control-label">Comparison</label>
+        <label for="restrict" class="col-sm-3 control-label">Comparison</label>
         <div class="col-sm-9">
-          <select name="comparison" ng-model="local.comparison.test" class="form-control">
+          <select name="restrict" ng-model="local.restrict.test" class="form-control">
             <option value="&lt;=&gt;">is</option>
             <option value="&lt;&gt;">is not</option>
             <option value="&gt;">greater than</option>
@@ -89,7 +89,7 @@
         <label for="value" class="col-sm-3 control-label">Value</label>
         <div class="col-sm-9">
           <input name="value"
-                 ng-model="local.comparison.value"
+                 ng-model="local.restrict.value"
                  class="form-control"
                  type="text"
                  placeholder="restriction rank" />
@@ -98,9 +98,9 @@
     </div>
     <div ng-switch-default>
       <div class="form-group">
-        <label for="comparison" class="col-sm-3 control-label">Comparison</label>
+        <label for="restrict" class="col-sm-3 control-label">Comparison</label>
         <div class="col-sm-9">
-          <select name="comparison" ng-model="local.comparison.test" class="form-control">
+          <select name="restrict" ng-model="local.restrict.test" class="form-control">
             <option value="&lt;=&gt;">is</option>
             <option value="&lt;&gt;">is not</option>
             <option value="&gt;">greater than</option>
