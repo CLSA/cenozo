@@ -2661,6 +2661,15 @@ cenozo.service( 'CnModalRestrictFactory', [
                     self.restrictList[index].value = response;
                     self.formattedValueList[index] =
                       CnSession.formatValue( self.restrictList[index].value, self.type, true );
+
+                    // set non-nullable options disabled/enabled status
+                    var optionList = document.querySelector( 'select[name="test' + index + '"]' ).
+                                     getElementsByClassName( 'not-nullable' );
+                    for( var i = 0; i < optionList.length; i++ ) optionList[i].disabled = null === response;
+                    
+                    // if null was select then make sure to select <=> or <>
+                    if( null === response && 0 > ['<=>','<>'].indexOf( self.restrictList[index].test ) )
+                      self.restrictList[index].test = '<=>';
                   }
                 } );
               };
