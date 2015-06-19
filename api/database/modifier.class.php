@@ -765,10 +765,13 @@ class modifier extends \cenozo\base_object
 
           if( 'NULL' == $value )
           {
-            if( '=' == $where['operator'] ) $statement = $where['column'].' IS NULL';
-            else if( '!=' == $where['operator'] ) $statement = $where['column'].' IS NOT NULL';
-            else log::err(
-                   'Tried to compare to NULL value with "'.$where['operator'].'" operator.' );
+            if( '=' == $where['operator'] )
+              $statement = $where['column'].' IS NULL';
+            else if( '!=' == $where['operator'] || '<>' == $where['operator'] )
+              $statement = $where['column'].' IS NOT NULL';
+            else if( '<=>' == $where['operator'] )
+              $statement = $where['column'].' <=> NULL';
+            else log::err( 'Tried to compare to NULL value with "'.$where['operator'].'" operator.' );
           }
           else
           {
