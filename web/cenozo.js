@@ -2084,9 +2084,11 @@ cenozo.factory( 'CnBaseModelFactory', [
 
               // add the parent subject and identifier to the service path if we are in the view state
               var path = self.getServiceCollectionPath();
+
               if( 'view' == self.getActionFromState() ) {
                 var parent = self.getParentSubjectAndIdentifier();
-                path = [ parent.subject, parent.identifier, path ].join( '/' );
+                if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) )
+                  path = [ parent.subject, parent.identifier, path ].join( '/' );
               }
 
               CnHttpFactory.instance( {
