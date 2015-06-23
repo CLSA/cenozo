@@ -385,10 +385,8 @@ final class bootstrap
 
     $url_parts = explode( '/', $this->path );
     if( 0 < strlen( $this->path ) )
-    {
       foreach( $url_parts as $index => $part )
-        if( 0 == $index % 2 ) $class_name .= sprintf( '\%s', $part );
-    }
+        if( 0 == $index % 2 && 0 < strlen( $part ) ) $class_name .= sprintf( '\%s', $part );
 
     // If the method is GET and we have an odd number of url parts (ie: collection)
     // then change method to QUERY

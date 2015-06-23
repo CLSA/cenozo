@@ -35,8 +35,9 @@ abstract class service extends \cenozo\base_object
     $session = lib::create( 'business\session' );
     $session->set_use_transaction( true );
 
-    $this->process_path( $path );
-    $this->status = lib::create( 'service\status', self::is_method( $method ) ? 200 : 405 );
+    $code = $this->process_path( $path ) ? 200 : 400;
+    if( 400 != $code && !self::is_method( $method ) ) $code = 405;
+    $this->status = lib::create( 'service\status', $code );
     $this->path = $path;
     $this->method = strtoupper( $method );
     $this->arguments = $args;
@@ -256,10 +257,12 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * Converts the service's path into a a list of collection and resource names
+   * Converts the service's path into a a list of collection and resource names.
    * 
+   * This method will return false if there was a problem processing the path
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $path
+   * @return boolean
    * @access protected
    */
   protected function process_path( $path )
@@ -273,6 +276,8 @@ abstract class service extends \cenozo\base_object
       $module_index = 0;
       foreach( explode( '/', $path ) as $index => $part )
       {
+        if( !$part ) return false;
+
         if( 0 == $index % 2 )
         {
           $this->collection_name_list[] = $part;
@@ -290,6 +295,8 @@ abstract class service extends \cenozo\base_object
         else $this->resource_value_list[] = $part;
       }
     }
+
+    return true;
   }
 
   /**
