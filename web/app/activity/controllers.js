@@ -4,14 +4,12 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ActivityListCtrl', [
-    '$scope', 'CnActivityModelFactory',
-    function( $scope, CnActivityModelFactory ) {
+    '$scope', 'CnActivityModelFactory', 'CnSession',
+    function( $scope, CnActivityModelFactory, CnSession ) {
       $scope.model = CnActivityModelFactory.root;
       $scope.model.listModel.onList().then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 

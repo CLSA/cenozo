@@ -4,27 +4,23 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ParticipantListCtrl', [
-    '$scope', 'CnParticipantModelFactory',
-    function( $scope, CnParticipantModelFactory ) {
+    '$scope', 'CnParticipantModelFactory', 'CnSession',
+    function( $scope, CnParticipantModelFactory, CnSession ) {
       $scope.model = CnParticipantModelFactory.root;
       $scope.model.listModel.onList().then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ParticipantViewCtrl', [
-    '$scope', 'CnParticipantModelFactory',
-    function( $scope, CnParticipantModelFactory ) {
+    '$scope', 'CnParticipantModelFactory', 'CnSession',
+    function( $scope, CnParticipantModelFactory, CnSession ) {
       $scope.model = CnParticipantModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 

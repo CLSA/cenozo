@@ -2,15 +2,6 @@ define( cenozo.getServicesIncludeList( 'application' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnApplicationAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
@@ -21,24 +12,25 @@ define( cenozo.getServicesIncludeList( 'application' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationViewFactory',
-    cenozo.getListModelInjectionList( 'application' ).concat( function() {
+    cenozo.getListModelInjectionList( 'application' ).concat( [ '$state', 'CnSession', function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
+      var $state = args[args.length-2];
+      var CnSession = args[args.length-1];
       var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
+    } ] )
   );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationModelFactory', [
-    'CnBaseModelFactory', 'CnApplicationListFactory', 'CnApplicationAddFactory', 'CnApplicationViewFactory',
+    'CnBaseModelFactory', 'CnApplicationListFactory', 'CnApplicationViewFactory',
     'CnHttpFactory',
-    function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationAddFactory, CnApplicationViewFactory,
+    function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationViewFactory,
               CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnApplicationAddFactory.instance( this );
         this.listModel = CnApplicationListFactory.instance( this );
         this.viewModel = CnApplicationViewFactory.instance( this );
 

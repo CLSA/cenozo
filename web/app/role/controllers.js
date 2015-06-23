@@ -4,14 +4,12 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'RoleListCtrl', [
-    '$scope', 'CnRoleModelFactory',
-    function( $scope, CnRoleModelFactory ) {
+    '$scope', 'CnRoleModelFactory', 'CnSession',
+    function( $scope, CnRoleModelFactory, CnSession ) {
       $scope.model = CnRoleModelFactory.root;
       $scope.model.listModel.onList().then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 

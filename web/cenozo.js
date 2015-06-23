@@ -1735,12 +1735,12 @@ cenozo.factory( 'CnBaseModelFactory', [
           var list = angular.copy( 'list' == type ? this.columnList : this.inputList );
 
           // add identifier data if we are getting view data
-          if( 'view' == type ) {
             if( angular.isDefined( this.identifier.column ) &&
                 angular.isUndefined( list[this.identifier.column] ) ) {
               list[this.identifier.column] = { type: 'identifier' };
             }
 
+          if( 'view' == type ) {
             if( angular.isDefined( this.identifier.parent ) ) {
               for( var i = 0; i < this.identifier.parent.length; i++ ) {
                 list[this.identifier.parent[i].alias] = {
@@ -1797,7 +1797,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
 
-            if( 'list' == type ) {
+            if( 'list' == type && 'identifier' != list[key].type ) {
               for( var i = 0; i < list[key].restrictList.length; i++ ) {
                 var test = list[key].restrictList[i].test;
                 var value = list[key].restrictList[i].value;

@@ -4,8 +4,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ErrorCtrl', [
-    '$scope', '$window', 'CnErrorModelFactory',
-    function( $scope, $window, CnErrorModelFactory ) {
+    '$scope', '$window', 'CnErrorModelFactory', 'CnSession',
+    function( $scope, $window, CnErrorModelFactory, CnSession ) {
       $scope.model = CnErrorModelFactory.root;
       $scope.model.setupBreadcrumbTrail();
       $scope.back = function() { $window.history.back(); };

@@ -4,41 +4,35 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'CollectionAddCtrl', [
-    '$scope', 'CnCollectionModelFactory',
-    function( $scope, CnCollectionModelFactory ) {
+    '$scope', 'CnCollectionModelFactory', 'CnSession',
+    function( $scope, CnCollectionModelFactory, CnSession ) {
       $scope.model = CnCollectionModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'CollectionListCtrl', [
-    '$scope', 'CnCollectionModelFactory',
-    function( $scope, CnCollectionModelFactory ) {
+    '$scope', 'CnCollectionModelFactory', 'CnSession',
+    function( $scope, CnCollectionModelFactory, CnSession ) {
       $scope.model = CnCollectionModelFactory.root;
       $scope.model.listModel.onList().then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'CollectionViewCtrl', [
-    '$scope', 'CnCollectionModelFactory',
-    function( $scope, CnCollectionModelFactory ) {
+    '$scope', 'CnCollectionModelFactory', 'CnSession',
+    function( $scope, CnCollectionModelFactory, CnSession ) {
       $scope.model = CnCollectionModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
 
       // when leaving...
       $scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
