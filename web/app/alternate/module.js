@@ -35,7 +35,10 @@ define( {
     },
     association: {
       title: 'Association',
-      type: 'string'
+      type: 'string',
+      help: 'How the alternate knows the participant (son, neighbour, wife, etc). ' +
+            'DO NOT include phone numbers.',
+      regex: '^[^0-9]*[0-9]?[^0-9]*$'
     },
     alternate: {
       title: 'Alternate Contact',
