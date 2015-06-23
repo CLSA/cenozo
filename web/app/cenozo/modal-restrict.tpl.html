@@ -40,12 +40,19 @@
         </div>
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
-          <div class="col-sm-9">
+          <div class="col-sm-7">
             <input name="{{ 'value' + $index }}"
                    ng-model="restrict.value"
                    class="form-control"
                    type="text"
-                   placeholder="restriction value" />
+                   placeholder="{{ null === restrict.value ? '(none)' : 'restriction value' }}"
+                   ng-readonly="null === restrict.value" />
+          </div>
+          <div class="col-sm-2">
+            <label class="btn btn-warning pull-right"
+                   ng-model="local.emptyList[$index].state"
+                   ng-click="local.toggleEmpty( $index )"
+                   btn-checkbox>Empty</label>
           </div>
         </div>
       </div>
@@ -111,10 +118,8 @@
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
           <div class="col-sm-9">
-            <input name="{{ 'value' + $index }}"
-                   ng-model="restrict.value"
-                   class="form-control"
-                   type="text"
+            <input name="{{ 'value' + $index }}" ng-model="restrict.value"
+                   class="form-control" type="number" min="1"
                    placeholder="restriction rank" />
           </div>
         </div>

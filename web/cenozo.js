@@ -548,7 +548,7 @@ cenozo.directive( 'cnRecordAdd', [
               var input = scope.inputArray[i];
               var meta = metadata.columnList[input.key];
               if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
-                input.enumList = meta.enumList;
+                input.enumList = angular.copy( meta.enumList );
 
                 input.enumList.unshift( {
                   value: undefined,
@@ -1017,8 +1017,8 @@ cenozo.filter( 'cnYesNo', function() {
  * TODO: document
  */
 cenozo.factory( 'CnSession', [
-  '$state', 'CnHttpFactory', 'CnModalPasswordFactory',
-  function( $state, CnHttpFactory, CnModalPasswordFactory ) {
+  '$state', '$filter', 'CnHttpFactory', 'CnModalPasswordFactory',
+  function( $state, $filter, CnHttpFactory, CnModalPasswordFactory ) {
     return new ( function() {
       var self = this;
       this.promise = null;
@@ -1148,13 +1148,14 @@ cenozo.factory( 'CnSession', [
       this.formatValue = function formatValue( value, type, longForm ) {
         if( angular.isUndefined( longForm ) ) longForm = false;
         var formatted = value;
-        if( cenozo.isDatetimeType( type ) ) {
-          if( null === value ) {
-            formatted = '(none)';
-          } else {
-            if( !cenozo.isMoment( value ) ) value = moment( value );
-            formatted = value.tz( this.user.timezone ).format( this.getDatetimeFormat( type, longForm ) );
-          }
+        if( null === value ) {
+          formatted = '(none)';
+        } else if( cenozo.isDatetimeType( type ) ) {
+          if( !cenozo.isMoment( value ) ) value = moment( value );
+          formatted = value.tz( this.user.timezone ).format( this.getDatetimeFormat( type, longForm ) );
+        } else if( 'rank' == type ) {
+          var number = parseInt( value );
+          if( 0 < number ) formatted = $filter( 'cnOrdinal' )( number );
         }
         return formatted;
       };
@@ -2080,8 +2081,16 @@ cenozo.factory( 'CnBaseModelFactory', [
 
             if( angular.isDefined( self.metadata.columnList.rank ) ) { // create enum for rank columns
               self.metadata.loadingCount++;
+
+              // add the parent subject and identifier to the service path if we are in the view state
+              var path = self.getServiceCollectionPath();
+              if( 'view' == self.getActionFromState() ) {
+                var parent = self.getParentSubjectAndIdentifier();
+                path = [ parent.subject, parent.identifier, path ].join( '/' );
+              }
+
               CnHttpFactory.instance( {
-                path: self.getServiceCollectionPath(),
+                path: path,
                 data: { select: { column: { column: 'MAX(rank)', alias: 'max', table_prefix: false } } }
               } ).query().then( function success( response ) {
                 if( 0 < response.data.length ) {
@@ -2278,7 +2287,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
         var subArrays = [];
         while( 0 < array.length ) subArrays.push( array.splice( 0, size ) );
         return subArrays;
-      }
+      };
 
       // service vars which can be defined by the contructor's params
       this.timezone = null;
@@ -2292,6 +2301,20 @@ cenozo.service( 'CnModalDatetimeFactory', [
       angular.extend( this, params );
 
       // service vars which cannot be defined by the constructor's params
+      this.updateSlidersFromDate = function( date ) {
+        this.hourSliderValue = date.format( 'H' );
+        this.minuteSliderValue = date.format( 'm' );
+        this.secondSliderValue = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType
+                               ? date.format( 's' )
+                               : 0;
+      }
+
+      this.updateDateFromSliders = function( date ) {
+        date.hour( this.hourSliderValue ).minute( this.minuteSliderValue ).second(
+          'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType ?
+          this.secondSliderValue : 0 );
+      }
+
       if( null === this.timezone ) this.timezone = CnSession.user.timezone;
       if( null === this.date ) {
         this.viewingDate = moment();
@@ -2302,9 +2325,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       }
       this.modeTitle = '';
       this.displayTime = '';
-      this.hourSliderValue = this.viewingDate.format( 'H' );
-      this.minuteSliderValue = this.viewingDate.format( 'm' );
-      this.secondSliderValue = this.viewingDate.format( 's' );
+      this.updateSlidersFromDate( this.viewingDate );
 
       this.prevMode = function() {
         this.mode = 'year' == this.mode ? 'month' : 'day';
@@ -2327,11 +2348,12 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.select = function( when ) {
         if( 'now' == when ) {
           this.date = moment().tz( CnSession.user.timezone );
-          // make seconds 0 if the type does not track seconds
           if( 'datetimesecond' != this.pickerType && 'timeseond' != this.pickerType ) this.date.second( 0 );
+          this.updateSlidersFromDate( this.date );
         } else if( 'today' == when ) {
           if( null === this.date ) this.date = moment();
-          this.date.year( moment().year() ).month( moment().month() ).date( moment().date() );
+          this.date = moment().tz( CnSession.user.timezone );
+          this.updateDateFromSliders( this.date );
         } else {
           if( null === when ) {
             this.dateBackup = angular.copy( this.date );
@@ -2339,11 +2361,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
           } else {
             if( null === this.date ) {
               this.date = moment().tz( CnSession.user.timezone );
-              this.date.hour( this.hourSliderValue );
-              this.date.minute( this.minuteSliderValue );
-              this.date.second(
-                'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType ?
-                this.secondSliderValue : 0 );
+              this.updateDateFromSliders( this.date );
             }
             this.date.year( when.year() ).month( when.month() ).date( when.date() );
           }
@@ -2465,34 +2483,23 @@ cenozo.service( 'CnModalDatetimeFactory', [
             };
             $scope.local.cancel = function() { $modalInstance.close( false ); };
 
-            function guaranteeDate() {
-              if( null === $scope.local.date ) {
-                $scope.local.date = null !== $scope.local.dateBackup
-                                  ? angular.copy( $scope.local.dateBackup )
-                                  : moment().tz( CnSession.user.timezone );
-                $scope.local.date.hour( $scope.local.hourSliderValue );
-                $scope.local.date.minute( $scope.local.minuteSliderValue );
-                $scope.local.date.second(
-                  'datetimesecond' == $scope.local.pickerType || 'timesecond' == $scope.local.pickerType ?
-                  $scope.local.secondSliderValue : 0 );
-                $scope.local.update();
-              }
-            }
-
             $scope.$watch( 'local.hourSliderValue', function( hour ) {
-              guaranteeDate();
-              $scope.local.date.hour( hour );
-              $scope.local.updateDisplayTime();
+              if( cenozo.isMoment( $scope.local.date ) ) {
+                $scope.local.updateDateFromSliders( $scope.local.date );
+                $scope.local.updateDisplayTime();
+              }
             } );
             $scope.$watch( 'local.minuteSliderValue', function( minute ) {
-              guaranteeDate();
-              $scope.local.date.minute( minute );
-              $scope.local.updateDisplayTime();
+              if( cenozo.isMoment( $scope.local.date ) ) {
+                $scope.local.updateDateFromSliders( $scope.local.date );
+                $scope.local.updateDisplayTime();
+              }
             } );
             $scope.$watch( 'local.secondSliderValue', function( second ) {
-              guaranteeDate();
-              $scope.local.date.second( second );
-              $scope.local.updateDisplayTime();
+              if( cenozo.isMoment( $scope.local.date ) ) {
+                $scope.local.updateDateFromSliders( $scope.local.date );
+                $scope.local.updateDisplayTime();
+              }
             } );
           }
         } ).result;
@@ -2611,15 +2618,18 @@ cenozo.service( 'CnModalRestrictFactory', [
       this.column = null;
       this.type = 'string';
       this.restrictList = [];
+      this.emptyList = [];
       angular.extend( this, params );
 
       // handle datetime types
       if( 0 == this.restrictList.length ) this.restrictList = [ { test: '<=>' } ];
       this.preExisting = angular.isDefined( this.restrictList[0].value );
       this.formattedValueList = [];
-      for( var i = 0; i < this.restrictList.length; i++ )
+      for( var i = 0; i < this.restrictList.length; i++ ) {
+        this.emptyList[i] = { state: null === this.restrictList[i].value };
         if( angular.isDefined( this.restrictList[i].value ) )
           this.formattedValueList[i] = CnSession.formatValue( this.restrictList[i].value, this.type, true );
+      }
 
       this.show = function() {
         return $modal.open( {
@@ -2641,11 +2651,13 @@ cenozo.service( 'CnModalRestrictFactory', [
             $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
 
             $scope.local.addRestriction = function() {
-              $scope.local.restrictList.push( { test: '<=>', logic: 'and' } );
+              this.restrictList.push( { test: '<=>', logic: 'and' } );
+              this.emptyList.push( { state: false } );
             };
 
             $scope.local.removeRestriction = function( index ) {
-              $scope.local.restrictList.splice( index, 1 );
+              this.restrictList.splice( index, 1 );
+              this.emptyList.splice( index, 1 );
             };
 
             if( cenozo.isDatetimeType( $scope.local.type ) ) {
@@ -2672,6 +2684,15 @@ cenozo.service( 'CnModalRestrictFactory', [
                       self.restrictList[index].test = '<=>';
                   }
                 } );
+              };
+            } else {
+              $scope.local.toggleEmpty = function( index ) {
+                if( this.emptyList[index].state ) {
+                  this.restrictList[index].value = this.emptyList[index].oldValue;
+                } else {
+                  this.emptyList[index].oldValue = this.restrictList[index].value;
+                  this.restrictList[index].value = null;
+                }
               };
             }
           }
