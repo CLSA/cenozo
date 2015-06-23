@@ -26,6 +26,23 @@ CREATE PROCEDURE patch_alternate()
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
     END IF;
 
+    SELECT "Allowing null values for alternate.association in alternate table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "alternate"
+      AND COLUMN_NAME = "association"
+      AND IS_NULLABLE = "NO" );
+    IF @test = 1 THEN
+      -- drop column
+      ALTER TABLE alternate
+      MODIFY COLUMN association VARCHAR(45) NULL;
+
+      UPDATE alternate SET association = NULL WHERE association IN( "", "unknown", "blank", "na", "n/a", "none" );
+    END IF;
+
   END //
 DELIMITER ;
 
