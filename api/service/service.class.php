@@ -276,7 +276,7 @@ abstract class service extends \cenozo\base_object
       $module_index = 0;
       foreach( explode( '/', $path ) as $index => $part )
       {
-        if( !$part ) return false;
+        if( 0 == strlen( $part ) ) return false;
 
         if( 0 == $index % 2 )
         {

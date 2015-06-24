@@ -552,7 +552,7 @@ cenozo.directive( 'cnRecordAdd', [
 
                 input.enumList.unshift( {
                   value: undefined,
-                  name: meta.required ? '(Select ' + input.title + ')' : '(none)'
+                  name: meta.required ? '(Select ' + input.title + ')' : '(empty)'
                 } );
 
                 // add additional rank
@@ -860,7 +860,7 @@ cenozo.directive( 'cnRecordView', [
                                ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
                                : angular.copy( metadata.columnList[key].enumList );
                 if( angular.isArray( input.enumList ) && !metadata.columnList[key].required )
-                  input.enumList.unshift( { value: '', name: '(none)' } );
+                  input.enumList.unshift( { value: '', name: '(empty)' } );
               }
             }
             metadataLoaded = true;
@@ -934,7 +934,7 @@ cenozo.filter( 'cnMetaFilter', [
         args.unshift( value );
         return filter.apply( null, args );
       } else {
-        return angular.isUndefined( value ) || null === value ? '(none)' : value;
+        return angular.isUndefined( value ) || null === value ? '(empty)' : value;
       }
     };
   }
@@ -951,7 +951,7 @@ cenozo.filter( 'cnDatetime', [
     return function( input, format ) {
       var output;
       if( angular.isUndefined( input ) || null === input ) {
-        output = '(none)';
+        output = '(empty)';
       } else {
         if( !cenozo.isMoment( input ) ) input = moment( input );
         output = input.tz( CnSession.user.timezone ).format( CnSession.getDatetimeFormat( format, false ) );
@@ -1149,7 +1149,11 @@ cenozo.factory( 'CnSession', [
         if( angular.isUndefined( longForm ) ) longForm = false;
         var formatted = value;
         if( null === value ) {
-          formatted = '(none)';
+          formatted = '(empty)';
+        } else if( 'string' == type && '' === value ) {
+          formatted = '(empty string)';
+        } else if( 'boolean' == type ) {
+          formatted = $filter( 'cnYesNo' )( value );
         } else if( cenozo.isDatetimeType( type ) ) {
           if( !cenozo.isMoment( value ) ) value = moment( value );
           formatted = value.tz( this.user.timezone ).format( this.getDatetimeFormat( type, longForm ) );
@@ -1235,8 +1239,8 @@ cenozo.factory( 'CnBaseAddFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseListFactory', [
-  '$filter', 'CnSession', 'CnPaginationFactory', 'CnHttpFactory',
-  function( $filter, CnSession, CnPaginationFactory, CnHttpFactory ) {
+  'CnSession', 'CnPaginationFactory', 'CnHttpFactory',
+  function( CnSession, CnPaginationFactory, CnHttpFactory ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
@@ -1253,7 +1257,7 @@ cenozo.factory( 'CnBaseListFactory', [
           } else {
             this.order.reverse = !this.order.reverse;
           }
-          var promise = this.cache.length < this.total ? this.listRecords( true ) : null;
+          var promise = this.cache.length < this.total ? this.onList( true ) : null;
 
           if( promise ) {
             promise.then(
@@ -1280,8 +1284,9 @@ cenozo.factory( 'CnBaseListFactory', [
           } else {
             for( var i = 0; i < newList.length; i++ ) {
               if( i >= currentList.length ||
-                  newList[i].test != currentList[i].test ||
-                  newList[i].value != currentList[i].value ) {
+                  newList[i].test !== currentList[i].test ||
+                  newList[i].value !== currentList[i].value ||
+                  newList[i].logic !== currentList[i].logic ) {
                 changed = true;
                 break;
               }
@@ -1293,15 +1298,8 @@ cenozo.factory( 'CnBaseListFactory', [
             this.parentModel.columnList[column].restrictList = angular.copy( newList );
             currentList = this.parentModel.columnList[column].restrictList;
 
-            // describe each restriction
-            for( var i = 0; i < currentList.length; i++ ) {
-              currentList[i].description =
-                $filter( 'cnComparator' )( currentList[i].test ) + ' ' +
-                CnSession.formatValue( currentList[i].value, this.parentModel.columnList[column].type, false );
-            }
-
             // describe the restrict list
-            this.listRecords( true ).then(
+            this.onList( true ).then(
               function success() { self.paginationFactory.currentPage = 1; },
               CnSession.errorHandler
             );
@@ -1312,7 +1310,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.checkCache = function() {
           var self = this;
           if( this.cache.length < this.total && this.paginationFactory.getMaxIndex() >= this.cache.length ) {
-            this.listRecords().catch( CnSession.errorHandler );
+            this.onList().catch( CnSession.errorHandler );
           }
         };
 
@@ -1406,7 +1404,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.chooseMode = false;
         object.toggleChooseMode = function() {
           this.chooseMode = !this.chooseMode;
-          return this.listRecords( true );
+          return this.onList( true );
         };
 
         /**
@@ -1801,7 +1799,14 @@ cenozo.factory( 'CnBaseModelFactory', [
               for( var i = 0; i < list[key].restrictList.length; i++ ) {
                 var test = list[key].restrictList[i].test;
                 var value = list[key].restrictList[i].value;
-                if( 'like' == test || 'not like' == test ) value = '%' + value + '%';
+
+                // simple search
+                if( ( 'like' == test || 'not like' == test ) ) {
+                  // LIKE "" is meaningless, so search for <=> "" instead
+                  if( 0 == value.length ) test = '<=>';
+                  // LIKE without % is meaningless, so add % at each end of the string
+                  else if( 0 > value.indexOf( '%' ) ) value = '%' + value + '%';
+                }
 
                 // determine the column name
                 var column = key;
@@ -1812,11 +1817,14 @@ cenozo.factory( 'CnBaseModelFactory', [
                   if( 2 < len ) column = columnParts[len-2] + '.' + columnParts[len-1];
                 }
 
-                whereList.push( {
+                var where = {
                   column: column,
                   operator: test,
-                  value: value
-                } );
+                  value: value,
+                };
+                if( 'or' == list[key].restrictList[i].logic ) where.or = true;
+
+                whereList.push( where );
               }
             }
           }
@@ -2375,7 +2383,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.updateDisplayTime = function() {
         var format = CnSession.getTimeFormat(
           'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType );
-        this.displayTime = null === this.date ? '(none)' : this.date.format( format + ' z' );
+        this.displayTime = null === this.date ? '(empty)' : this.date.format( format + ' z' );
       };
       this.update = function() {
         if( 'day' == this.mode ) {
@@ -2611,8 +2619,8 @@ cenozo.service( 'CnModalPasswordFactory', [
  * TODO: document
  */
 cenozo.service( 'CnModalRestrictFactory', [
-  '$modal', 'CnModalDatetimeFactory', 'CnSession',
-  function( $modal, CnModalDatetimeFactory, CnSession ) {
+  '$modal', '$filter', 'CnModalDatetimeFactory', 'CnSession',
+  function( $modal, $filter, CnModalDatetimeFactory, CnSession ) {
     var object = function( params ) {
       var self = this;
       if( angular.isUndefined( params.column ) ) throw 'Tried to create CnModalRestrictFactory without a column';
@@ -2623,8 +2631,38 @@ cenozo.service( 'CnModalRestrictFactory', [
       this.emptyList = [];
       angular.extend( this, params );
 
+      this.getInitialValue = function() {
+        var value = 1; // boolean, number, rank
+        if( 'string' == this.type ) value = '';
+        else if( cenozo.isDatetimeType( this.type ) ) {
+          var date = moment().tz( 'utc' );
+          if( 'datetime' == this.type || 'time' == this.type ) date.second( 0 );
+          value = date.format();
+        }
+        return value;
+      };
+
+      this.addRestriction = function() {
+        var restriction = { test: '<=>', value: this.getInitialValue() };
+        if( 0 < this.restrictList.length ) restriction.logic = 'and';
+        this.restrictList.push( restriction );
+        this.emptyList.push( { state: false } );
+        this.describeRestriction( this.restrictList.length - 1 );
+      };
+
+      this.describeRestriction = function( index ) {
+        var quotes = 'string' == this.type &&
+                     null !== this.restrictList[index].value &&
+                     0 < this.restrictList[index].value.length;
+        this.restrictList[index].description =
+          $filter( 'cnComparator' )( this.restrictList[index].test ) + ' ' +
+          ( quotes ? '"' : '' ) +
+          CnSession.formatValue( this.restrictList[index].value, this.type, false ) +
+          ( quotes ? '"' : '' );
+      }
+
       // handle datetime types
-      if( 0 == this.restrictList.length ) this.restrictList = [ { test: '<=>' } ];
+      if( 0 == this.restrictList.length ) this.addRestriction();
       this.preExisting = angular.isDefined( this.restrictList[0].value );
       this.formattedValueList = [];
       for( var i = 0; i < this.restrictList.length; i++ ) {
@@ -2647,15 +2685,13 @@ cenozo.service( 'CnModalRestrictFactory', [
                 if( angular.isUndefined( restrictList[i].value ) )
                   restrictList.splice( i, 1 );
 
+              // make sure the first item in the list has no logic set
+              if( 0 < restrictList.length && undefined !== restrictList[0].logic ) delete restrictList[0].logic;
+
               $modalInstance.close( restrictList );
             };
             $scope.local.remove = function() { $modalInstance.close( [] ); };
             $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
-
-            $scope.local.addRestriction = function() {
-              this.restrictList.push( { test: '<=>', logic: 'and' } );
-              this.emptyList.push( { state: false } );
-            };
 
             $scope.local.removeRestriction = function( index ) {
               this.restrictList.splice( index, 1 );
@@ -2681,22 +2717,31 @@ cenozo.service( 'CnModalRestrictFactory', [
                                      getElementsByClassName( 'not-nullable' );
                     for( var i = 0; i < optionList.length; i++ ) optionList[i].disabled = null === response;
                     
-                    // if null was select then make sure to select <=> or <>
-                    if( null === response && 0 > ['<=>','<>'].indexOf( self.restrictList[index].test ) )
-                      self.restrictList[index].test = '<=>';
+                    // update the empty list
+                    if( self.emptyList[index].state && null !== response ||
+                        !self.emptyList[index].state && null === response ) self.toggleEmpty( index );
                   }
                 } );
               };
-            } else {
-              $scope.local.toggleEmpty = function( index ) {
-                if( this.emptyList[index].state ) {
-                  this.restrictList[index].value = this.emptyList[index].oldValue;
-                } else {
-                  this.emptyList[index].oldValue = this.restrictList[index].value;
-                  this.restrictList[index].value = null;
-                }
-              };
             }
+
+            $scope.local.toggleEmpty = function( index ) {
+              if( this.emptyList[index].state ) {
+                this.restrictList[index].value = undefined === this.emptyList[index].oldValue
+                                               ? this.getInitialValue()
+                                               : this.emptyList[index].oldValue;
+              } else {
+                this.emptyList[index].oldValue = this.restrictList[index].value;
+                this.restrictList[index].value = null;
+                // make sure to select <=> or <>
+                if( 0 > ['<=>','<>'].indexOf( this.restrictList[index].test ) )
+                  this.restrictList[index].test = '<=>';
+              }
+
+              this.formattedValueList[index] =
+                CnSession.formatValue( this.restrictList[index].value, this.type, true );
+              this.describeRestriction( index );
+            };
           }
         } ).result;
       };

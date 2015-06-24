@@ -33,7 +33,8 @@
                tooltip-placement="bottom"
                tooltip-popup-delay="750">
               <span ng-repeat="restrict in column.restrictList">
-                {{ ( restrict.logic ? restrict.logic + ' ' : '' ) + restrict.description }}<br ng-if"!$last">
+                {{ ( restrict.logic ? restrict.logic.toUpperCase() + ' ' : '' ) + restrict.description }}
+                <br ng-if"!$last">
               </span>
             </p>
           </div>

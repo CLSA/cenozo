@@ -680,15 +680,14 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Returns an SQL where statement.
+   * Internally generates where/having sql statements
    * 
-   * This method should only be called by a record class and only after all modifications
-   * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $having Whether to return having or where statement.
    * @return string
-   * @access public
+   * @access private
    */
-  public function get_where()
+  private function get_where_or_having( $list )
   {
     $db = lib::create( 'business\session' )->get_database();
 
@@ -697,29 +696,29 @@ class modifier extends \cenozo\base_object
     $sql = '';
     $first_item = true;
     $last_open_bracket = false;
-    foreach( $this->where_list as $where )
+    foreach( $list as $item )
     {
       $statement = '';
 
       // check if this is a bracket
-      if( array_key_exists( 'bracket', $where ) )
+      if( array_key_exists( 'bracket', $item ) )
       {
-        $statement = $where['bracket'] ? '(' : ')';
+        $statement = $item['bracket'] ? '(' : ')';
       }
       else
       {
-        $is_datetime = $database_class_name::is_datetime_column( $where['column'] );
-        $is_date = $database_class_name::is_date_column( $where['column'] );
-        $is_time = $database_class_name::is_time_column( $where['column'] );
+        $is_datetime = $database_class_name::is_datetime_column( $item['column'] );
+        $is_date = $database_class_name::is_date_column( $item['column'] );
+        $is_time = $database_class_name::is_time_column( $item['column'] );
 
-        if( 'IN' == $where['operator'] || 'NOT IN' == $where['operator'] )
+        if( 'IN' == $item['operator'] || 'NOT IN' == $item['operator'] )
         {
-          if( is_array( $where['value'] ) )
+          if( is_array( $item['value'] ) )
           {
             $first_value = true;
-            foreach( $where['value'] as $value )
+            foreach( $item['value'] as $value )
             {
-              if( $where['format'] )
+              if( $item['format'] )
               {
                 if( $is_datetime ) $value = $db->format_datetime( $value );
                 else if( $is_date ) $value = $db->format_date( $value );
@@ -728,7 +727,7 @@ class modifier extends \cenozo\base_object
               }
 
               $statement .= $first_value
-                        ? sprintf( '%s %s( ', $where['column'], $where['operator'] )
+                        ? sprintf( '%s %s( ', $item['column'], $item['operator'] )
                         : ', ';
               $statement .= $value;
               $first_value = false;
@@ -737,8 +736,8 @@ class modifier extends \cenozo\base_object
           }
           else
           {
-            $value = $where['value'];
-            if( $where['format'] )
+            $value = $item['value'];
+            if( $item['format'] )
             {
               if( $is_datetime ) $value = $db->format_datetime( $value );
               else if( $is_date ) $value = $db->format_date( $value );
@@ -747,15 +746,15 @@ class modifier extends \cenozo\base_object
             }
 
             $statement = sprintf( '%s %s( %s )',
-                                $where['column'],
-                                $where['operator'],
+                                $item['column'],
+                                $item['operator'],
                                 $value );
           }
         }
         else
         {
-          $value = $where['value'];
-          if( $where['format'] )
+          $value = $item['value'];
+          if( $item['format'] )
           {
             if( $is_datetime ) $value = $db->format_datetime( $value );
             else if( $is_date ) $value = $db->format_date( $value );
@@ -765,25 +764,23 @@ class modifier extends \cenozo\base_object
 
           if( 'NULL' == $value )
           {
-            if( '=' == $where['operator'] )
-              $statement = $where['column'].' IS NULL';
-            else if( '!=' == $where['operator'] || '<>' == $where['operator'] )
-              $statement = $where['column'].' IS NOT NULL';
-            else if( '<=>' == $where['operator'] )
-              $statement = $where['column'].' <=> NULL';
-            else log::err( 'Tried to compare to NULL value with "'.$where['operator'].'" operator.' );
+            if( '=' == $item['operator'] ) $statement = $item['column'].' IS NULL';
+            else if( '!=' == $item['operator'] || '<>' == $item['operator'] )
+              $statement = $item['column'].' IS NOT NULL';
+            else if( '<=>' == $item['operator'] ) $statement = $item['column'].' <=> NULL';
+            else log::err( 'Tried to compare to NULL value with "'.$item['operator'].'" operator.' );
           }
           else
           {
             $statement = sprintf( '%s %s %s',
-                                $where['column'],
-                                $where['operator'],
+                                $item['column'],
+                                $item['operator'],
                                 $value );
           }
         }
       }
 
-      $logic_type = $where['or'] ? ' OR' : ' AND';
+      $logic_type = $item['or'] ? ' OR' : ' AND';
       if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
       $sql .= ' '.$statement;
       $first_item = false;
@@ -818,6 +815,20 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Returns an SQL where statement.
+   * 
+   * This method should only be called by a record class and only after all modifications
+   * have been set.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_where()
+  {
+    return $this->get_where_or_having( $this->where_list );
+  }
+
+  /**
    * Returns an SQL having statement.
    * 
    * This method should only be called by a record class and only after all modifications
@@ -828,102 +839,7 @@ class modifier extends \cenozo\base_object
    */
   public function get_having()
   {
-    $db = lib::create( 'business\session' )->get_database();
-
-    $util_class_name = lib::get_class_name( 'util' );
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $sql = '';
-    $first_item = true;
-    $last_open_bracket = false;
-    foreach( $this->having_list as $having )
-    {
-      $statement = '';
-
-      // check if this is a bracket
-      if( array_key_exists( 'bracket', $having ) )
-      {
-        $statement = $having['bracket'] ? '(' : ')';
-      }
-      else
-      {
-        $is_datetime = $database_class_name::is_datetime_column( $having['column'] );
-
-        if( 'IN' == $having['operator'] || 'NOT IN' == $having['operator'] )
-        {
-          if( is_array( $having['value'] ) )
-          {
-            $first_value = true;
-            foreach( $having['value'] as $value )
-            {
-              if( $having['format'] )
-              {
-                if( $is_datetime ) $value = $db->format_datetime( $value );
-                else if( $is_date ) $value = $db->format_date( $value );
-                else if( $is_time ) $value = $db->format_time( $value );
-                else $value = $db->format_string( $value );
-              }
-
-              $statement .= $first_value
-                        ? sprintf( '%s %s( ', $having['column'], $having['operator'] )
-                        : ', ';
-              $statement .= $value;
-              $first_value = false;
-            }
-            $statement .= ' )';
-          }
-          else
-          {
-            $value = $having['value'];
-            if( $having['format'] )
-            {
-              if( $is_datetime ) $value = $db->format_datetime( $value );
-              else if( $is_date ) $value = $db->format_date( $value );
-              else if( $is_time ) $value = $db->format_time( $value );
-              else $value = $db->format_string( $value );
-            }
-
-            $statement = sprintf( '%s %s( %s )',
-                                $having['column'],
-                                $having['operator'],
-                                $value );
-          }
-        }
-        else
-        {
-          $value = $having['value'];
-          if( $having['format'] )
-          {
-            if( $is_datetime ) $value = $db->format_datetime( $value );
-            else if( $is_date ) $value = $db->format_date( $value );
-            else if( $is_time ) $value = $db->format_time( $value );
-            else $value = $db->format_string( $value );
-          }
-
-          if( 'NULL' == $value )
-          {
-            if( '=' == $having['operator'] ) $statement = $having['column'].' IS NULL';
-            else if( '!=' == $having['operator'] ) $statement = $having['column'].' IS NOT NULL';
-            else log::err(
-                   'Tried to compare to NULL value with "'.$having['operator'].'" operator.' );
-          }
-          else
-          {
-            $statement = sprintf( '%s %s %s',
-                                $having['column'],
-                                $having['operator'],
-                                $value );
-          }
-        }
-      }
-
-      $logic_type = $having['or'] ? ' OR' : ' AND';
-      if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
-      $sql .= ' '.$statement;
-      $first_item = false;
-      $last_open_bracket = '(' == $statement;
-    }
-
-    return $sql;
+    return $this->get_where_or_having( $this->having_list );
   }
 
   /**

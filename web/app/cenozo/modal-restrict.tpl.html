@@ -7,6 +7,16 @@
       Provide how you wish to restrict the <strong>{{ local.name.singular | cnUCWords }}</strong> listing
       based on the <strong>{{ local.column }}</strong> column:
     </p>
+    <hr />
+    <div class="form-group">
+      <label class="col-sm-3 control-label">Restriction</label>
+      <div class="col-sm-9 well text-center">
+        <span ng-repeat="restrict in local.restrictList">
+          {{ ( restrict.logic ? restrict.logic.toUpperCase() + ' ' : '' ) + restrict.description }}
+          <br ng-if"!$last">
+        </span>
+      </div>
+    </div>
     <div ng-class="{'restrict-add': !$first}"
          ng-repeat="restrict in local.restrictList"
          ng-switch="local.type">
@@ -15,6 +25,7 @@
         <div class="col-sm-offset-3 col-sm-5">
           <select name="{{ 'logic' + $index }}"
                   ng-model="restrict.logic"
+                  ng-change="local.describeRestriction( $index )"
                   class="form-control">
             <option value="and">AND</option>
             <option value="or">OR</option>
@@ -30,11 +41,14 @@
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}" ng-model="restrict.test" class="form-control">
+            <select name="{{ 'test' + $index }}"
+                    ng-model="restrict.test"
+                    ng-change="local.describeRestriction( $index )"
+                    class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
-              <option class="not-nullable" value="like">is like</option>
-              <option class="not-nullable" value="not like">is not like</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="like">is like</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="not like">is not like</option>
             </select>
           </div>
         </div>
@@ -43,10 +57,11 @@
           <div class="col-sm-7">
             <input name="{{ 'value' + $index }}"
                    ng-model="restrict.value"
+                   ng-change="local.describeRestriction( $index )"
                    class="form-control"
                    type="text"
-                   placeholder="{{ null === restrict.value ? '(none)' : 'restriction value' }}"
-                   ng-readonly="null === restrict.value" />
+                   placeholder="{{ null === restrict.value ? '(empty)' : '' }}"
+                   ng-disabled="null === restrict.value" />
           </div>
           <div class="col-sm-2">
             <label class="btn btn-warning pull-right"
@@ -58,9 +73,12 @@
       </div>
       <div ng-switch-when="boolean">
         <div class="form-group">
-          <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Value</label>
+          <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}" ng-model="restrict.test" class="form-control">
+            <select name="{{ 'test' + $index }}"
+                    ng-model="restrict.test"
+                    ng-change="local.describeRestriction( $index )"
+                    class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
             </select>
@@ -68,11 +86,21 @@
         </div>
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
-          <div class="col-sm-9">
-            <select name="{{ 'value' + $index }}" ng-model="restrict.value" class="form-control">
+          <div class="col-sm-7">
+            <select name="{{ 'value' + $index }}"
+                    ng-model="restrict.value"
+                    ng-change="local.describeRestriction( $index )"
+                    class="form-control"
+                    ng-disabled="null === restrict.value">
               <option value="1">Yes</option>
               <option value="0">No</option>
             </select>
+          </div>
+          <div class="col-sm-2">
+            <label class="btn btn-warning pull-right"
+                   ng-model="local.emptyList[$index].state"
+                   ng-click="local.toggleEmpty( $index )"
+                   btn-checkbox>Empty</label>
           </div>
         </div>
       </div>
@@ -80,24 +108,35 @@
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}" ng-model="restrict.test" class="form-control">
+            <select name="{{ 'test' + $index }}"
+                    ng-model="restrict.test"
+                    ng-change="local.describeRestriction( $index )"
+                    class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
-              <option class="not-nullable" value="&gt;">greater than</option>
-              <option class="not-nullable" value="&gt;=">greater or equal to</option>
-              <option class="not-nullable" value="&lt;">less than</option>
-              <option class="not-nullable" value="&lt;=">less or equal to</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;">greater than</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;=">greater or equal to</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;">less than</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;=">less or equal to</option>
             </select>
           </div>
         </div>
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
-          <div class="col-sm-9">
+          <div class="col-sm-7">
             <input name="{{ 'value' + $index }}"
                    ng-model="restrict.value"
+                   ng-change="local.describeRestriction( $index )"
                    class="form-control"
                    type="text"
-                   placeholder="restriction number" />
+                   placeholder="{{ null === restrict.value ? '(empty)' : 'restriction number' }}"
+                   ng-disabled="null === restrict.value" />
+          </div>
+          <div class="col-sm-2">
+            <label class="btn btn-warning pull-right"
+                   ng-model="local.emptyList[$index].state"
+                   ng-click="local.toggleEmpty( $index )"
+                   btn-checkbox>Empty</label>
           </div>
         </div>
       </div>
@@ -105,22 +144,35 @@
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}" ng-model="restrict.test" class="form-control">
+            <select name="{{ 'test' + $index }}"
+                    ng-model="restrict.test"
+                    ng-change="local.describeRestriction( $index )"
+                    class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
-              <option class="not-nullable" value="&gt;">greater than</option>
-              <option class="not-nullable" value="&gt;=">greater or equal to</option>
-              <option class="not-nullable" value="&lt;">less than</option>
-              <option class="not-nullable" value="&lt;=">less or equal to</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;">greater than</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;=">greater or equal to</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;">less than</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;=">less or equal to</option>
             </select>
           </div>
         </div>
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
-          <div class="col-sm-9">
-            <input name="{{ 'value' + $index }}" ng-model="restrict.value"
+          <div class="col-sm-7">
+            {{ form }}
+            <input name="{{ 'value' + $index }}"
+                   ng-model="restrict.value"
+                   ng-change="local.describeRestriction( $index )"
                    class="form-control" type="number" min="1"
-                   placeholder="restriction rank" />
+                   placeholder="{{ null === restrict.value ? '(empty)' : 'restriction rank' }}"
+                   ng-disabled="null === restrict.value" />
+          </div>
+          <div class="col-sm-2">
+            <label class="btn btn-warning pull-right"
+                   ng-model="local.emptyList[$index].state"
+                   ng-click="local.toggleEmpty( $index )"
+                   btn-checkbox>Empty</label>
           </div>
         </div>
       </div>
@@ -128,27 +180,42 @@
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}" ng-model="restrict.test" class="form-control">
+            <select name="{{ 'test' + $index }}"
+                    ng-model="restrict.test"
+                    ng-change="local.describeRestriction( $index )"
+                    class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
-              <option class="not-nullable" value="&gt;">greater than</option>
-              <option class="not-nullable" value="&gt;=">greater or equal to</option>
-              <option class="not-nullable" value="&lt;">less than</option>
-              <option class="not-nullable" value="&lt;=">less or equal to</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;">greater than</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;=">greater or equal to</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;">less than</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;=">less or equal to</option>
             </select>
           </div>
         </div>
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
-          <div class="col-sm-9">
+          <div class="col-sm-7">
             <input name="{{ 'value' + $index }}"
                    ng-model="local.formattedValueList[$index]"
+                   ng-change="local.describeRestriction( $index )"
                    class="form-control"
                    type="text"
                    ng-click="local.selectDatetime( $index )"
-                   placeholder="restriction {{ 'time' == local.type || 'timesecond' == local.type ?
-                                               'time' : 'date &amp; time' }}"
-                   onkeydown="return false" />
+                   onkeydown="return false"
+                   placeholder="{{ null === restrict.value ?
+                                   '(empty)' :
+                                   'restriction ' + (
+                                     'time' == local.type || 'timesecond' == local.type ?
+                                     'time' : 'date &amp; time'
+                                   ) }}"
+                   ng-disabled="null === restrict.value" />
+          </div>
+          <div class="col-sm-2">
+            <label class="btn btn-warning pull-right"
+                   ng-model="local.emptyList[$index].state"
+                   ng-click="local.toggleEmpty( $index )"
+                   btn-checkbox>Empty</label>
           </div>
         </div>
       </div>
