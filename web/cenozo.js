@@ -172,19 +172,10 @@ cenozo.controller( 'HeaderCtrl', [
   function( $scope, $state, $interval, $window, CnSession, CnHttpFactory,
             CnModalMessageFactory, CnModalAccountFactory, CnModalPasswordFactory,
             CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
-    function updateTime() {
-      var now = moment();
-      now.tz( CnSession.user.timezone );
-      $scope.time = now.format( CnSession.getDatetimeFormat( 'time', true ) );
-    }
-
     $scope.isCollapsed = false;
-    $scope.breadcrumbTrail = CnSession.breadcrumbTrail;
+    $scope.isLoading = true;
+    $scope.session = CnSession;
     CnSession.promise.then( function() {
-      $scope.application = CnSession.application;
-      $scope.site = CnSession.site;
-      $scope.role = CnSession.role;
-
       $scope.setTimezone = function() {
         CnModalTimezoneFactory.instance( {
           timezone: CnSession.user.timezone
@@ -198,8 +189,9 @@ cenozo.controller( 'HeaderCtrl', [
         } );
       };
 
-      updateTime();
-      $interval( updateTime, 10000 );
+      CnSession.updateTime();
+      $interval( CnSession.updateTime, 10000 );
+      $scope.isLoading = false;
     } );
 
     $scope.setSiteRole = function() {
@@ -219,7 +211,7 @@ cenozo.controller( 'HeaderCtrl', [
     };
 
     $scope.editAccount = function() {
-      CnModalAccountFactory.instance().show().then( function( response ) {
+      CnModalAccountFactory.instance( { user: CnSession.user } ).show().then( function( response ) {
         if( angular.isObject( response ) ) {
           CnSession.setUserDetails(
             response.firstName, response.lastName, response.email, response.use12HourClock ).then(
@@ -277,9 +269,7 @@ cenozo.controller( 'HeaderCtrl', [
       } );
     };
 
-    $scope.logout = function() {
-      $window.location.assign( '?logout' );
-    };
+    $scope.logout = function() { $window.location.assign( '?logout' ); };
   }
 ] );
 
@@ -1017,8 +1007,8 @@ cenozo.filter( 'cnYesNo', function() {
  * TODO: document
  */
 cenozo.factory( 'CnSession', [
-  '$state', '$filter', 'CnHttpFactory', 'CnModalPasswordFactory',
-  function( $state, $filter, CnHttpFactory, CnModalPasswordFactory ) {
+  '$state', '$filter', 'CnHttpFactory', 'CnModalPasswordFactory', 'CnModalAccountFactory',
+  function( $state, $filter, CnHttpFactory, CnModalPasswordFactory, CnModalAccountFactory ) {
     return new ( function() {
       var self = this;
       this.promise = null;
@@ -1073,13 +1063,32 @@ cenozo.factory( 'CnSession', [
           } );
         }
 
-        // if the password isn't set then open the password dialog
+        // if the user's password isn't set then open the password dialog
         if( response.data.no_password ) {
           CnModalPasswordFactory.instance( { confirm: false } ).show().then( function() {
             console.log( 'TODO' );
           } );
         }
-      } ).catch( this.errorHandler );
+
+        // if the user's email isn't set then open the password dialog
+        if( !self.user.email ) {
+          CnModalAccountFactory.instance( { user: self.user } ).show().then( function( response ) {
+            if( angular.isObject( response ) ) {
+              self.setUserDetails(
+                response.firstName, response.lastName, response.email, response.use12HourClock ).then(
+                function success() {
+                  self.user.first_name = response.firstName;
+                  self.user.last_name = response.lastName;
+                  self.user.email = response.email;
+                  self.user.use_12hour_clock = 1 == response.use12HourClock;
+                  updateTime();
+                },
+                self.errorHandler
+              );
+            }
+          } );
+        }
+      } ).catch( self.errorHandler );
 
       this.setPassword = function setPassword( currentPass, requestedPass ) {
         return CnHttpFactory.instance( {
@@ -1130,6 +1139,12 @@ cenozo.factory( 'CnSession', [
           if( longForm ) resolvedFormat += ' z';
         }
         return resolvedFormat;
+      };
+
+      this.updateTime = function updateTime() {
+        var now = moment();
+        now.tz( self.user.timezone );
+        self.time = now.format( self.getDatetimeFormat( 'time', true ) );
       };
 
       this.setTimezone = function setTimezone( timezone ) {
@@ -2170,7 +2185,9 @@ cenozo.factory( 'CnHttpFactory', [
   '$http',
   function CnHttpFactory( $http ) {
     var object = function( params ) {
-      if( angular.isUndefined( params.path ) ) throw 'Tried to create CnHttpFactory without a path';
+      if( angular.isUndefined( params.path ) )
+        throw 'Tried to create CnHttpFactory instance without a path';
+
       this.path = null;
       this.data = {};
       angular.extend( this, params );
@@ -2202,16 +2219,19 @@ cenozo.factory( 'CnHttpFactory', [
  * TODO: document
  */
 cenozo.service( 'CnModalAccountFactory', [
-  '$modal', 'CnSession',
-  function( $modal, CnSession ) {
-    var object = function() {
+  '$modal',
+  function( $modal ) {
+    var object = function( params ) {
       var self = this;
-      CnSession.promise.then( function() {
-        self.firstName = CnSession.user.first_name;
-        self.lastName = CnSession.user.last_name;
-        self.email = CnSession.user.email;
-        self.use12HourClock = CnSession.user.use_12hour_clock ? 1 : 0;
-      } );
+
+      if( angular.isUndefined( params.user ) )
+        throw 'Tried to create CnModalAccountFactory instance without a user';
+
+      angular.extend( this, params );
+      this.firstName = params.user.first_name;
+      this.lastName = params.user.last_name;
+      this.email = params.user.email;
+      this.use12HourClock = params.user.use_12hour_clock ? 1 : 0;
 
       this.show = function() {
         return $modal.open( {
@@ -2239,7 +2259,7 @@ cenozo.service( 'CnModalAccountFactory', [
       };
     };
 
-    return { instance: function() { return new object(); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
@@ -2623,7 +2643,9 @@ cenozo.service( 'CnModalRestrictFactory', [
   function( $modal, $filter, CnModalDatetimeFactory, CnSession ) {
     var object = function( params ) {
       var self = this;
-      if( angular.isUndefined( params.column ) ) throw 'Tried to create CnModalRestrictFactory without a column';
+      if( angular.isUndefined( params.column ) )
+        throw 'Tried to create CnModalRestrictFactory instance without a column';
+
       this.name = null;
       this.column = null;
       this.type = 'string';

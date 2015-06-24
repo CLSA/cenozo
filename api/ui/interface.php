@@ -74,99 +74,101 @@
     ] );
   </script>
 
-  <nav class="navigation-header navbar navbar-default noselect" ng-controller="HeaderCtrl">
-    <div class="container-fluid">
-      <!-- Brand and toggle get grouped for better mobile display -->
-      <div class="navbar-header">
-        <a class="navbar-brand dropdown-toggle" data-toggle="dropdown">{{ application.title }}</a>
-        <ul class="dropdown-menu navigation-menu">
-          <li ng-controller="MenuCtrl">
-            <div class="container-fluid well" style="margin: -14px 7px 7px;">
-                <div class="btn-group col-sm-12">
-                  <button class="btn btn-default col-sm-2"
-                          ng-click="setSiteRole()"
-                          tooltip="Change which site and role you are logged in as">Site/Role</button>
-                  <button class="btn btn-default col-sm-2"
-                          ng-click="setTimezone()"
-                          tooltip="Change which timezone to display">Timezone</button>
-                  <button class="btn btn-default col-sm-2"
-                          ng-click="editAccount()"
-                          tooltip="Edit your account details">Account</button>
-                  <button class="btn btn-default col-sm-2"
-                          ng-click="setPassword()"
-                          tooltip="Change your password">Password</button>
-                  <button class="btn btn-default col-sm-2"
-                          ng-click="startBreak()"
-                          tooltip="Go on break">Break</button>
-                  <button class="btn btn-danger col-sm-2"
-                          ng-click="logout()"
-                          tooltip="Click and close window to logout the system">Logout</button>
-                </div>
-            </div>
-            <div class="container-fluid row">
-              <ul class="navigation-group col-xs-4">
-                <li class="container-fluid bg-primary rounded-top">
-                  <h4 class="text-center">Lists</h4>
-                </li>
-                <li ng-repeat="(module,title) in lists">
-                  <a class="btn btn-default btn-default full-width"
-                     ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                     ui-sref="{{ module }}.list">{{ title }}</a>
-                </li>
-              </ul>
-              <ul class="navigation-group col-xs-4">
-                <li class="container-fluid bg-primary rounded-top">
-                  <h4 class="text-center">Utilities</h4>
-                </li>
-                <li ng-repeat="(module,title) in utilities">
-                  <a class="btn btn-default btn-default full-width"
-                     ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                     ui-sref="{{ module }}.list">{{ title }}</a>
-                </li>
-              </ul>
-              <ul class="navigation-group col-xs-4">
-                <li class="container-fluid bg-primary rounded-top">
-                  <h4 class="text-center">Reports</h4>
-                </li>
-                <li ng-repeat="(module,title) in reports">
-                  <a class="btn btn-default btn-default full-width"
-                     ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                     ui-sref="{{ module }}.list">{{ title }}</a>
-                </li>
-              </ul>
-            </div>
-          </li>
-        </ul>
-        <button type="button"
-                class="navbar-toggle collapsed"
-                data-toggle="collapse"
-                data-target="#navbar-collapse">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-      </div>
-      <div class="collapse navbar-collapse" id="navbar-collapse">
-        <ul class="nav navbar-nav">
-          <ul class="breadcrumb">
-            <li ng-repeat="breadcrumb in breadcrumbTrail"
-                ng-class="{ 'navbar-link': !$last, 'active': $last }"
-                ng-click="breadcrumb.go()">{{ breadcrumb.title }}
+  <div ng-controller="HeaderCtrl">
+    <nav class="navigation-header navbar navbar-default noselect" ng-if="!isLoading">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <a class="navbar-brand dropdown-toggle" data-toggle="dropdown">{{ session.application.title }}</a>
+          <ul class="dropdown-menu navigation-menu">
+            <li ng-controller="MenuCtrl">
+              <div class="container-fluid well" style="margin: -14px 7px 7px;">
+                  <div class="btn-group col-sm-12">
+                    <button class="btn btn-default col-sm-2"
+                            ng-click="setSiteRole()"
+                            tooltip="Change which site and role you are logged in as">Site/Role</button>
+                    <button class="btn btn-default col-sm-2"
+                            ng-click="setTimezone()"
+                            tooltip="Change which timezone to display">Timezone</button>
+                    <button class="btn btn-default col-sm-2"
+                            ng-click="editAccount()"
+                            tooltip="Edit your account details">Account</button>
+                    <button class="btn btn-default col-sm-2"
+                            ng-click="setPassword()"
+                            tooltip="Change your password">Password</button>
+                    <button class="btn btn-default col-sm-2"
+                            ng-click="startBreak()"
+                            tooltip="Go on break">Break</button>
+                    <button class="btn btn-danger col-sm-2"
+                            ng-click="logout()"
+                            tooltip="Click and close window to logout the system">Logout</button>
+                  </div>
+              </div>
+              <div class="container-fluid row">
+                <ul class="navigation-group col-xs-4">
+                  <li class="container-fluid bg-primary rounded-top">
+                    <h4 class="text-center">Lists</h4>
+                  </li>
+                  <li ng-repeat="(module,title) in lists">
+                    <a class="btn btn-default btn-default full-width"
+                       ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
+                       ui-sref="{{ module }}.list">{{ title }}</a>
+                  </li>
+                </ul>
+                <ul class="navigation-group col-xs-4">
+                  <li class="container-fluid bg-primary rounded-top">
+                    <h4 class="text-center">Utilities</h4>
+                  </li>
+                  <li ng-repeat="(module,title) in utilities">
+                    <a class="btn btn-default btn-default full-width"
+                       ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
+                       ui-sref="{{ module }}.list">{{ title }}</a>
+                  </li>
+                </ul>
+                <ul class="navigation-group col-xs-4">
+                  <li class="container-fluid bg-primary rounded-top">
+                    <h4 class="text-center">Reports</h4>
+                  </li>
+                  <li ng-repeat="(module,title) in reports">
+                    <a class="btn btn-default btn-default full-width"
+                       ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
+                       ui-sref="{{ module }}.list">{{ title }}</a>
+                  </li>
+                </ul>
+              </div>
             </li>
           </ul>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-          <li>
-            <p class="navbar-text">
-              <span ng-click="setSiteRole()">{{ role.name | cnUCWords }} @ {{ site.name }}</span>
-              <span ng-click="setTimezone()"><i class="glyphicon glyphicon-time"></i> {{ time }}</span>
-            </p>
-          </li>
-        </ul>
+          <button type="button"
+                  class="navbar-toggle collapsed"
+                  data-toggle="collapse"
+                  data-target="#navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+          <ul class="nav navbar-nav">
+            <ul class="breadcrumb">
+              <li ng-repeat="breadcrumb in session.breadcrumbTrail"
+                  ng-class="{ 'navbar-link': !$last, 'active': $last }"
+                  ng-click="breadcrumb.go()">{{ breadcrumb.title }}
+              </li>
+            </ul>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <p class="navbar-text">
+                <span ng-click="setSiteRole()">{{ session.role.name | cnUCWords }} @ {{ session.site.name }}</span>
+                <span ng-click="setTimezone()"><i class="glyphicon glyphicon-time"></i> {{ session.time }}</span>
+              </p>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
+  </div>
 
   <div id="view" ui-view class="container-fluid outer-view-frame fade-transition noselect"></div>
 </body>

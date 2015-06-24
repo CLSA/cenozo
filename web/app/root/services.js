@@ -7,6 +7,7 @@ define( [], function() {
     function( CnSession ) {
       var object = function() {
         var self = this;
+        this.isLoading = true;
         this.setupBreadcrumbTrail = function() {
           CnSession.setBreadcrumbTrail(); // no trail to show
         };
@@ -16,6 +17,7 @@ define( [], function() {
           self.role = CnSession.role;
           self.site = CnSession.site;
           self.messageList = CnSession.messageList;
+          self.isLoading = false;
         } );
       };
 
