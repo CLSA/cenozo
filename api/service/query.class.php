@@ -33,12 +33,17 @@ class query extends read
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
 
     $leaf_subject = $this->get_leaf_subject();
+
     if( !is_null( $leaf_subject ) )
     {
-      // process "choosing" mode
-      if( $this->get_argument( 'choosing', false ) )
+      $relationship = $this->get_leaf_parent_relationship();
+      if( !is_null( $relationship ) && $relationship_class_name::NONE == $relationship )
       {
-        if( $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )
+        $this->status->set_code( 404 );
+      }
+      else if( $this->get_argument( 'choosing', false ) )
+      { // process "choosing" mode
+        if( $relationship_class_name::MANY_TO_MANY !== $relationship )
         { // must have table1/<id>/table2 where table1 N-to-N table2
           $this->status->set_code( 400 );
           throw lib::create( 'exception\runtime',

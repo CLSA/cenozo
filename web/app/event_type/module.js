@@ -1,6 +1,6 @@
 define( {
   subject: 'event_type',
-  identifier: {}, // standard
+  identifier: { column: 'name' }, // standard
   name: {
     singular: 'event type',
     plural: 'event types',
@@ -8,7 +8,14 @@ define( {
     pluralPossessive: 'event types\''
   },
   inputList: {
-    // not used
+    name: {
+      title: 'Name',
+      type: 'string'
+    },
+    description: {
+      title: 'Description',
+      type: 'string'
+    }
   },
   columnList: {
     name: { title: 'Name' },

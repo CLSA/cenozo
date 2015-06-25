@@ -812,11 +812,8 @@ cenozo.directive( 'cnRecordView', [
       },
       link: function( scope, element, attrs ) {
         scope.heading = attrs.heading;
-        if( angular.isUndefined( scope.heading ) ) {
-          var parentSubject = scope.model.getSubjectFromState();
-          scope.heading = parentSubject ? parentSubject.ucWords() + ' ' : '';
-          scope.heading += scope.model.name.singular.ucWords() + ' Details';
-        }
+        if( angular.isUndefined( scope.heading ) )
+          scope.heading = scope.model.name.singular.ucWords() + ' Details';
 
         var recordLoaded = false;
         scope.inputArray = scope.model.getInputArray( scope.removeInputs );

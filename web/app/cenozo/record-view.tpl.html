@@ -268,7 +268,7 @@
               type="button"
               class="btn btn-default btn-primary"
               ng-click="back()">
-        View {{ model.subject | cnUCWords }} List
+        View {{ model.name.singular | cnUCWords }} List
       </button>
       <button ng-repeat="parent in model.identifier.parent"
               ng-if="parentExists( parent.subject )"

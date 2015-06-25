@@ -166,6 +166,8 @@ class ui extends \cenozo\base_object
       $module_list['application']['children'] = array( 'cohort', 'role', 'site' );
     if( array_key_exists( 'alternate', $module_list ) )
       $module_list['alternate']['children'] = array( 'address', 'phone' );
+    if( array_key_exists( 'event_type', $module_list ) )
+      $module_list['event_type']['children'] = array( 'participant' );
     if( array_key_exists( 'participant', $module_list ) )
       $module_list['participant']['children'] = array( 'address', 'phone', 'consent', 'alternate', 'event' );
     if( array_key_exists( 'site', $module_list ) )
