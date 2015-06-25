@@ -667,9 +667,7 @@ cenozo.directive( 'cnRecordView', [
         removeInputs: '@'
       },
       controller: function( $scope ) {
-        $scope.hasParent = function() {
-          return angular.isDefined( $scope.model.identifier.parent );
-        }
+        $scope.hasParent = function() { return angular.isDefined( $scope.model.identifier.parent ); }
 
         $scope.parentExists = function( subject ) {
           if( !$scope.hasParent() ) return false;
@@ -690,9 +688,7 @@ cenozo.directive( 'cnRecordView', [
             parent.subject, parent.getIdentifier( $scope.model.viewModel.record ) );
         };
 
-        $scope.back = function() {
-          $scope.model.transitionToLastState();
-        };
+        $scope.back = function() { $scope.model.transitionToLastState(); };
 
         $scope.delete = function() {
           if( $scope.model.deleteEnabled ) {
@@ -783,9 +779,7 @@ cenozo.directive( 'cnRecordView', [
         };
 
         $scope.getTypeaheadValues = function( input, viewValue ) {
-          if( $scope.model.editEnabled ) {
-            return $scope.model.getTypeaheadValues( input, viewValue );
-          }
+          return $scope.model.editEnabled ? $scope.model.getTypeaheadValues( input, viewValue ) : []
         };
 
         $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
@@ -1471,7 +1465,6 @@ cenozo.factory( 'CnBaseViewFactory', [
           model.enableAdd( false );
           model.enableDelete( false );
           model.enableEdit( false );
-          model.enableView( false );
           object[parentModel.choosing[i].camel+'Model'] = model;
         }
 

@@ -264,7 +264,12 @@
               cn-really-click="delete()">
         <i class="glyphicon glyphicon-remove-sign"></i> Delete
       </button>
-      <button ng-if="!hasParent()" type="button" class="btn btn-default btn-primary" ng-click="back()">Back</button>
+      <button ng-if="!hasParent()"
+              type="button"
+              class="btn btn-default btn-primary"
+              ng-click="back()">
+        View {{ model.subject | cnUCWords }} List
+      </button>
       <button ng-repeat="parent in model.identifier.parent"
               ng-if="parentExists( parent.subject )"
               type="button"

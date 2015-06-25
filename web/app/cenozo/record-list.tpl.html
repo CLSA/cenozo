@@ -2,7 +2,7 @@
   <div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
   <table class="table"
          ng-class="{
-           'table-hover':(model.viewEnabled && !model.chooseEnabled) || model.listModel.chooseMode,
+           'table-hover':model.viewEnabled || model.chooseEnabled,
            'table-striped':!model.listModel.chooseMode
          } ">
     <thead>
@@ -59,7 +59,7 @@
                      | limitTo: ( model.listModel.paginationFactory.currentPage - 1 ) *
                                 model.listModel.paginationFactory.itemsPerPage - model.listModel.cache.length
                      | limitTo: model.listModel.paginationFactory.itemsPerPage"
-          ng-click="model.chooseEnabled ? chooseRecord( record ) : selectRecord( record )"
+          ng-click="model.chooseMode ? chooseRecord( record ) : selectRecord( record )"
           ng-class="{ success:model.listModel.chooseMode && record.chosen }">
           <td ng-repeat="column in columnArray">
             <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
