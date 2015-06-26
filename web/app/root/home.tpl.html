@@ -7,7 +7,7 @@
     <h3 class="text-primary">Welcome to {{ model.application.title }} version {{ model.application.version }}</h3>
     <div class="container-fluid">
       You are currently logged on as
-      <strong>{{ model.user.first_name }} {{ model.user.last_name }}</strong>
+      <strong>{{ model.user.firstName }} {{ model.user.lastName }}</strong>
       under the role of
       <strong>{{ model.role.name }}</strong>
       for the
@@ -19,26 +19,26 @@
       </span>
     </div>
     <div class="vertical-spacer"></div>
-    <div ng-if="model.user.last_activity" class="container-fluid">
+    <div ng-if="model.user.lastActivity" class="container-fluid">
       You were last logged in from
-      <strong>{{ model.user.last_activity.start_datetime | cnDatetime:datetime }}</strong>
+      <strong>{{ model.user.lastActivity.startDatetime | cnDatetime:datetime }}</strong>
       until
-      <strong>{{ model.user.last_activity.end_datetime | cnDatetime:datetime }}</strong>
+      <strong>{{ model.user.lastActivity.endDatetime | cnDatetime:datetime }}</strong>
       under the role of 
-      <strong>{{ model.user.last_activity.role_name }}</strong>
+      <strong>{{ model.user.lastActivity.roleName }}</strong>
       for the
-      <strong>{{ model.user.last_activity.site_name }}</strong>
+      <strong>{{ model.user.lastActivity.siteName }}</strong>
       site.
     </div>
     <div class="vertical-spacer"></div>
     <h3 class="text-primary">System Status</h3>
-    <div ng-if="model.application.development_mode" class="container-fluid text-warning">
+    <div ng-if="model.application.developmentMode" class="container-fluid text-warning">
       This application is currently in development mode.
     </div>
     <div class="container-fluid">
-      There {{ 1 == model.application.active_users ? "is" : "are" }} currently
-      {{ model.application.active_users }} active user{{ 1 == model.application.active_users ? "" : "s" }},
-      {{ model.site.active_users }} of which {{ 1 == model.application.active_users ? "is" : "are" }}
+      There {{ 1 == model.application.activeUsers ? "is" : "are" }} currently
+      {{ model.application.activeUsers }} active user{{ 1 == model.application.activeUsers ? "" : "s" }},
+      {{ model.site.activeUsers }} of which {{ 1 == model.application.activeUsers ? "is" : "are" }}
       logged into your site.
     </div>
     <div class="vertical-spacer"></div>

@@ -1,4 +1,4 @@
-<form ng-submit="local.ok()" novalidate name="form" class="noselect">
+<form ng-submit="ok()" novalidate name="form" class="noselect">
   <div class="modal-header">
     <h4 class="modal-title">Select a Timezone</h4>
   </div>
@@ -17,8 +17,8 @@
              ng-class="{ 'has-feedback has-error': form.timezone.$dirty && form.timezone.$invalid }">
           <input id="timezone"
                  name="timezone"
-                 ng-model="local.timezone"
-                 typeahead="item for item in local.getTypeaheadValues( $viewValue )"
+                 ng-model="timezone"
+                 typeahead="item for item in getTypeaheadValues( $viewValue )"
                  typeahead-editable="false"
                  typeahead-min-length="2"
                  class="form-control"
@@ -37,9 +37,9 @@
   </div>
   <div class="modal-footer">
     <div class="btn-group pull-left">
-      <button type="button" class="btn btn-info" ng-click="local.siteTimezone()">Current Site</button>
+      <button type="button" class="btn btn-info" ng-click="siteTimezone()">Current Site</button>
     </div>
-    <button type="button" class="btn btn-default" ng-click="local.cancel()">Cancel</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
     <button type="submit" class="btn btn-primary" ng-disabled="form.timezone.$invalid">OK</button>
   </div>
 </form>

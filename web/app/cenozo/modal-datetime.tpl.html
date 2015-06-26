@@ -1,4 +1,4 @@
-<form ng-submit="local.ok()" class="noselect">
+<form ng-submit="ok()" class="noselect">
   <div class="modal-header">
     <h4 class="modal-title">Select a value for {{ local.title }}</h4>
   </div>
@@ -100,7 +100,7 @@
               class="btn btn-warning"
               ng-click="local.select(null)">Empty</button>
     </div>
-    <button type="button" class="btn btn-default" ng-click="local.cancel()">Cancel</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
     <button type="submit" class="btn btn-primary">OK</button>
   </div>
 </form>

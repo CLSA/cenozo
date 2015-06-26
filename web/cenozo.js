@@ -197,9 +197,9 @@ cenozo.controller( 'HeaderCtrl', [
     $scope.setSiteRole = function() {
       CnModalSiteRoleFactory.instance().show().then( function( response ) {
         if( angular.isObject( response ) ) {
-          if( response.site_id != CnSession.site.id || response.role_id != CnSession.role.id ) {
+          if( response.siteId != CnSession.site.id || response.roleId != CnSession.role.id ) {
             $state.go( 'wait' ); // show a waiting screen while we're changing the site/role
-            CnSession.setSiteRole( response.site_id, response.role_id ).then(
+            CnSession.setSiteRole( response.siteId, response.roleId ).then(
               function success() {
                 $window.location.assign( $window.location.pathname );
               },
@@ -212,19 +212,7 @@ cenozo.controller( 'HeaderCtrl', [
 
     $scope.editAccount = function() {
       CnModalAccountFactory.instance( { user: CnSession.user } ).show().then( function( response ) {
-        if( angular.isObject( response ) ) {
-          CnSession.setUserDetails(
-            response.firstName, response.lastName, response.email, response.use12HourClock ).then(
-            function success() {
-              CnSession.user.first_name = response.firstName;
-              CnSession.user.last_name = response.lastName;
-              CnSession.user.email = response.email;
-              CnSession.user.use_12hour_clock = 1 == response.use12HourClock;
-              updateTime();
-            },
-            CnSession.errorHandler
-          );
-        }
+        if( response ) CnSession.setUserDetails().then( CnSession.updateTime, CnSession.errorHandler );
       } );
     };
 
@@ -625,7 +613,7 @@ cenozo.directive( 'cnRecordList', [
 
         // add site to removeColumns if role doesn't allow for all sites
         if( angular.isUndefined( scope.removeColumns ) ) scope.removeColumns = [];
-        if( !CnSession.role.all_sites && 0 > scope.removeColumns.indexOf( 'site' ) )
+        if( !CnSession.role.allSites && 0 > scope.removeColumns.indexOf( 'site' ) )
           scope.removeColumns.push( 'site' );
         scope.columnArray = scope.model.getColumnArray( scope.removeColumns );
 
@@ -1025,10 +1013,14 @@ cenozo.factory( 'CnSession', [
       this.promise = CnHttpFactory.instance( {
         path: 'self/0'
       } ).get().then( function success( response ) {
-        self.application = angular.copy( response.data.application );
-        self.user = angular.copy( response.data.user );
-        self.site = angular.copy( response.data.site );
-        self.role = angular.copy( response.data.role );
+        for( var property in response.data.application )
+          self.application[property.snakeToCamel()] = response.data.application[property];
+        for( var property in response.data.user )
+          self.user[property.snakeToCamel()] = response.data.user[property];
+        for( var property in response.data.site )
+          self.site[property.snakeToCamel()] = response.data.site[property];
+        for( var property in response.data.role )
+          self.role[property.snakeToCamel()] = response.data.role[property];
         self.messageList = angular.copy( response.data.system_message_list );
 
         // sanitize the timezone
@@ -1064,19 +1056,7 @@ cenozo.factory( 'CnSession', [
         // if the user's email isn't set then open the password dialog
         if( !self.user.email ) {
           CnModalAccountFactory.instance( { user: self.user } ).show().then( function( response ) {
-            if( angular.isObject( response ) ) {
-              self.setUserDetails(
-                response.firstName, response.lastName, response.email, response.use12HourClock ).then(
-                function success() {
-                  self.user.first_name = response.firstName;
-                  self.user.last_name = response.lastName;
-                  self.user.email = response.email;
-                  self.user.use_12hour_clock = 1 == response.use12HourClock;
-                  updateTime();
-                },
-                self.errorHandler
-              );
-            }
+            if( angular.isObject( response ) ) self.setUserDetails().then( self.updateTime, self.errorHandler );
           } );
         }
       } ).catch( self.errorHandler );
@@ -1088,22 +1068,22 @@ cenozo.factory( 'CnSession', [
         } ).patch();
       };
 
-      this.setSiteRole = function setSiteRole( site_id, role_id ) {
+      this.setSiteRole = function setSiteRole( siteId, roleId ) {
         return CnHttpFactory.instance( {
           path: 'self/0',
-          data: { site: { id: site_id }, role: { id: role_id } }
+          data: { site: { id: siteId }, role: { id: roleId } }
         } ).patch();
       };
 
-      this.setUserDetails = function setUserDetails( firstName, lastName, email, use12HourClock ) {
+      this.setUserDetails = function setUserDetails() {
         return CnHttpFactory.instance( {
           path: 'self/0',
           data: {
             user: {
-              first_name: firstName,
-              last_name: lastName,
-              email: email,
-              use_12hour_clock: use12HourClock
+              first_name: self.user.firstName,
+              last_name: self.user.lastName,
+              email: self.user.email,
+              use_12hour_clock: self.user.use12hourClock
             }
           }
         } ).patch();
@@ -1111,7 +1091,7 @@ cenozo.factory( 'CnSession', [
 
       this.getTimeFormat = function getTimeFormat( seconds ) {
         if( angular.isUndefined( seconds ) ) seconds = false;
-        return self.user.use_12hour_clock ?
+        return self.user.use12hourClock ?
           'h:mm' + ( seconds ? ':ss' : '' ) + 'a' :
           'H:mm' + ( seconds ? ':ss' : '' );
       };
@@ -2217,12 +2197,6 @@ cenozo.service( 'CnModalAccountFactory', [
       if( angular.isUndefined( params.user ) )
         throw 'Tried to create CnModalAccountFactory instance without a user';
 
-      angular.extend( this, params );
-      this.firstName = params.user.first_name;
-      this.lastName = params.user.last_name;
-      this.email = params.user.email;
-      this.use12HourClock = params.user.use_12hour_clock ? 1 : 0;
-
       this.show = function() {
         return $modal.open( {
           backdrop: 'static',
@@ -2230,18 +2204,16 @@ cenozo.service( 'CnModalAccountFactory', [
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-account.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = self;
-            $scope.local.ok = function() {
-              $modalInstance.close( {
-                firstName: $scope.local.firstName,
-                lastName: $scope.local.lastName,
-                email: $scope.local.email,
-                use12HourClock: $scope.local.use12HourClock
-              } );
+            $scope.user = params.user;
+            // need to convert boolean to integer for select dropdown
+            $scope.use12hourClock = $scope.user.use12hourClock ? 1 : 0;
+            $scope.ok = function() {
+              $scope.user.use12hourClock = 1 == $scope.use12hourClock;
+              $modalInstance.close( true );
             };
-            $scope.local.cancel = function() { $modalInstance.close( false ); };
-            $scope.local.testEmailFormat = function() {
-              $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]+$/.test( $scope.local.email );
+            $scope.cancel = function() { $modalInstance.close( false ); };
+            $scope.testEmailFormat = function() {
+              $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]+$/.test( $scope.user.email );
               cenozo.updateFormElement( $scope.form.email, true );
             };
           }
@@ -2263,8 +2235,8 @@ cenozo.service( 'CnModalConfirmFactory', [
   function( $modal ) {
     var object = function( params ) {
       var self = this;
-      this.title = 'Title';
-      this.message = 'Message';
+      this.title = 'Confirm';
+      this.message = 'Are you sure?';
       angular.extend( this, params );
 
       this.show = function() {
@@ -2274,9 +2246,10 @@ cenozo.service( 'CnModalConfirmFactory', [
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-confirm.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = self;
-            $scope.local.yes = function() { $modalInstance.close( true ); };
-            $scope.local.no = function() { $modalInstance.close( false ); };
+            $scope.title = self.title;
+            $scope.message = self.message;
+            $scope.yes = function() { $modalInstance.close( true ); };
+            $scope.no = function() { $modalInstance.close( false ); };
           }
         } ).result;
       };
@@ -2498,10 +2471,10 @@ cenozo.service( 'CnModalDatetimeFactory', [
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-datetime.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
-            $scope.local.ok = function() {
+            $scope.ok = function() {
               $modalInstance.close( null === $scope.local.date ? null : $scope.local.date.tz( 'utc' ).format() );
             };
-            $scope.local.cancel = function() { $modalInstance.close( false ); };
+            $scope.cancel = function() { $modalInstance.close( false ); };
 
             $scope.$watch( 'local.hourSliderValue', function( hour ) {
               if( cenozo.isMoment( $scope.local.date ) ) {
@@ -2554,8 +2527,10 @@ cenozo.service( 'CnModalMessageFactory', [
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-message.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = self;
-            $scope.local.close = function() { $modalInstance.close( false ); };
+            $scope.title = self.title;
+            $scope.message = self.message;
+            $scope.error = self.error
+            $scope.close = function() { $modalInstance.close( false ); };
           }
         } ).result;
       };
@@ -2586,22 +2561,23 @@ cenozo.service( 'CnModalPasswordFactory', [
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-password.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = self;
-            $scope.local.ok = function() {
+            $scope.confirm = self.confirm;
+            $scope.showPasswords = self.showPasswords;
+            $scope.ok = function() {
               $modalInstance.close( {
-                currentPass: $scope.local.currentPass,
-                requestedPass: $scope.local.newPass1
+                currentPass: $scope.currentPass,
+                requestedPass: $scope.newPass1
               } );
             };
-            $scope.local.cancel = function() { if( this.confirm ) $modalInstance.close( false ); };
-            $scope.local.checkPasswordMatch = function() {
+            $scope.cancel = function() { if( this.confirm ) $modalInstance.close( false ); };
+            $scope.checkPasswordMatch = function() {
               var match = true;
               var item1 = $scope.form.newPass1;
               var item2 = $scope.form.newPass2;
               if( item1.$dirty && item2.$dirty ) {
                 if( ( item1.$error.noMatch || !item1.$invalid ) &&
                     ( item2.$error.noMatch || !item2.$invalid ) ) {
-                  var match = $scope.local.newPass1 === $scope.local.newPass2;
+                  var match = $scope.newPass1 === $scope.newPass2;
                   item1.$error.noMatch = !match;
                   cenozo.updateFormElement( item1, false );
                   item2.$error.noMatch = !match;
@@ -2611,8 +2587,8 @@ cenozo.service( 'CnModalPasswordFactory', [
 
               return match;
             };
-            $scope.local.toggleShowPasswords = function() {
-              $scope.local.showPasswords = !$scope.local.showPasswords;
+            $scope.toggleShowPasswords = function() {
+              $scope.showPasswords = !$scope.showPasswords;
             };
           }
         } ).result;
@@ -2691,7 +2667,7 @@ cenozo.service( 'CnModalRestrictFactory', [
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-restrict.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
-            $scope.local.ok = function( restrictList ) {
+            $scope.ok = function( restrictList ) {
               // remove restrictions with no values before returning the list
               for( var i = restrictList.length - 1; i >= 0; i-- )
                 if( angular.isUndefined( restrictList[i].value ) )
@@ -2702,16 +2678,16 @@ cenozo.service( 'CnModalRestrictFactory', [
 
               $modalInstance.close( restrictList );
             };
-            $scope.local.remove = function() { $modalInstance.close( [] ); };
-            $scope.local.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
+            $scope.remove = function() { $modalInstance.close( [] ); };
+            $scope.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
 
-            $scope.local.removeRestriction = function( index ) {
+            $scope.removeRestriction = function( index ) {
               this.restrictList.splice( index, 1 );
               this.emptyList.splice( index, 1 );
             };
 
             if( cenozo.isDatetimeType( $scope.local.type ) ) {
-              $scope.local.selectDatetime = function( index ) {
+              $scope.selectDatetime = function( index ) {
                 var self = this;
                 CnModalDatetimeFactory.instance( {
                   title: this.column,
@@ -2737,7 +2713,7 @@ cenozo.service( 'CnModalRestrictFactory', [
               };
             }
 
-            $scope.local.toggleEmpty = function( index ) {
+            $scope.toggleEmpty = function( index ) {
               if( this.emptyList[index].state ) {
                 this.restrictList[index].value = undefined === this.emptyList[index].oldValue
                                                ? this.getInitialValue()
@@ -2772,21 +2748,6 @@ cenozo.service( 'CnModalSiteRoleFactory', [
   '$modal', 'CnSession',
   function( $modal, CnSession ) {
     var object = function() {
-      var self = this;
-      this.refreshRoleList = function() {
-        for( var i = 0; i < this.siteList.length; i++ )
-          if( this.site_id == this.siteList[i].id ) 
-            this.roleList = this.siteList[i].roleList;
-        this.role_id = this.roleList[0].id;
-      };
-
-      CnSession.promise.then( function() {
-        self.siteList = CnSession.siteList;
-        self.site_id = CnSession.site.id;
-        self.refreshRoleList();
-        self.role_id = CnSession.role.id;
-      } );
-
       this.show = function() {
         return $modal.open( {
           backdrop: 'static',
@@ -2794,14 +2755,28 @@ cenozo.service( 'CnModalSiteRoleFactory', [
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-site-role.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = self;
-            $scope.local.ok = function() {
+            // load the data from the session once it is available
+            CnSession.promise.then( function() {
+              $scope.siteList = CnSession.siteList;
+              $scope.siteId = CnSession.site.id;
+              $scope.refreshRoleList();
+              $scope.roleId = CnSession.role.id;
+            } );
+
+            $scope.refreshRoleList = function() {
+              for( var i = 0; i < this.siteList.length; i++ )
+                if( this.siteId == this.siteList[i].id ) 
+                  this.roleList = this.siteList[i].roleList;
+              this.roleId = this.roleList[0].id;
+            };
+
+            $scope.ok = function() {
               $modalInstance.close( {
-                site_id: $scope.local.site_id,
-                role_id: $scope.local.role_id
+                siteId: $scope.siteId,
+                roleId: $scope.roleId
               } );
             };
-            $scope.local.cancel = function() { $modalInstance.close( false ); };
+            $scope.cancel = function() { $modalInstance.close( false ); };
           }
         } ).result;
       };
@@ -2822,17 +2797,8 @@ cenozo.service( 'CnModalTimezoneFactory', [
     var object = function( params ) {
       var self = this;
 
-      // service vars which can be defined by the contructor's params
       this.timezone = null;
       angular.extend( this, params );
-
-      // service vars which cannot be defined by the constructor's params
-      this.timezoneList = moment.tz.names();
-
-      this.getTypeaheadValues = function( viewValue ) {
-        var re = new RegExp( angular.lowercase( viewValue ) );
-        return this.timezoneList.filter( function( value ) { return re.test( angular.lowercase( value ) ); } );
-      };
 
       this.show = function() {
         return $modal.open( {
@@ -2841,49 +2807,22 @@ cenozo.service( 'CnModalTimezoneFactory', [
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-timezone.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            $scope.local = self;
-            $scope.local.ok = function() {
-              $modalInstance.close( $scope.local.timezone );
+            $scope.timezone = self.timezone;
+            $scope.timezoneList = moment.tz.names();
+
+            $scope.getTypeaheadValues = function( viewValue ) {
+              var re = new RegExp( angular.lowercase( viewValue ) );
+              return $scope.timezoneList.filter( function( value ) {
+                return re.test( angular.lowercase( value ) );
+              } );
             };
-            $scope.local.cancel = function() { $modalInstance.close( false ); };
-            $scope.local.siteTimezone = function() {
-              $scope.local.timezone = CnSession.site.timezone;
+
+            $scope.siteTimezone = function() {
+              $scope.timezone = CnSession.site.timezone;
             };
-          }
-        } ).result;
-      };
-    };
 
-    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
-  }
-] );
-
-/* ######################################################################################################## */
-
-/**
- * TODO: document
- */
-cenozo.service( 'CnModalValueFactory', [
-  '$modal',
-  function( $modal ) {
-    var object = function( params ) {
-      var self = this;
-      this.title = 'Title';
-      this.message = 'Message';
-      this.enumList = null;
-      this.value = null;
-      angular.extend( this, params );
-
-      this.show = function() {
-        return $modal.open( {
-          backdrop: 'static',
-          keyboard: true,
-          modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-value.tpl.html',
-          controller: function( $scope, $modalInstance ) {
-            $scope.local = self;
-            $scope.local.ok = function() { $modalInstance.close( $scope.local.value ); };
-            $scope.local.cancel = function() { $modalInstance.close( false ); };
+            $scope.ok = function() { $modalInstance.close( $scope.timezone ); };
+            $scope.cancel = function() { $modalInstance.close( false ); };
           }
         } ).result;
       };
