@@ -225,3 +225,4 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
 
 .restrict-description { font-size: 80%; margin: 0; }
 .restrict-add { display: table; width: 100%; }
+.glyph-hover:hover { color: #d9edf7; }

@@ -556,6 +556,10 @@ cenozo.directive( 'cnRecordList', [
         removeColumns: '@'
       },
       controller: function( $scope ) {
+        $scope.refresh = function() {
+          if( !$scope.model.listModel.isLoading ) $scope.model.listModel.onList( true );
+        };
+
         $scope.addRecord = function() {
           if( $scope.model.addEnabled ) $scope.model.transitionToAddState();
         };
@@ -639,6 +643,13 @@ cenozo.directive( 'cnRecordView', [
         removeInputs: '@'
       },
       controller: function( $scope ) {
+        $scope.refresh = function() {
+          if( $scope.isComplete ) {
+            $scope.isComplete = false;
+            $scope.model.viewModel.onView().then( function() { $scope.isComplete = true } ); 
+          }
+        };
+
         $scope.hasParent = function() { return angular.isDefined( $scope.model.identifier.parent ); }
 
         $scope.parentExists = function( subject ) {

@@ -1,5 +1,14 @@
 <div class="record-list rounded">
-  <div class="container-fluid bg-primary rounded-top"><h4>{{ heading }}</h4></div>
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>
+      <i class="glyphicon glyphicon-refresh glyph-hover pull-right"
+         ng-if="!model.listModel.isLoading"
+         ng-click="refresh()"
+         tooltip="Click to refresh data"
+         tooltip-placement="right"></i>
+      {{ heading }}
+    </h4>
+  </div>
   <table class="table"
          ng-class="{
            'table-hover':model.viewEnabled || model.chooseEnabled,

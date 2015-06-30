@@ -1,6 +1,13 @@
 <div class="record-view rounded">
   <div class="container-fluid bg-primary rounded-top">
-    <h4>{{ heading }}{{ model.editEnabled ? '' : ' (read only)' }} <span ng-if="!isComplete">(Loading...)</span></h4>
+    <h4>
+      <i class="glyphicon glyphicon-refresh glyph-hover pull-right"
+         ng-if="isComplete"
+         ng-click="refresh()"
+         tooltip="Click to refresh data"
+         tooltip-placement="left"></i>
+      {{ heading }}{{ model.editEnabled ? '' : ' (read only)' }} <span ng-if="!isComplete">(Loading...)</span>
+    </h4>
   </div>
   <form name="form" class="form-horizontal" novalidate>
     <div class="form-body">
