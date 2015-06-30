@@ -7,7 +7,7 @@
          } ">
     <thead>
       <tr class="info">
-        <td ng-repeat="column in columnArray">
+        <td ng-repeat="column in dataArray">
           <div class="btn-group" tooltip="{{ column.help }}">
             <button class="btn btn-narrow btn-info"
                     ng-click="model.listModel.orderBy( column.key )">{{ column.title }}
@@ -18,7 +18,6 @@
             </button>
             <button class="btn btn-narrow"
                     ng-class="0 < column.restrictList.length ? 'btn-success' : 'btn-info'"
-                    ng-if="column.allowRestrict"
                     ng-click="setRestrictList( column.key )"
                     tooltip="{{ 0 < column.restrictList.length ?
                                 'Click to modify existing restriction applied to the ' + column.title + ' column' :
@@ -61,7 +60,7 @@
                      | limitTo: model.listModel.paginationFactory.itemsPerPage"
           ng-click="model.chooseMode ? chooseRecord( record ) : selectRecord( record )"
           ng-class="{ success:model.listModel.chooseMode && record.chosen }">
-          <td ng-repeat="column in columnArray">
+          <td ng-repeat="column in dataArray">
             <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
           </td>
           <td class="tiny" ng-if="model.deleteEnabled && !model.chooseEnabled">

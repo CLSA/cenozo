@@ -496,18 +496,14 @@ cenozo.directive( 'cnRecordAdd', [
         scope.formattedRecord = {};
 
         scope.heading = attrs.heading;
-        if( angular.isUndefined( scope.heading ) ) {
-          var parentSubject = scope.model.getSubjectFromState();
-          scope.heading = 'Create ';
-          scope.heading += parentSubject ? parentSubject.ucWords() + ' ' : '';
-          scope.heading += scope.model.name.singular.ucWords();
-        }
+        if( angular.isUndefined( scope.heading ) )
+          scope.heading = 'Create ' + scope.model.name.singular.ucWords();
 
-        // get the input array and add enum lists for boolean types
-        scope.inputArray = scope.model.getInputArray( scope.removeInputs );
-        for( var i = 0; i < scope.inputArray.length; i++ ) {
-          if( 'boolean' == scope.inputArray[i].type ) {
-            scope.inputArray[i].enumList = [
+        // get the data array and add enum lists for boolean types
+        scope.dataArray = scope.model.getDataArray( scope.removeInputs, 'add' );
+        for( var i = 0; i < scope.dataArray.length; i++ ) {
+          if( 'boolean' == scope.dataArray[i].type ) {
+            scope.dataArray[i].enumList = [
               { value: undefined, name: '(Select Yes or No)' },
               { value: true, name: 'Yes' },
               { value: false, name: 'No' }
@@ -522,8 +518,8 @@ cenozo.directive( 'cnRecordAdd', [
         scope.isComplete = false;
         scope.$watch( 'model.metadata', function( metadata ) {
           if( angular.isDefined( metadata ) && 0 === metadata.loadingCount && !scope.isComplete ) {
-            for( var i = 0; i < scope.inputArray.length; i++ ) {
-              var input = scope.inputArray[i];
+            for( var i = 0; i < scope.dataArray.length; i++ ) {
+              var input = scope.dataArray[i];
               var meta = metadata.columnList[input.key];
               if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
                 input.enumList = angular.copy( meta.enumList );
@@ -615,10 +611,10 @@ cenozo.directive( 'cnRecordList', [
         if( angular.isUndefined( scope.removeColumns ) ) scope.removeColumns = [];
         if( !CnSession.role.allSites && 0 > scope.removeColumns.indexOf( 'site' ) )
           scope.removeColumns.push( 'site' );
-        scope.columnArray = scope.model.getColumnArray( scope.removeColumns );
+        scope.dataArray = scope.model.getDataArray( scope.removeColumns, 'list' );
 
         scope.setRestrictList = function( column ) {
-          var column = scope.columnArray.findByProperty( 'key', column );
+          var column = scope.dataArray.findByProperty( 'key', column );
           CnModalRestrictFactory.instance( {
             name: scope.model.name,
             column: column.title,
@@ -630,7 +626,7 @@ cenozo.directive( 'cnRecordList', [
         };
 
         // get the total number of columns in the table
-        scope.numColumns = scope.columnArray.length;
+        scope.numColumns = scope.dataArray.length;
         if( scope.model.deleteEnabled ) scope.numColumns++;
       }
     };
@@ -804,7 +800,7 @@ cenozo.directive( 'cnRecordView', [
           scope.heading = scope.model.name.singular.ucWords() + ' Details';
 
         var recordLoaded = false;
-        scope.inputArray = scope.model.getInputArray( scope.removeInputs );
+        scope.dataArray = scope.model.getDataArray( scope.removeInputs, 'view' );
         scope.$watch( 'model.viewModel.record', function( record ) {
           // convert datetimes
           if( angular.isDefined( record.id ) && !recordLoaded ) {
@@ -823,7 +819,7 @@ cenozo.directive( 'cnRecordView', [
               !metadataLoaded ) {
             // build enum lists
             for( var key in metadata.columnList ) {
-              var input = scope.inputArray.findByProperty( 'key', key );
+              var input = scope.dataArray.findByProperty( 'key', key );
               if( input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
                 input.enumList = 'boolean' === input.type
                                ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
@@ -1580,49 +1576,7 @@ cenozo.factory( 'CnBaseModelFactory', [
   function( $state, CnSession, CnHttpFactory ) {
     return {
       construct: function( object, module ) {
-        for( var property in module ) object[property] = angular.copy( module[property] );
-
-        // restructure and add helper functions to the identifier parent(s)
-        if( angular.isDefined( object.identifier.parent ) ) {
-          if( !angular.isArray( object.identifier.parent ) )
-            object.identifier.parent = [ object.identifier.parent ];
-          for( var i = 0; i < object.identifier.parent.length; i++ ) {
-            object.identifier.parent[i].alias = object.identifier.parent[i].column.replace( '.', '_' );
-            object.identifier.parent[i].getIdentifier = function( record ) {
-              var columnParts = this.column.split( '.' );
-              var identifier = record[this.alias];
-              if( 2 == columnParts.length ) identifier = columnParts[1] + '=' + identifier;
-              return identifier;
-            };
-          }
-        }
-
-        // create empty restrict lists and filters for each column in the module's columnList
-        for( var property in object.columnList ) {
-          object.columnList[property].restrictList = [];
-
-          if( angular.isUndefined( object.columnList[property].type ) )
-            object.columnList[property].type = 'string';
-
-          var type = object.columnList[property].type;
-          if( cenozo.isDatetimeType( type ) ) {
-            object.columnList[property].filter = 'cnDatetime:' + type;
-          } else if( 'rank' == type ) {
-            object.columnList[property].filter = 'cnOrdinal';
-          } else if( 'boolean' == type ) {
-            object.columnList[property].filter = 'cnYesNo';
-          }
-        }
-
-        var moduleProperties = cenozoApp.moduleList[module.subject];
-        object.children = angular.copy( moduleProperties.children );
-        object.choosing = angular.copy( moduleProperties.choosing );
-        object.metadata = { loadingCount: 0 };
-        object.addEnabled = 0 <= moduleProperties.actions.indexOf( 'add' );
-        object.chooseEnabled = false;
-        object.deleteEnabled = 0 <= moduleProperties.actions.indexOf( 'delete' );
-        object.editEnabled = 0 <= moduleProperties.actions.indexOf( 'edit' );
-        object.viewEnabled = 0 <= moduleProperties.actions.indexOf( 'view' );
+        // Note: methods are added to object here, members below
 
         /**
          * get the identifier based on what is in the model's module
@@ -1715,13 +1669,11 @@ cenozo.factory( 'CnBaseModelFactory', [
           var selectList = [];
           var joinList = [];
           var whereList = [];
-          var list = angular.copy( 'list' == type ? this.columnList : this.inputList );
+          var list = 'list' == type ? this.columnList : this.inputList;
 
           // add identifier data if we are getting view data
-            if( angular.isDefined( this.identifier.column ) &&
-                angular.isUndefined( list[this.identifier.column] ) ) {
-              list[this.identifier.column] = { type: 'identifier' };
-            }
+          if( angular.isDefined( this.identifier.column ) && angular.isUndefined( list[this.identifier.column] ) )
+            list[this.identifier.column] = { type: 'identifier' };
 
           if( 'view' == type ) {
             if( angular.isDefined( this.identifier.parent ) ) {
@@ -1735,6 +1687,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
 
           for( var key in list ) {
+            // skip "noview" columns when the type is view
+            if( 'view' == type && true === list[key].noview ) continue;
+
             var lastJoin = null;
             var parentTable = this.subject;
             var columnParts = angular.isUndefined( list[key].column ) ? [ key ] : list[key].column.split( '.' );
@@ -1924,43 +1879,32 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * Makes an array containing COPIES of the model's input list
          */
-        object.getInputArray = function( removeInputList ) {
-          if( angular.isUndefined( removeInputList ) ) removeInputList = [];
+        object.getDataArray = function( removeList, type ) {
+          if( angular.isUndefined( removeList ) ) removeList = [];
 
           // make a copy of the input list and remove any parent column(s)
-          var inputObjectList = angular.copy( this.inputList );
           var stateSubject = this.getSubjectFromState();
-          if( stateSubject != this.subject ) delete inputObjectList[stateSubject+'_id'];
 
           // create an array out of the input list
-          var inputArray = [];
-          for( var key in inputObjectList ) {
-            if( 0 > removeInputList.indexOf( key ) ) {
-              var input = inputObjectList[key];
-              input.key = key;
-              inputArray.push( input );
+          var data = [];
+          if( 'list' == type ) {
+            for( var key in this.columnList )
+              if( 0 > removeList.indexOf( key ) )
+                data.push( this.columnList[key] );
+          } else { // add or view
+            for( var key in this.inputList ) {
+              if( 0 > removeList.indexOf( key ) &&
+                  // some items may be marked to not show when adding the record
+                  !( 'add' == type && true === this.inputList[key].noadd ) &&
+                  // some items may be marked to not show when viewing the record
+                  !( 'view' == type && true === this.inputList[key].noview ) ) {
+                  /* TODO: verify that the following is no longer needed
+                  !( stateSubject == this.subject && stateSubject+'_id' == key ) ) { */
+                data.push( this.inputList[key] );
+              }
             }
           }
-          return inputArray;
-        };
-
-        /**
-         * Makes an array containing REFERENCES to the model's column list
-         */
-        object.getColumnArray = function( removeColumnList ) {
-          if( angular.isUndefined( removeColumnList ) ) removeColumnList = [];
-
-          // create an array out of the column list
-          var columnArray = [];
-          for( var key in this.columnList ) {
-            if( 0 > removeColumnList.indexOf( key ) ) {
-              var column = this.columnList[key];
-              if( angular.isUndefined( column.allowRestrict ) ) column.allowRestrict = true;
-              column.key = key;
-              columnArray.push( column );
-            }
-          }
-          return columnArray;
+          return data;
         };
 
         /**
@@ -2141,6 +2085,68 @@ cenozo.factory( 'CnBaseModelFactory', [
           // if we get here then the format is okay
           return true;
         };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // DEFINE ALL OBJECT PROPERTIES HERE
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        // copy parameters from the module to the object
+        for( var property in module ) object[property] = angular.copy( module[property] );
+
+        // restructure and add helper functions to the identifier parent(s)
+        if( angular.isDefined( object.identifier.parent ) ) {
+          if( !angular.isArray( object.identifier.parent ) )
+            object.identifier.parent = [ object.identifier.parent ];
+          for( var i = 0; i < object.identifier.parent.length; i++ ) {
+            object.identifier.parent[i].alias = object.identifier.parent[i].column.replace( '.', '_' );
+            object.identifier.parent[i].getIdentifier = function( record ) {
+              var columnParts = this.column.split( '.' );
+              var identifier = record[this.alias];
+              if( 2 == columnParts.length ) identifier = columnParts[1] + '=' + identifier;
+              return identifier;
+            };
+          }
+        }
+
+        var moduleProperties = cenozoApp.moduleList[module.subject];
+        object.children = angular.copy( moduleProperties.children );
+        object.choosing = angular.copy( moduleProperties.choosing );
+        object.metadata = { loadingCount: 0 };
+        object.addEnabled = 0 <= moduleProperties.actions.indexOf( 'add' );
+        object.chooseEnabled = false;
+        object.deleteEnabled = 0 <= moduleProperties.actions.indexOf( 'delete' );
+        object.editEnabled = 0 <= moduleProperties.actions.indexOf( 'edit' );
+        object.viewEnabled = 0 <= moduleProperties.actions.indexOf( 'view' );
+
+        // process input list
+        for( var key in object.inputList ) {
+          object.inputList[key].key = key;
+        }
+
+        // process column list
+        var stateSubject = object.getSubjectFromState();
+        for( var key in object.columnList ) {
+          // If we are viewing a list whose subject doesn't match the current state then we need
+          // to remove any columns which are directly related to the current state
+          if( stateSubject != object.subject &&
+              angular.isDefined( object.columnList[key].column ) &&
+              stateSubject == object.columnList[key].column.split( '.' )[0] ) {
+            delete object.columnList[key];
+          } else {
+            // add key, restrictList and filter columns and make sure we have a type
+            object.columnList[key].key = key;
+            if( angular.isUndefined( object.columnList[key].type ) ) object.columnList[key].type = 'string';
+            object.columnList[key].restrictList = [];
+            var type = object.columnList[key].type;
+            if( cenozo.isDatetimeType( type ) ) {
+              object.columnList[key].filter = 'cnDatetime:' + type;
+            } else if( 'rank' == type ) {
+              object.columnList[key].filter = 'cnOrdinal';
+            } else if( 'boolean' == type ) {
+              object.columnList[key].filter = 'cnYesNo';
+            }
+          }
+        }
       }
     };
   }
