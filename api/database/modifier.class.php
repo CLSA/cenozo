@@ -868,8 +868,10 @@ class modifier extends \cenozo\base_object
   }
 
   /**
-   * Merges another modifier with this one.  Merging only includes join, where, group, having
-   * and order items.
+   * Merges another modifier with this one.
+   * 
+   * Merging only includes join, where, group, having and order items.  Where and having
+   * statements are enclosed by brackets.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param modifier $modifier
@@ -879,11 +881,23 @@ class modifier extends \cenozo\base_object
   {
     if( !is_null( $modifier ) )
     {
-      foreach( $modifier->join_list as $item ) $this->join_list[] = $item;
-      foreach( $modifier->where_list as $item ) $this->where_list[] = $item;
+      $this->join_list = array_merge( $this->join_list, $modifier->join_list );
+      $this->order_list = array_merge( $this->order_list, $modifier->order_list );
       foreach( $modifier->group_list as $item ) $this->group_list[] = $item;
-      foreach( $modifier->having_list as $item ) $this->having_list[] = $item;
-      foreach( $modifier->order_list as $item ) $this->order_list[] = $item;
+
+      if( 0 < count( $modifier->where_list ) )
+      {
+        $this->where_bracket( true );
+        foreach( $modifier->where_list as $item ) $this->where_list[] = $item;
+        $this->where_bracket( false );
+      }
+
+      if( 0 < count( $modifier->having_list ) )
+      {
+        $this->having_bracket( true );
+        foreach( $modifier->having_list as $item ) $this->having_list[] = $item;
+        $this->having_bracket( false );
+      }
     }
   }
 

@@ -55,7 +55,12 @@ class read extends service
     {
       try
       {
-        $this->modifier = $modifier_class_name::from_json( $mod_string );
+        // merge the service request's modifier so that where and having statements are enclosed in brackets
+        $modifier = $modifier_class_name::from_json( $mod_string );
+        $this->modifier = lib::create( 'database\modifier' );
+        $this->modifier->merge( $modifier );
+        $this->modifier->limit( $modifier->get_limit() );
+        $this->modifier->offset( $modifier->get_offset() );
       }
       catch( \cenozo\exception\base_exception $e )
       {
