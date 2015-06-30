@@ -2660,6 +2660,11 @@ cenozo.service( 'CnModalRestrictFactory', [
         this.describeRestriction( this.restrictList.length - 1 );
       };
 
+      this.removeRestriction = function( index ) {
+        this.restrictList.splice( index, 1 );
+        this.emptyList.splice( index, 1 );
+      };
+
       this.describeRestriction = function( index ) {
         var quotes = 'string' == this.type &&
                      null !== this.restrictList[index].value &&
@@ -2671,9 +2676,26 @@ cenozo.service( 'CnModalRestrictFactory', [
           ( quotes ? '"' : '' );
       }
 
-      // handle datetime types
+      this.toggleEmpty = function( index ) {
+        if( this.emptyList[index].state ) {
+          this.restrictList[index].value = undefined === this.emptyList[index].oldValue
+                                         ? this.getInitialValue()
+                                         : this.emptyList[index].oldValue;
+        } else {
+          this.emptyList[index].oldValue = this.restrictList[index].value;
+          this.restrictList[index].value = null;
+          // make sure to select <=> or <>
+          if( 0 > ['<=>','<>'].indexOf( this.restrictList[index].test ) )
+            this.restrictList[index].test = '<=>';
+        }
+
+        this.formattedValueList[index] =
+          CnSession.formatValue( this.restrictList[index].value, this.type, true );
+        this.describeRestriction( index );
+      };
+
+      this.preExisting = 0 < this.restrictList.length;
       if( 0 == this.restrictList.length ) this.addRestriction();
-      this.preExisting = angular.isDefined( this.restrictList[0].value );
       this.formattedValueList = [];
       for( var i = 0; i < this.restrictList.length; i++ ) {
         this.emptyList[i] = { state: null === this.restrictList[i].value };
@@ -2703,11 +2725,6 @@ cenozo.service( 'CnModalRestrictFactory', [
             $scope.remove = function() { $modalInstance.close( [] ); };
             $scope.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
 
-            $scope.removeRestriction = function( index ) {
-              this.restrictList.splice( index, 1 );
-              this.emptyList.splice( index, 1 );
-            };
-
             if( cenozo.isDatetimeType( $scope.local.type ) ) {
               $scope.selectDatetime = function( index ) {
                 var self = this;
@@ -2734,24 +2751,6 @@ cenozo.service( 'CnModalRestrictFactory', [
                 } );
               };
             }
-
-            $scope.toggleEmpty = function( index ) {
-              if( this.emptyList[index].state ) {
-                this.restrictList[index].value = undefined === this.emptyList[index].oldValue
-                                               ? this.getInitialValue()
-                                               : this.emptyList[index].oldValue;
-              } else {
-                this.emptyList[index].oldValue = this.restrictList[index].value;
-                this.restrictList[index].value = null;
-                // make sure to select <=> or <>
-                if( 0 > ['<=>','<>'].indexOf( this.restrictList[index].test ) )
-                  this.restrictList[index].test = '<=>';
-              }
-
-              this.formattedValueList[index] =
-                CnSession.formatValue( this.restrictList[index].value, this.type, true );
-              this.describeRestriction( index );
-            };
           }
         } ).result;
       };
