@@ -10,7 +10,7 @@ namespace cenozo\service\access;
 use cenozo\lib, cenozo\log;
 
 /**
- * Extends the base class query class
+ * Extends parent class
  */
 class query extends \cenozo\service\query
 {

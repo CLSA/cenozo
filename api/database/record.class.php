@@ -200,26 +200,29 @@ abstract class record extends \cenozo\base_object
       }
     }
 
-    // either insert or update the row based on whether the primary key is set
-    $sql = sprintf(
-      is_null( $primary_key_value ) ?
-      'INSERT INTO %s SET %s' :
-      'UPDATE %s SET %s WHERE %s = %d',
-      $table_name,
-      $sets,
-      static::$primary_key_name,
-      $primary_key_value );
+    if( 0 < strlen( $sets ) )
+    {
+      // either insert or update the row based on whether the primary key is set
+      $sql = sprintf(
+        is_null( $primary_key_value ) ?
+        'INSERT INTO %s SET %s' :
+        'UPDATE %s SET %s WHERE %s = %d',
+        $table_name,
+        $sets,
+        static::$primary_key_name,
+        $primary_key_value );
 
-    static::db()->execute( $sql );
+      static::db()->execute( $sql );
 
-    // get the new primary key
-    if( is_null( $primary_key_value ) )
-      $this->passive_column_values[static::$primary_key_name] = static::db()->insert_id();
+      // get the new primary key
+      if( is_null( $primary_key_value ) )
+        $this->passive_column_values[static::$primary_key_name] = static::db()->insert_id();
 
-    // transfer active to passive values
-    foreach( $this->active_column_values as $column => $value )
-      $this->passive_column_values[$column] = $value;
-    $this->active_column_values = array();
+      // transfer active to passive values
+      foreach( $this->active_column_values as $column => $value )
+        $this->passive_column_values[$column] = $value;
+      $this->active_column_values = array();
+    }
   }
 
   /**

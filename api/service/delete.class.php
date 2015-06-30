@@ -10,7 +10,7 @@ namespace cenozo\service;
 use cenozo\lib, cenozo\log;
 
 /**
- * The base class of all delete operations.
+ * The base class of all delete services.
  */
 class delete extends write
 {

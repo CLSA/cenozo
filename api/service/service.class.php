@@ -10,7 +10,7 @@ namespace cenozo\service;
 use cenozo\lib, cenozo\log;
 
 /**
- * Base class for all service.
+ * The base class for all services.
  *
  * All service classes extend this base service class.  All classes that extend this class are
  * used to fulfill some purpose executed by the user or machine interfaces.

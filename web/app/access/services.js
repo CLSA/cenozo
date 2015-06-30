@@ -21,12 +21,8 @@ define( cenozo.getServicesIncludeList( 'access' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAccessModelFactory', [
-    'CnBaseModelFactory',
-    'CnAccessListFactory', 'CnAccessAddFactory',
-    'CnHttpFactory',
-    function( CnBaseModelFactory,
-              CnAccessListFactory, CnAccessAddFactory,
-              CnHttpFactory ) {
+    'CnBaseModelFactory', 'CnAccessListFactory', 'CnAccessAddFactory', 'CnHttpFactory',
+    function( CnBaseModelFactory, CnAccessListFactory, CnAccessAddFactory, CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -41,7 +37,8 @@ define( cenozo.getServicesIncludeList( 'access' ), function( module ) {
               path: 'role',
               data: {
                 select: { column: [ 'id', 'name' ] },
-                modifier: { order: { name: false } }
+                modifier: { order: { name: false } },
+                granting: true // only return roles which we can grant access to
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.role_id.enumList = [];
@@ -56,7 +53,8 @@ define( cenozo.getServicesIncludeList( 'access' ), function( module ) {
                 path: 'site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false } }
+                  modifier: { order: { name: false } },
+                  granting: true // only return sites which we can grant access to
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.site_id.enumList = [];

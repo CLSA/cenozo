@@ -30,17 +30,31 @@ define( {
       title: 'Email',
       type: 'string',
       format: 'email',
-      help: 'Must be in the format "account@domain.name"'
+      help: 'Must be in the format "account@domain.name" ' +
+            '(if not provided then the user will be prompted for an email address the next time they login)'
     },
     timezone: {
       title: 'Timezone',
-      type: 'string',
+      type: 'typeahead',
+      typeahead: moment.tz.names(),
       help: 'Which timezone the user displays times in'
     },
     use_12hour_clock: {
       title: 'Use 12-Hour Clock',
       type: 'boolean',
       help: 'Whether to display times using the 12-hour clock (am/pm)'
+    },
+    site_id: {
+      title: 'Initial Site',
+      type: 'enum',
+      help: 'Which site to assign the user to',
+      noview: true
+    },
+    role_id: {
+      title: 'Initial Role',
+      type: 'enum',
+      help: 'Which role to assign the user to',
+      noview: true
     }
   },
   columnList: {

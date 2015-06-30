@@ -10,7 +10,7 @@ namespace cenozo\service\event_type\participant;
 use cenozo\lib, cenozo\log;
 
 /**
- * The base class of all query (collection-based get) services
+ * Extends parent class
  */
 class query extends \cenozo\service\query
 {

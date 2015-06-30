@@ -10,7 +10,7 @@ namespace cenozo\service;
 use cenozo\lib, cenozo\log;
 
 /**
- * The base class of all post operations.
+ * The base class of all post services.
  */
 class post extends write
 {

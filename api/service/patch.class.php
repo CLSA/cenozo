@@ -10,7 +10,7 @@ namespace cenozo\service;
 use cenozo\lib, cenozo\log;
 
 /**
- * The base class of all patch operations.
+ * The base class of all patch services.
  */
 class patch extends write
 {

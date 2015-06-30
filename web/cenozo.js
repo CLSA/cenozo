@@ -441,13 +441,7 @@ cenozo.directive( 'cnRecordAdd', [
                 $scope.model.transitionToLastState();
               },
               function error( response ) {
-                if( 406 == response.status ) {
-                  CnModalMessageFactory.instance( {
-                    title: 'Please Note',
-                    message: response.data,
-                    error: true
-                  } ).show();
-                } else if( 409 == response.status ) {
+                if( 409 == response.status ) {
                   // report which inputs are included in the conflict
                   for( var i = 0; i < response.data.length; i++ ) {
                     var elementScope = angular.element( angular.element(
@@ -569,13 +563,7 @@ cenozo.directive( 'cnRecordList', [
         $scope.deleteRecord = function( record ) {
           if( $scope.model.deleteEnabled ) {
             $scope.model.listModel.onDelete( record ).catch( function error( response ) {
-              if( 406 == response.status ) {
-                CnModalMessageFactory.instance( {
-                  title: 'Please Note',
-                  message: response.data,
-                  error: true
-                } ).show();
-              } else if( 409 == response.status ) {
+              if( 409 == response.status ) {
                 CnModalMessageFactory.instance( {
                   title: 'Unable to delete ' + $scope.model.name.singular + ' record',
                   message: 'It is not possible to delete this ' + $scope.model.name.singular +
@@ -678,7 +666,17 @@ cenozo.directive( 'cnRecordView', [
           if( $scope.model.deleteEnabled ) {
             $scope.model.viewModel.onDelete().then(
               function success() { $scope.model.transitionToLastState(); },
-              CnSession.errorHandler
+              function error( response ) {
+                if( 409 == response.status ) {
+                  CnModalMessageFactory.instance( {
+                    title: 'Unable to delete ' + $scope.model.name.singular + ' record',
+                    message: 'It is not possible to delete this ' + $scope.model.name.singular +
+                             ' record because it is being referenced by "' + response.data +
+                             '" in the database.',
+                    error: true
+                  } ).show();
+                } else { CnSession.errorHandler( response ); }
+              }
             );
           }
         };
@@ -739,14 +737,7 @@ cenozo.directive( 'cnRecordView', [
                   }
                 },
                 function error( response ) {
-                  if( 406 == response.status ) {
-                    $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
-                    CnModalMessageFactory.instance( {
-                      title: 'Please Note',
-                      message: response.data,
-                      error: true
-                    } ).show();
-                  } else if( 409 == response.status ) {
+                  if( 409 == response.status ) {
                     // report which inputs are included in the conflict
                     for( var i = 0; i < response.data.length; i++ ) {
                       var item = angular.element(
@@ -755,7 +746,12 @@ cenozo.directive( 'cnRecordView', [
                       item.$error.conflict = true;
                       cenozo.updateFormElement( item, true );
                     }
-                  } else { CnSession.errorHandler( response ); }
+                  } else {
+                    // make sure to put the data back when we get a notice
+                    if( 406 == response.status )
+                      $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
+                    CnSession.errorHandler( response );
+                  }
                 }
               );
             }
@@ -982,8 +978,10 @@ cenozo.filter( 'cnYesNo', function() {
  * TODO: document
  */
 cenozo.factory( 'CnSession', [
-  '$state', '$filter', 'CnHttpFactory', 'CnModalPasswordFactory', 'CnModalAccountFactory',
-  function( $state, $filter, CnHttpFactory, CnModalPasswordFactory, CnModalAccountFactory ) {
+  '$state', '$filter', 'CnHttpFactory',
+  'CnModalMessageFactory', 'CnModalPasswordFactory', 'CnModalAccountFactory',
+  function( $state, $filter, CnHttpFactory,
+            CnModalMessageFactory, CnModalPasswordFactory, CnModalAccountFactory ) {
     return new ( function() {
       var self = this;
       this.promise = null;
@@ -1052,7 +1050,7 @@ cenozo.factory( 'CnSession', [
         // if the user's email isn't set then open the password dialog
         if( !self.user.email ) {
           CnModalAccountFactory.instance( { user: self.user } ).show().then( function( response ) {
-            if( angular.isObject( response ) ) self.setUserDetails().then( self.updateTime, self.errorHandler );
+            if( response ) self.setUserDetails().then( self.updateTime, self.errorHandler );
           } );
         }
       } ).catch( self.errorHandler );
@@ -1124,7 +1122,16 @@ cenozo.factory( 'CnSession', [
       this.errorHandler = function errorHandler( response ) {
         var type = angular.isDefined( response ) && angular.isDefined( response.status )
                  ? response.status : 500;
-        $state.go( 'error.' + type );
+
+        if( 406 == type && angular.isDefined( response.data ) ) {
+          CnModalMessageFactory.instance( {
+            title: 'Please Note',
+            message: response.data,
+            error: true
+          } ).show();
+        } else {
+          $state.go( 'error.' + type );
+        }
       };
 
       this.formatValue = function formatValue( value, type, longForm ) {
@@ -1897,9 +1904,9 @@ cenozo.factory( 'CnBaseModelFactory', [
                   // some items may be marked to not show when adding the record
                   !( 'add' == type && true === this.inputList[key].noadd ) &&
                   // some items may be marked to not show when viewing the record
-                  !( 'view' == type && true === this.inputList[key].noview ) ) {
-                  /* TODO: verify that the following is no longer needed
-                  !( stateSubject == this.subject && stateSubject+'_id' == key ) ) { */
+                  !( 'view' == type && true === this.inputList[key].noview ) &&
+                  // don't include columns which belong to the state subject
+                  stateSubject+'_id' != key ) {
                 data.push( this.inputList[key] );
               }
             }
@@ -2119,9 +2126,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.viewEnabled = 0 <= moduleProperties.actions.indexOf( 'view' );
 
         // process input list
-        for( var key in object.inputList ) {
-          object.inputList[key].key = key;
-        }
+        for( var key in object.inputList ) { object.inputList[key].key = key; }
 
         // process column list
         var stateSubject = object.getSubjectFromState();
