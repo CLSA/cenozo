@@ -148,17 +148,8 @@ class database extends \cenozo\base_object
   {
     $setting_manager = lib::create( 'business\setting_manager' );
 
-    // only complete a transaction for the main database (this is an ADOdb limitation)
-    $database = sprintf(
-      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE );
-    $class_name = lib::get_class_name( 'business\setting_manager' );
-    if( class_exists( 'cenozo\business\setting_manager' ) &&
-        $class_name::exists() &&
-        $database == $this->name )
-    {
-      if( self::$debug ) log::debug( '(DB) completing transaction' );
-      $this->connection->commit();
-    }
+    if( self::$debug ) log::debug( '(DB) completing transaction' );
+    $this->connection->commit();
   }
 
   /**
@@ -872,7 +863,7 @@ class database extends \cenozo\base_object
    * @static
    * @access public
    */
-  public static $debug = false;
+  public static $debug = true;
 
   /**
    * Holds all table information including database, columns, unique key constraints.

@@ -53,7 +53,7 @@ class semaphore extends \cenozo\base_object
     {
       // we need to complete any transactions before continuing
       $session = lib::create( 'business\session' );
-      if( $session->use_transaction() ) $session->get_database()->complete_transaction();
+      $session->get_database()->complete_transaction();
 
       // restart the iteration counting
       $this->iteration = 0;

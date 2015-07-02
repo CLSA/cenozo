@@ -18,18 +18,6 @@ use cenozo\lib, cenozo\log;
 class ui extends \cenozo\base_object
 {
   /**
-   * Creates an HTML interface based on the current site and role.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function __construct()
-  {
-    // by default the UI does not use transactions
-    lib::create( 'business\session' )->set_use_transaction( false );
-  }
-
-  /**
    * Returns the interface
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

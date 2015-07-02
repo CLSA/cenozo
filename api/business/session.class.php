@@ -286,24 +286,6 @@ class session extends \cenozo\singleton
   }
 
   /**
-   * Returns whether to use a database transaction.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return boolean
-   * @access public
-   */
-  public function use_transaction() { return $this->transaction; }
-
-  /**
-   * Set whether to use a database transaction.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $transaction
-   * @access public
-   */
-  public function set_use_transaction( $use ) { $this->transaction = $use; }
-
-  /**
    * Returns whether the session has been initialized or not.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -382,11 +364,4 @@ class session extends \cenozo\singleton
    * @access private
    */
   protected $requested_site = NULL;
-
-  /**
-   * Whether a database transaction needs to be performed during this session.
-   * @var boolean
-   * @access private
-   */
-  private $transaction = false;
 }

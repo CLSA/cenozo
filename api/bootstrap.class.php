@@ -276,6 +276,8 @@ final class bootstrap
         $this->arguments,
         $this->file );
 
+      // start transaction and process the service
+      $this->session->get_database()->start_transaction();
       $service->process();
       $status = $service->get_status();
     }
@@ -305,12 +307,8 @@ final class bootstrap
                            $e ) );
     }
 
-    // make sure to fail any active transaction
-    if( $this->session->use_transaction() )
-    {
-      if( 400 <= $status->get_code() ) $this->session->get_database()->fail_transaction();
-      $this->session->get_database()->complete_transaction();
-    }
+    // fail transactions on error
+    if( 400 <= $status->get_code() ) $this->session->get_database()->fail_transaction();
 
     ob_end_clean();
     $status->send_headers();

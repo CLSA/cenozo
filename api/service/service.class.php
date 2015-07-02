@@ -31,10 +31,6 @@ abstract class service extends \cenozo\base_object
    */
   public function __construct( $method, $path, $args = NULL, $file = NULL )
   {
-    // by default all services use transactions
-    $session = lib::create( 'business\session' );
-    $session->set_use_transaction( true );
-
     $code = $this->process_path( $path ) ? 200 : 400;
     if( 400 != $code && !self::is_method( $method ) ) $code = 405;
     $this->status = lib::create( 'service\status', $code );

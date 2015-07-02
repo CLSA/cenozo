@@ -492,11 +492,8 @@ final class log extends singleton
         $session = lib::create( 'business\session' );
 
         // we need to complete the transaction if there is one in progress
-        if( $session->use_transaction() )
-        {
-          $session->get_database()->fail_transaction();
-          $session->get_database()->complete_transaction();
-        }
+        $session->get_database()->fail_transaction();
+        $session->get_database()->complete_transaction();
         $session->set_error_code( $e->get_code() );
       }
 
