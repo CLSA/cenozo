@@ -863,7 +863,7 @@ class database extends \cenozo\base_object
    * @static
    * @access public
    */
-  public static $debug = true;
+  public static $debug = false;
 
   /**
    * Holds all table information including database, columns, unique key constraints.
