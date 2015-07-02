@@ -2096,8 +2096,11 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           // check regex (note: escape character "\" must by typed FOUR times: \\\\
           if( angular.isDefined( input.regex ) ) {
-            var re = new RegExp( input.regex );
-            if( !re.test( value ) ) return false;
+            var regexList = angular.isArray( input.regex ) ? input.regex : [ input.regex ];
+            for( var i = 0; i < regexList.length; i++ ) {
+              var re = new RegExp( regexList[i] );
+              if( !re.test( value ) ) return false;
+            }
           }
 
           // if we get here then the format is okay
