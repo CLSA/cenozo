@@ -46,7 +46,8 @@ SOURCE address.sql
 SOURCE phone.sql
 SOURCE participant_site.sql
 
-SOURCE character_set.sql
+SOURCE table_character_sets.sql
+SOURCE column_character_sets.sql
 
 SOURCE update_version_number.sql
 

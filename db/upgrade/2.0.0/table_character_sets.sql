@@ -1,6 +1,6 @@
-DROP PROCEDURE IF EXISTS patch_character_set;
+DROP PROCEDURE IF EXISTS patch_table_character_sets;
 DELIMITER //
-CREATE PROCEDURE patch_character_set()
+CREATE PROCEDURE patch_table_character_sets()
   BEGIN
 
     -- Declare '_val' variables to read in each record from the cursor
@@ -40,10 +40,9 @@ CREATE PROCEDURE patch_character_set()
           LEAVE the_loop;
       END IF;
 
-      -- the equivalent of a 'print statement' in a stored procedure
-      -- it simply displays output for each loop
       SELECT CONCAT( "Converting character set to UTF8 for table ", name_val ) AS "";
 
+      -- convert the table to utf8
       SET @sql = CONCAT(
         "ALTER TABLE ", name_val, " ",
         "CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci" );
@@ -74,5 +73,5 @@ CREATE PROCEDURE patch_character_set()
   END //
 DELIMITER ;
 
-CALL patch_character_set();
-DROP PROCEDURE IF EXISTS patch_character_set;
+CALL patch_table_character_sets();
+DROP PROCEDURE IF EXISTS patch_table_character_sets;
