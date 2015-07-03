@@ -5,8 +5,8 @@
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
  */
-namespace sabretooth\database\limesurvey;
-use cenozo\lib, cenozo\log, sabretooth\util;
+namespace cenozo\database\limesurvey;
+use cenozo\lib, cenozo\log;
 
 /**
  * Access to limesurvey's *_SID tables.

@@ -6,8 +6,8 @@
  * @filesource
  */
 
-namespace sabretooth\database\limesurvey;
-use cenozo\lib, cenozo\log, sabretooth\util;
+namespace cenozo\database\limesurvey;
+use cenozo\lib, cenozo\log;
 
 /**
  * Access to limesurvey's survey_SID tables.

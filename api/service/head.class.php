@@ -29,13 +29,8 @@ class head extends read
   {
     parent::execute();
 
-    // get the list of the LAST collection
-    $index = count( $this->collection_name_list ) -1;
-    if( 0 <= $index )
-    {
-      $subject = $this->collection_name_list[$index];
-      $record_class_name = lib::get_class_name( sprintf( 'database\%s', $subject ) );
-      $this->headers['Columns'] = $record_class_name::db()->get_column_details( $subject );
-    }
+    // get the details of the leaf record
+    $record_class_name = $this->get_leaf_record_class_name();
+    $this->headers['Columns'] = $record_class_name::db()->get_column_details( $this->get_leaf_subject() );
   }
 }

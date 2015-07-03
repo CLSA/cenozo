@@ -493,7 +493,6 @@ final class log extends singleton
 
         // we need to complete the transaction if there is one in progress
         $session->get_database()->fail_transaction();
-        $session->get_database()->complete_transaction();
         $session->set_error_code( $e->get_code() );
       }
 

@@ -23,6 +23,34 @@ class post extends write
   }
 
   /**
+   * TODO: document
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
+
+    if( $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )
+    {
+      $record = $this->get_leaf_record();
+      $parent_record = $this->get_parent_record();
+
+      if( !is_null( $parent_record ) )
+      { // add the parent relationship
+        $parent_column = sprintf( '%s_id', $parent_record::get_table_name() );
+        $record->$parent_column = $parent_record->id;
+      }
+
+      // add record column data
+      $object = $this->get_file_as_object();
+      foreach( $record->get_column_names() as $column_name )
+        if( 'id' != $column_name && property_exists( $object, $column_name ) )
+          $record->$column_name = $object->$column_name;
+    }
+  }
+
+  /**
    * Extends parent method
    */
   protected function execute()
@@ -52,7 +80,6 @@ class post extends write
       else
       {
         $record = $this->get_leaf_record();
-
         try
         {
           // save the record, set the data as the new id
@@ -90,25 +117,12 @@ class post extends write
    */
   protected function get_leaf_record()
   {
+    // create the record if it doesn't exist yet
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
-
     if( is_null( $this->new_record ) &&
         $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )
     {
-      // create a record for the LAST collection
-      $object = $this->get_file_as_object();
       $this->new_record = lib::create( sprintf( 'database\%s', $this->get_leaf_subject() ) );
-
-      $parent_record = $this->get_parent_record();
-      if( !is_null( $parent_record ) )
-      { // add the parent relationship
-        $parent_column = sprintf( '%s_id', $parent_record::get_table_name() );
-        $this->new_record->$parent_column = $parent_record->id;
-      }
-
-      foreach( $this->new_record->get_column_names() as $column_name )
-        if( 'id' != $column_name && property_exists( $object, $column_name ) )
-          $this->new_record->$column_name = $object->$column_name;
     }
 
     return $this->new_record;

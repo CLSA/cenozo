@@ -82,7 +82,7 @@ class query extends read
     $leaf_subject = $this->get_leaf_subject();
     if( !is_null( $leaf_subject ) )
     {
-      $record_class_name = lib::get_class_name( sprintf( 'database\%s', $leaf_subject ) );
+      $record_class_name = $this->get_leaf_record_class_name();
       $this->headers['Columns'] = $record_class_name::db()->get_column_details( $leaf_subject );
       $this->headers['Limit'] = $this->modifier->get_limit();
       $this->headers['Offset'] = $this->modifier->get_offset();
@@ -96,10 +96,9 @@ class query extends read
    */
   protected function get_record_count()
   {
-    $leaf_subject = $this->get_leaf_subject();
     $parent_record = $this->get_parent_record();
-    $record_class_name = lib::get_class_name( sprintf( 'database\%s', $leaf_subject ) );
-    $parent_record_method = sprintf( 'get_%s_count', $leaf_subject );
+    $record_class_name = $this->get_leaf_record_class_name();
+    $parent_record_method = sprintf( 'get_%s_count', $this->get_leaf_subject() );
     $modifier = clone $this->modifier;
 
     return is_null( $parent_record ) || $this->get_argument( 'choosing', false ) ?
@@ -112,10 +111,9 @@ class query extends read
    */
   protected function get_record_list()
   {
-    $leaf_subject = $this->get_leaf_subject();
     $parent_record = $this->get_parent_record();
-    $record_class_name = lib::get_class_name( sprintf( 'database\%s', $leaf_subject ) );
-    $parent_record_method = sprintf( 'get_%s_list', $leaf_subject );
+    $record_class_name = $this->get_leaf_record_class_name();
+    $parent_record_method = sprintf( 'get_%s_list', $this->get_leaf_subject() );
     $modifier = clone $this->modifier;
 
     $list = is_null( $parent_record ) || $this->get_argument( 'choosing', false )

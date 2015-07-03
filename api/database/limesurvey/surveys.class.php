@@ -6,8 +6,8 @@
  * @filesource
  */
 
-namespace sabretooth\database\limesurvey;
-use cenozo\lib, cenozo\log, sabretooth\util;
+namespace cenozo\database\limesurvey;
+use cenozo\lib, cenozo\log;
 
 /**
  * surveys: record
@@ -74,6 +74,30 @@ class surveys extends record
     }
 
     return $attribute_list;
+  }
+
+  /**
+   * Returns an associative array of surveys where keys are sids and values are titles
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return associative array
+   * @access public
+   * @static
+   */
+  public static function get_titles()
+  {
+    $select = lib::create( 'database\select' );
+    $select->add_column( 'sid' );
+    $select->add_table_column( 'surveys_languagesettings', 'surveyls_title', 'title' );
+
+    $modifier = lib::create( 'database\modifier' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'surveys_languagesettings.surveyls_survey_id', '=', 'surveys.sid', false );
+    $join_mod->where( 'surveys_languagesettings.surveyls_language', '=', 'surveys.language', false );
+    $modifier->join_modifier( 'surveys_languagesettings', $join_mod );
+    
+    $array = array();
+    foreach( static::select( $select, $modifier ) as $row ) $array[$row['sid']] = $row['title'];
+    return $array;
   }
 
   /**

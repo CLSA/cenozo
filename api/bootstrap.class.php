@@ -258,6 +258,7 @@ final class bootstrap
           'Please check with an administrator or try again at a later time.', __METHOD__ );
 
       $this->session->initialize();
+      $db = $this->session->get_database();
 
       // make sure the software and database versions match
       if( $this->settings['general']['version'] != $this->session->get_application()->version )
@@ -277,7 +278,7 @@ final class bootstrap
         $this->file );
 
       // start transaction and process the service
-      $this->session->get_database()->start_transaction();
+      $db->start_transaction();
       $service->process();
       $status = $service->get_status();
     }
@@ -308,7 +309,8 @@ final class bootstrap
     }
 
     // fail transactions on error
-    if( 400 <= $status->get_code() ) $this->session->get_database()->fail_transaction();
+    if( 400 <= $status->get_code() ) $db->fail_transaction();
+    else $db->complete_transaction();
 
     ob_end_clean();
     $status->send_headers();
