@@ -33,7 +33,6 @@ $settings['general']['machine_password'] = 'machine password goes here';
 // database settings (username and password are set in the application's settings)
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
-$settings['db']['table_prefix'] = '';
 
 // ldap settings
 $settings['ldap']['enabled'] = true;
