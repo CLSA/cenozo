@@ -18,6 +18,11 @@ define( {
       type: 'string',
       help: 'A user-friendly name for the service, may contain any characters.'
     },
+    url: {
+      title: 'URL',
+      type: 'string',
+      help: 'The root web address of the application. This is used for intra-application communication.',
+    },
     version: {
       title: 'Version',
       type: 'string',
@@ -27,6 +32,11 @@ define( {
       title: 'Release Based',
       type: 'boolean',
       help: 'Whether the application only has access to participants once they are released.'
+    },
+    update_queue: {
+      title: 'Update Queue',
+      type: 'boolean',
+      help: 'Whether the application has a queue which should be updated when changes are made to the database.'
     },
     country: {
       title: 'Country',
@@ -61,7 +71,11 @@ define( {
     title: { title: 'Title' },
     version: { title: 'Version' },
     release_based: {
-      title: 'Release Based',
+      title: 'Released',
+      type: 'boolean'
+    },
+    update_queue: {
+      title: 'Queued',
       type: 'boolean'
     },
     participant_count: {

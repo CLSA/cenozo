@@ -3,7 +3,7 @@ DELIMITER //
 CREATE PROCEDURE patch_application()
   BEGIN
 
-    SELECT "Renaming service table to application and adding country and timezone columns" AS "";
+    SELECT "Renaming service table to application and adding/removing columns" AS "";
 
     SET @test = (
       SELECT COUNT(*)
@@ -29,9 +29,16 @@ CREATE PROCEDURE patch_application()
       ON DELETE NO ACTION ON UPDATE NO ACTION;
 
       ALTER TABLE application
+      DROP COLUMN cenozo,
+      ADD COLUMN url VARCHAR(511) NOT NULL AFTER title,
       ADD COLUMN country VARCHAR(45) NOT NULL,
-      ADD COLUMN timezone VARCHAR(45) NOT NULL DEFAULT 'Canada/Eastern';
-      UPDATE application SET country = 'Canada';
+      ADD COLUMN timezone VARCHAR(45) NOT NULL DEFAULT 'Canada/Eastern',
+      ADD COLUMN update_queue TINYINT(1) NOT NULL DEFAULT 0;
+      
+      UPDATE application SET url = CONCAT( 'https://localhost/', name ), country = 'Canada';
+      UPDATE application SET update_queue = 1
+      WHERE ( name LIKE "beartooth%" OR name LIKE "sabretooth%" )
+      AND name != "sabretooth_qc";
     END IF;
 
   END //
