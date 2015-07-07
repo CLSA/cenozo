@@ -35,14 +35,16 @@ String.prototype.ucWords = function() {
   return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
 }
 
+cenozo.getType = function( variable ) {
+  var type = ( {} ).toString.call( variable ).match( /\s([a-zA-Z]+)/ )[1].toLowerCase();
+  // if an object, check for moment
+  if( 'object' == type && variable._isAMomentObject ) type = 'moment';
+  return type;
+};
+
 // determines whether a type is one of the datetime types
 cenozo.isDatetimeType = function( type ) {        
   return 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type );
-};
-
-// determines whether a variable is a moment object
-cenozo.isMoment = function( variable ) {
-  return angular.isObject( variable ) && variable._isAMomentObject;
 };
 
 // Defines which modules are part of the framework
@@ -870,7 +872,7 @@ cenozo.filter( 'cnComparator', function() {
  */
 cenozo.filter( 'cnCheckmark', function() {
   return function( input ) {
-    if( "boolean" != typeof input ) input = 0 != input;
+    if( "boolean" != cenozo.getType( input ) ) input = 0 != input;
     return input ? '\u2714' : '\u2718';
   };
 } );
@@ -926,7 +928,7 @@ cenozo.filter( 'cnDatetime', [
       if( angular.isUndefined( input ) || null === input ) {
         output = '(empty)';
       } else {
-        if( !cenozo.isMoment( input ) ) input = moment( input );
+        if( 'moment' != cenozo.getType( input ) ) input = moment( input );
         output = input.tz( CnSession.user.timezone ).format( CnSession.getDatetimeFormat( format, false ) );
       }
       return output;
@@ -940,11 +942,20 @@ cenozo.filter( 'cnDatetime', [
  * TODO: document
  */
 cenozo.filter( 'cnOrdinal', function() {
-  return function( number ) {
-    var postfixList = [ 'th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th' ];
-    var modulo = number % 100;
-    if( 11 <= modulo && modulo <= 13 ) return number + 'th';
-    return number + postfixList[number % 10];
+  return function( input ) {
+    var output = input;
+    if( angular.isUndefined( input ) || null === input || '' === input ) output = 'none';
+    else {
+      if( 'string' == cenozo.getType( input ) ) input = parseInt( input );
+      if( 'number' == cenozo.getType( input ) ) {
+        input = Math.floor( input );
+        var postfixList = [ 'th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th' ];
+        var modulo = input % 100;
+        if( 11 <= modulo && modulo <= 13 ) return input + 'th';
+        output += postfixList[input % 10];
+      }
+    }
+    return output;
   }
 } );
 
@@ -955,7 +966,13 @@ cenozo.filter( 'cnOrdinal', function() {
  */
 cenozo.filter( 'cnPercent', function() {
   return function( input ) {
-    return input + "%";
+    var output = input;
+    if( angular.isUndefined( input ) || null === input || '' === input ) output = 'none';
+    else {
+      if( 'string' == cenozo.getType( input ) ) input = parseInt( input );
+      if( 'number' == cenozo.getType( input ) ) output = input + '%';
+    }
+    return output;
   };
 } );
 
@@ -966,7 +983,7 @@ cenozo.filter( 'cnPercent', function() {
  */
 cenozo.filter( 'cnUCWords', function() {
   return function( input ) {
-    if( angular.isDefined( input ) )
+    if( 'string' == cenozo.getType( input ) )
       input = input.replace( /(?:^|\s)\S/g, function( a ) { return angular.uppercase( a ); } );
     return input;
   };
@@ -979,7 +996,7 @@ cenozo.filter( 'cnUCWords', function() {
  */
 cenozo.filter( 'cnYesNo', function() {
   return function( input ) {
-    if( "boolean" != typeof input ) input = 0 != input;
+    if( "boolean" != cenozo.getType( input ) ) input = 0 != input;
     return input ? 'yes' : 'no';
   };
 } );
@@ -1156,7 +1173,7 @@ cenozo.factory( 'CnSession', [
         } else if( 'boolean' == type ) {
           formatted = $filter( 'cnYesNo' )( value );
         } else if( cenozo.isDatetimeType( type ) ) {
-          if( !cenozo.isMoment( value ) ) value = moment( value );
+          if( 'moment' != cenozo.getType( value ) ) value = moment( value );
           formatted = value.tz( this.user.timezone ).format( this.getDatetimeFormat( type, longForm ) );
         } else if( 'rank' == type ) {
           var number = parseInt( value );
@@ -2515,19 +2532,19 @@ cenozo.service( 'CnModalDatetimeFactory', [
             $scope.cancel = function() { $modalInstance.close( false ); };
 
             $scope.$watch( 'local.hourSliderValue', function( hour ) {
-              if( cenozo.isMoment( $scope.local.date ) ) {
+              if( 'moment' == cenozo.getType( $scope.local.date ) ) {
                 $scope.local.updateDateFromSliders( $scope.local.date );
                 $scope.local.updateDisplayTime();
               }
             } );
             $scope.$watch( 'local.minuteSliderValue', function( minute ) {
-              if( cenozo.isMoment( $scope.local.date ) ) {
+              if( 'moment' == cenozo.getType( $scope.local.date ) ) {
                 $scope.local.updateDateFromSliders( $scope.local.date );
                 $scope.local.updateDisplayTime();
               }
             } );
             $scope.$watch( 'local.secondSliderValue', function( second ) {
-              if( cenozo.isMoment( $scope.local.date ) ) {
+              if( 'moment' == cenozo.getType( $scope.local.date ) ) {
                 $scope.local.updateDateFromSliders( $scope.local.date );
                 $scope.local.updateDisplayTime();
               }
