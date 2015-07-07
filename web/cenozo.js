@@ -1933,7 +1933,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           var data = [];
           if( 'list' == type ) {
             for( var key in this.columnList )
-              if( 0 > removeList.indexOf( key ) )
+              if( 0 > removeList.indexOf( key ) && 'identifier' != this.columnList[key].type )
                 data.push( this.columnList[key] );
           } else { // add or view
             for( var key in this.inputList ) {
