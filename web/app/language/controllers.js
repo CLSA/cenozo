@@ -7,7 +7,7 @@ define( [], function() {
     '$scope', 'CnLanguageModelFactory', 'CnSession',
     function( $scope, CnLanguageModelFactory, CnSession ) {
       $scope.model = CnLanguageModelFactory.root;
-      $scope.model.listModel.onList().then( function() {
+      $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
       } ).catch( CnSession.errorHandler );
     }
