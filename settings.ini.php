@@ -52,10 +52,6 @@ $settings['url']['LIMESURVEY'] = '../limesurvey';
 // the location of the Shift8 Asterisk library
 $settings['path']['SHIFT8'] = '/usr/local/lib/shift8';
 
-// the credentials for the machine user
-$settings['general']['machine_user'] = 'machine';
-$settings['general']['machine_password'] = 'password';
-
 // database settings
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';

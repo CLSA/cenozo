@@ -26,10 +26,6 @@ $settings['url']['CENOZO'] = sprintf( 'http%s://%s/url/to/cenozo',
 $settings['path']['LIMESURVEY'] = '/path/to/limesurvey';
 $settings['url']['LIMESURVEY'] = 'http://url/to/limesurvey';
 
-// the credentials for the machine user
-$settings['general']['machine_user'] = 'machine username goes here';
-$settings['general']['machine_password'] = 'machine password goes here';
-
 // database settings (username and password are set in the application's settings)
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
