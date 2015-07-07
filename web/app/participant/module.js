@@ -31,7 +31,9 @@ define( {
     },
     honorific: {
       title: 'Honorific',
-      type: 'string'
+      type: 'string',
+      help: 'English examples: Mr. Mrs. Miss Ms. Dr. Prof. Br. Sr. Fr. Rev. Pr.  ' +
+            'French examples: M. Mme Dr Dre Prof. F. Sr P. Révérend Pasteur Pasteure Me'
     },
     first_name: {
       title: 'First Name',
