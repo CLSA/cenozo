@@ -6,8 +6,8 @@
  * @filesource
  */
 
-namespace sabretooth\exception;
-use cenozo\lib, cenozo\log, sabretooth\util;
+namespace cenozo\exception;
+use cenozo\lib, cenozo\log;
 
 /**
  * voip: voip exceptions

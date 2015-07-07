@@ -6,8 +6,8 @@
  * @filesource
  */
 
-namespace sabretooth\database;
-use cenozo\lib, cenozo\log, sabretooth\util;
+namespace cenozo\database;
+use cenozo\lib, cenozo\log;
 
 /**
  * recording: record
