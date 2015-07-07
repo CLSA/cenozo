@@ -436,6 +436,7 @@ cenozo.directive( 'cnRecordAdd', [
           } else {
             $scope.model.addModel.onAdd( $scope.$parent.record ).then(
               function success( response ) {
+                // create a new record to be created (in case another record is added)
                 $scope.model.addModel.onNew( $scope.$parent.record );
                 $scope.form.$setPristine();
                 $scope.model.transitionToLastState();
@@ -1222,11 +1223,19 @@ cenozo.factory( 'CnBaseAddFactory', [
 
         /**
          * Override this function when needing to make additional operations when adding or creating
-         * this model's records.
+         * this model's records.  Unlike onNew this creates the record on the server which has already
+         * been created on the client side.
          * 
          * @return promise
          */
         object.onAdd = function( record ) { return this.addRecord( record ); };
+
+        /**
+         * Override this function when needing to make additional operations when creating a new record
+         * for this model.  Unlike onAdd this creates the record on the client side (not the server).
+         * 
+         * @return promise
+         */
         object.onNew = function( record ) { return this.newRecord( record ); };
       }
     };
@@ -2048,7 +2057,11 @@ cenozo.factory( 'CnBaseModelFactory', [
 
               CnHttpFactory.instance( {
                 path: path,
-                data: { select: { column: { column: 'MAX(rank)', alias: 'max', table_prefix: false } } }
+                data: { select: { column: {
+                  column: 'MAX(' + self.subject + '.rank)',
+                  alias: 'max',
+                  table_prefix: false
+                } } }
               } ).query().then( function success( response ) {
                 if( 0 < response.data.length ) {
                   self.metadata.columnList.rank.enumList = [];
