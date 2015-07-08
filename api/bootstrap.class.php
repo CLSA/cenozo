@@ -209,8 +209,8 @@ final class bootstrap
           : ucwords( $e->get_type() ).' Error!',
         'message' => 0 < strlen( $e->get_raw_message() )
           ? $e->get_raw_message()
-          : 'There was an error while trying to communicate with the server.<br>'.
-            'Please notify a superior with the error code.',
+          : 'There was a problem while trying to communicate with the server.'.
+            'Please contact support for help with this error.',
         'code' => sprintf( '%s.%s', strtoupper( substr( $e->get_type(), 0, 1 ) ), $e->get_code() )
       );
 
@@ -224,8 +224,8 @@ final class bootstrap
         'title' => 'System Error!',
         'message' => 0 < strlen( $e->getMessage() )
           ? $e->getMessage()
-          : 'There was an error while trying to communicate with the server.<br>'.
-            'Please notify a superior with the error code.',
+          : 'There was a problem while trying to communicate with the server.'.
+            'Please contact support for help with this error.',
         'code' => $util_class_name::convert_number_to_code( SYSTEM_CENOZO_BASE_ERRNO )
       );
 

@@ -80,7 +80,7 @@ class session extends \cenozo\singleton
     $this->set_user( $user_class_name::get_unique_record( 'name', $user_name ) );
     if( is_null( $this->db_user ) )
       throw lib::create( 'exception\notice',
-        'Your account does not exist.<br>'.
+        'Your account does not exist. '.
         'Please contact an account administrator to gain access to the system.',
         __METHOD__ );
 
@@ -271,7 +271,7 @@ class session extends \cenozo\singleton
     if( !$this->db_user->active )
     {
       throw lib::create( 'exception\notice',
-        'Your account has been deactivated.<br>'.
+        'Your account has been deactivated. '.
         'Please contact your account administrator to regain access to the system.', __METHOD__ );
     }
 

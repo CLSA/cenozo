@@ -109,7 +109,7 @@ class opal_manager extends \cenozo\factory
         // These errors may be transient, so instruct the user to reload the page
         throw lib::create( 'exception\notice',
           'The server appears to be busy, please try reloading the page. '.
-          'If this still does not fix the problem please report the issue to a superior.',
+          'If this still does not fix the problem please contact support.',
           __METHOD__ );
       }
 
@@ -240,7 +240,7 @@ class opal_manager extends \cenozo\factory
         // These errors may be transient, so instruct the user to reload the page
         throw lib::create( 'exception\notice',
           'The server appears to be busy, please try reloading the page. '.
-          'If this still does not fix the problem please report the issue to a superior.',
+          'If this still does not fix the problem please contact support.',
           __METHOD__ );
       }
 

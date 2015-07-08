@@ -497,8 +497,8 @@ final class log extends singleton
       }
 
       $title = ucwords( $e->get_type() ).' Error!';
-      $notice = 'There was an error while trying to communicate with the server.<br>'.
-                'Please notify a superior with the error code.';
+      $notice = 'There was a problem while trying to communicate with the server. '.
+                'Please contact support for help with this error.';
       $code = $e->get_code();
       include CENOZO_PATH.'/api/ui/error.php';
       exit;
