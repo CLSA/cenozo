@@ -19,6 +19,7 @@
   <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
 
   <script src="<?php print CENOZO_URL; ?>/cenozo.js" id="cenozo"></script>
+  <script src="app.js" id="app"></script>
   <script src="<?php print LIB_URL; ?>/requirejs/require.js"
           data-main="<?php print APP_URL; ?>/require.js"></script>
 </head>
@@ -67,6 +68,7 @@
       '$scope', '$state',
       function( $scope, $state ) {
         $scope.isCurrentState = function isCurrentState( state ) { return $state.is( state ); };
+        $scope.operations = <?php print $operation_item_string; ?>;
         $scope.lists = <?php print $list_item_string; ?>;
         $scope.utilities = <?php print $utility_item_string; ?>;
         $scope.reports = <?php print $report_item_string; ?>;
@@ -83,25 +85,13 @@
           <ul class="dropdown-menu navigation-menu">
             <li ng-controller="MenuCtrl">
               <div class="container-fluid well" style="margin: -14px 7px 7px;">
-                  <div class="btn-group col-sm-12">
-                    <button class="btn btn-default col-sm-2"
-                            ng-click="setSiteRole()"
-                            tooltip="Change which site and role you are logged in as">Site/Role</button>
-                    <button class="btn btn-default col-sm-2"
-                            ng-click="setTimezone()"
-                            tooltip="Change which timezone to display">Timezone</button>
-                    <button class="btn btn-default col-sm-2"
-                            ng-click="editAccount()"
-                            tooltip="Edit your account details">Account</button>
-                    <button class="btn btn-default col-sm-2"
-                            ng-click="setPassword()"
-                            tooltip="Change your password">Password</button>
-                    <button class="btn btn-default col-sm-2"
-                            ng-click="startBreak()"
-                            tooltip="Go on break">Break</button>
-                    <button class="btn btn-danger col-sm-2"
-                            ng-click="logout()"
-                            tooltip="Click and close window to logout the system">Logout</button>
+                  <div class="btn-group btn-group-justified">
+                    <div class="btn-group"
+                            ng-repeat="op in operations">
+                      <button class="btn btn-default"
+                              ng-click="operationList[op].execute()"
+                              tooltip="{{ operationList[op].help }}">{{ operationList[op].title }}</button>
+                    </div>
                   </div>
               </div>
               <div class="container-fluid row">
@@ -160,8 +150,12 @@
           <ul class="nav navbar-nav navbar-right">
             <li>
               <p class="navbar-text">
-                <span ng-click="setSiteRole()">{{ session.role.name | cnUCWords }} @ {{ session.site.name }}</span>
-                <span ng-click="setTimezone()"><i class="glyphicon glyphicon-time"></i> {{ session.time }}</span>
+                <span ng-click="operationList.siteRole.execute()">
+                  {{ session.role.name | cnUCWords }} @ {{ session.site.name }}
+                </span>
+                <span ng-click="operationList.timezone.execute()">
+                  <i class="glyphicon glyphicon-time"></i> {{ session.time }}
+                </span>
               </p>
             </li>
           </ul>

@@ -12,14 +12,12 @@ define( cenozo.getServicesIncludeList( 'application' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationViewFactory',
-    cenozo.getListModelInjectionList( 'application' ).concat( [ '$state', 'CnSession', function() {
+    cenozo.getListModelInjectionList( 'application' ).concat( function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var $state = args[args.length-2];
-      var CnSession = args[args.length-1];
       var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } ] )
+    } )
   );
 
   /* ######################################################################################################## */

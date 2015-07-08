@@ -261,26 +261,33 @@
       </ng-form>
     </div>
     <div class="form-footer rounded-bottom">
-      <button ng-if="model.deleteEnabled"
-              type="button"
-              class="btn btn-danger"
-              cn-really-message="Are you sure you want to delete this {{ model.subject }}?"
-              cn-really-click="delete()">
-        <i class="glyphicon glyphicon-remove-sign"></i> Delete
-      </button>
-      <button ng-if="!hasParent()"
-              type="button"
-              class="btn btn-default btn-primary"
-              ng-click="back()">
-        View {{ model.name.singular | cnUCWords }} List
-      </button>
-      <button ng-repeat="parent in model.identifier.parent"
-              ng-if="parentExists( parent.subject )"
-              type="button"
-              class="btn btn-default btn-primary"
-              ng-click="viewParent( parent.subject )">
-        View {{ parent.subject.replace( '_', ' ' ) | cnUCWords }}
-      </button>
+      <div class="btn-group pull-left">
+        <button class="btn btn-default"
+                ng-repeat="operation in model.viewModel.operationList"
+                ng-click="operation.execute()">{{ operation.name }}</button>
+      </div>
+      <div class="btn-group">
+        <button ng-if="model.deleteEnabled"
+                type="button"
+                class="btn btn-danger"
+                cn-really-message="Are you sure you want to delete this {{ model.subject }}?"
+                cn-really-click="delete()">
+          <i class="glyphicon glyphicon-remove-sign"></i> Delete
+        </button>
+        <button ng-if="!hasParent()"
+                type="button"
+                class="btn btn-default btn-primary"
+                ng-click="back()">
+          View {{ model.name.singular | cnUCWords }} List
+        </button>
+        <button ng-repeat="parent in model.identifier.parent"
+                ng-if="parentExists( parent.subject )"
+                type="button"
+                class="btn btn-default btn-primary"
+                ng-click="viewParent( parent.subject )">
+          View {{ parent.subject.replace( '_', ' ' ) | cnUCWords }}
+        </button>
+      </div>
     </div> 
   </form>
 </div>

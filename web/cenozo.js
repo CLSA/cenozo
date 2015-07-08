@@ -165,101 +165,104 @@ cenozo.animation( '.fade-transition', function() {
 /* ######################################################################################################## */
 
 /**
- * Prints the application title and version
+ * Controller for the header/menu system
  */
-cenozo.controller( 'HeaderCtrl', [
-  '$scope', '$state', '$interval', '$window', 'CnSession', 'CnHttpFactory',
+cenozo.service( 'CnBaseHeader', [
+  '$state', '$interval', '$window', 'CnSession', 'CnHttpFactory',
   'CnModalMessageFactory', 'CnModalAccountFactory', 'CnModalPasswordFactory',
   'CnModalSiteRoleFactory', 'CnModalTimezoneFactory',
-  function( $scope, $state, $interval, $window, CnSession, CnHttpFactory,
+  function( $state, $interval, $window, CnSession, CnHttpFactory,
             CnModalMessageFactory, CnModalAccountFactory, CnModalPasswordFactory,
             CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
-    $scope.isCollapsed = false;
-    $scope.isLoading = true;
-    $scope.session = CnSession;
-    CnSession.promise.then( function() {
-      $scope.setTimezone = function() {
-        CnModalTimezoneFactory.instance( {
-          timezone: CnSession.user.timezone
-        } ).show().then( function( response ) {
-          if( response && response != CnSession.user.timezone ) {
-            CnSession.setTimezone( response ).then(
-              function success() { $window.location.reload(); },
-              CnSession.errorHandler
-            );
-          }
+    return {
+      construct: function( scope ) {
+        // update the time once the session has finished loading
+        CnSession.promise.then( function() {
+          CnSession.updateTime();
+          $interval( CnSession.updateTime, 10000 );
+          scope.isLoading = false;
         } );
-      };
 
-      CnSession.updateTime();
-      $interval( CnSession.updateTime, 10000 );
-      $scope.isLoading = false;
-    } );
-
-    $scope.setSiteRole = function() {
-      CnModalSiteRoleFactory.instance().show().then( function( response ) {
-        if( angular.isObject( response ) ) {
-          if( response.siteId != CnSession.site.id || response.roleId != CnSession.role.id ) {
-            $state.go( 'wait' ); // show a waiting screen while we're changing the site/role
-            CnSession.setSiteRole( response.siteId, response.roleId ).then(
-              function success() {
-                $window.location.assign( $window.location.pathname );
-              },
-              CnSession.errorHandler
-            );
-          }
-        }
-      } );
-    };
-
-    $scope.editAccount = function() {
-      CnModalAccountFactory.instance( { user: CnSession.user } ).show().then( function( response ) {
-        if( response ) CnSession.setUserDetails().then( CnSession.updateTime, CnSession.errorHandler );
-      } );
-    };
-
-    $scope.setPassword = function() {
-      CnModalPasswordFactory.instance().show().then( function( response ) {
-        if( angular.isObject( response ) ) {
-          CnSession.setPassword( response.currentPass, response.requestedPass ).catch(
-            function error( response ) {
-              if( 401 == response.status ) {
-                CnModalMessageFactory.instance( {
-                  title: 'Unable To Change Password',
-                  message: 'Sorry, the current password you provided is incorrect, please try again. ' +
-                           'If you have forgotten your current password an administrator can reset it.',
-                  error: true
-                } ).show();
-              } else { CnSession.errorHandler( response ); }
+        scope.isCollapsed = false;
+        scope.isLoading = true;
+        scope.session = CnSession;
+        
+        // a list of all possible operations that the menu controller has to choose from
+        scope.operationList = {
+          account: {
+            title: 'Account',
+            help: 'Edit your account details',
+            execute: function() {
+              CnModalAccountFactory.instance( { user: CnSession.user } ).show().then( function( response ) {
+                if( response ) CnSession.setUserDetails().then( CnSession.updateTime, CnSession.errorHandler );
+              } );
             }
-          );
-        }
-      } );
-    };
-
-    $scope.startBreak = function() {
-      return CnHttpFactory.instance( {
-        path: 'self/0',
-        data: { user: { break: true } }
-      } ).patch().then( function() {
-        CnModalMessageFactory.instance( {
-          title: 'On Break',
-          message: 'You are currently on break, to continue working click the "Close" button. ' +
-                   'Your activity will continue to be logged as soon as you perform an action ' +
-                   'or reload your web browser.'
-        } ).show();
-      } ).catch( function() {
-        CnModalMessageFactory.instance( {
-          title: 'Error',
-          message: 'Sorry, there was an error while trying to put you on break. ' +
-                   'As a result your time will continue to be logged. ' +
-                   'Please contact support for help with this error.',
-          error: true
-        } ).show();
-      } );
-    };
-
-    $scope.logout = function() { $window.location.assign( '?logout' ); };
+          },
+          logout: {
+            title: 'Logout',
+            help: 'Click and close window to logout the system',
+            execute: function() { $window.location.assign( '?logout' ); }
+          },
+          password: {
+            title: 'Password',
+            help: 'Change your password',
+            execute: function() {
+              CnModalPasswordFactory.instance().show().then( function( response ) {
+                if( angular.isObject( response ) ) {
+                  CnSession.setPassword( response.currentPass, response.requestedPass ).catch(
+                    function error( response ) {
+                      if( 401 == response.status ) {
+                        CnModalMessageFactory.instance( {
+                          title: 'Unable To Change Password',
+                          message: 'Sorry, the current password you provided is incorrect, please try again. ' +
+                                   'If you have forgotten your current password an administrator can reset it.',
+                          error: true
+                        } ).show();
+                      } else { CnSession.errorHandler( response ); }
+                    }
+                  );
+                }
+              } );
+            }
+          },
+          siteRole: {
+            title: 'Site/Role',
+            help: 'Change which site and role you are logged in as',
+            execute: function() {
+              CnModalSiteRoleFactory.instance().show().then( function( response ) {
+                if( angular.isObject( response ) ) {
+                  if( response.siteId != CnSession.site.id || response.roleId != CnSession.role.id ) {
+                    $state.go( 'wait' ); // show a waiting screen while we're changing the site/role
+                    CnSession.setSiteRole( response.siteId, response.roleId ).then(
+                      function success() {
+                        $window.location.assign( $window.location.pathname );
+                      },
+                      CnSession.errorHandler
+                    );
+                  }
+                }
+              } );
+            }
+          },
+          timezone: {
+            title: 'Timezone',
+            help: 'Change which timezone to display',
+            execute: function() {
+              CnModalTimezoneFactory.instance( {
+                timezone: CnSession.user.timezone
+              } ).show().then( function( response ) {
+                if( response && response != CnSession.user.timezone ) {
+                  CnSession.setTimezone( response ).then(
+                    function success() { $window.location.reload(); },
+                    CnSession.errorHandler
+                  );
+                }
+              } );
+            }
+          }
+        };
+      }
+    }
   }
 ] );
 
@@ -1463,6 +1466,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.record = {};
         object.formattedRecord = {};
         object.backupRecord = {};
+        object.operationList = [];
         
         // set up factories
         object.childrenFactoryList = args.splice( 1, parentModel.children.length );
