@@ -32,7 +32,6 @@ class get extends \cenozo\service\service
    */
   public function get_resource( $index )
   {
-    $util_class_name = lib::get_class_name( 'util' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $system_message_class_name = lib::get_class_name( 'database\system_message' );
     $session = lib::create( 'business\session' );
