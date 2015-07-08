@@ -322,38 +322,19 @@ abstract class record extends \cenozo\base_object
     if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
 
-    $columns = array();
-    if( is_null( $select ) )
-    {
-      $columns = $this->passive_column_values;
-    }
-    else
-    {
-      $table_name = static::get_table_name();
-
-      // select this table if one hasn't been selected yet
-      if( is_null( $select->get_table_name() ) ) $select->from( $table_name );
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( sprintf( '%s.id', $this->get_table_name() ), '=', $this->id );
-      $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
-      $columns = static::db()->get_row( $sql );
-
-      foreach( $columns as $column => $value )
-      {
-        if( static::column_exists( $column ) && !is_null( $value ) )
-        {
-          $type = static::db()->get_column_data_type( $table_name, $column );
-          if( 'int' == $type ) $columns[$column] = intval( $value );
-          else if( 'float' == $type ) $columns[$column] = floatval( $value );
-          else if( 'tinyint' == $type ) $columns[$column] = (boolean) $value;
-        }
-      }
-    }
-
-    // apply the active values
+    // apply the active values to the passive values and return the result
+    $columns = $this->passive_column_values;
     foreach( array_keys( $columns ) as $column )
+    {
       if( array_key_exists( $column, $this->active_column_values ) )
         $columns[$column] = $this->active_column_values[$column];
+
+      // convert datetime objects to strings
+      $type = static::db()->get_column_data_type( static::get_table_name(), $column );
+      if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
+      else if( 'time' == $type ) $columns[$column] = $columns[$column]->format( 'H:i:s' );
+      else if( 'datetime' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
+    }
 
     return $columns;
   }
