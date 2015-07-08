@@ -196,6 +196,15 @@ class session extends \cenozo\singleton
   public function get_site() { return $this->db_site; }
 
   /**
+   * Get the current site's setting.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\setting
+   * @access public
+   */
+  public function get_setting() { return $this->db_setting; }
+
+  /**
    * Change the user's active site and role
    * 
    * Will return whether the user has access to the site/role pair
@@ -245,6 +254,7 @@ class session extends \cenozo\singleton
       {
         $this->db_access = $db_access;
         $this->db_site = $this->db_access->get_site();
+        $this->db_setting = current( $this->db_site->get_setting_object_list() );
         $this->db_role = $this->db_access->get_role();
         $has_access = true;
       }
@@ -376,6 +386,13 @@ class session extends \cenozo\singleton
    * @access private
    */
   private $db_site = NULL;
+
+  /**
+   * The record of the current setting.
+   * @var database\setting
+   * @access private
+   */
+  private $db_setting = NULL;
 
   /**
    * The qualified access record for the current user/site/role
