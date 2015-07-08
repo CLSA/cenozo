@@ -29,7 +29,6 @@ CREATE PROCEDURE patch_application()
       ON DELETE NO ACTION ON UPDATE NO ACTION;
 
       ALTER TABLE application
-      DROP COLUMN cenozo,
       ADD COLUMN url VARCHAR(511) NOT NULL AFTER title,
       ADD COLUMN country VARCHAR(45) NOT NULL,
       ADD COLUMN timezone VARCHAR(45) NOT NULL DEFAULT 'Canada/Eastern',
