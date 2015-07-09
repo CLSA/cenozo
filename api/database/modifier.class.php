@@ -403,6 +403,66 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Returns the number of where statements in the modifier
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_where_count()
+  {
+    return count( $this->where_list );
+  }
+
+  /**
+   * Returns the number of join statements in the modifier
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_join_count()
+  {
+    return count( $this->join_list );
+  }
+
+  /**
+   * Returns the number of group statements in the modifier
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_group_count()
+  {
+    return count( $this->group_list );
+  }
+
+  /**
+   * Returns the number of having statements in the modifier
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_having_count()
+  {
+    return count( $this->having_list );
+  }
+
+  /**
+   * Returns the number of order statements in the modifier
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_order_count()
+  {
+    return count( $this->order_list );
+  }
+
+  /**
    * Returns whether the modifier has a certain table (or alias) in its join clauses.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to search for.

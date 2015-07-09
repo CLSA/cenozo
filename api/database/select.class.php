@@ -260,6 +260,21 @@ class select extends \cenozo\base_object
   }
 
   /**
+   * Returns whether the select statement has columns outside of the "from" table
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function has_external_table_columns()
+  {
+    foreach( array_keys( $this->column_list ) as $table )
+      if( 0 < strlen( $table ) && $table != $this->table_name )
+        return true;
+    return false;
+  }
+
+  /**
    * Returns the select statement based on this object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

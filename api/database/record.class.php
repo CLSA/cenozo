@@ -322,22 +322,56 @@ abstract class record extends \cenozo\base_object
     if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
 
-    // apply the active values to the passive values and return the result
-    $columns = $this->passive_column_values;
-    foreach( array_keys( $columns ) as $column )
+    $columns = array();
+    
+    if( is_null( $select ) )
     {
-      if( array_key_exists( $column, $this->active_column_values ) )
-        $columns[$column] = $this->active_column_values[$column];
+      $columns = $this->passive_column_values;
+    }
+    else
+    {
+      // select this table if one hasn't been selected yet
+      $table_name = static::get_table_name();
+      if( is_null( $select->get_table_name() ) ) $select->from( $table_name );
 
-      // convert datetime objects to strings
-      $type = static::db()->get_column_data_type( static::get_table_name(), $column );
-      if( !is_null( $columns[$column] ) )
+      if( $select->has_external_table_columns() ||
+          ( !is_null( $modifier ) && 0 < $modifier->get_group_count() ) )
+      { // the select/modifier statements are requiring that we query the database
+        if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+        $modifier->where( sprintf( '%s.id', $table_name ), '=', $this->id );
+        $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
+        $columns = static::db()->get_row( $sql );
+
+        foreach( $columns as $column => $value )
+        {
+          if( static::column_exists( $column ) && !is_null( $value ) )
+          {
+            $type = static::db()->get_column_data_type( $table_name, $column );
+            if( 'int' == $type ) $columns[$column] = intval( $value );
+            else if( 'float' == $type ) $columns[$column] = floatval( $value );
+            else if( 'tinyint' == $type ) $columns[$column] = (boolean) $value;
+          }
+        }
+      }
+      else // all data comes from the current table
       {
-        if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
-        else if( 'time' == $type ) $columns[$column] = $columns[$column]->format( 'H:i:s' );
-        else if( 'datetime' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
+        if( $select->has_column( '*' ) )
+        {
+          $columns = $this->passive_column_values;
+        }
+        else
+        {
+          foreach( array_keys( $this->passive_column_values ) as $column )
+            if( $select->has_column( $column ) || $select->has_table_column( $table_name, $column ) )
+              $columns[$column] = $this->passive_column_values[$column];
+        }
       }
     }
+
+    // apply the active values
+    foreach( array_keys( $columns ) as $column )
+      if( array_key_exists( $column, $this->active_column_values ) )
+        $columns[$column] = $this->active_column_values[$column];
 
     return $columns;
   }
