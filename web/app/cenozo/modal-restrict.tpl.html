@@ -41,7 +41,8 @@
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}"
+            <select id="{{ 'test' + $index }}"
+                    name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
                     ng-change="local.describeRestriction( $index )"
                     class="form-control">
@@ -55,7 +56,8 @@
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
           <div class="col-sm-7">
-            <input name="{{ 'value' + $index }}"
+            <input id="{{ 'value' + $index }}"
+                   name="{{ 'value' + $index }}"
                    ng-model="restrict.value"
                    ng-change="local.describeRestriction( $index )"
                    class="form-control"
@@ -75,7 +77,8 @@
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}"
+            <select id="{{ 'test' + $index }}"
+                    name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
                     ng-change="local.describeRestriction( $index )"
                     class="form-control">
@@ -87,7 +90,8 @@
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
           <div class="col-sm-7">
-            <select name="{{ 'value' + $index }}"
+            <select id="{{ 'value' + $index }}"
+                    name="{{ 'value' + $index }}"
                     ng-model="restrict.value"
                     ng-change="local.describeRestriction( $index )"
                     class="form-control"
@@ -108,7 +112,8 @@
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}"
+            <select id="{{ 'test' + $index }}"
+                    name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
                     ng-change="local.describeRestriction( $index )"
                     class="form-control">
@@ -124,7 +129,8 @@
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
           <div class="col-sm-7">
-            <input name="{{ 'value' + $index }}"
+            <input id="{{ 'value' + $index }}"
+                   name="{{ 'value' + $index }}"
                    ng-model="restrict.value"
                    ng-change="local.describeRestriction( $index )"
                    class="form-control"
@@ -144,7 +150,8 @@
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}"
+            <select id="{{ 'test' + $index }}"
+                    name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
                     ng-change="local.describeRestriction( $index )"
                     class="form-control">
@@ -161,7 +168,8 @@
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
           <div class="col-sm-7">
             {{ form }}
-            <input name="{{ 'value' + $index }}"
+            <input id="{{ 'value' + $index }}"
+                   name="{{ 'value' + $index }}"
                    ng-model="restrict.value"
                    ng-change="local.describeRestriction( $index )"
                    class="form-control" type="number" min="1"
@@ -180,7 +188,8 @@
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
-            <select name="{{ 'test' + $index }}"
+            <select id="{{ 'test' + $index }}"
+                    name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
                     ng-change="local.describeRestriction( $index )"
                     class="form-control">
@@ -196,7 +205,8 @@
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
           <div class="col-sm-7">
-            <input name="{{ 'value' + $index }}"
+            <input id="{{ 'value' + $index }}"
+                   name="{{ 'value' + $index }}"
                    ng-model="local.formattedValueList[$index]"
                    ng-change="local.describeRestriction( $index )"
                    class="form-control"

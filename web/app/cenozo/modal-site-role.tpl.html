@@ -10,22 +10,22 @@
     <div class="row container-fluid">
       <label for="timezone" class="col-sm-3 control-label">Site</label>
       <div class="col-sm-9">
-        <select
-          name="siteId"
-          ng-options="site.id as site.name for site in siteList"
-          ng-model="siteId"
-          ng-change="refreshRoleList()"
-          class="form-control"></select>
+        <select id="siteId"
+                name="siteId"
+                ng-options="site.id as site.name for site in siteList"
+                ng-model="siteId"
+                ng-change="refreshRoleList()"
+                class="form-control"></select>
       </div>
     </div>
     <div class="row container-fluid">
       <label for="timezone" class="col-sm-3 control-label">Role</label>
       <div class="col-sm-9">
-        <select
-          name="roleId"
-          ng-options="role.id as role.name for role in roleList"
-          ng-model="roleId"
-          class="form-control"></select>
+        <select id="roleId"
+                name="roleId"
+                ng-options="role.id as role.name for role in roleList"
+                ng-model="roleId"
+                class="form-control"></select>
       </div>
     </div>
   </div>

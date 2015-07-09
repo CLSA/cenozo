@@ -5,7 +5,7 @@
              name="innerForm">
       <div class="form-group"
            ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
-        <label for="name" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
+        <label for="{{ input.key }}" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
         <div class="col-sm-9">
           <div class="input-group"
                ng-switch="input.type"
@@ -129,64 +129,64 @@
               ng-required="model.metadata.columnList[input.key].required"></textarea>
             <div ng-switch-when="months" class="row">
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="january">
                   <input id="january" name="name" ng-model="record.january" type="checkbox"> January
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="february">
                   <input id="february" name="name" ng-model="record.february" type="checkbox"> February
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="march">
                   <input id="march" name="name" ng-model="record.march" type="checkbox"> March
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="april">
                   <input id="april" name="name" ng-model="record.april" type="checkbox"> April
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="may">
                   <input id="may" name="name" ng-model="record.may" type="checkbox"> May
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="june">
                   <input id="june" name="name" ng-model="record.june" type="checkbox"> June
                 </label>
               </div>
             </div>
             <div ng-switch-when="months" class="row">
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="july">
                   <input id="july" name="name" ng-model="record.july" type="checkbox"> July
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="august">
                   <input id="august" name="name" ng-model="record.august" type="checkbox"> August
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="september">
                   <input id="september" name="name" ng-model="record.september" type="checkbox"> September
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="october">
                   <input id="october" name="name" ng-model="record.october" type="checkbox"> October
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="november">
                   <input id="november" name="name" ng-model="record.november" type="checkbox"> November
                 </label>
               </div>
               <div class="col-sm-2">
-                <label class="checkbox">
+                <label class="checkbox" for="december">
                   <input id="december" name="name" ng-model="record.december" type="checkbox"> December
                 </label>
               </div>

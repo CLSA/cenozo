@@ -16,7 +16,7 @@
         <div class="form-group"
              ng-if="'identifier' != input.type"
              ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
-          <label for="name" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
+          <label for="{{ input.key }}" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
           <div ng-class="model.viewModel.record[input.key] == model.viewModel.backupRecord[input.key] ?
                          'col-sm-9' : 'col-sm-8'">
             <div class="input-group"
@@ -127,7 +127,7 @@
                 ng-required="model.metadata.columnList[input.key].required"></textarea>
               <div ng-switch-when="months" class="row">
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="january">
                     <input id="january" name="name"
                       ng-model="model.viewModel.record.january"
                       ng-change="patch( 'january' )"
@@ -136,7 +136,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="february">
                     <input id="february" name="name"
                       ng-model="model.viewModel.record.february"
                       ng-change="patch( 'february' )"
@@ -145,7 +145,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="march">
                     <input id="march" name="name"
                       ng-model="model.viewModel.record.march"
                       ng-change="patch( 'march' )"
@@ -154,7 +154,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="april">
                     <input id="april" name="name"
                       ng-model="model.viewModel.record.april"
                       ng-change="patch( 'april' )"
@@ -163,7 +163,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="may">
                     <input id="may" name="name"
                       ng-model="model.viewModel.record.may"
                       ng-change="patch( 'may' )"
@@ -172,7 +172,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="june">
                     <input id="june" name="name"
                       ng-model="model.viewModel.record.june"
                       ng-change="patch( 'june' )"
@@ -183,7 +183,7 @@
               </div>
               <div ng-switch-when="months" class="row">
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="july">
                     <input id="july" name="name"
                       ng-model="model.viewModel.record.july"
                       ng-change="patch( 'july' )"
@@ -192,7 +192,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="august">
                     <input id="august" name="name"
                       ng-model="model.viewModel.record.august"
                       ng-change="patch( 'august' )"
@@ -201,7 +201,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="september">
                     <input id="september" name="name"
                       ng-model="model.viewModel.record.september"
                       ng-change="patch( 'september' )"
@@ -209,7 +209,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="october">
                     <input id="october" name="name"
                       ng-model="model.viewModel.record.october"
                       ng-change="patch( 'october' )"
@@ -218,7 +218,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="november">
                     <input id="november" name="name"
                       ng-model="model.viewModel.record.november"
                       ng-change="patch( 'november' )"
@@ -227,7 +227,7 @@
                   </label>
                 </div>
                 <div class="col-sm-2">
-                  <label class="checkbox">
+                  <label class="checkbox" for="december">
                     <input id="december" name="name"
                       ng-model="model.viewModel.record.december"
                       ng-change="patch( 'december' )"

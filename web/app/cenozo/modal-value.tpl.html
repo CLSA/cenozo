@@ -5,11 +5,12 @@
   <div class="modal-body">
     <label for="value" class="control-label">{{ message }}</label>
     <input ng-if="!enumList"
-      name="value"
-      ng-model="value"
-      class="form-control"
-      type="text"
-      required />
+           id="value"
+           name="value"
+           ng-model="value"
+           class="form-control"
+           type="text"
+           required />
     <select ng-if="enumList"
       ng-options="item.value as item.name for item in enumList"
       ng-model="value"

@@ -14,7 +14,8 @@
       <div class="col-sm-8">
         <div class="input-group"
              ng-class="{ 'has-feedback has-error': form.firstName.$invalid }">
-          <input name="firstName"
+          <input id="firstName"
+                 name="firstName"
                  ng-model="user.firstName"
                  class="form-control"
                  type="text"
@@ -31,7 +32,8 @@
       <div class="col-sm-8">
         <div class="input-group"
              ng-class="{ 'has-feedback has-error': form.lastName.$invalid }">
-          <input name="lastName"
+          <input id="lastName"
+                 name="lastName"
                  ng-model="user.lastName"
                  class="form-control"
                  type="text"
@@ -49,7 +51,8 @@
       <div class="col-sm-8">
         <div class="input-group"
              ng-class="{ 'has-feedback has-error': form.email.$invalid }">
-          <input name="email"
+          <input id="email"
+                 name="email"
                  ng-model="user.email"
                  ng-change="testEmailFormat()"
                  class="form-control"
@@ -67,7 +70,11 @@
              tooltip="Whether to display times using the 12-hour clock (am/pm)">Use 12-Hour Clock</label>
       <div class="col-sm-8">
         <div class="input-group">
-          <select name="use12hourClock" ng-model="use12hourClock" class="form-control" required>
+          <select id="use12hourClock"
+                  name="use12hourClock"
+                  ng-model="use12hourClock"
+                  class="form-control"
+                  required>
             <option value="1">Yes</option>
             <option value="0">No</option>
           </select>
