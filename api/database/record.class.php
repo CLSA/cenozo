@@ -331,9 +331,12 @@ abstract class record extends \cenozo\base_object
 
       // convert datetime objects to strings
       $type = static::db()->get_column_data_type( static::get_table_name(), $column );
-      if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
-      else if( 'time' == $type ) $columns[$column] = $columns[$column]->format( 'H:i:s' );
-      else if( 'datetime' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
+      if( !is_null( $columns[$column] ) )
+      {
+        if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
+        else if( 'time' == $type ) $columns[$column] = $columns[$column]->format( 'H:i:s' );
+        else if( 'datetime' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
+      }
     }
 
     return $columns;
