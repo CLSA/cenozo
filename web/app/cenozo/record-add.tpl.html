@@ -54,6 +54,7 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              ng-required="model.metadata.columnList[input.key].required"
               type="hidden"></input>
             <input ng-switch-when="date"
               ng-model="formattedRecord[input.key]"
@@ -66,6 +67,7 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              ng-required="model.metadata.columnList[input.key].required"
               type="hidden"></input>
             <input ng-switch-when="time"
               ng-model="formattedRecord[input.key]"
@@ -78,6 +80,7 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              ng-required="model.metadata.columnList[input.key].required"
               type="hidden"></input>
             <input ng-switch-when="timesecond"
               ng-model="formattedRecord[input.key]"
@@ -90,6 +93,7 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              ng-required="model.metadata.columnList[input.key].required"
               type="hidden"></input>
             <input ng-switch-when="datetime"
               ng-model="formattedRecord[input.key]"
@@ -102,6 +106,7 @@
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
+              ng-required="model.metadata.columnList[input.key].required"
               type="hidden"></input>
             <input ng-switch-when="datetimesecond"
               ng-model="formattedRecord[input.key]"

@@ -491,7 +491,7 @@ cenozo.directive( 'cnRecordAdd', [
             title: input.title,
             date: $scope.record[input.key],
             pickerType: input.type,
-            emptyAllowed: true
+            emptyAllowed: !$scope.model.metadata.columnList[input.key].required
           } ).show().then( function( response ) {
             if( false !== response ) {
               $scope.record[input.key] = response;
@@ -1972,9 +1972,17 @@ cenozo.factory( 'CnBaseModelFactory', [
           // create an array out of the input list
           var data = [];
           if( 'list' == type ) {
-            for( var key in this.columnList )
-              if( 0 > removeList.indexOf( key ) && 'identifier' != this.columnList[key].type )
+            for( var key in this.columnList ) {
+              if( 0 > removeList.indexOf( key ) &&
+                  // don't include identifier columns
+                  'identifier' != this.columnList[key].type &&
+                  // for child lists, don't include parent columns
+                  !( stateSubject != this.subject &&
+                     angular.isDefined( this.columnList[key].column ) &&
+                     stateSubject == this.columnList[key].column.split( '.' )[0] ) ) {
                 data.push( this.columnList[key] );
+              }
+            }
           } else { // add or view
             for( var key in this.inputList ) {
               if( 0 > removeList.indexOf( key ) &&
@@ -2215,25 +2223,17 @@ cenozo.factory( 'CnBaseModelFactory', [
         // process column list
         var stateSubject = object.getSubjectFromState();
         for( var key in object.columnList ) {
-          // If we are viewing a list whose subject doesn't match the current state then we need
-          // to remove any columns which are directly related to the current state
-          if( stateSubject != object.subject &&
-              angular.isDefined( object.columnList[key].column ) &&
-              stateSubject == object.columnList[key].column.split( '.' )[0] ) {
-            delete object.columnList[key];
-          } else {
-            // add key, restrictList and filter columns and make sure we have a type
-            object.columnList[key].key = key;
-            if( angular.isUndefined( object.columnList[key].type ) ) object.columnList[key].type = 'string';
-            object.columnList[key].restrictList = [];
-            var type = object.columnList[key].type;
-            if( cenozo.isDatetimeType( type ) ) {
-              object.columnList[key].filter = 'cnDatetime:' + type;
-            } else if( 'rank' == type ) {
-              object.columnList[key].filter = 'cnOrdinal';
-            } else if( 'boolean' == type ) {
-              object.columnList[key].filter = 'cnYesNo';
-            }
+          // add key, restrictList and filter columns and make sure we have a type
+          object.columnList[key].key = key;
+          if( angular.isUndefined( object.columnList[key].type ) ) object.columnList[key].type = 'string';
+          object.columnList[key].restrictList = [];
+          var type = object.columnList[key].type;
+          if( cenozo.isDatetimeType( type ) ) {
+            object.columnList[key].filter = 'cnDatetime:' + type;
+          } else if( 'rank' == type ) {
+            object.columnList[key].filter = 'cnOrdinal';
+          } else if( 'boolean' == type ) {
+            object.columnList[key].filter = 'cnYesNo';
           }
         }
       }
