@@ -21,9 +21,9 @@
     <div class="vertical-spacer"></div>
     <div ng-if="model.user.lastActivity" class="container-fluid">
       You were last logged in from
-      <strong>{{ model.user.lastActivity.startDatetime | cnDatetime:datetime }}</strong>
+      <strong>{{ model.user.lastActivity.start_datetime | cnDatetime:'datetimesecond' }}</strong>
       until
-      <strong>{{ model.user.lastActivity.endDatetime | cnDatetime:datetime }}</strong>
+      <strong>{{ model.user.lastActivity.end_datetime | cnDatetime:'datetimesecond' }}</strong>
       under the role of 
       <strong>{{ model.user.lastActivity.roleName }}</strong>
       for the
