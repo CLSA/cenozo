@@ -1672,6 +1672,15 @@ cenozo.factory( 'CnBaseModelFactory', [
         };
 
         /**
+         * get a user-friendly name for the record (may not be unique)
+         */
+        object.getFriendlyNameFromRecord = function( record ) {
+          var friendlyColumn = module.name.friendlyColumn;
+          return angular.isDefined( friendlyColumn ) && angular.isDefined( record[friendlyColumn] ) ?
+            record[friendlyColumn] : this.getIdentifierFromRecord( record, true );
+        };
+
+        /**
          * get the state's subject
          */
         object.getSubjectFromState = function() {
@@ -1953,7 +1962,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               title: this.name.singular.ucWords(),
               go: function() { object.transitionToLastState(); }
             }, {
-              title: this.getIdentifierFromRecord( this.viewModel.record, true )
+              title: this.getFriendlyNameFromRecord( this.viewModel.record )
             } ] );
           } else throw 'Tried to setup breadcrumb trail for invalid type "' + type + '"';
 
@@ -2663,23 +2672,23 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
       if( angular.isUndefined( params.participant ) )
         throw 'Tried to create CnModalAccountFactory instance without a participant';
 
-      this.add = function() {
-        var newNote = {
+      this.add = function( text ) {
+        var note = {
           user_id: CnSession.user.id,
           datetime: moment().format(),
-          note: ''
+          note: text
         };
-        CnHttpFactory.instance( {
+        
+        return CnHttpFactory.instance( {
           path: 'participant/' + params.participant.getIdentifier() + '/note',
-          data: newNote
+          data: note
         } ).post().then( function( response ) {
-          newNote.id = response.data;
+          note.id = response.data;
+          note.noteBackup = note.note;
+          note.userFirst = CnSession.user.firstName;
+          note.userLast = CnSession.user.lastName;
+          return note;
         } ).catch( CnSession.errorHandler );
-
-        newNote.added = true;
-        newNote.userFirst = CnSession.user.firstName;
-        newNote.userLast = CnSession.user.lastName;
-        return newNote;
       };
 
       this.delete = function( note ) {
@@ -2748,29 +2757,31 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
             $scope.allowEdit = 0 <= CnSession.noteActions.indexOf( 'edit' );
 
             $scope.addNote = function() {
-              $scope.noteList.push( self.add() );
-              
+              self.add( this.newNote ).then( function( note ) { $scope.noteList.push( note ); } );
+              this.newNote = '';
+              // trigger the elastic directive to reset the height
+              $timeout( function() { angular.element( '#newNote' ).trigger( 'change' ) }, 100 );
             };
             $scope.deleteNote = function( id ) {
-              var index = $scope.noteList.findIndexByProperty( 'id', id );
+              var index = this.noteList.findIndexByProperty( 'id', id );
               if( angular.isDefined( index ) ) {
-                self.delete( $scope.noteList[index] );
-                $scope.noteList.splice( index, 1 );
+                self.delete( this.noteList[index] );
+                this.noteList.splice( index, 1 );
               }
             };
             $scope.noteChanged = function( id ) {
-              var note = $scope.noteList.findByProperty( 'id', id );
+              var note = this.noteList.findByProperty( 'id', id );
               if( note ) self.patch( note, 'note' );
             };
             $scope.stickyChanged = function( id ) {
-              var note = $scope.noteList.findByProperty( 'id', id );
+              var note = this.noteList.findByProperty( 'id', id );
               if( note ) {
                 note.sticky = !note.sticky;
                 self.patch( note, 'sticky' );
               }
             };
             $scope.undo = function( id ) {
-              var note = $scope.noteList.findByProperty( 'id', id );
+              var note = this.noteList.findByProperty( 'id', id );
               if( note && note.note != note.noteBackup ) {
                 note.note = note.noteBackup;
                 self.patch( note, 'note' );

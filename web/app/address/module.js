@@ -13,7 +13,8 @@ define( {
     singular: 'address',
     plural: 'addresses',
     possessive: 'address\'',
-    pluralPossessive: 'addresses\''
+    pluralPossessive: 'addresses\'',
+    friendlyColumn: 'rank'
   },
   inputList: {
     active: {

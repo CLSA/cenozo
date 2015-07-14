@@ -224,13 +224,48 @@ class select extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to search for
    * @param string $column The column to search for (optional)
+   * @param boolean $alias Whether to test for the alias name or column name
    * @return boolean
    * @access public
    */
-  public function has_table_column( $table, $column = NULL )
+  public function has_table_column( $table, $column = NULL, $alias = false )
   {
-    return array_key_exists( $table, $this->column_list ) &&
-           ( is_null( $column ) || array_key_exists( $column, $this->column_list[$table] ) );
+    $found = array_key_exists( $table, $this->column_list );
+    if( $found && !is_null( $column ) )
+    {
+      if( $alias )
+      {
+        $found = array_key_exists( $column, $this->column_list[$table] );
+      }
+      else
+      {
+        $found = false;
+        foreach( $this->column_list[$table] as $item )
+        {
+          if( $item['column'] == $column )
+          {
+            $found = true;
+            break;
+          }
+        }
+      }
+    }
+
+    return $found;
+  }
+
+  /**
+   * Convenience method
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table The table to search for
+   * @param string $column The alias to search for
+   * @return boolean
+   * @access public
+   */
+  public function has_table_alias( $table, $column = NULL )
+  {
+    return $this->has_table_column( $table, $column, true );
   }
 
   /**
@@ -238,12 +273,27 @@ class select extends \cenozo\base_object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for
+   * @param boolean $alias Whether to test for the alias name or column name
    * @return boolean
    * @access public
    */
-  public function has_column( $column )
+  public function has_column( $column, $alias = false )
   {
-    return $this->has_table_column( '', $column );
+    return $this->has_table_column( '', $column, $alias );
+  }
+
+  /**
+   * Convenience method
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to search for
+   * @param boolean $alias Whether to test for the alias name or column name
+   * @return boolean
+   * @access public
+   */
+  public function has_alias( $column )
+  {
+    return $this->has_column( $column, true );
   }
 
   /**

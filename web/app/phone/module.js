@@ -13,7 +13,8 @@ define( {
     singular: 'phone',
     plural: 'phones',
     possessive: 'phone\'s',
-    pluralPossessive: 'phones\''
+    pluralPossessive: 'phones\'',
+    friendlyColumn: 'rank'
   },
   inputList: {
     address_id: {

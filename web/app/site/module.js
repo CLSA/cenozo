@@ -5,7 +5,8 @@ define( {
     singular: 'site',
     plural: 'sites',
     possessive: 'site\'s',
-    pluralPossessive: 'sites\''
+    pluralPossessive: 'sites\'',
+    friendlyColumn: 'name'
   },
   inputList: {
     name: {

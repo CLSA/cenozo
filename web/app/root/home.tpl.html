@@ -45,7 +45,7 @@
     <h3 class="text-primary">System Messages</h3>
     <div class="container-fluid" ng-repeat="message in model.messageList">
       <h4><i class="glyphicon glyphicon-envelope"></i> {{ message.title }}</h4>
-      <blockquote class="text-info">{{ message.note }}</blockquote>
+      <blockquote class="text-info" style="white-space: pre-wrap;">{{ message.note }}</blockquote>
     </div>
   </div>
 </div>

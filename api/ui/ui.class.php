@@ -167,11 +167,13 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'state', $module_list ) )
       $module_list['state']['children'] = array( 'role' );
     if( array_key_exists( 'user', $module_list ) )
-      $module_list['user']['children'] = array( 'access', 'language' );
+      $module_list['user']['children'] = array( 'access' );
 
     // add choose actions to certain modules
     if( array_key_exists( 'collection', $module_list ) )
       $module_list['collection']['choosing'] = array( 'participant', 'user' );
+    if( array_key_exists( 'user', $module_list ) )
+      $module_list['user']['choosing'] = array( 'language' );
 
     return $module_list;
   }

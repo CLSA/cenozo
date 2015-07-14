@@ -42,6 +42,13 @@ define( cenozo.getServicesIncludeList( 'event' ), function( module ) {
         this.listModel = CnEventListFactory.instance( this );
         this.viewModel = CnEventViewFactory.instance( this );
 
+        // extend getFriendlyNameFromRecord
+        this.getFriendlyNameFromRecord = function( record ) {
+          var eventType = self.metadata.columnList.event_type_id.enumList.findByProperty(
+            'value', record.event_type_id );
+          return eventType ? eventType.name : 'unknown';
+        };
+
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;

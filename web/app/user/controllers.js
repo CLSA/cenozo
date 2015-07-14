@@ -33,6 +33,13 @@ define( [], function() {
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
       } ).catch( CnSession.errorHandler );
+
+      // when leaving...
+      $scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
+        // turn off the language list choose mode if it is on
+        if( $scope.model.viewModel.languageModel.listModel.chooseMode )
+          $scope.model.viewModel.languageModel.listModel.toggleChooseMode();
+      } );
     }
   ] );
 

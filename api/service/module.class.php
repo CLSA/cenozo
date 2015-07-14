@@ -34,6 +34,14 @@ abstract class module extends \cenozo\base_object
   public function prepare_read( $select, $modifier ) {}
 
   /**
+   * Performs operations on all rows after reading
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function post_read( &$row ) {}
+
+  /**
    * Performs operations on the leaf record before writing
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

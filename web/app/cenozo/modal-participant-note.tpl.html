@@ -9,7 +9,19 @@
       always showing at the top.
     </p>
     <hr />
-    <div class="panel panel-default" ng-repeat="note in noteList | orderBy:'-sticky'">
+    <div ng-if="allowAdd" class="panel panel-info">
+      <div class="panel-heading">
+        <span>Add note</span>
+      </div>
+      <div style="position:relative;">
+        <textarea id="newNote" ng-model="newNote" class="form-control note" cn-elastic></textarea>
+        <button class="btn btn-info bottom-right" ng-click="addNote()">
+          <i class="glyphicon glyphicon-cloud-upload"></i> Submit
+        </button>
+      </div>
+    </div>
+    <hr />
+    <div class="panel panel-default" ng-repeat="note in noteList | orderBy:['-sticky','-datetime']">
       <div class="panel-heading">
         <span>{{ note.userFirst }} {{ note.userLast }}</span>
         <span class="pull-right">
@@ -35,17 +47,13 @@
                   class="form-control note"
                   ng-disabled="!allowEdit"
                   cn-elastic></textarea>
-        <button ng-if="!note.added && note.note != note.noteBackup"
-                class="btn btn-warning"
-                style="position:absolute;bottom:0px;right:0px;"
+        <button ng-if="note.note != note.noteBackup"
+                class="btn btn-warning bottom-right"
                 ng-click="undo( note.id )">undo</button>
       </div>
     </div>
   </div>
   <div class="modal-footer">
-    <button ng-if="allowAdd" type="button" class="btn btn-default" ng-click="addNote()">
-      Add <i class="glyphicon glyphicon-plus"></i>
-    </button>
     <button type="button" class="btn btn-primary" ng-click="close()">Close</button>
   </div>
 </form>

@@ -67,7 +67,7 @@
                      | limitTo: ( model.listModel.paginationFactory.currentPage - 1 ) *
                                 model.listModel.paginationFactory.itemsPerPage - model.listModel.cache.length
                      | limitTo: model.listModel.paginationFactory.itemsPerPage"
-          ng-click="model.chooseMode ? chooseRecord( record ) : selectRecord( record )"
+          ng-click="model.listModel.chooseMode ? chooseRecord( record ) : selectRecord( record )"
           ng-class="{ success:model.listModel.chooseMode && record.chosen }">
           <td ng-repeat="column in dataArray">
             <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>

@@ -5,7 +5,8 @@ define( {
     singular: 'system message',
     plural: 'system messages',
     possessive: 'system message\'s',
-    pluralPossessive: 'system messages\''
+    pluralPossessive: 'system messages\'',
+    friendlyColumn: 'title'
   },
   inputList: {
     application_id: {

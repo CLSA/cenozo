@@ -22,7 +22,7 @@ class module extends \cenozo\service\module
     parent::prepare_read( $select, $modifier );
 
     // add the "participant_uid" column if needed
-    if( $select->has_table_column( 'participant', 'participant_uid' ) )
+    if( $select->has_table_alias( 'participant', 'participant_uid' ) )
       $modifier->left_join( 'participant', 'phone.participant_id', 'participant.id' );
   }
 }

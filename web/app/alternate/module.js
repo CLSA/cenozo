@@ -10,7 +10,8 @@ define( {
     singular: 'alternate',
     plural: 'alternates',
     possessive: 'alternate\'s',
-    pluralPossessive: 'alternates\''
+    pluralPossessive: 'alternates\'',
+    friendlyColumn: 'association'
   },
   inputList: {
     participant_id: {

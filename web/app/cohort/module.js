@@ -1,6 +1,6 @@
 define( {
   subject: 'cohort',
-  identifier: {}, // standard
+  identifier: { column: 'name' },
   name: {
     singular: 'cohort',
     plural: 'cohorts',

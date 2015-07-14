@@ -77,6 +77,23 @@ class read extends service
   }
 
   /**
+   * Extends parent method
+   */
+  protected function finish()
+  {
+    parent::finish();
+
+    // modify the data after it has been fetched
+    $leaf_module = $this->get_leaf_module();
+    if( !is_null( $leaf_module ) )
+    {
+      if( is_array( $this->data ) && is_array( current( $this->data ) ) )
+        foreach( $this->data as $row ) $leaf_module->post_read( $row );
+      else $leaf_module->post_read( $this->data );
+    }
+  }
+
+  /**
    * The select used to process this read service
    * @var database\select
    * @access protected

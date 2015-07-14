@@ -10,7 +10,8 @@ define( {
     singular: 'consent',
     plural: 'consents',
     possessive: 'consent\'s',
-    pluralPossessive: 'consents\''
+    pluralPossessive: 'consents\'',
+    friendlyColumn: 'date'
   },
   inputList: {
     accept: {
