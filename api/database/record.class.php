@@ -373,6 +373,7 @@ abstract class record extends \cenozo\base_object
       if( array_key_exists( $column, $this->active_column_values ) )
         $columns[$column] = $this->active_column_values[$column];
 
+    reset( $columns );
     return $columns;
   }
 
@@ -966,6 +967,7 @@ abstract class record extends \cenozo\base_object
       }
     }
 
+    if( is_array( $return_value ) ) reset( $return_value );
     return $return_value;
   }
 
@@ -1120,6 +1122,7 @@ abstract class record extends \cenozo\base_object
     $values = array();
     foreach( current( $matches ) as $match ) $values[] = substr( $match, 1, -1 );
 
+    reset( $values );
     return $values;
   }
 
