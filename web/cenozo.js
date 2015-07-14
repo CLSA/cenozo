@@ -13,11 +13,16 @@ baseCenozoUrl = undefined;
 moment.tz.setDefault( 'UTC' );
 
 // add some useful prototype functions
-Array.prototype.findByProperty = function( property, value ) {
+Array.prototype.findIndexByProperty = function( property, value ) {
   for( var i = 0; i < this.length; i++ )
     if( angular.isDefined( this[i][property] ) && value == this[i][property] )
-      return this[i];
-  return null;
+      return i;
+  return undefined;
+}
+
+Array.prototype.findByProperty = function( property, value ) {
+  var index = this.findIndexByProperty( property, value );
+  return angular.isDefined( index ) ? this[index] : null;
 }
 
 String.prototype.snakeToCamel = function cnSnakeToCamel( first ) {
@@ -201,7 +206,11 @@ cenozo.service( 'CnBaseHeader', [
           logout: {
             title: 'Logout',
             help: 'Click and close window to logout the system',
-            execute: function() { $window.location.assign( '?logout' ); }
+            execute: function() {
+              // blank content
+              document.getElementById( 'view' ).innerHTML = '';
+              $window.location.assign( '?logout' );
+            }
           },
           password: {
             title: 'Password',
@@ -244,6 +253,8 @@ cenozo.service( 'CnBaseHeader', [
                     $state.go( 'wait' ); // show a waiting screen while we're changing the site/role
                     CnSession.setSiteRole( response.siteId, response.roleId ).then(
                       function success() {
+                        // blank content
+                        document.getElementById( 'view' ).innerHTML = '';
                         $window.location.assign( $window.location.pathname );
                       },
                       CnSession.errorHandler
@@ -261,6 +272,8 @@ cenozo.service( 'CnBaseHeader', [
                 timezone: CnSession.user.timezone
               } ).show().then( function( response ) {
                 if( response && response != CnSession.user.timezone ) {
+                  // blank content
+                  document.getElementById( 'view' ).innerHTML = '';
                   CnSession.setTimezone( response ).then(
                     function success() { $window.location.reload(); },
                     CnSession.errorHandler
@@ -313,28 +326,13 @@ cenozo.directive( 'cnChange', [
  * that the user is currently logged into).
  */
 cenozo.directive( 'cnClock', [
-  '$interval', '$window', 'CnSession', 'CnModalTimezoneFactory',
-  function( $interval, $window, CnSession, CnModalTimezoneFactory ) {
+  '$interval', 'CnSession',
+  function( $interval, CnSession ) {
     return {
       restrict: 'E',
       templateUrl: cenozo.baseUrl + '/app/cenozo/clock.tpl.html',
       link: function( scope, element ) {
         CnSession.promise.then( function() {
-          scope.chooseTimezone = function() {
-            CnModalTimezoneFactory.instance( {
-              timezone: CnSession.user.timezone
-            } ).show().then( function( response ) {
-              if( response && response != CnSession.user.timezone ) {
-                // blank content
-                document.getElementById( 'view' ).innerHTML = '';
-                CnSession.setTimezone( response ).then(
-                  function success() { $window.location.reload(); },
-                  CnSession.errorHandler
-                );
-              }
-            } );
-          };
-
           function updateTime() {
             var now = moment();
             now.tz( CnSession.user.timezone );
@@ -363,8 +361,8 @@ cenozo.directive( 'cnElastic', [
       link: function( $scope, element ) {
         $scope.initialHeight = $scope.initialHeight || element[0].style.height;
         var resize = function() {
-          element[0].style.height = $scope.initialHeight;
-          element[0].style.height = '' + element[0].scrollHeight + 'px';
+          element[0].style.height = $scope.initialHeight; // affects scrollHeight
+          element[0].style.height = '' + ( element[0].scrollHeight + 2 ) + 'px';
         };
         element.on( 'blur keyup change', resize );
         $timeout( resize, 200 );
@@ -1034,6 +1032,8 @@ cenozo.factory( 'CnSession', [
       this.siteList = [];
       this.messageList = [];
       this.breadcrumbTrail = [];
+      this.noteActions = cenozo.noteActions;
+      delete cenozo.noteActions;
 
       // defines the breadcrumbtrail based on an array of crumbs
       this.setBreadcrumbTrail = function( crumbs ) {
@@ -2640,6 +2640,145 @@ cenozo.service( 'CnModalMessageFactory', [
             $scope.message = self.message;
             $scope.error = self.error
             $scope.close = function() { $modalInstance.close( false ); };
+          }
+        } ).result;
+      };
+    };
+
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.service( 'CnModalParticipantNoteFactory', [
+  '$modal', '$timeout', 'CnSession', 'CnHttpFactory',
+  function( $modal, $timeout, CnSession, CnHttpFactory ) {
+    var object = function( params ) {
+      var self = this;
+
+      if( angular.isUndefined( params.participant ) )
+        throw 'Tried to create CnModalAccountFactory instance without a participant';
+
+      this.add = function() {
+        var newNote = {
+          user_id: CnSession.user.id,
+          datetime: moment().format(),
+          note: ''
+        };
+        CnHttpFactory.instance( {
+          path: 'participant/' + params.participant.getIdentifier() + '/note',
+          data: newNote
+        } ).post().then( function( response ) {
+          newNote.id = response.data;
+        } ).catch( CnSession.errorHandler );
+
+        newNote.added = true;
+        newNote.userFirst = CnSession.user.firstName;
+        newNote.userLast = CnSession.user.lastName;
+        return newNote;
+      };
+
+      this.delete = function( note ) {
+        CnHttpFactory.instance( {
+          path: 'participant/' + params.participant.getIdentifier() + '/note/' + note.id
+        } ).delete().catch( CnSession.errorHandler );
+      };
+
+      this.patch = function( note, key ) {
+        var data = {};
+        data[key] = note[key];
+        CnHttpFactory.instance( {
+          path: 'participant/' + params.participant.getIdentifier() + '/note/' + note.id,
+          data: data
+        } ).patch().catch( CnSession.errorHandler );
+      };
+
+      this.show = function() {
+        return $modal.open( {
+          backdrop: 'static',
+          keyboard: true,
+          modalFade: true,
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-participant-note.tpl.html',
+          controller: function( $scope, $modalInstance ) {
+            CnHttpFactory.instance( {
+              path: 'participant/' + params.participant.getIdentifier() + '/note',
+              data: {
+                modifier: {
+                  join: {
+                    table: 'user',
+                    onleft: 'note.user_id',
+                    onright: 'user.id'
+                  },
+                  order: { 'datetime': true }
+                },
+                select: {
+                  column: [ 'sticky', 'datetime', 'note', {
+                    table: 'user',
+                    column: 'first_name',
+                    alias: 'user_first'
+                  } , {
+                    table: 'user',
+                    column: 'last_name',
+                    alias: 'user_last'
+                  } ]
+                }
+              }
+            } ).query().then( function( response ) {
+              $scope.noteList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                $scope.noteList.push( {
+                  id: response.data[i].id,
+                  datetime: response.data[i].datetime,
+                  sticky: response.data[i].sticky,
+                  userFirst: response.data[i].user_first,
+                  userLast: response.data[i].user_last,
+                  note: response.data[i].note,
+                  noteBackup: response.data[i].note
+                } );
+              }
+            } ).catch( CnSession.errorHandler );
+
+            $scope.participant = params.participant;
+            $scope.allowAdd = 0 <= CnSession.noteActions.indexOf( 'add' );
+            $scope.allowDelete = 0 <= CnSession.noteActions.indexOf( 'delete' );
+            $scope.allowEdit = 0 <= CnSession.noteActions.indexOf( 'edit' );
+
+            $scope.addNote = function() {
+              $scope.noteList.push( self.add() );
+              
+            };
+            $scope.deleteNote = function( id ) {
+              var index = $scope.noteList.findIndexByProperty( 'id', id );
+              if( angular.isDefined( index ) ) {
+                self.delete( $scope.noteList[index] );
+                $scope.noteList.splice( index, 1 );
+              }
+            };
+            $scope.noteChanged = function( id ) {
+              var note = $scope.noteList.findByProperty( 'id', id );
+              if( note ) self.patch( note, 'note' );
+            };
+            $scope.stickyChanged = function( id ) {
+              var note = $scope.noteList.findByProperty( 'id', id );
+              if( note ) {
+                note.sticky = !note.sticky;
+                self.patch( note, 'sticky' );
+              }
+            };
+            $scope.undo = function( id ) {
+              var note = $scope.noteList.findByProperty( 'id', id );
+              if( note && note.note != note.noteBackup ) {
+                note.note = note.noteBackup;
+                self.patch( note, 'note' );
+                // trigger the elastic directive in case the scroll height has changed
+                $timeout( function() { angular.element( '#note' + id ).trigger( 'change' ) }, 100 );
+              }
+            };
+            $scope.close = function() { $modalInstance.close(); };
           }
         } ).result;
       };

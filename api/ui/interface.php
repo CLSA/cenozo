@@ -34,6 +34,12 @@
     ] );
     cenozoApp.moduleList = <?php print $module_string; ?>;
 
+    // notes are handled by a modal only
+    if( angular.isDefined( cenozoApp.moduleList.note ) ) {
+      cenozo.noteActions = cenozoApp.moduleList.note.actions;
+      delete cenozoApp.moduleList.note;
+    }
+
     // pre-create snake, camel, title, etc strings for children and choosing lists
     for( var name in cenozoApp.moduleList ) {
       var module = cenozoApp.moduleList[name];
@@ -58,9 +64,8 @@
     cenozoApp.config( [
       '$stateProvider',
       function( $stateProvider ) {
-        for( var module in cenozoApp.moduleList ) {
+        for( var module in cenozoApp.moduleList )
           cenozo.routeModule( $stateProvider, module, cenozoApp.moduleList[module] );
-        }
       }
     ] );
 

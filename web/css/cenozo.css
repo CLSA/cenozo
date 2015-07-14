@@ -28,6 +28,11 @@ blockquote { font-size: 100%; }
 .col-slim { padding-left: 0px; padding-right: 0px; }
 .nopadding { padding: 0px; }
 .tooltip-inner { width: 350px; }
+textarea.note {
+  border-radius:0px;
+  resize:none;
+  background-color:white;
+}
 
 .breadcrumb {
   padding-top: 15px;

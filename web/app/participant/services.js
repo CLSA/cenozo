@@ -12,32 +12,29 @@ define( cenozo.getServicesIncludeList( 'participant' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantViewFactory',
-    cenozo.getListModelInjectionList( 'participant' ).concat( [ 'CnSession', 'CnHttpFactory', function() {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
-      var CnSession = args[args.length-2];
-      var CnHttpFactory = args[args.length-1];
-      var object = function( parentModel ) { 
-        CnBaseViewFactory.construct( this, parentModel, args );
+    cenozo.getListModelInjectionList( 'participant' ).concat( [
+      'CnSession', 'CnModalParticipantNoteFactory', function() {
+        var args = arguments;
+        var CnBaseViewFactory = args[0];
+        var CnSession = args[args.length-2];
+        var CnModalParticipantNoteFactory = args[args.length-1];
+        var object = function( parentModel ) { 
+          CnBaseViewFactory.construct( this, parentModel, args );
 
-        // add operations
-        var self = this;
-        this.operationList.push( {
-          name: 'Requeue',
-          execute: function() {
-            var operation = this;
-            operation.name = 'Queueing...';
-            CnHttpFactory.instance( {
-              path: 'participant/' + self.record.id,
-              data: { 'requeue': true }
-            } ).patch().then( function( response ) {
-              operation.name = 'Requeue';
-            } ).catch( CnSession.errorHandler );
+          // add operations
+          var self = this;
+          if( 0 <= CnSession.noteActions.indexOf( 'list' ) ) { // only show notes button if allowed
+            this.operationList.push( {
+              name: 'Notes',
+              execute: function() {
+                CnModalParticipantNoteFactory.instance( { participant: self.record } ).show();
+              }
+            } );
           }
-        } );
-      };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } ] )
+        };
+        return { instance: function( parentModel ) { return new object( parentModel ); } };
+      }
+    ] )
   );
 
   /* ######################################################################################################## */
