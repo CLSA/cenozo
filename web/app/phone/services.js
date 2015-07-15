@@ -49,7 +49,7 @@ define( cenozo.getServicesIncludeList( 'phone' ), function( module ) {
             // get the service path from the parent subject and identifier
             var parent = self.getParentSubjectAndIdentifier();
             return CnHttpFactory.instance( {
-              path: [ parent.subject, parent.identifier, 'address' ].join( '/' ),
+              path: self.getServiceCollectionPath().replace( 'phone', 'address' ),
               data: {
                 select: { column: [ 'id', 'summary' ] },
                 modifier: { order: 'rank' }
