@@ -87,4 +87,23 @@ class site extends base_access
     $db_access = lib::create( 'database\access', $access_id );
     $db_access->delete();
   }
+
+  /**
+   * Convenience method which returns the setting record for this site
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @return database\setting
+   * @access public
+   */
+  public function get_setting()
+  {
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to get setting for site with no id.' );
+      return NULL;
+    }
+
+    $setting_class_name = lib::get_class_name( 'database\setting' );
+    return $setting_class_name::get_unique_record( 'site_id', $this->id );
+  }
 }
