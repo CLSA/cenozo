@@ -19,6 +19,9 @@ class address extends has_rank
    */
   public function save()
   {
+    // if this is a new address and the region isn't set, source it
+    if( is_null( $this->id ) && is_null( $this->region_id ) ) $this->source_postcode();
+
     // make sure the address is valid
     if( !$this->is_valid() )
     {
