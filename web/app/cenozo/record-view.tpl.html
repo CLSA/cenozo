@@ -20,7 +20,7 @@
           <div ng-class="model.viewModel.record[input.key] == model.viewModel.backupRecord[input.key] ?
                          'col-sm-9' : 'col-sm-8'">
             <div class="input-group"
-                 ng-switch="input.type"
+                 ng-switch="input.type|cnViewType"
                  ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
               <input ng-switch-when="string"
                 ng-attr-id="{{ input.key }}"
@@ -62,33 +62,6 @@
                 autocomplete="off"
                 ng-readonly="!model.editEnabled"
                 ng-required="model.metadata.columnList[input.key].required"></input>
-              <input ng-switch-when="date"
-                ng-attr-id="{{ input.key }}"
-                name="name"
-                ng-model="model.viewModel.formattedRecord[input.key]"
-                class="form-control"
-                type="text"
-                ng-click="selectDatetime( input )"
-                ng-readonly="!model.editEnabled"
-                onkeydown="return false"></input>
-              <input ng-switch-when="time"
-                ng-attr-id="{{ input.key }}"
-                name="name"
-                ng-model="model.viewModel.formattedRecord[input.key]"
-                class="form-control"
-                type="text"
-                ng-click="selectDatetime( input )"
-                ng-readonly="!model.editEnabled"
-                onkeydown="return false"></input>
-              <input ng-switch-when="timesecond"
-                ng-attr-id="{{ input.key }}"
-                name="name"
-                ng-model="model.viewModel.formattedRecord[input.key]"
-                class="form-control"
-                type="text"
-                ng-click="selectDatetime( input )"
-                ng-readonly="!model.editEnabled"
-                onkeydown="return false"></input>
               <input ng-switch-when="datetime"
                 ng-attr-id="{{ input.key }}"
                 name="name"
@@ -98,16 +71,7 @@
                 ng-click="selectDatetime( input )"
                 ng-readonly="!model.editEnabled"
                 onkeydown="return false"></input>
-              <input ng-switch-when="datetimesecond"
-                ng-attr-id="{{ input.key }}"
-                name="name"
-                ng-model="model.viewModel.formattedRecord[input.key]"
-                class="form-control"
-                type="text"
-                ng-click="selectDatetime( input )"
-                ng-readonly="!model.editEnabled"
-                onkeydown="return false"></input>
-              <select ng-switch-default
+              <select ng-switch-when="select"
                 ng-attr-id="{{ input.key }}"
                 name="name"
                 ng-options="item.value as item.name for item in input.enumList"

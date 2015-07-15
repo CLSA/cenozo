@@ -1004,6 +1004,19 @@ cenozo.filter( 'cnUCWords', function() {
 /**
  * TODO: document
  */
+cenozo.filter( 'cnViewType', function() {
+  return function( input ) {
+    if( 'boolean' == input || 'enum' == input ) input = 'select';
+    else if( cenozo.isDatetimeType( input ) ) input = 'datetime';
+    return input;
+  };
+} );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.filter( 'cnYesNo', function() {
   return function( input ) {
     if( "boolean" != cenozo.getType( input ) ) input = 0 != input;
