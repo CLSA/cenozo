@@ -21,6 +21,7 @@
       </div>
     </div>
     <hr />
+    <p ng-if="0 == noteList.length" class="text-info">There are no notes for this participant.</p>
     <div class="panel panel-default" ng-repeat="note in noteList | orderBy:['-sticky','-datetime']">
       <div class="panel-heading">
         <span>{{ note.userFirst }} {{ note.userLast }}</span>
