@@ -338,21 +338,25 @@ abstract class record extends \cenozo\base_object
         $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
         $columns = static::db()->get_row( $sql );
 
+        // convert non-null values
         foreach( $columns as $column => $value )
         {
-          // get the table and column associated with this column (alias)
-          $current_table_name = $select->get_alias_table( $column );
-          $current_column_name = $select->get_alias_column( $column );
-
-          // the table name in the select may be an alias to a join in the modifier
-          if( $modifier->has_join( $current_table_name ) )
-            $current_table_name = $modifier->get_alias_table( $current_table_name );
-
-          // convert column types
-          if( static::db()->column_exists( $current_table_name, $current_column_name ) )
+          if( !is_null( $value ) )
           {
-            $type = static::db()->get_column_variable_type( $current_table_name, $current_column_name );
-            if( 'string' != $type && 'datetime' != $type ) settype( $columns[$column], $type );
+            // get the table and column associated with this column (alias)
+            $current_table_name = $select->get_alias_table( $column );
+            $current_column_name = $select->get_alias_column( $column );
+
+            // the table name in the select may be an alias to a join in the modifier
+            if( $modifier->has_join( $current_table_name ) )
+              $current_table_name = $modifier->get_alias_table( $current_table_name );
+
+            // convert column types
+            if( static::db()->column_exists( $current_table_name, $current_column_name ) )
+            {
+              $type = static::db()->get_column_variable_type( $current_table_name, $current_column_name );
+              if( 'string' != $type && 'datetime' != $type ) settype( $columns[$column], $type );
+            }
           }
         }
       }
