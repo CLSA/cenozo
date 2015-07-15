@@ -30,7 +30,7 @@
                 class="form-control"
                 type="text"
                 autocomplete="off"
-                ng-disabled="!model.editEnabled || input.constant"
+                ng-readonly="!model.editEnabled || input.constant"
                 ng-required="model.metadata.columnList[input.key].required"></input>
               <input ng-switch-when="typeahead"
                 ng-attr-id="{{ input.key }}"
@@ -45,7 +45,7 @@
                 type="text"
                 placeholder="(Type the first few letters to search possible values)"
                 autocomplete="off"
-                ng-disabled="!model.editEnabled"
+                ng-readonly="!model.editEnabled"
                 ng-required="model.metadata.columnList[input.key].required"></input>
               <input ng-switch-when="lookup-typeahead"
                 ng-attr-id="{{ input.key }}"
@@ -60,7 +60,7 @@
                 type="text"
                 placeholder="(Type the first few letters to search possible values)"
                 autocomplete="off"
-                ng-disabled="!model.editEnabled"
+                ng-readonly="!model.editEnabled"
                 ng-required="model.metadata.columnList[input.key].required"></input>
               <input ng-switch-when="date"
                 ng-attr-id="{{ input.key }}"
@@ -69,7 +69,7 @@
                 class="form-control"
                 type="text"
                 ng-click="selectDatetime( input )"
-                ng-disabled="!model.editEnabled"
+                ng-readonly="!model.editEnabled"
                 onkeydown="return false"></input>
               <input ng-switch-when="time"
                 ng-attr-id="{{ input.key }}"
@@ -78,7 +78,7 @@
                 class="form-control"
                 type="text"
                 ng-click="selectDatetime( input )"
-                ng-disabled="!model.editEnabled"
+                ng-readonly="!model.editEnabled"
                 onkeydown="return false"></input>
               <input ng-switch-when="timesecond"
                 ng-attr-id="{{ input.key }}"
@@ -87,7 +87,7 @@
                 class="form-control"
                 type="text"
                 ng-click="selectDatetime( input )"
-                ng-disabled="!model.editEnabled"
+                ng-readonly="!model.editEnabled"
                 onkeydown="return false"></input>
               <input ng-switch-when="datetime"
                 ng-attr-id="{{ input.key }}"
@@ -96,7 +96,7 @@
                 class="form-control"
                 type="text"
                 ng-click="selectDatetime( input )"
-                ng-disabled="!model.editEnabled"
+                ng-readonly="!model.editEnabled"
                 onkeydown="return false"></input>
               <input ng-switch-when="datetimesecond"
                 ng-attr-id="{{ input.key }}"
@@ -105,7 +105,7 @@
                 class="form-control"
                 type="text"
                 ng-click="selectDatetime( input )"
-                ng-disabled="!model.editEnabled"
+                ng-readonly="!model.editEnabled"
                 onkeydown="return false"></input>
               <select ng-switch-default
                 ng-attr-id="{{ input.key }}"
@@ -123,7 +123,7 @@
                 ng-model="model.viewModel.record[input.key]"
                 cn-change="patch( input.key )"
                 class="form-control"
-                ng-disabled="!model.editEnabled || input.constant"
+                ng-readonly="!model.editEnabled || input.constant"
                 ng-required="model.metadata.columnList[input.key].required"></textarea>
               <div ng-switch-when="months" class="row">
                 <div class="col-sm-2">
