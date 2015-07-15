@@ -325,6 +325,45 @@ class select extends \cenozo\base_object
   }
 
   /**
+   * Returns the table name associated with an alias
+   * 
+   * This resolves the "from" table, meaning if an alias was added without a table name then
+   * internally the table name is set to an empty string, but this method will return the
+   * "from" table instead, if it is set.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $alias The name of the alias (may be identical to the column name)
+   * @return string
+   * @access public
+   */
+  public function get_alias_table( $alias )
+  {
+    foreach( $this->column_list as $t => $c )
+      foreach( $c as $a => $details )
+        if( $a == $alias ) return 0 == strlen( $t ) ? $this->table_name : $t;
+
+    log::warning( sprintf( 'Unable to find table for alias "%s" in select object', $alias ) );
+    return NULL;
+  }
+
+  /**
+   * Returns the column name associated with an alias
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $alias The name of the alias (may be identical to the column name)
+   * @return string
+   * @access public
+   */
+  public function get_alias_column( $alias )
+  {
+    foreach( $this->column_list as $t => $c )
+      foreach( $c as $a => $details )
+        if( $a == $alias ) return $details['column'];
+
+    log::warning( sprintf( 'Unable to find column for alias "%s" in select object', $alias ) );
+    return NULL;
+  }
+
+  /**
    * Returns the select statement based on this object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

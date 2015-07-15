@@ -258,6 +258,35 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Convertns a column's data type into a native PHP variable type (int, string, boolean, etc)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table_name The name of the table to check for.
+   * @param string $column_name A column name in the record's corresponding table.
+   * @return string
+   * @access public
+   */
+  public function get_column_variable_type( $table_name, $column_name )
+  {
+    $boolean_types = array( 'tinyint' );
+    $datetime_types = array( 'date', 'datetime', 'time', 'timestamp' );
+    $integer_types = array( 'bigint', 'int', 'mediumint', 'smallint' );
+    $float_types = array( 'decimal', 'double', 'float', 'real' );
+    $string_types = array( 'blob', 'char', 'enum', 'longtext', 'text', 'varchar' );
+
+    $data_type = $this->get_column_data_type( $table_name, $column_name );
+    if( in_array( $data_type, $string_types ) ) return 'string';
+    if( in_array( $data_type, $integer_types ) ) return 'integer';
+    if( in_array( $data_type, $datetime_types ) ) return 'datetime';
+    if( in_array( $data_type, $boolean_types ) ) return 'boolean';
+    if( in_array( $data_type, $float_types ) ) return 'float';
+    
+    log::warning( sprintf(
+      'Database containes column type "%s" which is not categorized by database layer',
+      $data_type ) );
+    return 'string';
+  }
+
+  /**
    * Returns a column's key type.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.

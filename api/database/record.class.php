@@ -125,12 +125,9 @@ abstract class record extends \cenozo\base_object
           { // convert data types
             if( !is_null( $value ) )
             {
-              $type = static::db()->get_column_data_type( $table_name, $column );
-              if( 'int' == $type ) $value = intval( $value );
-              else if( 'float' == $type ) $value = floatval( $value );
-              else if( 'tinyint' == $type ) $value = (boolean) $value;
-              else if( 'date' == $type || 'time' == $type || 'datetime' == $type )
-                $value = !$value ? NULL : $util_class_name::get_datetime_object( $value );
+              $type = static::db()->get_column_variable_type( $table_name, $column );
+              if( 'datetime' == $type ) $value = !$value ? NULL : $util_class_name::get_datetime_object( $value );
+              else if( 'string' != $type ) settype( $value, $type );
             }
 
             $this->passive_column_values[$column] = $value;
@@ -337,19 +334,25 @@ abstract class record extends \cenozo\base_object
       if( $select->has_external_table_columns() ||
           ( !is_null( $modifier ) && 0 < $modifier->get_group_count() ) )
       { // the select/modifier statements are requiring that we query the database
-        if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
         $modifier->where( sprintf( '%s.id', $table_name ), '=', $this->id );
         $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
         $columns = static::db()->get_row( $sql );
 
         foreach( $columns as $column => $value )
         {
-          if( static::column_exists( $column ) && !is_null( $value ) )
+          // get the table and column associated with this column (alias)
+          $current_table_name = $select->get_alias_table( $column );
+          $current_column_name = $select->get_alias_column( $column );
+
+          // the table name in the select may be an alias to a join in the modifier
+          if( $modifier->has_join( $current_table_name ) )
+            $current_table_name = $modifier->get_alias_table( $current_table_name );
+
+          // convert column types
+          if( static::db()->column_exists( $current_table_name, $current_column_name ) )
           {
-            $type = static::db()->get_column_data_type( $table_name, $column );
-            if( 'int' == $type ) $columns[$column] = intval( $value );
-            else if( 'float' == $type ) $columns[$column] = floatval( $value );
-            else if( 'tinyint' == $type ) $columns[$column] = (boolean) $value;
+            $type = static::db()->get_column_variable_type( $current_table_name, $current_column_name );
+            if( 'string' != $type && 'datetime' != $type ) settype( $columns[$column], $type );
           }
         }
       }
@@ -957,10 +960,8 @@ abstract class record extends \cenozo\base_object
           {
             if( static::column_exists( $column ) && !is_null( $value ) )
             {
-              $type = static::db()->get_column_data_type( $table_name, $column );
-              if( 'int' == $type ) $return_value[$index][$column] = intval( $value );
-              else if( 'float' == $type ) $return_value[$index][$column] = floatval( $value );
-              else if( 'tinyint' == $type ) $return_value[$index][$column] = (boolean) $value;
+              $type = static::db()->get_column_variable_type( $table_name, $column );
+              if( 'string' != $type && 'datetime' != $type ) settype( $return_value[$index][$column], $type );
             }
           }
         }

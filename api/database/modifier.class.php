@@ -529,6 +529,25 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Returns the natural table name associated with a join (based on an alias)
+   * 
+   * Any join may be aliased.  This method will return the table name that the alias refers to,
+   * or simply the table name if there is no alias (ie: the table name matches the alias name)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_alias_table( $alias )
+  {
+    $table = array_key_exists( $alias, $this->join_list ) ? $this->join_list[$alias]['table'] : NULL;
+
+    if( is_null( $table ) )
+      log::warning( sprintf( 'Unable to find table for alias "%s" in modifier object', $alias ) );
+
+    return $table;
+  }
+
+  /**
    * Get an array of where clauses.
    * 
    * Each element contains an associative array where the indeces 'value' and 'format' contain
