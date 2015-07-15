@@ -10,7 +10,11 @@ define( {
   inputList: {
     active: {
       title: 'Active',
-      type: 'boolean'
+      type: 'boolean',
+      help: 'Participants can be deactivated so that they are not included in reports, interviews, etc. ' +
+            'Deactivating a participant should only ever be used on a temporary basis. If a participant ' +
+            'is to be permanently discontinued from the interview process then select a condition (below) ' +
+            'instead.'
     },
     uid: {
       title: 'Unique ID',
@@ -89,8 +93,10 @@ define( {
       type: 'enum'
     },
     state_id: {
-      title: 'Final State',
-      type: 'enum'
+      title: 'Condition',
+      type: 'enum',
+      help: 'A condition defines the reason that a participant should no longer be contacted. ' +
+            'If this value is not empty then the participant will no longer be contacted for interviews.'
     },
     withdraw_option: {
       title: 'Withdraw Option',
