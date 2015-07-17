@@ -47,9 +47,11 @@ define( cenozo.getServicesIncludeList( 'phone' ), function( module ) {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
             // get the service path from the parent subject and identifier
-            var parent = self.getParentSubjectAndIdentifier();
+            var parent = self.getParentIdentifier();
             return CnHttpFactory.instance( {
-              path: self.getServiceCollectionPath().replace( 'phone', 'address' ),
+              path: angular.isDefined( parent.subject )
+                  ? [ parent.subject, parent.identifier, 'address' ].join( '/' )
+                  : self.getServiceCollectionPath().replace( 'phone', 'address' ),
               data: {
                 select: { column: [ 'id', 'summary' ] },
                 modifier: { order: 'rank' }

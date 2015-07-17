@@ -17,6 +17,32 @@ class module extends \cenozo\service\module
   /**
    * Extend parent method
    */
+  public function validate()
+  {
+    // check for role's all_site setting before viewing any site
+    $allowed = true;
+    $session = lib::create( 'business\session' );
+    if( !$session->get_role()->all_sites )
+    {
+      $index = 0;
+      while( $subject = $this->get_subject( $index ) )
+      {
+        if( 'site' == $subject )
+        {
+          $allowed = $this->service->get_resource( $index )->id == $session->get_site()->id;
+          break;
+        }
+
+        $index++;
+      }
+    }
+
+    return $allowed;
+  }
+
+  /**
+   * Extend parent method
+   */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
@@ -59,6 +85,33 @@ class module extends \cenozo\service\module
         $select->add_column( 'IFNULL( user_count, 0 )', 'user_count', false );
       if( $select->has_column( 'last_access_datetime' ) )
         $select->add_column( 'site_join_access.last_access_datetime', 'last_access_datetime', false );
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
+  public function pre_write( $record )
+  {
+    parent::pre_write( $record );
+
+    // set the current application as the site's owner
+    $record->application_id = lib::create( 'business\session' )->get_application()->id;
+  }
+
+  /**
+   * Extend parent method
+   */
+  public function post_write( $record )
+  {
+    parent::post_write( $record );
+
+    // create setting record if there isn't one already
+    if( is_null( $record->get_setting() ) )
+    {
+      $db_setting = lib::create( 'database\setting' );
+      $db_setting->site_id = $record->id;
+      $db_setting->save();
     }
   }
 }

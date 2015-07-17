@@ -21,12 +21,26 @@ define( cenozo.getServicesIncludeList( 'site' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSiteViewFactory',
-    cenozo.getListModelInjectionList( 'site' ).concat( function() {
+    cenozo.getListModelInjectionList( 'site' ).concat( [ '$state', 'CnSession', function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var $state = args[args.length-2];
+      var CnSession = args[args.length-1];
+      var object = function( parentModel ) {
+        CnBaseViewFactory.construct( this, parentModel, args );
+
+        var self = this;
+        if( 0 <= cenozoApp.moduleList.setting.actions.indexOf( 'view' ) ) {
+          this.operationList.push( {
+            name: 'Settings',
+            execute: function() {
+              $state.go( 'setting.view', { identifier: 'site_id=' + self.record.id } );
+            }
+          } );
+        }
+      }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
+    } ] )
   );
 
   /* ######################################################################################################## */

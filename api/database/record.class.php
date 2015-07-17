@@ -375,10 +375,21 @@ abstract class record extends \cenozo\base_object
       }
     }
 
-    // apply the active values
+    // apply the active values and convert datetime objects back into strings
     foreach( array_keys( $columns ) as $column )
+    {
       if( array_key_exists( $column, $this->active_column_values ) )
         $columns[$column] = $this->active_column_values[$column];
+
+      if( array_key_exists( $column, $this->passive_column_values ) &&
+          $columns[$column] instanceof \DateTime )
+      {
+        $type = static::db()->get_column_data_type( $table_name, $column );
+        if( 'datetime' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
+        else if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
+        else if( 'time' == $type ) $columns[$column] = $columns[$column]->format( 'H:i:s' );
+      }
+    }
 
     reset( $columns );
     return $columns;

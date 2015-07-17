@@ -199,8 +199,9 @@ abstract class service extends \cenozo\base_object
             sprintf( 'Service module for "%s" is not found', $subject ),
             __METHOD__ );
         }
-        else if( !$session->is_service_allowed( $db_service ) ||
-                 !( 'HEAD' == $this->method || $this->module_list[$index]->validate() ) )
+        else if( 'HEAD' != $this->method &&
+                 ( !$session->is_service_allowed( $db_service ) ||
+                   !$this->module_list[$index]->validate() ) )
         {
           $this->status->set_code( 403 );
           break;
@@ -433,9 +434,9 @@ abstract class service extends \cenozo\base_object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string If there is no leaf subject then NULL is returned
-   * @access protected
+   * @access public
    */
-  protected function get_leaf_subject()
+  public function get_leaf_subject()
   {
     return $this->get_subject( count( $this->collection_name_list ) - 1 );
   }
@@ -445,9 +446,9 @@ abstract class service extends \cenozo\base_object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string If there is no parent subject then NULL is returned
-   * @access protected
+   * @access public
    */
-  protected function get_parent_subject()
+  public function get_parent_subject()
   {
     return $this->get_subject( count( $this->collection_name_list ) - 2 );
   }
@@ -455,7 +456,7 @@ abstract class service extends \cenozo\base_object
   /**
    * TODO: document
    */
-  protected function get_leaf_record_class_name()
+  public function get_leaf_record_class_name()
   {
     return $this->get_record_class_name( count( $this->collection_name_list ) - 1 );
   }
@@ -465,9 +466,9 @@ abstract class service extends \cenozo\base_object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string If there is no leaf subject then NULL is returned
-   * @access protected
+   * @access public
    */
-  protected function get_leaf_record()
+  public function get_leaf_record()
   {
     $count = count( $this->collection_name_list );
     return 0 < $count ? $this->get_resource( $count - 1 ) : NULL;
@@ -491,9 +492,9 @@ abstract class service extends \cenozo\base_object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int See database\relationship for list of possible values
-   * @access protected
+   * @access public
    */
-  protected function get_leaf_parent_relationship()
+  public function get_leaf_parent_relationship()
   {
     $parent_record = $this->get_parent_record();
     return is_null( $parent_record ) ? NULL : $parent_record::get_relationship( $this->get_leaf_subject() );

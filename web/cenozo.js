@@ -907,6 +907,33 @@ cenozo.filter( 'cnCrop', function() {
 /**
  * TODO: document
  */
+cenozo.filter( 'cnDatetime', [
+  'CnSession',
+  function( CnSession ) {
+    return function( input, format ) {
+      var output;
+      if( angular.isUndefined( input ) || null === input ) {
+        output = '(empty)';
+      } else {
+        if( 'moment' != cenozo.getType( input ) ) {
+          if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( input ) )
+            // no Z at the end since we are converting a time
+            input = moment().format( 'YYYY-MM-DD' ) + 'T' + input + 'Z';
+          input = moment( new Date( input ) );
+        }
+        if( 'datetime' == format || 'datetimesecond' == format ) input.tz( CnSession.user.timezone );
+        output = input.format( CnSession.getDatetimeFormat( format, false ) );
+      }
+      return output;
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.filter( 'cnMetaFilter', [
   '$filter',
   function( $filter ) {
@@ -925,27 +952,6 @@ cenozo.filter( 'cnMetaFilter', [
       } else {
         return angular.isUndefined( value ) || null === value ? '(empty)' : value;
       }
-    };
-  }
-] );
-
-/* ######################################################################################################## */
-
-/**
- * TODO: document
- */
-cenozo.filter( 'cnDatetime', [
-  'CnSession',
-  function( CnSession ) {
-    return function( input, format ) {
-      var output;
-      if( angular.isUndefined( input ) || null === input ) {
-        output = '(empty)';
-      } else {
-        if( 'moment' != cenozo.getType( input ) ) input = moment( input );
-        output = input.tz( CnSession.user.timezone ).format( CnSession.getDatetimeFormat( format, false ) );
-      }
-      return output;
     };
   }
 ] );
@@ -1010,7 +1016,7 @@ cenozo.filter( 'cnUCWords', function() {
  */
 cenozo.filter( 'cnViewType', function() {
   return function( input ) {
-    if( 'boolean' == input || 'enum' == input ) input = 'select';
+    if( 'boolean' == input || 'enum' == input || 'rank' == input ) input = 'select';
     else if( cenozo.isDatetimeType( input ) ) input = 'datetime';
     return input;
   };
@@ -1177,7 +1183,7 @@ cenozo.factory( 'CnSession', [
           if( 'date' != format )
             resolvedFormat += ' @ ' + this.getTimeFormat( 'datetimesecond' == format, longForm );
         } else if( 'timesecond' == format || 'time' == format ) {
-          resolvedFormat = this.getTimeFormat( 'timesecond' == format, longForm );
+          resolvedFormat = this.getTimeFormat( 'timesecond' == format, false );
         }
         return resolvedFormat;
       };
@@ -1185,7 +1191,7 @@ cenozo.factory( 'CnSession', [
       this.updateTime = function updateTime() {
         var now = moment();
         now.tz( self.user.timezone );
-        self.time = now.format( self.getDatetimeFormat( 'time', true ) );
+        self.time = now.format( self.getTimeFormat( false, true ) );
       };
 
       this.setTimezone = function setTimezone( timezone ) {
@@ -1689,12 +1695,32 @@ cenozo.factory( 'CnBaseModelFactory', [
         };
 
         /**
-         * get a user-friendly name for the record (may not be unique)
+         * Get a user-friendly name for the record (may not be unique)
+         * 
+         * This method is sometimes extended by a module's event factory
          */
-        object.getFriendlyNameFromRecord = function( record ) {
+        object.getBreadcrumbTitle = function() {
+          // first try for a friendly name
           var friendlyColumn = module.name.friendlyColumn;
-          return angular.isDefined( friendlyColumn ) && angular.isDefined( record[friendlyColumn] ) ?
-            record[friendlyColumn] : this.getIdentifierFromRecord( record, true );
+          if( angular.isDefined( friendlyColumn ) && angular.isDefined( this.viewModel.record[friendlyColumn] ) )
+            return this.viewModel.record[friendlyColumn] ? this.viewModel.record[friendlyColumn] : 'view';
+
+          // no friendly name, try for an identifier column
+          return angular.isDefined( module.identifier.column )
+               ? this.getIdentifierFromRecord( this.viewModel.record, true )
+               : 'view'; // database IDs aren't friendly so just return "view"
+        };
+
+        /**
+         * Get a user-friendly name for the record's parent (may not be unique)
+         * 
+         * This method is sometimes extended by a module's event factory
+         */
+        object.getBreadcrumbParentTitle = function() {
+          var parent = this.getParentIdentifier();
+          return angular.isDefined( parent.friendly )
+               ? this.viewModel.record[parent.friendly]
+               : String( parent.identifier ).split( '=' ).pop();
         };
 
         /**
@@ -1722,18 +1748,22 @@ cenozo.factory( 'CnBaseModelFactory', [
          * NOTE: when viewing this will return the first parent that is set in the view record
          *       (there may be multiple)
          */
-        object.getParentSubjectAndIdentifier = function() {
-          var subject = this.getSubjectFromState();
-          var identifier = $state.params.parentIdentifier;
-          if( angular.isUndefined( identifier ) ) {
+        object.getParentIdentifier = function() {
+          var response = {
+            subject: this.getSubjectFromState(),
+            identifier: $state.params.parentIdentifier
+          };
+
+          if( angular.isUndefined( response.identifier ) ) {
             var action = this.getActionFromState();
             if( 'view' == action && angular.isDefined( this.identifier.parent ) ) {
               // return the FIRST "set" parent
               for( var i = 0; i < this.identifier.parent.length; i++ ) {
                 var parent = this.identifier.parent[i];
                 if( this.viewModel.record[parent.alias] ) {
-                  subject = parent.subject;
-                  identifier = parent.getIdentifier( this.viewModel.record );
+                  response.subject = parent.subject;
+                  if( angular.isDefined( parent.friendly ) ) response.friendly = parent.friendly;
+                  response.identifier = parent.getIdentifier( this.viewModel.record );
                   break;
                 }
               }
@@ -1741,9 +1771,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
 
           // the subject is incorrect if we haven't got a parent identifier
-          if( angular.isUndefined( identifier ) ) subject = undefined;
-          
-          return { subject: subject, identifier: identifier };
+          if( angular.isUndefined( response.identifier ) ) response.subject = undefined;
+
+          return response;
         };
 
         /**
@@ -1905,7 +1935,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          * TODO: document
          */
         object.transitionToLastState = function() {
-          var parent = this.getParentSubjectAndIdentifier();
+          var parent = this.getParentIdentifier();
           if( angular.isDefined( parent.subject ) ) {
             // return to viewing the parent model
             $state.go( parent.subject + '.view', { identifier: parent.identifier } );
@@ -1951,13 +1981,13 @@ cenozo.factory( 'CnBaseModelFactory', [
           var trail = [];
 
           // check the module for parents
-          var parent = this.getParentSubjectAndIdentifier();
+          var parent = this.getParentIdentifier();
           if( angular.isDefined( parent.subject ) ) {
             trail = trail.concat( [ {
               title: parent.subject.replace( '_', ' ' ).ucWords(),
               go: function() { $state.go( parent.subject + '.list' ); }
             }, {
-              title: String( parent.identifier ).split( '=' ).pop(),
+              title: this.getBreadcrumbParentTitle(),
               go: function() { $state.go( parent.subject + '.view', { identifier: parent.identifier } ); }
             } ] );
           }
@@ -1977,9 +2007,9 @@ cenozo.factory( 'CnBaseModelFactory', [
             // now put this model's details
             trail = trail.concat( [ {
               title: this.name.singular.ucWords(),
-              go: function() { object.transitionToLastState(); }
+              go: angular.isDefined( parent.subject ) ? undefined : function() { object.transitionToLastState(); }
             }, {
-              title: this.getFriendlyNameFromRecord( this.viewModel.record )
+              title: this.getBreadcrumbTitle()
             } ] );
           } else throw 'Tried to setup breadcrumb trail for invalid type "' + type + '"';
 
@@ -2141,7 +2171,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               var path = self.getServiceCollectionPath();
 
               if( 'view' == self.getActionFromState() ) {
-                var parent = self.getParentSubjectAndIdentifier();
+                var parent = self.getParentIdentifier();
                 if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) )
                   path = [ parent.subject, parent.identifier, path ].join( '/' );
               }

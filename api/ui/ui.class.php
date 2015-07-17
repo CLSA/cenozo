@@ -215,6 +215,7 @@ class ui extends \cenozo\base_object
       'language' => 'Languages',
       'participant' => 'Participants',
       'quota' => 'Quotas',
+      'setting' => 'Settings',
       'site' => 'Sites',
       'state' => 'States',
       'system_message' => 'System Messages',

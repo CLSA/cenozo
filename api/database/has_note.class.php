@@ -122,7 +122,7 @@ abstract class has_note extends record
       $table_name,
       $subject_key_name,
       static::db()->format_string( $db_user->id ),
-      static::db()->format_string( $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' ) ),
+      static::db()->format_datetime( $util_class_name::get_datetime_object() ),
       static::db()->format_string( $note ),
       $table_name,
       $modifier->get_sql() );

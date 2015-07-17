@@ -147,7 +147,7 @@
           <ul class="nav navbar-nav">
             <ul class="breadcrumb">
               <li ng-repeat="breadcrumb in session.breadcrumbTrail"
-                  ng-class="{ 'navbar-link': !$last, 'active': $last }"
+                  ng-class="breadcrumb.go ? 'navbar-link': 'active'"
                   ng-click="breadcrumb.go()">{{ breadcrumb.title }}
               </li>
             </ul>
