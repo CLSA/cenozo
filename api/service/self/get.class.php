@@ -108,35 +108,37 @@ class get extends \cenozo\service\service
     $pseudo_record['user']['last_activity'] = $last_activity ? $last_activity : NULL;
 
     // include the number of active users for the application and whether it is in development mode
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->join( 'site', 'activity.site_id', 'site.id' );
-    $modifier->where( 'end_datetime', '=', NULL );
-    $modifier->where( 'site.application_id', '=', $session->get_application()->id );
-    $pseudo_record['application']['active_users'] = $activity_class_name::count( $modifier );
+    $activity_mod = lib::create( 'database\modifier' );
+    $activity_mod->join( 'site', 'activity.site_id', 'site.id' );
+    $activity_mod->where( 'end_datetime', '=', NULL );
+    $activity_mod->where( 'site.application_id', '=', $session->get_application()->id );
+    $pseudo_record['application']['active_users'] = $activity_class_name::count( $activity_mod );
     $pseudo_record['application']['development_mode'] = lib::in_development_mode();
 
     // include the number of active users for the site
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'end_datetime', '=', NULL );
-    $modifier->where( 'site_id', '=', $session->get_site()->id );
-    $pseudo_record['site']['active_users'] = $activity_class_name::count( $modifier );
+    $activity_mod = lib::create( 'database\modifier' );
+    $activity_mod->where( 'end_datetime', '=', NULL );
+    $activity_mod->where( 'site_id', '=', $session->get_site()->id );
+    $pseudo_record['site']['active_users'] = $activity_class_name::count( $activity_mod );
 
     // include the appropriate system messages
-    $select = lib::create( 'database\select' );
-    $select->add_column( 'title' );
-    $select->add_column( 'note' );
-    $modifier = lib::create( 'database\modifier' );
+    $system_message_sel = lib::create( 'database\select' );
+    $system_message_sel->add_column( 'title' );
+    $system_message_sel->add_column( 'expiry' );
+    $system_message_sel->add_column( 'note' );
+    $system_message_mod = lib::create( 'database\modifier' );
     $application_id = $session->get_application()->id;
     $column = sprintf( 'IFNULL( system_message.application_id, %d )', $application_id );
-    $modifier->where( $column, '=', $application_id );
+    $system_message_mod->where( $column, '=', $application_id );
     $site_id = $session->get_site()->id;
     $column = sprintf( 'IFNULL( system_message.site_id, %d )', $site_id );
-    $modifier->where( $column, '=', $site_id );
+    $system_message_mod->where( $column, '=', $site_id );
     $role_id = $session->get_role()->id;
     $column = sprintf( 'IFNULL( system_message.role_id, %d )', $role_id );
-    $modifier->where( $column, '=', $role_id );
-    $modifier->order_desc( 'id' );
-    $pseudo_record['system_message_list'] = $system_message_class_name::select( $select, $modifier );
+    $system_message_mod->where( $column, '=', $role_id );
+    $system_message_mod->order_desc( 'id' );
+    $pseudo_record['system_message_list'] =
+      $system_message_class_name::select( $system_message_sel, $system_message_mod );
 
     return $pseudo_record;
   }

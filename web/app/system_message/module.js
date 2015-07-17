@@ -31,6 +31,12 @@ define( {
       title: 'Title',
       type: 'string'
     },
+    expiry: {
+      title: 'Expiry',
+      type: 'date',
+      help: 'The day after which the message will no longer appear',
+      min: 'now'
+    },
     note: {
       title: 'Note',
       type: 'text'

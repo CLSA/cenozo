@@ -47,6 +47,9 @@
       <h4><i class="glyphicon glyphicon-envelope"></i> {{ message.title }}</h4>
       <blockquote class="text-info" style="white-space: pre-wrap;">{{ message.note }}</blockquote>
     </div>
+    <div ng-if="0 == model.messageList.length">
+      <blockquote class="text-info" style="white-space: pre-wrap;">There are no messages.</blockquote>
+    </div>
   </div>
 </div>
 <div class="gradient-footer"></div>

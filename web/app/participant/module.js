@@ -86,7 +86,8 @@ define( {
     },
     date_of_birth: {
       title: 'Date of Birth',
-      type: 'date'
+      type: 'date',
+      max: 'now'
     },
     age_group_id: {
       title: 'Age Group',

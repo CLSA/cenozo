@@ -16,8 +16,17 @@ define( [], function() {
           self.user = CnSession.user;
           self.role = CnSession.role;
           self.site = CnSession.site;
-          self.messageList = CnSession.messageList;
           self.isLoading = false;
+
+          self.messageList = [];
+          for( var i = 0; i < CnSession.messageList.length; i++ ) {
+            if( null === CnSession.messageList[i].expiry ) {
+              self.messageList.push( CnSession.messageList[i] );
+            } else {
+              var date = moment( new Date( CnSession.messageList[i].expiry ) );
+              if( !date.isBefore( moment(), 'day' ) ) self.messageList.push( CnSession.messageList[i] );
+            }
+          }
         } );
       };
 

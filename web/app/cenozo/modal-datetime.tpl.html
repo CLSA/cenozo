@@ -90,11 +90,13 @@
       <button ng-if="'date' != local.pickerType"
               type="button"
               class="btn btn-info"
-              ng-click="local.select('now')">Now</button>
+              ng-click="local.select('now')"
+              ng-disabled="nowDisabled">Now</button>
       <button ng-if="'time' != local.pickerType && 'timesecond' != local.pickerType"
               type="button"
               class="btn btn-info"
-              ng-click="local.select('today')">Today</button>
+              ng-click="local.select('today')"
+              ng-disabled="todayDisabled">Today</button>
       <button ng-if="local.emptyAllowed"
               type="button"
               class="btn btn-warning"

@@ -19,7 +19,8 @@ define( {
     },
     datetime: {
       title: 'Date & Time',
-      type: 'datetimesecond'
+      type: 'datetimesecond',
+      max: 'now'
     }
   },
   columnList: {

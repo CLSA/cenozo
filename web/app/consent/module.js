@@ -24,7 +24,8 @@ define( {
     },
     date: {
       title: 'Date',
-      type: 'date'
+      type: 'date',
+      max: 'now'
     },
     note: {
       title: 'Note',
