@@ -3024,11 +3024,10 @@ cenozo.service( 'CnModalRestrictFactory', [
 
             if( cenozo.isDatetimeType( $scope.local.type ) ) {
               $scope.selectDatetime = function( index ) {
-                var self = this;
                 CnModalDatetimeFactory.instance( {
-                  title: this.column,
-                  date: this.restrictList[index].value,
-                  pickerType: this.type,
+                  title: self.column,
+                  date: self.restrictList[index].value,
+                  pickerType: self.type,
                   emptyAllowed: true
                 } ).show().then( function( response ) {
                   if( false !== response ) {
