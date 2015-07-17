@@ -174,10 +174,10 @@ cenozo.animation( '.fade-transition', function() {
  */
 cenozo.service( 'CnBaseHeader', [
   '$state', '$interval', '$window', 'CnSession',
-  'CnModalMessageFactory', 'CnModalAccountFactory', 'CnModalSiteSettingsFactory',
+  'CnModalMessageFactory', 'CnModalAccountFactory',
   'CnModalPasswordFactory', 'CnModalSiteRoleFactory', 'CnModalTimezoneFactory',
   function( $state, $interval, $window, CnSession,
-            CnModalMessageFactory, CnModalAccountFactory, CnModalSiteSettingsFactory,
+            CnModalMessageFactory, CnModalAccountFactory,
             CnModalPasswordFactory, CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
     return {
       construct: function( scope ) {
@@ -238,9 +238,7 @@ cenozo.service( 'CnBaseHeader', [
             title: 'Site Settings',
             help: 'Edit site settings',
             execute: function() {
-              CnModalSiteSettingsFactory.instance( { setting: CnSession.setting } ).show().then( function( response ) {
-                if( response ) CnSession.setSiteSettings().catch( CnSession.errorHandler );
-              } );
+              $state.go( 'site.view', { identifier: CnSession.site.id } );
             }
           },
           siteRole: {
@@ -3130,65 +3128,6 @@ cenozo.service( 'CnModalSiteRoleFactory', [
     };
 
     return { instance: function() { return new object(); } };
-  }
-] );
-
-/* ######################################################################################################## */
-
-/**
- * TODO: document
- */
-cenozo.service( 'CnModalSiteSettingsFactory', [
-  '$modal', 'CnSession', 'CnHttpFactory', 'CnModalDatetimeFactory',
-  function( $modal, CnSession, CnHttpFactory, CnModalDatetimeFactory ) {
-    var object = function( params ) {
-      var self = this;
-
-      if( angular.isUndefined( params.setting ) )
-        throw 'Tried to create CnModalSiteSettingsFactory instance without the setting parameter';
-
-      this.show = function() {
-        return $modal.open( {
-          backdrop: 'static',
-          keyboard: true,
-          modalFade: true,
-          // the template must be provided by the application
-          templateUrl: 'app/cenozo/modal-site-settings.tpl.html',
-          controller: function( $scope, $modalInstance ) {
-            $scope.setting = params.setting;
-            $scope.ok = function() {
-              $scope.setting.surveyWithoutSip = 1 == $scope.surveyWithoutSip;
-              $modalInstance.close( true );
-            };
-            $scope.cancel = function() { $modalInstance.close( false ); };
-            $scope.testNumber = function( key ) {
-              $scope.form[key].$error.format = false === 0 <= $scope.setting[key];
-              cenozo.updateFormElement( $scope.form[key], true );
-            };
-            $scope.selectTime = function( key ) {
-              CnModalDatetimeFactory.instance( {
-                title: 'callingStartTime' == key ? 'earliest call time' : 'latest call time',
-                date: $scope.setting[key],
-                pickerType: 'time',
-                emptyAllowed: false
-              } ).show().then( function( response ) {
-                if( false !== response ) {
-                  $scope.setting[key] = response;
-                  $scope[key] = CnSession.formatValue( $scope.setting[key], 'time' );
-                }
-              } );
-            };
-
-            // need to convert some values
-            $scope.surveyWithoutSip = $scope.setting.surveyWithoutSip ? 1 : 0;
-            $scope.callingStartTime = CnSession.formatValue( $scope.setting.callingStartTime, 'time' );
-            $scope.callingEndTime = CnSession.formatValue( $scope.setting.callingEndTime, 'time' );
-          }
-        } ).result;
-      };
-    };
-
-    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
