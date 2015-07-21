@@ -29,13 +29,15 @@ class module extends \cenozo\service\module
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )
     {
-      $join_sel = lib::create( 'database\select' );
-      $join_sel->from( 'participant' );
-      $join_sel->add_column( 'language_id' );
-      $join_sel->add_column( 'COUNT(*)', 'participant_count', false );
+      // to accomplish this we need to create two sub-joins, so start by creating the inner join
+      $inner_join_sel = lib::create( 'database\select' );
+      $inner_join_sel->from( 'participant' );
+      $inner_join_sel->add_column( 'language_id' );
+      $inner_join_sel->add_column( 'COUNT(*)', 'participant_count', false );
 
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->group( 'language_id' );
+      $inner_join_mod = lib::create( 'database\modifier' );
+      $inner_join_mod->group( 'language_id' );
+      $inner_join_mod->where( 'language_id', '!=', NULL );
 
       // restrict to participants in this application
       if( $db_application->release_based )
@@ -43,26 +45,39 @@ class module extends \cenozo\service\module
         $sub_mod = lib::create( 'database\modifier' );
         $sub_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
         $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
-        $join_mod->join_modifier( 'application_has_participant', $sub_mod );
-        $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
+        $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
+        $inner_join_mod->join_modifier( 'application_has_participant', $sub_mod );
       }
 
       // restrict to participants in this site (for some roles)
-      if( !$db_role->all_sites )
+      if( !$session->get_role()->all_sites )
       {
         $sub_mod = lib::create( 'database\modifier' );
         $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
         $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
-
-        $join_mod->join_modifier( 'participant_site', $sub_mod );
-        $join_mod->where( 'participant_site.site_id', '=', $db_site->id );
+        $sub_mod->where( 'participant_site.site_id', '=', $session->get_site()->id );
+        $inner_join_mod->join_modifier( 'participant_site', $sub_mod );
       }
 
-      $modifier->left_join(
-        sprintf( '( %s %s ) AS language_join_participant', $join_sel->get_sql(), $join_mod->get_sql() ),
+      // now create the outer join
+      $outer_join_sel = lib::create( 'database\select' );
+      $outer_join_sel->from( 'language' );
+      $outer_join_sel->add_column( 'id', 'language_id' );
+      $outer_join_sel->add_column(
+        'IF( language_id IS NOT NULL, participant_count, 0 )', 'participant_count', false );
+
+      $outer_join_mod = lib::create( 'database\modifier' );
+      $outer_join_mod->left_join(
+        sprintf( '( %s %s ) AS inner_join', $inner_join_sel->get_sql(), $inner_join_mod->get_sql() ),
         'language.id',
-        'language_join_participant.language_id' );
-      $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
+        'inner_join.language_id' );
+
+      // now join to our main modifier
+      $modifier->left_join(
+        sprintf( '( %s %s ) AS outer_join', $outer_join_sel->get_sql(), $outer_join_mod->get_sql() ),
+        'language.id',
+        'outer_join.language_id' );
+      $select->add_column( 'participant_count', 'participant_count', false );
     }
 
     // add the total number of users

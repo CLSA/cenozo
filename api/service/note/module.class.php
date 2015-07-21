@@ -43,9 +43,8 @@ class module extends \cenozo\service\module
       $sub_mod = lib::create( 'database\modifier' );
       $sub_mod->where( 'participant_id', '=', 'participant_site.participant_id', false );
       $sub_mod->where( 'participant_site.application_id', '=', $session->get_application()->id );
-
+      $sub_mod->where( 'participant_site.site_id', '=', $session->get_site()->id );
       $modifier->join_modifier( 'participant_site', $sub_mod );
-      $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
     }
   }
 }

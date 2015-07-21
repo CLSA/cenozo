@@ -30,12 +30,16 @@ class module extends \cenozo\service\module
     if( $select->has_column( 'participant_count' ) )
     {
       $join_sel = lib::create( 'database\select' );
-      $join_sel->from( 'collection_has_participant' );
-      $join_sel->add_column( 'collection_id' );
-      $join_sel->add_column( 'COUNT(*)', 'participant_count', false );
+      $join_sel->from( 'collection' );
+      $join_sel->add_column( 'id', 'collection_id' );
+      $join_sel->add_column(
+        'IF( collection_has_participant.participant_id IS NOT NULL, COUNT(*), 0 )',
+        'participant_count', false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->group( 'collection_id' );
+      $join_mod->left_join(
+        'collection_has_participant', 'collection.id', 'collection_has_participant.collection_id' );
+      $join_mod->group( 'collection.id' );
 
       // restrict to participants in this application
       if( $db_application->release_based )
@@ -44,8 +48,8 @@ class module extends \cenozo\service\module
         $sub_mod->where( 'collection_has_participant.participant_id', '=',
                          'application_has_participant.participant_id', false );
         $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
-        $join_mod->join_modifier( 'application_has_participant', $sub_mod );
-        $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
+        $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
+        $join_mod->join_modifier( 'application_has_participant', $sub_mod, 'left' );
       }
 
       // restrict to participants in this site (for some roles)
@@ -55,16 +59,15 @@ class module extends \cenozo\service\module
         $sub_mod->where( 'collection_has_participant.participant_id', '=',
                          'participant_site.participant_id', false );
         $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
-
-        $join_mod->join_modifier( 'participant_site', $sub_mod );
-        $join_mod->where( 'participant_site.site_id', '=', $db_site->id );
+        $sub_mod->where( 'participant_site.site_id', '=', $db_site->id );
+        $join_mod->join_modifier( 'participant_site', $sub_mod, 'left' );
       }
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS collection_join_participant', $join_sel->get_sql(), $join_mod->get_sql() ),
         'collection.id',
         'collection_join_participant.collection_id' );
-      $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
+      $select->add_column( 'participant_count', 'participant_count', false );
     }
 
     // add the total number of users

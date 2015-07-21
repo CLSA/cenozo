@@ -973,11 +973,12 @@ abstract class record extends \cenozo\base_object
         {
           foreach( $row as $column => $value )
           {
+            $type = 'string';
+
             if( static::column_exists( $column ) && !is_null( $value ) )
-            {
               $type = static::db()->get_column_variable_type( $table_name, $column );
-              if( 'string' != $type && 'datetime' != $type ) settype( $return_value[$index][$column], $type );
-            }
+            else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
+            if( 'string' != $type && 'datetime' != $type ) settype( $return_value[$index][$column], $type );
           }
         }
       }

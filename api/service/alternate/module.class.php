@@ -37,9 +37,9 @@ class module extends \cenozo\service\module
       $sub_mod = lib::create( 'database\modifier' );
       $sub_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
       $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+      $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
       $modifier->join_modifier(
         'application_has_participant', $sub_mod, $db_application->release_based ? '' : 'left' );
-      $modifier->where( 'application_has_participant.datetime', '!=', NULL );
     }
 
     // restrict to participants in this site (for some roles)
@@ -48,9 +48,8 @@ class module extends \cenozo\service\module
       $sub_mod = lib::create( 'database\modifier' );
       $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
       $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
-
+      $sub_mod->where( 'participant_site.site_id', '=', $session->get_site()->id );
       $modifier->join_modifier( 'participant_site', $sub_mod );
-      $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
     }
 
     // add the "types" column if needed

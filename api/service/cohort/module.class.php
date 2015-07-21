@@ -47,8 +47,8 @@ class module extends \cenozo\service\module
         $sub_mod = lib::create( 'database\modifier' );
         $sub_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
         $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+        $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
         $join_mod->join_modifier( 'application_has_participant', $sub_mod );
-        $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
       }
 
       // restrict to participants in this site (for some roles)
@@ -57,9 +57,8 @@ class module extends \cenozo\service\module
         $sub_mod = lib::create( 'database\modifier' );
         $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
         $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
-
+        $sub_mod->where( 'participant_site.site_id', '=', $db_site->id );
         $join_mod->join_modifier( 'participant_site', $sub_mod );
-        $join_mod->where( 'participant_site.site_id', '=', $db_site->id );
       }
 
       $modifier->left_join(

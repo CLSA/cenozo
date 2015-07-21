@@ -165,7 +165,7 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'site', $module_list ) )
       $module_list['site']['children'] = array( 'access' );
     if( array_key_exists( 'state', $module_list ) )
-      $module_list['state']['children'] = array( 'role' );
+      $module_list['state']['children'] = array( 'role', 'participant' );
     if( array_key_exists( 'user', $module_list ) )
       $module_list['user']['children'] = array( 'access' );
 
