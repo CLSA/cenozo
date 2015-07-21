@@ -115,7 +115,7 @@ class post extends write
   /**
    * TODO: document
    */
-  protected function get_leaf_record()
+  public function get_leaf_record()
   {
     // create the record if it doesn't exist yet
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
