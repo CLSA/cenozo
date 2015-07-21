@@ -16,7 +16,9 @@
         <div class="form-group"
              ng-if="'identifier' != input.type"
              ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
-          <label for="{{ input.key }}" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
+          <label for="{{ input.key }}" class="col-sm-3 control-label" tooltip="{{ input.help }}">
+            {{ input.title }}
+          </label>
           <div ng-class="model.viewModel.record[input.key] == model.viewModel.backupRecord[input.key] ?
                          'col-sm-9' : 'col-sm-8'">
             <div class="input-group"
