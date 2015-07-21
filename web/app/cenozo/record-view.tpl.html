@@ -221,7 +221,7 @@
           <div ng-if="model.editEnabled &&
                       model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
                class="col-sm-1 col-slim">
-            <button class="btn btn-small btn-warning" ng-click="undo( input.key )">undo</button>
+            <button class="btn btn-small btn-warning" type="button" ng-click="undo( input.key )">Undo</button>
           </div>
         </div>
       </ng-form>
@@ -229,6 +229,7 @@
     <div class="form-footer rounded-bottom">
       <div class="btn-group pull-left">
         <button class="btn btn-default"
+                type="button"
                 ng-repeat="operation in model.viewModel.operationList"
                 ng-click="operation.execute()">{{ operation.name }}</button>
       </div>

@@ -306,9 +306,13 @@ cenozo.directive( 'cnChange', [
           $timeout( function() { oldValue = element.val(); } );
         } );
         element.bind( 'blur', function() {
+          scope.$evalAsync( function() { if( element.val() != oldValue ) scope.$eval( attrs.cnChange ); } );
+        } );
+        element.bind( 'keydown', function( event ) {
           scope.$evalAsync( function() {
-            if( element.val() != oldValue ) {
+            if( 13 == event.which ) {
               scope.$eval( attrs.cnChange );
+              event.target.blur();
             }
           } );
         } );
