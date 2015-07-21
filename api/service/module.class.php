@@ -90,10 +90,26 @@ abstract class module extends \cenozo\base_object
   /**
    * TODO: document
    */
-  protected $index = NULL;
+  protected function get_resource()
+  {
+    return $this->service->get_resource( $this->index );
+  }
 
   /**
    * TODO: document
    */
-  protected $service = NULL;
+  protected function get_parent_resource()
+  {
+    return $this->service->get_resource( $this->index - 1 );
+  }
+
+  /**
+   * TODO: document
+   */
+  private $index = NULL;
+
+  /**
+   * TODO: document
+   */
+  private $service = NULL;
 }

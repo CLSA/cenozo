@@ -24,17 +24,8 @@ class module extends \cenozo\service\module
     $session = lib::create( 'business\session' );
     if( !$session->get_role()->all_sites )
     {
-      $index = 0;
-      while( $subject = $this->get_subject( $index ) )
-      {
-        if( 'site' == $subject )
-        {
-          $allowed = $this->service->get_resource( $index )->id == $session->get_site()->id;
-          break;
-        }
-
-        $index++;
-      }
+      $db_site = $this->get_resource();
+      if( $db_site ) $allowed = $db_site->id == $session->get_site()->id;
     }
 
     return $allowed;
