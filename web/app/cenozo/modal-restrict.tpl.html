@@ -208,7 +208,7 @@
         </div>
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
-          <div class="col-sm-7">
+          <div class="col-sm-9">
             <input id="{{ 'value' + $index }}"
                    name="{{ 'value' + $index }}"
                    ng-model="local.formattedValueList[$index]"
@@ -222,15 +222,7 @@
                                    'restriction ' + (
                                      'time' == local.type || 'timesecond' == local.type ?
                                      'time' : 'date &amp; time'
-                                   ) }}"
-                   ng-disabled="null === restrict.value" />
-          </div>
-          <div class="col-sm-2">
-            <label class="btn btn-default pull-right"
-                   ng-class="{'btn-warning':local.emptyList[$index].state}"
-                   ng-model="local.emptyList[$index].state"
-                   ng-click="local.toggleEmpty( $index )"
-                   btn-checkbox>Empty</label>
+                                   ) }}" />
           </div>
         </div>
       </div>
