@@ -332,7 +332,7 @@ abstract class record extends \cenozo\base_object
       if( is_null( $select->get_table_name() ) ) $select->from( $table_name );
 
       if( $select->has_external_table_columns() ||
-          ( !is_null( $modifier ) && 0 < $modifier->get_group_count() ) )
+          ( !is_null( $modifier ) && 0 < $modifier->get_join_count() ) )
       { // the select/modifier statements are requiring that we query the database
         $modifier->where( sprintf( '%s.id', $table_name ), '=', $this->id );
         $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
