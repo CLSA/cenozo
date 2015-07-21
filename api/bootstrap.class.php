@@ -184,22 +184,20 @@ final class bootstrap
     try
     {
       // if we are maintenance mode then go no further
-      if( $this->settings['general']['maintenance_mode'] )
-        throw lib::create( 'exception\notice',
-          'Sorry, the system is currently offline for maintenance. '.
-          'Please check with an administrator or try again at a later time.', __METHOD__ );
+      if( !$this->settings['general']['maintenance_mode'] )
+      {
+        $this->session->initialize();
 
-      $this->session->initialize();
-
-      // make sure the software and database versions match
-      if( $this->settings['general']['version'] != $this->session->get_application()->version )
-        throw lib::create( 'exception\runtime',
-          sprintf(
-            'The software version (%s) does not match the database version (%s).  The api will '.
-            'remain unavailable until this problem is corrected by an administrator.',
-            $this->settings['general']['version'],
-            $this->session->get_application()->version ),
-          __METHOD__ );
+        // make sure the software and database versions match
+        if( $this->settings['general']['version'] != $this->session->get_application()->version )
+          throw lib::create( 'exception\runtime',
+            sprintf(
+              'The software version (%s) does not match the database version (%s).  The api will '.
+              'remain unavailable until this problem is corrected by an administrator.',
+              $this->settings['general']['version'],
+              $this->session->get_application()->version ),
+            __METHOD__ );
+      }
     }
     catch( exception\base_exception $e )
     {
@@ -234,7 +232,7 @@ final class bootstrap
     }
 
     ob_end_clean();
-    print $ui->get_interface( $error );
+    print $ui->get_interface( $this->settings['general']['maintenance_mode'], $error );
   }
 
   /**

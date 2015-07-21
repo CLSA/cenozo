@@ -26,12 +26,18 @@ class ui extends \cenozo\base_object
    * @return string
    * @access public
    */
-  public function get_interface( $error = NULL )
+  public function get_interface( $maintenance = false, $error = NULL )
   {
     $util_class_name = lib::get_class_name( 'util' );
 
     $interface = '';
-    if( is_null( $error ) )
+    if( $maintenance )
+    {
+      ob_start();
+      include( dirname( __FILE__ ).'/maintenance.php' );
+      $interface = ob_get_clean();
+    }
+    else if( is_null( $error ) )
     {
       // prepare the framework module list (used to identify which modules are provided by the framework)
       $framework_module_list = $this->get_framework_module_list();
