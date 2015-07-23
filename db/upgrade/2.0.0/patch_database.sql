@@ -4,13 +4,14 @@ SET AUTOCOMMIT=0;
 
 SOURCE person_first_address.sql
 SOURCE access.sql
-SOURCE activity.sql
 SOURCE application.sql
 SOURCE application_has_participant.sql
 SOURCE application_has_cohort.sql
 SOURCE application_has_role.sql
+SOURCE activity.sql
 SOURCE user_has_application.sql
 SOURCE site.sql
+SOURCE application_has_site.sql
 SOURCE jurisdiction.sql
 SOURCE region_site.sql
 SOURCE user.sql

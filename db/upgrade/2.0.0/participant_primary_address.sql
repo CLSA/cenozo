@@ -13,7 +13,6 @@ CREATE PROCEDURE patch_participant_primary_address()
     IF @test = 1 THEN
 
       DROP VIEW IF EXISTS participant_primary_address;
-
       CREATE TABLE IF NOT EXISTS participant_primary_address (
         participant_id INT UNSIGNED NOT NULL,
         address_id INT UNSIGNED NULL,

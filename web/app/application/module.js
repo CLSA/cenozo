@@ -11,12 +11,17 @@ define( {
     name: {
       title: 'Name',
       type: 'string',
-      help: 'May only contain letters, numbers and underscores.'
+      constant: true
     },
     title: {
       title: 'Title',
       type: 'string',
       help: 'A user-friendly name for the service, may contain any characters.'
+    },
+    type: {
+      title: 'Type',
+      type: 'string',
+      constant: true
     },
     url: {
       title: 'URL',

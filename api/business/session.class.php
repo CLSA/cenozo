@@ -234,13 +234,13 @@ class session extends \cenozo\singleton
       {
         // find the most recent access restricted to the given site/role (if any)
         $access_mod = lib::create( 'database\modifier' );
-        $access_mod->join( 'site', 'access.site_id', 'site.id' );
-        $access_mod->where( 'site.application_id', '=', $this->db_application->id );
+        $access_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
+        $access_mod->where( 'application_has_site.application_id', '=', $this->db_application->id );
         $access_mod->order_desc( 'datetime' );
         $access_mod->order_desc( 'microtime' );
         $access_mod->limit( 1 );
-        if( !is_null( $db_site ) ) $access_mod->where( 'site_id', '=', $db_site->id );
-        if( !is_null( $db_role ) ) $access_mod->where( 'role_id', '=', $db_role->id );
+        if( !is_null( $db_site ) ) $access_mod->where( 'access.site_id', '=', $db_site->id );
+        if( !is_null( $db_role ) ) $access_mod->where( 'access.role_id', '=', $db_role->id );
         $db_access = current( $this->db_user->get_access_object_list( $access_mod ) );
       }
       else

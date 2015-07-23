@@ -38,11 +38,12 @@ CREATE TRIGGER jurisdiction_BEFORE_INSERT BEFORE INSERT ON jurisdiction FOR EACH
 BEGIN
   SET @test = (
     SELECT COUNT(*) FROM jurisdiction
-    JOIN site ON jurisdiction.site_id = site.id
+    JOIN application_has_site ON jurisdiction.site_id = application_has_site.site_id
     WHERE jurisdiction.postcode = NEW.postcode
-    AND site.application_id = (
-      SELECT application_id FROM site
-      WHERE id = NEW.site_id
+    AND application_id = (
+      SELECT application_id
+      FROM application_has_site
+      WHERE application_has_site.site_id = NEW.site_id
     )
   );
   IF @test > 0 THEN
@@ -69,11 +70,12 @@ CREATE TRIGGER jurisdiction_BEFORE_UPDATE BEFORE UPDATE ON jurisdiction FOR EACH
 BEGIN
   SET @test = (
     SELECT COUNT(*) FROM jurisdiction
-    JOIN site ON jurisdiction.site_id = site.id
+    JOIN application_has_site ON jurisdiction.site_id = application_has_site.site_id
     WHERE jurisdiction.postcode = NEW.postcode
-    AND site.application_id = (
-      SELECT application_id FROM site
-      WHERE id = NEW.site_id
+    AND application_id = (
+      SELECT application_id
+      FROM application_has_site
+      WHERE application_has_site.site_id = NEW.site_id
     )
     AND jurisdiction.id != NEW.id
   );

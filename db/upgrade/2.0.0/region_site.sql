@@ -37,12 +37,13 @@ CREATE TRIGGER region_site_BEFORE_INSERT BEFORE INSERT ON region_site FOR EACH R
 BEGIN
   SET @test = (
     SELECT COUNT(*) FROM region_site
-    JOIN site ON region_site.site_id = site.id
+    JOIN application_has_site ON region_site.site_id = application_has_site.site_id
     WHERE region_site.region_id = NEW.region_id
     AND region_site.language_id = NEW.language_id
-    AND site.application_id = (
-      SELECT application_id FROM site
-      WHERE id = NEW.site_id
+    AND application_id = (
+      SELECT application_id
+      FROM application_has_site
+      WHERE application_has_site.site_id = NEW.site_id
     )
   );
   IF @test > 0 THEN
@@ -69,12 +70,13 @@ CREATE TRIGGER region_site_BEFORE_UPDATE BEFORE UPDATE ON region_site FOR EACH R
 BEGIN
   SET @test = (
     SELECT COUNT(*) FROM region_site
-    JOIN site ON region_site.site_id = site.id
+    JOIN application_has_site ON region_site.site_id = application_has_site.site_id
     WHERE region_site.region_id = NEW.region_id
     AND region_site.language_id = NEW.language_id
-    AND site.application_id = (
-      SELECT application_id FROM site
-      WHERE id = NEW.site_id
+    AND application_id = (
+      SELECT application_id
+      FROM application_has_site
+      WHERE application_has_site.site_id = NEW.site_id
     )
     AND region_site.id != NEW.id
   );

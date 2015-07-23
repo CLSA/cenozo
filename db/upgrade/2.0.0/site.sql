@@ -3,36 +3,48 @@ DELIMITER //
 CREATE PROCEDURE patch_site()
   BEGIN
 
-    SELECT "Renaming service_id column to application_id in site table" AS "";
+    SELECT "Removing service_id from site table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
       FROM information_schema.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = "site"
-      AND COLUMN_NAME = "application_id" );
-    IF @test = 0 THEN
+      AND COLUMN_NAME = "service_id" );
+    IF @test = 1 THEN
+      -- rename sites before we proceed (this is CLSA specific)
+      UPDATE site
+      JOIN application ON site.service_id = application.id
+      SET site.name = CONCAT( site.name, " DCS" )
+      WHERE application.name = "beartooth";
+      UPDATE site
+      JOIN application ON site.service_id = application.id
+      SET site.name = CONCAT( site.name, " DCSF1" )
+      WHERE application.name = "beartooth_f1";
+      UPDATE site
+      JOIN application ON site.service_id = application.id
+      SET site.name = CONCAT( site.name, " REC" )
+      WHERE application.name = "cedar";
+      UPDATE site
+      JOIN application ON site.service_id = application.id
+      SET site.name = CONCAT( site.name, " CC" )
+      WHERE application.name = "sabretooth";
+      UPDATE site
+      JOIN application ON site.service_id = application.id
+      SET site.name = CONCAT( site.name, " MC" )
+      WHERE application.name = "sabretooth_mc";
+      UPDATE site
+      JOIN application ON site.service_id = application.id
+      SET site.name = CONCAT( site.name, " QC" )
+      WHERE application.name = "sabretooth_qc";
+
       -- drop foreign keys
       ALTER TABLE site
-      DROP FOREIGN KEY fk_site_service_id;
-
-      -- rename column
-      ALTER TABLE site
-      CHANGE service_id application_id INT UNSIGNED NOT NULL;
-
-      -- rename keys
-      ALTER TABLE site
+      DROP FOREIGN KEY fk_site_service_id,
       DROP KEY fk_service_id,
-      ADD KEY fk_application_id (application_id);
-
-      ALTER TABLE site
       DROP KEY uq_name_service_id,
-      ADD UNIQUE KEY uq_name_application_id (name ASC, application_id ASC);
-
-      ALTER TABLE site
-      ADD CONSTRAINT fk_site_application_id
-      FOREIGN KEY (application_id) REFERENCES application (id)
-      ON DELETE NO ACTION ON UPDATE NO ACTION;
+      DROP COLUMN service_id,
+      ADD UNIQUE KEY uq_name (name);
     END IF;
 
   END //

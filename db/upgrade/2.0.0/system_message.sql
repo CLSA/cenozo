@@ -1,5 +1,6 @@
 SELECT "Creating new system_message (global) table" AS "";
 
+DROP TABLE IF EXISTS system_message;
 CREATE TABLE IF NOT EXISTS system_message (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   update_timestamp TIMESTAMP NOT NULL,

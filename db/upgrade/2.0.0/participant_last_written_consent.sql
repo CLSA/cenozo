@@ -13,7 +13,6 @@ CREATE PROCEDURE patch_participant_last_written_consent()
     IF @test = 1 THEN
 
       DROP VIEW IF EXISTS participant_last_written_consent;
-
       CREATE TABLE IF NOT EXISTS participant_last_written_consent (
         participant_id INT UNSIGNED NOT NULL,
         consent_id INT UNSIGNED NULL,
