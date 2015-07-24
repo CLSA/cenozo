@@ -31,13 +31,20 @@ class ui extends \cenozo\base_object
     $util_class_name = lib::get_class_name( 'util' );
 
     $interface = '';
-    if( $maintenance )
+    if( $maintenance || !is_null( $error ) )
     {
+      $title = $maintenance ? ucwords( INSTANCE ).' is Offline' : $error['title'];
+      $message = $maintenance
+               ? 'Sorry, the system is currently offline for maintenance. '.
+                 'Please check with an administrator or try again at a later time.'
+               : $error['message'];
+
+      // build the error interface
       ob_start();
-      include( dirname( __FILE__ ).'/maintenance.php' );
+      include( dirname( __FILE__ ).'/error.php' );
       $interface = ob_get_clean();
     }
-    else if( is_null( $error ) )
+    else
     {
       // prepare the framework module list (used to identify which modules are provided by the framework)
       $framework_module_list = $this->get_framework_module_list();
@@ -79,17 +86,6 @@ class ui extends \cenozo\base_object
       // build the interface
       ob_start();
       include( dirname( __FILE__ ).'/interface.php' );
-      $interface = ob_get_clean();
-    }
-    else
-    {
-      $title = $error['title'];
-      $message = $error['message'];
-      $code = $error['code'];
-
-      // build the error interface
-      ob_start();
-      include( dirname( __FILE__ ).'/error.php' );
       $interface = ob_get_clean();
     }
 
