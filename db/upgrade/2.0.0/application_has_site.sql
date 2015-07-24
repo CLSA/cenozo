@@ -32,6 +32,7 @@ CREATE PROCEDURE patch_application_has_site()
           ON UPDATE NO ACTION)
       ENGINE = InnoDB;
 
+      -- this is clsa-specific
       INSERT INTO application_has_site( application_id, site_id )
       SELECT application.id, site.id
       FROM application, site
@@ -40,7 +41,7 @@ CREATE PROCEDURE patch_application_has_site()
       UNION SELECT application.id, site.id
       FROM application, site
       WHERE application.type = "sabretooth" AND application.name != "sabretooth_qc"
-      AND site.name LIKE "% CC"
+      AND site.name LIKE "% CATI"
       UNION SELECT application.id, site.id
       FROM application, site
       WHERE application.name = "sabretooth_qc"
@@ -49,6 +50,14 @@ CREATE PROCEDURE patch_application_has_site()
       FROM application, site
       WHERE application.type = "cedar"
       AND site.name LIKE "% REC";
+
+      DELETE FROM application_has_site
+      WHERE application_id = ( SELECT id FROM application WHERE name = "sabretooth_mc" )
+      AND site_id = ( SELECT id FROM site WHERE name = "Victoria CATI" );
+
+      DELETE FROM application_has_site
+      WHERE application_id = ( SELECT id FROM application WHERE name = "sabretooth" )
+      AND site_id = ( SELECT id FROM site WHERE name = "Simon Fraser CATI" );
 
     END IF;
 

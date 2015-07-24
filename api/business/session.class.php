@@ -90,6 +90,7 @@ class session extends \cenozo\singleton
     // create a new activity if there isn't already one open
     $activity_mod = lib::create( 'database\modifier' );
     $activity_mod->where( 'user_id', '=', $this->db_user->id );
+    $activity_mod->where( 'application_id', '=', $this->db_application->id );
     $activity_mod->where( 'site_id', '=', $this->db_site->id );
     $activity_mod->where( 'role_id', '=', $this->db_role->id );
     $activity_mod->where( 'end_datetime', '=', NULL );
@@ -97,6 +98,7 @@ class session extends \cenozo\singleton
     {
       $db_activity = lib::create( 'database\activity' );
       $db_activity->user_id = $this->db_user->id;
+      $db_activity->application_id = $this->db_application->id;
       $db_activity->site_id = $this->db_site->id;
       $db_activity->role_id = $this->db_role->id;
       $db_activity->start_datetime = $util_class_name::get_datetime_object();
@@ -250,7 +252,7 @@ class session extends \cenozo\singleton
           array( $this->db_user->id, $db_role->id, $db_site->id ) );
       }
 
-      if( !is_null( $db_access ) )
+      if( !is_null( $db_access ) && false !== $db_access )
       {
         $this->db_access = $db_access;
         $this->db_site = $this->db_access->get_site();
@@ -285,7 +287,12 @@ class session extends \cenozo\singleton
         'Please contact your account administrator to regain access to the system.', __METHOD__ );
     }
 
-    $this->set_site_and_role();
+    if( !$this->set_site_and_role() )
+    {
+      throw lib::create( 'exception\notice',
+        'You do not have access to this application. '.
+        'Please contact your account administrator to gain access to the system.', __METHOD__ );
+    }
   }
 
   /**

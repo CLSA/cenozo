@@ -60,6 +60,10 @@ define( {
       title: 'Users',
       type: 'number'
     },
+    participant_count: {
+      title: 'Participants',
+      type: 'number'
+    },
     last_access_datetime: {
       title: 'Last Access',
       type: 'datetime'

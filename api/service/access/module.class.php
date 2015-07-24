@@ -22,7 +22,8 @@ class module extends \cenozo\service\module
     parent::prepare_read( $select, $modifier );
 
     // only include sites which belong to this application
-    $modifier->join( 'site', 'access.site_id', 'site.id' );
-    $modifier->where( 'site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
+    $modifier->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
+    $modifier->where(
+      'application_has_site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
   }
 }

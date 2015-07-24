@@ -84,8 +84,8 @@ class module extends \cenozo\service\module
       // restrict to users who have access to this application
       $sub_mod = lib::create( 'database\modifier' );
       $join_mod->join( 'access', 'user_has_collection.user_id', 'access.user_id' );
-      $join_mod->join( 'site', 'access.site_id', 'site.id' );
-      $join_mod->where( 'site.application_id', '=', $db_application->id );
+      $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
+      $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
 
       // restrict to users who have access to this site (for some roles)
       if( !$db_role->all_sites ) $join_mod->where( 'site.id', '=', $db_site->id );

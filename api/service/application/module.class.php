@@ -52,10 +52,10 @@ class module extends \cenozo\service\module
       $join_sel->from( 'application' );
       $join_sel->add_column( 'id', 'application_id' );
       $join_sel->add_column(
-        'IF( site.id IS NOT NULL, COUNT(*), 0 )', 'site_count', false );
+        'IF( application_has_site.site_id IS NOT NULL, COUNT(*), 0 )', 'site_count', false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->left_join( 'site', 'application.id', 'site.application_id' );
+      $join_mod->left_join( 'application_has_site', 'application.id', 'application_has_site.application_id' );
       $join_mod->group( 'application.id' );
 
       $modifier->left_join(
@@ -70,12 +70,12 @@ class module extends \cenozo\service\module
     {
       $inner_join_sel = lib::create( 'database\select' );
       $inner_join_sel->from( 'access' );
-      $inner_join_sel->add_table_column( 'site', 'application_id' );
+      $inner_join_sel->add_table_column( 'application_has_site', 'application_id' );
       $inner_join_sel->add_column( 'COUNT( DISTINCT user_id )', 'user_count', false );
 
       $inner_join_mod = lib::create( 'database\modifier' );
-      $inner_join_mod->join( 'site', 'access.site_id', 'site.id' );
-      $inner_join_mod->group( 'site.application_id' );
+      $inner_join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
+      $inner_join_mod->group( 'application_has_site.application_id' );
 
       $outer_join_sel = lib::create( 'database\select' );
       $outer_join_sel->from( 'application' );

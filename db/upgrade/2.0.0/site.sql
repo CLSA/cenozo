@@ -19,20 +19,12 @@ CREATE PROCEDURE patch_site()
       WHERE application.name = "beartooth";
       UPDATE site
       JOIN application ON site.service_id = application.id
-      SET site.name = CONCAT( site.name, " DCSF1" )
-      WHERE application.name = "beartooth_f1";
-      UPDATE site
-      JOIN application ON site.service_id = application.id
       SET site.name = CONCAT( site.name, " REC" )
       WHERE application.name = "cedar";
       UPDATE site
       JOIN application ON site.service_id = application.id
-      SET site.name = CONCAT( site.name, " CC" )
-      WHERE application.name = "sabretooth";
-      UPDATE site
-      JOIN application ON site.service_id = application.id
-      SET site.name = CONCAT( site.name, " MC" )
-      WHERE application.name = "sabretooth_mc";
+      SET site.name = CONCAT( site.name, " CATI" )
+      WHERE application.name = "sabretooth" OR application.name = "sabretooth_mc";
       UPDATE site
       JOIN application ON site.service_id = application.id
       SET site.name = CONCAT( site.name, " QC" )

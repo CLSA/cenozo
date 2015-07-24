@@ -98,6 +98,7 @@ class patch extends \cenozo\service\service
       { // going on break, close the current activity
         $activity_mod = lib::create( 'database\modifier' );
         $activity_mod->where( 'user_id', '=', $db_user->id );
+        $activity_mod->where( 'application_id', '=', $session->get_application()->id );
         $activity_mod->where( 'site_id', '=', $session->get_site()->id );
         $activity_mod->where( 'role_id', '=', $session->get_role()->id );
         $activity_mod->where( 'end_datetime', '=', NULL );

@@ -32,12 +32,12 @@ class query extends \cenozo\service\query
     $this->select->add_table_column( 'role', 'name', 'role_name' );
 
     // restrict to the current user's access to the current application
-    $this->modifier->join( 'site', 'access.site_id', 'site.id' );
+    $this->modifier->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
     $this->modifier->join( 'role', 'access.role_id', 'role.id' );
     $this->modifier->where(
       'access.user_id', '=', lib::create( 'business\session' )->get_user()->id );
     $this->modifier->where(
-      'site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
+      'application_has_site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
     $this->modifier->order( 'site.name' );
     $this->modifier->order( 'role.name' );
   }

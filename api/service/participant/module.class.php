@@ -52,11 +52,15 @@ class module extends \cenozo\service\module
     // join to participant_site table
     if( $select->has_table_columns( 'site' ) || $select->has_table_columns( 'default_site' ) )
     {
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
-      $join_mod->where(
-        'participant_site.application_id', '=', $db_application->id );
-      $modifier->join_modifier( 'participant_site', $join_mod );
+      if( !$modifier->has_join( 'participant_site' ) )
+      {
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
+        $join_mod->where(
+          'participant_site.application_id', '=', $db_application->id );
+        $modifier->join_modifier( 'participant_site', $join_mod );
+      }
+
       $modifier->left_join( 'site', 'participant_site.site_id', 'site.id' );
       $modifier->left_join( 'site', 'participant_site.default_site_id', 'default_site.id', 'default_site' );
     }

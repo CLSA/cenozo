@@ -24,8 +24,8 @@ class module extends \cenozo\service\module
     $session = lib::create( 'business\session' );
 
     // only include sites which belong to this application
-    $modifier->join( 'site', 'activity.site_id', 'site.id' );
-    $modifier->where( 'site.application_id', '=', $session->get_application()->id );
+    $modifier->join( 'application_has_site', 'activity.site_id', 'application_has_site.site_id' );
+    $modifier->where( 'application_has_site.application_id', '=', $session->get_application()->id );
 
     // restrict to the current site only (for some roles)
     if( !$session->get_role()->all_sites )

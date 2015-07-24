@@ -42,7 +42,8 @@ class module extends \cenozo\service\module
     $db_application = $session->get_application();
 
     // only include sites which belong to this application
-    $modifier->where( 'site.application_id', '=', $db_application->id );
+    $modifier->join( 'application_has_site', 'site.id', 'application_has_site.site_id' );
+    $modifier->where( 'application_has_site.application_id', '=', $db_application->id );
 
     // add the total number of related records
     if( $select->has_column( 'role_count' ) ||
@@ -77,17 +78,27 @@ class module extends \cenozo\service\module
       if( $select->has_column( 'last_access_datetime' ) )
         $select->add_column( 'site_join_access.last_access_datetime', 'last_access_datetime', false );
     }
-  }
 
-  /**
-   * Extend parent method
-   */
-  public function pre_write( $record )
-  {
-    parent::pre_write( $record );
+    // add the total number of related records
+    if( $select->has_column( 'participant_count' ) )
+    {
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'participant_site' );
+      $join_sel->add_column( 'site_id' );
+      $join_sel->add_column( 'COUNT(*)', 'participant_count', false );
 
-    // set the current application as the site's owner
-    $record->application_id = lib::create( 'business\session' )->get_application()->id;
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'application_id', '=', $db_application->id );
+      $join_mod->group( 'site_id' );
+
+      $modifier->left_join(
+        sprintf( '( %s %s ) AS site_join_participant_site', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'site.id',
+        'site_join_participant_site.site_id' );
+
+      // override columns so that we can fake these columns being in the site table
+      $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
+    }
   }
 
   /**
@@ -96,6 +107,9 @@ class module extends \cenozo\service\module
   public function post_write( $record )
   {
     parent::post_write( $record );
+
+    // add the site to the current application
+    lib::create( 'business\session' )->get_application()->add_records( 'site', $record->id );
 
     // create setting record if there isn't one already
     if( is_null( $record->get_setting() ) )
