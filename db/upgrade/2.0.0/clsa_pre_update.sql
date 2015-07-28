@@ -142,6 +142,14 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       SELECT "Removing McMaster CATI sites" AS "";
+      INSERT IGNORE INTO access( site_id, role_id, user_id )
+      SELECT site1.id, role_id, user_id
+      FROM access
+      JOIN site AS site2 ON access.site_id = site2.id
+      JOIN site AS site1 ON site1.name = "Dalhousie" AND site1.service_id = @mc_service_id
+      WHERE site2.name = "McMaster" AND site2.service_id = @mc_service_id
+      AND role_id = ( SELECT id FROM role WHERE name = "administrator" )
+
       DELETE FROM access WHERE site_id IN (
         SELECT id FROM site
         WHERE name = "McMaster"
