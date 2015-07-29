@@ -21,29 +21,12 @@ define( cenozo.getServicesIncludeList( 'phone' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneViewFactory',
-    cenozo.getListModelInjectionList( 'phone' ).concat( [ 'CnModalMessageFactory', function() {
+    cenozo.getListModelInjectionList( 'phone' ).concat( function() {
       var args = arguments;
-      var CnModalMessageFactory = args[args.length-1];
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel, args );
-
-        // do not allow changes to the international column
-        var self = this;
-        this.onPatch = function( data ) {
-          if( angular.isDefined( data.international ) ) {
-            self.record.international = self.backupRecord.international;
-            return CnModalMessageFactory.instance( {
-              title: 'Cannot Change Address',
-              message: 'Once an phone number has been created it cannot be changed to or from an ' +
-                       'international phone number.  Please create a new phone number instead.',
-              error: true
-            } ).show();
-          } else return this.patchRecord( data );
-        };
-      };
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } ] )
+    } )
   );
 
   /* ######################################################################################################## */

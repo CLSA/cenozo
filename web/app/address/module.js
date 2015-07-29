@@ -28,7 +28,8 @@ define( {
     international: {
       title: 'International',
       type: 'boolean',
-      help: 'Can only be defined when creating a new address.'
+      help: 'Cannot be changed once the address has been created.',
+      noedit: true
     },
     address1: {
       title: 'Address Line 1',

@@ -10,10 +10,10 @@ define( {
     } ]
   },
   name: {
-    singular: 'phone',
-    plural: 'phones',
-    possessive: 'phone\'s',
-    pluralPossessive: 'phones\'',
+    singular: 'phone number',
+    plural: 'phone numbers',
+    possessive: 'phone number\'s',
+    pluralPossessive: 'phone numbers\'',
     friendlyColumn: 'rank'
   },
   inputList: {
@@ -28,7 +28,9 @@ define( {
     },
     international: {
       title: 'International',
-      type: 'boolean'
+      type: 'boolean',
+      help: 'Cannot be changed once the phone number has been created.',
+      noedit: true
     },
     rank: {
       title: 'Rank',

@@ -16,7 +16,8 @@ define( {
       title: 'Username',
       type: 'string',
       format: 'alpha_num',
-      help: 'May only contain numbers, letters and underscores'
+      help: 'May only contain numbers, letters and underscores. Can only be defined when creating a new user.',
+      noedit: true
     },
     first_name: {
       title: 'First Name',

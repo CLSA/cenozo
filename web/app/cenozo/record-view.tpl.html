@@ -32,7 +32,7 @@
                 class="form-control"
                 type="text"
                 autocomplete="off"
-                ng-readonly="!model.editEnabled || input.constant"
+                ng-readonly="!model.editEnabled || input.constant || input.noedit"
                 ng-required="model.metadata.columnList[input.key].required"></input>
               <input ng-switch-when="typeahead"
                 ng-attr-id="{{ input.key }}"
@@ -80,7 +80,7 @@
                 ng-model="model.viewModel.record[input.key]"
                 ng-change="patch( input.key )"
                 class="form-control"
-                ng-disabled="!model.editEnabled || input.constant || !input.enumList"
+                ng-disabled="!model.editEnabled || input.constant || input.noedit || !input.enumList"
                 ng-required="model.metadata.columnList[input.key].required"></select>
               <textarea ng-switch-when="text"
                 cn-elastic
@@ -89,7 +89,7 @@
                 ng-model="model.viewModel.record[input.key]"
                 cn-change="patch( input.key )"
                 class="form-control"
-                ng-readonly="!model.editEnabled || input.constant"
+                ng-readonly="!model.editEnabled || input.constant || input.noedit"
                 ng-required="model.metadata.columnList[input.key].required"></textarea>
               <div ng-switch-when="months" class="row">
                 <div class="col-sm-2">
