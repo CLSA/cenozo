@@ -1,7 +1,6 @@
 <cn-record-view model="model"></cn-record-view>
 <div class="vertical-spacer" ng-repeat="child in model.children" ng-if="showChildren">
-  <cn-record-list heading="{{ child.title }} List"
-                  model="model.viewModel[child.camel+'Model']"></cn-record-list>
+  <cn-record-list model="model.viewModel[child.camel+'Model']"></cn-record-list>
 </div>
 <div class="well vertical-spacer text-info" ng-if="!showChildren">
   Note: cohort, role and site lists can only be viewed for the application you are currently using.

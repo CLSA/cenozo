@@ -1,9 +1,8 @@
 <cn-record-view model="model"></cn-record-view>
 <div class="vertical-spacer" ng-repeat="child in model.children">
-  <cn-record-list heading="{{ child.title }} List"
-                  model="model.viewModel[child.camel+'Model']"></cn-record-list>
+  <cn-record-list model="model.viewModel[child.camel+'Model']"></cn-record-list>
 </div>
 <div class="vertical-spacer">
-  <cn-record-list heading="Spoken {{ child.title }} List (if empty then all languages are spoken)"
+  <cn-record-list heading="Spoken Language List (if empty then all languages are spoken)"
                   model="model.viewModel['languageModel']"></cn-record-list>
 </div>
