@@ -23,13 +23,13 @@ define( cenozo.getServicesIncludeList( 'address' ), function( module ) {
   cenozo.providers.factory( 'CnAddressViewFactory',
     cenozo.getListModelInjectionList( 'address' ).concat( [ 'CnModalMessageFactory', function() {
       var args = arguments;
+      var CnModalMessageFactory = args[args.length-1];
       var CnBaseViewFactory = args[0];
       var object = function( parentModel ) {
         CnBaseViewFactory.construct( this, parentModel, args );
 
         // do not allow changes to the international column
         var self = this;
-        var CnModalMessageFactory = args[args.length-1];
         this.onPatch = function( data ) {
           if( angular.isDefined( data.international ) ) {
             self.record.international = self.backupRecord.international;
