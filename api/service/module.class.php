@@ -62,14 +62,13 @@ abstract class module extends \cenozo\base_object
   /**
    * Validates the use of a module for its parent service
    * 
+   * This method should be extended whenever checking for the validity of the service.
+   * When invalid the module should set the status code to something appropriate (ex: 403, 404, etc)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
-  public function validate()
-  {
-    return true;
-  }
+  public function validate() {}
 
   /**
    * Returns this module's subject
@@ -101,6 +100,14 @@ abstract class module extends \cenozo\base_object
   protected function get_parent_resource()
   {
     return $this->service->get_resource( $this->index - 1 );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function get_status()
+  {
+    return $this->service->get_status();
   }
 
   /**

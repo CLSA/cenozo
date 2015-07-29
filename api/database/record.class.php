@@ -339,7 +339,7 @@ abstract class record extends \cenozo\base_object
         $columns = static::db()->get_row( $sql );
 
         // convert non-null values
-        foreach( $columns as $column => $value )
+        if( is_array( $columns ) ) foreach( $columns as $column => $value )
         {
           if( !is_null( $value ) )
           {
@@ -376,22 +376,26 @@ abstract class record extends \cenozo\base_object
     }
 
     // apply the active values and convert datetime objects back into strings
-    foreach( array_keys( $columns ) as $column )
+    if( is_array( $columns ) )
     {
-      if( array_key_exists( $column, $this->active_column_values ) )
-        $columns[$column] = $this->active_column_values[$column];
-
-      if( array_key_exists( $column, $this->passive_column_values ) &&
-          $columns[$column] instanceof \DateTime )
+      foreach( array_keys( $columns ) as $column )
       {
-        $type = static::db()->get_column_data_type( $table_name, $column );
-        if( 'datetime' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
-        else if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
-        else if( 'time' == $type ) $columns[$column] = $columns[$column]->format( 'H:i:s' );
+        if( array_key_exists( $column, $this->active_column_values ) )
+          $columns[$column] = $this->active_column_values[$column];
+
+        if( array_key_exists( $column, $this->passive_column_values ) &&
+            $columns[$column] instanceof \DateTime )
+        {
+          $type = static::db()->get_column_data_type( $table_name, $column );
+          if( 'datetime' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
+          else if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
+          else if( 'time' == $type ) $columns[$column] = $columns[$column]->format( 'H:i:s' );
+        }
       }
+
+      reset( $columns );
     }
 
-    reset( $columns );
     return $columns;
   }
 

@@ -22,8 +22,7 @@ class module extends \cenozo\service\module
     $valid = parent::validate();
 
     // make sure to only respond if the parent is a participant
-    if( $valid ) $valid = 'participant' == $this->get_parent_subject();
-    return $valid;
+    if( 'participant' != $this->get_parent_subject() ) $this->get_status()->set_code( 404 );
   }
 
   /**

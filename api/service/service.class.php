@@ -199,13 +199,14 @@ abstract class service extends \cenozo\base_object
             sprintf( 'Service module for "%s" is not found', $subject ),
             __METHOD__ );
         }
-        else if( 'HEAD' != $this->method &&
-                 ( !$session->is_service_allowed( $db_service ) ||
-                   !$this->module_list[$index]->validate() ) )
+        else if( 'HEAD' != $this->method )
         {
-          $this->status->set_code( 403 );
-          break;
+          if( !$session->is_service_allowed( $db_service ) ) $this->status->set_code( 403 );
+          else $this->module_list[$index]->validate();
         }
+
+        // don't bother continuing if we've got an error
+        if( 300 <= $this->status->get_code() ) break;
 
         $parent_subject = $subject;
       }

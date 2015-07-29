@@ -19,16 +19,15 @@ class module extends \cenozo\service\module
    */
   public function validate()
   {
+    parent::validate();
+
     // check for role's all_site setting before viewing any site
-    $allowed = true;
     $session = lib::create( 'business\session' );
     if( !$session->get_role()->all_sites )
     {
       $db_site = $this->get_resource();
-      if( $db_site ) $allowed = $db_site->id == $session->get_site()->id;
+      if( $db_site ) if( $db_site->id != $session->get_site()->id ) $this->get_status()->set_code( 403 );
     }
-
-    return $allowed;
   }
 
   /**

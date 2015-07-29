@@ -15,6 +15,23 @@ use cenozo\lib, cenozo\log;
 class application extends record
 {
   /**
+   * Determine whether the current application has access to the participant
+   * TODO: document
+   */
+  public function has_participant( $db_participant )
+  {
+    $access = true;
+    if( $this->release_based )
+    { // check for the participant
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'participant_id', '=', $db_participant->id );
+      $access = 0 < $this->get_participant_count( $modifier );
+    }
+
+    return $access;
+  }
+
+  /**
    * Adds one or more cohorts so a application.
    * This method effectively overrides the parent add_records() method so that grouping can also
    * be included.
