@@ -26,6 +26,9 @@ class module extends \cenozo\service\module
     $db_site = $session->get_site();
     $db_role = $session->get_role();
 
+    // if there is a parent then only show the active languages
+    if( $this->get_parent_subject() ) $modifier->where( 'language.active', '=', true );
+
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )
     {
