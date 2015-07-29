@@ -3075,6 +3075,9 @@ cenozo.service( 'CnModalRestrictFactory', [
                     // update the empty list
                     if( self.emptyList[index].state && null !== response ||
                         !self.emptyList[index].state && null === response ) self.toggleEmpty( index );
+
+                    // describe the restriction
+                    self.describeRestriction( index );
                   }
                 } );
               };

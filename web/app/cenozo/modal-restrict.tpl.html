@@ -197,12 +197,12 @@
                     ng-model="restrict.test"
                     ng-change="local.describeRestriction( $index )"
                     class="form-control">
-              <option value="&lt;=&gt;">is</option>
-              <option value="&lt;&gt;">is not</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;">greater than</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;=">greater or equal to</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;">less than</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;=">less or equal to</option>
+              <option value="&lt;=&gt;">on</option>
+              <option value="&lt;&gt;">is on</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;">after</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;=">after or on</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;">before</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;=">before or on</option>
             </select>
           </div>
         </div>
@@ -212,7 +212,6 @@
             <input id="{{ 'value' + $index }}"
                    name="{{ 'value' + $index }}"
                    ng-model="local.formattedValueList[$index]"
-                   ng-change="local.describeRestriction( $index )"
                    class="form-control"
                    type="text"
                    ng-click="selectDatetime( $index )"
