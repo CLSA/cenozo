@@ -9,11 +9,8 @@
       {{ heading }}
     </h4>
   </div>
-  <table class="table rounded"
-         ng-class="{
-           'table-hover':model.viewEnabled || model.chooseEnabled,
-           'table-striped':!model.listModel.chooseMode
-         } ">
+  <table class="table table-striped rounded"
+         ng-class="{ 'table-hover':model.viewEnabled || model.chooseEnabled } ">
     <thead class="bg-info">
       <tr>
         <td ng-repeat="column in dataArray">
@@ -47,7 +44,7 @@
             </p>
           </div>
         </td>
-        <td class="tiny" ng-if="model.deleteEnabled && !model.chooseEnabled"></td>
+        <td class="tiny" ng-if="model.deleteEnabled || model.listModel.chooseMode"></td>
       </tr>
     </thead>
     <tbody>
@@ -72,24 +69,30 @@
           <td ng-repeat="column in dataArray">
             <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
           </td>
-          <td class="tiny" ng-if="model.deleteEnabled && !model.chooseEnabled">
-            <div>
-              <button class="btn btn-xs btn-danger"
-                      tooltip="Delete {{ model.name.singular }}"
-                      tooltip-placement="left"
-                      cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
-                                         item in the {{ model.name.singular }} list?"
-                      cn-really-click="deleteRecord( record )"
-                      ng-click="$event.stopPropagation()">
-                <i class="glyphicon glyphicon-remove"></i>
-              </button>
-            </div>
+          <td class="tiny" ng-if="model.deleteEnabled">
+            <button class="btn btn-xs btn-danger"
+                    tooltip="Delete {{ model.name.singular }}"
+                    tooltip-placement="left"
+                    cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
+                                       item in the {{ model.name.singular }} list?"
+                    cn-really-click="deleteRecord( record )"
+                    ng-click="$event.stopPropagation()">
+              <i class="glyphicon glyphicon-remove"></i>
+            </button>
+          </td>
+          <td class="tiny" ng-if="model.listModel.chooseMode">
+            <button ng-if="record.chosen"
+                    class="btn btn-xs btn-danger"
+                    tooltip="Remove {{ model.name.singular }}"
+                    tooltip-placement="left">
+              <i class="glyphicon glyphicon-remove"></i>
+            </button>
           </td>
       </tr>
     </tbody>
     <tfoot class="bg-info">
       <tr>
-        <td colspan="{{ numColumns }}" class="rounded-bottom">
+        <td colspan="{{ numColumns + ( model.listModel.chooseMode ? 1 : 0 ) }}" class="rounded-bottom">
           <pagination class="pagination pull-left"
                       ng-model="model.listModel.paginationFactory.currentPage"
                       ng-show="model.listModel.cache.length > model.listModel.paginationFactory.itemsPerPage"
