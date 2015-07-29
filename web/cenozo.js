@@ -1064,7 +1064,6 @@ cenozo.factory( 'CnSession', [
       // defines the breadcrumbtrail based on an array of crumbs
       this.setBreadcrumbTrail = function( crumbs ) {
         this.breadcrumbTrail.length = 0;
-        this.breadcrumbTrail.push( { title: '' } );
         this.breadcrumbTrail.push( { title: 'Home', go: function() { $state.go( 'root.home' ); } } );
         if( angular.isArray( crumbs ) )
           for( var i = 0; i < crumbs.length; i++ )

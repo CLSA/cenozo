@@ -34,6 +34,7 @@ blockquote { font-size: 100%; }
 .bottom-right { position: absolute; bottom: 0px; right: 0px; }
 .operation-list { padding: 0.5em; }
 .no-line-height { line-height: 0px; }
+.bg-white { background-color: #fff; }
 
 textarea.note {
   border-radius:0px;
@@ -75,7 +76,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 .gradient-footer {
   position: relative;
-  top: -64px;
+  top: -10px;
   height: 8em;
   background: -moz-linear-gradient(top, white,  transparent);
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, white), color-stop(100%, transparent));
@@ -157,11 +158,13 @@ tfoot, .modal-footer {
   background-color: transparent;
   border-radius: 0px;
 }
+.breadcrumb > li:before,
 .breadcrumb > li + li:before {
   padding-left: 1px;
   padding-right: 2px;
   content: "/";
 }
+.breadcrumb > li:after,
 .breadcrumb > li + li:after {
   padding-left: 0px;
   padding-right: 2px;
