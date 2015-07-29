@@ -1,7 +1,7 @@
 <div class="record-list rounded">
   <div class="container-fluid bg-primary rounded-top">
     <h4>
-      <i class="glyphicon glyphicon-refresh glyph-hover pull-right"
+      <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
          ng-if="!model.listModel.isLoading"
          ng-click="refresh()"
          tooltip="Click to refresh data"
@@ -9,13 +9,13 @@
       {{ heading }}
     </h4>
   </div>
-  <table class="table"
+  <table class="table rounded"
          ng-class="{
            'table-hover':model.viewEnabled || model.chooseEnabled,
            'table-striped':!model.listModel.chooseMode
          } ">
-    <thead>
-      <tr class="info">
+    <thead class="bg-info">
+      <tr>
         <td ng-repeat="column in dataArray">
           <div class="btn-group" tooltip="{{ column.help }}">
             <button class="btn btn-narrow btn-info"
@@ -87,8 +87,8 @@
           </td>
       </tr>
     </tbody>
-    <tfoot>
-      <tr class="info">
+    <tfoot class="bg-info">
+      <tr>
         <td colspan="{{ numColumns }}" class="rounded-bottom">
           <pagination class="pagination pull-left"
                       ng-model="model.listModel.paginationFactory.currentPage"

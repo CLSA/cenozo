@@ -1,5 +1,5 @@
 <form ng-submit="ok()" novalidate name="form" class="noselect">
-  <div class="modal-header">
+  <div class="modal-header bg-primary">
     <h4 class="modal-title">Account Details</h4>
   </div>
   <div class="modal-body">
@@ -81,7 +81,7 @@
       </div>
     </div>
   </div>
-  <div class="modal-footer">
+  <div class="modal-footer bg-info">
     <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
     <button type="submit" class="btn btn-primary"
             ng-disabled="form.email.$error.format || form.$invalid">OK</button>

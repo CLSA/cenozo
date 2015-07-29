@@ -1,7 +1,7 @@
 <div class="record-view rounded">
   <div class="container-fluid bg-primary rounded-top">
     <h4>
-      <i class="glyphicon glyphicon-refresh glyph-hover pull-right"
+      <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
          ng-if="isComplete"
          ng-click="refresh()"
          tooltip="Click to refresh data"
@@ -226,7 +226,7 @@
         </div>
       </ng-form>
     </div>
-    <div class="form-footer rounded-bottom">
+    <div class="form-footer text-right rounded-bottom bg-info">
       <div class="btn-group pull-left">
         <button class="btn btn-default"
                 type="button"
@@ -243,14 +243,14 @@
         </button>
         <button ng-if="!hasParent()"
                 type="button"
-                class="btn btn-default btn-primary"
+                class="btn btn-primary"
                 ng-click="back()">
           View {{ model.name.singular | cnUCWords }} List
         </button>
         <button ng-repeat="parent in model.identifier.parent"
                 ng-if="parentExists( parent.subject )"
                 type="button"
-                class="btn btn-default btn-primary"
+                class="btn btn-primary"
                 ng-click="viewParent( parent.subject )">
           View {{ parent.subject.replace( '_', ' ' ) | cnUCWords }}
         </button>

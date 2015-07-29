@@ -1,9 +1,9 @@
 <form ng-submit="close()" class="noselect">
-  <div class="modal-header">
+  <div class="modal-header bg-primary">
     <h4 class="modal-title">{{ title }}</h4>
   </div>
   <div class="modal-body" ng-class="{ 'text-danger': error }">{{ message }}</div>
-  <div class="modal-footer">
+  <div class="modal-footer bg-info">
     <button type="submit" class="btn btn-primary">Close</button>
   </div>
 </form>

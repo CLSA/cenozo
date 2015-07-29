@@ -83,17 +83,16 @@
 
   <div ng-controller="HeaderCtrl">
     <nav class="navigation-header navbar navbar-default noselect" ng-if="!isLoading">
-      <div class="container-fluid">
+      <div class="container-fluid bg-primary no-line-height">
         <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <a class="navbar-brand dropdown-toggle" data-toggle="dropdown">{{ session.application.title }}</a>
+        <div class="navbar-header btn-primary">
+          <a class="navbar-brand btn-default" data-toggle="dropdown">{{ session.application.title }}</a>
           <ul class="dropdown-menu navigation-menu">
             <li ng-controller="MenuCtrl">
-              <div class="container-fluid well" style="margin: -14px 7px 7px;">
+              <div class="container-fluid operation-list">
                   <div class="btn-group btn-group-justified">
-                    <div class="btn-group"
-                            ng-repeat="op in operations">
-                      <button class="btn btn-default"
+                    <div class="btn-group" ng-repeat="op in operations">
+                      <button class="btn btn-info"
                               ng-click="operationList[op].execute()"
                               tooltip="{{ operationList[op].help }}">{{ operationList[op].title }}</button>
                     </div>
@@ -145,23 +144,20 @@
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse">
           <ul class="nav navbar-nav">
-            <ul class="breadcrumb">
-              <li ng-repeat="breadcrumb in session.breadcrumbTrail"
-                  ng-class="breadcrumb.go ? 'navbar-link': 'active'"
+            <ul class="breadcrumb breadcrumb-slash">
+              <li class="navbar-item"
+                  ng-repeat="breadcrumb in session.breadcrumbTrail"
+                  ng-class="{'navbar-link btn-primary':breadcrumb.go}"
                   ng-click="breadcrumb.go()">{{ breadcrumb.title }}
               </li>
             </ul>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li>
-              <p class="navbar-text">
-                <span ng-click="operationList.siteRole.execute()">
-                  {{ session.role.name | cnUCWords }} @ {{ session.site.name }}
-                </span>
-                <span ng-click="operationList.timezone.execute()">
-                  <i class="glyphicon glyphicon-time"></i> {{ session.time }}
-                </span>
-              </p>
+            <li class="navbar-item navbar-link btn-primary siterole" ng-click="operationList.siteRole.execute()">
+              {{ session.role.name | cnUCWords }} @ {{ session.site.name }}
+            </li>
+            <li class="navbar-item navbar-link btn-primary clock" ng-click="operationList.timezone.execute()">
+              <i class="glyphicon glyphicon-time"></i> {{ session.time }}
             </li>
           </ul>
         </div>
