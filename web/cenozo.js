@@ -312,6 +312,7 @@ cenozo.directive( 'cnChange', [
           scope.$evalAsync( function() {
             if( 13 == event.which ) {
               scope.$eval( attrs.cnChange );
+              oldValue = element.val(); // update the old value, otherwise the blur event will fire
               event.target.blur();
             }
           } );
