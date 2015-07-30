@@ -104,7 +104,7 @@
                     <h4 class="text-center">Lists</h4>
                   </li>
                   <li ng-repeat="(module,title) in lists">
-                    <a class="btn btn-default btn-default full-width"
+                    <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
                        ui-sref="{{ module }}.list">{{ title }}</a>
                   </li>
@@ -114,7 +114,7 @@
                     <h4 class="text-center">Utilities</h4>
                   </li>
                   <li ng-repeat="(module,title) in utilities">
-                    <a class="btn btn-default btn-default full-width"
+                    <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
                        ui-sref="{{ module }}.list">{{ title }}</a>
                   </li>
@@ -124,7 +124,7 @@
                     <h4 class="text-center">Reports</h4>
                   </li>
                   <li ng-repeat="(module,title) in reports">
-                    <a class="btn btn-default btn-default full-width"
+                    <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
                        ui-sref="{{ module }}.list">{{ title }}</a>
                   </li>
