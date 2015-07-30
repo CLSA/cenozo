@@ -80,7 +80,11 @@
                 ng-model="model.viewModel.record[input.key]"
                 ng-change="patch( input.key )"
                 class="form-control"
-                ng-disabled="!model.editEnabled || input.constant || input.noedit || !input.enumList"
+                ng-disabled="!model.editEnabled ||
+                             input.constant ||
+                             input.noedit ||
+                             !input.enumList ||
+                             1 >= input.enumList.length"
                 ng-required="model.metadata.columnList[input.key].required"></select>
               <textarea ng-switch-when="text"
                 cn-elastic

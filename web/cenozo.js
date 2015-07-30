@@ -414,8 +414,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  'CnSession', 'CnModalDatetimeFactory',
-  function( CnSession, CnModalDatetimeFactory ) {
+  '$filter', 'CnSession', 'CnModalDatetimeFactory',
+  function( $filter, CnSession, CnModalDatetimeFactory ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -536,15 +536,20 @@ cenozo.directive( 'cnRecordAdd', [
               if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
                 input.enumList = angular.copy( meta.enumList );
 
-                input.enumList.unshift( {
-                  value: undefined,
-                  name: meta.required ? '(Select ' + input.title + ')' : '(empty)'
-                } );
+                var newRank = input.enumList.length + 1;
+                if( 1 == input.enumList.length ) {
+                  scope.record[input.key] = input.enumList[0].value;
+                } else {
+                  input.enumList.unshift( {
+                    value: undefined,
+                    name: meta.required ? '(Select ' + input.title + ')' : '(empty)'
+                  } );
+                }
 
                 // add additional rank
                 if( 'rank' == input.key ) input.enumList.push( {
-                  value: input.enumList.length,
-                  name: input.enumList.length
+                  value: newRank,
+                  name: $filter( 'cnOrdinal' )( newRank )
                 } );
               }
             }
@@ -1693,8 +1698,8 @@ cenozo.factory( 'CnBaseViewFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseModelFactory', [
-  '$state', 'CnSession', 'CnHttpFactory',
-  function( $state, CnSession, CnHttpFactory ) {
+  '$state', '$filter', 'CnSession', 'CnHttpFactory',
+  function( $state, $filter, CnSession, CnHttpFactory ) {
     return {
       construct: function( object, module ) {
         // Note: methods are added to object here, members below
@@ -2202,7 +2207,10 @@ cenozo.factory( 'CnBaseModelFactory', [
                   self.metadata.columnList.rank.enumList = [];
                   if( null !== response.data[0].max )
                     for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ )
-                      self.metadata.columnList.rank.enumList.push( { value: rank, name: rank } );
+                      self.metadata.columnList.rank.enumList.push( {
+                        value: rank,
+                        name: $filter( 'cnOrdinal' )( rank )
+                      } );
                 }
                 // signal that we are done loading metadata
                 self.metadata.loadingCount--;
