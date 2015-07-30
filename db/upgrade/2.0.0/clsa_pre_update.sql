@@ -146,7 +146,7 @@ CREATE PROCEDURE clsa_pre_update()
       SELECT site1.id, role_id, user_id
       FROM access
       JOIN site AS site2 ON access.site_id = site2.id
-      JOIN site AS site1 ON site1.name = "Dalhousie" AND site1.service_id = @mc_service_id
+      JOIN site AS site1 ON site1.name = "Sherbrooke" AND site1.service_id = @mc_service_id
       WHERE site2.name = "McMaster" AND site2.service_id = @mc_service_id
       AND role_id = ( SELECT id FROM role WHERE name = "administrator" )
 
