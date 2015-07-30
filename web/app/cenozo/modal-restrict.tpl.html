@@ -19,7 +19,7 @@
     </div>
     <div ng-class="{'restrict-add': !$first}"
          ng-repeat="restrict in local.restrictList"
-         ng-switch="local.type">
+         ng-switch="local.type|cnRestrictType">
       <hr />
       <div ng-if="!$first" class="form-group">
         <div class="col-sm-offset-3 col-sm-5">
@@ -44,12 +44,16 @@
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
                     class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="like">is like</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="not like">is not like</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="like">
+                is like
+              </option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="not like">
+                is not like
+              </option>
             </select>
           </div>
         </div>
@@ -67,8 +71,8 @@
           </div>
           <div class="col-sm-2">
             <label class="btn btn-default pull-right"
-                   ng-class="{'btn-warning':local.emptyList[$index].state}"
-                   ng-model="local.emptyList[$index].state"
+                   ng-class="{'btn-warning':local.emptyList[$index].isEmpty}"
+                   ng-model="local.emptyList[$index].isEmpty"
                    ng-click="local.toggleEmpty( $index )"
                    btn-checkbox>Empty</label>
           </div>
@@ -81,7 +85,7 @@
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
                     class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
@@ -103,8 +107,8 @@
           </div>
           <div class="col-sm-2">
             <label class="btn btn-default pull-right"
-                   ng-class="{'btn-warning':local.emptyList[$index].state}"
-                   ng-model="local.emptyList[$index].state"
+                   ng-class="{'btn-warning':local.emptyList[$index].isEmpty}"
+                   ng-model="local.emptyList[$index].isEmpty"
                    ng-click="local.toggleEmpty( $index )"
                    btn-checkbox>Empty</label>
           </div>
@@ -117,7 +121,7 @@
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
                     class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
@@ -136,14 +140,13 @@
                    ng-model="restrict.value"
                    ng-change="local.describeRestriction( $index )"
                    class="form-control"
-                   type="text"
-                   placeholder="{{ null === restrict.value ? '(empty)' : 'restriction number' }}"
-                   ng-disabled="null === restrict.value" />
+                   type="number"
+                   placeholder="{{ null === restrict.value ? '(empty)' : 'restriction number' }}" />
           </div>
           <div class="col-sm-2">
             <label class="btn btn-default pull-right"
-                   ng-class="{'btn-warning':local.emptyList[$index].state}"
-                   ng-model="local.emptyList[$index].state"
+                   ng-class="{'btn-warning':local.emptyList[$index].isEmpty}"
+                   ng-model="local.emptyList[$index].isEmpty"
                    ng-click="local.toggleEmpty( $index )"
                    btn-checkbox>Empty</label>
           </div>
@@ -156,7 +159,7 @@
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
                     class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
@@ -175,40 +178,54 @@
                    name="{{ 'value' + $index }}"
                    ng-model="restrict.value"
                    ng-change="local.describeRestriction( $index )"
-                   class="form-control" type="number" min="1"
+                   class="form-control"
+                   type="number"
+                   min="1"
                    placeholder="{{ null === restrict.value ? '(empty)' : 'restriction rank' }}"
                    ng-disabled="null === restrict.value" />
           </div>
           <div class="col-sm-2">
             <label class="btn btn-default pull-right"
-                   ng-class="{'btn-warning':local.emptyList[$index].state}"
-                   ng-model="local.emptyList[$index].state"
+                   ng-class="{'btn-warning':local.emptyList[$index].isEmpty}"
+                   ng-model="local.emptyList[$index].isEmpty"
                    ng-click="local.toggleEmpty( $index )"
                    btn-checkbox>Empty</label>
           </div>
         </div>
       </div>
-      <div ng-switch-default>
+      <div ng-switch-when="datetime">
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
           <div class="col-sm-9">
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
                     class="form-control">
-              <option value="&lt;=&gt;">on</option>
-              <option value="&lt;&gt;">is on</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;">after</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;=">after or on</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;">before</option>
-              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;=">before or on</option>
+              <option value="&lt;=&gt;">
+                {{ local.emptyList[$index].isEmpty ? "is" : ( "date" == local.type ? "on" : "at" ) }}
+              </option>
+              <option value="&lt;&gt;">
+                {{ local.emptyList[$index].isEmpty ? "is not" : ( "date" == local.type ? "not on" : "not at" ) }}
+              </option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;">
+                after
+              </option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;=">
+                after or {{ "date" == local.type ? "on" : "at" }}
+              </option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;">
+                before
+              </option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;=">
+                before or {{ "date" == local.type ? "on" : "at" }}
+              </option>
             </select>
           </div>
         </div>
         <div class="form-group">
           <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
-          <div class="col-sm-9">
+          <div class="col-sm-7">
             <input id="{{ 'value' + $index }}"
                    name="{{ 'value' + $index }}"
                    ng-model="local.formattedValueList[$index]"
@@ -222,6 +239,13 @@
                                      'time' == local.type || 'timesecond' == local.type ?
                                      'time' : 'date &amp; time'
                                    ) }}" />
+          </div>
+          <div class="col-sm-2">
+            <label class="btn btn-default pull-right"
+                   ng-class="{'btn-warning':local.emptyList[$index].isEmpty}"
+                   ng-model="local.emptyList[$index].isEmpty"
+                   ng-click="local.toggleEmpty( $index )"
+                   btn-checkbox>Empty</label>
           </div>
         </div>
       </div>

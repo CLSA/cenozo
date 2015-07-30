@@ -1004,6 +1004,18 @@ cenozo.filter( 'cnPercent', function() {
 /**
  * TODO: document
  */
+cenozo.filter( 'cnRestrictType', function() {
+  return function( input ) {
+    if( cenozo.isDatetimeType( input ) ) input = 'datetime';
+    return input;
+  };
+} );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.filter( 'cnUCWords', function() {
   return function( input ) {
     if( 'string' == cenozo.getType( input ) )
@@ -2985,9 +2997,14 @@ cenozo.service( 'CnModalRestrictFactory', [
         var restriction = { test: '<=>', value: this.getInitialValue() };
         if( 0 < this.restrictList.length ) restriction.logic = 'and';
         this.restrictList.push( restriction );
-        this.emptyList.push( { state: false } );
+        this.emptyList.push( { isEmpty: false } );
         this.describeRestriction( this.restrictList.length - 1 );
       };
+
+      this.updateEmpty = function( index ) {
+        // first make sure the empty list is correct
+        this.emptyList[index].isEmpty = null === this.restrictList[index].value;
+      }
 
       this.removeRestriction = function( index ) {
         this.restrictList.splice( index, 1 );
@@ -3006,7 +3023,7 @@ cenozo.service( 'CnModalRestrictFactory', [
       }
 
       this.toggleEmpty = function( index ) {
-        if( this.emptyList[index].state ) {
+        if( this.emptyList[index].isEmpty ) {
           this.restrictList[index].value = undefined === this.emptyList[index].oldValue
                                          ? this.getInitialValue()
                                          : this.emptyList[index].oldValue;
@@ -3027,7 +3044,7 @@ cenozo.service( 'CnModalRestrictFactory', [
       if( 0 == this.restrictList.length ) this.addRestriction();
       this.formattedValueList = [];
       for( var i = 0; i < this.restrictList.length; i++ ) {
-        this.emptyList[i] = { state: null === this.restrictList[i].value };
+        this.emptyList[i] = { isEmpty: null === this.restrictList[i].value };
         if( angular.isDefined( this.restrictList[i].value ) )
           this.formattedValueList[i] = CnSession.formatValue( this.restrictList[i].value, this.type, true );
       }
@@ -3073,8 +3090,7 @@ cenozo.service( 'CnModalRestrictFactory', [
                     for( var i = 0; i < optionList.length; i++ ) optionList[i].disabled = null === response;
                     
                     // update the empty list
-                    if( self.emptyList[index].state && null !== response ||
-                        !self.emptyList[index].state && null === response ) self.toggleEmpty( index );
+                    self.updateEmpty( index );
 
                     // describe the restriction
                     self.describeRestriction( index );
