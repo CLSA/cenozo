@@ -102,7 +102,10 @@
                       total-items="model.listModel.total"
                       previous-text="&lsaquo;"
                       next-text="&rsaquo;"></pagination>
-          {{ model.listModel.total }} records total
+          <span class="footer-total">
+            {{ model.listModel.total }}
+            {{ 1 == model.listModel.total ? model.name.singular : model.name.plural }} total
+          </span>
           <button class="btn btn-default pull-right"
                   ng-if="model.addEnabled && !model.chooseEnabled"
                   ng-click="addRecord()">
