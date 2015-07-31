@@ -8,7 +8,7 @@ blockquote { font-size: 100%; }
 .btn { font-weight: bold; }
 .btn-narrow { padding-left: 6px; padding-right: 6px; }
 .btn-muted { background-color: #eaeaea; }
-.btn-menu { line-height: 0.85714; }
+.btn-menu { line-height: 1; }
 .full-page { width: 100vw !important; height: 100vh !important; }
 .full-width { width: 100% !important; }
 .pagination { margin: 0; }
