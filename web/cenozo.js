@@ -858,8 +858,22 @@ cenozo.directive( 'cnRecordView', [
                 input.enumList = 'boolean' === input.type
                                ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
                                : angular.copy( metadata.columnList[key].enumList );
-                if( angular.isArray( input.enumList ) && !metadata.columnList[key].required )
-                  input.enumList.unshift( { value: '', name: '(empty)' } );
+                if( angular.isArray( input.enumList ) ) {
+                  // if needed, remove self record
+                  if( input.noself ) {
+                    console.log( scope.model.viewModel.record );
+                    for( var i = 0; i < input.enumList.length; i++ ) {
+                      if( input.enumList[i].value == scope.model.viewModel.record.id ) {
+                        input.enumList.splice( i, 1 );
+                        break;
+                      }
+                    }
+                  }
+                  
+                  // add the empty option if input is not required
+                  if( !metadata.columnList[key].required )
+                    input.enumList.unshift( { value: '', name: '(empty)' } );
+                }
               }
             }
             metadataLoaded = true;
