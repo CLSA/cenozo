@@ -29,7 +29,8 @@ class address extends has_rank
       $message = sprintf(
         $this->international ?
         'international addresses may not have a region in %s.' :
-        'local (non-international) addresses must have a region in %s and a valid postcode.',
+        'local (non-international) addresses must have a region in %s and a valid postcode '.
+        'belonging to the address\' region.',
         $country );
       throw lib::create( 'exception\notice',
         'Unable to save address as requested. Please note that '.$message,
@@ -51,6 +52,25 @@ class address extends has_rank
     static::$rank_parent = !is_null( $this->alternate_id ) ? 'alternate' : 'participant';
     parent::delete();
     static::$rank_parent = NULL;
+  }
+
+  /**
+   * Add space in postcodes if needed by overriding the magic __set method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name The name of the column
+   * @param mixed $value The value to set the contents of a column to
+   * @throws exception\argument
+   * @access public
+   */
+  public function __set( $column_name, $value )
+  {
+    if( 'postcode' == $column_name )
+      $value = preg_replace_callback(
+        '/([A-Za-z][0-9][A-Za-z]) ?([0-9][A-Za-z][0-9])/',
+        function( $match ) { return strtoupper( sprintf( '%s %s', $match[1], $match[2] ) ); },
+        $value );
+
+    parent::__set( $column_name, $value );
   }
 
   /**
@@ -80,25 +100,6 @@ class address extends has_rank
     }
 
     return $record;
-  }
-
-  /**
-   * Add space in postcodes if needed by overriding the magic __set method
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column_name The name of the column
-   * @param mixed $value The value to set the contents of a column to
-   * @throws exception\argument
-   * @access public
-   */
-  public function __set( $column_name, $value )
-  {
-    if( 'postcode' == $column_name )
-      $value = preg_replace_callback(
-        '/([A-Za-z][0-9][A-Za-z]) ?([0-9][A-Za-z][0-9])/',
-        function( $match ) { return strtoupper( sprintf( '%s %s', $match[1], $match[2] ) ); },
-        $value );
-
-    parent::__set( $column_name, $value );
   }
 
   /**

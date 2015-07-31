@@ -15,6 +15,56 @@ use cenozo\lib, cenozo\log;
 class site extends base_access
 {
   /**
+   * Override parent method
+   */
+  public function save()
+  {
+    // if the region isn't set, source it
+    if( is_null( $this->region_id ) ) $this->source_postcode();
+
+    // make sure the site is valid
+    if( !$this->is_valid() )
+      throw lib::create( 'exception\notice',
+        'Unable to save site as requested. The postcode and region are not valid.',
+        __METHOD__ );
+
+    parent::save();
+  }
+
+  /**
+   * Override parent method
+   */
+  public function delete()
+  {
+    // first remove all application links
+    $application_sel = lib::create( 'database\select' );
+    $application_sel->add_table_column( 'application', 'id' );
+    $application_id_list = array();
+    foreach( $this->get_application_list( $application_sel ) as $row )
+      $this->remove_application( $row['id'] );
+    parent::delete();
+  }
+
+  /**
+   * Add space in postcodes if needed by overriding the magic __set method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name The name of the column
+   * @param mixed $value The value to set the contents of a column to
+   * @throws exception\argument
+   * @access public
+   */
+  public function __set( $column_name, $value )
+  {
+    if( 'postcode' == $column_name )
+      $value = preg_replace_callback(
+        '/([A-Za-z][0-9][A-Za-z]) ?([0-9][A-Za-z][0-9])/',
+        function( $match ) { return strtoupper( sprintf( '%s %s', $match[1], $match[2] ) ); },
+        $value );
+
+    parent::__set( $column_name, $value );
+  }
+
+  /**
    * Gives a complete name for the site.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
@@ -105,5 +155,49 @@ class site extends base_access
 
     $setting_class_name = lib::get_class_name( 'database\setting' );
     return $setting_class_name::get_unique_record( 'site_id', $this->id );
+  }
+
+  /**
+   * Determines if the site is valid by making sure all site-based manditory fields
+   * are filled and checking for postcode-region mismatches.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_valid()
+  {
+    $valid = true;
+
+    if( !is_null( $this->postcode ) )
+    {
+      log::debug( array( $this->postcode, $this->region_id ) );
+      // make sure postcode is in A0A 0A0 or 00000 format
+      if( 0 == preg_match( '/([A-Za-z][0-9][A-Za-z]) ([0-9][A-Za-z][0-9])/', $this->postcode ) &&
+          0 == preg_match( '/[0-9]{5}/', $this->postcode ) ) $valid = false;
+      else
+      {
+        // look up the postal code for the correct region
+        $postcode_class_name = lib::get_class_name( 'database\postcode' );
+        $db_postcode = $postcode_class_name::get_match( $this->postcode );
+        $valid = !is_null( $db_postcode ) ? $db_postcode->region_id == $this->region_id : false;
+      }
+    }
+
+    return $valid;
+  }
+
+  /**
+   * Sets the region column based on the postcode.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function source_postcode()
+  {
+    $postcode_class_name = lib::get_class_name( 'database\postcode' );
+    if( !is_null( $this->postcode ) )
+    {
+      $db_postcode = $postcode_class_name::get_match( $this->postcode );
+      if( !is_null( $db_postcode ) ) $this->region_id = $db_postcode->region_id;
+    }
   }
 }

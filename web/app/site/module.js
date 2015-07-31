@@ -40,12 +40,15 @@ define( {
     },
     region_id: {
       title: 'Region',
-      type: 'enum'
+      type: 'enum',
+      constant: true,
+      help: 'Cannot be changed once the site has been created.'
     },
     postcode: {
       title: 'Postcode',
-      type: 'string'
-    }
+      type: 'string',
+      help: 'Must be in "A1A1A1" format, zip codes in "01234" format.'
+    },
   },
   columnList: {
     name: {

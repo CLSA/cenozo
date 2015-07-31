@@ -73,13 +73,4 @@ class module extends \cenozo\service\module
       $modifier->left_join( 'region', 'address.region_id', 'region.id' );
     }
   }
-
-  /**
-   * Extend parent method
-   */
-  public function pre_write( $record )
-  {
-    // source the postcode
-    if( !$record->international && is_null( $record->region_id ) ) $record->source_postcode();
-  }
 }

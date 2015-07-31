@@ -107,8 +107,9 @@ class module extends \cenozo\service\module
   {
     parent::post_write( $record );
 
-    // add the site to the current application
-    lib::create( 'business\session' )->get_application()->add_records( 'site', $record->id );
+    // add the site to the current application (if it is new)
+    if( 0 == $record->get_application_count() )
+      lib::create( 'business\session' )->get_application()->add_site( $record->id );
 
     // create setting record if there isn't one already
     if( is_null( $record->get_setting() ) )

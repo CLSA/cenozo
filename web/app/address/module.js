@@ -45,7 +45,9 @@ define( {
     },
     region_id: {
       title: 'Region',
-      type: 'enum'
+      type: 'enum',
+      constant: true,
+      help: 'Cannot be changed once the address has been created.'
     },
     postcode: {
       title: 'Postcode',
