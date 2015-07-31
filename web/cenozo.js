@@ -491,8 +491,8 @@ cenozo.directive( 'cnRecordAdd', [
           CnModalDatetimeFactory.instance( {
             title: input.title,
             date: $scope.record[input.key],
-            minDate: input.min,
-            maxDate: input.max,
+            minDate: angular.isDefined( $scope.record[input.min] ) ? $scope.record[input.min] : input.min,
+            maxDate: angular.isDefined( $scope.record[input.max] ) ? $scope.record[input.max] : input.max,
             pickerType: input.type,
             emptyAllowed: !$scope.model.metadata.columnList[input.key].required
           } ).show().then( function( response ) {
@@ -813,8 +813,10 @@ cenozo.directive( 'cnRecordView', [
             CnModalDatetimeFactory.instance( {
               title: input.title,
               date: $scope.model.viewModel.record[input.key],
-              minDate: input.min,
-              maxDate: input.max,
+              minDate: angular.isDefined( $scope.model.viewModel.record[input.min] ) ?
+                       $scope.model.viewModel.record[input.min] : input.min,
+              maxDate: angular.isDefined( $scope.model.viewModel.record[input.max] ) ?
+                       $scope.model.viewModel.record[input.max] : input.max,
               pickerType: input.type,
               emptyAllowed: !$scope.model.metadata.columnList[input.key].required
             } ).show().then( function( response ) {
