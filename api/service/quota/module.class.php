@@ -24,7 +24,7 @@ class module extends \cenozo\service\module
     $session = lib::create( 'business\session' );
 
     // only include quotas which belong to this application
-    $modifier->join( 'application_has_site', 'quota.site_id', 'site.id' );
+    $modifier->join( 'application_has_site', 'quota.site_id', 'application_has_site.site_id' );
     $modifier->where( 'application_has_site.application_id', '=', $session->get_application()->id );
 
     // restrict to the current site only (for some roles)
