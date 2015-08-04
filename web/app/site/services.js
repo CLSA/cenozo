@@ -38,6 +38,16 @@ define( cenozo.getServicesIncludeList( 'site' ), function( module ) {
             }
           } );
         }
+
+        // extend the onPatch function
+        this.onPatch = function( data ) {
+          return self.patchRecord( data ).then( function() {
+            if( angular.isDefined( data.postcode ) ) {
+              // update the region
+              self.onView();
+            }
+          } );
+        };
       }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     } ] )

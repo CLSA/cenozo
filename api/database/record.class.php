@@ -304,6 +304,19 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * Returns whether a column has been modified from the value in the database
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name The name of the column
+   * @return boolean
+   * @access public
+   */
+  public function has_column_changed( $column_name )
+  {
+    return array_key_exists( $column_name, $this->active_column_values );
+  }
+
+  /**
    * Returns all column values in the record as an associative array
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

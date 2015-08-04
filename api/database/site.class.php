@@ -19,8 +19,8 @@ class site extends base_access
    */
   public function save()
   {
-    // if the region isn't set, source it
-    if( is_null( $this->region_id ) ) $this->source_postcode();
+    // source the region if the postcode has changed
+    if( $this->has_column_changed( 'postcode' ) ) $this->source_postcode();
 
     // make sure the site is valid
     if( !$this->is_valid() )
@@ -170,7 +170,6 @@ class site extends base_access
 
     if( !is_null( $this->postcode ) )
     {
-      log::debug( array( $this->postcode, $this->region_id ) );
       // make sure postcode is in A0A 0A0 or 00000 format
       if( 0 == preg_match( '/([A-Za-z][0-9][A-Za-z]) ([0-9][A-Za-z][0-9])/', $this->postcode ) &&
           0 == preg_match( '/[0-9]{5}/', $this->postcode ) ) $valid = false;
