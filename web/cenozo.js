@@ -850,7 +850,7 @@ cenozo.directive( 'cnRecordView', [
           if( angular.isDefined( metadata ) &&
               angular.isDefined( metadata.columnList ) &&
               0 === metadata.loadingCount &&
-              !metadataLoaded ) {
+              !scope.isLoaded ) {
             // build enum lists
             for( var key in metadata.columnList ) {
               var input = scope.dataArray.findByProperty( 'key', key );
@@ -861,7 +861,6 @@ cenozo.directive( 'cnRecordView', [
                 if( angular.isArray( input.enumList ) ) {
                   // if needed, remove self record
                   if( input.noself ) {
-                    console.log( scope.model.viewModel.record );
                     for( var i = 0; i < input.enumList.length; i++ ) {
                       if( input.enumList[i].value == scope.model.viewModel.record.id ) {
                         input.enumList.splice( i, 1 );
