@@ -113,6 +113,14 @@ abstract class module extends \cenozo\base_object
   /**
    * TODO: document
    */
+  protected function get_argument( $name, $default = NULL )
+  {
+    return $this->service->get_argument( $name, $default );
+  }
+
+  /**
+   * TODO: document
+   */
   private $index = NULL;
 
   /**

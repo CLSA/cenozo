@@ -536,7 +536,7 @@ abstract class service extends \cenozo\base_object
    * @throws exception\argument
    * @access protected
    */
-  protected function get_argument( $name, $default = NULL )
+  public function get_argument( $name, $default = NULL )
   {
     $argument = NULL;
     if( !array_key_exists( $name, $this->arguments ) )

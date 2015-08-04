@@ -40,9 +40,12 @@ class module extends \cenozo\service\module
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
 
-    // only include sites which belong to this application
-    $modifier->join( 'application_has_site', 'site.id', 'application_has_site.site_id' );
-    $modifier->where( 'application_has_site.application_id', '=', $db_application->id );
+    if( false === $this->get_argument( 'choosing', false ) )
+    {
+      // only include sites which belong to this application
+      $modifier->join( 'application_has_site', 'site.id', 'application_has_site.site_id' );
+      $modifier->where( 'application_has_site.application_id', '=', $db_application->id );
+    }
 
     // add the total number of related records
     if( $select->has_column( 'role_count' ) ||
@@ -107,16 +110,19 @@ class module extends \cenozo\service\module
   {
     parent::post_write( $record );
 
-    // add the site to the current application (if it is new)
-    if( 0 == $record->get_application_count() )
-      lib::create( 'business\session' )->get_application()->add_site( $record->id );
-
-    // create setting record if there isn't one already
-    if( is_null( $record->get_setting() ) )
+    if( $record )
     {
-      $db_setting = lib::create( 'database\setting' );
-      $db_setting->site_id = $record->id;
-      $db_setting->save();
+      // add the site to the current application (if it is new)
+      if( 0 == $record->get_application_count() )
+        lib::create( 'business\session' )->get_application()->add_site( $record->id );
+
+      // create setting record if there isn't one already
+      if( is_null( $record->get_setting() ) )
+      {
+        $db_setting = lib::create( 'database\setting' );
+        $db_setting->site_id = $record->id;
+        $db_setting->save();
+      }
     }
   }
 }
