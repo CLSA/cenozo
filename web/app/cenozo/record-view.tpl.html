@@ -33,6 +33,7 @@
                 type="text"
                 autocomplete="off"
                 ng-readonly="!model.editEnabled || input.constant || input.noedit"
+                maxlength="{{ model.metadata.columnList[input.key].max_length }}"
                 ng-required="model.metadata.columnList[input.key].required"></input>
               <input ng-switch-when="typeahead"
                 ng-attr-id="{{ input.key }}"

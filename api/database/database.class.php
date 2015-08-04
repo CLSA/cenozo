@@ -60,8 +60,8 @@ class database extends \cenozo\base_object
     $column_mod->order( 'column_name' );
 
     $rows = $this->get_all(
-      sprintf( 'SELECT table_schema, table_name, column_name, column_type, '.
-                      'data_type, column_key, column_default, is_nullable != "YES" AS is_nullable '.
+      sprintf( 'SELECT table_schema, table_name, column_name, column_type, data_type, character_maximum_length, '.
+               'column_key, column_default, is_nullable != "YES" AS is_nullable '.
                'FROM information_schema.columns %s ',
                $column_mod->get_sql() ),
       false ); // do not add table names
@@ -85,6 +85,7 @@ class database extends \cenozo\base_object
         array( 'data_type' => $data_type,
                'type' => $column_type,
                'default' => $column_default,
+               'max_length' => $character_maximum_length,
                'required' => $is_nullable,
                'key' => $column_key );
     }
