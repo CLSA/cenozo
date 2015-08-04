@@ -1,5 +1,7 @@
 /* primary colours */
-a, .text-primary {
+a, .text-primary,
+.pagination > li > a,
+.pagination > li > span {
   color: #683f7d;
 }
 a.text-primary:hover,
@@ -33,7 +35,13 @@ fieldset[disabled] .btn-primary.focus,
 fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
-fieldset[disabled] .btn-primary.active {
+fieldset[disabled] .btn-primary.active,
+.pagination > .active > a,
+.pagination > .active > span,
+.pagination > .active > a:hover,
+.pagination > .active > span:hover,
+.pagination > .active > a:focus,
+.pagination > .active > span:focus {
   background-color: #683f7d;
   border-color: #51284f;
 }
