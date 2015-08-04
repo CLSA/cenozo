@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css">
+  <link rel="stylesheet" href="css/theme.css">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.js"></script>
