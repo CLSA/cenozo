@@ -537,14 +537,14 @@ cenozo.directive( 'cnRecordAdd', [
                 input.enumList = angular.copy( meta.enumList );
 
                 var newRank = input.enumList.length + 1;
-                if( 1 == input.enumList.length ) {
-                  scope.record[input.key] = input.enumList[0].value;
-                } else {
+                if( !meta.required || 1 < input.enumList.length ) {
                   input.enumList.unshift( {
                     value: undefined,
                     name: meta.required ? '(Select ' + input.title + ')' : '(empty)'
                   } );
                 }
+
+                if( 1 == input.enumList.length ) scope.record[input.key] = input.enumList[0].value;
 
                 // add additional rank
                 if( 'rank' == input.key ) input.enumList.push( {

@@ -71,8 +71,8 @@
                 ng-model="model.viewModel.formattedRecord[input.key]"
                 class="form-control"
                 type="text"
-                ng-click="selectDatetime( input )"
-                ng-readonly="!model.editEnabled"
+                ng-click="model.editEnabled && !input.constant && !input.noedit && selectDatetime( input )"
+                ng-readonly="!model.editEnabled || input.constant || input.noedit"
                 onkeydown="return false"></input>
               <select ng-switch-when="select"
                 ng-attr-id="{{ input.key }}"
