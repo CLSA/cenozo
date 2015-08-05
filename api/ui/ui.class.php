@@ -57,8 +57,9 @@ class ui extends \cenozo\base_object
       // prepare which operations to show above the lists (not sorted)
       $operation_items = $this->get_operation_items();
       
-      // prepare which modules to show in the list
-      $list_items = $this->get_list_items( $module_list );
+      // prepare which modules to show in the list and add the list item to the module's actions
+      $list_items = $this->get_list_items();
+      foreach( $list_items as $subject => $title ) $module_list[$subject]['actions'][] = 'list';
       asort( $list_items );
       
       // remove list items the role doesn't have access to
@@ -143,10 +144,9 @@ class ui extends \cenozo\base_object
       if( !array_key_exists( $subject, $module_list ) )
         $module_list[$subject] = array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
 
+      // add delete, view, edit and add actions (list actions are depending on the list items so not added here)
       if( 'DELETE' == $service['method'] )
         $module_list[$subject]['actions'][] = 'delete';
-      else if( 'GET' == $service['method'] && !$service['resource'] )
-        $module_list[$subject]['actions'][] = 'list';
       else if( 'GET' == $service['method'] && $service['resource'] )
         $module_list[$subject]['actions'][] = 'view';
       else if( 'PATCH' == $service['method'] )
