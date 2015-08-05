@@ -17,17 +17,18 @@ class patch extends \cenozo\service\patch
   /**
    * Override parent method
    */
-  protected function setup()
+  public function get_file_as_array()
   {
-    parent::setup();
-
     // remove preferred_site_id from the patch array
-    if( array_key_exists( 'preferred_site_id', $this->patch_array ) )
+    $patch_array = parent::get_file_as_array();
+    if( array_key_exists( 'preferred_site_id', $patch_array ) )
     {
-      $this->preferred_site_id = $this->patch_array['preferred_site_id'];
+      $this->preferred_site_id = $patch_array['preferred_site_id'];
       $this->update_preferred_site = true;
-      unset( $this->patch_array['preferred_site_id'] );
+      unset( $patch_array['preferred_site_id'] );
     }
+
+    return $patch_array;
   }
 
   /**

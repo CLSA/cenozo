@@ -25,14 +25,14 @@ class post extends \cenozo\service\post
     {
       $db_user = $this->get_leaf_record();
 
-      $object = $this->get_file_as_object();
-      if( property_exists( $object, 'site_id' ) && property_exists( $object, 'role_id' ) )
+      $post_object = $this->get_object_as_object();
+      if( property_exists( $post_object, 'site_id' ) && property_exists( $post_object, 'role_id' ) )
       {
         // add the initial access record
         $db_access = lib::create( 'database\access' );
         $db_access->user_id = $db_user->id;
-        $db_access->site_id = $object->site_id;
-        $db_access->role_id = $object->role_id;
+        $db_access->site_id = $post_object->site_id;
+        $db_access->role_id = $post_object->role_id;
         $db_access->save();
       }
 

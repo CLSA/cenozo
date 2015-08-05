@@ -170,17 +170,9 @@ abstract class service extends \cenozo\base_object
       {
         $has_resource = array_key_exists( $index, $this->resource_value_list );
         $method = 'GET';
-        if( $index == count( $this->collection_name_list ) - 1 && !$many_to_many )
-        { // for the leaf it depends on whether there is a many-to-many relationship with the parent
-          $method = $this->method;
-        }
-        /* TODO: identify if the following has a use (probably defunct code)
-        else if( $index == count( $this->collection_name_list ) - 2 && $many_to_many )
-        { // for the parent it depends on whether there is a many-to-many relationship with the leaf
-          $method = 'PATCH';
-        }
-        */
 
+        // for the leaf it depends on whether there is a many-to-many relationship with the parent
+        if( $index == count( $this->collection_name_list ) - 1 && !$many_to_many ) $method = $this->method;
         if( 'HEAD' == $method ) $method = 'GET'; // HEAD access is based on GET access
 
         $db_service = $service_class_name::get_unique_record(
@@ -502,18 +494,6 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * Returns the file provided to the service decoded as a JSON string
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function get_file_as_object()
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-    return $util_class_name::json_decode( $this->file );
-  }
-
-  /**
    * Returns the file provided to the service (unchanged)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -522,6 +502,37 @@ abstract class service extends \cenozo\base_object
   public function get_file_as_raw()
   {
     return $this->file;
+  }
+
+  /**
+   * Returns the file provided to the service decoded as an object
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function get_file_as_object()
+  {
+    if( null === $this->file_as_object )
+    {
+      $util_class_name = lib::get_class_name( 'util' );
+      $this->file_as_object = $util_class_name::json_decode( $this->file );
+    }
+
+    return $this->file_as_object;
+  }
+
+  /**
+   * Returns the file provided to the service decoded as an associate array
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function get_file_as_array()
+  {
+    if( null === $this->file_as_array )
+      $this->file_as_array = get_object_vars( $this->get_file_as_object() );
+
+    return $this->file_as_array;
   }
 
   /**
@@ -695,11 +706,25 @@ abstract class service extends \cenozo\base_object
   private $arguments = array();
 
   /**
-   * The url query arguments.
+   * The raw file posted by PATCH and POST requests
    * @var array( array )
    * @access private
    */
   private $file = NULL;
+
+  /**
+   * The PATCH/POST file as an object
+   * @var array( array )
+   * @access private
+   */
+  private $file_as_object = NULL;
+
+  /**
+   * The PATCH/POST file as an array
+   * @var array( array )
+   * @access private
+   */
+  private $file_as_array = NULL;
 
   /**
    * The writelog record associated with the service request (null for read-only services)

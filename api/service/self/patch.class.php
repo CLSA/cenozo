@@ -56,21 +56,17 @@ class patch extends \cenozo\service\service
     $role_class_name = lib::get_class_name( 'database\role' );
 
     $session = lib::create( 'business\session' );
-    $data = $this->get_file_as_object();
+    $patch_array = $this->get_file_as_array();
 
     // make sure to only allow editing of user OR site+role
-    $subjects = get_object_vars( $data );
-    $has_site = array_key_exists( 'site', $subjects );
-    $has_role = array_key_exists( 'role', $subjects );
-    $has_user = array_key_exists( 'user', $subjects );
-    if( 1 == count( $subjects ) && $has_user )
+    if( 1 == count( $patch_array ) && array_key_exists( 'user', $patch_array ) )
     {
       $db_user = $session->get_user();
-      $array = (array) $subjects['user'];
+      $user_array = (array) $patch_array['user'];
 
-      if( 1 == count( $array ) && array_key_exists( 'password', $array ) )
+      if( 1 == count( $user_array ) && array_key_exists( 'password', $user_array ) )
       { // changing password
-        $password = $array['password'];
+        $password = $user_array['password'];
         if( !property_exists( $password, 'current' ) || !property_exists( $password, 'requested' ) )
         {
           $this->status->set_code( 400 );
@@ -94,7 +90,7 @@ class patch extends \cenozo\service\service
           }
         }
       }
-      else if( 1 == count( $array ) && array_key_exists( 'break', $array ) )
+      else if( 1 == count( $user_array ) && array_key_exists( 'break', $user_array ) )
       { // going on break, close the current activity
         $activity_mod = lib::create( 'database\modifier' );
         $activity_mod->where( 'user_id', '=', $db_user->id );
@@ -113,7 +109,7 @@ class patch extends \cenozo\service\service
       else
       { // modifying current user's record
         $modified = false;
-        foreach( $array as $column => $value )
+        foreach( $user_array as $column => $value )
         {
           if( !in_array( $column, array( 'first_name', 'last_name', 'email', 'timezone', 'use_12hour_clock' ) ) )
           {
@@ -146,35 +142,43 @@ class patch extends \cenozo\service\service
         }
       }
     }
-    else if( ( 1 == count( $subjects ) && ( $has_site || $has_role ) ) ||
-             ( 2 == count( $subjects ) && $has_site && $has_role ) )
-    {
-      // determine if the site is changing or not
-      $db_requested_site = $session->get_site();
-      if( $has_site )
-      {
-        $array = (array) $subjects['site'];
-        $db_requested_site = $site_class_name::get_unique_record( array_keys( $array ), array_values( $array ) );
-      }
-
-      // determine if the role is changing or not
-      $db_requested_role = $session->get_role();
-      if( $has_role )
-      {
-        $array = (array) $subjects['role'];
-        $db_requested_role = $role_class_name::get_unique_record( array_keys( $array ), array_values( $array ) );
-      }
-
-      $success = $session->set_site_and_role( $db_requested_site, $db_requested_role );
-      $session->mark_access_time();
-      $this->status->set_code( $success ? 204 : 403 );
-    }
     else
     {
-      $this->status->set_code( 400 );
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Patch expects a user OR a site and/or role, got "%s"', implode( ', ', $subjects ) ),
-        __METHOD__ );
+      $has_site = array_key_exists( 'site', $patch_array );
+      $has_role = array_key_exists( 'role', $patch_array );
+    
+      if( ( 1 == count( $this->patch_array ) && ( $has_site || $has_role ) ) ||
+          ( 2 == count( $this->patch_array ) && $has_site && $has_role ) )
+      {
+        // determine if the site is changing or not
+        $db_requested_site = $session->get_site();
+        if( $has_site )
+        {
+          $site_array = (array) $this->patch_array['site'];
+          $db_requested_site =
+            $site_class_name::get_unique_record( array_keys( $site_array ), array_values( $site_array ) );
+        }
+
+        // determine if the role is changing or not
+        $db_requested_role = $session->get_role();
+        if( $has_role )
+        {
+          $role_array = (array) $this->patch_array['role'];
+          $db_requested_role =
+            $role_class_name::get_unique_record( array_keys( $role_array ), array_values( $role_array ) );
+        }
+
+        $success = $session->set_site_and_role( $db_requested_site, $db_requested_role );
+        $session->mark_access_time();
+        $this->status->set_code( $success ? 204 : 403 );
+      }
+      else
+      {
+        $this->status->set_code( 400 );
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Patch expects a user OR a site and/or role, got "%s"', implode( ', ', $this->patch_array ) ),
+          __METHOD__ );
+      }
     }
   }
 }

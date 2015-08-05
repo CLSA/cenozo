@@ -25,16 +25,6 @@ class patch extends write
   /**
    * Extends parent method
    */
-  protected function setup()
-  {
-    parent::setup();
-
-    $this->patch_array = get_object_vars( $this->get_file_as_object() );
-  }
-
-  /**
-   * Extends parent method
-   */
   protected function execute()
   {
     parent::execute();
@@ -42,7 +32,7 @@ class patch extends write
     $leaf_record = $this->get_leaf_record();
     if( !is_null( $leaf_record ) )
     {
-      foreach( $this->patch_array as $key => $value )
+      foreach( $this->get_file_as_array() as $key => $value )
       {
         try
         {
@@ -83,11 +73,4 @@ class patch extends write
       }
     }
   }
-
-  /**
-   * An associative array containing all patch instructions
-   * @var array
-   * @access protected
-   */
-  protected $patch_array;
 }

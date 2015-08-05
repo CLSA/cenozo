@@ -43,10 +43,10 @@ class post extends write
       }
 
       // add record column data
-      $object = $this->get_file_as_object();
+      $post_object = $this->get_file_as_object();
       foreach( $record->get_column_names() as $column_name )
-        if( 'id' != $column_name && property_exists( $object, $column_name ) )
-          $record->$column_name = $object->$column_name;
+        if( 'id' != $column_name && property_exists( $post_object, $column_name ) )
+          $record->$column_name = $post_object->$column_name;
     }
   }
 
@@ -64,16 +64,16 @@ class post extends write
     {
       if( $relationship_class_name::MANY_TO_MANY === $this->get_leaf_parent_relationship() )
       {
-        $id = $this->get_file_as_object();
-        if( !is_int( $id ) && !is_array( $id ) )
+        $post_object = $this->get_file_as_object();
+        if( !is_int( $post_object ) && !is_array( $post_object ) )
         {
           $this->status->set_code( 400 );
-          throw lib::create( 'exception\argument', 'id', $id, __METHOD__ );
+          throw lib::create( 'exception\argument', 'post_object', $post_object, __METHOD__ );
         }
         else
         {
           $method = sprintf( 'add_%s', $leaf_subject );
-          $this->get_parent_record()->$method( $id );
+          $this->get_parent_record()->$method( $post_object );
           $this->status->set_code( 201 );
         }
       }
