@@ -1154,8 +1154,8 @@ cenozo.factory( 'CnSession', [
 
         // if the user's password isn't set then open the password dialog
         if( response.data.no_password ) {
-          CnModalPasswordFactory.instance( { confirm: false } ).show().then( function() {
-            console.log( 'TODO' );
+          CnModalPasswordFactory.instance( { confirm: false } ).show().then( function( response ) {
+            self.setPassword( response.currentPass, response.requestedPass ).catch( self.errorHandler );
           } );
         }
 
