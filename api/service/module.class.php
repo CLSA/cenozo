@@ -71,6 +71,14 @@ abstract class module extends \cenozo\base_object
   public function validate() {}
 
   /**
+   * Returns the method of the parent service
+   */
+  protected function get_method()
+  {
+    return $this->service->get_method();
+  }
+
+  /**
    * Returns this module's subject
    */
   protected function get_subject()
@@ -100,6 +108,14 @@ abstract class module extends \cenozo\base_object
   protected function get_parent_resource()
   {
     return $this->service->get_resource( $this->index - 1 );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function set_data( $data )
+  {
+    $this->service->set_data( $data );
   }
 
   /**

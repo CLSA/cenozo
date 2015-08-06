@@ -30,8 +30,7 @@ class get extends read
     parent::execute();
 
     $leaf_record = $this->get_leaf_record();
-    $this->data = is_null( $leaf_record )
-                ? NULL
-                : $leaf_record->get_column_values( $this->select, $this->modifier );
+    $this->set_data( is_null( $leaf_record ) ?
+      NULL : $leaf_record->get_column_values( $this->select, $this->modifier ) );
   }
 }

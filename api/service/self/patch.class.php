@@ -131,7 +131,7 @@ class patch extends \cenozo\service\service
         {
           if( $e->is_duplicate_entry() )
           {
-            $this->data = $e->get_duplicate_columns( $db_user->get_class_name() );
+            $this->set_data( $e->get_duplicate_columns( $db_user->get_class_name() ) );
             $this->status->set_code( 409 );
           }
           else

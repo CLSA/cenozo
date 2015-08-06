@@ -367,7 +367,7 @@ abstract class service extends \cenozo\base_object
           }
           catch( \cenozo\exception\notice $e )
           {
-            $this->data = $e->get_notice();
+            $this->set_data( $e->get_notice() );
             $this->status->set_code( 406 );
           }
           // ignore runtime exceptions and instead just return a null record
@@ -592,6 +592,14 @@ abstract class service extends \cenozo\base_object
   public function get_data() { return $this->data; }
 
   /**
+   * Sets the data returned by the service.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $data
+   * @access public
+   */
+  public function set_data( $data ) { $this->data = $data; }
+
+  /**
    * Gets whether to check if the user has access to the service
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
@@ -618,10 +626,10 @@ abstract class service extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param $method string
    * @return boolean
-   * @access protected
+   * @access public
    * @static
    */
-  protected static function is_method( $method )
+  public static function is_method( $method )
   {
     $method = strtoupper( $method );
     return array_key_exists( $method, self::$method_list );
@@ -632,10 +640,10 @@ abstract class service extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param $method string
    * @return boolean
-   * @access protected
+   * @access public
    * @static
    */
-  protected static function is_read_method( $method )
+  public static function is_read_method( $method )
   {
     $method = strtoupper( $method );
     return array_key_exists( $method, self::$method_list ) && !self::$method_list[$method];
@@ -646,10 +654,10 @@ abstract class service extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param $method string
    * @return boolean
-   * @access protected
+   * @access public
    * @static
    */
-  protected static function is_write_method( $method )
+  public static function is_write_method( $method )
   {
     $method = strtoupper( $method );
     return array_key_exists( $method, self::$method_list ) && self::$method_list[$method];

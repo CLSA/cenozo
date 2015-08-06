@@ -150,6 +150,6 @@ class get extends \cenozo\service\service
    */
   public function execute()
   {
-    $this->data = $this->get_leaf_record();
+    $this->set_data( $this->get_leaf_record() );
   }
 }

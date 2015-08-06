@@ -54,14 +54,14 @@ class patch extends write
         }
         catch( \cenozo\exception\notice $e )
         {
-          $this->data = $e->get_notice();
+          $this->set_data( $e->get_notice() );
           $this->status->set_code( 406 );
         }
         catch( \cenozo\exception\database $e )
         {
           if( $e->is_duplicate_entry() )
           {
-            $this->data = $e->get_duplicate_columns( $leaf_record->get_class_name() );
+            $this->set_data( $e->get_duplicate_columns( $leaf_record->get_class_name() ) );
             $this->status->set_code( 409 );
           }
           else

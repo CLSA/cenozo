@@ -84,7 +84,7 @@ class post extends write
         {
           // save the record, set the data as the new id
           $record->save();
-          $this->data = (int)$record->id;
+          $this->set_data( (int)$record->id );
 
           // set up the status to show a successfully created resource
           $this->status->set_code( 201 );
@@ -92,14 +92,14 @@ class post extends write
         }
         catch( \cenozo\exception\notice $e )
         {
-          $this->data = $e->get_notice();
+          $this->set_data( $e->get_notice() );
           $this->status->set_code( 406 );
         }
         catch( \cenozo\exception\database $e )
         {
           if( $e->is_duplicate_entry() )
           { // conflict, return offending columns
-            $this->data = $e->get_duplicate_columns( $record->get_class_name() );
+            $this->set_data( $e->get_duplicate_columns( $record->get_class_name() ) );
             $this->status->set_code( 409 );
           }
           else
