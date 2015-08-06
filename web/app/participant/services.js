@@ -23,14 +23,12 @@ define( cenozo.getServicesIncludeList( 'participant' ), function( module ) {
 
           // add operations
           var self = this;
-          if( 0 <= CnSession.noteActions.indexOf( 'list' ) ) { // only show notes button if allowed
-            this.operationList.push( {
-              name: 'Notes',
-              execute: function() {
-                CnModalParticipantNoteFactory.instance( { participant: self.record } ).show();
-              }
-            } );
-          }
+          this.operationList.push( {
+            name: 'Notes',
+            execute: function() {
+              CnModalParticipantNoteFactory.instance( { participant: self.record } ).show();
+            }
+          } );
         };
         return { instance: function( parentModel ) { return new object( parentModel ); } };
       }
