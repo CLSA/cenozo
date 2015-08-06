@@ -375,6 +375,8 @@ class select extends \cenozo\base_object
       throw lib::create( 'exception\runtime',
         'Tried to get SQL from select before table "from" value is set', __METHOD__ );
 
+    $db = lib::create( 'business\session' )->get_database();
+
     // figure out which table to select from
     $main_table = is_null( $this->table_alias ) ? $this->table_name : $this->table_alias;
 
@@ -383,16 +385,23 @@ class select extends \cenozo\base_object
     foreach( $this->column_list as $table => $column_details )
     {
       // table prefix
-      $table_prefix = 0 == strlen( $table ) ? $main_table : $table;
-      $table_prefix .= '.';
+      if( 0 == strlen( $table ) ) $table = $main_table;
+      $table_prefix = $table.'.';
 
       // now add the alias or table.column to the list of columns
       foreach( $column_details as $alias => $item )
       {
         $column = sprintf( '%s%s', $item['table_prefix'] ? $table_prefix : '', $item['column'] );
+
+        // try and get the column type
+        $type = NULL;
+        try { $type = $db->get_column_type( $table, $item['column'] ); }
+        catch( \cenozo\exception\base_exception $e ) {} // it's normal if the column isn't found
+
         // convert datetimes to ISO 8601 format
-        if( false !== strpos( $item['column'], 'datetime' ) )
+        if( 'datetime' == $type || 'datetime' === substr( $item['column'], -8 ) )
           $column = sprintf( 'DATE_FORMAT( %s, "%s" )', $column, '%Y-%m-%dT%T+00:00' );
+
         // add the alias (but not for *)
         $column = '*' == $item['column'] ? $column : sprintf( '%s AS %s', $column, $alias );
         $columns[] = $column;
