@@ -719,9 +719,12 @@ cenozo.directive( 'cnRecordView', [
           if( $scope.model.editEnabled ) {
             if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
               $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
-              if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) )
+              if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) ) {
                 $scope.model.viewModel.formattedRecord[property] =
                   $scope.model.viewModel.backupRecord['formatted_'+property];
+              }/* else {
+                $scope.model.viewModel.formattedRecord[property] = null;
+              }*/
               $scope.patch( property );
             }
           }
@@ -789,6 +792,14 @@ cenozo.directive( 'cnRecordView', [
                 }
               );
             }
+          }
+        };
+
+        $scope.onEmptyTypeahead = function( property ) {
+          // if the input isn't required then set the value to null
+          if( !$scope.model.metadata.columnList[property].required ) {
+            $scope.model.viewModel.record[property] = null;
+            $scope.patch( property );
           }
         };
 

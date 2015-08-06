@@ -43,13 +43,14 @@
                 typeahead-editable="false"
                 typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
                 typeahead-min-length="2"
+                cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
                 class="form-control"
                 ng-class="{ 'loading': model.inputList[input.key].typeahead.isLoading }"
                 type="text"
-                placeholder="(Type the first few letters to search possible values)"
+                placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
+                             }}type the first few letters to search possible values)"
                 autocomplete="off"
-                ng-readonly="!model.editEnabled"
-                ng-required="model.metadata.columnList[input.key].required"></input>
+                ng-readonly="!model.editEnabled"></input>
               <input ng-switch-when="lookup-typeahead"
                 ng-attr-id="{{ input.key }}"
                 name="name"
@@ -58,13 +59,14 @@
                 typeahead-editable="false"
                 typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
                 typeahead-min-length="2"
+                cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
                 class="form-control"
                 ng-class="{ 'loading': model.inputList[input.key].typeahead.isLoading }"
                 type="text"
-                placeholder="(Type the first few letters to search possible values)"
+                placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
+                             }}type the first few letters to search possible values)"
                 autocomplete="off"
-                ng-readonly="!model.editEnabled"
-                ng-required="model.metadata.columnList[input.key].required"></input>
+                ng-readonly="!model.editEnabled"></input>
               <input ng-switch-when="datetime"
                 ng-attr-id="{{ input.key }}"
                 name="name"
