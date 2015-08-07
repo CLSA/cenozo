@@ -103,9 +103,7 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
   var baseUrl = this.getModuleUrl( name );
   for( var i = 0; i < module.actions.length; i++ ) {
     var action = module.actions[i];
-    if( 0 > ['add', 'list', 'view'].indexOf( action ) ) {
-      stateProvider.state( name + '.' + action, { abstract: true } );
-    } else {
+    if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
       var url = '/' + action;
       if( 'view' == action ) url += '/{identifier}';
       var templateUrl = baseUrl + action + '.tpl.html';

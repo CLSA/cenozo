@@ -91,14 +91,14 @@ class ldap_manager extends \cenozo\singleton
       'cn' => $first_name.' '.$last_name,
       'sn' => $last_name,
       'givenname' => $first_name,
-      'uid' => $username,
+      'sAMAccountName' => $username,
       'objectClass' => array (
         'inetOrgPerson',
         'passwordHolder' ),
       'description' => 'clsa',
       'userpassword' => $util_class_name::sha1_hash( $password ) );
 
-    $dn = sprintf( 'uid=%s,ou=Users,%s', $username, $this->base );
+    $dn = sprintf( 'sAMAccountName=%s,ou=Users,%s', $username, $this->base );
     if( !( @ldap_add( $this->resource, $dn, $data ) ) )
       if( 68 != ldap_errno( $this->resource ) ) // ignore already exists errors
         throw lib::create( 'exception\ldap',
@@ -118,7 +118,7 @@ class ldap_manager extends \cenozo\singleton
     if( !$this->enabled ) return;
     $this->connect();
 
-    $dn = sprintf( 'uid=%s,ou=Users,%s', $username, $this->base );
+    $dn = sprintf( 'sAMAccountName=%s,ou=Users,%s', $username, $this->base );
     if( !( @ldap_delete( $this->resource, $dn ) ) )
       throw lib::create( 'exception\ldap',
         ldap_error( $this->resource ), ldap_errno( $this->resource ) );
@@ -139,7 +139,7 @@ class ldap_manager extends \cenozo\singleton
     if( !$this->enabled ) return false;
     $this->connect();
 
-    $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(uid=%s))', $username ) );
+    $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(sAMAccountName=%s))', $username ) );
     if( !$search )
       throw lib::create( 'exception\ldap',
         ldap_error( $this->resource ), ldap_errno( $this->resource ) );
@@ -179,7 +179,7 @@ class ldap_manager extends \cenozo\singleton
     $util_class_name = lib::get_class_name( 'util' );
     $this->connect();
 
-    $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(uid=%s))', $username ) );
+    $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(sAMAccountName=%s))', $username ) );
     if( !$search )
       throw lib::create( 'exception\ldap',
         ldap_error( $this->resource ), ldap_errno( $this->resource ) );

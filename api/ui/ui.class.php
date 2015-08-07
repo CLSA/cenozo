@@ -59,22 +59,29 @@ class ui extends \cenozo\base_object
       
       // prepare which modules to show in the list and add the list item to the module's actions
       $list_items = $this->get_list_items();
-      foreach( $list_items as $subject => $title ) $module_list[$subject]['actions'][] = 'list';
-      asort( $list_items );
+      foreach( $list_items as $title => $subject ) $module_list[$subject]['actions'][] = 'list';
+      ksort( $list_items );
       
       // remove list items the role doesn't have access to
-      foreach( $list_items as $subject => $item )
+      foreach( $list_items as $title => $subject )
         if( !array_key_exists( $subject, $module_list ) ||
             !in_array( 'list', $module_list[$subject]['actions'] ) )
           unset( $list_items[$subject] );
 
       // prepare which utilities to show in the list
       $utility_items = $this->get_utility_items();
-      asort( $utility_items );
-
+      foreach( $utility_items as $title => $module )
+      {
+        if( !array_key_exists( $module['subject'], $module_list ) )
+          $module_list[$module['subject']] =
+            array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
+        $module_list[$module['subject']]['actions'][] = $module['action'];
+      }
+      ksort( $utility_items );
+     
       // prepare which reports to show in the list
       $report_items = $this->get_report_items();
-      asort( $report_items );
+      ksort( $report_items );
 
       // create the json strings for the interface
       $framework_module_string = $util_class_name::json_encode( $framework_module_list );
@@ -211,27 +218,25 @@ class ui extends \cenozo\base_object
     $db_role = $session->get_role();
 
     $list = array(
-      'activity' => 'Activities',
-      'application' => 'Applications',
-      'alternate' => 'Alternates',
-      'collection' => 'Collections',
-      'event_type' => 'Event Types',
-      'language' => 'Languages',
-      'participant' => 'Participants',
-      'quota' => 'Quotas',
-      'setting' => 'Settings',
-      'site' => 'Sites',
-      'state' => 'States',
-      'system_message' => 'System Messages',
-      'user' => 'Users' );
+      'Activities'      => 'activity',
+      'Alternates'      => 'alternate',
+      'Collections'     => 'collection',
+      'Event Types'     => 'event_type',
+      'Languages'       => 'language',
+      'Participants'    => 'participant',
+      'Quotas'          => 'quota',
+      'Settings'        => 'setting',
+      'States'          => 'state',
+      'System Messages' => 'system_message',
+      'Users'           => 'user' );
 
-    if( !$db_role->all_sites ) unset( $list['site'] );
-    if( 3 > $db_role->tier ) unset( $list['application'] );
+    if( $db_role->all_sites ) $list['Sites'] = 'site';
+    if( 3 <= $db_role->tier ) $list['Applications'] = 'application';
 
     // determine which grouping type to use
     $grouping_list = $session->get_application()->get_cohort_groupings();
-    if( in_array( 'jurisdiction', $grouping_list ) ) $list['jurisdiction'] = 'Jurisdictions';
-    if( in_array( 'region', $grouping_list ) ) $list['region_site'] = 'Region Sites';
+    if( in_array( 'jurisdiction', $grouping_list ) ) $list['Jurisdictions'] = 'jurisdiction';
+    if( in_array( 'region', $grouping_list ) ) $list['Region Sites'] = 'region_site';
 
     return $list;
   }
@@ -245,12 +250,21 @@ class ui extends \cenozo\base_object
    */
   protected function get_utility_items()
   {
-    return array(
-      'ParticipantMultiedit' => 'Participant Multiedit',
-      'ParticipantMultinote' => 'Participant Note',
-      'ParticipantReassign' => 'Participant Reassign',
-      'ParticipantSearch' => 'Participant Search',
-      'ParticipantTree' => 'Participant Tree' );
+    $db_role = lib::create( 'business\session' )->get_role();
+
+    $list = array();
+
+    if( 2 <= $db_role->tier )
+    {
+      $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
+      $list['Participant Multinote'] = array( 'subject' => 'participant', 'action' => 'multinote' );
+      $list['Participant Search']    = array( 'subject' => 'participant', 'action' => 'search' );
+    }
+
+    if( 3 <= $db_role->tier )
+      $list['Participant Reassign'] = array( 'subject' => 'participant', 'action' => 'reassign' );
+
+    return $list;
   }
 
   /**
@@ -263,15 +277,15 @@ class ui extends \cenozo\base_object
   protected function get_report_items()
   {
     return array(
-      'CallHistory' => 'Call History',
-      'ConsentRequired' => 'Consent Required',
-      'Email' => 'Email',
-      'MailoutRequired' => 'Mailout Required',
-      'Participant' => 'Participant',
-      'ParticipantStatus' => 'Participant Status',
-      'ParticipantTree' => 'Participant Tree',
-      'Productivity' => 'Productivity',
-      'Sample' => 'Sample',
-      'Timing' => 'Timing' );
+      'Call History'       => 'call_history',
+      'Consent Required'   => 'consent_required',
+      'Email'              => 'email',
+      'Mailout Required'   => 'mailout_required',
+      'Participant'        => 'participant',
+      'Participant Status' => 'participant_status',
+      'Participant Tree'   => 'participant_tree',
+      'Productivity'       => 'productivity',
+      'Sample'             => 'sample',
+      'Timing'             => 'timing' );
   }
 }

@@ -104,7 +104,7 @@
                   <li class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Lists</h4>
                   </li>
-                  <li ng-repeat="(module,title) in lists">
+                  <li ng-repeat="(title,module) in lists">
                     <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
                        ui-sref="{{ module }}.list">{{ title }}</a>
@@ -114,20 +114,20 @@
                   <li class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Utilities</h4>
                   </li>
-                  <li ng-repeat="(module,title) in utilities">
+                  <li ng-repeat="(title,module) in utilities">
                     <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                       ui-sref="{{ module }}.list">{{ title }}</a>
+                       ui-sref="{{ module.subject }}.{{ module.action }}">{{ title }}</a>
                   </li>
                 </ul>
                 <ul class="navigation-group col-xs-4">
                   <li class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Reports</h4>
                   </li>
-                  <li ng-repeat="(module,title) in reports">
+                  <li ng-repeat="(title,module) in reports">
                     <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                       ui-sref="{{ module }}.list">{{ title }}</a>
+                       ui-sref="{{ module }}.view">{{ title }}</a>
                   </li>
                 </ul>
               </div>
