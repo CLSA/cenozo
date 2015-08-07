@@ -17,6 +17,8 @@ SOURCE region_site.sql
 SOURCE user.sql
 SOURCE address.sql
 SOURCE consent.sql
+SOURCE event.sql
+SOURCE event_type.sql
 SOURCE phone.sql
 SOURCE person_note.sql
 SOURCE alternate.sql
@@ -29,6 +31,7 @@ SOURCE participant_default_site.sql
 SOURCE participant_preferred_site.sql
 SOURCE alternate_first_address.sql
 SOURCE participant_first_address.sql
+SOURCE participant_last_event.sql
 SOURCE participant_last_consent.sql
 SOURCE participant_last_written_consent.sql
 
@@ -41,6 +44,7 @@ SOURCE update_participant_primary_address.sql
 SOURCE update_participant_site_for_participant.sql
 SOURCE update_participant_site_for_jurisdiction.sql
 SOURCE update_participant_site_for_region_site.sql
+SOURCE update_participant_last_event.sql
 SOURCE update_participant_last_consent.sql
 SOURCE update_participant_last_written_consent.sql
 SOURCE address.sql
