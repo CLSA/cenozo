@@ -287,6 +287,42 @@ cenozo.service( 'CnBaseHeader', [
 /* ######################################################################################################## */
 
 /**
+ * Manually compiles the element, fixing the recursion loop.
+ * @param element
+ * @param [link] A post-link function, or an object with function(s) registered via pre and post properties.
+ * @returns An object containing the linking functions.
+ */
+cenozo.service( 'CnRecursionHelper', [
+  '$compile',
+  function( $compile ) {
+    return {
+      compile: function( element, link ) {
+        // Normalize the link parameter
+        if( angular.isFunction( link )) link = { post: link };
+
+        // Break the recursion loop by removing the contents
+        var contents = element.contents( ).remove( );
+        var compiledContents;
+        return {
+          pre: ( link && link.pre ) ? link.pre : null,
+          // Compiles and re-adds the contents
+          post: function( scope, element ) {
+            // Compile the contents
+            if( !compiledContents ) compiledContents = $compile( contents );
+            // Re-add the compiled contents to the element
+            compiledContents( scope, function( clone ) { element.append( clone ); } );
+            // Call the post-linking function, if any
+            if( link && link.post ) link.post.apply( null, arguments );
+          }
+        };
+      }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * Like ngChange but will only trigger after loosing focus of the element (instead of any change)
  * if the parent element is an INPUT of type other than checkbox or radio, otherwise it is identical
  * to the standard ngChange directive.
@@ -888,6 +924,50 @@ cenozo.directive( 'cnRecordView', [
             if( recordLoaded && metadataLoaded ) scope.isComplete = true;
           }
         }, true );
+      }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.directive( 'cnTree',
+  function() {
+    return {
+      templateUrl: cenozo.baseUrl + '/app/cenozo/tree.tpl.html',
+      restrict: 'E',
+      scope: { model: '=' },
+      controller: function( $scope ) {
+      }
+    };
+  }
+);
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.directive( 'cnTreeBranch', [
+  'CnRecursionHelper',
+  function( CnRecursionHelper ) {
+    return {
+      templateUrl: cenozo.baseUrl + '/app/cenozo/tree-branch.tpl.html',
+      restrict: 'E',
+      scope: {
+        model: '=',
+        isRoot: '='
+      },
+      controller: function( $scope ) {
+        $scope.toggleBranch = function( id ) { $scope.model.open = !$scope.model.open; };
+      },
+      compile: function( element ) {
+        // Use the compile function from the CnRecursionHelper,
+        // And return the linking function(s) which it returns
+        return CnRecursionHelper.compile( element );
       }
     };
   }

@@ -1,0 +1,31 @@
+<div ng-class="isRoot ? 'tree-root' : 'tree-branch'">
+  <div class="btn-group">
+    <button class="btn btn-primary"
+            ng-if="0 < model.branchList.length"
+            ng-click="toggleBranch( model.id )"
+            data-toggle="collapse"
+            data-target="#{{ model.id }}">
+      <i class="glyphicon" ng-class="model.open ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"></i>
+    </button>
+    <button class="btn btn-default"
+            type="button"
+            tooltip="Click to view this queue and a list of its participants"
+            tooltip-placement="right"
+            ng-disabled="'...' == model.participant_count">
+      {{ model.participant_count }}
+    </button>
+  </div>
+  <span>
+    <strong>{{ model.title }}</strong>
+    <mark ng-if="!model.open">
+      ({{ model.branchList.length }} sub-queue{{ 1 == model.branchList.length ? '' : 's' }})
+    </mark>
+  </span>
+  {{ model.initialOpen }}
+  <div id="{{ model.id }}"
+       ng-if="0 < model.branchList.length"
+       class="collapse"
+       ng-class="{'in': model.initialOpen}">
+     <cn-tree-branch is-root="false" ng-repeat="branch in model.branchList" model="branch"></cn-tree-branch>
+  </div>
+</div>

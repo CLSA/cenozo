@@ -249,3 +249,13 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
 
 .restrict-description { font-size: 80%; margin: 0; }
 .restrict-add { display: table; width: 100%; }
+
+.tree-root, .tree-branch {
+  overflow: hidden;
+  background: white;
+}
+.tree-branch {
+  position: relative;
+  left: 5em;
+  padding-top: 4px;
+}
