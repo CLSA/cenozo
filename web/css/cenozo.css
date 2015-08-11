@@ -127,6 +127,7 @@ tfoot, .modal-footer {
 .open > .navigation-menu {
   opacity: 1;
   visibility: visible;
+  background-color: #ededed;
 }
 
 .navigation-menu {
