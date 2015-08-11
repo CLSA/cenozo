@@ -270,7 +270,7 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
   top: 0;
   bottom: 0;
   left: 0;
-  border-left: 2px solid #999;
+  border-left: 2px solid #ccc;
 }
 .tree li {
   position: relative;
@@ -286,7 +286,7 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
   position: absolute;
   top: 20px;
   left: 0;
-  border-top: 2px solid #999;
+  border-top: 2px solid #ccc;
 }
 .tree .last-tree-branch:last-child:before {
   background: white;
