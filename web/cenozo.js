@@ -957,10 +957,7 @@ cenozo.directive( 'cnTreeBranch', [
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/tree-branch.tpl.html',
       restrict: 'E',
-      scope: {
-        model: '=',
-        isRoot: '='
-      },
+      scope: { model: '=', last: '=' },
       controller: function( $scope ) {
         $scope.toggleBranch = function( id ) { $scope.model.open = !$scope.model.open; };
       },

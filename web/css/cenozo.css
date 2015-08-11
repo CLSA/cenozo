@@ -250,12 +250,47 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
 .restrict-description { font-size: 80%; margin: 0; }
 .restrict-add { display: table; width: 100%; }
 
-.tree-root, .tree-branch {
-  overflow: hidden;
-  background: white;
+/* tree */
+.tree,
+.tree ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position:relative;
+  margin-left: 20px;
 }
-.tree-branch {
+.tree:first-child {
+  margin-left: -20px;
+}
+.tree ul:before {
+  content: "";
+  display: block;
+  width: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-left: 2px solid #999;
+}
+.tree li {
   position: relative;
-  left: 5em;
   padding-top: 4px;
+  padding-left: 20px;
+}
+.tree ul li:before {
+  content: "";
+  display: block;
+  width: 30px;
+  height: 0;
+  margin-top: -1px;
+  position: absolute;
+  top: 20px;
+  left: 0;
+  border-top: 2px solid #999;
+}
+.tree .last-tree-branch:last-child:before {
+  background: white;
+  height: auto;
+  top: 20px;
+  bottom: 0;
 }
