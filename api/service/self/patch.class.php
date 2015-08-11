@@ -147,14 +147,14 @@ class patch extends \cenozo\service\service
       $has_site = array_key_exists( 'site', $patch_array );
       $has_role = array_key_exists( 'role', $patch_array );
     
-      if( ( 1 == count( $this->patch_array ) && ( $has_site || $has_role ) ) ||
-          ( 2 == count( $this->patch_array ) && $has_site && $has_role ) )
+      if( ( 1 == count( $patch_array ) && ( $has_site || $has_role ) ) ||
+          ( 2 == count( $patch_array ) && $has_site && $has_role ) )
       {
         // determine if the site is changing or not
         $db_requested_site = $session->get_site();
         if( $has_site )
         {
-          $site_array = (array) $this->patch_array['site'];
+          $site_array = (array) $patch_array['site'];
           $db_requested_site =
             $site_class_name::get_unique_record( array_keys( $site_array ), array_values( $site_array ) );
         }
@@ -163,7 +163,7 @@ class patch extends \cenozo\service\service
         $db_requested_role = $session->get_role();
         if( $has_role )
         {
-          $role_array = (array) $this->patch_array['role'];
+          $role_array = (array) $patch_array['role'];
           $db_requested_role =
             $role_class_name::get_unique_record( array_keys( $role_array ), array_values( $role_array ) );
         }
@@ -176,7 +176,7 @@ class patch extends \cenozo\service\service
       {
         $this->status->set_code( 400 );
         throw lib::create( 'exception\runtime',
-          sprintf( 'Patch expects a user OR a site and/or role, got "%s"', implode( ', ', $this->patch_array ) ),
+          sprintf( 'Patch expects a user OR a site and/or role, got "%s"', implode( ', ', $patch_array ) ),
           __METHOD__ );
       }
     }

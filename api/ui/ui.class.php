@@ -59,9 +59,14 @@ class ui extends \cenozo\base_object
       
       // prepare which modules to show in the list and add the list item to the module's actions
       $list_items = $this->get_list_items();
-      foreach( $list_items as $title => $subject ) $module_list[$subject]['actions'][] = 'list';
+      foreach( $list_items as $title => $subject )
+      {
+        if( !array_key_exists( $subject, $module_list ) )
+          $module_list[$subject] = array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
+        $module_list[$subject]['actions'][] = 'list';
+      }
       ksort( $list_items );
-      
+
       // remove list items the role doesn't have access to
       foreach( $list_items as $title => $subject )
         if( !array_key_exists( $subject, $module_list ) ||
