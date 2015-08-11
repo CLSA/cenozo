@@ -782,7 +782,7 @@ class modifier extends \cenozo\base_object
       // check if this is a bracket
       if( array_key_exists( 'bracket', $item ) )
       {
-        $statement = $item['bracket'] ? '(' : ')';
+        $statement = $item['bracket'] ? '(' : ( $last_open_bracket ? 'true )' : ')' );
       }
       else
       {
