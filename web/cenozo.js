@@ -425,7 +425,7 @@ cenozo.directive( 'cnReallyClick', [
         element.bind( 'click', function() {
           var message = attrs.cnReallyMessage;
           CnModalConfirmFactory.instance( {
-            title: 'Confirm Delete',
+            title: 'Please Confirm',
             message: message
           } ).show().then( function( response ) {
             if( response ) {
