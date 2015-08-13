@@ -83,10 +83,11 @@ class select extends \cenozo\base_object
    * @param string $column The column to select
    * @param string $alias The optional alias for the column (must be unique)
    * @param boolean $table_prefix Whether to prefix the column with the table name
+   * @param string $type A hint at what type the column is (doesn't have to be provided)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function add_table_column( $table, $column, $alias = NULL, $table_prefix = true )
+  public function add_table_column( $table, $column, $alias = NULL, $table_prefix = true, $type = NULL )
   {
     // sanitize
     if( is_null( $column ) || 0 == strlen( $column ) )
@@ -103,7 +104,10 @@ class select extends \cenozo\base_object
         if( $a == $alias ) unset( $this->column_list[$t][$a] );
 
     if( !array_key_exists( $table, $this->column_list ) ) $this->column_list[$table] = array();
-    $this->column_list[$table][$alias] = array( 'column' => $column, 'table_prefix' => $table_prefix );
+    $this->column_list[$table][$alias] = array(
+      'column' => $column,
+      'table_prefix' => $table_prefix,
+      'type' => $type );
   }
 
   /**
@@ -128,9 +132,9 @@ class select extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function add_column( $column, $alias = NULL, $table_prefix = true )
+  public function add_column( $column, $alias = NULL, $table_prefix = true, $type = NULL )
   {
-    $this->add_table_column( NULL, $column, $alias, $table_prefix );
+    $this->add_table_column( NULL, $column, $alias, $table_prefix, $type );
   }
 
   /**
@@ -393,13 +397,19 @@ class select extends \cenozo\base_object
       {
         $column = sprintf( '%s%s', $item['table_prefix'] ? $table_prefix : '', $item['column'] );
 
-        // try and get the column type
-        $type = NULL;
-        try { $type = $db->get_column_type( $table, $item['column'] ); }
-        catch( \cenozo\exception\base_exception $e ) {} // it's normal if the column isn't found
+        // try and get the column type if it hasn't already been hinted
+        $type = $item['type'];
+        if( is_null( $type ) )
+        {
+          try { $type = $db->get_column_type( $table, $item['column'] ); }
+          catch( \cenozo\exception\base_exception $e ) {} // it's normal if the column isn't found
+        }
 
         // convert datetimes to ISO 8601 format
-        if( 'datetime' == $type || 'datetime' === substr( $item['column'], -8 ) )
+        if( 'datetime' == $type ||
+            'timestamp' == $type ||
+            'datetime' === substr( $item['column'], -8 ) ||
+            'timestamp' === substr( $item['column'], -8 ) )
           $column = sprintf( 'DATE_FORMAT( %s, "%s" )', $column, '%Y-%m-%dT%T+00:00' );
 
         // add the alias (but not for *)
@@ -475,7 +485,8 @@ class select extends \cenozo\base_object
                   array_key_exists( 'table', $column ) ? $column['table'] : NULL,
                   $column['column'],
                   array_key_exists( 'alias', $column ) ? $column['alias'] : NULL,
-                  array_key_exists( 'table_prefix', $column ) ? $column['table_prefix'] : true );
+                  array_key_exists( 'table_prefix', $column ) ? $column['table_prefix'] : true,
+                  array_key_exists( 'type', $column ) ? $column['type'] : true );
               }
               else throw lib::create( 'exception\runtime', 'Invalid column sub-statement', __METHOD__ );
             }
