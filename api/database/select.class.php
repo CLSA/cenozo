@@ -409,7 +409,7 @@ class select extends \cenozo\base_object
         if( 'datetime' == $type ||
             'timestamp' == $type ||
             'datetime' === substr( $item['column'], -8 ) ||
-            'timestamp' === substr( $item['column'], -8 ) )
+            'timestamp' === substr( $item['column'], -9 ) )
           $column = sprintf( 'DATE_FORMAT( %s, "%s" )', $column, '%Y-%m-%dT%T+00:00' );
 
         // add the alias (but not for *)
@@ -486,7 +486,7 @@ class select extends \cenozo\base_object
                   $column['column'],
                   array_key_exists( 'alias', $column ) ? $column['alias'] : NULL,
                   array_key_exists( 'table_prefix', $column ) ? $column['table_prefix'] : true,
-                  array_key_exists( 'type', $column ) ? $column['type'] : true );
+                  array_key_exists( 'type', $column ) ? $column['type'] : NULL );
               }
               else throw lib::create( 'exception\runtime', 'Invalid column sub-statement', __METHOD__ );
             }
