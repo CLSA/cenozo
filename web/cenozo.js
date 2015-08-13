@@ -1349,9 +1349,10 @@ cenozo.factory( 'CnSession', [
           if( 'moment' != cenozo.getType( value ) ) {
             if( angular.isUndefined( value ) ) value = moment();
             else {
-              if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( value ) )
+              if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( value ) ) {
                 // no Z at the end since we are converting a time
                 value = moment().format( 'YYYY-MM-DD' ) + 'T' + value + 'Z';
+              }
               value = moment( new Date( value ) );
             }
           }
