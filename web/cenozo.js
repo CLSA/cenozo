@@ -116,21 +116,32 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
     }
   }
 
-  // add child states to the list
+  // add child states to the list or remove them if they aren't in the app's module list
   for( var i = 0; i < module.children.length; i++ ) {
     var child = module.children[i];
-    var baseChildUrl = this.getModuleUrl( child.snake );
-    stateProvider.state( name + '.add_' + child.snake, {
-      url: '/view/{parentIdentifier}/' + child.snake,
-      controller: child.Camel + 'AddCtrl',
-      templateUrl: baseChildUrl + 'add.tpl.html'
-    } );
+    if( angular.isDefined( cenozoApp.moduleList[child.snake] ) ) {
+      var baseChildUrl = this.getModuleUrl( child.snake );
+      stateProvider.state( name + '.add_' + child.snake, {
+        url: '/view/{parentIdentifier}/' + child.snake,
+        controller: child.Camel + 'AddCtrl',
+        templateUrl: baseChildUrl + 'add.tpl.html'
+      } );
 
-    stateProvider.state( name + '.view_' + child.snake, {
-      url: '/view/{parentIdentifier}/' + child.snake + '/{identifier}',
-      controller: child.Camel + 'ViewCtrl',
-      templateUrl: baseChildUrl + 'view.tpl.html'
-    } );
+      stateProvider.state( name + '.view_' + child.snake, {
+        url: '/view/{parentIdentifier}/' + child.snake + '/{identifier}',
+        controller: child.Camel + 'ViewCtrl',
+        templateUrl: baseChildUrl + 'view.tpl.html'
+      } );
+    } else {
+      module.children.splice( i, 1 );
+    }
+  }
+
+  // remove any choosing modules which don't exist
+  for( var i = 0; i < module.choosing.length; i++ ) {
+    if( angular.isUndefined( cenozoApp.moduleList[module.choosing[i].snake] ) ) {
+      module.choosing.splice( i, 1 );
+    }
   }
 };
 
@@ -301,7 +312,7 @@ cenozo.service( 'CnRecursionHelper', [
         if( angular.isFunction( link )) link = { post: link };
 
         // Break the recursion loop by removing the contents
-        var contents = element.contents( ).remove( );
+        var contents = element.contents().remove();
         var compiledContents;
         return {
           pre: ( link && link.pre ) ? link.pre : null,
@@ -1230,7 +1241,7 @@ cenozo.factory( 'CnSession', [
         // if the user's password isn't set then open the password dialog
         if( response.data.no_password ) {
           CnModalPasswordFactory.instance( { confirm: false } ).show().then( function( response ) {
-            self.setPassword( response.currentPass, response.requestedPass ).catch( self.errorHandler );
+            self.setPassword( 'password', response.requestedPass ).catch( self.errorHandler );
           } );
         }
 

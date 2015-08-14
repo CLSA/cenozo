@@ -167,11 +167,16 @@ class ui extends \cenozo\base_object
         $module_list[$subject]['actions'][] = 'add';
     }
 
-    // add child actions to certain modules
+    // add child/choose actions to certain modules
     if( array_key_exists( 'application', $module_list ) )
+    {
       $module_list['application']['children'] = array( 'cohort', 'role' );
+      $module_list['application']['choosing'] = array( 'site' );
+    }
     if( array_key_exists( 'alternate', $module_list ) )
       $module_list['alternate']['children'] = array( 'address', 'phone' );
+    if( array_key_exists( 'collection', $module_list ) )
+      $module_list['collection']['choosing'] = array( 'participant', 'user' );
     if( array_key_exists( 'event_type', $module_list ) )
       $module_list['event_type']['children'] = array( 'participant' );
     if( array_key_exists( 'participant', $module_list ) )
@@ -181,15 +186,10 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'state', $module_list ) )
       $module_list['state']['children'] = array( 'role', 'participant' );
     if( array_key_exists( 'user', $module_list ) )
+    {
       $module_list['user']['children'] = array( 'access' );
-
-    // add choose actions to certain modules
-    if( array_key_exists( 'application', $module_list ) )
-      $module_list['application']['choosing'] = array( 'site' );
-    if( array_key_exists( 'collection', $module_list ) )
-      $module_list['collection']['choosing'] = array( 'participant', 'user' );
-    if( array_key_exists( 'user', $module_list ) )
       $module_list['user']['choosing'] = array( 'language' );
+    }
 
     return $module_list;
   }
@@ -223,20 +223,25 @@ class ui extends \cenozo\base_object
     $db_role = $session->get_role();
 
     $list = array(
-      'Activities'      => 'activity',
       'Alternates'      => 'alternate',
       'Collections'     => 'collection',
-      'Event Types'     => 'event_type',
       'Languages'       => 'language',
-      'Participants'    => 'participant',
-      'Quotas'          => 'quota',
-      'Settings'        => 'setting',
-      'States'          => 'state',
-      'System Messages' => 'system_message',
-      'Users'           => 'user' );
+      'Participants'    => 'participant'
+    );
 
     if( $db_role->all_sites ) $list['Sites'] = 'site';
-    if( 3 <= $db_role->tier ) $list['Applications'] = 'application';
+    if( 2 <= $db_role->tier )
+    {
+      $list['Activities']      = 'activity';
+      $list['Event Types']     = 'event_type';
+      $list['Quotas']          = 'quota';
+      $list['Settings']        = 'setting';
+      $list['States']          = 'state';
+      $list['System Messages'] = 'system_message';
+      $list['Users']           = 'user';
+    }
+    if( 3 <= $db_role->tier )
+      $list['Applications'] = 'application';
 
     // determine which grouping type to use
     $grouping_list = $session->get_application()->get_cohort_groupings();

@@ -10,12 +10,4 @@ define( [], function() {
     };
   } );
 
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAccessView', function () {
-    return {
-      templateUrl: 'app/access/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
 } );
