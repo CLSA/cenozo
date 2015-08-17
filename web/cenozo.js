@@ -549,58 +549,63 @@ cenozo.directive( 'cnRecordAdd', [
         };
       },
       link: function( scope, element, attrs ) {
-        scope.record = {};
-        scope.formattedRecord = {};
+        if( angular.isUndefined( scope.model ) ) {
+          console.error( 'Cannot render cn-record-add, no model provided.' );
+        } else {
+          scope.record = {};
+          scope.formattedRecord = {};
 
-        scope.heading = attrs.heading;
-        if( angular.isUndefined( scope.heading ) )
-          scope.heading = 'Create ' + scope.model.name.singular.ucWords();
+          scope.heading = attrs.heading;
+          if( angular.isUndefined( scope.heading ) )
+            scope.heading = 'Create ' + scope.model.name.singular.ucWords();
 
-        // get the data array and add enum lists for boolean types
-        scope.dataArray = scope.model.getDataArray( scope.removeInputs, 'add' );
-        for( var i = 0; i < scope.dataArray.length; i++ ) {
-          if( 'boolean' == scope.dataArray[i].type ) {
-            scope.dataArray[i].enumList = [
-              { value: undefined, name: '(Select Yes or No)' },
-              { value: true, name: 'Yes' },
-              { value: false, name: 'No' }
-            ];
+          // get the data array and add enum lists for boolean types
+          var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
+          scope.dataArray = scope.model.getDataArray( removeInputs, 'add' );
+          for( var i = 0; i < scope.dataArray.length; i++ ) {
+            if( 'boolean' == scope.dataArray[i].type ) {
+              scope.dataArray[i].enumList = [
+                { value: undefined, name: '(Select Yes or No)' },
+                { value: true, name: 'Yes' },
+                { value: false, name: 'No' }
+              ];
+            }
           }
-        }
 
-        // watch for changes in the record (created asynchronously by the service)
-        scope.$parent.$watch( 'record', function( record ) { scope.record = record; } );
+          // watch for changes in the record (created asynchronously by the service)
+          scope.$parent.$watch( 'record', function( record ) { scope.record = record; } );
 
-        // watch for changes in metadata (created asynchronously by the service)
-        scope.isComplete = false;
-        scope.$watch( 'model.metadata', function( metadata ) {
-          if( angular.isDefined( metadata ) && 0 === metadata.loadingCount && !scope.isComplete ) {
-            for( var i = 0; i < scope.dataArray.length; i++ ) {
-              var input = scope.dataArray[i];
-              var meta = metadata.columnList[input.key];
-              if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
-                input.enumList = angular.copy( meta.enumList );
+          // watch for changes in metadata (created asynchronously by the service)
+          scope.isComplete = false;
+          scope.$watch( 'model.metadata', function( metadata ) {
+            if( angular.isDefined( metadata ) && 0 === metadata.loadingCount && !scope.isComplete ) {
+              for( var i = 0; i < scope.dataArray.length; i++ ) {
+                var input = scope.dataArray[i];
+                var meta = metadata.columnList[input.key];
+                if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
+                  input.enumList = angular.copy( meta.enumList );
 
-                var newRank = input.enumList.length + 1;
-                if( !meta.required || 1 < input.enumList.length ) {
-                  input.enumList.unshift( {
-                    value: undefined,
-                    name: meta.required ? '(Select ' + input.title + ')' : '(empty)'
+                  var newRank = input.enumList.length + 1;
+                  if( !meta.required || 1 < input.enumList.length ) {
+                    input.enumList.unshift( {
+                      value: undefined,
+                      name: meta.required ? '(Select ' + input.title + ')' : '(empty)'
+                    } );
+                  }
+
+                  if( 1 == input.enumList.length ) scope.record[input.key] = input.enumList[0].value;
+
+                  // add additional rank
+                  if( 'rank' == input.key ) input.enumList.push( {
+                    value: newRank,
+                    name: $filter( 'cnOrdinal' )( newRank )
                   } );
                 }
-
-                if( 1 == input.enumList.length ) scope.record[input.key] = input.enumList[0].value;
-
-                // add additional rank
-                if( 'rank' == input.key ) input.enumList.push( {
-                  value: newRank,
-                  name: $filter( 'cnOrdinal' )( newRank )
-                } );
               }
+              scope.isComplete = true;
             }
-            scope.isComplete = true;
-          }
-        }, true );
+          }, true );
+        }
       }
     };
   }
@@ -625,7 +630,10 @@ cenozo.directive( 'cnRecordList', [
       },
       controller: function( $scope ) {
         $scope.refresh = function() {
-          if( !$scope.model.listModel.isLoading ) $scope.model.listModel.onList( true );
+          if( !$scope.model.listModel.isLoading ) $scope.model.listModel.onList( true ).then(
+            function success() { $scope.model.listModel.paginationFactory.currentPage = 1; },
+            CnSession.errorHandler
+          );
         };
 
         $scope.addRecord = function() {
@@ -663,31 +671,34 @@ cenozo.directive( 'cnRecordList', [
         }
       },
       link: function( scope, element, attrs ) {
-        scope.heading = angular.isUndefined( attrs.heading )
-                      ? scope.model.name.singular.ucWords() + ' List'
-                      : attrs.heading;
+        if( angular.isUndefined( scope.model ) ) {
+          console.error( 'Cannot render cn-record-list, no model provided.' );
+        } else {
+          scope.heading = angular.isUndefined( attrs.heading )
+                        ? scope.model.name.singular.ucWords() + ' List'
+                        : attrs.heading;
 
-        // add site to removeColumns if role doesn't allow for all sites
-        if( angular.isUndefined( scope.removeColumns ) ) scope.removeColumns = [];
-        if( !CnSession.role.allSites && 0 > scope.removeColumns.indexOf( 'site' ) )
-          scope.removeColumns.push( 'site' );
-        scope.dataArray = scope.model.getDataArray( scope.removeColumns, 'list' );
+          // add site to removeColumns if role doesn't allow for all sites
+          var removeColumns = angular.isDefined( scope.removeColumns ) ? scope.removeColumns.split( ' ' ) : []
+          if( !CnSession.role.allSites && 0 > removeColumns.indexOf( 'site' ) ) removeColumns.push( 'site' );
+          scope.dataArray = scope.model.getDataArray( removeColumns, 'list' );
 
-        scope.setRestrictList = function( column ) {
-          var column = scope.dataArray.findByProperty( 'key', column );
-          CnModalRestrictFactory.instance( {
-            name: scope.model.name,
-            column: column.title,
-            type: column.type,
-            restrictList: angular.copy( column.restrictList )
-          } ).show().then( function( restrictList ) {
-            scope.model.listModel.setRestrictList( column.key, restrictList );
-          } );
-        };
+          scope.setRestrictList = function( column ) {
+            var column = scope.dataArray.findByProperty( 'key', column );
+            CnModalRestrictFactory.instance( {
+              name: scope.model.name,
+              column: column.title,
+              type: column.type,
+              restrictList: angular.copy( column.restrictList )
+            } ).show().then( function( restrictList ) {
+              scope.model.listModel.setRestrictList( column.key, restrictList );
+            } );
+          };
 
-        // get the total number of columns in the table
-        scope.numColumns = scope.dataArray.length;
-        if( scope.model.deleteEnabled ) scope.numColumns++;
+          // get the total number of columns in the table
+          scope.numColumns = scope.dataArray.length;
+          if( scope.model.deleteEnabled ) scope.numColumns++;
+        }
       }
     };
   }
@@ -885,56 +896,61 @@ cenozo.directive( 'cnRecordView', [
         };
       },
       link: function( scope, element, attrs ) {
-        scope.heading = attrs.heading;
-        if( angular.isUndefined( scope.heading ) )
-          scope.heading = scope.model.name.singular.ucWords() + ' Details';
+        if( angular.isUndefined( scope.model ) ) {
+          console.error( 'Cannot render cn-record-view, no model provided.' );
+        } else {
+          scope.heading = attrs.heading;
+          if( angular.isUndefined( scope.heading ) )
+            scope.heading = scope.model.name.singular.ucWords() + ' Details';
 
-        var recordLoaded = false;
-        scope.dataArray = scope.model.getDataArray( scope.removeInputs, 'view' );
-        scope.$watch( 'model.viewModel.record', function( record ) {
-          // convert datetimes
-          if( angular.isDefined( record.id ) && !recordLoaded ) {
-            recordLoaded = true;
-            if( recordLoaded && metadataLoaded ) scope.isComplete = true;
-          }
-        } );
+          var recordLoaded = false;
+          var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
+          scope.dataArray = scope.model.getDataArray( removeInputs, 'view' );
+          scope.$watch( 'model.viewModel.record', function( record ) {
+            // convert datetimes
+            if( angular.isDefined( record.id ) && !recordLoaded ) {
+              recordLoaded = true;
+              if( recordLoaded && metadataLoaded ) scope.isComplete = true;
+            }
+          } );
 
-        // watch for changes in metadata (created asynchronously by the service)
-        var metadataLoaded = false;
-        scope.isComplete = false;
-        scope.$watch( 'model.metadata', function( metadata ) {
-          if( angular.isDefined( metadata ) &&
-              angular.isDefined( metadata.columnList ) &&
-              0 === metadata.loadingCount &&
-              !scope.isLoaded ) {
-            // build enum lists
-            for( var key in metadata.columnList ) {
-              var input = scope.dataArray.findByProperty( 'key', key );
-              if( input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
-                input.enumList = 'boolean' === input.type
-                               ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
-                               : angular.copy( metadata.columnList[key].enumList );
-                if( angular.isArray( input.enumList ) ) {
-                  // if needed, remove self record
-                  if( input.noself ) {
-                    for( var i = 0; i < input.enumList.length; i++ ) {
-                      if( input.enumList[i].value == scope.model.viewModel.record.id ) {
-                        input.enumList.splice( i, 1 );
-                        break;
+          // watch for changes in metadata (created asynchronously by the service)
+          var metadataLoaded = false;
+          scope.isComplete = false;
+          scope.$watch( 'model.metadata', function( metadata ) {
+            if( angular.isDefined( metadata ) &&
+                angular.isDefined( metadata.columnList ) &&
+                0 === metadata.loadingCount &&
+                !scope.isLoaded ) {
+              // build enum lists
+              for( var key in metadata.columnList ) {
+                var input = scope.dataArray.findByProperty( 'key', key );
+                if( input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
+                  input.enumList = 'boolean' === input.type
+                                 ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
+                                 : angular.copy( metadata.columnList[key].enumList );
+                  if( angular.isArray( input.enumList ) ) {
+                    // if needed, remove self record
+                    if( input.noself ) {
+                      for( var i = 0; i < input.enumList.length; i++ ) {
+                        if( input.enumList[i].value == scope.model.viewModel.record.id ) {
+                          input.enumList.splice( i, 1 );
+                          break;
+                        }
                       }
                     }
+
+                    // add the empty option if input is not required
+                    if( !metadata.columnList[key].required )
+                      input.enumList.unshift( { value: '', name: '(empty)' } );
                   }
-                  
-                  // add the empty option if input is not required
-                  if( !metadata.columnList[key].required )
-                    input.enumList.unshift( { value: '', name: '(empty)' } );
                 }
               }
+              metadataLoaded = true;
+              if( recordLoaded && metadataLoaded ) scope.isComplete = true;
             }
-            metadataLoaded = true;
-            if( recordLoaded && metadataLoaded ) scope.isComplete = true;
-          }
-        }, true );
+          }, true );
+        }
       }
     };
   }
@@ -1470,22 +1486,26 @@ cenozo.factory( 'CnBaseListFactory', [
         object.paginationFactory = CnPaginationFactory.instance();
         object.isLoading = false;
 
-        object.orderBy = function( column ) {
+        object.orderBy = function( column, doNotList ) {
+          if( angular.isUndefined( doNotList ) ) doNotList = false;
           var self = this;
           if( null === this.order || column != this.order.column ) {
             this.order = { column: column, reverse: false };
           } else {
             this.order.reverse = !this.order.reverse;
           }
-          var promise = this.cache.length < this.total ? this.onList( true ) : null;
 
-          if( promise ) {
-            promise.then(
-              function success() { self.paginationFactory.currentPage = 1; },
-              CnSession.errorHandler
-            );
-          } else {
-            this.paginationFactory.currentPage = 1;
+          // call onList unless explicitely told not to
+          if( !doNotList ) {
+            var promise = this.cache.length < this.total ? this.onList( true ) : null;
+            if( promise ) {
+              promise.then(
+                function success() { self.paginationFactory.currentPage = 1; },
+                CnSession.errorHandler
+              );
+            } else {
+              this.paginationFactory.currentPage = 1;
+            }
           }
         };
 
@@ -2184,6 +2204,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
           }
+
           return data;
         };
 
@@ -2376,12 +2397,41 @@ cenozo.factory( 'CnBaseModelFactory', [
           return true;
         };
 
+        object.addColumn = function( key, column, index ) {
+          column.key = key;
+          if( angular.isUndefined( column.type ) ) column.type = 'string';
+          column.restrictList = [];
+          var type = column.type;
+          if( cenozo.isDatetimeType( type ) ) column.filter = 'cnDatetime:' + type;
+          else if( 'rank' == type ) column.filter = 'cnOrdinal';
+          else if( 'boolean' == type ) column.filter = 'cnYesNo';
+
+          if( angular.isUndefined( index ) ) {
+            // no index: add to existing object
+            this.columnList[key] = column;
+          } else {
+            // index: make new object and add the column at the desired index
+            var newColumnList = {};
+            var currentIndex = 0;
+            for( var k in this.columnList ) {
+              if( currentIndex == index ) newColumnList[key] = column;
+              newColumnList[k] = this.columnList[k];
+              currentIndex++;
+            }
+            this.columnList = newColumnList;
+          }
+        };
+
         ////////////////////////////////////////////////////////////////////////////////////////////
         // DEFINE ALL OBJECT PROPERTIES HERE
         ////////////////////////////////////////////////////////////////////////////////////////////
 
         // copy parameters from the module to the object
-        for( var property in module ) object[property] = angular.copy( module[property] );
+        for( var key in module ) if( 'columnList' != key ) object[key] = angular.copy( module[key] );
+
+        // add each column one at a time
+        object.columnList = {};
+        for( var key in module.columnList ) object.addColumn( key, module.columnList[key] );
 
         // restructure and add helper functions to the identifier parent(s)
         if( angular.isDefined( object.identifier.parent ) ) {
@@ -2410,23 +2460,6 @@ cenozo.factory( 'CnBaseModelFactory', [
 
         // process input list
         for( var key in object.inputList ) { object.inputList[key].key = key; }
-
-        // process column list
-        var stateSubject = object.getSubjectFromState();
-        for( var key in object.columnList ) {
-          // add key, restrictList and filter columns and make sure we have a type
-          object.columnList[key].key = key;
-          if( angular.isUndefined( object.columnList[key].type ) ) object.columnList[key].type = 'string';
-          object.columnList[key].restrictList = [];
-          var type = object.columnList[key].type;
-          if( cenozo.isDatetimeType( type ) ) {
-            object.columnList[key].filter = 'cnDatetime:' + type;
-          } else if( 'rank' == type ) {
-            object.columnList[key].filter = 'cnOrdinal';
-          } else if( 'boolean' == type ) {
-            object.columnList[key].filter = 'cnYesNo';
-          }
-        }
       }
     };
   }
