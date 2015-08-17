@@ -990,11 +990,15 @@ abstract class record extends \cenozo\base_object
         {
           foreach( $row as $column => $value )
           {
+            // try and determine the type
             $type = 'string';
 
-            if( static::column_exists( $column ) && !is_null( $value ) )
-              $type = static::db()->get_column_variable_type( $table_name, $column );
+            $details = $select->get_alias_details( $column );
+            if( !is_null( $details['type'] ) ) $type = $details['type'];
+            else if( static::db()->column_exists( $details['table'], $details['column'] ) )
+              $type = static::db()->get_column_variable_type( $details['table'], $details['column'] );
             else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
+
             if( 'string' != $type && 'datetime' != $type ) settype( $return_value[$index][$column], $type );
           }
         }
