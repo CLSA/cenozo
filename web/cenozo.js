@@ -247,7 +247,7 @@ cenozo.service( 'CnBaseHeader', [
             title: 'Site Settings',
             help: 'Edit site settings',
             execute: function() {
-              $state.go( 'site.view', { identifier: CnSession.site.id } );
+              return $state.go( 'site.view', { identifier: CnSession.site.id } );
             }
           },
           siteRole: {
@@ -257,15 +257,17 @@ cenozo.service( 'CnBaseHeader', [
               CnModalSiteRoleFactory.instance().show().then( function( response ) {
                 if( angular.isObject( response ) ) {
                   if( response.siteId != CnSession.site.id || response.roleId != CnSession.role.id ) {
-                    $state.go( 'wait' ); // show a waiting screen while we're changing the site/role
-                    CnSession.setSiteRole( response.siteId, response.roleId ).then(
-                      function success() {
-                        // blank content
-                        document.getElementById( 'view' ).innerHTML = '';
-                        $window.location.assign( $window.location.pathname );
-                      },
-                      CnSession.errorHandler
-                    );
+                    // show a waiting screen while we're changing the site/role
+                    return $state.go( 'wait' ).then( function() {
+                      CnSession.setSiteRole( response.siteId, response.roleId ).then(
+                        function success() {
+                          // blank content
+                          document.getElementById( 'view' ).innerHTML = '';
+                          $window.location.assign( $window.location.pathname );
+                        },
+                        CnSession.errorHandler
+                      );
+                    } );
                   }
                 }
               } );
@@ -666,7 +668,7 @@ cenozo.directive( 'cnRecordList', [
 
         $scope.selectRecord = function( record ) {
           if( $scope.model.viewEnabled ) {
-            $scope.model.transitionToViewState( record );
+            $scope.model.listModel.onSelect( record );
           };
         }
       },
@@ -1209,7 +1211,7 @@ cenozo.factory( 'CnSession', [
       // defines the breadcrumbtrail based on an array of crumbs
       this.setBreadcrumbTrail = function( crumbs ) {
         this.breadcrumbTrail.length = 0;
-        this.breadcrumbTrail.push( { title: 'Home', go: function() { $state.go( 'root.home' ); } } );
+        this.breadcrumbTrail.push( { title: 'Home', go: function() { return $state.go( 'root.home' ); } } );
         if( angular.isArray( crumbs ) )
           for( var i = 0; i < crumbs.length; i++ )
             this.breadcrumbTrail.push( crumbs[i] );
@@ -1359,7 +1361,7 @@ cenozo.factory( 'CnSession', [
             error: true
           } ).show();
         } else {
-          $state.go( 'error.' + type );
+          return $state.go( 'error.' + type );
         }
       };
 
@@ -1408,7 +1410,7 @@ cenozo.factory( 'CnBaseAddFactory', [
         object.parentModel = parentModel;
 
         /**
-         * Must be called by the onAdd() function in order to send the new record to the server.
+         * Is usually called by the onAdd() function in order to send the new record to the server.
          * This function should not be changed, override the onAdd() function instead.
          * 
          * @param object record: The record to add
@@ -1423,7 +1425,7 @@ cenozo.factory( 'CnBaseAddFactory', [
         };
 
         /**
-         * Must be called by the onNew() function in order to create a new local record.
+         * Is usually called by the onNew() function in order to create a new local record.
          * This function should not be changed, override the onNew() function instead.
          * 
          * @param object record: The object to initialize as a new record
@@ -1555,7 +1557,7 @@ cenozo.factory( 'CnBaseListFactory', [
         };
 
         /**
-         * Must be called by the onChoose() function in order to add a record on the server in a
+         * Is usually called by the onChoose() function in order to add a record on the server in a
          * many-to-many relationship.
          * This function should not be changed, override the onChoose() function instead.
          * 
@@ -1576,7 +1578,7 @@ cenozo.factory( 'CnBaseListFactory', [
         };
 
         /**
-         * Must be called by the onDelete() function in order to delete a record from the server.
+         * Is usually called by the onDelete() function in order to delete a record from the server.
          * This function should not be changed, override the onDelete() function instead.
          * 
          * @param object record: The record to delete
@@ -1599,7 +1601,7 @@ cenozo.factory( 'CnBaseListFactory', [
         };
 
         /**
-         * Must be called by the onList() function in order to load records from the server.
+         * Is usually called by the onList() function in order to load records from the server.
          * This function should not be changed, override the onList() function instead.
          * 
          * @param boolean replace: Whether to replace the cached list or append to it
@@ -1648,6 +1650,19 @@ cenozo.factory( 'CnBaseListFactory', [
         };
 
         /**
+         * Is usually called by the onSelect() function in order to add a record on the server in a
+         * many-to-many relationship.
+         * This function should not be changed, override the onSelect() function instead.
+         * 
+         * @param object record: The record to select
+         * @return promise
+         */
+        object.selectRecord = function( record ) {
+          if( !this.parentModel.viewEnabled ) throw 'Calling selectRecord() but viewEnabled is false';
+          return this.parentModel.transitionToViewState( record );
+        };
+
+        /**
          * Override these function when needing to make additional operations when choosing, deleting
          * or listing this model's records.
          * 
@@ -1656,6 +1671,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.onChoose = function( record ) { return this.chooseRecord( record ); };
         object.onDelete = function( record ) { return this.deleteRecord( record ); };
         object.onList = function( replace ) { return this.listRecords( replace ); };
+        object.onSelect = function( record ) { return this.selectRecord( record ); };
       }
     };
   }
@@ -1728,7 +1744,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         };
 
         /**
-         * Must be called by the onDelete() function in order to delete the viewed record from the server.
+         * Is usually called by the onDelete() function in order to delete the viewed record from the server.
          * This function should not be changed, override the onDelete() function instead.
          * 
          * @return promise
@@ -1742,7 +1758,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         };
 
         /**
-         * Must be called by the onPatch() function in order to make changes on the server to the viewed record.
+         * Is usually called by the onPatch() function in order to make changes on the server to the viewed record.
          * This function should not be changed, override the onPatch() function instead.
          * 
          * @param object data: An object of column -> value pairs to change
@@ -1758,7 +1774,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         };
 
         /**
-         * Must be called by the onView() function in order to load data from the server to view the record.
+         * Is usually called by the onView() function in order to load data from the server to view the record.
          * This function should not be changed, override the onView() function instead.
          * 
          * @return promise
@@ -1965,13 +1981,13 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           // add identifier data if we are getting view data
           if( angular.isDefined( this.identifier.column ) && angular.isUndefined( list[this.identifier.column] ) )
-            list[this.identifier.column] = { type: 'identifier' };
+            list[this.identifier.column] = { type: 'hidden' };
 
           if( 'view' == type ) {
             if( angular.isDefined( this.identifier.parent ) ) {
               for( var i = 0; i < this.identifier.parent.length; i++ ) {
                 list[this.identifier.parent[i].alias] = {
-                  type: 'identifier',
+                  type: 'hidden',
                   column: this.identifier.parent[i].column
                 };
               }
@@ -2027,7 +2043,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
 
-            if( 'list' == type && 'identifier' != list[key].type ) {
+            if( 'list' == type && 'hidden' != list[key].type ) {
               for( var i = 0; i < list[key].restrictList.length; i++ ) {
                 var test = list[key].restrictList[i].test;
                 var value = list[key].restrictList[i].value;
@@ -2076,10 +2092,10 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         object.reloadState = function( record ) {
           if( angular.isUndefined( record ) ) {
-            $state.reload();
+            return $state.reload();
           } else {
             $state.params.identifier = record.getIdentifier();
-            $state.transitionTo( $state.current, $state.params, { reload: true } );
+            return $state.transitionTo( $state.current, $state.params, { reload: true } );
           }
         };
 
@@ -2088,12 +2104,9 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         object.transitionToLastState = function() {
           var parent = this.getParentIdentifier();
-          if( angular.isDefined( parent.subject ) ) {
-            // return to viewing the parent model
-            $state.go( parent.subject + '.view', { identifier: parent.identifier } );
-          } else {
+          return angular.isDefined( parent.subject ) ?
+            $state.go( parent.subject + '.view', { identifier: parent.identifier } ) :
             $state.go( '^.list' );
-          }
         };
         
         /**
@@ -2101,11 +2114,9 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         object.transitionToAddState = function() {
           var stateName = $state.current.name;
-          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
-            $state.go( '^.add_' + this.subject, { parentIdentifier: $state.params.identifier } );
-          } else { // adding to a view state
+          return 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ?
+            $state.go( '^.add_' + this.subject, { parentIdentifier: $state.params.identifier } ) :
             $state.go( '^.add' );
-          }
         };
         
         /**
@@ -2116,14 +2127,14 @@ cenozo.factory( 'CnBaseModelFactory', [
           var stateParams = { identifier: record.getIdentifier() };
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) )
             stateParams.parentIdentifier = $state.params.identifier;
-          $state.go( this.subject + '.view', stateParams );
+          return $state.go( this.subject + '.view', stateParams );
         };
         
         /**
          * TODO: document
          */
         object.transitionToParentViewState = function( subject, identifier ) {
-          $state.go( subject + '.view', { identifier: identifier } );
+          return $state.go( subject + '.view', { identifier: identifier } );
         };
         
         /**
@@ -2137,10 +2148,10 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( angular.isDefined( parent.subject ) ) {
             trail = trail.concat( [ {
               title: parent.subject.replace( '_', ' ' ).ucWords(),
-              go: function() { $state.go( parent.subject + '.list' ); }
+              go: function() { return $state.go( parent.subject + '.list' ); }
             }, {
               title: this.getBreadcrumbParentTitle(),
-              go: function() { $state.go( parent.subject + '.view', { identifier: parent.identifier } ); }
+              go: function() { return $state.go( parent.subject + '.view', { identifier: parent.identifier } ); }
             } ] );
           }
 
@@ -2182,8 +2193,8 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( 'list' == type ) {
             for( var key in this.columnList ) {
               if( 0 > removeList.indexOf( key ) &&
-                  // don't include identifier columns
-                  'identifier' != this.columnList[key].type &&
+                  // don't include hidden columns
+                  'hidden' != this.columnList[key].type &&
                   // for child lists, don't include parent columns
                   !( stateSubject != this.subject &&
                      angular.isDefined( this.columnList[key].column ) &&
@@ -2286,7 +2297,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.enableView = function( enable ) { this.viewEnabled = enable; };
 
         /**
-         * Must be called by the getMetadata() function in order to load this model's base metadata
+         * Is usually called by the getMetadata() function in order to load this model's base metadata
          * This function should not be changed, override the getMetadata() function instead.
          * 
          * @return promise
