@@ -317,14 +317,14 @@ class session extends \cenozo\singleton
    * Return whether the session has permission to perform the given service.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\service $service If null this method returns false.
+   * @param database\service $db_service If null this method returns false.
    * @return boolean
    * @access public
    */
-  public function is_service_allowed( $service )
+  public function is_service_allowed( $db_service )
   {
-    return !is_null( $service ) && !is_null( $this->db_role ) &&
-           ( !$service->restricted || $this->db_role->has_service( $service ) );
+    return !is_null( $db_service ) && !is_null( $this->db_role ) &&
+           ( !$db_service->restricted || $this->db_role->has_service( $db_service ) );
   }
 
   /**
