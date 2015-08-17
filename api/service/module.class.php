@@ -129,9 +129,35 @@ abstract class module extends \cenozo\base_object
   /**
    * TODO: document
    */
+  public function get_file_as_raw()
+  {
+    return $this->service->get_file_as_raw();
+  }
+
+  /**
+   * TODO: document
+   */
+  public function get_file_as_object()
+  {
+    return $this->service->get_file_as_object();
+  }
+
+  /**
+   * TODO: document
+   */
+  public function get_file_as_array()
+  {
+    return $this->service->get_file_as_array();
+  }
+
+  /**
+   * TODO: document
+   */
   protected function get_argument( $name, $default = NULL )
   {
-    return $this->service->get_argument( $name, $default );
+    return 1 == func_num_args() ?
+      $this->service->get_argument( $name ) :
+      $this->service->get_argument( $name, $default );
   }
 
   /**
