@@ -239,7 +239,14 @@ class select extends \cenozo\base_object
     {
       if( $alias )
       {
-        $found = array_key_exists( $column, $this->column_list[$table] );
+        foreach( $this->column_list as $table_column_list )
+        {
+          if( array_key_exists( $column, $table_column_list ) )
+          {
+            $found = true;
+            break;
+          }
+        }
       }
       else
       {
@@ -329,6 +336,32 @@ class select extends \cenozo\base_object
   }
 
   /**
+   * Returns the full column details associated with an alias
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $alias The name of the alias (may be identical to the column name)
+   * @return array
+   * @access public
+   */
+  public function get_alias_details( $alias )
+  {
+    foreach( $this->column_list as $t => $c )
+    {
+      foreach( $c as $a => $details )
+      {
+        if( $a == $alias )
+        {
+          $details['table'] = $t;
+          return $details;
+        }
+      }
+    }
+
+    log::warning( sprintf( 'Unable to find column for alias "%s" in select object', $alias ) );
+    return NULL;
+  }
+
+  /**
    * Returns the table name associated with an alias
    * 
    * This resolves the "from" table, meaning if an alias was added without a table name then
@@ -341,12 +374,8 @@ class select extends \cenozo\base_object
    */
   public function get_alias_table( $alias )
   {
-    foreach( $this->column_list as $t => $c )
-      foreach( $c as $a => $details )
-        if( $a == $alias ) return 0 == strlen( $t ) ? $this->table_name : $t;
-
-    log::warning( sprintf( 'Unable to find table for alias "%s" in select object', $alias ) );
-    return NULL;
+    $details = $this->get_alias_details( $alias );
+    return is_null( $details ) ? NULL : $details['table'];
   }
 
   /**
@@ -359,12 +388,22 @@ class select extends \cenozo\base_object
    */
   public function get_alias_column( $alias )
   {
-    foreach( $this->column_list as $t => $c )
-      foreach( $c as $a => $details )
-        if( $a == $alias ) return $details['column'];
+    $details = $this->get_alias_details( $alias );
+    return is_null( $details ) ? NULL : $details['column'];
+  }
 
-    log::warning( sprintf( 'Unable to find column for alias "%s" in select object', $alias ) );
-    return NULL;
+  /**
+   * Returns the column type associated with an alias
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $alias The name of the alias (may be identical to the column name)
+   * @return string
+   * @access public
+   */
+  public function get_alias_type( $alias )
+  {
+    $details = $this->get_alias_details( $alias );
+    return is_null( $details ) ? NULL : $details['type'];
   }
 
   /**
