@@ -56,7 +56,7 @@ $settings['path']['SHIFT8'] = '/usr/local/lib/shift8';
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
 $settings['db']['prefix'] = '';
-$settings['db']['query_limit'] = 50;
+$settings['db']['query_limit'] = 100;
 
 // ldap settings
 $settings['ldap']['enabled'] = true;
