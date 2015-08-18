@@ -2946,6 +2946,10 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
       if( angular.isUndefined( params.participant ) )
         throw 'Tried to create CnModalAccountFactory instance without a participant';
 
+      this.identifier = angular.isDefined( params.participant.getIdentifier )
+                      ? params.participant.getIdentifier()
+                      : params.participant.id;
+
       this.add = function( text ) {
         var note = {
           user_id: CnSession.user.id,
@@ -2954,7 +2958,7 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
         };
         
         return CnHttpFactory.instance( {
-          path: 'participant/' + params.participant.getIdentifier() + '/note',
+          path: 'participant/' + self.identifier + '/note',
           data: note
         } ).post().then( function( response ) {
           note.id = response.data;
@@ -2967,7 +2971,7 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
 
       this.delete = function( note ) {
         CnHttpFactory.instance( {
-          path: 'participant/' + params.participant.getIdentifier() + '/note/' + note.id
+          path: 'participant/' + self.identifier + '/note/' + note.id
         } ).delete().catch( CnSession.errorHandler );
       };
 
@@ -2975,7 +2979,7 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
         var data = {};
         data[key] = note[key];
         CnHttpFactory.instance( {
-          path: 'participant/' + params.participant.getIdentifier() + '/note/' + note.id,
+          path: 'participant/' + self.identifier + '/note/' + note.id,
           data: data
         } ).patch().catch( CnSession.errorHandler );
       };
@@ -2988,7 +2992,7 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-participant-note.tpl.html',
           controller: function( $scope, $modalInstance ) {
             CnHttpFactory.instance( {
-              path: 'participant/' + params.participant.getIdentifier() + '/note',
+              path: 'participant/' + self.identifier + '/note',
               data: {
                 modifier: {
                   join: {
@@ -3026,6 +3030,7 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
             } ).catch( CnSession.errorHandler );
 
             $scope.participant = params.participant;
+
             $scope.allowAdd = 0 <= CnSession.noteActions.indexOf( 'add' );
             $scope.allowDelete = 0 <= CnSession.noteActions.indexOf( 'delete' );
             $scope.allowEdit = 0 <= CnSession.noteActions.indexOf( 'edit' );

@@ -82,5 +82,8 @@ class module extends \cenozo\service\module
       $modifier->left_join( 'site', 'participant_site.site_id', 'site.id' );
       $modifier->left_join( 'site', 'participant_site.default_site_id', 'default_site.id', 'default_site' );
     }
+
+    if( $select->has_table_columns( 'language' ) )
+      $modifier->join( 'language', 'participant.language_id', 'language.id' );
   }
 }

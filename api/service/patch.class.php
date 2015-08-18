@@ -37,7 +37,6 @@ class patch extends write
         try
         {
           $leaf_record->$key = $value;
-          $this->status->set_code( 204 );
         }
         catch( \cenozo\exception\argument $e )
         {
@@ -46,29 +45,28 @@ class patch extends write
         }
       }
 
-      if( 300 > $this->status->get_code() )
+      $this->status->set_code( 204 );
+
+      try
       {
-        try
+        $leaf_record->save();
+      }
+      catch( \cenozo\exception\notice $e )
+      {
+        $this->set_data( $e->get_notice() );
+        $this->status->set_code( 406 );
+      }
+      catch( \cenozo\exception\database $e )
+      {
+        if( $e->is_duplicate_entry() )
         {
-          $leaf_record->save();
+          $this->set_data( $e->get_duplicate_columns( $leaf_record->get_class_name() ) );
+          $this->status->set_code( 409 );
         }
-        catch( \cenozo\exception\notice $e )
+        else
         {
-          $this->set_data( $e->get_notice() );
-          $this->status->set_code( 406 );
-        }
-        catch( \cenozo\exception\database $e )
-        {
-          if( $e->is_duplicate_entry() )
-          {
-            $this->set_data( $e->get_duplicate_columns( $leaf_record->get_class_name() ) );
-            $this->status->set_code( 409 );
-          }
-          else
-          {
-            $this->status->set_code( $e->is_missing_data() ? 400 : 500 );
-            throw $e;
-          }
+          $this->status->set_code( $e->is_missing_data() ? 400 : 500 );
+          throw $e;
         }
       }
     }

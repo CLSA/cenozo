@@ -316,6 +316,19 @@ abstract class service extends \cenozo\base_object
     return array_key_exists( $index, $this->collection_name_list ) ? $this->collection_name_list[$index] : NULL;
   }
 
+  /**
+   * Returns the resource value for a particular index
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $index
+   * @return string
+   * @access protected
+   */
+  protected function get_resource_value( $index )
+  {
+    return array_key_exists( $index, $this->resource_value_list ) ? $this->resource_value_list[$index] : NULL;
+  }
+
   /** 
    * TODO: document
    */

@@ -1,7 +1,12 @@
 <form ng-submit="ok()" novalidate name="form" class="noselect">
   <div class="modal-header bg-primary">
-    <button type="button" class="close" ng-click="close()">&times;</button>
-    <h4 class="modal-title">Notes for {{ participant.uid }}</h4>
+    <h4 class="modal-title">
+      <i class="glyphicon glyphicon-remove glyph-hover btn-primary btn-header pull-right"
+         ng-click="close()"
+         tooltip="Close"
+         tooltip-placement="left"></i>
+      Notes for {{ participant.uid }}
+    </h4>
   </div>
   <div class="modal-body">
     <p class="text-info">

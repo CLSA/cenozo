@@ -40,7 +40,7 @@ class module extends \cenozo\service\module
     if( !$session->get_role()->all_sites )
     {
       $sub_mod = lib::create( 'database\modifier' );
-      $sub_mod->where( 'participant_id', '=', 'participant_site.participant_id', false );
+      $sub_mod->where( 'note.participant_id', '=', 'participant_site.participant_id', false );
       $sub_mod->where( 'participant_site.application_id', '=', $session->get_application()->id );
       $sub_mod->where( 'participant_site.site_id', '=', $session->get_site()->id );
       $modifier->join_modifier( 'participant_site', $sub_mod );

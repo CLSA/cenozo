@@ -17,7 +17,7 @@ blockquote { font-size: 100%; }
 .form-body { padding-top: 1em; }
 .form-horizontal .form-group { margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
 .form-footer { padding: 1em; }
-.footer-total{ line-height: 2.42857; }
+.footer-total, .form-text { line-height: 34px; }
 .spacer { margin: 0.5em; content: "&nbsp;" }
 .vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
 .horizontal-spacer { margin-left: 0.5em; margin-right: 0.5em; }
@@ -90,6 +90,7 @@ input[type=number] { -moz-appearance: textfield; }
 }
 
 /* modal tweaking */
+.modal-title { font-weight: bold; }
 .modal-content { border-width: 0px; }
 .modal-body { display: block; overflow: auto; }
 thead, .modal-header {
@@ -100,7 +101,6 @@ tfoot, .modal-footer {
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
 }
-.modal-title { font-weight: bold; }
 
 .loader {
   padding: 3em;
