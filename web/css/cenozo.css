@@ -1,9 +1,9 @@
-table { margin-bottom: 0px !important; }
-thead, tfoot { font-weight: bold; }
-thead td, tbody td { text-align: center; }
-tfoot { text-align: center; }
+table, .collapsed-footer { margin-bottom: 0px !important; }
+thead, tfoot, .collapsed-footer { font-weight: bold; }
+thead td, tbody td, tfoot, .collapsed-footer { text-align: center; }
 td { border: 0px !important; }
 td.tiny { width: 1px; white-space: nowrap; }
+.collapsed-footer { padding: 8px; }
 blockquote { font-size: 100%; }
 .btn { font-weight: bold; }
 .btn-narrow { padding-left: 6px; padding-right: 6px; }
@@ -37,6 +37,7 @@ blockquote { font-size: 100%; }
 .operation-list { padding: 0.5em; }
 .no-line-height { line-height: 0px; }
 .bg-white { background-color: #fff; }
+.btn-header { border-radius: 6px; margin-right: -5px !important; margin-left: 0px !important; }
 
 textarea.note {
   border-radius:0px;

@@ -628,7 +628,8 @@ cenozo.directive( 'cnRecordList', [
       restrict: 'E',
       scope: {
         model: '=',
-        removeColumns: '@'
+        removeColumns: '@',
+        collapsed: '@'
       },
       controller: function( $scope ) {
         $scope.refresh = function() {
@@ -680,6 +681,8 @@ cenozo.directive( 'cnRecordList', [
                         ? scope.model.name.singular.ucWords() + ' List'
                         : attrs.heading;
 
+          scope.initCollapsed = scope.collapsed ? true : false;
+
           // add site to removeColumns if role doesn't allow for all sites
           var removeColumns = angular.isDefined( scope.removeColumns ) ? scope.removeColumns.split( ' ' ) : []
           if( !CnSession.role.allSites && 0 > removeColumns.indexOf( 'site' ) ) removeColumns.push( 'site' );
@@ -721,7 +724,8 @@ cenozo.directive( 'cnRecordView', [
       restrict: 'E',
       scope: {
         model: '=',
-        removeInputs: '@'
+        removeInputs: '@',
+        collapsed: '@'
       },
       controller: function( $scope ) {
         $scope.refresh = function() {
@@ -902,6 +906,7 @@ cenozo.directive( 'cnRecordView', [
           console.error( 'Cannot render cn-record-view, no model provided.' );
         } else {
           scope.heading = attrs.heading;
+          scope.initCollapsed = scope.collapsed ? true : false;
           if( angular.isUndefined( scope.heading ) )
             scope.heading = scope.model.name.singular.ucWords() + ' Details';
 

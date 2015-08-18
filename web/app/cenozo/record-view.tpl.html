@@ -1,16 +1,25 @@
 <div class="record-view rounded">
   <div class="container-fluid bg-primary rounded-top">
     <h4>
-      <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
-         ng-if="isComplete"
-         ng-click="refresh()"
-         tooltip="Click to refresh data"
-         tooltip-placement="left"></i>
+      <div class="pull-right">
+        <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
+           ng-if="isComplete"
+           ng-click="refresh()"
+           tooltip="Click to refresh data"
+           tooltip-placement="left"></i>
+        <i class="glyphicon glyph-hover btn-primary btn-header"
+           ng-class="collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
+           data-toggle="collapse"
+           data-target="#{{ model.subject }}View"
+           ng-click="collapsed = !collapsed"
+           tooltip="Click to expand participant details"
+           tooltip-placement="left"></i>
+      </div>
       {{ heading }}{{ model.editEnabled ? '' : ' (read only)' }} <span ng-if="!isComplete">(Loading&hellip;)</span>
     </h4>
   </div>
   <form name="form" class="form-horizontal" novalidate>
-    <div class="form-body">
+    <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.subject }}View">
       <ng-form ng-repeat="input in dataArray"
                name="innerForm">
         <div class="form-group"
@@ -228,7 +237,7 @@
           <div ng-if="model.editEnabled &&
                       model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
                class="col-sm-1 col-slim">
-            <button class="btn btn-small btn-warning" type="button" ng-click="undo( input.key )">Undo</button>
+            <button class="btn btn-warning" type="button" ng-click="undo( input.key )">Undo</button>
           </div>
         </div>
       </ng-form>
