@@ -989,17 +989,20 @@ abstract class record extends \cenozo\base_object
         {
           foreach( $row as $column => $value )
           {
-            // try and determine the type
-            $type = 'string';
+            if( !is_null( $return_value[$index][$column] ) )
+            {
+              // try and determine the type
+              $type = 'string';
 
-            $details = $select->get_alias_details( $column );
-            $current_table = 0 == strlen( $details['table'] ) ? $select->get_table_name() : $details['table'];
-            if( !is_null( $details['type'] ) ) $type = $details['type'];
-            else if( static::db()->column_exists( $current_table, $details['column'] ) )
-              $type = static::db()->get_column_variable_type( $current_table, $details['column'] );
-            else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
+              $details = $select->get_alias_details( $column );
+              $current_table = 0 == strlen( $details['table'] ) ? $select->get_table_name() : $details['table'];
+              if( !is_null( $details['type'] ) ) $type = $details['type'];
+              else if( static::db()->column_exists( $current_table, $details['column'] ) )
+                $type = static::db()->get_column_variable_type( $current_table, $details['column'] );
+              else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
 
-            if( 'string' != $type && 'datetime' != $type ) settype( $return_value[$index][$column], $type );
+              if( 'string' != $type && 'datetime' != $type ) settype( $return_value[$index][$column], $type );
+            }
           }
         }
       }
