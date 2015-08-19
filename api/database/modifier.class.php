@@ -220,12 +220,15 @@ class modifier extends \cenozo\base_object
    * @param boolean $open Whether to open or close a bracket
    * @param boolean $or Whether to logically "or" the contents of the bracket
    *        (default is false, which means "and").  This is ignored when closing brackets.
+   * @param boolean $not Whether to logically "not" the contents of the bracket
+   *        (default is to not include the "not" statement).  This is ignored when closing brackets.
    * @access public
    */
-  public function where_bracket( $open, $or = false )
+  public function where_bracket( $open, $or = false, $not = false )
   {
     $this->where_list[] = array( 'bracket' => $open,
-                                 'or' => $or );
+                                 'or' => $or,
+                                 'not' => $not );
   }
 
   /**
@@ -307,12 +310,15 @@ class modifier extends \cenozo\base_object
    * @param boolean $open Whether to open or close a bracket
    * @param boolean $or Whether to logically "or" the contents of the bracket
    *        (default is false, which means "and").  This is ignored when closing brackets.
+   * @param boolean $not Whether to logically "not" the contents of the bracket
+   *        (default is to not include the "not" statement).  This is ignored when closing brackets.
    * @access public
    */
-  public function having_bracket( $open, $or = false )
+  public function having_bracket( $open, $or = false, $not = false )
   {
     $this->having_list[] = array( 'bracket' => $open,
-                                 'or' => $or );
+                                 'or' => $or,
+                                 'not' => $not );
   }
 
   /**
@@ -782,7 +788,9 @@ class modifier extends \cenozo\base_object
       // check if this is a bracket
       if( array_key_exists( 'bracket', $item ) )
       {
-        $statement = $item['bracket'] ? '(' : ( $last_open_bracket ? 'true )' : ')' );
+        $statement = $item['bracket']
+                   ? ( $item['not'] ? 'NOT ' : '' ).'('
+                   : ( $last_open_bracket ? 'true )' : ')' );
       }
       else
       {
