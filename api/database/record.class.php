@@ -676,7 +676,6 @@ abstract class record extends \cenozo\base_object
                       ? $foreign_class_name::select_objects( $modifier )
                       : $foreign_class_name::select( $select, $modifier );
       }
-
     }
     else
     {
@@ -994,9 +993,10 @@ abstract class record extends \cenozo\base_object
             $type = 'string';
 
             $details = $select->get_alias_details( $column );
+            $current_table = 0 == strlen( $details['table'] ) ? $select->get_table_name() : $details['table'];
             if( !is_null( $details['type'] ) ) $type = $details['type'];
-            else if( static::db()->column_exists( $details['table'], $details['column'] ) )
-              $type = static::db()->get_column_variable_type( $details['table'], $details['column'] );
+            else if( static::db()->column_exists( $current_table, $details['column'] ) )
+              $type = static::db()->get_column_variable_type( $current_table, $details['column'] );
             else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
 
             if( 'string' != $type && 'datetime' != $type ) settype( $return_value[$index][$column], $type );
