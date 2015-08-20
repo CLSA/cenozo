@@ -783,12 +783,14 @@ class modifier extends \cenozo\base_object
     $last_open_bracket = false;
     foreach( $list as $item )
     {
+      $open_bracket = NULL;
       $statement = '';
 
       // check if this is a bracket
       if( array_key_exists( 'bracket', $item ) )
       {
-        $statement = $item['bracket']
+        $open_bracket = $item['bracket'];
+        $statement = $open_bracket
                    ? ( $item['not'] ? 'NOT ' : '' ).'('
                    : ( $last_open_bracket ? 'true )' : ')' );
       }
@@ -868,10 +870,14 @@ class modifier extends \cenozo\base_object
       }
 
       $logic_type = $item['or'] ? ' OR' : ' AND';
-      if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
-      $sql .= ' '.$statement;
+      // only show the logic type if...
+      $show_logic =
+        !$first_item && // this isn't the first item
+        !( false === $open_bracket ) && // we're not closing a bracket
+        !$last_open_bracket; // we didn't just open a bracket
+      $sql .= ( $show_logic ? $logic_type : '' ).' '.$statement;
       $first_item = false;
-      $last_open_bracket = '(' == $statement;
+      $last_open_bracket = true === $open_bracket;
     }
 
     return $sql;
