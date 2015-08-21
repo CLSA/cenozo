@@ -347,28 +347,52 @@ abstract class record extends \cenozo\base_object
       if( $select->has_external_table_columns() ||
           ( !is_null( $modifier ) && 0 < $modifier->get_join_count() ) )
       { // the select/modifier statements are requiring that we query the database
+        if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
         $modifier->where( sprintf( '%s.id', $table_name ), '=', $this->id );
         $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
         $columns = static::db()->get_row( $sql );
 
         // convert non-null values
-        if( is_array( $columns ) ) foreach( $columns as $column => $value )
+        if( is_array( $columns ) )
         {
-          if( !is_null( $value ) )
+          foreach( $columns as $column => $value )
           {
-            // get the table and column associated with this column (alias)
-            $current_table_name = $select->get_alias_table( $column );
-            $current_column_name = $select->get_alias_column( $column );
-
-            // the table name in the select may be an alias to a join in the modifier
-            if( $modifier->has_join( $current_table_name ) )
-              $current_table_name = $modifier->get_alias_table( $current_table_name );
-
-            // convert column types
-            if( static::db()->column_exists( $current_table_name, $current_column_name ) )
+            if( !is_null( $value ) )
             {
-              $type = static::db()->get_column_variable_type( $current_table_name, $current_column_name );
-              if( 'string' != $type && 'datetime' != $type ) settype( $columns[$column], $type );
+              // see if the column is an alias in the select object
+              $type = NULL;
+              $alias_details = NULL;
+              $current_column_name = $column;
+              $current_table_name = NULL;
+              if( $select->has_alias( $column ) )
+              {
+                $alias_details = $select->get_alias_details( $column );
+                $type = $alias_details['type'];
+                if( is_null( $type ) )
+                {
+                  $current_column_name = $alias_details['column'];
+                  $current_table_name = 0 == strlen( $alias_details['table'] )
+                                      ? $select->get_table_name()
+                                      : $alias_details['table'];
+
+                  // the table name may be an alias to a join in the modifier
+                  if( $modifier->has_join( $current_table_name ) )
+                    $current_table_name = $modifier->get_alias_table( $current_table_name );
+                }
+              }
+              else if( static::column_exists( $column ) ) $current_table_name = $table_name;
+
+              if( is_null( $type ) )
+              {
+                // we come here if the column is an alias in the select but has no type,
+                // or the column exists in the local (static) table's column list
+                if( static::db()->column_exists( $current_table_name, $current_column_name ) )
+                  $type = static::db()->get_column_variable_type( $current_table_name, $current_column_name );
+                else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
+              }
+
+              if( !is_null( $type ) && 'string' != $type && 'datetime' != $type )
+                settype( $columns[$column], $type );
             }
           }
         }
@@ -989,19 +1013,42 @@ abstract class record extends \cenozo\base_object
         {
           foreach( $row as $column => $value )
           {
-            if( !is_null( $return_value[$index][$column] ) )
+            if( !is_null( $value ) )
             {
-              // try and determine the type
-              $type = 'string';
+              // see if the column is an alias in the select object
+              $type = NULL;
+              $alias_details = NULL;
+              $current_column_name = $column;
+              $current_table_name = NULL;
+              if( $select->has_alias( $column ) )
+              {
+                $alias_details = $select->get_alias_details( $column );
+                $type = $alias_details['type'];
+                if( is_null( $type ) )
+                {
+                  $current_column_name = $alias_details['column'];
+                  $current_table_name = 0 == strlen( $alias_details['table'] )
+                                      ? $select->get_table_name()
+                                      : $alias_details['table'];
 
-              $details = $select->get_alias_details( $column );
-              $current_table = 0 == strlen( $details['table'] ) ? $select->get_table_name() : $details['table'];
-              if( !is_null( $details['type'] ) ) $type = $details['type'];
-              else if( static::db()->column_exists( $current_table, $details['column'] ) )
-                $type = static::db()->get_column_variable_type( $current_table, $details['column'] );
-              else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
+                  // the table name may be an alias to a join in the modifier
+                  if( $modifier->has_join( $current_table_name ) )
+                    $current_table_name = $modifier->get_alias_table( $current_table_name );
+                }
+              }
+              else if( static::column_exists( $column ) ) $current_table_name = $table_name;
 
-              if( 'string' != $type && 'datetime' != $type ) settype( $return_value[$index][$column], $type );
+              if( is_null( $type ) )
+              {
+                // we come here if the column is an alias in the select but has no type,
+                // or the column exists in the local (static) table's column list
+                if( static::db()->column_exists( $current_table_name, $current_column_name ) )
+                  $type = static::db()->get_column_variable_type( $current_table_name, $current_column_name );
+                else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
+              }
+
+              if( !is_null( $type ) && 'string' != $type && 'datetime' != $type )
+                settype( $return_value[$index][$column], $type );
             }
           }
         }

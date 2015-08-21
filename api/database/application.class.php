@@ -95,9 +95,14 @@ class application extends record
     }
 
     $select = lib::create( 'database\select' );
-    $select->add_column( 'DISTINCT grouping', 'grouping', false );
+    $select->from( 'application_has_cohort' );
+    $select->set_distinct( true );
+    $select->add_column( 'grouping', 'grouping', false );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'application_id', '=', $this->id );
+    $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
     $list = array();
-    foreach( $this->get_cohort_list( $select ) as $row ) $list[] = $row['grouping'];
+    foreach( static::db()->get_col( $sql ) as $grouping ) $list[] = $grouping;
     return $list;
   }
 

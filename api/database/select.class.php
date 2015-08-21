@@ -237,6 +237,7 @@ class select extends \cenozo\base_object
     $found = array_key_exists( $table, $this->column_list );
     if( $found && !is_null( $column ) )
     {
+      $found = false;
       if( $alias )
       {
         foreach( $this->column_list as $table_column_list )

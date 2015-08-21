@@ -282,7 +282,7 @@ class database extends \cenozo\base_object
     if( in_array( $data_type, $float_types ) ) return 'float';
     
     log::warning( sprintf(
-      'Database containes column type "%s" which is not categorized by database layer',
+      'Database contains column type "%s" which is not categorized by database layer',
       $data_type ) );
     return 'string';
   }
