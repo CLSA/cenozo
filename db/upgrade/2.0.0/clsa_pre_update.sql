@@ -217,6 +217,22 @@ CREATE PROCEDURE clsa_pre_update()
           JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @bt_service_id
           SET site_id = site1.id
           WHERE site_id IN ( SELECT id FROM site WHERE service_id = @f1_service_id );
+
+          -- now remove duplicates
+          DROP TABLE IF EXISTS temp;
+          CREATE TEMPORARY TABLE temp
+          SELECT * FROM jurisdiction
+          GROUP BY site_id, postcode
+          HAVING COUNT(*) > 1
+          ORDER BY id;
+          INSERT INTO temp
+          SELECT * FROM jurisdiction
+          GROUP BY site_id, postcode
+          HAVING COUNT(*) = 1
+          ORDER BY id;
+
+          TRUNCATE jurisdiction;
+          INSERT INTO jurisdiction SELECT * FROM temp ORDER BY id;
         END IF;
       END IF;
 
@@ -236,6 +252,7 @@ CREATE PROCEDURE clsa_pre_update()
           WHERE site_id IN ( SELECT id FROM site WHERE service_id = @mc_service_id );
 
           -- now remove duplicates
+          DROP TABLE IF EXISTS temp;
           CREATE TEMPORARY TABLE temp
           SELECT * FROM region_site
           GROUP BY site_id, region_id, language_id
