@@ -107,6 +107,7 @@
                   <li ng-repeat="(title,module) in lists">
                     <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
+                       ui-sref-active="btn-warning"
                        ui-sref="{{ module }}.list">{{ title }}</a>
                   </li>
                 </ul>
@@ -117,7 +118,11 @@
                   <li ng-repeat="(title,module) in utilities">
                     <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                       ui-sref="{{ module.subject }}.{{ module.action }}">{{ title }}</a>
+                       ui-sref-active="btn-warning"
+                       ui-sref="{{
+                         module.subject + '.' + module.action +
+                         ( module.identifier ? '({identifier:\'' + module.identifier + '\'})' : '' )
+                       }}">{{ title }}</a>
                   </li>
                 </ul>
                 <ul class="navigation-group col-xs-4">
@@ -127,6 +132,7 @@
                   <li ng-repeat="(title,module) in reports">
                     <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
+                       ui-sref-active="btn-warning"
                        ui-sref="{{ module }}.view">{{ title }}</a>
                   </li>
                 </ul>

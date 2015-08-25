@@ -80,7 +80,8 @@ class ui extends \cenozo\base_object
         if( !array_key_exists( $module['subject'], $module_list ) )
           $module_list[$module['subject']] =
             array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
-        $module_list[$module['subject']]['actions'][] = $module['action'];
+        if( !in_array( $module['action'], $module_list[$module['subject']]['actions'] ) )
+          $module_list[$module['subject']]['actions'][] = $module['action'];
       }
       ksort( $utility_items );
      
@@ -235,13 +236,15 @@ class ui extends \cenozo\base_object
       $list['Activities']      = 'activity';
       $list['Event Types']     = 'event_type';
       $list['Quotas']          = 'quota';
-      $list['Settings']        = 'setting';
       $list['States']          = 'state';
       $list['System Messages'] = 'system_message';
       $list['Users']           = 'user';
     }
     if( 3 <= $db_role->tier )
-      $list['Applications'] = 'application';
+    {
+      $list['Applications']    = 'application';
+      $list['Settings']        = 'setting';
+    }
 
     // determine which grouping type to use
     $grouping_list = $session->get_application()->get_cohort_groupings();

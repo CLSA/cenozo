@@ -243,13 +243,6 @@ cenozo.service( 'CnBaseHeader', [
               } );
             }
           },
-          siteSettings: {
-            title: 'Site Settings',
-            help: 'Edit site settings',
-            execute: function() {
-              return $state.go( 'site.view', { identifier: CnSession.site.id } );
-            }
-          },
           siteRole: {
             title: 'Site/Role',
             help: 'Change which site and role you are logged in as',
