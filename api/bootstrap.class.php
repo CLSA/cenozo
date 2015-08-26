@@ -29,31 +29,10 @@ final class bootstrap
   {
     // WARNING!  Do not use the log class in this method!
 
-    // set the method type and request path
+    // set the method type, arguments and input file (if patching/posting)
     $this->method = $_SERVER['REQUEST_METHOD'];
-
-    // determine the arguments
-    if( 'DELETE' == $this->method )
-    {
-    }
-    else if( 'GET' == $this->method )
-    {
-      $this->arguments = $_GET;
-    }
-    else if( 'HEAD' == $this->method )
-    {
-      $this->arguments = $_GET;
-    }
-    else if( 'PATCH' == $this->method )
-    {
-      $this->arguments =  $_GET;
-      $this->file = file_get_contents( 'php://input' );
-    }
-    else if( 'POST' == $this->method )
-    {
-      $this->arguments =  $_POST;
-      $this->file = file_get_contents( 'php://input' );
-    }
+    $this->arguments = $_REQUEST;
+    if( 'PATCH' == $this->method || 'POST' == $this->method ) $this->file = file_get_contents( 'php://input' );
   }
 
   /**
