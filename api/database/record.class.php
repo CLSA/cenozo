@@ -297,6 +297,14 @@ abstract class record extends \cenozo\base_object
         'Tried to write to record\'s primary key which is forbidden',
         __METHOD__ );
 
+    if( !is_null( $value ) )
+    {
+      // if the column is an enum, make sure the new value is valid
+      $enum_values = $this->get_enum_values( $column_name );
+      if( !is_null( $enum_values ) && !in_array( $value, $enum_values ) )
+        throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
+    }
+
     if( $this->passive_column_values[$column_name] != $value )
       $this->active_column_values[$column_name] = $value;
     else if( array_key_exists( $column_name, $this->active_column_values ) )
@@ -1204,13 +1212,17 @@ abstract class record extends \cenozo\base_object
    */
   public static function get_enum_values( $column_name )
   {
-    // match all strings in single quotes, then cut out the quotes from the match and return them
-    $type = static::db()->get_column_type( static::get_table_name(), $column_name );
-    preg_match_all( "/'[^']+'/", $type, $matches );
-    $values = array();
-    foreach( current( $matches ) as $match ) $values[] = substr( $match, 1, -1 );
+    $values = NULL;
+    if( 'enum' == static::db()->get_column_data_type( static::get_table_name(), $column_name ) )
+    {
+      // match all strings in single quotes, then cut out the quotes from the match and return them
+      $type = static::db()->get_column_type( static::get_table_name(), $column_name );
+      preg_match_all( "/'[^']+'/", $type, $matches );
+      $values = array();
+      foreach( current( $matches ) as $match ) $values[] = substr( $match, 1, -1 );
+      reset( $values );
+    }
 
-    reset( $values );
     return $values;
   }
 
