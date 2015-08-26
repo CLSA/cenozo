@@ -102,7 +102,7 @@ tfoot, .modal-footer {
   border-bottom-right-radius: 6px;
 }
 
-.loader {
+.loading {
   padding: 3em;
   height: 16px;
   background-image: url( ../img/loading.gif );
