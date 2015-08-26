@@ -30,10 +30,11 @@ class get extends \cenozo\service\service
   /**
    * Override parent method since self is a meta-resource
    */
-  public function get_resource( $index )
+  protected function create_resource( $index )
   {
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $system_message_class_name = lib::get_class_name( 'database\system_message' );
+    $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
 
     $application_sel = lib::create( 'database\select' );
@@ -86,6 +87,7 @@ class get extends \cenozo\service\service
     $access_mod->order( 'role.name' );
 
     $pseudo_record = array(
+      'voip_enabled' => $setting_manager->get_setting( 'voip', 'enabled' ),
       'application' => $session->get_application()->get_column_values( $application_sel ),
       'role' => $session->get_role()->get_column_values( $role_sel ),
       'site' => $session->get_site()->get_column_values( $site_sel ),

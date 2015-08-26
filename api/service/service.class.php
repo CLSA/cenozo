@@ -356,70 +356,75 @@ abstract class service extends \cenozo\base_object
    * @return database\record
    * @access public
    */
-  public function get_resource( $index )
+  public final function get_resource( $index )
   {
     if( !array_key_exists( $index, $this->resource_cache ) )
+      $this->resource_cache[$index] = $this->create_resource( $index );
+    return $this->resource_cache[$index];
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function create_resource( $index )
+  {
+    $session = lib::create( 'business\session' );
+
+    $record = NULL;
+
+    if( array_key_exists( $index, $this->collection_name_list ) &&
+        array_key_exists( $index, $this->resource_value_list ) )
     {
-      $session = lib::create( 'business\session' );
+      $resource_value = $this->resource_value_list[$index];
 
-      $record = NULL;
+      $util_class_name = lib::get_class_name( 'util' );
+      $record_class_name = $this->get_record_class_name( $index );
 
-      if( array_key_exists( $index, $this->collection_name_list ) &&
-          array_key_exists( $index, $this->resource_value_list ) )
-      {
-        $resource_value = $this->resource_value_list[$index];
-
-        $util_class_name = lib::get_class_name( 'util' );
-        $record_class_name = $this->get_record_class_name( $index );
-
-        if( $util_class_name::string_matches_int( $resource_value ) )
-        { // there is a resource, get the corresponding record
-          try
-          {
-            $record = new $record_class_name( $resource_value );
-          }
-          catch( \cenozo\exception\notice $e )
-          {
-            $this->set_data( $e->get_notice() );
-            $this->status->set_code( 406 );
-          }
-          // ignore runtime exceptions and instead just return a null record
-          catch( \cenozo\exception\runtime $e ) {}
+      if( $util_class_name::string_matches_int( $resource_value ) )
+      { // there is a resource, get the corresponding record
+        try
+        {
+          $record = new $record_class_name( $resource_value );
         }
-        else if( false !== strpos( $resource_value, '=' ) )
-        { // check unique keys
-          $columns = array();
-          $values = array();
-          foreach( explode( ';', $resource_value ) as $part )
+        catch( \cenozo\exception\notice $e )
+        {
+          $this->set_data( $e->get_notice() );
+          $this->status->set_code( 406 );
+        }
+        // ignore runtime exceptions and instead just return a null record
+        catch( \cenozo\exception\runtime $e ) {}
+      }
+      else if( false !== strpos( $resource_value, '=' ) )
+      { // check unique keys
+        $columns = array();
+        $values = array();
+        foreach( explode( ';', $resource_value ) as $part )
+        {
+          $pair = explode( '=', $part );
+          if( 2 == count( $pair ) )
           {
-            $pair = explode( '=', $part );
-            if( 2 == count( $pair ) )
-            {
-              $columns[] = $pair[0];
-              $values[] = $pair[1];
-            }
+            $columns[] = $pair[0];
+            $values[] = $pair[1];
+          }
+        }
+
+        if( 0 < count( $columns ) )
+        {
+          $parent_index = $index - 1;
+          if( 0 <= $parent_index )
+          {
+            // add the parent ID to the unique key
+            $parent_record = $this->get_resource( $parent_index );
+            $columns[] = sprintf( '%s_id', $parent_record->get_class_name() );
+            $values[] = $parent_record->id;
           }
 
-          if( 0 < count( $columns ) )
-          {
-            $parent_index = $index - 1;
-            if( 0 <= $parent_index )
-            {
-              // add the parent ID to the unique key
-              $parent_record = $this->get_resource( $parent_index );
-              $columns[] = sprintf( '%s_id', $parent_record->get_class_name() );
-              $values[] = $parent_record->id;
-            }
-
-            $record = $record_class_name::get_unique_record( $columns, $values );
-          }
+          $record = $record_class_name::get_unique_record( $columns, $values );
         }
       }
-
-      $this->resource_cache[$index] = $record;
     }
 
-    return $this->resource_cache[$index];
+    return $record;
   }
 
   /**

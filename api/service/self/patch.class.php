@@ -31,7 +31,7 @@ class patch extends \cenozo\service\service
   /**
    * Override parent method since self is a meta-resource
    */
-  public function get_resource( $index )
+  protected function create_resource( $index )
   {
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
