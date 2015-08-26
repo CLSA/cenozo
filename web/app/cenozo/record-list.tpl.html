@@ -59,8 +59,8 @@
       </thead>
       <tbody>
         <tr ng-if="model.listModel.isLoading">
-          <td colspan="{{ numColumns }}" style="background-color: white">
-            <div class="loader" tooltip="Loading&hellip;"></div>
+          <td colspan="{{ numColumns }}" class="bg-white">
+            <div class="loading" tooltip="Loading&hellip;"></div>
           </td>
         </tr>
         <tr ng-if="!model.listModel.isLoading && 0 == model.listModel.cache.length">

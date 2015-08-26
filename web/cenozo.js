@@ -52,6 +52,10 @@ cenozo.isDatetimeType = function( type ) {
   return 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type );
 };
 
+cenozo.parseEnumList = function( columnMetadata ) {
+  return columnMetadata.type.replace( /^enum\(['"]/i, '' ).replace( /['"]\)$/, '' ).split( "','" );
+}
+
 // Defines which modules are part of the framework
 cenozo.modules = function( modules ) { this.moduleList = angular.copy( modules ); };
 
@@ -193,7 +197,7 @@ cenozo.service( 'CnBaseHeader', [
         // update the time once the session has finished loading
         CnSession.promise.then( function() {
           CnSession.updateTime();
-          $interval( CnSession.updateTime, 10000 );
+          $interval( CnSession.updateTime, 4000 );
           scope.isLoading = false;
         } );
 
@@ -356,35 +360,6 @@ cenozo.directive( 'cnChange', [
               event.target.blur();
             }
           } );
-        } );
-      }
-    };
-  }
-] );
-
-/* ######################################################################################################## */
-
-/**
- * Displays a clock including hours, minutes and timezone (based on the timezone of the site
- * that the user is currently logged into).
- */
-cenozo.directive( 'cnClock', [
-  '$interval', 'CnSession',
-  function( $interval, CnSession ) {
-    return {
-      restrict: 'E',
-      templateUrl: cenozo.baseUrl + '/app/cenozo/clock.tpl.html',
-      link: function( scope, element ) {
-        CnSession.promise.then( function() {
-          function updateTime() {
-            var now = moment();
-            now.tz( CnSession.user.timezone );
-            scope.time = now.format( CnSession.getDatetimeFormat( 'time', true ) );
-          }
-
-          updateTime();
-          var promise = $interval( updateTime, 10000 );
-          element.on( '$destroy', function() { $interval.cancel( promise ); } );
         } );
       }
     };
@@ -959,6 +934,37 @@ cenozo.directive( 'cnRecordView', [
 /* ######################################################################################################## */
 
 /**
+ * Displays a running timer
+ */
+cenozo.directive( 'cnTimer', [
+  '$interval',
+  function( $interval ) {
+    return {
+      restrict: 'E',
+      template: '{{ hours ? hours+":" : "" }}{{ minutes }}:{{ seconds }}',
+      scope: { since: '@' },
+      link: function( scope, element ) {
+        function tick() {
+          scope.duration.add( 1, 'second' );
+          scope.hours = scope.duration.hours();
+          scope.minutes = scope.duration.minutes();
+          if( 10 > scope.minutes ) scope.minutes = '0' + scope.minutes;
+          scope.seconds = scope.duration.seconds();
+          if( 10 > scope.seconds ) scope.seconds = '0' + scope.seconds;
+        }
+
+        scope.duration = moment.duration( moment().diff( moment( scope.since ) ) );
+        tick();
+        var promise = $interval( tick, 1000 );
+        element.on( '$destroy', function() { $interval.cancel( promise ); } );
+      }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * TODO: document
  */
 cenozo.directive( 'cnTree',
@@ -996,6 +1002,21 @@ cenozo.directive( 'cnTreeBranch', [
     };
   }
 ] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.directive( 'cnLoading',
+  function() {
+    return {
+      templateUrl: cenozo.baseUrl + '/app/cenozo/loading.tpl.html',
+      restrict: 'E',
+      scope: { message: '@' }
+    };
+  }
+);
 
 /* ######################################################################################################## */
 
@@ -2313,9 +2334,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               columnList[column].required = '1' == columnList[column].required;
               if( 'enum' == columnList[column].data_type ) { // parse out the enum values
                 columnList[column].enumList = [];
-                var enumList = columnList[column].type.replace( /^enum\(['"]/i, '' )
-                                                    .replace( /['"]\)$/, '' )
-                                                    .split( "','" );
+                var enumList = cenozo.parseEnumList( columnList[column] );
                 for( var i = 0; i < enumList.length; i++ ) {
                   columnList[column].enumList.push( {
                     value: enumList[i],
@@ -2490,21 +2509,22 @@ cenozo.factory( 'CnHttpFactory', [
       this.data = {};
       angular.extend( this, params );
 
-      this.http = function( method, url ) {
+      var self = this;
+      function http( method, url ) {
         var object = { url: url, method: method };
-        if( null != this.data ) {
-          if( 'POST' == method || 'PATCH' == method ) object.data = this.data;
-          else object.params = this.data;
+        if( null != self.data ) {
+          if( 'POST' == method || 'PATCH' == method ) object.data = self.data;
+          else object.params = self.data;
         }
         return $http( object );
       };
 
-      this.delete = function() { return this.http( 'DELETE', 'api/' + this.path ); };
-      this.get = function() { return this.http( 'GET', 'api/' + this.path ); };
-      this.head = function() { return this.http( 'HEAD', 'api/' + this.path ); };
-      this.patch = function() { return this.http( 'PATCH', 'api/' + this.path ); };
-      this.post = function() { return this.http( 'POST', 'api/' + this.path ); };
-      this.query = function() { return this.http( 'GET', 'api/' + this.path ); };
+      this.delete = function() { return http( 'DELETE', 'api/' + this.path ); };
+      this.get = function() { return http( 'GET', 'api/' + this.path ); };
+      this.head = function() { return http( 'HEAD', 'api/' + this.path ); };
+      this.patch = function() { return http( 'PATCH', 'api/' + this.path ); };
+      this.post = function() { return http( 'POST', 'api/' + this.path ); };
+      this.query = function() { return http( 'GET', 'api/' + this.path ); };
     };
 
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
