@@ -22,8 +22,7 @@ class write extends service
     parent::setup();
 
     // modify the record based on the module
-    $leaf_module = $this->get_leaf_module();
-    if( !is_null( $leaf_module ) ) $leaf_module->pre_write( $this->get_leaf_record() );
+    $this->get_leaf_module()->pre_write( $this->get_leaf_record() );
   }
 
   /**
@@ -34,8 +33,7 @@ class write extends service
     parent::finish();
 
     // modify the record based on the module
-    $leaf_module = $this->get_leaf_module();
-    if( !is_null( $leaf_module ) ) $leaf_module->post_write( $this->get_leaf_record() );
+    $this->get_leaf_module()->post_write( $this->get_leaf_record() );
   }
 }
 
