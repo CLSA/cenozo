@@ -1,20 +1,20 @@
 define( {
-  subject: 'state',
+  subject: 'source',
   identifier: { column: 'name' },
   name: {
-    singular: 'state',
-    plural: 'states',
-    possessive: 'state\'s',
-    pluralPossessive: 'states\''
+    singular: 'source',
+    plural: 'sources',
+    possessive: 'source\'s',
+    pluralPossessive: 'sources\''
   },
   inputList: {
     name: {
       title: 'Name',
       type: 'string'
     },
-    rank: {
-      title: 'Rank',
-      type: 'rank'
+    override_quota: {
+      title: 'Override Quota',
+      type: 'boolean'
     },
     description: {
       title: 'Description',
@@ -22,22 +22,18 @@ define( {
     }
   },
   columnList: {
-    rank: {
-      title: 'Rank',
-      type: 'rank'
-    },
     name: { title: 'Name' },
+    override_quota: {
+      title: 'Override Quota',
+      type: 'boolean'
+    },
     participant_count: {
       title: 'Participants',
-      type: 'number'
-    },
-    role_count: {
-      title: 'Roles',
       type: 'number'
     }
   },
   defaultOrder: {
-    column: 'rank',
+    column: 'name',
     reverse: false
   }
 } );

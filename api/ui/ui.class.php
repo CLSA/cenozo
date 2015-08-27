@@ -118,7 +118,7 @@ class ui extends \cenozo\base_object
     return array(
       'access', 'activity', 'address', 'age_group', 'alternate', 'application', 'cohort', 'collection',
       'consent', 'event', 'event_type', 'jurisdiction', 'language', 'participant', 'phone',
-      'quota', 'region', 'region_site', 'role', 'site', 'state', 'system_message', 'user' );
+      'quota', 'region', 'region_site', 'role', 'site', 'source', 'state', 'system_message', 'user' );
   }
 
   /**
@@ -184,6 +184,8 @@ class ui extends \cenozo\base_object
       $module_list['participant']['children'] = array( 'address', 'phone', 'consent', 'alternate', 'event' );
     if( array_key_exists( 'site', $module_list ) )
       $module_list['site']['children'] = array( 'access' );
+    if( array_key_exists( 'source', $module_list ) )
+      $module_list['source']['children'] = array( 'participant' );
     if( array_key_exists( 'state', $module_list ) )
       $module_list['state']['children'] = array( 'role', 'participant' );
     if( array_key_exists( 'user', $module_list ) )
@@ -244,6 +246,7 @@ class ui extends \cenozo\base_object
     {
       $list['Applications']    = 'application';
       $list['Settings']        = 'setting';
+      $list['Sources']         = 'source';
     }
 
     // determine which grouping type to use
