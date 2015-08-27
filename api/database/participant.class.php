@@ -202,22 +202,30 @@ class participant extends record
     // get the requested site's id
     $site_id = is_a( $site, lib::get_class_name( 'database\site' ) ) ? $site->id : $site;
 
-    // make sure this participant's cohort belongs to the application
-    if( !static::db()->get_one( sprintf(
-      'SELECT COUNT(*) '.
-      'FROM participant '.
-      'JOIN application_has_cohort ON application_has_cohort.cohort_id = participant.cohort_id '.
-      'WHERE application_has_cohort.application_id = %s '.
-      'AND participant.id = %s',
-      static::db()->format_string( $db_application->id ),
-      static::db()->format_string( $this->id ) ) ) )
-      throw lib::create( 'exception\runtime', sprintf(
-        'Tried to set preferred %s site for participant %s, '.
-        'but %s does not have access to the %s cohort',
-        $db_application->name,
-        $this->uid,
-        $db_application->name,
-        $this->get_cohort()->name ),
+    // make sure the participant's cohort belongs to the application
+    $cohort_mod = lib::create( 'database\modifier' );
+    $cohort_mod->where( 'cohort_id', '=', $this->cohort_id );
+    if( 0 == $db_application->get_cohort_count( $cohort_mod ) )
+      throw lib::create( 'exception\runtime',
+        sprintf(
+          'Tried to set preferred %s site for participant %s, '.
+          'but application does not have access to the %s cohort',
+          $db_application->name,
+          $this->uid,
+          $this->get_cohort()->name ),
+        __METHOD__ );
+
+    // make sure the application has access to the site
+    $site_mod = lib::create( 'database\modifier' );
+    $site_mod->where( 'site_id', '=', $site_id );
+    if( 0 == $db_application->get_site_count( $site_mod ) )
+      throw lib::create( 'exception\runtime',
+        sprintf(
+          'Tried to set preferred %s site for participant %s, '.
+          'but application does not have access to the %s site',
+          $db_application->name,
+          $this->uid,
+          lib::create( 'database\site', $site_id )->name ),
         __METHOD__ );
 
     // we want to add the row (if none exists) or just update the preferred_site_id column
@@ -232,15 +240,19 @@ class participant extends record
   }
 
   /**
+   NOTE: DISABLED UNTIL NEEDED.  sHOULD BE RE-WRITTEN.
    * Sets the preferred site of multiple participants for a particular application.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier
    * @param database\application $db_application
    * @param database\site|int $site
    * @access public
-   */
+   *
   public static function multi_set_preferred_site( $modifier, $db_application, $site = NULL )
   {
+    // get the requested site's id
+    $site_id = is_a( $site, lib::get_class_name( 'database\site' ) ) ? $site->id : $site;
+
     // make sure all participants' cohorts belongs to the application
     $total = static::db()->get_one( sprintf(
       'SELECT COUNT(*) '.
@@ -263,9 +275,6 @@ class participant extends record
         $this->get_cohort()->name ),
         __METHOD__ );
 
-    // get the requested site's id
-    $site_id = is_a( $site, lib::get_class_name( 'database\site' ) ) ? $site->id : $site;
-
     // we want to add the row (if none exists) or just update the preferred_site_id column
     // if a row already exists
     static::db()->execute( sprintf(
@@ -277,7 +286,7 @@ class participant extends record
       static::db()->format_string( $db_application->id ),
       static::db()->format_string( $site_id ),
       $modifier->get_sql() ) );
-  }
+  } */
 
   /**
    * Get the default site that the participant belongs to for a given application.
