@@ -49,6 +49,7 @@ class get extends \cenozo\service\service
     $role_sel->from( 'role' );
     $role_sel->add_column( 'id' );
     $role_sel->add_column( 'name' );
+    $role_sel->add_column( 'tier' );
     $role_sel->add_column( 'all_sites' );
 
     $site_sel = lib::create( 'database\select' );
