@@ -406,7 +406,7 @@ cenozo.directive( 'cnReallyClick', [
         element.bind( 'click', function() {
           var message = attrs.cnReallyMessage;
           CnModalConfirmFactory.instance( {
-            title: 'Please Confirm',
+            title: angular.isDefined( attrs.cnReallyTitle ) ? attrs.cnReallyTitle : 'Please Confirm',
             message: message
           } ).show().then( function( response ) {
             if( response ) {
