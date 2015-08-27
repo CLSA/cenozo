@@ -315,13 +315,15 @@ abstract class record extends \cenozo\base_object
    * Returns whether a column has been modified from the value in the database
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column_name The name of the column
+   * @param string/array $search The name of the column (or an array of column names)
    * @return boolean
    * @access public
    */
-  public function has_column_changed( $column_name )
+  public function has_column_changed( $search )
   {
-    return array_key_exists( $column_name, $this->active_column_values );
+    return is_array( $search ) ?
+      0 < count( array_intersect( $search, array_keys( $this->active_column_values ) ) ) :
+      array_key_exists( $search, $this->active_column_values );
   }
 
   /**
