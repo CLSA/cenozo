@@ -3488,10 +3488,15 @@ cenozo.config( [
 cenozo.run( [
   '$state', '$rootScope', 'CnSession',
   function( $state, $rootScope, CnSession ) {
-    $rootScope.$on( '$stateChangeSuccess', function( event, toState, toParams, fromState, fromParams ) {
+    $rootScope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
       console.info(
-        'State change from %s to %s',
+        'Changing state from %s to %s',
         fromState.name ? fromState.name + angular.toJson( fromParams ) : '(none)',
+        toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
+      );
+    } );
+    $rootScope.$on( '$stateChangeSuccess', function( event, toState, toParams, fromState, fromParams ) {
+      console.info( 'Completed state change to %s',
         toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
       );
     } );
