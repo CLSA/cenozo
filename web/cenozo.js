@@ -1380,7 +1380,7 @@ cenozo.factory( 'CnSession', [
             error: true
           } ).show();
         } else {
-          return $state.go( 'error.' + type );
+          return $state.go( 'error.' + type, response );
         }
       };
 
@@ -3463,7 +3463,10 @@ cenozo.config( [
     $stateProvider.state( 'error.400', { templateUrl: baseErrorUrl + '400.tpl.html' } );
     $stateProvider.state( 'error.403', { templateUrl: baseErrorUrl + '403.tpl.html' } );
     $stateProvider.state( 'error.404', { templateUrl: baseErrorUrl + '404.tpl.html' } );
-    $stateProvider.state( 'error.500', { templateUrl: baseErrorUrl + '500.tpl.html' } );
+    $stateProvider.state( 'error.500', {
+      templateUrl: baseErrorUrl + '500.tpl.html',
+      params: { data: null, }
+    } );
     $stateProvider.state( 'error.state', { templateUrl: baseErrorUrl + 'state.tpl.html' } );
 
     // load the 404 state when a state is not found for the provided path
@@ -3472,7 +3475,7 @@ cenozo.config( [
       return $location.path();
     } );
 
-    // make tooltip delay default to 200ms
+    // set the default tooltip delay
     $tooltipProvider.options( { popupDelay: 500 } );
   }
 ] );
@@ -3485,6 +3488,13 @@ cenozo.config( [
 cenozo.run( [
   '$state', '$rootScope', 'CnSession',
   function( $state, $rootScope, CnSession ) {
+    $rootScope.$on( '$stateChangeSuccess', function( event, toState, toParams, fromState, fromParams ) {
+      console.info(
+        'State change from %s to %s',
+        fromState.name ? fromState.name + angular.toJson( fromParams ) : '(none)',
+        toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
+      );
+    } );
     $rootScope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
       CnSession.setBreadcrumbTrail( [ { title: 'Loading\u2026' } ] );
     } );

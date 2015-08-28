@@ -6,6 +6,7 @@
         Sorry, the server was unable to respond to your request.
         Please <a ng-click="reload()">reload</a> the page or
         <a ng-click="back()">go back</a> to the previous page.
+        <h4 ng-if="model.errorCode" class="text-warning">Error Code: {{ model.errorCode }}</h4>
       </blockquote>
     </div>
   </div>

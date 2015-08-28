@@ -7,6 +7,7 @@ define( [], function() {
     function( $state, CnSession ) {
       var object = function() {
         var self = this;
+        if( angular.isDefined( $state.params.data ) ) self.errorCode = $state.params.data;
         this.setupBreadcrumbTrail = function() {
           CnSession.setBreadcrumbTrail( [ { title: $state.current.name.replace( '.', ' ' ).ucWords() } ] );
         };
