@@ -555,7 +555,13 @@ cenozo.directive( 'cnRecordAdd', [
                 if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
                   input.enumList = angular.copy( meta.enumList );
 
+                  // add additional rank
                   var newRank = input.enumList.length + 1;
+                  if( 'rank' == input.key ) input.enumList.push( {
+                    value: newRank,
+                    name: $filter( 'cnOrdinal' )( newRank )
+                  } );
+
                   if( !meta.required || 1 < input.enumList.length ) {
                     input.enumList.unshift( {
                       value: undefined,
@@ -564,12 +570,6 @@ cenozo.directive( 'cnRecordAdd', [
                   }
 
                   if( 1 == input.enumList.length ) scope.record[input.key] = input.enumList[0].value;
-
-                  // add additional rank
-                  if( 'rank' == input.key ) input.enumList.push( {
-                    value: newRank,
-                    name: $filter( 'cnOrdinal' )( newRank )
-                  } );
                 }
               }
               scope.isComplete = true;
