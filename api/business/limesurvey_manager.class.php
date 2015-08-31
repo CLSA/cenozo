@@ -30,7 +30,7 @@ class limesurvey_manager extends \cenozo\singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\interview $db_interview The interview to get the value from
-   * @param database\phase $db_phase The phase of a qnaire to get the value from
+   * @param database\phase $db_phase The phase of a script to get the value from
    * @param string $question The title of the limesurvey question
    * @param boolean $last Whether to return the last response instead of first
    *                      (for repeating phases only)

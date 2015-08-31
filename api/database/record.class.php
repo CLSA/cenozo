@@ -1146,8 +1146,7 @@ abstract class record extends \cenozo\base_object
     // make sure the column is unique
     if( !$found )
     {
-      log::err( 'Trying to get unique record from table "'.
-                $table_name.'" using invalid columns.' );
+      throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
     }
     else
     {

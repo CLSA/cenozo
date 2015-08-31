@@ -26,6 +26,8 @@ SOURCE participant.sql
 SOURCE person.sql
 SOURCE quota.sql
 SOURCE system_message.sql
+SOURCE script.sql
+SOURCE phase.sql
 
 SOURCE participant_default_site.sql
 SOURCE participant_preferred_site.sql
