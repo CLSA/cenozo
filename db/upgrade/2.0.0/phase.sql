@@ -3,13 +3,6 @@ DROP PROCEDURE IF EXISTS patch_phase;
   CREATE PROCEDURE patch_phase()
   BEGIN
 
-    -- determine the @cenozo database name
-    SET @cenozo = (
-      SELECT unique_constraint_schema
-      FROM information_schema.referential_constraints
-      WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_queue_state_site_id" );
-
     SELECT "Creating new phase table" AS "";
 
     SET @test = (
