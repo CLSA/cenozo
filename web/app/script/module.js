@@ -38,7 +38,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'script.name',
+    column: 'name',
     reverse: false
   }
 } );

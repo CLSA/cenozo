@@ -43,7 +43,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'phase.rank',
+    column: 'rank',
     reverse: false
   }
 } );

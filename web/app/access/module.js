@@ -53,7 +53,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'user.name',
+    column: 'user',
     reverse: false
   }
 } );
