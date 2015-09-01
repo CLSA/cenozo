@@ -469,7 +469,7 @@ cenozo.directive( 'cnRecordAdd', [
                 // create a new record to be created (in case another record is added)
                 $scope.model.addModel.onNew( $scope.$parent.record );
                 $scope.form.$setPristine();
-                return CnSession.workingTransition( $scope.model.transitionToLastState() );
+                return CnSession.workingTransition( $scope.model.transitionToLastState );
               },
               function error( response ) {
                 if( 409 == response.status ) {
@@ -729,7 +729,7 @@ cenozo.directive( 'cnRecordView', [
         $scope.delete = function() {
           if( $scope.model.deleteEnabled ) {
             $scope.model.viewModel.onDelete().then(
-              function success() { CnSession.workingTransition( $scope.model.transitionToLastState() ); },
+              function success() { CnSession.workingTransition( $scope.model.transitionToLastState ); },
               function error( response ) {
                 if( 409 == response.status ) {
                   CnModalMessageFactory.instance( {
@@ -1245,7 +1245,9 @@ cenozo.factory( 'CnSession', [
             if( null === workingPromise ) workingPromise = $timeout( watchWorkingCount, 1000 );
           } else {
             this.working = false;
-            this.transitionWhileWorking = false;
+            // reset the transitionWhileWorking property after a short wait so that any pending
+            // transitions can be ignored before the property is reset
+            $timeout( function() { self.transitionWhileWorking = false; }, 200 );
             if( null !== workingPromise ) {
               $timeout.cancel( workingPromise );
               workingPromise = null;
@@ -1412,7 +1414,7 @@ cenozo.factory( 'CnSession', [
             error: true
           } ).show();
         } else {
-          return self.workingTransition( $state.go( 'error.' + type, response ) );
+          return self.workingTransition( function() { $state.go( 'error.' + type, response ) } );
         }
       };
 
@@ -3547,10 +3549,10 @@ cenozo.run( [
       if( 0 < CnSession.working ) CnSession.transitionWhileWorking = true;
     } );
     $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
-      CnSession.workingTransition( $state.go( 'error.state' ) );
+      CnSession.workingTransition( function() { $state.go( 'error.state' ) } );
     } );
     $rootScope.$on( '$stateChangeError', function( event, toState, toParams, fromState, fromParams, error ) {
-      CnSession.workingTransition( $state.go( 'error.404' ) );
+      CnSession.workingTransition( function() { $state.go( 'error.404' ) } );
     } );
     $rootScope.$on( 'httpRequest', function( event ) {
       CnSession.updateWorkingCount( true );
