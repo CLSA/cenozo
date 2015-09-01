@@ -1,4 +1,4 @@
-SELECT "Adding new triggers to event table" AS "";
+SELECT "Adding new triggers to event_type table" AS "";
 
 DELIMITER $$
 

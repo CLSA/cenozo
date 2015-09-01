@@ -18,7 +18,6 @@ SOURCE user.sql
 SOURCE address.sql
 SOURCE consent.sql
 SOURCE event.sql
-SOURCE event_type.sql
 SOURCE phone.sql
 SOURCE person_note.sql
 SOURCE alternate.sql
@@ -28,6 +27,7 @@ SOURCE quota.sql
 SOURCE system_message.sql
 SOURCE script.sql
 SOURCE phase.sql
+SOURCE event_type.sql
 
 SOURCE participant_default_site.sql
 SOURCE participant_preferred_site.sql
