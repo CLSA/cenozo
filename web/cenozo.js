@@ -17,12 +17,12 @@ Array.prototype.findIndexByProperty = function( property, value ) {
   for( var i = 0; i < this.length; i++ )
     if( angular.isDefined( this[i][property] ) && value == this[i][property] )
       return i;
-  return undefined;
+  return null;
 }
 
 Array.prototype.findByProperty = function( property, value ) {
   var index = this.findIndexByProperty( property, value );
-  return angular.isDefined( index ) ? this[index] : null;
+  return null === index ? null : this[index];
 }
 
 String.prototype.snakeToCamel = function cnSnakeToCamel( first ) {
@@ -3100,7 +3100,7 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
             };
             $scope.deleteNote = function( id ) {
               var index = this.noteList.findIndexByProperty( 'id', id );
-              if( angular.isDefined( index ) ) {
+              if( null !== index ) {
                 self.delete( this.noteList[index] );
                 this.noteList.splice( index, 1 );
               }
