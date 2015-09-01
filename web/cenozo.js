@@ -1905,6 +1905,7 @@ cenozo.factory( 'CnBaseModelFactory', [
     return {
       construct: function( object, module ) {
         // Note: methods are added to object here, members below
+        var self = object;
 
         /**
          * get the identifier based on what is in the model's module
@@ -1923,12 +1924,12 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.getBreadcrumbTitle = function() {
           // first try for a friendly name
           var friendlyColumn = module.name.friendlyColumn;
-          if( angular.isDefined( friendlyColumn ) && angular.isDefined( this.viewModel.record[friendlyColumn] ) )
-            return this.viewModel.record[friendlyColumn] ? this.viewModel.record[friendlyColumn] : 'view';
+          if( angular.isDefined( friendlyColumn ) && angular.isDefined( self.viewModel.record[friendlyColumn] ) )
+            return self.viewModel.record[friendlyColumn] ? self.viewModel.record[friendlyColumn] : 'view';
 
           // no friendly name, try for an identifier column
           return angular.isDefined( module.identifier.column )
-               ? this.getIdentifierFromRecord( this.viewModel.record, true )
+               ? self.getIdentifierFromRecord( self.viewModel.record, true )
                : 'view'; // database IDs aren't friendly so just return "view"
         };
 
@@ -1938,9 +1939,9 @@ cenozo.factory( 'CnBaseModelFactory', [
          * This method is sometimes extended by a module's event factory
          */
         object.getBreadcrumbParentTitle = function() {
-          var parent = this.getParentIdentifier();
+          var parent = self.getParentIdentifier();
           return angular.isDefined( parent.friendly )
-               ? this.viewModel.record[parent.friendly]
+               ? self.viewModel.record[parent.friendly]
                : String( parent.identifier ).split( '=' ).pop();
         };
 
@@ -1966,25 +1967,25 @@ cenozo.factory( 'CnBaseModelFactory', [
 
         /**
          * get the parent identifier (either from the state or the module)
-         * NOTE: when viewing this will return the first parent that is set in the view record
+         * NOTE: when viewing the function will return the first parent that is set in the view record
          *       (there may be multiple)
          */
         object.getParentIdentifier = function() {
           var response = {
-            subject: this.getSubjectFromState(),
+            subject: self.getSubjectFromState(),
             identifier: $state.params.parentIdentifier
           };
 
           if( angular.isUndefined( response.identifier ) ) {
-            var action = this.getActionFromState();
-            if( 'view' == action && angular.isDefined( this.identifier.parent ) ) {
+            var action = self.getActionFromState();
+            if( 'view' == action && angular.isDefined( self.identifier.parent ) ) {
               // return the FIRST "set" parent
-              for( var i = 0; i < this.identifier.parent.length; i++ ) {
-                var parent = this.identifier.parent[i];
-                if( this.viewModel.record[parent.alias] ) {
+              for( var i = 0; i < self.identifier.parent.length; i++ ) {
+                var parent = self.identifier.parent[i];
+                if( self.viewModel.record[parent.alias] ) {
                   response.subject = parent.subject;
                   if( angular.isDefined( parent.friendly ) ) response.friendly = parent.friendly;
-                  response.identifier = parent.getIdentifier( this.viewModel.record );
+                  response.identifier = parent.getIdentifier( self.viewModel.record );
                   break;
                 }
               }
@@ -2002,11 +2003,11 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         object.getServiceCollectionPath = function() {
           var path = '';
-          if( this.getSubjectFromState() != this.subject ) {
+          if( self.getSubjectFromState() != self.subject ) {
             var identifier = $state.params.parentIdentifier
                            ? $state.params.parentIdentifier
                            : $state.params.identifier;
-            path += this.getSubjectFromState() + '/' + identifier + '/';
+            path += self.getSubjectFromState() + '/' + identifier + '/';
           }
           return path + module.subject;
         }
@@ -2016,7 +2017,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         object.getServiceResourcePath = function( resource ) {
           var identifier = angular.isUndefined( resource ) ? $state.params.identifier : resource;
-          return this.getServiceCollectionPath() + '/' + identifier;
+          return self.getServiceCollectionPath() + '/' + identifier;
         }
 
         /**
@@ -2030,18 +2031,18 @@ cenozo.factory( 'CnBaseModelFactory', [
           var selectList = [];
           var joinList = [];
           var whereList = [];
-          var list = 'list' == type ? this.columnList : this.inputList;
+          var list = 'list' == type ? self.columnList : self.inputList;
 
           // add identifier data if we are getting view data
-          if( angular.isDefined( this.identifier.column ) && angular.isUndefined( list[this.identifier.column] ) )
-            list[this.identifier.column] = { type: 'hidden' };
+          if( angular.isDefined( self.identifier.column ) && angular.isUndefined( list[self.identifier.column] ) )
+            list[self.identifier.column] = { type: 'hidden' };
 
           if( 'view' == type ) {
-            if( angular.isDefined( this.identifier.parent ) ) {
-              for( var i = 0; i < this.identifier.parent.length; i++ ) {
-                list[this.identifier.parent[i].alias] = {
+            if( angular.isDefined( self.identifier.parent ) ) {
+              for( var i = 0; i < self.identifier.parent.length; i++ ) {
+                list[self.identifier.parent[i].alias] = {
                   type: 'hidden',
-                  column: this.identifier.parent[i].column
+                  column: self.identifier.parent[i].column
                 };
               }
             }
@@ -2052,7 +2053,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             if( 'view' == type && true === list[key].noview ) continue;
 
             var lastJoin = null;
-            var parentTable = this.subject;
+            var parentTable = self.subject;
             var columnParts = angular.isUndefined( list[key].column ) ? [ key ] : list[key].column.split( '.' );
             for( var k = 0; k < columnParts.length; k++ ) {
               if( k == columnParts.length - 1 ) {
@@ -2060,7 +2061,7 @@ cenozo.factory( 'CnBaseModelFactory', [
                   for( var month = 0; month < 12; month++ )
                     selectList.push( angular.lowercase( moment().month( month ).format( 'MMMM' ) ) );
                 } else {
-                  // add this column to the select list
+                  // add column to the select list
                   var select = { column: columnParts[k], alias: key };
                   if( 0 < k ) select.table = columnParts[k-1];
                   selectList.push( select );
@@ -2073,7 +2074,7 @@ cenozo.factory( 'CnBaseModelFactory', [
                   var onleft = parentTable + '.' + table + '_id';
                   var onright = table + '.id';
 
-                  // see if the join to this table already exists
+                  // see if the join to table already exists
                   var join = null;
                   for( var j = 0; j < joinList.length; j++ ) {
                     if( joinList[j].table == table &&
@@ -2156,7 +2157,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          * TODO: document
          */
         object.transitionToLastState = function() {
-          var parent = this.getParentIdentifier();
+          var parent = self.getParentIdentifier();
           return angular.isDefined( parent.subject ) ?
             $state.go( parent.subject + '.view', { identifier: parent.identifier } ) :
             $state.go( '^.list' );
@@ -2168,7 +2169,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         object.transitionToAddState = function() {
           var stateName = $state.current.name;
           return 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ?
-            $state.go( '^.add_' + this.subject, { parentIdentifier: $state.params.identifier } ) :
+            $state.go( '^.add_' + self.subject, { parentIdentifier: $state.params.identifier } ) :
             $state.go( '^.add' );
         };
         
@@ -2180,7 +2181,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           var stateParams = { identifier: record.getIdentifier() };
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) )
             stateParams.parentIdentifier = $state.params.identifier;
-          return $state.go( this.subject + '.view', stateParams );
+          return $state.go( self.subject + '.view', stateParams );
         };
         
         /**
@@ -2191,41 +2192,41 @@ cenozo.factory( 'CnBaseModelFactory', [
         };
         
         /**
-         * Creates the breadcrumb trail using this module and a specific type (add, list or view)
+         * Creates the breadcrumb trail using module and a specific type (add, list or view)
          */
         object.setupBreadcrumbTrail = function( type ) {
           var trail = [];
 
           // check the module for parents
-          var parent = this.getParentIdentifier();
+          var parent = self.getParentIdentifier();
           if( angular.isDefined( parent.subject ) ) {
             trail = trail.concat( [ {
               title: parent.subject.replace( '_', ' ' ).ucWords(),
               go: function() { return $state.go( parent.subject + '.list' ); }
             }, {
-              title: this.getBreadcrumbParentTitle(),
+              title: self.getBreadcrumbParentTitle(),
               go: function() { return $state.go( parent.subject + '.view', { identifier: parent.identifier } ); }
             } ] );
           }
 
           if( 'add' == type ) {
             trail = trail.concat( [ {
-              title: this.name.singular.ucWords(),
+              title: self.name.singular.ucWords(),
               go: function() { object.transitionToLastState(); }
             }, {
               title: 'New'
             } ] );
           } else if( 'list' == type ) {
             trail = trail.concat( [ {
-              title: this.name.plural.ucWords()
+              title: self.name.plural.ucWords()
             } ] );
           } else if( 'view' == type ) {
-            // now put this model's details
+            // now put the model's details
             trail = trail.concat( [ {
-              title: this.name.singular.ucWords(),
+              title: self.name.singular.ucWords(),
               go: angular.isDefined( parent.subject ) ? undefined : function() { object.transitionToLastState(); }
             }, {
-              title: this.getBreadcrumbTitle()
+              title: self.getBreadcrumbTitle()
             } ] );
           } else throw 'Tried to setup breadcrumb trail for invalid type "' + type + '"';
 
@@ -2239,32 +2240,32 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( angular.isUndefined( removeList ) ) removeList = [];
 
           // make a copy of the input list and remove any parent column(s)
-          var stateSubject = this.getSubjectFromState();
+          var stateSubject = self.getSubjectFromState();
 
           // create an array out of the input list
           var data = [];
           if( 'list' == type ) {
-            for( var key in this.columnList ) {
+            for( var key in self.columnList ) {
               if( 0 > removeList.indexOf( key ) &&
                   // don't include hidden columns
-                  'hidden' != this.columnList[key].type &&
+                  'hidden' != self.columnList[key].type &&
                   // for child lists, don't include parent columns
-                  !( stateSubject != this.subject &&
-                     angular.isDefined( this.columnList[key].column ) &&
-                     stateSubject == this.columnList[key].column.split( '.' )[0] ) ) {
-                data.push( this.columnList[key] );
+                  !( stateSubject != self.subject &&
+                     angular.isDefined( self.columnList[key].column ) &&
+                     stateSubject == self.columnList[key].column.split( '.' )[0] ) ) {
+                data.push( self.columnList[key] );
               }
             }
           } else { // add or view
-            for( var key in this.inputList ) {
+            for( var key in self.inputList ) {
               if( 0 > removeList.indexOf( key ) &&
                   // some items may be marked to not show when adding the record
-                  !( 'add' == type && true === this.inputList[key].noadd ) &&
+                  !( 'add' == type && true === self.inputList[key].noadd ) &&
                   // some items may be marked to not show when viewing the record
-                  !( 'view' == type && true === this.inputList[key].noview ) &&
+                  !( 'view' == type && true === self.inputList[key].noview ) &&
                   // don't include columns which belong to the state subject
                   stateSubject+'_id' != key ) {
-                data.push( this.inputList[key] );
+                data.push( self.inputList[key] );
               }
             }
           }
@@ -2343,25 +2344,24 @@ cenozo.factory( 'CnBaseModelFactory', [
         };
 
         // enable/disable module functionality
-        object.enableAdd = function( enable ) { this.addEnabled = enable; };
-        object.enableChoose = function( enable ) { this.chooseEnabled = enable; };
-        object.enableDelete = function( enable ) { this.deleteEnabled = enable; };
-        object.enableEdit = function( enable ) { this.editEnabled = enable; };
-        object.enableView = function( enable ) { this.viewEnabled = enable; };
+        object.enableAdd = function( enable ) { self.addEnabled = enable; };
+        object.enableChoose = function( enable ) { self.chooseEnabled = enable; };
+        object.enableDelete = function( enable ) { self.deleteEnabled = enable; };
+        object.enableEdit = function( enable ) { self.editEnabled = enable; };
+        object.enableView = function( enable ) { self.viewEnabled = enable; };
 
         /**
-         * Is usually called by the getMetadata() function in order to load this model's base metadata
+         * Is usually called by the getMetadata() function in order to load the model's base metadata
          * This function should not be changed, override the getMetadata() function instead.
          * 
          * @return promise
          */
         object.loadMetadata = function() {
-          var self = this;
-          this.metadata.columnList = {};
-          this.metadata.isComplete = false;
-          this.metadata.loadingCount++;
+          self.metadata.columnList = {};
+          self.metadata.isComplete = false;
+          self.metadata.loadingCount++;
           return CnHttpFactory.instance( {
-            path: this.subject
+            path: self.subject
           } ).head().then( function( response ) {
             var columnList = angular.fromJson( response.headers( 'Columns' ) );
             for( var column in columnList ) {
@@ -2417,17 +2417,17 @@ cenozo.factory( 'CnBaseModelFactory', [
         };
 
         /**
-         * Override this function when additional metadata is required by the model.
+         * Override the function when additional metadata is required by the model.
          * 
          * @return promise
          */
-        object.getMetadata = function() { return this.loadMetadata(); };
+        object.getMetadata = function() { return self.loadMetadata(); };
 
         /**
          * Determines whether a value meets its property's format
          */
         object.testFormat = function( property, value ) {
-          var input = this.inputList[property];
+          var input = self.inputList[property];
           if( angular.isUndefined( input ) ) return true;
 
           // check format
@@ -2470,17 +2470,17 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           if( angular.isUndefined( index ) ) {
             // no index: add to existing object
-            this.columnList[key] = column;
+            self.columnList[key] = column;
           } else {
             // index: make new object and add the column at the desired index
             var newColumnList = {};
             var currentIndex = 0;
-            for( var k in this.columnList ) {
+            for( var k in self.columnList ) {
               if( currentIndex == index ) newColumnList[key] = column;
-              newColumnList[k] = this.columnList[k];
+              newColumnList[k] = self.columnList[k];
               currentIndex++;
             }
-            this.columnList = newColumnList;
+            self.columnList = newColumnList;
           }
         };
 
@@ -2502,8 +2502,8 @@ cenozo.factory( 'CnBaseModelFactory', [
           for( var i = 0; i < object.identifier.parent.length; i++ ) {
             object.identifier.parent[i].alias = object.identifier.parent[i].column.replace( '.', '_' );
             object.identifier.parent[i].getIdentifier = function( record ) {
-              var columnParts = this.column.split( '.' );
-              var identifier = record[this.alias];
+              var columnParts = self.column.split( '.' );
+              var identifier = record[self.alias];
               if( 2 == columnParts.length ) identifier = columnParts[1] + '=' + identifier;
               return identifier;
             };
