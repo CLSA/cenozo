@@ -469,7 +469,7 @@ cenozo.directive( 'cnRecordAdd', [
                 // create a new record to be created (in case another record is added)
                 $scope.model.addModel.onNew( $scope.$parent.record );
                 $scope.form.$setPristine();
-                $scope.model.transitionToLastState();
+                return CnSession.workingTransition( $scope.model.transitionToLastState() );
               },
               function error( response ) {
                 if( 409 == response.status ) {
@@ -729,7 +729,7 @@ cenozo.directive( 'cnRecordView', [
         $scope.delete = function() {
           if( $scope.model.deleteEnabled ) {
             $scope.model.viewModel.onDelete().then(
-              function success() { $scope.model.transitionToLastState(); },
+              function success() { CnSession.workingTransition( $scope.model.transitionToLastState() ); },
               function error( response ) {
                 if( 409 == response.status ) {
                   CnModalMessageFactory.instance( {
@@ -1209,13 +1209,16 @@ cenozo.filter( 'cnYesNo', function() {
  * TODO: document
  */
 cenozo.factory( 'CnSession', [
-  '$state', '$filter', 'CnHttpFactory',
+  '$state', '$timeout', '$filter', 'CnHttpFactory',
   'CnModalMessageFactory', 'CnModalPasswordFactory', 'CnModalAccountFactory',
-  function( $state, $filter, CnHttpFactory,
+  function( $state, $timeout, $filter, CnHttpFactory,
             CnModalMessageFactory, CnModalPasswordFactory, CnModalAccountFactory ) {
     return new ( function() {
       var self = this;
       this.promise = null;
+      this.working = false;
+      this.workingCount = 0;
+      this.transitionWhileWorking = false;
       this.application = {};
       this.user = {};
       this.site = {};
@@ -1226,6 +1229,35 @@ cenozo.factory( 'CnSession', [
       this.breadcrumbTrail = [];
       this.noteActions = cenozo.noteActions;
       delete cenozo.noteActions;
+
+      // handle watching of http requests that take a long time to return
+      var workingPromise = null;
+      function watchWorkingCount() {
+        workingPromise = null;
+        if( 0 < self.workingCount ) self.working = true;
+      }
+
+      this.updateWorkingCount = function( increment ) {
+        if( angular.isDefined( increment ) ) {
+          this.workingCount += increment ? 1 : -1;
+
+          if( 0 < this.workingCount ) {
+            if( null === workingPromise ) workingPromise = $timeout( watchWorkingCount, 1000 );
+          } else {
+            this.working = false;
+            this.transitionWhileWorking = false;
+            if( null !== workingPromise ) {
+              $timeout.cancel( workingPromise );
+              workingPromise = null;
+            }
+          }
+        }
+      }
+
+      // wrapping all state transitions with option to cancel
+      this.workingTransition = function( transitionFn ) {
+        return this.transitionWhileWorking ? null : transitionFn();
+      }
 
       // defines the breadcrumbtrail based on an array of crumbs
       this.setBreadcrumbTrail = function( crumbs ) {
@@ -1380,7 +1412,7 @@ cenozo.factory( 'CnSession', [
             error: true
           } ).show();
         } else {
-          return $state.go( 'error.' + type, response );
+          return self.workingTransition( $state.go( 'error.' + type, response ) );
         }
       };
 
@@ -2499,8 +2531,8 @@ cenozo.factory( 'CnBaseModelFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnHttpFactory', [
-  '$http',
-  function CnHttpFactory( $http ) {
+  '$http', '$rootScope',
+  function CnHttpFactory( $http, $rootScope ) {
     var object = function( params ) {
       if( angular.isUndefined( params.path ) )
         throw 'Tried to create CnHttpFactory instance without a path';
@@ -2526,6 +2558,16 @@ cenozo.factory( 'CnHttpFactory', [
       this.post = function() { return http( 'POST', 'api/' + this.path ); };
       this.query = function() { return http( 'GET', 'api/' + this.path ); };
     };
+
+    // broadcast when http requests start/finish
+    $http.defaults.transformRequest.push( function( request ) {
+      $rootScope.$broadcast( 'httpRequest' );
+      return request;
+    } );
+    $http.defaults.transformResponse.push( function( response ) { 
+      $rootScope.$broadcast( 'httpResponse' );
+      return response;
+    } );
 
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
@@ -3502,12 +3544,19 @@ cenozo.run( [
     } );
     $rootScope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
       CnSession.setBreadcrumbTrail( [ { title: 'Loading\u2026' } ] );
+      if( 0 < CnSession.working ) CnSession.transitionWhileWorking = true;
     } );
     $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
-      $state.go( 'error.state' );
+      CnSession.workingTransition( $state.go( 'error.state' ) );
     } );
     $rootScope.$on( '$stateChangeError', function( event, toState, toParams, fromState, fromParams, error ) {
-      $state.go( 'error.404' );
+      CnSession.workingTransition( $state.go( 'error.404' ) );
+    } );
+    $rootScope.$on( 'httpRequest', function( event ) {
+      CnSession.updateWorkingCount( true );
+    } );
+    $rootScope.$on( 'httpResponse', function( event ) {
+      CnSession.updateWorkingCount( false );
     } );
   }
 ] );

@@ -74,8 +74,12 @@ a, .text-info {
   color: #359a92;
 }
 a.text-info:hover,
-a.text-info:focus {
-  color: #4cb1c0;
+a.text-info:focus,
+.navbar-link:focus,
+.navbar-link:hover,
+.navbar-brand:focus,
+.navbar-brand:hover {
+  color: #4cb1c0 !important; /* important required by navbar */
 }
 .bg-info,
 .table > thead > tr > td.info,

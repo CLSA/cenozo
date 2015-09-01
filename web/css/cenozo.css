@@ -38,6 +38,20 @@ blockquote { font-size: 100%; }
 .no-line-height { line-height: 0px; }
 .bg-white { background-color: #fff; }
 .btn-header { border-radius: 6px; margin-right: -5px !important; margin-left: 0px !important; }
+.working {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, .10) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, .10) 50%,
+    rgba(255, 255, 255, .10) 75%,
+    transparent 75%,
+    transparent
+  );
+  animation: progress-bar-stripes 2s linear infinite;
+  background-size: 40px 40px;
+}
 
 textarea.note {
   border-radius:0px;
@@ -178,10 +192,13 @@ tfoot, .modal-footer {
   height: 50px;
   padding: 15px 0px;
   line-height: 20px;
+  background-color: inherit;
 }
 
 /* navbar tweaks */
+.navbar-header { background-color: transparent; }
 .navbar-link, .dropdown { cursor: pointer; }
+.navbar-link { color: white !important; }
 .navbar-default {
   border-width: 0px;
   border-radius: 0px;
@@ -191,18 +208,10 @@ tfoot, .modal-footer {
   cursor: pointer;
   padding: 15px 10px;
 }
-.navbar-nav .navbar-link,
-.navbar-nav .navbar-link:hover,
-.navbar-nav .navbar-link:focus,
-.breadcrumb .navbar-link,
-.breadcrumb .navbar-link:hover,
-.breadcrumb .navbar-link:focus {
-  color: inherit;
-}
 .navbar-default .navbar-brand,
 .navbar-default .navbar-brand:hover,
 .navbar-default .navbar-brand:focus {
-  color: inherit;
+  color: white;
   background-color: inherit;
 }
 .siterole {

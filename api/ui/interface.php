@@ -84,10 +84,10 @@
 
   <div ng-controller="HeaderCtrl">
     <nav class="navigation-header navbar navbar-default noselect" ng-if="!isLoading">
-      <div class="container-fluid bg-primary no-line-height">
+      <div class="container-fluid bg-primary no-line-height" ng-class="{'working': session.working}">
         <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header btn-primary">
-          <a class="navbar-brand btn-default" data-toggle="dropdown">{{ session.application.title }}</a>
+        <div class="navbar-header">
+          <a class="navbar-brand" data-toggle="dropdown">{{ session.application.title }}</a>
           <ul class="dropdown-menu navigation-menu">
             <li ng-controller="MenuCtrl">
               <div class="container-fluid operation-list">
@@ -154,16 +154,16 @@
             <ul class="breadcrumb breadcrumb-slash">
               <li class="navbar-item"
                   ng-repeat="breadcrumb in session.breadcrumbTrail"
-                  ng-class="{'navbar-link btn-primary':breadcrumb.go}"
+                  ng-class="{'navbar-link':breadcrumb.go}"
                   ng-click="breadcrumb.go()">{{ breadcrumb.title }}
               </li>
             </ul>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li class="navbar-item navbar-link btn-primary siterole" ng-click="operationList.siteRole.execute()">
+            <li class="navbar-item navbar-link siterole" ng-click="operationList.siteRole.execute()">
               {{ session.role.name | cnUCWords }} @ {{ session.site.name }}
             </li>
-            <li class="navbar-item navbar-link btn-primary clock" ng-click="operationList.timezone.execute()">
+            <li class="navbar-item navbar-link clock" ng-click="operationList.timezone.execute()">
               <i class="glyphicon glyphicon-time"></i> {{ session.time }}
             </li>
           </ul>
