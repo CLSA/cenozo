@@ -172,7 +172,7 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'application', $module_list ) )
     {
       $module_list['application']['children'] = array( 'cohort', 'role' );
-      $module_list['application']['choosing'] = array( 'site' );
+      $module_list['application']['choosing'] = array( 'site', 'script' );
     }
     if( array_key_exists( 'alternate', $module_list ) )
       $module_list['alternate']['children'] = array( 'address', 'phone' );

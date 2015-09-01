@@ -12,6 +12,7 @@ SOURCE activity.sql
 SOURCE user_has_application.sql
 SOURCE site.sql
 SOURCE application_has_site.sql
+SOURCE application_has_script.sql
 SOURCE jurisdiction.sql
 SOURCE region_site.sql
 SOURCE user.sql
