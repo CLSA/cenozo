@@ -12,6 +12,14 @@ define( {
       title: 'Name',
       type: 'string'
     },
+    sid: {
+      title: 'Survey',
+      type: 'enum'
+    },
+    repeated: {
+      title: 'Repeated',
+      type: 'boolean'
+    },
     reserved: {
       title: 'Reserved',
       type: 'boolean',
@@ -28,13 +36,16 @@ define( {
       column: 'script.name',
       title: 'Name'
     },
+    survey_title: {
+      title: 'Name'
+    },
+    repeated: {
+      title: 'Repeated',
+      type: 'boolean'
+    },
     reserved: {
       title: 'Reserved',
       type: 'boolean'
-    },
-    phase_count: {
-      title: 'Phases',
-      type: 'number'
     }
   },
   defaultOrder: {

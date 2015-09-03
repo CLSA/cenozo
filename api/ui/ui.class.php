@@ -117,8 +117,8 @@ class ui extends \cenozo\base_object
   {
     return array(
       'access', 'activity', 'address', 'age_group', 'alternate', 'application', 'cohort', 'collection',
-      'consent', 'event', 'event_type', 'jurisdiction', 'language', 'participant', 'phase', 'phone',
-      'quota', 'region', 'region_site', 'role', 'script', 'site', 'source', 'state', 'system_message', 'user' );
+      'consent', 'event', 'event_type', 'jurisdiction', 'language', 'participant', 'phone', 'quota',
+      'region', 'region_site', 'role', 'script', 'site', 'source', 'state', 'system_message', 'user' );
   }
 
   /**
@@ -182,8 +182,6 @@ class ui extends \cenozo\base_object
       $module_list['event_type']['children'] = array( 'participant' );
     if( array_key_exists( 'participant', $module_list ) )
       $module_list['participant']['children'] = array( 'address', 'phone', 'consent', 'alternate', 'event' );
-    if( array_key_exists( 'script', $module_list ) )
-      $module_list['script']['children'] = array( 'phase' );
     if( array_key_exists( 'site', $module_list ) )
       $module_list['site']['children'] = array( 'access' );
     if( array_key_exists( 'source', $module_list ) )

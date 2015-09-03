@@ -21,22 +21,17 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    // add the total number of phases
-    if( $select->has_column( 'phase_count' ) )
+    // join to limesurvey tables to get the survey name
+    if( $select->has_column( 'survey_title' ) )
     {
-      $join_sel = lib::create( 'database\select' );
-      $join_sel->from( 'phase' );
-      $join_sel->add_column( 'script_id' );
-      $join_sel->add_column( 'COUNT( * )', 'phase_count', false );
-
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->group( 'script_id' );
-
-      $modifier->left_join(
-        sprintf( '( %s %s ) AS script_join_phase', $join_sel->get_sql(), $join_mod->get_sql() ),
-        'script.id',
-        'script_join_phase.script_id' );
-      $select->add_column( 'IFNULL( phase_count, 0 )', 'phase_count', false );
+      $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+      
+      $survey_table_array = array();
+      foreach( $surveys_class_name::get_titles() as $sid => $title )
+        $survey_table_array[] = sprintf( 'SELECT %s sid, "%s" title', $sid, $title );
+      $survey_table = sprintf( '( %s ) AS survey', implode( $survey_table_array, ' UNION ' ) );
+      $modifier->left_join( $survey_table, 'script.sid', 'survey.sid' );
+      $select->add_table_column( 'survey', 'title', 'survey_title' );
     }
   }
 }

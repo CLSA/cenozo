@@ -19,6 +19,8 @@ DROP PROCEDURE IF EXISTS patch_script;
         create_timestamp TIMESTAMP NOT NULL,
         name VARCHAR(255) NOT NULL,
         event_type_id INT UNSIGNED NOT NULL,
+        sid INT NOT NULL,
+        repeated TINYINT(1) NOT NULL DEFAULT 0,
         reserved TINYINT(1) NOT NULL DEFAULT 1,
         description TEXT NULL,
         PRIMARY KEY (id),

@@ -11,7 +11,7 @@
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.js"></script>
 </head>
 <body class="background">
-  <div class="jumbotron noselect">
+  <div class="container-fluid jumbotron noselect">
     <h2 class="text-info">
       <i class="glyphicon glyphicon-exclamation-sign"></i>
       <?php echo $title; ?>
