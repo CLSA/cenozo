@@ -878,6 +878,17 @@ cenozo.directive( 'cnRecordView', [
           if( angular.isUndefined( scope.heading ) )
             scope.heading = scope.model.name.singular.ucWords() + ' Details';
 
+          // when leaving turn off any activated toggle modes
+          scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
+            if( angular.isDefined( scope.model.viewModel ) ) {
+              for( var i = 0; i < scope.model.choosing.length; i++ ) {
+                var choosingModel = scope.model.viewModel[scope.model.choosing[i].camel+'Model'];
+                if( angular.isDefined( choosingModel ) && choosingModel.listModel.chooseMode )
+                  choosingModel.listModel.toggleChooseMode();
+              }
+            }
+          } );
+
           var recordLoaded = false;
           var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
           scope.dataArray = scope.model.getDataArray( removeInputs, 'view' );
