@@ -14,7 +14,7 @@ define( {
   },
   inputList: {
     event_type_id: {
-      title: 'Event',
+      title: 'Event Type',
       type: 'enum'
     },
     datetime: {
@@ -24,9 +24,9 @@ define( {
     }
   },
   columnList: {
-    event: {
+    event_type: {
       column: 'event_type.name',
-      title: 'Event'
+      title: 'Event Type'
     },
     datetime: {
       title: 'Date & Time',

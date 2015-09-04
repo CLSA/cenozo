@@ -23,17 +23,15 @@ class consent extends record
    */
   public function save()
   {
-    if( $this->accept )
+    $db_consent_type = lib::create( 'database\consent_type', $this->consent_type_id );
+    if( $this->accept && 'participation' == $db_consent_type->name )
     {
-      if( !is_null( $this->participant_id ) )
+      $db_participant = lib::create( 'database\participant', $this->participant_id );
+      if( !is_null( $db_participant->withdraw_letter ) )
       {
-        $db_participant = lib::create( 'database\participant', $this->participant_id );
-        if( !is_null( $db_participant->withdraw_letter ) )
-        {
-          throw lib::create( 'exception\notice',
-            'The participant has completed the withdraw script, '.
-            'no changes to consent status are allowed.', __METHOD__ );
-        }
+        throw lib::create( 'exception\notice',
+          'The participant has completed the withdraw script, '.
+          'no changes to participation consent status are allowed.', __METHOD__ );
       }
     }
 
@@ -48,7 +46,8 @@ class consent extends record
    */
   public function to_string()
   {
-    return sprintf( '%s %s',
+    return sprintf( '%s %s %s',
+                    $this->get_consent_type()->name,
                     $this->written ? 'written' : 'verbal',
                     $this->accept ? 'accept' : 'deny' );
   }

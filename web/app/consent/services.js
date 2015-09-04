@@ -32,12 +32,46 @@ define( cenozo.getServicesIncludeList( 'consent' ), function( module ) {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentModelFactory', [
     'CnBaseModelFactory', 'CnConsentListFactory', 'CnConsentAddFactory', 'CnConsentViewFactory',
-    function( CnBaseModelFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory ) {
+    'CnHttpFactory',
+    function( CnBaseModelFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory,
+              CnHttpFactory ) {
       var object = function() {
+        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnConsentAddFactory.instance( this );
         this.listModel = CnConsentListFactory.instance( this );
         this.viewModel = CnConsentViewFactory.instance( this );
+
+        // extend getBreadcrumbTitle
+        this.getBreadcrumbTitle = function() {
+          var consentType = self.metadata.columnList.consent_type_id.enumList.findByProperty(
+            'value', this.viewModel.record.consent_type_id );
+          return consentType ? consentType.name : 'unknown';
+        };
+
+        // extend getMetadata
+        this.getMetadata = function() {
+          this.metadata.loadingCount++;
+          return this.loadMetadata().then( function() {
+            return CnHttpFactory.instance( {
+              path: 'consent_type',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name' }
+              }
+            } ).query().then( function success( response ) { 
+              self.metadata.columnList.consent_type_id.enumList = []; 
+              for( var i = 0; i < response.data.length; i++ ) { 
+                self.metadata.columnList.consent_type_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].name
+                } );
+              }
+            } ).then( function() {
+              self.metadata.loadingCount--;
+            } );
+          } );
+        };
       };
 
       return {

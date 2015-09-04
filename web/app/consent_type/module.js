@@ -1,11 +1,11 @@
 define( {
-  subject: 'event_type',
+  subject: 'consent_type',
   identifier: { column: 'name' },
   name: {
-    singular: 'event type',
-    plural: 'event types',
-    possessive: 'event type\'s',
-    pluralPossessive: 'event types\''
+    singular: 'consent type',
+    plural: 'consent types',
+    possessive: 'consent type\'s',
+    pluralPossessive: 'consent types\''
   },
   inputList: {
     name: {
@@ -19,8 +19,12 @@ define( {
   },
   columnList: {
     name: { title: 'Name' },
-    event_count: {
-      title: 'Events',
+    accept_count: {
+      title: 'Accepts',
+      type: 'number'
+    },
+    deny_count: {
+      title: 'Denies',
       type: 'number'
     },
     description: {

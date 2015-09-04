@@ -69,8 +69,9 @@ BEGIN
   CALL update_participant_site_for_participant( NEW.id );
   CALL update_participant_first_address( NEW.id );
   CALL update_participant_primary_address( NEW.id );
-  CALL update_participant_last_consent( NEW.id );
-  CALL update_participant_last_written_consent( NEW.id );
+  CALL update_participant_last_consents( NEW.id );
+  CALL update_participant_last_written_consents( NEW.id );
+  CALL update_participant_last_events( NEW.id );
 END;$$
 
 DELIMITER ;

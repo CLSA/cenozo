@@ -49,12 +49,13 @@ class participant extends record
   }
 
   /**
-   * Get the participant's last consent
+   * Get the participant's last event by event type
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return consent
+   * @param database\event_type $db_event_type
+   * @return event
    * @access public
    */
-  public function get_last_consent()
+  public function get_last_event( $db_event_type )
   {
     // check the primary key value
     if( is_null( $this->id ) )
@@ -63,29 +64,52 @@ class participant extends record
       return NULL;
     }
 
-    // need custom SQL
-    $consent_id = static::db()->get_one(
-      sprintf( 'SELECT id '.
-               'FROM consent '.
-               'WHERE participant_id = %s '.
-               'AND date = ( '.
-                 'SELECT MAX( date ) '.
-                 'FROM consent '.
-                 'WHERE participant_id = %s '.
-                 'ORDER BY id DESC '.
-               ')',
-               static::db()->format_string( $this->id ),
-               static::db()->format_string( $this->id ) ) );
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_last_event' );
+    $select->add_column( 'event_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_id', '=', $this->id );
+    $modifier->where( 'event_type_id', '=', $db_event_type->id );
+
+    $event_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    return $event_id ? lib::create( 'database\event', $event_id ) : NULL;
+  }
+
+  /**
+   * Get the participant's last consent by consent type
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\consent_type $db_consent_type
+   * @return consent
+   * @access public
+   */
+  public function get_last_consent( $db_consent_type )
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_last_consent' );
+    $select->add_column( 'event_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_id', '=', $this->id );
+    $modifier->where( 'event_type_id', '=', $db_consent_type->id );
+
+    $consent_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
   }
 
   /**
-   * Get the participant's last consent
+   * Get the participant's last written consent by consent type
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\consent_type $db_consent_type
    * @return consent
    * @access public
    */
-  public function get_last_written_consent()
+  public function get_last_written_consent( $db_consent_type )
   {
     // check the primary key value
     if( is_null( $this->id ) )
@@ -94,20 +118,14 @@ class participant extends record
       return NULL;
     }
 
-    // need custom SQL
-    $consent_id = static::db()->get_one(
-      sprintf( 'SELECT id '.
-               'FROM consent '.
-               'WHERE participant_id = %s '.
-               'AND date = ( '.
-                 'SELECT MAX( date ) '.
-                 'FROM consent '.
-                 'WHERE participant_id = %s '.
-                 'AND written = 1 '.
-                 'ORDER BY id DESC '.
-               ')',
-               static::db()->format_string( $this->id ),
-               static::db()->format_string( $this->id ) ) );
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_last_written_consent' );
+    $select->add_column( 'event_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_id', '=', $this->id );
+    $modifier->where( 'event_type_id', '=', $db_consent_type->id );
+
+    $consent_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
   }
 

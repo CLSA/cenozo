@@ -14,13 +14,20 @@ define( {
     friendlyColumn: 'date'
   },
   inputList: {
+    consent_type_id: {
+      title: 'Consent Type',
+      type: 'enum',
+      noedit: true
+    },
     accept: {
       title: 'Accept',
-      type: 'boolean'
+      type: 'boolean',
+      noedit: true
     },
     written: {
       title: 'Written',
-      type: 'boolean'
+      type: 'boolean',
+      noedit: true
     },
     date: {
       title: 'Date',
@@ -33,6 +40,10 @@ define( {
     }
   },
   columnList: {
+    consent_type: {
+      column: 'consent_type.name',
+      title: 'Consent Type'
+    },
     accept: {
       title: 'Accept',
      type: 'boolean'

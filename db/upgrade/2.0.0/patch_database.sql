@@ -16,6 +16,7 @@ SOURCE jurisdiction.sql
 SOURCE region_site.sql
 SOURCE user.sql
 SOURCE address.sql
+SOURCE consent_type.sql
 SOURCE consent.sql
 SOURCE event.sql
 SOURCE phone.sql
@@ -47,8 +48,11 @@ SOURCE update_participant_site_for_participant.sql
 SOURCE update_participant_site_for_jurisdiction.sql
 SOURCE update_participant_site_for_region_site.sql
 SOURCE update_participant_last_event.sql
+SOURCE update_participant_last_events.sql
 SOURCE update_participant_last_consent.sql
+SOURCE update_participant_last_consents.sql
 SOURCE update_participant_last_written_consent.sql
+SOURCE update_participant_last_written_consents.sql
 SOURCE address.sql
 SOURCE phone.sql
 SOURCE participant_site.sql

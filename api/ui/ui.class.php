@@ -117,8 +117,9 @@ class ui extends \cenozo\base_object
   {
     return array(
       'access', 'activity', 'address', 'age_group', 'alternate', 'application', 'cohort', 'collection',
-      'consent', 'event', 'event_type', 'jurisdiction', 'language', 'participant', 'phone', 'quota',
-      'region', 'region_site', 'role', 'script', 'site', 'source', 'state', 'system_message', 'user' );
+      'consent', 'consent_type', 'event', 'event_type', 'jurisdiction', 'language', 'participant',
+      'phone', 'quota', 'region', 'region_site', 'role', 'script', 'site', 'source', 'state',
+      'system_message', 'user' );
   }
 
   /**
@@ -178,6 +179,8 @@ class ui extends \cenozo\base_object
       $module_list['alternate']['children'] = array( 'address', 'phone' );
     if( array_key_exists( 'collection', $module_list ) )
       $module_list['collection']['choosing'] = array( 'participant', 'user' );
+    if( array_key_exists( 'consent_type', $module_list ) )
+      $module_list['consent_type']['children'] = array( 'participant' );
     if( array_key_exists( 'event_type', $module_list ) )
       $module_list['event_type']['children'] = array( 'participant' );
     if( array_key_exists( 'participant', $module_list ) )
@@ -236,6 +239,7 @@ class ui extends \cenozo\base_object
     if( 2 <= $db_role->tier )
     {
       $list['Activities']      = 'activity';
+      $list['Consent Types']     = 'consent_type';
       $list['Event Types']     = 'event_type';
       $list['Quotas']          = 'quota';
       $list['States']          = 'state';
