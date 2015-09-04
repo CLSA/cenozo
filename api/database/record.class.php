@@ -34,19 +34,24 @@ abstract class record extends \cenozo\base_object
 
     // set the default value for all columns
     $table_name = static::get_table_name();
-    foreach( static::db()->get_column_names( $table_name ) as $name )
+    foreach( static::db()->get_column_names( $table_name ) as $column )
     {
       // If the default is CURRENT_TIMESTAMP, or if there is a DATETIME column by the name
       // 'start_datetime' then make the default the current date and time.
       // Because mysql does not allow setting the default value for a DATETIME column to be
       // NOW() we need to set the default here manually
-      $default = static::db()->get_column_default( $table_name, $name );
-      $this->passive_column_values[$name] = NULL;
+      $default = static::db()->get_column_default( $table_name, $column );
+      $this->passive_column_values[$column] = NULL;
       
-      if( 'start_datetime' == $name || ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) )
-        $this->active_column_values[$name] = $util_class_name::get_datetime_object();
+      if( 'start_datetime' == $column || ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $column ) )
+        $this->active_column_values[$column] = $util_class_name::get_datetime_object();
       else if( !is_null( $default ) )
-        $this->active_column_values[$name] = $default;
+      {
+        $type = static::db()->get_column_variable_type( $table_name, $column );
+        if( 'datetime' == $type ) $default = !$default ? NULL : $util_class_name::get_datetime_object( $default );
+        else if( 'string' != $type ) settype( $default, $type );
+        $this->active_column_values[$column] = $default;
+      }
     }
 
     if( NULL != $id )
@@ -305,10 +310,17 @@ abstract class record extends \cenozo\base_object
         throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
     }
 
-    if( $this->passive_column_values[$column_name] != $value )
+    if( $this->passive_column_values[$column_name] === $value )
+    {
+      // we're setting the value to the passive value, so remove the column from the active array
+      if( array_key_exists( $column_name, $this->active_column_values ) )
+        unset( $this->active_column_values[$column_name] );
+    }
+    else
+    {
+      // the value is different from what's in the passive array, so store it in the active array
       $this->active_column_values[$column_name] = $value;
-    else if( array_key_exists( $column_name, $this->active_column_values ) )
-      unset( $this->active_column_values[$column_name] );
+    }
   }
 
   /**

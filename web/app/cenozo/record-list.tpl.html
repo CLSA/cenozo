@@ -82,6 +82,7 @@
             </td>
             <td class="tiny" ng-if="model.deleteEnabled">
               <button class="btn btn-xs btn-danger"
+                      ng-disabled="0 <= isDeleting.indexOf( record.id )"
                       tooltip="Delete {{ model.name.singular }}"
                       tooltip-placement="left"
                       cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}

@@ -253,6 +253,7 @@
         <button ng-if="model.deleteEnabled"
                 type="button"
                 class="btn btn-danger"
+                ng-disabled="isDeleting"
                 cn-really-message="Are you sure you want to delete this {{ model.subject }}?"
                 cn-really-click="delete()">
           <i class="glyphicon glyphicon-remove-sign"></i> Delete

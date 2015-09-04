@@ -147,7 +147,7 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * Validate the service.  If validation fails the service's return status will be set to 403
+   * Validate the service.  If validation fails the service's status code will be set.
    * 
    * Validation works by checking each collection/resource pair and making sure the current role
    * has access to it.  For non-leaf pairs the method "GET" is checked.  For the leaf pair the

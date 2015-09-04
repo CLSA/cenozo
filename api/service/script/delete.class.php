@@ -21,8 +21,9 @@ class delete extends \cenozo\service\delete
   {
     parent::setup();
 
-    // make note of the event_type now so we can delete it after the script is deleted
-    $this->db_event_type = $this->get_leaf_record()->get_event_type();
+    // make note of the event_types now so we can delete them after the script is deleted
+    $this->db_started_event_type = $this->get_leaf_record()->get_started_event_type();
+    $this->db_completed_event_type = $this->get_leaf_record()->get_completed_event_type();
   }
 
   /**
@@ -34,8 +35,9 @@ class delete extends \cenozo\service\delete
 
     try
     {
-      // delete the associated event type
-      $this->db_event_type->delete();
+      // delete the associated event types
+      $this->db_started_event_type->delete();
+      $this->db_completed_event_type->delete();
     }
     catch( \cenozo\exception\notice $e )
     {
@@ -62,5 +64,12 @@ class delete extends \cenozo\service\delete
    * @var database\event_type
    * @access protected
    */
-  protected $db_event_type = NULL;
+  protected $db_started_event_type = NULL;
+
+  /**
+   * Record cache
+   * @var database\event_type
+   * @access protected
+   */
+  protected $db_completed_event_type = NULL;
 }

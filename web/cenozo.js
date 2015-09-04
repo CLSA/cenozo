@@ -464,14 +464,17 @@ cenozo.directive( 'cnRecordAdd', [
               scope = scope.$$nextSibling;
             }
           } else {
+            $scope.isAdding = true;
             $scope.model.addModel.onAdd( $scope.$parent.record ).then(
               function success( response ) {
                 // create a new record to be created (in case another record is added)
                 $scope.model.addModel.onNew( $scope.$parent.record );
                 $scope.form.$setPristine();
+                $scope.isAdding = false;
                 return CnSession.workingTransition( $scope.model.transitionToLastState );
               },
               function error( response ) {
+                $scope.isAdding = false;
                 if( 409 == response.status ) {
                   // report which inputs are included in the conflict
                   for( var i = 0; i < response.data.length; i++ ) {
@@ -522,6 +525,7 @@ cenozo.directive( 'cnRecordAdd', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-add, no model provided.' );
         } else {
+          scope.isAdding = false;
           scope.record = {};
           scope.formattedRecord = {};
 
@@ -613,7 +617,12 @@ cenozo.directive( 'cnRecordList', [
 
         $scope.deleteRecord = function( record ) {
           if( $scope.model.deleteEnabled ) {
-            $scope.model.listModel.onDelete( record ).catch( function error( response ) {
+            if( 0 > $scope.isDeleting.indexOf( record.id ) ) $scope.isDeleting.push( record.id );
+            $scope.model.listModel.onDelete( record ).then( function success( response ) {
+              var index = $scope.isDeleting.indexOf( record.id );
+              if( 0 <= index ) $scope.isDeleting.splice( index, 1 );
+            } ).catch( function error( response ) {
+              if( 0 <= index ) $scope.isDeleting.splice( index, 1 );
               if( 409 == response.status ) {
                 CnModalMessageFactory.instance( {
                   title: 'Unable to delete ' + $scope.model.name.singular + ' record',
@@ -645,6 +654,7 @@ cenozo.directive( 'cnRecordList', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-list, no model provided.' );
         } else {
+          scope.isDeleting = [];
           scope.heading = angular.isUndefined( attrs.heading )
                         ? scope.model.name.singular.ucWords() + ' List'
                         : attrs.heading;
@@ -727,10 +737,15 @@ cenozo.directive( 'cnRecordView', [
         $scope.back = function() { $scope.model.transitionToLastState(); };
 
         $scope.delete = function() {
+          $scope.isDeleting = true;
           if( $scope.model.deleteEnabled ) {
             $scope.model.viewModel.onDelete().then(
-              function success() { CnSession.workingTransition( $scope.model.transitionToLastState ); },
+              function success() {
+                $scope.isDeleting = false;
+                CnSession.workingTransition( $scope.model.transitionToLastState );
+              },
               function error( response ) {
+                $scope.isDeleting = false;
                 if( 409 == response.status ) {
                   CnModalMessageFactory.instance( {
                     title: 'Unable to delete ' + $scope.model.name.singular + ' record',
@@ -873,6 +888,7 @@ cenozo.directive( 'cnRecordView', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-view, no model provided.' );
         } else {
+          scope.isDeleting = false;
           scope.heading = attrs.heading;
           scope.initCollapsed = scope.collapsed ? true : false;
           if( angular.isUndefined( scope.heading ) )
@@ -1269,7 +1285,9 @@ cenozo.factory( 'CnSession', [
 
       // wrapping all state transitions with option to cancel
       this.workingTransition = function( transitionFn ) {
-        return this.transitionWhileWorking ? null : transitionFn();
+        var transition = !this.transitionWhileWorking;
+        this.transitionWhileWorking = false;
+        return transition ? transitionFn() : null;
       }
 
       // defines the breadcrumbtrail based on an array of crumbs
