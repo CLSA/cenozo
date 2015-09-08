@@ -968,21 +968,41 @@ cenozo.directive( 'cnTimer', [
   function( $interval ) {
     return {
       restrict: 'E',
-      template: '{{ days ? days+" + " : "" }}{{ hours ? hours+":" : "" }}{{ minutes }}:{{ seconds }}',
-      scope: { since: '@' },
+      template: '{{ dayStr ? dayStr + " " : "" }}' +
+                '{{ timeSign ? timeSign + " " : "" }}' +
+                '{{ hourStr ? hours + ":" : "" }}' +
+                '{{ minuteStr }}:{{ secondStr }}',
+      scope: {
+        since: '@',
+        allowNegative: '='
+      },
       link: function( scope, element ) {
         function tick() {
           scope.duration.add( 1, 'second' );
-          scope.days = Math.floor( scope.duration.asDays() );
-          if( 0 != scope.days ) scope.days += 1 == scope.days ? " day" : " days";
-          scope.hours = scope.duration.hours();
-          scope.minutes = scope.duration.minutes();
-          if( 10 > scope.minutes ) scope.minutes = '0' + scope.minutes;
-          scope.seconds = scope.duration.seconds();
-          if( 10 > scope.seconds ) scope.seconds = '0' + scope.seconds;
+          var days = Math.floor( scope.duration.asDays() );
+          var negative = 0 > days;
+          scope.timeSign = 0 > days ? "-" : "+";
+          if( 0 > days ) days++; // adjust for negative durations
+
+          if( 0 == days ) {
+            scope.dayStr = "";
+            if( "+" == scope.timeSign ) scope.timeSign = "";
+          } else {
+            scope.dayStr = " " + days + ( 1 == Math.abs( days ) ? "day" : "days" );
+          }
+          scope.hourStr = Math.abs( scope.duration.hours() );
+          scope.minuteStr = Math.abs( scope.duration.minutes() );
+          if( 10 > scope.minuteStr ) scope.minuteStr = '0' + scope.minuteStr;
+          scope.secondStr = Math.abs( scope.duration.seconds() );
+          if( 10 > scope.secondStr ) scope.secondStr = '0' + scope.secondStr;
         }
 
         scope.duration = moment.duration( moment().diff( moment( scope.since ) ) );
+
+        // adjust for negative
+        var seconds = Math.floor( scope.duration.asSeconds() );
+        if( false === scope.allowNegative && 0 > seconds ) scope.duration.subtract( seconds+1, 'second' );
+
         tick();
         var promise = $interval( tick, 1000 );
         element.on( '$destroy', function() { $interval.cancel( promise ); } );
