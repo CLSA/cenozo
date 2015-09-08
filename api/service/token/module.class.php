@@ -1,0 +1,27 @@
+<?php
+/**
+ * module.class.php
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @filesource
+ */
+
+namespace cenozo\service\token;
+use cenozo\lib, cenozo\log;
+
+/**
+ * Performs operations which effect how this module is used in a service
+ */
+class module extends \cenozo\service\module
+{
+  /**
+   * Extend parent method
+   */
+  public function validate()
+  {
+    $valid = parent::validate();
+
+    // make sure to only respond if the parent is a script
+    if( 'script' != $this->get_parent_subject() ) $this->get_status()->set_code( 404 );
+  }
+}

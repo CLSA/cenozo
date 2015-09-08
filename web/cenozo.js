@@ -968,11 +968,13 @@ cenozo.directive( 'cnTimer', [
   function( $interval ) {
     return {
       restrict: 'E',
-      template: '{{ hours ? hours+":" : "" }}{{ minutes }}:{{ seconds }}',
+      template: '{{ days ? days+" + " : "" }}{{ hours ? hours+":" : "" }}{{ minutes }}:{{ seconds }}',
       scope: { since: '@' },
       link: function( scope, element ) {
         function tick() {
           scope.duration.add( 1, 'second' );
+          scope.days = Math.floor( scope.duration.asDays() );
+          if( 0 != scope.days ) scope.days += 1 == scope.days ? " day" : " days";
           scope.hours = scope.duration.hours();
           scope.minutes = scope.duration.minutes();
           if( 10 > scope.minutes ) scope.minutes = '0' + scope.minutes;

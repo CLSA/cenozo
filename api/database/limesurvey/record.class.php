@@ -25,7 +25,7 @@ abstract class record extends \cenozo\database\record
   public function __construct( $id = NULL )
   {
     parent::__construct( $id );
-    $this->include_timestamps = false;
+    $this->write_timestamps = false;
   }
 
   /**

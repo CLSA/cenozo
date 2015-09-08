@@ -33,5 +33,8 @@ class module extends \cenozo\service\module
       $modifier->left_join( $survey_table, 'script.sid', 'survey.sid' );
       $select->add_table_column( 'survey', 'title', 'survey_title' );
     }
+
+    if( $select->has_column( 'url' ) )
+      $select->add_column( sprintf( 'CONCAT( "%s/index.php?sid=", script.sid )', LIMESURVEY_URL ), 'url', false );
   }
 }

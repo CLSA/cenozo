@@ -39,7 +39,7 @@ class post extends write
       if( !is_null( $parent_record ) )
       { // add the parent relationship
         $parent_column = sprintf( '%s_id', $parent_record::get_table_name() );
-        $record->$parent_column = $parent_record->id;
+        if( $record->column_exists( $parent_column ) ) $record->$parent_column = $parent_record->id;
       }
 
       // add record column data
@@ -84,11 +84,12 @@ class post extends write
         {
           // save the record, set the data as the new id
           $record->save();
-          $this->set_data( (int)$record->id );
+          $primary_key_name = $record::get_primary_key_name();
+          $this->set_data( (int)$record->$primary_key_name );
 
           // set up the status to show a successfully created resource
           $this->status->set_code( 201 );
-          $this->status->set_location( sprintf( '%s/%d', $leaf_subject, $record->id ) );
+          $this->status->set_location( sprintf( '%s/%d', $leaf_subject, $record->$primary_key_name ) );
         }
         catch( \cenozo\exception\notice $e )
         {
@@ -115,21 +116,11 @@ class post extends write
   /**
    * TODO: document
    */
-  public function get_leaf_record()
+  protected function create_resource( $index )
   {
-    // create the record if it doesn't exist yet
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
-    if( is_null( $this->new_record ) &&
-        $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )
-    {
-      $this->new_record = lib::create( sprintf( 'database\%s', $this->get_leaf_subject() ) );
-    }
-
-    return $this->new_record;
+    return $this->get_number_of_collections() - 1 == $index &&
+           $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() ?
+      lib::create( $this->get_record_class_name( $index, true ) ) : parent::create_resource( $index );
   }
-
-  /**
-   * TODO: document
-   */
-  private $new_record = NULL;
 }

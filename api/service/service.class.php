@@ -120,7 +120,10 @@ abstract class service extends \cenozo\base_object
             $parent_record = $this->get_resource( $index - 1 );
             $method_name = sprintf( 'get_%s_count', $subject );
             $modifier = lib::create( 'database\modifier' );
-            $modifier->where( sprintf( '%s.id', $record::get_table_name() ), '=', $record->id );
+            $primary_key_name = $record::get_primary_key_name();
+            $modifier->where(
+              sprintf( '%s.%s', $record::get_table_name(), $primary_key_name ),
+              '=', $record->$primary_key_name );
             if( 0 == $parent_record->$method_name( $modifier ) )
             {
               $this->status->set_code( 404 );
@@ -299,6 +302,14 @@ abstract class service extends \cenozo\base_object
   public function get_method() { return $this->method; }
 
   /**
+   * TODO: document
+   */
+  public function get_number_of_collections()
+  {
+    return count( $this->collection_name_list );
+  }
+
+  /**
    * Returns the subject for a particular index
    * 
    * The index is based on the service's path.  Every other item in the path identifies a
@@ -332,14 +343,16 @@ abstract class service extends \cenozo\base_object
   /** 
    * TODO: document
    */
-  protected function get_record_class_name( $index )
+  protected function get_record_class_name( $index, $relative = false )
   {
     $subject = $this->get_subject( $index );
     if( is_null( $subject ) )
       throw lib::create( 'exception\runtime',
         sprintf( 'Tried to get record class name for invalid subject (index: %d)', $index ),
         __METHOD__ );
-    return lib::get_class_name( sprintf( 'database\%s', $subject ) );
+
+    $class = sprintf( 'database\%s', $subject );
+    return $relative ? $class : lib::get_class_name( $class );
   }
 
   /**
@@ -548,7 +561,10 @@ abstract class service extends \cenozo\base_object
   public function get_file_as_array()
   {
     if( null === $this->file_as_array )
-      $this->file_as_array = get_object_vars( $this->get_file_as_object() );
+    {
+      $object = $this->get_file_as_object();
+      if( !is_null( $object ) ) $this->file_as_array = get_object_vars( $object );
+    }
 
     return $this->file_as_array;
   }
