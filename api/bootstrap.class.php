@@ -267,7 +267,7 @@ final class bootstrap
               ? $service->get_status()
               : lib::create( 'service\status', 500 );
 
-      if( !is_null( $service ) && is_null( $service->get_data() ) ) $service->set_data( $e->get_code() );
+      if( !is_null( $service ) && is_null( $service->get_data() ) ) $service->set_data( $e->get_code().'' );
 
       // log all but notice exceptions
       if( 'notice' != $e->get_type() )
