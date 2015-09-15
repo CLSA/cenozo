@@ -970,7 +970,7 @@ cenozo.directive( 'cnTimer', [
       restrict: 'E',
       template: '{{ dayStr ? dayStr + " " : "" }}' +
                 '{{ timeSign ? timeSign + " " : "" }}' +
-                '{{ hourStr ? hours + ":" : "" }}' +
+                '{{ hourStr ? hourStr + ":" : "" }}' +
                 '{{ minuteStr }}:{{ secondStr }}',
       scope: {
         since: '@',
@@ -988,7 +988,7 @@ cenozo.directive( 'cnTimer', [
             scope.dayStr = "";
             if( "+" == scope.timeSign ) scope.timeSign = "";
           } else {
-            scope.dayStr = " " + days + ( 1 == Math.abs( days ) ? "day" : "days" );
+            scope.dayStr = days + ( 1 == Math.abs( days ) ? " day" : " days" );
           }
           scope.hourStr = Math.abs( scope.duration.hours() );
           scope.minuteStr = Math.abs( scope.duration.minutes() );
