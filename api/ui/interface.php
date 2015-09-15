@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <title><?php echo ucwords( INSTANCE ); ?></title>
-  <link rel="shortcut icon" href="img/favicon.ico">
+  <link rel="shortcut icon" href="<?php print ROOT_URL; ?>/img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css">
-  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.js"></script>
@@ -20,7 +20,7 @@
   <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
 
   <script src="<?php print CENOZO_URL; ?>/cenozo.js" id="cenozo"></script>
-  <script src="app.js" id="app"></script>
+  <script src="<?php print ROOT_URL; ?>/app.js" id="app"></script>
   <script src="<?php print LIB_URL; ?>/requirejs/require.js"
           data-main="<?php print APP_URL; ?>/require.js"></script>
 </head>
@@ -33,6 +33,7 @@
       'ui.slider',
       'cenozo'
     ] );
+    cenozoApp.baseUrl = "<?php print ROOT_URL; ?>";
     cenozoApp.moduleList = <?php print $module_string; ?>;
 
     // notes are handled by a modal only

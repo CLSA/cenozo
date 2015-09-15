@@ -5,9 +5,9 @@ catch( err ) { var cenozo = angular.module( 'cenozo', ['ngAnimate'] ); }
 
 // set up cenozo's base variables
 cenozo.providers = {};
-var baseCenozoUrl = document.getElementById( 'cenozo' ).src;
-cenozo.baseUrl = baseCenozoUrl.substr( 0, baseCenozoUrl.indexOf( '/cenozo.js' ) );
-baseCenozoUrl = undefined;
+var tempUrl = document.getElementById( 'cenozo' ).src;
+cenozo.baseUrl = tempUrl.substr( 0, tempUrl.indexOf( '/cenozo.js' ) );
+tempUrl = undefined;
 
 // setup moment.timezone
 moment.tz.setDefault( 'UTC' );
@@ -61,7 +61,8 @@ cenozo.modules = function( modules ) { this.moduleList = angular.copy( modules )
 
 // Gets the base url for a module
 cenozo.getModuleUrl = function( moduleName ) {
-  return ( 0 <= this.moduleList.indexOf( moduleName ) ? this.baseUrl + '/' : '' ) + 'app/' + moduleName + '/';
+  return ( 0 <= this.moduleList.indexOf( moduleName ) ? this.baseUrl : cenozoApp.baseUrl ) +
+         '/app/' + moduleName + '/';
 };
 
 // Returns a list of includes needed by a module's service file
@@ -92,7 +93,7 @@ cenozo.routeModule = function ( stateProvider, name, module ) {
   // add base state
   stateProvider.state( name, {
     abstract: true,
-    url: '/' + name,
+    url: cenozoApp.baseUrl + '/' + name,
     templateUrl: this.baseUrl + '/app/cenozo/view-frame.tpl.html',
     resolve: {
       data: [ '$q', function( $q ) {
@@ -2596,7 +2597,7 @@ cenozo.factory( 'CnHttpFactory', [
 
       var self = this;
       function http( method, url ) {
-        var object = { url: url, method: method };
+        var object = { url: cenozoApp.baseUrl + '/' + url, method: method };
         if( null != self.data ) {
           if( 'POST' == method || 'PATCH' == method ) object.data = self.data;
           else object.params = self.data;
@@ -3510,10 +3511,10 @@ cenozo.factory( 'CnPaginationFactory',
  * TODO: document
  */
 cenozo.config( [
-  '$controllerProvider', '$compileProvider', '$filterProvider', '$provide',
-  '$stateProvider', '$tooltipProvider', '$urlRouterProvider',
-  function( $controllerProvider, $compileProvider, $filterProvider, $provide,
-            $stateProvider, $tooltipProvider, $urlRouterProvider ) {
+  '$controllerProvider', '$compileProvider', '$filterProvider', '$locationProvider',
+  '$provide', '$stateProvider', '$tooltipProvider', '$urlRouterProvider',
+  function( $controllerProvider, $compileProvider, $filterProvider, $locationProvider,
+            $provide, $stateProvider, $tooltipProvider, $urlRouterProvider ) {
     // create an object containing all providers
     cenozo.providers.controller = $controllerProvider.register;
     cenozo.providers.directive = $compileProvider.directive;
@@ -3539,7 +3540,7 @@ cenozo.config( [
         } ]
       }
     } );
-    $stateProvider.state( 'root.home', { url: '/' } ); // resolve application/#/
+    $stateProvider.state( 'root.home', { url: cenozoApp.baseUrl + '/' } ); // resolve application/#/
     $stateProvider.state( 'wait', { templateUrl: baseRootUrl + 'wait.tpl.html' } );
 
     // add the error states
@@ -3572,6 +3573,9 @@ cenozo.config( [
 
     // set the default tooltip delay
     $tooltipProvider.options( { popupDelay: 500 } );
+
+    // turn on html5 mode
+    $locationProvider.html5Mode( true );
   }
 ] );
 
@@ -3589,15 +3593,13 @@ cenozo.run( [
         fromState.name ? fromState.name + angular.toJson( fromParams ) : '(none)',
         toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
       );
+      CnSession.setBreadcrumbTrail( [ { title: 'Loading\u2026' } ] );
+      if( 0 < CnSession.working ) CnSession.transitionWhileWorking = true;
     } );
     $rootScope.$on( '$stateChangeSuccess', function( event, toState, toParams, fromState, fromParams ) {
       console.info( 'Completed state change to %s',
         toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
       );
-    } );
-    $rootScope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
-      CnSession.setBreadcrumbTrail( [ { title: 'Loading\u2026' } ] );
-      if( 0 < CnSession.working ) CnSession.transitionWhileWorking = true;
     } );
     $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
       CnSession.workingTransition( function() { $state.go( 'error.state' ) } );

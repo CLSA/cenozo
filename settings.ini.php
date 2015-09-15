@@ -25,6 +25,7 @@ $settings['general']['development_mode'] = false;
 $settings['general']['activity_timeout'] = '2 HOUR';
 
 // cenozo's sub-directory urls
+$settings['url']['ROOT'] = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) );
 $settings['url']['APP'] = $this->settings['url']['CENOZO'].'/app';
 $settings['url']['CSS'] = $this->settings['url']['CENOZO'].'/css';
 $settings['url']['IMG'] = $this->settings['url']['CENOZO'].'/img';
