@@ -3540,7 +3540,7 @@ cenozo.config( [
         } ]
       }
     } );
-    $stateProvider.state( 'root.home', { url: cenozoApp.baseUrl + '/' } ); // resolve application/#/
+    $stateProvider.state( 'root.home', { url: cenozoApp.baseUrl + '/' } );
     $stateProvider.state( 'wait', { templateUrl: baseRootUrl + 'wait.tpl.html' } );
 
     // add the error states
