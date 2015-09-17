@@ -40,6 +40,14 @@ String.prototype.ucWords = function() {
   return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
 }
 
+// generate a globally unique identifier
+cenozo.generateGUID = function() {
+  var S4 = function() {
+    return( ( ( 1+Math.random() ) * 0x10000 ) | 0 ).toString( 16 ).substring( 1 );
+  };
+  return( S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4() );
+};
+
 cenozo.getType = function( variable ) {
   var type = ( {} ).toString.call( variable ).match( /\s([a-zA-Z]+)/ )[1].toLowerCase();
   // if an object, check for moment
@@ -1267,7 +1275,7 @@ cenozo.factory( 'CnSession', [
       var self = this;
       this.promise = null;
       this.working = false;
-      this.workingCount = 0;
+      this.workingGUIDList = {};
       this.transitionWhileWorking = false;
       this.application = {};
       this.user = {};
@@ -1284,24 +1292,30 @@ cenozo.factory( 'CnSession', [
       var workingPromise = null;
       function watchWorkingCount() {
         workingPromise = null;
-        if( 0 < self.workingCount ) self.working = true;
+        if( 0 < Object.keys( self.workingGUIDList ).length ) {
+          self.working = true;
+        }
       }
 
-      this.updateWorkingCount = function( increment ) {
-        if( angular.isDefined( increment ) ) {
-          this.workingCount += increment ? 1 : -1;
+      this.updateWorkingGUID = function( guid, start ) {
+        if( start ) {
+          if( !angular.isDefined( this.workingGUIDList[guid] ) ) this.workingGUIDList[guid] = 0;
+          this.workingGUIDList[guid]++;
+        } else if( angular.isDefined( this.workingGUIDList[guid] ) ) {
+          this.workingGUIDList[guid]--;
+          if( 0 == this.workingGUIDList[guid] ) delete this.workingGUIDList[guid];
+        }
 
-          if( 0 < this.workingCount ) {
-            if( null === workingPromise ) workingPromise = $timeout( watchWorkingCount, 1000 );
-          } else {
-            this.working = false;
-            // reset the transitionWhileWorking property after a short wait so that any pending
-            // transitions can be ignored before the property is reset
-            $timeout( function() { self.transitionWhileWorking = false; }, 200 );
-            if( null !== workingPromise ) {
-              $timeout.cancel( workingPromise );
-              workingPromise = null;
-            }
+        if( 0 < Object.keys( this.workingGUIDList ).length ) {
+          if( null === workingPromise ) workingPromise = $timeout( watchWorkingCount, 1000 );
+        } else {
+          this.working = false;
+          // reset the transitionWhileWorking property after a short wait so that any pending
+          // transitions can be ignored before the property is reset
+          $timeout( function() { self.transitionWhileWorking = false; }, 200 );
+          if( null !== workingPromise ) {
+            $timeout.cancel( workingPromise );
+            workingPromise = null;
           }
         }
       }
@@ -2587,17 +2601,35 @@ cenozo.factory( 'CnBaseModelFactory', [
 cenozo.factory( 'CnHttpFactory', [
   '$http', '$rootScope',
   function CnHttpFactory( $http, $rootScope ) {
+    function appendTransform( defaults, transform ) {
+      defaults = angular.isArray(defaults) ? defaults : [defaults];
+      return defaults.concat( transform );
+    };
+
     var object = function( params ) {
       if( angular.isUndefined( params.path ) )
         throw 'Tried to create CnHttpFactory instance without a path';
 
       this.path = null;
       this.data = {};
+      this.guid = cenozo.generateGUID();
       angular.extend( this, params );
 
       var self = this;
       function http( method, url ) {
-        var object = { url: cenozoApp.baseUrl + '/' + url, method: method };
+        var object = {
+          url: cenozoApp.baseUrl + '/' + url,
+          method: method,
+          // broadcast when http requests start/finish
+          transformRequest: appendTransform( $http.defaults.transformRequest, function( request ) {
+            $rootScope.$broadcast( 'httpRequest', self.guid, request );
+            return request;
+          } ),
+          transformResponse: appendTransform( $http.defaults.transformResponse, function( response ) {
+            $rootScope.$broadcast( 'httpResponse', self.guid, response );
+            return response;
+          } )
+        };
         if( null != self.data ) {
           if( 'POST' == method || 'PATCH' == method ) object.data = self.data;
           else object.params = self.data;
@@ -2612,16 +2644,6 @@ cenozo.factory( 'CnHttpFactory', [
       this.post = function() { return http( 'POST', 'api/' + this.path ); };
       this.query = function() { return http( 'GET', 'api/' + this.path ); };
     };
-
-    // broadcast when http requests start/finish
-    $http.defaults.transformRequest.push( function( request ) {
-      $rootScope.$broadcast( 'httpRequest' );
-      return request;
-    } );
-    $http.defaults.transformResponse.push( function( response ) { 
-      $rootScope.$broadcast( 'httpResponse' );
-      return response;
-    } );
 
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
@@ -3607,11 +3629,11 @@ cenozo.run( [
     $rootScope.$on( '$stateChangeError', function( event, toState, toParams, fromState, fromParams, error ) {
       CnSession.workingTransition( function() { $state.go( 'error.404' ) } );
     } );
-    $rootScope.$on( 'httpRequest', function( event ) {
-      CnSession.updateWorkingCount( true );
+    $rootScope.$on( 'httpRequest', function( event, guid, request ) {
+      CnSession.updateWorkingGUID( guid, true );
     } );
-    $rootScope.$on( 'httpResponse', function( event ) {
-      CnSession.updateWorkingCount( false );
+    $rootScope.$on( 'httpResponse', function( event, guid, response ) {
+      CnSession.updateWorkingGUID( guid, false );
     } );
   }
 ] );
