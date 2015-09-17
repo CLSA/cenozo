@@ -16,7 +16,6 @@ define( 'NOTICE_CENOZO_BASE_ERRNO',     400000 );
 define( 'PERMISSION_CENOZO_BASE_ERRNO', 500000 );
 define( 'RUNTIME_CENOZO_BASE_ERRNO',    600000 );
 define( 'SYSTEM_CENOZO_BASE_ERRNO',     700000 );
-define( 'TEMPLATE_CENOZO_BASE_ERRNO',   800000 );
 
 /**
  * "argument" error codes
@@ -275,10 +274,3 @@ define( 'RUNTIME__CENOZO_SERVICE_SERVICE__GET_RECORD_CLASS_NAME__ERRNO',
  *    512: user warning,
  *   1024: user notice
  */
-
-/**
- * "template" error codes
- * 
- * Since template errors already have codes this list is likely to stay empty.
- */
-
