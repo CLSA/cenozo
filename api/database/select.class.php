@@ -111,6 +111,21 @@ class select extends \cenozo\base_object
   }
 
   /**
+   * Adds a constant to the select statement.
+   * 
+   * @param mixed $constant The value to add (may be a string, number or boolean)
+   * @param string $alias The optional alias for the column (must be unique)
+   * @param string $type A hint at what type the column is (doesn't have to be provided)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function add_constant( $constant, $alias = NULL, $type = NULL )
+  {
+    $db = lib::create( 'business\session' )->get_database();
+    $this->add_table_column( '', $db->format_string( $constant ), $alias, false, $type );
+  }
+
+  /**
    * Adds all columns for a table to the select (table.*)
    * 
    * @param string $table The table to select * on.  If no table is provided then the base table
