@@ -461,7 +461,10 @@ class select extends \cenozo\base_object
     $table = is_null( $this->table_alias )
            ? $this->table_name
            : sprintf( '%s AS %s', $this->table_name, $this->table_alias );
-    return sprintf( 'SELECT %s%s FROM %s', $this->distinct ? 'DISTINCT ' : '', join( ',', $columns ), $table );
+    return sprintf( "SELECT %s%s\nFROM %s",
+                    $this->distinct ? 'DISTINCT ' : '',
+                    join( ",\n  ", $columns ),
+                    $table );
   }
 
   /**

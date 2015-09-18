@@ -727,14 +727,14 @@ class modifier extends \cenozo\base_object
   public function get_sql( $count = false )
   {
     $sql = $this->get_join();
-    if( $where = $this->get_where() ) $sql .= sprintf( ' WHERE %s', $where );
-    if( $group = $this->get_group() ) $sql .= sprintf( ' GROUP BY %s', $group );
-    if( $having = $this->get_having() ) $sql .= sprintf( ' HAVING %s', $having );
+    if( $where = $this->get_where() ) $sql .= sprintf( "\nWHERE %s", $where );
+    if( $group = $this->get_group() ) $sql .= sprintf( "\nGROUP BY %s", $group );
+    if( $having = $this->get_having() ) $sql .= sprintf( "\nHAVING %s", $having );
     if( !$count )
     {
-      if( $order = $this->get_order() ) $sql .= sprintf( ' ORDER BY %s', $order );
+      if( $order = $this->get_order() ) $sql .= sprintf( "\nORDER BY %s", $order );
       if( !is_null( $this->limit ) )
-        $sql .= sprintf( ' LIMIT %d OFFSET %d', $this->limit, $this->offset );
+        $sql .= sprintf( "\nLIMIT %d OFFSET %d", $this->limit, $this->offset );
     }
 
     return $sql;
@@ -754,11 +754,13 @@ class modifier extends \cenozo\base_object
     $sql = '';
     foreach( $this->join_list as $alias => $join )
     {
-      $type = sprintf( '%s%sJOIN', $join['type'], 'STRAIGHT' == $join['type'] ? '_' : ' ' );
+      $prefix = $join['type'];
+      if( 0 < strlen( $prefix ) ) $prefix .= 'STRAIGHT' == $prefix ? '_' : ' ';
+      $type = sprintf( "\n%sJOIN", $prefix );
       $on_clause = $join['modifier']->get_where();
       $table = $join['table'];
       if( $alias != $join['table'] ) $table .= ' AS '.$alias;
-      $sql .= sprintf( '%s %s ON%s ', $type, $table, $on_clause );
+      $sql .= sprintf( "%s %s\n  ON %s ", $type, $table, $on_clause );
     }
 
     return $sql;
@@ -869,13 +871,14 @@ class modifier extends \cenozo\base_object
         }
       }
 
-      $logic_type = $item['or'] ? ' OR' : ' AND';
+      $logic_type = $item['or'] ? 'OR' : 'AND';
       // only show the logic type if...
       $show_logic =
         !$first_item && // this isn't the first item
         !( false === $open_bracket ) && // we're not closing a bracket
         !$last_open_bracket; // we didn't just open a bracket
-      $sql .= ( $show_logic ? $logic_type : '' ).' '.$statement;
+      if( !$first_item ) $sql .= "\n  ";
+      $sql .= ( $show_logic ? $logic_type.' ' : '' ).$statement;
       $first_item = false;
       $last_open_bracket = true === $open_bracket;
     }
@@ -898,7 +901,7 @@ class modifier extends \cenozo\base_object
     $first = true;
     foreach( $this->group_list as $column )
     {
-      $sql .= sprintf( '%s%s',
+      $sql .= sprintf( "\n%s%s",
                        $first ? '' : ', ',
                        $column );
       $first = false;
@@ -950,10 +953,10 @@ class modifier extends \cenozo\base_object
     $first = true;
     foreach( $this->order_list as $column => $value )
     {
-      $sql .= sprintf( '%s%s %s',
+      $sql .= sprintf( '%s%s%s',
                        $first ? '' : ', ',
                        $column,
-                       $value ? 'DESC' : '' );
+                       $value ? ' DESC' : '' );
       $first = false;
     }
 

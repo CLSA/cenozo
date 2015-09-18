@@ -46,7 +46,8 @@ class user extends base_access
     }
 
     static::db()->execute(
-      sprintf( 'INSERT IGNORE INTO access (create_timestamp, site_id, role_id, user_id) VALUES %s',
+      sprintf( 'INSERT IGNORE INTO access (create_timestamp, site_id, role_id, user_id) '.
+               "\n".'VALUES %s',
                $values ) );
   }
 

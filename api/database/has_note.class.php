@@ -117,8 +117,8 @@ abstract class has_note extends record
 
     $sql = sprintf(
       'INSERT INTO %s_note( create_timestamp, %s, user_id, datetime, note ) '.
-      'SELECT NULL, id, %s, %s, %s '.
-      'FROM %s %s',
+      "\n".'SELECT NULL, id, %s, %s, %s '.
+      "\n".'FROM %s %s',
       $table_name,
       $subject_key_name,
       static::db()->format_string( $db_user->id ),

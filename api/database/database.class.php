@@ -61,8 +61,8 @@ class database extends \cenozo\base_object
 
     $rows = $this->get_all(
       sprintf( 'SELECT table_schema, table_name, column_name, column_type, data_type, character_maximum_length, '.
-               'column_key, column_default, is_nullable != "YES" AS is_nullable '.
-               'FROM information_schema.columns %s ',
+               "\n".'column_key, column_default, is_nullable != "YES" AS is_nullable '.
+               "\n".'FROM information_schema.columns %s ',
                $column_mod->get_sql() ),
       false ); // do not add table names
 
@@ -402,7 +402,7 @@ class database extends \cenozo\base_object
     if( self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
-      log::debug( sprintf( '(DB) executing "%s"', $sql ) );
+      log::debug( "(DB) executing:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -449,7 +449,7 @@ class database extends \cenozo\base_object
     if( self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
-      log::debug( sprintf( '(DB) getting one "%s"', $sql ) );
+      log::debug( "(DB) getting one:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -487,7 +487,7 @@ class database extends \cenozo\base_object
     if( self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
-      log::debug( sprintf( '(DB) getting row "%s"', $sql ) );
+      log::debug( "(DB) getting row:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -529,7 +529,7 @@ class database extends \cenozo\base_object
     if( self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
-      log::debug( sprintf( '(DB) getting all "%s"', $sql ) );
+      log::debug( "(DB) getting all:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -568,7 +568,7 @@ class database extends \cenozo\base_object
     if( self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
-      log::debug( sprintf( '(DB) getting col "%s"', $sql ) );
+      log::debug( "(DB) getting col:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -893,7 +893,7 @@ class database extends \cenozo\base_object
    * @static
    * @access public
    */
-  public static $debug = false;
+  public static $debug = true;
 
   /**
    * Holds all table information including database, columns, unique key constraints.

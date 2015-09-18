@@ -144,10 +144,13 @@ class participant extends record
       return NULL;
     }
 
-    // need custom SQL
-    $address_id = static::db()->get_one(
-      sprintf( 'SELECT address_id FROM participant_primary_address WHERE participant_id = %s',
-               static::db()->format_string( $this->id ) ) );
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_primary_address' );
+    $select->add_column( 'address_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_id', '=', $this->id );
+
+    $address_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
   }
 
@@ -168,10 +171,14 @@ class participant extends record
       return NULL;
     }
 
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_first_address' );
+    $select->add_column( 'address_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_id', '=', $this->id );
+
     // need custom SQL
-    $address_id = static::db()->get_one(
-      sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
-               static::db()->format_string( $this->id ) ) );
+    $address_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
   }
 
@@ -190,14 +197,14 @@ class participant extends record
 
     if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
 
-    $site_id = static::db()->get_one( sprintf(
-      'SELECT site_id '.
-      'FROM participant_site '.
-      'WHERE application_id = %s '.
-      'AND participant_id = %s',
-      static::db()->format_string( $db_application->id ),
-      static::db()->format_string( $this->id ) ) );
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_site' );
+    $select->add_column( 'site_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'application_id', '=', $db_application->id );
+    $modifier->where( 'participant_id', '=', $this->id );
 
+    $site_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
 
@@ -250,8 +257,8 @@ class participant extends record
     // if a row already exists
     static::db()->execute( sprintf(
       'INSERT INTO application_has_participant '.
-      'SET application_id = %s, participant_id = %s, preferred_site_id = %s '.
-      'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
+      "\n".'SET application_id = %s, participant_id = %s, preferred_site_id = %s '.
+      "\n".'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
       static::db()->format_string( $db_application->id ),
       static::db()->format_string( $this->id ),
       static::db()->format_string( $site_id ) ) );
@@ -322,14 +329,14 @@ class participant extends record
 
     if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
 
-    $site_id = static::db()->get_one( sprintf(
-      'SELECT default_site_id '.
-      'FROM participant_site '.
-      'WHERE application_id = %s '.
-      'AND participant_id = %s',
-      static::db()->format_string( $db_application->id ),
-      static::db()->format_string( $this->id ) ) );
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_site' );
+    $select->add_column( 'default_site_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'application_id', '=', $db_application->id );
+    $modifier->where( 'participant_id', '=', $this->id );
 
+    $site_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
 
@@ -349,14 +356,14 @@ class participant extends record
 
     if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
 
-    $site_id = static::db()->get_one( sprintf(
-      'SELECT site_id '.
-      'FROM participant_site '.
-      'WHERE application_id = %s '.
-      'AND participant_id = %s',
-      static::db()->format_string( $db_application->id ),
-      static::db()->format_string( $this->id ) ) );
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_site' );
+    $select->add_column( 'site_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'application_id', '=', $db_application->id );
+    $modifier->where( 'participant_id', '=', $this->id );
 
+    $site_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
   }
 
@@ -368,31 +375,27 @@ class participant extends record
    */
   public function get_quota()
   {
-    $db_primary_address = $this->get_primary_address();
-    $db_default_site = $this->get_default_site();
-    $db_age_group = $this->get_age_group();
+    // no primary key means no quota
+    if( is_null( $this->id ) ) return NULL;
 
-    $quota_id = 0;
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant' );
+    $select->add_table_column( 'quota', 'id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'participant_primary_address',
+      'participant.id', 'participant_primary_address.participant_id' );
+    $modifier->join( 'address', 'participant_primary_address.address_id', 'address.id' );
+    $modifier->join( 'participant_site', 'participant.id', 'participant_site.participant_id' );
 
-    if( !is_null( $db_primary_address ) &&
-        !is_null( $db_primary_address->region_id ) &&
-        !is_null( $db_default_site ) &&
-        !is_null( $this->sex ) &&
-        !is_null( $db_age_group ) )
-    {
-      $quota_id = static::db()->get_one( sprintf(
-        'SELECT id '.
-        'FROM quota '.
-        'WHERE region_id = %s '.
-        'AND site_id = %s '.
-        'AND sex = %s '.
-        'AND age_group_id = %s',
-        static::db()->format_string( $db_primary_address->region_id ),
-        static::db()->format_string( $db_default_site->id ),
-        static::db()->format_string( $this->sex ),
-        static::db()->format_string( $db_age_group->id ) ) );
-    }
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'address.region_id', '=', 'quota.region_id' );
+    $join_mod->where( 'participant_site.default_site_id', '=', 'quota.site_id' );
+    $join_mod->where( 'participant.sex', '=', 'quota.sex' );
+    $join_mod->where( 'participant.age_group_id', '=', 'quota.age_group_id' );
+    $modifier->join_modifier( 'quota', $join_mod );
+    $modifier->where( 'participant.id', '=', $this->id );
 
+    $quota_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $quota_id ? lib::create( 'database\quota', $quota_id ) : NULL;
   }
 
@@ -482,19 +485,13 @@ class participant extends record
    */
   public static function get_new_uid()
   {
-    $new_uid = NULL;
-
     // Get a random UID by selecting a random number between the min and max ID and finding
     // the first record who's id is greater or equal to that random number (since some may
     // get deleted)
     $row = static::db()->get_row( 'SELECT MIN( id ) AS min, MAX( id ) AS max FROM unique_identifier_pool' );
-    if( count( $row ) )
-    {
-      $new_uid = static::db()->get_one(
-        'SELECT uid FROM unique_identifier_pool WHERE id >= '.rand( $row['min'], $row['max'] ) );
-    }
-
-    return $new_uid;
+    return count( $row ) ? static::db()->get_one(
+                 'SELECT uid FROM unique_identifier_pool WHERE id >= '.
+                 rand( $row['min'], $row['max'] ) ) : NULL;
   }
 
   /**
