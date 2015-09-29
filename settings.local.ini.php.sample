@@ -22,9 +22,14 @@ $settings['url']['CENOZO'] = sprintf( 'http%s://%s/url/to/cenozo',
                                           'on' == $_SERVER["HTTPS"] ? 's' : '',
                                           $_SERVER["HTTP_HOST"] );
 
-// the path and url of Limesurvey
-$settings['path']['LIMESURVEY'] = '/path/to/limesurvey';
-$settings['url']['LIMESURVEY'] = 'http://url/to/limesurvey';
+// the url of limesurvey and database information found in application/config/config.php
+$settings['url']['LIMESURVEY'] = '../limesurvey';
+$settings['survey_db']['driver'] = 'mysql'; // in components/db/connectionString
+$settings['survey_db']['server'] = 'localhost'; // in components/db/connectionString (do not include "host=")
+$settings['survey_db']['username'] = 'limesurvey'; // components/db/username
+$settings['survey_db']['password'] = ''; // components/db/password
+$settings['survey_db']['database'] = 'localhost'; // in components/db/connectionString
+$settings['survey_db']['prefix'] = ''; // components/db/tablePrefix
 
 // database settings (username and password are set in the application's settings)
 $settings['db']['server'] = 'localhost';

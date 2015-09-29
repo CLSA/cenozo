@@ -26,46 +26,6 @@ class setting_manager extends \cenozo\singleton
     $args = $arguments[0];
     $args = is_array( $arguments[0] ) ? $arguments[0] : array();
 
-    // get the survey database settings from the limesurvey config file
-    $file = LIMESURVEY_PATH.'/config.php';
-    if( file_exists( $file ) )
-    {
-      include $file;
-      $args['survey_db'] =
-        array( 'driver' => $databasetype,
-               'server' => $databaselocation,
-               'username' => $databaseuser,
-               'password' => $databasepass,
-               'database' => $databasename );
-    }
-    else // no version 1.92 of the config file, try version 2.0
-    {
-      $file = LIMESURVEY_PATH.'/application/config/config.php';
-
-      if( file_exists( $file ) )
-      {
-        define( 'BASEPATH', '' ); // needed to read the config file
-        $config = require( $file );
-        $db = explode( ';', $config['components']['db']['connectionString'] );
-
-        $parts = explode( ':', $db[0], 2 );
-        $driver = current( $parts );
-        $parts = explode( '=', $db[0], 2 );
-        $server = next( $parts );
-        $parts = explode( '=', $db[2], 2 );
-        $database = next( $parts );
-
-        $args['survey_db'] =
-          array( 'driver' => $driver,
-                 'server' => $server,
-                 'username' => $config['components']['db']['username'],
-                 'password' => $config['components']['db']['password'],
-                 'database' => $database );
-      }
-      else throw lib::create( 'exception\runtime',
-        'Cannot find limesurvey config.php file.', __METHOD__ );
-    }
-
     // copy the setting one category at a time
     $this->read_settings( 'db', $args );
     $this->read_settings( 'general', $args );

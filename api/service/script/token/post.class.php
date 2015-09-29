@@ -32,34 +32,17 @@ class post extends \cenozo\service\post
     parent::setup();
 
     // create the participant record
-    $db_script = $this->get_parent_record();
+    $survey_manager = lib::create( 'business\survey_manager' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $data = $this->get_file_as_array();
 
+    // populate the token
+    $db_script = $this->get_parent_record();
     $db_participant = array_key_exists( 'uid', $data )
                     ? $participant_class_name::get_unique_record( 'uid', $data['uid'] )
                     : lib::create( 'database\participant', $data['participant_id'] );
-
-    // fill in the token based on the script and participant
     $db_tokens = $this->get_leaf_record();
-    $db_tokens->token = $db_tokens::determine_token_string( $db_participant, $db_script->repeated );
-    $db_tokens->firstname = $db_participant->honorific.' '.$db_participant->first_name;
-    if( 0 < strlen( $db_participant->other_name ) )
-      $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
-    $db_tokens->lastname = $db_participant->last_name;
-    $db_tokens->email = $db_participant->email;
-
-/* TODO: token attribute management
-    $data_manager = lib::create( 'business\data_manager' );
-    $db_surveys = lib::create( 'database\limesurvey\surveys', $db_script->sid );
-    foreach( $db_surveys->get_token_attribute_names() as $key => $value )
-    {
-      $attribute = $data_manager->get_value( $value );
-      if( is_null( $attribute ) )
-        $attribute = $data_manager->get_participant_value( $db_participant, $value );
-      $db_tokens->$key = 
-    }
-*/
+    $survey_manager->populate_token( $db_script, $db_participant, $db_tokens );
   }
 
   /**

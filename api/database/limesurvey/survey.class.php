@@ -15,7 +15,7 @@ use cenozo\lib, cenozo\log;
 class survey extends sid_record
 {
   /**
-   * Returns a participant's response to a particular question.
+   * Returns a response to this survey
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $question_code
@@ -24,6 +24,11 @@ class survey extends sid_record
    */
   public function get_response( $question_code )
   {
+    $select = lib::create( 'database\select' );
+    $select->add_column( 'gid' );
+    $select->add_column( 'qid' );
+    $select->from( 'questions' );
+
     // the questions table has more than one column in its primary key so custom sql is needed
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'sid', '=', static::get_sid() );
@@ -31,7 +36,7 @@ class survey extends sid_record
     $modifier->group( 'sid' );
     $modifier->group( 'gid' );
     $modifier->group( 'qid' );
-    $sql = sprintf( 'SELECT gid, qid FROM questions %s', $modifier->get_sql() );
+    $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
 
     $row = static::db()->get_row( $sql );
     if( 0 == count( $row ) )
@@ -46,56 +51,38 @@ class survey extends sid_record
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $question_code
+   * @param database\modifier $modifier A modifier applied to the survey selection
+   *                          This usually has: token LIKE 'A123456_%' or something similar
    * @return string
    * @access public
    */
-  public static function get_responses( $token, $question_code )
+  public static function get_responses( $question_code, $modifier = NULL )
   {
+    $question_sel = lib::create( 'database\select' );
+    $question_sel->add_column( 'gid' );
+    $question_sel->add_column( 'qid' );
+    $question_sel->from( 'questions' );
+
     // the questions table has more than one column in its primary key so custom sql is needed
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'sid', '=', static::get_sid() );
-    $modifier->where( 'title', '=', $question_code );
-    $modifier->group( 'sid' );
-    $modifier->group( 'gid' );
-    $modifier->group( 'qid' );
-    $sql = sprintf( 'SELECT gid, qid FROM questions %s', $modifier->get_sql() );
+    $question_mod = lib::create( 'database\modifier' );
+    $question_mod->where( 'sid', '=', static::get_sid() );
+    $question_mod->where( 'title', '=', $question_code );
+    $question_mod->group( 'sid' );
+    $question_mod->group( 'gid' );
+    $question_mod->group( 'qid' );
+    $sql = sprintf( '%s %s', $question_sel->get_sql(), $question_mod->get_sql() );
 
     $row = static::db()->get_row( $sql );
     if( 0 == count( $row ) )
       throw lib::create( 'exception\runtime', 'Question code not found in survey.', __METHOD__ );
 
-    $sql = sprintf(
-      'SELECT %sX%sX%s '.
-      'FROM %s '.
-      'WHERE token LIKE %s',
-      static::get_sid(),
-      $row['gid'],
-      $row['qid'],
-      static::get_table_name(),
-      static::db()->format_string( $token ) );
+    $select = lib::create( 'database\select' );
+    $select->add_column( sprintf( '%sX%sX%s', static::get_sid(), $row['gid'], $row['qid'] ) );
+    $select->from( static::get_table_name() );
 
+    $sql = $select->get_sql();
+    if( !is_null( $modifier ) ) $sql .= ' '.$modifier->get_sql();
     return static::db()->get_col( $sql );
-  }
-
-  /**
-   * Returns the total time in seconds spent on this survey (by all participants)
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier
-   * @return double
-   * @static
-   */
-  public static function get_total_time( $modifier = NULL )
-  {
-    $table_name = static::get_table_name();
-    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( $table_name.'.id', '=', $table_name.'_timings.id', false );
-
-    return static::db()->get_one( sprintf(
-      'SELECT SUM( IFNULL( interviewtime, 0 ) ) FROM %s, %s %s',
-      $table_name,
-      $table_name.'_timings',
-      $modifier->get_sql() ) );
   }
 
   /**

@@ -40,8 +40,7 @@ class data_manager extends \cenozo\singleton
   {
     // split the key into table/column parts
     $parts = explode( '.', $key );
-    if( 2 > count( $parts ) )
-      throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+    return 2 <= count( $parts );
   }
 
   /**
@@ -59,7 +58,13 @@ class data_manager extends \cenozo\singleton
     $subject = $parts[0];
 
     $value = NULL;
-    if( 'cookie' == $subject )
+    if( 'constant' == $subject )
+    {
+      if( 2 != count( $parts ) )
+        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+      $value = $parts[1];
+    }
+    else if( 'cookie' == $subject )
     {
       if( 2 != count( $parts ) )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
@@ -227,13 +232,23 @@ class data_manager extends \cenozo\singleton
       $value = 0 < $db_participant->get_collection_count( $modifier ) ? 1 : 0;
     }
     else if( 'consent' == $subject ||
+             'written_consent' == $subject ||
              'last_consent' == $subject ||
              'last_written_consent' == $subject )
     {
       if( 'count()' == $parts[1] )
       {
-        // participant.consent.count() or consent.count()
-        $value = $db_participant->get_consent_count();
+        if( 'consent' == $subject )
+        { // participant.consent.count() or consent.count()
+          $value = $db_participant->get_consent_count();
+        }
+        else if( 'written_consent' == $subject )
+        { // participant.written_consent.count() or written_consent.count()
+          $consent_mod = lib::create( 'database\modifier' );
+          $consent_mod->where( 'written', '=', true );
+          $value = $db_participant->get_consent_count( $consent_mod );
+        }
+        else throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
       }
       else
       {
