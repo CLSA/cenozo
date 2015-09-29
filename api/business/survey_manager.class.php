@@ -61,7 +61,6 @@ class survey_manager extends \cenozo\singleton
         if( !$data_manager->is_value( $value ) ) $invalid = true;
         else
         {
-          log::debug( array( $value, strpos( $value, 'participant.' ) ) );
           $db_tokens->$key = 0 === strpos( $value, 'participant.' )
                            ? $data_manager->get_participant_value( $db_participant, $value )
                            : $data_manager->get_value( $value );
