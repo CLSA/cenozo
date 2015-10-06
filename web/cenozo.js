@@ -269,7 +269,7 @@ cenozo.service( 'CnBaseHeader', [
                         function success() {
                           // blank content
                           document.getElementById( 'view' ).innerHTML = '';
-                          $window.location.assign( $window.location.pathname );
+                          $window.location.assign( cenozoApp.baseUrl );
                         },
                         CnSession.errorHandler
                       );
