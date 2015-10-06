@@ -1026,7 +1026,7 @@ abstract class record extends \cenozo\base_object
       if( 'object' == $return_alternate )
       { // convert ids to records
         $records = array();
-        foreach( $return_value as $row ) $records[] = new static( $row['id'] );
+        foreach( $return_value as $row ) $records[] = new static( $row[static::$primary_key_name] );
         $return_value = $records;
       }
       else
@@ -1126,8 +1126,9 @@ abstract class record extends \cenozo\base_object
     $table_name = static::get_table_name();
     $record = NULL;
 
-    // if the column is ID then there's no need to search for unique keys
-    if( 'id' == $column || ( is_array( $column ) && 1 == count( $column ) && 'id' == $column[0] ) )
+    // if the column is the primary key then there's no need to search for unique keys
+    if( static::$primary_key_name == $column ||
+        ( is_array( $column ) && 1 == count( $column ) && static::$primary_key_name == $column[0] ) )
       return new static( is_array( $value ) ? current( $value ) : $value );
 
     // create an associative array from the column/value arguments and sort
