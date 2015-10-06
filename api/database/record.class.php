@@ -1013,12 +1013,13 @@ abstract class record extends \cenozo\base_object
                       is_null( $modifier ) ? '' : $modifier->get_sql( true ) );
 
       // if the modifier has a group statement then we want the number of returned rows
-      $return_value = 0 < count( $modifier->get_group_columns() )
+      $return_value = !is_null( $modifier ) && 0 < count( $modifier->get_group_columns() )
                     ? count( static::db()->get_all( $sql ) )
                     : intval( static::db()->get_one( $sql ) );
     }
     else
     {
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $sql = sprintf( '%s %s',
                       $select->get_sql(),
                       is_null( $modifier ) ? '' : $modifier->get_sql() );
