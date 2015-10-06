@@ -151,6 +151,7 @@ class opal_manager extends \cenozo\factory
   public function get_label( $datasource, $table, $variable, $value, $db_language = NULL )
   {
     $util_class_name = lib::get_class_name( 'util' );
+    $language_class_name = lib::get_class_name( 'database\language' );
 
     if( 0 == strlen( $variable ) )
       throw lib::create( 'exception\argument', 'variable', $variable, __METHOD__ );
@@ -158,8 +159,7 @@ class opal_manager extends \cenozo\factory
       throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
 
     // if no language is specified then use the application's default
-    if( is_null( $db_language ) )
-      $db_language = lib::create( 'business\session' )->get_application()->get_language();
+    if( is_null( $db_language ) ) $db_language = $language_class_name::get_unique_record( 'code', 'en' );
 
     // NOTE: as a temporary fix to Opal not responding promptly to queries the following
     // variables have been cached into the local database and are to be accessed directly

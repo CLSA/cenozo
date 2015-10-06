@@ -22,6 +22,25 @@ CREATE PROCEDURE patch_participant()
       ALTER TABLE participant DROP COLUMN email_do_not_contact;
     END IF;
 
+    SELECT "Making language_id NOT NULL in participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "language_id"
+      AND IS_NULLABLE = "YES" );
+    IF @test = 1 THEN
+      UPDATE participant, language
+      SET language_id = language.id
+      WHERE participant.language_id IS NULL
+      AND language.code = "en";
+
+      ALTER TABLE participant
+      MODIFY language_id int(10) unsigned NOT NULL;
+    END IF;
+
     SELECT "Renaming gender to sex in participant table" AS "";
 
     SET @test = (

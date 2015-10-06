@@ -92,7 +92,7 @@ CREATE PROCEDURE patch_participant_site()
       LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
       LEFT JOIN address ON participant_primary_address.address_id = address.id
       LEFT JOIN region_site ON address.region_id = region_site.region_id
-      AND IFNULL( participant.language_id, application.language_id ) = region_site.language_id
+      AND participant.language_id = region_site.language_id
       AND region_site.site_id IN (
         SELECT site_id FROM application_has_site WHERE application_id = application.id
       )

@@ -26,7 +26,7 @@ BEGIN
     SELECT site_id FROM application_has_site WHERE application_id = application.id
   )
   LEFT JOIN site AS region_site_site ON region_site.site_id = region_site_site.id
-  AND IFNULL( participant.language_id, application.language_id ) = region_site.language_id
+  AND participant.language_id = region_site.language_id
   LEFT JOIN application_has_participant ON application.id = application_has_participant.application_id
   AND application_has_participant.participant_id = participant.id
   WHERE region_site.id = proc_region_site_id

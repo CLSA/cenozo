@@ -47,10 +47,6 @@ define( {
       title: 'Country',
       type: 'string'
     },
-    language_id: {
-      title: 'Default Language',
-      type: 'enum'
-    },
     timezone: {
       title: 'Default Time Zone',
       type: 'typeahead',

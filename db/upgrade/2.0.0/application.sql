@@ -14,18 +14,17 @@ CREATE PROCEDURE patch_application()
       -- rename table
       RENAME TABLE service TO application;
 
-      -- rename keys
+      -- drop language_id column
       ALTER TABLE application
-      MODIFY language_id INT(10) UNSIGNED NOT NULL,
       DROP FOREIGN KEY fk_service_language_id,
-      ADD CONSTRAINT fk_application_language_id
-      FOREIGN KEY (language_id) REFERENCES language (id)
-      ON DELETE NO ACTION ON UPDATE NO ACTION;
+      DROP INDEX fk_language_id,
+      DROP COLUMN language_id;
 
+      -- rename service_release_event_type_id key
       ALTER TABLE application
       DROP FOREIGN KEY fk_service_release_event_type_id,
       ADD CONSTRAINT fk_application_release_event_type_id
-      FOREIGN KEY (language_id) REFERENCES language (id)
+      FOREIGN KEY (release_event_type_id) REFERENCES event_type (id)
       ON DELETE NO ACTION ON UPDATE NO ACTION;
 
       ALTER TABLE application
