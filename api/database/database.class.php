@@ -50,7 +50,7 @@ class database extends \cenozo\base_object
    */
   protected function read_schema()
   {
-    $filename = sprintf( '%s/schema.ser', TEMPORARY_FILES_PATH );
+    $filename = sprintf( '%s/%s.schema.ser', TEMPORARY_FILES_PATH, $this->name );
 
     if( file_exists( $filename ) && 0 < filesize( $filename ) )
     {
