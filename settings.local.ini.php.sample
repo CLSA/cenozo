@@ -18,9 +18,10 @@ $settings['general']['maintenance_mode'] = false;
 $settings['general']['framework_name'] = 'cenozo';
 
 // the web url of the cenozo framework
-$settings['url']['CENOZO'] = sprintf( 'http%s://%s/url/to/cenozo',
-                                          'on' == $_SERVER["HTTPS"] ? 's' : '',
-                                          $_SERVER["HTTP_HOST"] );
+if( array_key_exists( 'HTTP_HOST', $_SERVER ) )
+  $settings['url']['CENOZO'] = sprintf( 'http%s://%s/url/to/cenozo',
+                                            'on' == $_SERVER["HTTPS"] ? 's' : '',
+                                            $_SERVER["HTTP_HOST"] );
 
 // the url of limesurvey and database information found in application/config/config.php
 $settings['url']['LIMESURVEY'] = '../limesurvey';

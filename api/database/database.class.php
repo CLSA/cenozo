@@ -29,8 +29,6 @@ class database extends \cenozo\base_object
    */
   public function __construct( $server, $username, $password, $database )
   {
-    $setting_manager = lib::create( 'business\setting_manager' );
-
     $this->server = $server;
     $this->username = $username;
     $this->password = $password;
@@ -41,79 +39,109 @@ class database extends \cenozo\base_object
 
     if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
 
-    // determine the framework name
-    $framework_name = sprintf(
-      '%s%s',
-      $setting_manager->get_setting( 'db', 'database_prefix' ),
-      $setting_manager->get_setting( 'general', 'framework_name' ) );
-    $schema_list = array( '"'.$this->name.'"', '"'.$framework_name.'"' );
+    $this->read_schema();
+  }
 
-    $column_mod = lib::create( 'database\modifier' );
-    $column_mod->where( 'table_schema', 'IN', $schema_list, false );
-    $column_mod->where( 'column_name', '!=', '"update_timestamp"', false ); // ignore timestamp columns
-    $column_mod->where( 'column_name', '!=', '"create_timestamp"', false );
-    $column_mod->where( 'column_type', '!=', '"mediumtext"', false ); // ignore really big data types
-    $column_mod->where( 'column_type', '!=', '"longtext"', false );
-    $column_mod->where( 'column_type', '!=', '"mediumblob"', false );
-    $column_mod->where( 'column_type', '!=', '"longblob"', false );
-    $column_mod->order( 'table_name' );
-    $column_mod->order( 'column_name' );
+  /**
+   * Reads the database schema into memory
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function read_schema()
+  {
+    $filename = sprintf( '%s/schema.ser', TEMPORARY_FILES_PATH );
 
-    $rows = $this->get_all(
-      sprintf( 'SELECT table_schema, table_name, column_name, column_type, data_type, character_maximum_length, '.
-               "\n".'column_key, column_default, is_nullable != "YES" AS is_nullable '.
-               "\n".'FROM information_schema.columns %s ',
-               $column_mod->get_sql() ),
-      false ); // do not add table names
-
-    // record the tables, columns and types
-    foreach( $rows as $row )
+    if( file_exists( $filename ) && 0 < filesize( $filename ) )
     {
-      extract( $row ); // defines variables based on column values in query
-
-      if( !array_key_exists( $table_name, $this->tables ) )
-        $this->tables[$table_name] =
-          array( 'database' => $table_schema,
-                 'primary' => array(),
-                 'constraints' => array(),
-                 'columns' => array() );
-
-      if( 'PRI' == strtoupper( $column_key ) )
-        $this->tables[$table_name]['primary'][] = $column_name;
-
-      $this->tables[$table_name]['columns'][$column_name] =
-        array( 'data_type' => $data_type,
-               'type' => $column_type,
-               'default' => $column_default,
-               'max_length' => $character_maximum_length,
-               'required' => $is_nullable,
-               'key' => $column_key );
+      $this->tables = unserialize( file_get_contents( $filename ) );
     }
-
-    $constraint_mod = lib::create( 'database\modifier' );
-    $constraint_mod->where( 'TABLE_CONSTRAINTS.TABLE_SCHEMA', 'IN', $schema_list, false );
-    $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', '"UNIQUE"', false );
-    $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'KEY_COLUMN_USAGE.CONSTRAINT_NAME', false );
-    $constraint_mod->group( 'table_name' );
-    $constraint_mod->group( 'constraint_name' );
-    $constraint_mod->group( 'column_name' );
-    $constraint_mod->order( 'table_name' );
-    $constraint_mod->order( 'constraint_name' );
-    $constraint_mod->order( 'ordinal_position' );
-
-    $rows = $this->get_all(
-      sprintf( 'SELECT TABLE_CONSTRAINTS.TABLE_NAME table_name, '.
-                      'TABLE_CONSTRAINTS.CONSTRAINT_NAME AS constraint_name, '.
-                      'KEY_COLUMN_USAGE.COLUMN_NAME AS column_name '.
-               'FROM information_schema.TABLE_CONSTRAINTS, information_schema.KEY_COLUMN_USAGE %s',
-               $constraint_mod->get_sql() ),
-      false ); // do not add table names
-
-    // record the constraints
-    foreach( $rows as $row )
+    else // read direclty from the database and write the results to a cached file when done
     {
-      extract( $row ); // defines $table_name, $constraint_name and $column_name
-      $this->tables[$table_name]['constraints'][$constraint_name][] = $column_name;
+      $setting_manager = lib::create( 'business\setting_manager' );
+
+      // determine the framework name
+      $framework_name = sprintf(
+        '%s%s',
+        $setting_manager->get_setting( 'db', 'database_prefix' ),
+        $setting_manager->get_setting( 'general', 'framework_name' ) );
+      $schema_list = array( '"'.$this->name.'"', '"'.$framework_name.'"' );
+
+      $column_mod = lib::create( 'database\modifier' );
+      $column_mod->where( 'table_schema', 'IN', $schema_list, false );
+      $column_mod->where( 'column_name', '!=', '"update_timestamp"', false ); // ignore timestamp columns
+      $column_mod->where( 'column_name', '!=', '"create_timestamp"', false );
+      $column_mod->where( 'column_type', '!=', '"mediumtext"', false ); // ignore really big data types
+      $column_mod->where( 'column_type', '!=', '"longtext"', false );
+      $column_mod->where( 'column_type', '!=', '"mediumblob"', false );
+      $column_mod->where( 'column_type', '!=', '"longblob"', false );
+      $column_mod->order( 'table_name' );
+      $column_mod->order( 'column_name' );
+
+      $rows = $this->get_all(
+        sprintf( 'SELECT table_schema, table_name, column_name, column_type, data_type, character_maximum_length, '.
+                 "\n".'column_key, column_default, is_nullable != "YES" AS is_nullable '.
+                 "\n".'FROM information_schema.columns %s ',
+                 $column_mod->get_sql() ),
+        false ); // do not add table names
+
+      // record the tables, columns and types
+      foreach( $rows as $row )
+      {
+        extract( $row ); // defines variables based on column values in query
+
+        if( !array_key_exists( $table_name, $this->tables ) )
+          $this->tables[$table_name] =
+            array( 'database' => $table_schema,
+                   'primary' => array(),
+                   'constraints' => array(),
+                   'columns' => array() );
+
+        if( 'PRI' == strtoupper( $column_key ) )
+          $this->tables[$table_name]['primary'][] = $column_name;
+
+        $this->tables[$table_name]['columns'][$column_name] =
+          array( 'data_type' => $data_type,
+                 'type' => $column_type,
+                 'default' => $column_default,
+                 'max_length' => $character_maximum_length,
+                 'required' => $is_nullable,
+                 'key' => $column_key );
+      }
+
+      $constraint_mod = lib::create( 'database\modifier' );
+      $constraint_mod->where( 'TABLE_CONSTRAINTS.TABLE_SCHEMA', 'IN', $schema_list, false );
+      $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', '"UNIQUE"', false );
+      $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'KEY_COLUMN_USAGE.CONSTRAINT_NAME', false );
+      $constraint_mod->group( 'table_name' );
+      $constraint_mod->group( 'constraint_name' );
+      $constraint_mod->group( 'column_name' );
+      $constraint_mod->order( 'table_name' );
+      $constraint_mod->order( 'constraint_name' );
+      $constraint_mod->order( 'ordinal_position' );
+
+      $rows = $this->get_all(
+        sprintf( 'SELECT TABLE_CONSTRAINTS.TABLE_NAME table_name, '.
+                        'TABLE_CONSTRAINTS.CONSTRAINT_NAME AS constraint_name, '.
+                        'KEY_COLUMN_USAGE.COLUMN_NAME AS column_name '.
+                 'FROM information_schema.TABLE_CONSTRAINTS, information_schema.KEY_COLUMN_USAGE %s',
+                 $constraint_mod->get_sql() ),
+        false ); // do not add table names
+
+      // record the constraints
+      foreach( $rows as $row )
+      {
+        extract( $row ); // defines $table_name, $constraint_name and $column_name
+        $this->tables[$table_name]['constraints'][$constraint_name][] = $column_name;
+      }
+
+      // write cache of schema to disk
+      $result = file_put_contents( $filename, serialize( $this->tables ) );
+      if( false === $result )
+      {
+        log::warning(
+          sprintf( 'Unable to write schema cache to "%s", make sure permissions are set correctly.', $filename ) );
+      }
     }
   }
 

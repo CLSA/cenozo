@@ -30,7 +30,7 @@ final class bootstrap
     // WARNING!  Do not use the log class in this method!
 
     // set the method type, arguments and input file (if patching/posting)
-    $this->method = $_SERVER['REQUEST_METHOD'];
+    $this->method = array_key_exists( 'REQUEST_METHOD', $_SERVER ) ? $_SERVER['REQUEST_METHOD'] : NULL;
     $this->arguments = $_REQUEST;
     if( 'PATCH' == $this->method || 'POST' == $this->method ) $this->file = file_get_contents( 'php://input' );
   }
@@ -78,6 +78,36 @@ final class bootstrap
     ini_set( 'display_errors', '0' );
     error_reporting( E_ALL | E_STRICT );
 
+    $this->read_settings();
+
+    // include the autoloader and error code files (search for app_path::util first)
+    require_once CENOZO_API_PATH.'/lib.class.php';
+    require_once CENOZO_API_PATH.'/exception/error_codes.inc.php';
+    if( file_exists( API_PATH.'/exception/error_codes.inc.php' ) )
+      require_once API_PATH.'/exception/error_codes.inc.php';
+
+    // registers an autoloader so classes don't have to be included manually
+    lib::register( $this->method, $this->settings['general']['development_mode'] );
+
+    // set up the logger and session
+    lib::create( 'log' );
+    $this->session = lib::create( 'business\session', $this->settings );
+
+    // the session is initialized in the launch methods
+    if( 'ui' == $launch ) $this->launch_ui();
+    else if( 'api' == $launch ) $this->launch_api();
+    else die(
+      'The application is not set up properly.  Please check the launch type sent to the '.
+      'initialize() method and make sure it is either "ui" or "api".' );
+
+    $this->session->shutdown();
+  }
+
+  /**
+   * 
+   */
+  public function read_settings()
+  {
     // include the initialization settings
     global $SETTINGS;
     $this->add_settings( $SETTINGS, true );
@@ -124,28 +154,6 @@ final class bootstrap
       define( $path_name.'_PATH', $path_value );
     foreach( $this->settings['url'] as $path_name => $path_value )
       define( $path_name.'_URL', $path_value );
-
-    // include the autoloader and error code files (search for app_path::util first)
-    require_once CENOZO_API_PATH.'/lib.class.php';
-    require_once CENOZO_API_PATH.'/exception/error_codes.inc.php';
-    if( file_exists( API_PATH.'/exception/error_codes.inc.php' ) )
-      require_once API_PATH.'/exception/error_codes.inc.php';
-
-    // registers an autoloader so classes don't have to be included manually
-    lib::register( $this->method, $this->settings['general']['development_mode'] );
-
-    // set up the logger and session
-    lib::create( 'log' );
-    $this->session = lib::create( 'business\session', $this->settings );
-
-    // the session is initialized in the launch methods
-    if( 'ui' == $launch ) $this->launch_ui();
-    else if( 'api' == $launch ) $this->launch_api();
-    else die(
-      'The application is not set up properly.  Please check the launch type sent to the '.
-      'initialize() method and make sure it is either "ui" or "api".' );
-
-    $this->session->shutdown();
   }
 
   /**
