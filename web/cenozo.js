@@ -3041,22 +3041,28 @@ cenozo.service( 'CnModalMessageFactory', [
       this.title = 'Title';
       this.message = 'Message';
       this.error = false;
+      this.block = false;
       angular.extend( this, params );
 
       this.show = function() {
-        return $modal.open( {
+        self.modal = $modal.open( {
           backdrop: 'static',
-          keyboard: true,
+          keyboard: !self.block,
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-message.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
-            $scope.error = self.error
+            $scope.error = self.error;
+            $scope.block = self.block;
             $scope.close = function() { $modalInstance.close( false ); };
           }
-        } ).result;
+        } );
+
+        return self.modal.result;
       };
+
+      this.close = function() { if( angular.isDefined( this.modal ) ) this.modal.close( false ); };
     };
 
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
