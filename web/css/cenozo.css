@@ -239,6 +239,16 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
   cursor: default;
 }
 
+.allow-select {
+  -webkit-touch-callout: text;
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+
 .loading {
   background: url( ../img/loading.gif );
   background-repeat: no-repeat;

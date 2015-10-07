@@ -29,9 +29,9 @@
     <p ng-if="0 == noteList.length" class="text-info">There are no notes for this participant.</p>
     <div class="panel panel-default" ng-repeat="note in noteList | orderBy:['-sticky','-datetime']">
       <div class="panel-heading">
-        <span>{{ note.userFirst }} {{ note.userLast }}</span>
+        <span class="allow-select">{{ note.userFirst }} {{ note.userLast }}</span>
         <span class="pull-right">
-          {{ note.datetime | cnDatetime:'datetimesecond' }}
+          <span class="allow-select">{{ note.datetime | cnDatetime:'datetimesecond' }}</span>
           <button ng-if="allowEdit"
                   class="btn btn-xs btn-default"
                   ng-class="{'btn-warning':note.sticky}"

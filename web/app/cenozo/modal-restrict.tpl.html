@@ -10,7 +10,7 @@
     <hr />
     <div class="form-group">
       <label class="col-sm-3 control-label">Restriction</label>
-      <div class="col-sm-9 well text-center">
+      <div class="col-sm-9 well text-center allow-select">
         <span ng-repeat="restrict in local.restrictList">
           {{ ( restrict.logic ? restrict.logic.toUpperCase() + ' ' : '' ) + restrict.description }}
           <br ng-if"!$last">
