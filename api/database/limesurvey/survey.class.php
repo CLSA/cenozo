@@ -52,7 +52,6 @@ class survey extends sid_record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $question_code
    * @param database\modifier $modifier A modifier applied to the survey selection
-   *                          This usually has: token LIKE 'A123456_%' or something similar
    * @return string
    * @access public
    */

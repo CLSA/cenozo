@@ -15,6 +15,80 @@ use cenozo\lib, cenozo\log;
 class script extends record
 {
   /**
+   * Adds all missing started/completed events
+   */
+  public function add_event_types( $db_participant )
+  {
+    static::add_all_event_types( $db_participant, $this );
+  }
+
+  /**
+   * TODO: document
+   */
+  public static function add_all_event_types( $db_participant, $db_script = NULL )
+  {
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+
+    $select = lib::create( 'database\select' );
+    $select->add_column( 'sid' );
+    $select->add_column( 'repeated' );
+    $select->add_column( 'started_event_type_id' );
+    $select->add_column( 'completed_event_type_id' );
+    $select->from( 'script' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'reserved', '=', false );
+    if( !is_null( $db_script ) ) $modifier->where( 'id', '=', $db_script->id );
+
+    foreach( static::select( $select, $modifier ) as $script )
+    {
+      $survey_class_name::set_sid( $script['sid'] );
+
+      $survey_sel = lib::create( 'database\select' );
+      $survey_sel->add_column( 'startdate' );
+      $survey_sel->add_column( 'submitdate' );
+      $survey_sel->from( $survey_class_name::get_table_name() );
+      $survey_mod = lib::create( 'database\modifier' );
+      $tokens_class_name::where_token( $survey_mod, $db_participant, $script['repeated'] );
+
+      foreach( $survey_class_name::select( $survey_sel, $survey_mod ) as $survey )
+      {
+        // check start date
+        if( !is_null( $survey['startdate'] ) )
+        {
+          $event_mod = lib::create( 'database\modifier' );
+          $event_mod->where( 'event_type_id', '=', $script['started_event_type_id'] );
+          $event_mod->where( 'datetime', '=', $survey['startdate'] );
+          if( 0 == $db_participant->get_event_count( $event_mod ) )
+          {
+            $db_event = lib::create( 'database\event' );
+            $db_event->participant_id = $db_participant->id;
+            $db_event->event_type_id = $script['started_event_type_id'];
+            $db_event->datetime = $survey['startdate'];
+            $db_event->save();
+          }
+        }
+
+        // check end date
+        if( !is_null( $survey['submitdate'] ) )
+        {
+          $event_mod = lib::create( 'database\modifier' );
+          $event_mod->where( 'event_type_id', '=', $script['completed_event_type_id'] );
+          $event_mod->where( 'datetime', '=', $survey['submitdate'] );
+          if( 0 == $db_participant->get_event_count( $event_mod ) )
+          {
+            $db_event = lib::create( 'database\event' );
+            $db_event->participant_id = $db_participant->id;
+            $db_event->event_type_id = $script['completed_event_type_id'];
+            $db_event->datetime = $survey['submitdate'];
+            $db_event->save();
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Extend parent method
    */
   public function get_token_count( $modifier )

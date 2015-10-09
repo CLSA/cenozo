@@ -389,7 +389,7 @@ class util
    */
   public static function json_encode( $arg )
   {
-    return json_encode( $arg );
+    return json_encode( self::utf8_encode( $arg ) );
   }
 
   /**

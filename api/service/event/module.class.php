@@ -31,4 +31,15 @@ class module extends \cenozo\service\module
       if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
     }
   }
+
+  /**
+   * Extend parent method
+   */
+  public function pre_write( $record )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    // if no datetime is provided then use the current datetime
+    if( is_null( $record->datetime ) ) $record->datetime = $util_class_name::get_datetime_object();
+  }
 }

@@ -18,6 +18,7 @@ blockquote { font-size: 100%; }
 .form-horizontal .form-group { margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
 .form-footer { padding: 1em; }
 .footer-total, .form-text { line-height: 34px; }
+.form-long-text { margin-top: 8px; margin-bottom: 8px; }
 .spacer { margin: 0.5em; content: "&nbsp;" }
 .vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
 .horizontal-spacer { margin-left: 0.5em; margin-right: 0.5em; }

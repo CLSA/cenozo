@@ -14,14 +14,34 @@ use cenozo\lib, cenozo\log;
  */
 class tokens extends sid_record
 {
+  const TOKEN_POSTFIX_LENGTH = 7;
+
+  /**
+   * TODO: document
+   */
+  public static function where_token( $modifier, $db_participant, $repeated = false )
+  {
+    if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
+      throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
+    if( !is_null( $db_participant ) && !is_a( $db_participant, lib::get_class_name( 'database\participant' ) ) )
+      throw lib::create( 'exception\argument', 'db_participant', $db_participant, __METHOD__ );
+
+    if( $repeated )
+    {
+      $like = sprintf( '%s.%s', $db_participant->uid, str_repeat( '_', static::TOKEN_POSTFIX_LENGTH ) );
+      $modifier->where( 'token', 'LIKE', $like );
+    }
+    else $modifier->where( 'token', '=', $db_participant->uid );
+  }
+
   /**
    * Returns the token name based on the participant and whether the script is repeated
    * 
    * If the script is not repeated then the token string is simply the participant's UID.
    * If the script is repeated then a counter is postfixed to the UID.  The largest pre-existing postfix
    * will be found and incremented, or if this is the participant's first token then a postfix of 1 will
-   * be added.
-   * Note: postfixes are always 7 digits long and padded with zeros (0)
+   * be added. Postfixes are delimited by a period (.)
+   * Note: postfixes are always padded with zeros (0)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @param boolean $repeated
@@ -33,39 +53,23 @@ class tokens extends sid_record
     $token = $db_participant->uid;
     if( $repeated )
     {
-      // need to add a postfix to the token; try for an open assignment first
+      // create an counter as a postfix
       $select = lib::create( 'database\select' );
-      $select->add_column( 'id' );
+      $select->add_column( 'MAX( tid )', 'max_tid', false );
+      $select->from( static::get_table_name() );
       $modifier = lib::create( 'database\modifier' );
-      $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
-      $modifier->where( 'interview.participant_id', '=', $db_participant->id );
-      $modifier->where( 'assignment.end_datetime', '=', NULL );
+      static::where_token( $modifier, $db_participant->uid, true );
+      $sub_select = sprintf( '( %s %s )', $select->get_sql(), $modifier->get_sql() );
 
-      $assignment_id_list = 
-        lib::create( 'business\session' )->get_user()->get_assignment_list( $select, $modifier );
-      if( 0 < count( $assignment_id_list ) )
-      {
-        $postfix = '_'.str_pad( current( $assignment_id_list )['id'], 7, '0', STR_PAD_LEFT );
-      }
-      else // create an counter as a postfix
-      {
-        $select = lib::create( 'database\select' );
-        $select->add_column( 'MAX( tid )', 'max_tid', false );
-        $select->from( static::get_table_name() );
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'token', 'LIKE', $db_participant->uid.'_%' );
-        $sub_select = sprintf( '( %s %s )', $select->get_sql(), $modifier->get_sql() );
+      $select = lib::create( 'database\select' );
+      $select->add_column( 'token' );
+      $select->from( static::get_table_name() );
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'tid', '=', $sub_select, false );
+      $last_token = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
 
-        $select = lib::create( 'database\select' );
-        $select->add_column( 'token' );
-        $select->from( static::get_table_name() );
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'tid', '=', $sub_select, false );
-        $last_token = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
-
-        $postfix = $last_token ? substr( $last_token, '_' ) : '_0000000';
-        $postfix++;
-      }
+      $postfix = $last_token ? substr( $last_token, '.' ) : '.'.str_repeat( '0', static::TOKEN_POSTFIX_LENGTH );
+      $postfix++;
 
       $token .= $postfix;
     }

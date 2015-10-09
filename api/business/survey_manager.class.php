@@ -27,7 +27,8 @@ class survey_manager extends \cenozo\singleton
   /**
    * Writes all columns of a token for the given script and participant
    * 
-   * This method will try and fill in all columns of a token row including attributes.
+   * This method will try and fill in all columns of a token row, with the exception of the token
+   * column.  To set the token use database\limesurvey\tokens::determine_token_string() static method.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\script $db_script The script that the token belongs to
    * @param database\participant $db_participant The participant that the token belongs to
@@ -44,7 +45,6 @@ class survey_manager extends \cenozo\singleton
     if( is_null( $db_tokens ) ) $db_tokens = lib::create( 'database\limesurvey\tokens' ); 
 
     // fill in the token based on the script and participant
-    $db_tokens->token = $db_tokens::determine_token_string( $db_participant, $db_script->repeated );
     $db_tokens->firstname = $db_participant->honorific.' '.$db_participant->first_name;
     if( 0 < strlen( $db_participant->other_name ) ) 
       $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
