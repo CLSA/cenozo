@@ -23,6 +23,7 @@ class module extends \cenozo\service\module
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $script_class_name = lib::get_class_name( 'database\script' );
+    $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
 
     // join to limesurvey tables to get the survey name
     if( $select->has_column( 'survey_title' ) )
