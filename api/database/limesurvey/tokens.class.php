@@ -68,10 +68,12 @@ class tokens extends sid_record
       $modifier->where( 'tid', '=', $sub_select, false );
       $last_token = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
 
-      $postfix = $last_token ? substr( $last_token, '.' ) : '.'.str_repeat( '0', static::TOKEN_POSTFIX_LENGTH );
+      $postfix = $last_token
+               ? substr( $last_token, -static::TOKEN_POSTFIX_LENGTH )
+               : str_repeat( '0', static::TOKEN_POSTFIX_LENGTH );
       $postfix++;
 
-      $token .= $postfix;
+      $token .= '.'.$postfix;
     }
 
     return $token;

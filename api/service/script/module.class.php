@@ -21,11 +21,12 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $script_class_name = lib::get_class_name( 'database\script' );
+
     // join to limesurvey tables to get the survey name
     if( $select->has_column( 'survey_title' ) )
     {
-      $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
-
       $survey_table_array = array();
       foreach( $surveys_class_name::get_titles() as $sid => $title )
         $survey_table_array[] = sprintf( 'SELECT %s sid, "%s" title', $sid, $title );
@@ -34,31 +35,29 @@ class module extends \cenozo\service\module
       $select->add_table_column( 'survey', 'title', 'survey_title' );
     }
 
+    $db_participant = NULL;
+    $participant_id = $this->get_argument( 'participant_id', NULL );
+    $uid = $this->get_argument( 'uid', NULL );
+    if( !is_null( $participant_id ) ) $db_participant = lib::create( 'database\participant', $participant_id );
+    else if( !is_null( $uid ) ) $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
+
+    // if a participant is specified then update the started/completed events
+    if( !is_null( $db_participant ) ) $script_class_name::add_all_event_types( $db_participant );
+
     if( $select->has_table_columns( 'started_event' ) || $select->has_table_columns( 'completed_event' ) )
     {
-      // uid or participant_id must be provided in order to get the completed status
-      $uid = $this->get_argument( 'uid', NULL );
-      $participant_id = $this->get_argument( 'participant_id', NULL );
-      if( is_null( $uid ) && is_null( $participant_id ) )
+      if( is_null( $db_participant ) )
       {
         log::warning(
           'Script service requested participant-based information without providing uid or participant_id.' );
       }
       else
       {
-        $participant_class_name = lib::get_class_name( 'database\participant' );
-
-        if( is_null( $participant_id ) )
-        {
-          $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
-          $participant_id = $db_participant->id;
-        }
-
         if( $select->has_table_columns( 'started_event' ) )
         {
           $join_mod = lib::create( 'database\modifier' );
           $join_mod->where( 'script.started_event_type_id', '=', 'started_last_event.event_type_id', false );
-          $join_mod->where( 'started_last_event.participant_id', '=', $participant_id );
+          $join_mod->where( 'started_last_event.participant_id', '=', $db_participant->id );
           $modifier->join_modifier( 'participant_last_event', $join_mod, 'left', 'started_last_event' );
           $modifier->left_join(
             'event', 'started_last_event.event_id', 'started_event.id', 'started_event' );
@@ -68,7 +67,7 @@ class module extends \cenozo\service\module
         {
           $join_mod = lib::create( 'database\modifier' );
           $join_mod->where( 'script.completed_event_type_id', '=', 'completed_last_event.event_type_id', false );
-          $join_mod->where( 'completed_last_event.participant_id', '=', $participant_id );
+          $join_mod->where( 'completed_last_event.participant_id', '=', $db_participant->id );
           $modifier->join_modifier( 'participant_last_event', $join_mod, 'left', 'completed_last_event' );
           $modifier->left_join(
             'event', 'completed_last_event.event_id', 'completed_event.id', 'completed_event' );
