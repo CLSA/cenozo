@@ -806,21 +806,23 @@ cenozo.directive( 'cnRecordView', [
                     var scope = angular.element(
                       angular.element( document.querySelector( '#' + property ) ) ).scope();
                     // if a conflict or format has been resolved then clear it throughout the form
-                    var currentItem = scope.$parent.innerForm.name;
-                    if( currentItem.$error.conflict ) {
-                      var sibling = scope.$parent.$parent.$$childHead;
-                      while( null !== sibling ) {
-                        var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
-                        if( siblingItem.$error.conflict ) {
-                          siblingItem.$error.conflict = false;
-                          cenozo.updateFormElement( siblingItem, true );
+                    if( scope ) {
+                      var currentItem = scope.$parent.innerForm.name;
+                      if( currentItem.$error.conflict ) {
+                        var sibling = scope.$parent.$parent.$$childHead;
+                        while( null !== sibling ) {
+                          var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
+                          if( siblingItem.$error.conflict ) {
+                            siblingItem.$error.conflict = false;
+                            cenozo.updateFormElement( siblingItem, true );
+                          }
+                          sibling = sibling.$$nextSibling;
                         }
-                        sibling = sibling.$$nextSibling;
                       }
-                    }
-                    if( currentItem.$error.format ) {
-                      currentItem.$error.format = false;
-                      cenozo.updateFormElement( currentItem, true );
+                      if( currentItem.$error.format ) {
+                        currentItem.$error.format = false;
+                        cenozo.updateFormElement( currentItem, true );
+                      }
                     }
 
                     // update the formatted value
@@ -3001,6 +3003,9 @@ cenozo.service( 'CnModalDatetimeFactory', [
       if( angular.isUndefined( this.maxDate ) || null === this.maxDate ) this.maxDate = null;
       else if( 'now' !== this.maxDate )
         this.maxDate = moment( new Date( this.maxDate ) ).tz( CnSession.user.timezone );
+
+      // treat invalid dates as null dates
+      if( '0000-00-00' == this.date.substring( 0, 10 ) ) this.date = null;
 
       // process the input (starting) date
       if( null === this.date ) {
