@@ -39,8 +39,8 @@ CREATE PROCEDURE patch_alternate_first_address()
       REPLACE INTO alternate_first_address( alternate_id, address_id )
       SELECT alternate.id, address1.id
       FROM alternate
-      JOIN address AS address1 ON alternate.id = address1.alternate_id
-      WHERE address1.rank = (
+      LEFT JOIN address AS address1 ON alternate.id = address1.alternate_id
+      AND address1.rank = (
         SELECT MIN( address2.rank )
         FROM address AS address2
         WHERE address2.active

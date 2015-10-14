@@ -37,8 +37,8 @@ CREATE PROCEDURE patch_participant_first_address()
       REPLACE INTO participant_first_address( participant_id, address_id )
       SELECT participant.id, address1.id
       FROM participant
-      JOIN address AS address1 ON participant.id = address1.participant_id
-      WHERE address1.rank = (
+      LEFT JOIN address AS address1 ON participant.id = address1.participant_id
+      AND address1.rank = (
         SELECT MIN( address2.rank )
         FROM address AS address2
         WHERE address2.active

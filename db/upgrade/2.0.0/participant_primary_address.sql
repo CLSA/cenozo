@@ -3,7 +3,7 @@ DELIMITER //
 CREATE PROCEDURE patch_participant_primary_address()
   BEGIN
 
-    SELECT "Replaceing participant_primary_address view with caching table" AS "";
+    SELECT "Replacing participant_primary_address view with caching table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
@@ -38,8 +38,8 @@ CREATE PROCEDURE patch_participant_primary_address()
       REPLACE INTO participant_primary_address( participant_id, address_id )
       SELECT participant.id, address1.id
       FROM participant
-      JOIN address AS address1 ON participant.id = address1.participant_id
-      WHERE address1.rank = (
+      LEFT JOIN address AS address1 ON participant.id = address1.participant_id
+      AND address1.rank = (
         SELECT MIN( address2.rank )
         FROM address AS address2
         JOIN region ON address2.region_id = region.id
