@@ -3,9 +3,9 @@ SELECT "Creating new update_participant_last_events procedure" AS "";
 DROP procedure IF EXISTS update_participant_last_events;
 
 DELIMITER $$
-CREATE PROCEDURE update_participant_last_events(IN proc_participant_id INT(10) UNSIGNED, IN proc_event_type_id INT(10) UNSIGNED) 
+CREATE PROCEDURE update_participant_last_events(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
-  REPLACE INTO participant_last_events( participant_id, event_type_id, event_id )
+  REPLACE INTO participant_last_event( participant_id, event_type_id, event_id )
   SELECT participant.id, event_type.id, event.id
   FROM participant
   CROSS JOIN event_type
