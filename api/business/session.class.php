@@ -108,6 +108,9 @@ class session extends \cenozo\singleton
     // update the access with the current time
     $this->mark_access_time();
 
+    // initialize the voip manager (this only has an effect if voip is enabled)
+    lib::create( 'business\voip_manager' )->initialize();
+
     $this->state = 'initialized';
   }
 
@@ -122,6 +125,9 @@ class session extends \cenozo\singleton
   {
     // only shutdown after initialization
     if( 'initialized' != $this->state ) return;
+
+    // shut down the voip manager (this only has an effect if voip is enabled)
+    lib::create( 'business\voip_manager' )->shutdown();
 
     $this->state = 'shutdown';
   }
