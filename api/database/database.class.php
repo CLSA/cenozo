@@ -179,8 +179,6 @@ class database extends \cenozo\base_object
    */
   public function complete_transaction()
   {
-    $setting_manager = lib::create( 'business\setting_manager' );
-
     if( self::$debug ) log::debug( '(DB) completing transaction' );
     $this->connection->commit();
   }
