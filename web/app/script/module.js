@@ -20,12 +20,6 @@ define( {
       title: 'Repeated',
       type: 'boolean'
     },
-    reserved: {
-      title: 'Reserved',
-      type: 'boolean',
-      help: 'Reserved scripts are not included in the participant script list. ' +
-            'Scripts used by application questionnaires should be marked as reserved.'
-    },
     description: {
       title: 'Description',
       type: 'text'
@@ -41,10 +35,6 @@ define( {
     },
     repeated: {
       title: 'Repeated',
-      type: 'boolean'
-    },
-    reserved: {
-      title: 'Reserved',
       type: 'boolean'
     }
   },

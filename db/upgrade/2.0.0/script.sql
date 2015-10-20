@@ -22,7 +22,6 @@ DROP PROCEDURE IF EXISTS patch_script;
         completed_event_type_id INT UNSIGNED NOT NULL,
         sid INT NOT NULL,
         repeated TINYINT(1) NOT NULL DEFAULT 0,
-        reserved TINYINT(1) NOT NULL DEFAULT 1,
         description TEXT NULL,
         PRIMARY KEY (id),
         INDEX fk_started_event_type_id (started_event_type_id ASC),
