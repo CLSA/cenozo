@@ -1,4 +1,4 @@
-define( cenozo.getServicesIncludeList( 'participant' ), function( module ) {
+define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */

@@ -1,4 +1,4 @@
-define( cenozo.getServicesIncludeList( 'access' ), function( module ) {
+define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */

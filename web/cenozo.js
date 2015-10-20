@@ -32,6 +32,10 @@ String.prototype.snakeToCamel = function cnSnakeToCamel( first ) {
   return output;
 };
 
+String.prototype.endsWith = function cnEndsWith( suffix ) {
+  return this.indexOf( suffix, this.length - suffix.length ) !== -1;
+};
+
 String.prototype.camelToSnake = function cnCamelToSnake() {
   return this.replace( /([A-Z])/g, function( $1 ) { return '_' + angular.lowercase( $1 ); } ).replace( /^_/, '' );
 };
@@ -71,6 +75,38 @@ cenozo.modules = function( modules ) { this.moduleList = angular.copy( modules )
 cenozo.getModuleUrl = function( moduleName ) {
   return ( 0 <= this.moduleList.indexOf( moduleName ) ? this.baseUrl : cenozoApp.baseUrl ) +
          '/app/' + moduleName + '/';
+};
+
+// Returns a list of includes needed by a module's service file
+cenozo.getDependencyList = function( moduleName ) {
+  var module = cenozoApp.moduleList[moduleName];
+  var dependents = module.children.concat( module.choosing );
+
+  var cenozoModulePath = this.baseUrl + '/app/' + moduleName + '/';
+  var appModulePath = cenozoApp.baseUrl + '/app/' + moduleName + '/';
+
+  var list = 0 <= this.moduleList.indexOf( moduleName ) ? [
+    // framework libraries and application extensions
+    cenozoModulePath + 'module.js',
+    appModulePath + 'module.extend.js',
+    cenozoModulePath + 'controllers.js',
+    appModulePath + 'controllers.extend.js',
+    cenozoModulePath + 'directives.js',
+    appModulePath + 'directives.extend.js',
+    cenozoModulePath + 'services.js',
+    appModulePath + 'services.extend.js'
+  ] : [
+    // application libraries
+    appModulePath + 'module.js',
+    appModulePath + 'controllers.js',
+    appModulePath + 'directives.js',
+    appModulePath + 'services.js',
+  ];
+
+  // also bootstrap dependent modules
+  for( var i = 0; i < dependents.length; i++ )
+    list.push( cenozo.getModuleUrl( dependents[i].snake ) + 'bootstrap.js' );
+  return list;
 };
 
 // Returns a list of includes needed by a module's service file
@@ -3600,7 +3636,7 @@ cenozo.config( [
 
     // load the 404 state when a state is not found for the provided path
     $urlRouterProvider.otherwise( function( $injector, $location ) {
-      $injector.get( '$state' ).go( 'error.404' );
+      if( !$location.url().endsWith( '/module.js' ) ) $injector.get( '$state' ).go( 'error.404' );
       return $location.path();
     } );
 
