@@ -901,7 +901,7 @@ class modifier extends \cenozo\base_object
     $first = true;
     foreach( $this->group_list as $column )
     {
-      $sql .= sprintf( "\n%s%s",
+      $sql .= sprintf( "%s%s",
                        $first ? '' : ', ',
                        $column );
       $first = false;
