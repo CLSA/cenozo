@@ -1,8 +1,8 @@
-define( [], function() {
+define( cenozo.getDependencyList( 'participant' ), function() {
   'use strict';
 
+  var module = cenozoApp.module( 'participant' );
   angular.extend( module, {
-    subject: 'participant',
     identifier: { column: 'uid' },
     name: {
       singular: 'participant',
@@ -144,5 +144,176 @@ define( [], function() {
       reverse: false
     }
   } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'ParticipantListCtrl', [
+    '$scope', 'CnParticipantModelFactory', 'CnSession',
+    function( $scope, CnParticipantModelFactory, CnSession ) {
+      $scope.model = CnParticipantModelFactory.root;
+      $scope.model.listModel.onList( true ).then( function() {
+        $scope.model.setupBreadcrumbTrail( 'list' );
+      } ).catch( CnSession.errorHandler );
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'ParticipantViewCtrl', [
+    '$scope', 'CnParticipantModelFactory', 'CnSession',
+    function( $scope, CnParticipantModelFactory, CnSession ) {
+      $scope.model = CnParticipantModelFactory.root;
+      $scope.model.viewModel.onView().then( function() {
+        $scope.model.setupBreadcrumbTrail( 'view' );
+      } ).catch( CnSession.errorHandler );
+    }
+  ] );
+
+  cenozo.providers.directive( 'cnParticipantAdd', function () {
+    return {
+      templateUrl: 'app/participant/add.tpl.html',
+      restrict: 'E'
+    };
+  } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnParticipantView', function () {
+    return {
+      templateUrl: 'app/participant/view.tpl.html',
+      restrict: 'E'
+    };
+  } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnParticipantListFactory', [
+    'CnBaseListFactory',
+    function( CnBaseListFactory ) {
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnParticipantViewFactory',
+    cenozo.getViewModelInjectionList( 'participant' ).concat( [
+      'CnSession', 'CnModalParticipantNoteFactory', function() {
+        var args = arguments;
+        var CnBaseViewFactory = args[0];
+        var CnSession = args[args.length-2];
+        var CnModalParticipantNoteFactory = args[args.length-1];
+        var object = function( parentModel ) { 
+          CnBaseViewFactory.construct( this, parentModel, args );
+
+          // add operations
+          var self = this;
+          this.operationList.push( {
+            name: 'Notes',
+            execute: function() {
+              CnModalParticipantNoteFactory.instance( { participant: self.record } ).show();
+            }
+          } );
+        };
+        return { instance: function( parentModel ) { return new object( parentModel ); } };
+      }
+    ] )
+  );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnParticipantModelFactory', [
+    'CnBaseModelFactory', 'CnParticipantListFactory', 'CnParticipantViewFactory', 'CnHttpFactory',
+    function( CnBaseModelFactory, CnParticipantListFactory, CnParticipantViewFactory, CnHttpFactory ) {
+      var object = function() {
+        var self = this;
+        CnBaseModelFactory.construct( this, module );
+        this.listModel = CnParticipantListFactory.instance( this );
+        this.viewModel = CnParticipantViewFactory.instance( this );
+
+        // extend getMetadata
+        this.getMetadata = function() {
+          this.metadata.loadingCount++;
+          return this.loadMetadata().then( function() {
+            return CnHttpFactory.instance( {
+              path: 'age_group',
+              data: {
+                select: { column: [ 'id', 'lower', 'upper' ] },
+                modifier: { order: { lower: false } }
+              }
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.age_group_id.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                self.metadata.columnList.age_group_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].lower + ' to ' + response.data[i].upper
+                } );
+              }
+            } ).then( function() {
+              return CnHttpFactory.instance( {
+                path: 'language',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: {
+                    where: {
+                      column: 'active',
+                      operator: '=',
+                      value: true
+                    },
+                    order: 'name'
+                  }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.language_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.language_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } );
+            } ).then( function() {
+              return CnHttpFactory.instance( {
+                path: 'site',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.preferred_site_id = { enumList: [] };
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.preferred_site_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } );
+            } ).then( function() {
+              return CnHttpFactory.instance( {
+                path: 'state',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'rank' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.state_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.state_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } );
+            } ).then( function() {
+              self.metadata.loadingCount--;
+            } );
+          } );
+        };
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
+    }
+  ] );
+
+  // load any extensions to the module
+  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/participant/module.extend.js' ], function() {} );
 
 } );

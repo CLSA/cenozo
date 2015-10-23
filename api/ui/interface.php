@@ -26,43 +26,12 @@
 </head>
 <body class="background">
   <script>
-    cenozo.modules( <?php print $framework_module_string; ?> );
-    var cenozoApp = angular.module( 'cenozoApp', [
-      'ui.bootstrap',
-      'ui.router',
-      'ui.slider',
-      'cenozo'
-    ] );
+    // set the application's base url (the object is created for us in cenozo.js)
     cenozoApp.baseUrl = "<?php print ROOT_URL; ?>";
-    cenozoApp.moduleList = <?php print $module_string; ?>;
 
-    // notes are handled by a modal only
-    if( angular.isDefined( cenozoApp.moduleList.note ) ) {
-      cenozo.noteActions = cenozoApp.moduleList.note.actions;
-      delete cenozoApp.moduleList.note;
-    }
-
-    // pre-create snake, camel, title, etc strings for children and choosing lists
-    for( var name in cenozoApp.moduleList ) {
-      var module = cenozoApp.moduleList[name];
-      for( var c = 0; c < module.children.length; c++ ) {
-        module.children[c] = {
-          snake: module.children[c],
-          camel: module.children[c].snakeToCamel( false ),
-          Camel: module.children[c].snakeToCamel( true ),
-          title: module.children[c].replace( '_', ' ' ).ucWords()
-        };
-      }
-      for( var c = 0; c < module.choosing.length; c++ ) {
-        module.choosing[c] = {
-          snake: module.choosing[c],
-          camel: module.choosing[c].snakeToCamel( false ),
-          Camel: module.choosing[c].snakeToCamel( true ),
-          title: module.choosing[c].replace( '_', ' ' ).ucWords()
-        };
-      }
-    }
-
+    // define framework modules, set the applications module list then route them all
+    cenozo.defineFrameworkModules( <?php print $framework_module_string; ?> );
+    cenozoApp.setModuleList( <?php print $module_string; ?> );
     cenozoApp.config( [
       '$stateProvider',
       function( $stateProvider ) {

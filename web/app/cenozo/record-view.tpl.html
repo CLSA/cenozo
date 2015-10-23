@@ -20,12 +20,17 @@
   </div>
   <form name="form" class="form-horizontal" novalidate>
     <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.subject }}View">
-      <ng-form ng-repeat="input in dataArray"
-               name="innerForm">
+      <ng-form ng-repeat="input in dataArray" name="innerForm">
+        <h4 ng-if="'separator' == input.type" class="text-center separator" tooltip="{{ input.help }}">
+          {{ input.title }}
+        </h4>
         <div class="form-group"
-             ng-if="'hidden' != input.type"
+             ng-if="'hidden' != input.type && 'separator' != input.type"
              ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
-          <label for="{{ input.key }}" class="col-sm-3 control-label" tooltip="{{ input.help }}">
+          <label ng-if="'separator' != input.type"
+                 for="{{ input.key }}"
+                 class="col-sm-3 control-label"
+                 tooltip="{{ input.help }}">
             {{ input.title }}
           </label>
           <div ng-class="model.viewModel.record[input.key] == model.viewModel.backupRecord[input.key] ?

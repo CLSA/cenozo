@@ -1,5 +1,16 @@
-define( [], function() {
+define( [], function() { 
   'use strict';
+
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'ErrorCtrl', [
+    '$scope', '$window', 'CnErrorModelFactory', 'CnSession',
+    function( $scope, $window, CnErrorModelFactory, CnSession ) {
+      $scope.model = CnErrorModelFactory.root;
+      $scope.model.setupBreadcrumbTrail();
+      $scope.back = function() { $window.history.back(); };
+      $scope.reload = function() { $window.location.reload(); };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnErrorModelFactory', [
@@ -25,5 +36,8 @@ define( [], function() {
       };
     }
   ] );
+
+  // load any extensions to the module
+  require( [ cenozoApp.baseUrl + '/app/error/module.extend.js' ], function() {} );
 
 } );

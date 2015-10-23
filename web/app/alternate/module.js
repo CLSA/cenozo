@@ -1,81 +1,185 @@
-define( {
-  subject: 'alternate',
-  identifier: {
-    parent: {
-      subject: 'participant',
-      column: 'participant.uid'
-    }
-  },
-  name: {
-    singular: 'alternate',
-    plural: 'alternates',
-    possessive: 'alternate\'s',
-    pluralPossessive: 'alternates\'',
-    friendlyColumn: 'association'
-  },
-  inputList: {
-    participant_id: {
-      column: 'alternate.participant_id',
-      title: 'Participant',
-      type: 'lookup-typeahead',
-      typeahead: {
-        table: 'participant',
-        select: 'CONCAT( first_name, " ", last_name, " (", uid, ")" )',
-        where: [ 'first_name', 'last_name', 'uid' ]
+define( cenozo.getDependencyList( 'alternate' ), function() {
+  'use strict';
+
+  var module = cenozoApp.module( 'alternate' );
+  angular.extend( module, {
+    identifier: {
+      parent: {
+        subject: 'participant',
+        column: 'participant.uid'
       }
     },
-    first_name: {
-      column: 'alternate.first_name',
-      title: 'First Name',
-      type: 'string'
+    name: {
+      singular: 'alternate',
+      plural: 'alternates',
+      possessive: 'alternate\'s',
+      pluralPossessive: 'alternates\'',
+      friendlyColumn: 'association'
     },
-    last_name: {
-      column: 'alternate.last_name',
-      title: 'Last Name',
-      type: 'string'
+    inputList: {
+      participant_id: {
+        column: 'alternate.participant_id',
+        title: 'Participant',
+        type: 'lookup-typeahead',
+        typeahead: {
+          table: 'participant',
+          select: 'CONCAT( first_name, " ", last_name, " (", uid, ")" )',
+          where: [ 'first_name', 'last_name', 'uid' ]
+        }
+      },
+      first_name: {
+        column: 'alternate.first_name',
+        title: 'First Name',
+        type: 'string'
+      },
+      last_name: {
+        column: 'alternate.last_name',
+        title: 'Last Name',
+        type: 'string'
+      },
+      association: {
+        title: 'Association',
+        type: 'string',
+        help: 'How the alternate knows the participant (son, neighbour, wife, etc). ' +
+              'DO NOT include phone numbers.',
+        regex: '^[^0-9]*[0-9]?[^0-9]*$'
+      },
+      alternate: {
+        title: 'Alternate Contact',
+        type: 'boolean'
+      },
+      informant: {
+        title: 'Information Provider',
+        type: 'boolean'
+      },
+      proxy: {
+        title: 'Decision Maker',
+        type: 'boolean'
+      }
     },
-    association: {
-      title: 'Association',
-      type: 'string',
-      help: 'How the alternate knows the participant (son, neighbour, wife, etc). ' +
-            'DO NOT include phone numbers.',
-      regex: '^[^0-9]*[0-9]?[^0-9]*$'
+    columnList: {
+      uid: {
+        column: 'participant.uid',
+        title: 'Participant'
+      },
+      first_name: {
+        column: 'alternate.first_name',
+        title: 'First Name'
+      },
+      last_name: {
+        column: 'alternate.last_name',
+        title: 'Last Name'
+      },
+      association: {
+        title: 'Association'
+      },
+      types: {
+        title: 'Types'
+      }
     },
-    alternate: {
-      title: 'Alternate Contact',
-      type: 'boolean'
-    },
-    informant: {
-      title: 'Information Provider',
-      type: 'boolean'
-    },
-    proxy: {
-      title: 'Decision Maker',
-      type: 'boolean'
+    defaultOrder: {
+      column: 'uid',
+      reverse: false
     }
-  },
-  columnList: {
-    uid: {
-      column: 'participant.uid',
-      title: 'Participant'
-    },
-    first_name: {
-      column: 'alternate.first_name',
-      title: 'First Name'
-    },
-    last_name: {
-      column: 'alternate.last_name',
-      title: 'Last Name'
-    },
-    association: {
-      title: 'Association'
-    },
-    types: {
-      title: 'Types'
+  } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'AlternateAddCtrl', [
+    '$scope', 'CnAlternateModelFactory', 'CnSession',
+    function( $scope, CnAlternateModelFactory, CnSession ) {
+      $scope.model = CnAlternateModelFactory.root;
+      $scope.record = {};
+      $scope.model.addModel.onNew( $scope.record ).then( function() {
+        $scope.model.setupBreadcrumbTrail( 'add' );
+      } ).catch( CnSession.errorHandler );
     }
-  },
-  defaultOrder: {
-    column: 'uid',
-    reverse: false
-  }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'AlternateListCtrl', [
+    '$scope', 'CnAlternateModelFactory', 'CnSession',
+    function( $scope, CnAlternateModelFactory, CnSession ) {
+      $scope.model = CnAlternateModelFactory.root;
+      $scope.model.listModel.onList( true ).then( function() {
+        $scope.model.setupBreadcrumbTrail( 'list' );
+      } ).catch( CnSession.errorHandler );
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'AlternateViewCtrl', [
+    '$scope', 'CnAlternateModelFactory', 'CnSession',
+    function( $scope, CnAlternateModelFactory, CnSession ) {
+      $scope.model = CnAlternateModelFactory.root;
+      $scope.model.viewModel.onView().then( function() {
+        $scope.model.setupBreadcrumbTrail( 'view' );
+      } ).catch( CnSession.errorHandler );
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnAlternateAdd', function () {
+    return {
+      templateUrl: 'app/alternate/add.tpl.html',
+      restrict: 'E'
+    };
+  } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnAlternateView', function () {
+    return {
+      templateUrl: 'app/alternate/view.tpl.html',
+      restrict: 'E'
+    };
+  } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnAlternateAddFactory', [
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnAlternateListFactory', [
+    'CnBaseListFactory',
+    function( CnBaseListFactory ) {
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnAlternateViewFactory',
+    cenozo.getViewModelInjectionList( 'alternate' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
+    } )
+  );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnAlternateModelFactory', [
+    '$state', 'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
+    function( $state, CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory ) {
+      var object = function() {
+        CnBaseModelFactory.construct( this, module );
+        this.addModel = CnAlternateAddFactory.instance( this );
+        this.listModel = CnAlternateListFactory.instance( this );
+        this.viewModel = CnAlternateViewFactory.instance( this );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
+    }
+  ] );
+
+  // load any extensions to the module
+  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/alternate/module.extend.js' ], function() {} );
+
 } );

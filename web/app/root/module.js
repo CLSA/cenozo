@@ -1,5 +1,14 @@
-define( [], function() {
+define( [], function() { 
   'use strict';
+
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'HomeCtrl', [
+    '$scope', 'CnHomeModelFactory', 'CnSession',
+    function( $scope, CnHomeModelFactory, CnSession ) {
+      $scope.model = CnHomeModelFactory.root;
+      $scope.model.setupBreadcrumbTrail();
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnHomeModelFactory', [
@@ -36,5 +45,8 @@ define( [], function() {
       };
     }
   ] );
+
+  // load any extensions to the module
+  require( [ cenozoApp.baseUrl + '/app/root/module.extend.js' ], function() {} );
 
 } );

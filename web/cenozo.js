@@ -3,8 +3,7 @@
 try { var cenozo = angular.module( 'cenozo' ); }
 catch( err ) { var cenozo = angular.module( 'cenozo', ['ngAnimate'] ); }
 
-// set up cenozo's base variables
-cenozo.providers = {};
+// determine cenozo's base url
 var tempUrl = document.getElementById( 'cenozo' ).src;
 cenozo.baseUrl = tempUrl.substr( 0, tempUrl.indexOf( '/cenozo.js' ) );
 tempUrl = undefined;
@@ -12,199 +11,214 @@ tempUrl = undefined;
 // setup moment.timezone
 moment.tz.setDefault( 'UTC' );
 
-// add some useful prototype functions
-Array.prototype.findIndexByProperty = function( property, value ) {
-  for( var i = 0; i < this.length; i++ )
-    if( angular.isDefined( this[i][property] ) && value == this[i][property] )
-      return i;
-  return null;
-}
+// Extend the Array prototype with extra functions
+angular.extend( Array.prototype, {
+  findIndexByProperty: function( property, value ) {
+    for( var i = 0; i < this.length; i++ )
+      if( angular.isDefined( this[i][property] ) && value == this[i][property] )
+        return i;
+    return null;
+  },
+  findByProperty: function( property, value ) {
+    var index = this.findIndexByProperty( property, value );
+    return null === index ? null : this[index];
+  }
+} );
 
-Array.prototype.findByProperty = function( property, value ) {
-  var index = this.findIndexByProperty( property, value );
-  return null === index ? null : this[index];
-}
+// Extend the String prototype with extra functions
+angular.extend( String.prototype, {
+  snakeToCamel: function( first ) {
+    if( angular.isUndefined( first ) ) first = false;
+    var output = this.replace( /(\_\w)/g, function( $1 ) { return angular.uppercase( $1[1] ); } );
+    if( first ) output = angular.uppercase( output.charAt(0) ) + output.slice(1);
+    return output;
+  },
+  endsWith: function( suffix ) {
+    return this.indexOf( suffix, this.length - suffix.length ) !== -1;
+  },
+  camelToSnake: function() {
+    return this.replace( /([A-Z])/g, function( $1 ) { return '_' + angular.lowercase( $1 ); } ).replace( /^_/, '' );
+  },
+  ucWords: function() {
+    return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
+  }
+} );
 
-String.prototype.snakeToCamel = function cnSnakeToCamel( first ) {
-  if( angular.isUndefined( first ) ) first = false;
-  var output = this.replace( /(\_\w)/g, function( $1 ) { return angular.uppercase( $1[1] ); } );
-  if( first ) output = angular.uppercase( output.charAt(0) ) + output.slice(1);
-  return output;
-};
+// extend the application object
+var cenozoApp = angular.module( 'cenozoApp', [
+  'ui.bootstrap',
+  'ui.router',
+  'ui.slider',
+  'cenozo'
+] );
 
-String.prototype.endsWith = function cnEndsWith( suffix ) {
-  return this.indexOf( suffix, this.length - suffix.length ) !== -1;
-};
+angular.extend( cenozoApp, {
+  moduleList: {},
 
-String.prototype.camelToSnake = function cnCamelToSnake() {
-  return this.replace( /([A-Z])/g, function( $1 ) { return '_' + angular.lowercase( $1 ); } ).replace( /^_/, '' );
-};
+  // returns a reference to a module
+  module: function( moduleName ) { return this.moduleList[moduleName]; },
 
-String.prototype.ucWords = function() {
-  return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
-}
-
-// generate a globally unique identifier
-cenozo.generateGUID = function() {
-  var S4 = function() {
-    return( ( ( 1+Math.random() ) * 0x10000 ) | 0 ).toString( 16 ).substring( 1 );
-  };
-  return( S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4() );
-};
-
-cenozo.getType = function( variable ) {
-  var type = ( {} ).toString.call( variable ).match( /\s([a-zA-Z]+)/ )[1].toLowerCase();
-  // if an object, check for moment
-  if( 'object' == type && variable._isAMomentObject ) type = 'moment';
-  return type;
-};
-
-// determines whether a type is one of the datetime types
-cenozo.isDatetimeType = function( type ) {        
-  return 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type );
-};
-
-cenozo.parseEnumList = function( columnMetadata ) {
-  return columnMetadata.type.replace( /^enum\(['"]/i, '' ).replace( /['"]\)$/, '' ).split( "','" );
-}
-
-// Defines which modules are part of the framework
-cenozo.modules = function( modules ) { this.moduleList = angular.copy( modules ); };
-
-// Gets the base url for a module
-cenozo.getModuleUrl = function( moduleName ) {
-  return ( 0 <= this.moduleList.indexOf( moduleName ) ? this.baseUrl : cenozoApp.baseUrl ) +
-         '/app/' + moduleName + '/';
-};
-
-// Returns a list of includes needed by a module's service file
-cenozo.getDependencyList = function( moduleName ) {
-  var module = cenozoApp.moduleList[moduleName];
-  var dependents = module.children.concat( module.choosing );
-
-  var cenozoModulePath = this.baseUrl + '/app/' + moduleName + '/';
-  var appModulePath = cenozoApp.baseUrl + '/app/' + moduleName + '/';
-
-  var list = 0 <= this.moduleList.indexOf( moduleName ) ? [
-    // framework libraries and application extensions
-    cenozoModulePath + 'module.js',
-    appModulePath + 'module.extend.js',
-    cenozoModulePath + 'controllers.js',
-    appModulePath + 'controllers.extend.js',
-    cenozoModulePath + 'directives.js',
-    appModulePath + 'directives.extend.js',
-    cenozoModulePath + 'services.js',
-    appModulePath + 'services.extend.js'
-  ] : [
-    // application libraries
-    appModulePath + 'module.js',
-    appModulePath + 'controllers.js',
-    appModulePath + 'directives.js',
-    appModulePath + 'services.js',
-  ];
-
-  // also bootstrap dependent modules
-  for( var i = 0; i < dependents.length; i++ )
-    list.push( cenozo.getModuleUrl( dependents[i].snake ) + 'bootstrap.js' );
-  return list;
-};
-
-// Returns a list of includes needed by a module's service file
-cenozo.getServicesIncludeList = function( moduleName ) {
-  var module = cenozoApp.moduleList[moduleName];
-  var dependents = module.children.concat( module.choosing );
-  var list = [ cenozo.getModuleUrl( moduleName ) + 'module.js' ];
-  for( var i = 0; i < dependents.length; i++ )
-    list.push( cenozo.getModuleUrl( dependents[i].snake ) + 'bootstrap.js' );
-  return list;
-};
-
-// Returns a list of includes needed by a module's list model factory
-cenozo.getListModelInjectionList = function( moduleName ) {
-  var module = cenozoApp.moduleList[moduleName];
-  var dependents = module.children.concat( module.choosing );
-  var list = ['CnBaseViewFactory'];
-  for( var i = 0; i < dependents.length; i++ ) list.push( 'Cn' + dependents[i].Camel + 'ModelFactory' );
-  return list;
-};
-
-// Sets up the routing for a module
-cenozo.routeModule = function ( stateProvider, name, module ) {
-  if( angular.isUndefined( stateProvider ) ) throw 'routeModule requires exactly 3 parameters';
-  if( angular.isUndefined( name ) ) throw 'routeModule requires exactly 3 parameters';
-  if( angular.isUndefined( module ) ) throw 'routeModule requires exactly 3 parameters';
-
-  // add base state
-  stateProvider.state( name, {
-    abstract: true,
-    url: cenozoApp.baseUrl + '/' + name,
-    templateUrl: this.baseUrl + '/app/cenozo/view-frame.tpl.html',
-    resolve: {
-      data: [ '$q', function( $q ) {
-        var deferred = $q.defer();
-        require( [ cenozo.getModuleUrl( name ) + 'bootstrap.js' ], function() { deferred.resolve(); } );
-        return deferred.promise;
-      } ]
+  // Defines all modules belonging to the Application
+  setModuleList: function( list ) {
+    this.moduleList = list;
+    for( var name in this.moduleList ) {
+      if( "note" == name ) {
+        // notes are handled by a modal only
+        cenozo.noteActions = this.moduleList.note.actions;
+        delete this.moduleList.note;
+      } else {
+        var framework = cenozo.isFrameworkModule( name );
+        angular.extend( this.moduleList[name], {
+          subject: {
+            snake: name,
+            camel: name.snakeToCamel( false ),
+            Camel: name.snakeToCamel( true )
+          },
+          framework: framework,
+          url: ( framework ? cenozo.baseUrl : this.baseUrl ) + '/app/' + name + '/'
+        } );
+      }
     }
-  } );
 
-  // add action states
-  var baseUrl = this.getModuleUrl( name );
-  for( var i = 0; i < module.actions.length; i++ ) {
-    var action = module.actions[i];
-    if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
-      var url = '/' + action;
-      if( 'view' == action ) url += '/{identifier}';
-      var templateUrl = baseUrl + action + '.tpl.html';
+    // replace dependent names with references to the module objects themselves
+    for( var name in this.moduleList ) {
+      for( var i = 0; i < this.moduleList[name].children.length; i++ ) {
+        var child = this.module( this.moduleList[name].children[i] );
+        if( child ) this.moduleList[name].children[i] = child;
+      }
+      for( var i = 0; i < this.moduleList[name].choosing.length; i++ ) {
+        var child = this.module( this.moduleList[name].choosing[i] );
+        if( child ) this.moduleList[name].choosing[i] = child;
+      }
+    }
+  }
+} );
 
-      stateProvider.state( name + '.' + action, {
-        url: url,
-        controller: ( name + '_' + action + '_ctrl' ).snakeToCamel( true ),
-        templateUrl: templateUrl
+// extend the framework object
+angular.extend( cenozo, {
+  providers: {},
+  frameworkModules: {},
+
+  // defines all modules belonging to the framework
+  defineFrameworkModules: function( list ) { this.frameworkModules = list; },
+
+  // returns whether a module belongs to the framework or not
+  isFrameworkModule: function( moduleName ) { return 0 <= this.frameworkModules.indexOf( moduleName ); },
+
+  // generate a globally unique identifier
+  generateGUID: function() {
+    var S4 = function() {
+      return( ( ( 1+Math.random() ) * 0x10000 ) | 0 ).toString( 16 ).substring( 1 );
+    };
+    return( S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4() );
+  },
+
+  // get the type of a variable
+  getType: function( variable ) {
+    var type = ( {} ).toString.call( variable ).match( /\s([a-zA-Z]+)/ )[1].toLowerCase();
+    // if an object, check for moment
+    if( 'object' == type && variable._isAMomentObject ) type = 'moment';
+    return type;
+  },
+  
+  // determines whether a type is one of the datetime types
+  isDatetimeType: function( type ) {        
+    return 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type );
+  },
+  
+  // parse an enum list returned as column metadata
+  parseEnumList: function( columnMetadata ) {
+    return columnMetadata.type.replace( /^enum\(['"]/i, '' ).replace( /['"]\)$/, '' ).split( "','" );
+  },
+  
+  // Returns a list of includes needed by a module's service file
+  getDependencyList: function( moduleName ) {
+    var list = [];
+    var module = cenozoApp.module( moduleName );
+
+    // load all dependent modules
+    var dependents = module.children.concat( module.choosing );
+    for( var i = 0; i < dependents.length; i++ )
+      list.push( dependents[i].url + 'module.js' );
+    return list;
+  },
+
+  // Returns a list of includes needed by a module's list model factory
+  getViewModelInjectionList: function( moduleName ) {
+    var module = cenozoApp.module( moduleName );
+    var dependents = module.children.concat( module.choosing );
+    var list = ['CnBaseViewFactory'];
+    for( var i = 0; i < dependents.length; i++ )
+      list.push( 'Cn' + dependents[i].subject.Camel + 'ModelFactory' );
+    return list;
+  },
+
+  // Sets up the routing for a module
+  routeModule: function ( stateProvider, name, module ) {
+    if( angular.isUndefined( stateProvider ) ) throw 'routeModule requires exactly 3 parameters';
+    if( angular.isUndefined( name ) ) throw 'routeModule requires exactly 3 parameters';
+    if( angular.isUndefined( module ) ) throw 'routeModule requires exactly 3 parameters';
+
+    // add base state
+    stateProvider.state( name, {
+      abstract: true,
+      url: cenozoApp.baseUrl + '/' + name,
+      templateUrl: this.baseUrl + '/app/cenozo/view-frame.tpl.html',
+      resolve: {
+        data: [ '$q', function( $q ) {
+          var deferred = $q.defer();
+          require( [ module.url + 'module.js' ], function() { deferred.resolve(); } );
+          return deferred.promise;
+        } ]
+      }
+    } );
+
+    // add action states
+    for( var i = 0; i < module.actions.length; i++ ) {
+      var action = module.actions[i];
+      if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
+        var url = '/' + action;
+        if( 'view' == action ) url += '/{identifier}';
+        var templateUrl = module.url + action + '.tpl.html';
+
+        stateProvider.state( name + '.' + action, {
+          url: url,
+          controller: ( name + '_' + action + '_ctrl' ).snakeToCamel( true ),
+          templateUrl: templateUrl
+        } );
+      }
+    }
+
+    // add child states to the list
+    for( var i = 0; i < module.children.length; i++ ) {
+      var child = module.children[i];
+
+      stateProvider.state( name + '.add_' + child.subject.snake, {
+        url: '/view/{parentIdentifier}/' + child.subject.snake,
+        controller: child.subject.Camel + 'AddCtrl',
+        templateUrl: child.url + 'add.tpl.html'
+      } );
+
+      stateProvider.state( name + '.view_' + child.subject.snake, {
+        url: '/view/{parentIdentifier}/' + child.subject.snake + '/{identifier}',
+        controller: child.subject.Camel + 'ViewCtrl',
+        templateUrl: child.url + 'view.tpl.html'
       } );
     }
-  }
+  },
 
-  // add child states to the list or remove them if they aren't in the app's module list
-  for( var i = 0; i < module.children.length; i++ ) {
-    var child = module.children[i];
-    if( angular.isDefined( cenozoApp.moduleList[child.snake] ) ) {
-      var baseChildUrl = this.getModuleUrl( child.snake );
-      stateProvider.state( name + '.add_' + child.snake, {
-        url: '/view/{parentIdentifier}/' + child.snake,
-        controller: child.Camel + 'AddCtrl',
-        templateUrl: baseChildUrl + 'add.tpl.html'
-      } );
-
-      stateProvider.state( name + '.view_' + child.snake, {
-        url: '/view/{parentIdentifier}/' + child.snake + '/{identifier}',
-        controller: child.Camel + 'ViewCtrl',
-        templateUrl: baseChildUrl + 'view.tpl.html'
-      } );
-    } else {
-      module.children.splice( i, 1 );
+  // Used to set up the routing for a module
+  updateFormElement: function updateFormElement( item, clean ) {
+    if( angular.isUndefined( clean ) ) clean = false;
+    var invalid = false;
+    for( var error in item.$error ) {
+      invalid = true === item.$error[error];
+      if( invalid ) break;
     }
+    if( clean ) item.$dirty = invalid;
+    item.$invalid = invalid;
   }
-
-  // remove any choosing modules which don't exist
-  for( var i = 0; i < module.choosing.length; i++ ) {
-    if( angular.isUndefined( cenozoApp.moduleList[module.choosing[i].snake] ) ) {
-      module.choosing.splice( i, 1 );
-    }
-  }
-};
-
-// Used to set up the routing for a module
-cenozo.updateFormElement = function updateFormElement( item, clean ) {
-  if( angular.isUndefined( clean ) ) clean = false;
-  var invalid = false;
-  for( var error in item.$error ) {
-    invalid = true === item.$error[error];
-    if( invalid ) break;
-  }
-  if( clean ) item.$dirty = invalid;
-  item.$invalid = invalid;
-};
+} );
 
 /* ######################################################################################################## */
 
@@ -945,7 +959,8 @@ cenozo.directive( 'cnRecordView', [
           scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
             if( angular.isDefined( scope.model.viewModel ) ) {
               for( var i = 0; i < scope.model.choosing.length; i++ ) {
-                var choosingModel = scope.model.viewModel[scope.model.choosing[i].camel+'Model'];
+                var child = scope.model.choosing[i];
+                var choosingModel = scope.model.viewModel[child.subject.camel+'Model'];
                 if( angular.isDefined( choosingModel ) && choosingModel.listModel.chooseMode )
                   choosingModel.listModel.toggleChooseMode();
               }
@@ -1858,19 +1873,21 @@ cenozo.factory( 'CnBaseViewFactory', [
 
         // setup child models
         for( var i = 0; i < parentModel.children.length; i++ ) {
+          var child = parentModel.children[i];
           var model = object.childrenFactoryList[i].instance();
           if( !parentModel.editEnabled ) model.enableAdd( false );
           if( !parentModel.editEnabled ) model.enableDelete( false );
           if( !parentModel.viewEnabled ) model.enableView( false );
-          object[parentModel.children[i].camel+'Model'] = model;
+          object[child.subject.camel+'Model'] = model;
         }
         for( var i = 0; i < parentModel.choosing.length; i++ ) {
+          var child = parentModel.choosing[i];
           var model = object.choosingFactoryList[i].instance();
           model.enableChoose( true );
           model.enableAdd( false );
           model.enableDelete( false );
           model.enableEdit( false );
-          object[parentModel.choosing[i].camel+'Model'] = model;
+          object[child.subject.camel+'Model'] = model;
         }
 
         /**
@@ -1940,12 +1957,16 @@ cenozo.factory( 'CnBaseViewFactory', [
           var self = this;
           if( !this.parentModel.viewEnabled ) throw 'Calling viewRecord() but viewEnabled is false';
 
-          for( var i = 0; i < this.parentModel.children.length; i++ )
-            if( this[this.parentModel.children[i].camel+'Model'] )
-              this[this.parentModel.children[i].camel+'Model'].listModel.onList( true );
-          for( var i = 0; i < this.parentModel.choosing.length; i++ )
-            if( this[this.parentModel.choosing[i].camel+'Model'] )
-              this[this.parentModel.choosing[i].camel+'Model'].listModel.onList( true );
+          var dependents = this.parentModel.children.concat( this.parentModel.choosing );
+          for( var i = 0; i < this.parentModel.children.length; i++ ) {
+            var child = this.parentModel.children[i];
+            if( this[child.subject.camel+'Model'] )
+              this[child.subject.camel+'Model'].listModel.onList( true );
+          }
+          for( var i = 0; i < this.parentModel.choosing.length; i++ ) {
+            var model = this[this.parentModel.choosing[i].subject.camel+'Model'];
+            if( model ) this[model].listModel.onList( true );
+          }
 
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath(),
@@ -2016,7 +2037,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         self.getIdentifierFromRecord = function( record, valueOnly ) {
           var valueOnly = angular.isUndefined( valueOnly ) ? false : valueOnly;
-          var column = angular.isDefined( module.identifier.column ) ? module.identifier.column : 'id';
+          var column = angular.isDefined( self.module.identifier.column ) ? self.module.identifier.column : 'id';
           return valueOnly || 'id' == column ? String( record[column] ) : column + '=' + record[column];
         };
 
@@ -2027,12 +2048,12 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         self.getBreadcrumbTitle = function() {
           // first try for a friendly name
-          var friendlyColumn = module.name.friendlyColumn;
+          var friendlyColumn = self.module.name.friendlyColumn;
           if( angular.isDefined( friendlyColumn ) && angular.isDefined( self.viewModel.record[friendlyColumn] ) )
             return self.viewModel.record[friendlyColumn] ? self.viewModel.record[friendlyColumn] : 'view';
 
           // no friendly name, try for an identifier column
-          return angular.isDefined( module.identifier.column )
+          return angular.isDefined( self.module.identifier.column )
                ? self.getIdentifierFromRecord( self.viewModel.record, true )
                : 'view'; // database IDs aren't friendly so just return "view"
         };
@@ -2059,7 +2080,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           return stateNameParts[0];
         };
 
-        /*
+        /**
          * get the state's action
          */
         self.getActionFromState = function() {
@@ -2107,13 +2128,13 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         self.getServiceCollectionPath = function() {
           var path = '';
-          if( self.getSubjectFromState() != self.subject ) {
+          if( self.getSubjectFromState() != self.module.subject.snake ) {
             var identifier = $state.params.parentIdentifier
                            ? $state.params.parentIdentifier
                            : $state.params.identifier;
             path += self.getSubjectFromState() + '/' + identifier + '/';
           }
-          return path + module.subject;
+          return path + self.module.subject.snake;
         }
 
         /**
@@ -2154,10 +2175,11 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           for( var key in list ) {
             // skip "noview" columns when the type is view
+            if( 'separator' == list[key].type ) continue;
             if( 'view' == type && true === list[key].noview ) continue;
 
             var lastJoin = null;
-            var parentTable = self.subject;
+            var parentTable = self.module.subject.snake;
             var columnParts = angular.isUndefined( list[key].column ) ? [ key ] : list[key].column.split( '.' );
             for( var k = 0; k < columnParts.length; k++ ) {
               if( k == columnParts.length - 1 ) {
@@ -2273,7 +2295,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         self.transitionToAddState = function() {
           var stateName = $state.current.name;
           return 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ?
-            $state.go( '^.add_' + self.subject, { parentIdentifier: $state.params.identifier } ) :
+            $state.go( '^.add_' + self.module.subject.snake, { parentIdentifier: $state.params.identifier } ) :
             $state.go( '^.add' );
         };
         
@@ -2285,7 +2307,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           var stateParams = { identifier: record.getIdentifier() };
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) )
             stateParams.parentIdentifier = $state.params.identifier;
-          return $state.go( self.subject + '.view', stateParams );
+          return $state.go( self.module.subject.snake + '.view', stateParams );
         };
         
         /**
@@ -2354,7 +2376,7 @@ cenozo.factory( 'CnBaseModelFactory', [
                   // don't include hidden columns
                   'hidden' != self.columnList[key].type &&
                   // for child lists, don't include parent columns
-                  !( stateSubject != self.subject &&
+                  !( stateSubject != self.module.subject.snake &&
                      angular.isDefined( self.columnList[key].column ) &&
                      stateSubject == self.columnList[key].column.split( '.' )[0] ) ) {
                 data.push( self.columnList[key] );
@@ -2465,7 +2487,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           self.metadata.isComplete = false;
           self.metadata.loadingCount++;
           return CnHttpFactory.instance( {
-            path: self.subject
+            path: self.module.subject.snake
           } ).head().then( function( response ) {
             var columnList = angular.fromJson( response.headers( 'Columns' ) );
             for( var column in columnList ) {
@@ -2498,7 +2520,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               CnHttpFactory.instance( {
                 path: path,
                 data: { select: { column: {
-                  column: 'MAX(' + self.subject + '.rank)',
+                  column: 'MAX(' + self.module.subject.snake + '.rank)',
                   alias: 'max',
                   table_prefix: false
                 } } }
@@ -2592,12 +2614,15 @@ cenozo.factory( 'CnBaseModelFactory', [
         // DEFINE ALL OBJECT PROPERTIES HERE
         ////////////////////////////////////////////////////////////////////////////////////////////
 
+        self.module = module;
+
         // copy parameters from the module to the Object
-        for( var key in module ) if( 'columnList' != key ) self[key] = angular.copy( module[key] );
+        for( var key in self.module ) if( 'columnList' != key ) self[key] = angular.copy( self.module[key] );
 
         // add each column one at a time
         self.columnList = {};
-        for( var key in module.columnList ) self.addColumn( key, module.columnList[key] );
+
+        for( var key in self.module.columnList ) self.addColumn( key, self.module.columnList[key] );
 
         // restructure and add helper functions to the identifier parent(s)
         if( angular.isDefined( self.identifier.parent ) ) {
@@ -2614,15 +2639,12 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
         }
 
-        var moduleProperties = cenozoApp.moduleList[module.subject];
-        self.children = angular.copy( moduleProperties.children );
-        self.choosing = angular.copy( moduleProperties.choosing );
         self.metadata = { loadingCount: 0 };
-        self.addEnabled = 0 <= moduleProperties.actions.indexOf( 'add' );
+        self.addEnabled = 0 <= self.module.actions.indexOf( 'add' );
         self.chooseEnabled = false;
-        self.deleteEnabled = 0 <= moduleProperties.actions.indexOf( 'delete' );
-        self.editEnabled = 0 <= moduleProperties.actions.indexOf( 'edit' );
-        self.viewEnabled = 0 <= moduleProperties.actions.indexOf( 'view' );
+        self.deleteEnabled = 0 <= self.module.actions.indexOf( 'delete' );
+        self.editEnabled = 0 <= self.module.actions.indexOf( 'edit' );
+        self.viewEnabled = 0 <= self.module.actions.indexOf( 'view' );
 
         // process input list
         for( var key in self.inputList ) { self.inputList[key].key = key; }
@@ -3604,7 +3626,7 @@ cenozo.config( [
       resolve: {
         data: [ '$q', function( $q ) {
           var deferred = $q.defer();
-          require( [ baseRootUrl + 'bootstrap.js' ], function() { deferred.resolve(); } );
+          require( [ baseRootUrl + 'module.js' ], function() { deferred.resolve(); } );
           return deferred.promise;
         } ]
       }
@@ -3620,7 +3642,7 @@ cenozo.config( [
       resolve: {
         data: [ '$q', function( $q ) {
           var deferred = $q.defer();
-          require( [ baseErrorUrl + 'bootstrap.js' ], function() { deferred.resolve(); } );
+          require( [ baseErrorUrl + 'module.js' ], function() { deferred.resolve(); } );
           return deferred.promise;
         } ]
       }
