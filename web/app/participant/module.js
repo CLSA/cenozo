@@ -36,6 +36,10 @@ define( cenozo.getDependencyList( 'participant' ), function() {
         type: 'string',
         constant: true
       },
+      naming_separator: {
+        type: 'separator',
+        title: 'Naming Details'
+      },
       honorific: {
         title: 'Honorific',
         type: 'string',
@@ -54,9 +58,41 @@ define( cenozo.getDependencyList( 'participant' ), function() {
         title: 'Last Name',
         type: 'string'
       },
+      defining_separator: {
+        type: 'separator',
+        title: 'Defining Details'
+      },
+      sex: {
+        title: 'Sex',
+        type: 'enum'
+      },
+      date_of_birth: {
+        title: 'Date of Birth',
+        type: 'date',
+        max: 'now'
+      },
+      age_group_id: {
+        title: 'Age Group',
+        type: 'enum'
+      },
+      state_id: {
+        title: 'Condition',
+        type: 'enum',
+        help: 'A condition defines the reason that a participant should no longer be contacted. ' +
+              'If this value is not empty then the participant will no longer be contacted for interviews.'
+      },
       language_id: {
         title: 'Preferred Language',
         type: 'enum'
+      },
+      withdraw_option: {
+        title: 'Withdraw Option',
+        type: 'string',
+        constant: true
+      },
+      site_separator: {
+        type: 'separator',
+        title: 'Site & Contact Details'
       },
       default_site: {
         column: 'default_site.name',
@@ -83,30 +119,6 @@ define( cenozo.getDependencyList( 'participant' ), function() {
         help: 'Whether the participant wishes to be included in mass emails such as newsletters, ' +
               'holiday greetings, etc.'
       },
-      sex: {
-        title: 'Sex',
-        type: 'enum'
-      },
-      date_of_birth: {
-        title: 'Date of Birth',
-        type: 'date',
-        max: 'now'
-      },
-      age_group_id: {
-        title: 'Age Group',
-        type: 'enum'
-      },
-      state_id: {
-        title: 'Condition',
-        type: 'enum',
-        help: 'A condition defines the reason that a participant should no longer be contacted. ' +
-              'If this value is not empty then the participant will no longer be contacted for interviews.'
-      },
-      withdraw_option: {
-        title: 'Withdraw Option',
-        type: 'string',
-        constant: true
-      }
     },
     columnList: {
       uid: {

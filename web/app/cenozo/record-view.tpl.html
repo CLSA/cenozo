@@ -21,9 +21,11 @@
   <form name="form" class="form-horizontal" novalidate>
     <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.subject }}View">
       <ng-form ng-repeat="input in dataArray" name="innerForm">
-        <h4 ng-if="'separator' == input.type" class="text-center separator" tooltip="{{ input.help }}">
-          {{ input.title }}
-        </h4>
+        <div ng-if="'separator' == input.type"
+             class="container-fluid bg-info vertical-spacer"
+             tooltip="{{ input.help }}">
+          <h4>{{ input.title }}</h4>
+        </div>
         <div class="form-group"
              ng-if="'hidden' != input.type && 'separator' != input.type"
              ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">

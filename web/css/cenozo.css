@@ -39,11 +39,6 @@ blockquote { font-size: 100%; }
 .no-line-height { line-height: 0px; }
 .bg-white { background-color: #fff; }
 .btn-header { border-radius: 6px; margin-right: -5px !important; margin-left: 0px !important; }
-.separator {
-  border-bottom: 2px dotted #ccc;
-  padding-bottom: 4px;
-  margin-bottom: 20px;
-}
 .working {
   background-image: linear-gradient(
     45deg,
