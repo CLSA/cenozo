@@ -34,21 +34,21 @@
                              'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
               </button>
               <button class="btn btn-narrow"
-                      ng-class="0 < column.restrictList.length ? 'btn-success' : 'btn-info'"
+                      ng-class="0 < model.listModel.columnRestrictLists[column.key].length ? 'btn-success' : 'btn-info'"
                       ng-click="setRestrictList( column.key )"
-                      tooltip="{{ 0 < column.restrictList.length ?
+                      tooltip="{{ 0 < model.listModel.columnRestrictLists[column.key].length ?
                                   'Click to modify existing restriction applied to the ' + column.title + ' column' :
                                   'Click to restrict this list based on the ' + column.title + ' column' }}">
                 <i class="glyphicon glyphicon-filter"></i>
               </button>
             </div>
-            <div class="text-center text-info full-width" ng-if="0 < column.restrictList.length">
+            <div class="text-center text-info full-width" ng-if="0 < model.listModel.columnRestrictLists[column.key].length">
               <p class="restrict-description"
-                 ng-if="0 < column.restrictList.length"
+                 ng-if="0 < model.listModel.columnRestrictLists[column.key].length"
                  tooltip="To remove the restriction click the filter icon, then the remove button"
                  tooltip-placement="bottom"
                  tooltip-popup-delay="750">
-                <span ng-repeat="restrict in column.restrictList">
+                <span ng-repeat="restrict in model.listModel.columnRestrictLists[column.key]">
                   {{ ( restrict.logic ? restrict.logic.toUpperCase() + ' ' : '' ) + restrict.description }}
                   <br ng-if"!$last">
                 </span>
