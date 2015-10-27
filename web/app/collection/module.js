@@ -10,28 +10,6 @@ define( cenozo.getDependencyList( 'collection' ), function() {
       possessive: 'collection\'s',
       pluralPossessive: 'collections\''
     },
-    inputList: {
-      name: {
-        title: 'Name',
-        type: 'string',
-        format: 'alpha_num',
-        help: 'May only contain letters, numbers and underscores.'
-      },
-      active: {
-        title: 'Active',
-        type: 'boolean',
-        help: 'Inactive collections will not show as options in reports or to external applications.'
-      },
-      locked: {
-        title: 'Locked',
-        type: 'boolean',
-        help: 'If locked then only users in the access list will be able to make changes to the collection.'
-      },
-      description: {
-        title: 'Description',
-        type: 'text'
-      }
-    },
     columnList: {
       name: { title: 'Name' },
       active: {
@@ -54,6 +32,29 @@ define( cenozo.getDependencyList( 'collection' ), function() {
     defaultOrder: {
       column: 'name',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    name: {
+      title: 'Name',
+      type: 'string',
+      format: 'alpha_num',
+      help: 'May only contain letters, numbers and underscores.'
+    },
+    active: {
+      title: 'Active',
+      type: 'boolean',
+      help: 'Inactive collections will not show as options in reports or to external applications.'
+    },
+    locked: {
+      title: 'Locked',
+      type: 'boolean',
+      help: 'If locked then only users in the access list will be able to make changes to the collection.'
+    },
+    description: {
+      title: 'Description',
+      type: 'text'
     }
   } );
 
@@ -199,8 +200,5 @@ define( cenozo.getDependencyList( 'collection' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/collection/module.extend.js' ], function() {} );
 
 } );

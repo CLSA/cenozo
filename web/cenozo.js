@@ -37,7 +37,8 @@ angular.extend( String.prototype, {
     return this.indexOf( suffix, this.length - suffix.length ) !== -1;
   },
   camelToSnake: function() {
-    return this.replace( /([A-Z])/g, function( $1 ) { return '_' + angular.lowercase( $1 ); } ).replace( /^_/, '' );
+    return this.replace( /([A-Z])/g, function( $1 ) { return '_' + angular.lowercase( $1 ); } )
+               .replace( /^_/, '' );
   },
   ucWords: function() {
     return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
@@ -75,7 +76,44 @@ angular.extend( cenozoApp, {
             Camel: name.snakeToCamel( true )
           },
           framework: framework,
-          url: ( framework ? cenozo.baseUrl : this.baseUrl ) + '/app/' + name + '/'
+          url: ( framework ? cenozo.baseUrl : this.baseUrl ) + '/app/' + name + '/',
+          getRequiredFiles: function() {
+            // we require the main module.js
+            var modules = [ this.url + 'module.js' ];
+            // if this is a framework module then also require the application's module extention
+            if( this.framework )
+              modules.push( cenozoApp.baseUrl + '/app/' + this.subject.snake + '/module.extend.js' );
+            return modules;
+          },
+          inputGroupList: {},
+          addInput: function( group, key, input ) {
+            // make sure the key is unique throughout all groups
+            for( var g in this.inputGroupList ) {
+              if( g != group && angular.isDefined( this.inputGroupList[g][key] ) ) {
+                console.error(
+                  "Cannot add input '" + key + "' to group '" + group + 
+                  "' as it already exists in the existing group '" + g + "'." );
+                return;
+              }
+            }
+
+            // add the key to the input
+            input.key = key;
+
+            // create the group if it doesn't exist
+            if( angular.isUndefined( this.inputGroupList[group] ) )
+              this.inputGroupList[group] = {};
+            this.inputGroupList[group][key] = input;
+          },
+          addInputGroup: function( title, inputList ) {
+            for( var key in inputList ) this.addInput( title, key, inputList[key] );
+          },
+          getInput( key ) {
+            for( var group in this.inputGroupList )
+              if( angular.isDefined( this.inputGroupList[group][key] ) )
+                return this.inputGroupList[group][key];
+            return null;
+          }
         } );
       }
     }
@@ -138,8 +176,7 @@ angular.extend( cenozo, {
 
     // load all dependent modules
     var dependents = module.children.concat( module.choosing );
-    for( var i = 0; i < dependents.length; i++ )
-      list.push( dependents[i].url + 'module.js' );
+    for( var i = 0; i < dependents.length; i++ ) list = list.concat( dependents[i].getRequiredFiles() );
     return list;
   },
 
@@ -167,7 +204,7 @@ angular.extend( cenozo, {
       resolve: {
         data: [ '$q', function( $q ) {
           var deferred = $q.defer();
-          require( [ module.url + 'module.js' ], function() { deferred.resolve(); } );
+          require( module.getRequiredFiles(), function() { deferred.resolve(); } );
           return deferred.promise;
         } ]
       }
@@ -590,7 +627,7 @@ cenozo.directive( 'cnRecordAdd', [
 
           scope.heading = attrs.heading;
           if( angular.isUndefined( scope.heading ) )
-            scope.heading = 'Create ' + scope.model.name.singular.ucWords();
+            scope.heading = 'Create ' + scope.model.module.name.singular.ucWords();
 
           // get the data array and add enum lists for boolean types
           var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
@@ -684,8 +721,8 @@ cenozo.directive( 'cnRecordList', [
               if( 0 <= index ) $scope.isDeleting.splice( index, 1 );
               if( 409 == response.status ) {
                 CnModalMessageFactory.instance( {
-                  title: 'Unable to delete ' + $scope.model.name.singular + ' record',
-                  message: 'It is not possible to delete this ' + $scope.model.name.singular +
+                  title: 'Unable to delete ' + $scope.model.module.name.singular + ' record',
+                  message: 'It is not possible to delete this ' + $scope.model.module.name.singular +
                            ' record because it is being referenced by "' + response.data +
                            '" in the database.',
                   error: true
@@ -715,7 +752,7 @@ cenozo.directive( 'cnRecordList', [
         } else {
           scope.isDeleting = [];
           scope.heading = angular.isUndefined( attrs.heading )
-                        ? scope.model.name.singular.ucWords() + ' List'
+                        ? scope.model.module.name.singular.ucWords() + ' List'
                         : attrs.heading;
 
           scope.initCollapsed = scope.collapsed ? true : false;
@@ -728,7 +765,7 @@ cenozo.directive( 'cnRecordList', [
           scope.setRestrictList = function( column ) {
             var column = scope.dataArray.findByProperty( 'key', column );
             CnModalRestrictFactory.instance( {
-              name: scope.model.name,
+              name: scope.model.module.name,
               column: column.title,
               type: column.type,
               restrictList: angular.copy( column.restrictList )
@@ -772,11 +809,11 @@ cenozo.directive( 'cnRecordView', [
           }
         };
 
-        $scope.hasParent = function() { return angular.isDefined( $scope.model.identifier.parent ); }
+        $scope.hasParent = function() { return angular.isDefined( $scope.model.module.identifier.parent ); }
 
         $scope.parentExists = function( subject ) {
           if( !$scope.hasParent() ) return false;
-          var parent = $scope.model.identifier.parent.findByProperty( 'subject', subject );
+          var parent = $scope.model.module.identifier.parent.findByProperty( 'subject', subject );
           if( null === parent ) return false;
           return $scope.model.viewModel.record[parent.alias];
         }
@@ -785,7 +822,7 @@ cenozo.directive( 'cnRecordView', [
           if( !$scope.hasParent() )
             throw 'Calling viewParent() but "' + $scope.model.subject + '" module has no parent';
 
-          var parent = $scope.model.identifier.parent.findByProperty( 'subject', subject );
+          var parent = $scope.model.module.identifier.parent.findByProperty( 'subject', subject );
           if( null === parent )
             throw 'Calling viewParent() but "' + $scope.model.subject + '" record has no parent';
 
@@ -807,8 +844,8 @@ cenozo.directive( 'cnRecordView', [
                 $scope.isDeleting = false;
                 if( 409 == response.status ) {
                   CnModalMessageFactory.instance( {
-                    title: 'Unable to delete ' + $scope.model.name.singular + ' record',
-                    message: 'It is not possible to delete this ' + $scope.model.name.singular +
+                    title: 'Unable to delete ' + $scope.model.module.name.singular + ' record',
+                    message: 'It is not possible to delete this ' + $scope.model.module.name.singular +
                              ' record because it is being referenced by "' + response.data +
                              '" in the database.',
                     error: true
@@ -826,9 +863,7 @@ cenozo.directive( 'cnRecordView', [
               if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) ) {
                 $scope.model.viewModel.formattedRecord[property] =
                   $scope.model.viewModel.backupRecord['formatted_'+property];
-              }/* else {
-                $scope.model.viewModel.formattedRecord[property] = null;
-              }*/
+              }
               $scope.patch( property );
             }
           }
@@ -953,13 +988,13 @@ cenozo.directive( 'cnRecordView', [
           scope.heading = attrs.heading;
           scope.initCollapsed = scope.collapsed ? true : false;
           if( angular.isUndefined( scope.heading ) )
-            scope.heading = scope.model.name.singular.ucWords() + ' Details';
+            scope.heading = scope.model.module.name.singular.ucWords() + ' Details';
 
           // when leaving turn off any activated toggle modes
           scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
             if( angular.isDefined( scope.model.viewModel ) ) {
-              for( var i = 0; i < scope.model.choosing.length; i++ ) {
-                var child = scope.model.choosing[i];
+              for( var i = 0; i < scope.model.module.choosing.length; i++ ) {
+                var child = scope.model.module.choosing[i];
                 var choosingModel = scope.model.viewModel[child.subject.camel+'Model'];
                 if( angular.isDefined( choosingModel ) && choosingModel.listModel.chooseMode )
                   choosingModel.listModel.toggleChooseMode();
@@ -988,7 +1023,12 @@ cenozo.directive( 'cnRecordView', [
                 !scope.isLoaded ) {
               // build enum lists
               for( var key in metadata.columnList ) {
-                var input = scope.dataArray.findByProperty( 'key', key );
+                // find the input in the dataArray groups
+                var input = null;
+                for( var i = 0; i < scope.dataArray.length; i++ ) {
+                  input = scope.dataArray[i].inputList.findByProperty( 'key', key );
+                  if( null != input ) break;
+                }
                 if( input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
                   input.enumList = 'boolean' === input.type
                                  ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
@@ -1654,7 +1694,7 @@ cenozo.factory( 'CnBaseListFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
-        object.order = object.parentModel.defaultOrder;
+        object.order = object.parentModel.module.defaultOrder;
         object.total = 0;
         object.cache = [];
         object.paginationFactory = CnPaginationFactory.instance();
@@ -1868,20 +1908,20 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.operationList = [];
         
         // set up factories
-        object.childrenFactoryList = args.splice( 1, parentModel.children.length );
-        object.choosingFactoryList = args.splice( 1, parentModel.choosing.length );
+        object.childrenFactoryList = args.splice( 1, parentModel.module.children.length );
+        object.choosingFactoryList = args.splice( 1, parentModel.module.choosing.length );
 
         // setup child models
-        for( var i = 0; i < parentModel.children.length; i++ ) {
-          var child = parentModel.children[i];
+        for( var i = 0; i < parentModel.module.children.length; i++ ) {
+          var child = parentModel.module.children[i];
           var model = object.childrenFactoryList[i].instance();
           if( !parentModel.editEnabled ) model.enableAdd( false );
           if( !parentModel.editEnabled ) model.enableDelete( false );
           if( !parentModel.viewEnabled ) model.enableView( false );
           object[child.subject.camel+'Model'] = model;
         }
-        for( var i = 0; i < parentModel.choosing.length; i++ ) {
-          var child = parentModel.choosing[i];
+        for( var i = 0; i < parentModel.module.choosing.length; i++ ) {
+          var child = parentModel.module.choosing[i];
           var model = object.choosingFactoryList[i].instance();
           model.enableChoose( true );
           model.enableAdd( false );
@@ -1895,8 +1935,8 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         object.updateFormattedRecord = function( property ) {
           if( angular.isDefined( property ) ) {
-            var input = this.parentModel.inputList[property];
-            if( angular.isDefined( input ) ) {
+            var input = this.parentModel.module.getInput( property );
+            if( null !== input ) {
               if( 'lookup-typeahead' == input.type ) {
                 // When lookup-typeaheads are first loaded move the formatted property from the record
                 // to the formatted record.  We must do this so that future calls to this function do
@@ -1932,7 +1972,8 @@ cenozo.factory( 'CnBaseViewFactory', [
         };
 
         /**
-         * Is usually called by the onPatch() function in order to make changes on the server to the viewed record.
+         * Is usually called by the onPatch() function in order to make changes on the server to the viewed
+         * record.
          * This function should not be changed, override the onPatch() function instead.
          * 
          * @param object data: An object of column -> value pairs to change
@@ -1957,15 +1998,10 @@ cenozo.factory( 'CnBaseViewFactory', [
           var self = this;
           if( !this.parentModel.viewEnabled ) throw 'Calling viewRecord() but viewEnabled is false';
 
-          var dependents = this.parentModel.children.concat( this.parentModel.choosing );
-          for( var i = 0; i < this.parentModel.children.length; i++ ) {
-            var child = this.parentModel.children[i];
-            if( this[child.subject.camel+'Model'] )
-              this[child.subject.camel+'Model'].listModel.onList( true );
-          }
-          for( var i = 0; i < this.parentModel.choosing.length; i++ ) {
-            var model = this[this.parentModel.choosing[i].subject.camel+'Model'];
-            if( model ) this[model].listModel.onList( true );
+          var dependents = this.parentModel.module.children.concat( this.parentModel.module.choosing );
+          for( var i = 0; i < dependents.length; i++ ) {
+            var model = this[dependents[i].subject.camel+'Model'];
+            if( model ) model.listModel.onList( true );
           }
 
           return CnHttpFactory.instance( {
@@ -1985,13 +2021,15 @@ cenozo.factory( 'CnBaseViewFactory', [
 
             return self.parentModel.getMetadata().then( function() {
               // convert blank enums into empty strings (for ng-options)
-              for( var column in self.parentModel.inputList ) {
-                var inputObject = self.parentModel.inputList[column];
-                if( 'enum' == inputObject.type && null === self.record[column] ) {
-                  var metadata = self.parentModel.metadata.columnList[column];
-                  if( angular.isDefined( metadata ) && !metadata.required ) {
-                    self.record[column] = '';
-                    self.backupRecord[column] = '';
+              for( var group in self.parentModel.inputGroupList ) {
+                for( var column in self.parentModel.inputGroupList[group] ) {
+                  var inputObject = self.parentModel.inputGroupList[group][column];
+                  if( 'enum' == inputObject.type && null === self.record[column] ) {
+                    var metadata = self.parentModel.metadata.columnList[column];
+                    if( angular.isDefined( metadata ) && !metadata.required ) {
+                      self.record[column] = '';
+                      self.backupRecord[column] = '';
+                    }
                   }
                 }
               }
@@ -2103,10 +2141,10 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           if( angular.isUndefined( response.identifier ) ) {
             var action = self.getActionFromState();
-            if( 'view' == action && angular.isDefined( self.identifier.parent ) ) {
+            if( 'view' == action && angular.isDefined( self.module.identifier.parent ) ) {
               // return the FIRST "set" parent
-              for( var i = 0; i < self.identifier.parent.length; i++ ) {
-                var parent = self.identifier.parent[i];
+              for( var i = 0; i < self.module.identifier.parent.length; i++ ) {
+                var parent = self.module.identifier.parent[i];
                 if( self.viewModel.record[parent.alias] ) {
                   response.subject = parent.subject;
                   if( angular.isDefined( parent.friendly ) ) response.friendly = parent.friendly;
@@ -2156,18 +2194,27 @@ cenozo.factory( 'CnBaseModelFactory', [
           var selectList = [];
           var joinList = [];
           var whereList = [];
-          var list = 'list' == type ? self.columnList : self.inputList;
 
-          // add identifier data if we are getting view data
-          if( angular.isDefined( self.identifier.column ) && angular.isUndefined( list[self.identifier.column] ) )
-            list[self.identifier.column] = { type: 'hidden' };
+          var list = {};
+          if( 'list' == type ) {
+            list = self.columnList;
+          } else {
+            // we need to get a list of all inputs from the module's input groups
+            for( var group in self.module.inputGroupList )
+              angular.extend( list, self.module.inputGroupList[group] );
+          }
+
+          // add identifier data if it is missing
+          if( angular.isDefined( self.module.identifier.column ) &&
+              angular.isUndefined( list[self.module.identifier.column] ) )
+            list[self.module.identifier.column] = { type: 'hidden' };
 
           if( 'view' == type ) {
-            if( angular.isDefined( self.identifier.parent ) ) {
-              for( var i = 0; i < self.identifier.parent.length; i++ ) {
-                list[self.identifier.parent[i].alias] = {
+            if( angular.isDefined( self.module.identifier.parent ) ) {
+              for( var i = 0; i < self.module.identifier.parent.length; i++ ) {
+                list[self.module.identifier.parent[i].alias] = {
                   type: 'hidden',
-                  column: self.identifier.parent[i].column
+                  column: self.module.identifier.parent[i].column
                 };
               }
             }
@@ -2337,19 +2384,19 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           if( 'add' == type ) {
             trail = trail.concat( [ {
-              title: self.name.singular.ucWords(),
+              title: self.module.name.singular.ucWords(),
               go: function() { self.transitionToLastState(); }
             }, {
               title: 'New'
             } ] );
           } else if( 'list' == type ) {
             trail = trail.concat( [ {
-              title: self.name.plural.ucWords()
+              title: self.module.name.plural.ucWords()
             } ] );
           } else if( 'view' == type ) {
             // now put the model's details
             trail = trail.concat( [ {
-              title: self.name.singular.ucWords(),
+              title: self.module.name.singular.ucWords(),
               go: angular.isDefined( parent.subject ) ? undefined : function() { self.transitionToLastState(); }
             }, {
               title: self.getBreadcrumbTitle()
@@ -2360,7 +2407,13 @@ cenozo.factory( 'CnBaseModelFactory', [
         };
 
         /**
-         * Makes an array containing COPIES of the model's input list
+         * Makes an array containing items to be used by record add/view/list directives
+         * 
+         * When asking for the "list" type an array is created from the module's columnList property.
+         * When asking for the "add" or "view" types an array is created from the module's inputList property.
+         * The "view" type array is special as, unlike the other arrays which contain the items directly, the
+         * "view" array contains an array of groups, each of which contains the items belonging to them.
+         * NOTE: The returned arrays are COPIES of the module's items, not references.
          */
         self.getDataArray = function( removeList, type ) {
           if( angular.isUndefined( removeList ) ) removeList = [];
@@ -2382,16 +2435,34 @@ cenozo.factory( 'CnBaseModelFactory', [
                 data.push( self.columnList[key] );
               }
             }
-          } else { // add or view
-            for( var key in self.inputList ) {
-              if( 0 > removeList.indexOf( key ) &&
-                  // some items may be marked to not show when adding the record
-                  !( 'add' == type && true === self.inputList[key].noadd ) &&
-                  // some items may be marked to not show when viewing the record
-                  !( 'view' == type && true === self.inputList[key].noview ) &&
-                  // don't include columns which belong to the state subject
-                  stateSubject+'_id' != key ) {
-                data.push( self.inputList[key] );
+          } else if( 'add' == type ) {
+            for( var group in self.module.inputGroupList ) {
+              for( var key in self.module.inputGroupList[group] ) {
+                var input = self.module.inputGroupList[group][key];
+                // don't include removed items, those which belong to the state subject or "noadd"s
+                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && !input.noadd ) {
+                  data.push( input );
+                }
+              }
+            }
+          } else { // view
+            for( var group in self.module.inputGroupList ) {
+              for( var key in self.module.inputGroupList[group] ) {
+                var input = self.module.inputGroupList[group][key];
+                // don't include removed items, those which belong to the state subject or "noviews"s
+                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && !input.noview ) {
+                  var groupObj = data.findByProperty( 'title', group );
+                  if( null === groupObj ) {
+                    // we haven't added this group yet, so add it now
+                    var index = data.push( {
+                      title: group,
+                      collapsed: true, // always initialize collapsed
+                      inputList: []
+                    } );
+                    groupObj = data[index-1];
+                  };
+                  groupObj.inputList.push( input );
+                }
               }
             }
           }
@@ -2553,8 +2624,8 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Determines whether a value meets its property's format
          */
         self.testFormat = function( property, value ) {
-          var input = self.inputList[property];
-          if( angular.isUndefined( input ) ) return true;
+          var input = self.module.getInput( property );
+          if( null === input ) return true;
 
           // check format
           if( angular.isDefined( input.format ) ) {
@@ -2585,6 +2656,11 @@ cenozo.factory( 'CnBaseModelFactory', [
           return true;
         };
 
+        /**
+         * This function adds a column to the model which is used by the list model.
+         * A separate copy of the column list is kept from the module as columns may need to
+         * be added or removed at run-time
+         */
         self.addColumn = function( key, column, index ) {
           column.key = key;
           if( angular.isUndefined( column.type ) ) column.type = 'string';
@@ -2613,24 +2689,15 @@ cenozo.factory( 'CnBaseModelFactory', [
         ////////////////////////////////////////////////////////////////////////////////////////////
         // DEFINE ALL OBJECT PROPERTIES HERE
         ////////////////////////////////////////////////////////////////////////////////////////////
-
         self.module = module;
 
-        // copy parameters from the module to the Object
-        for( var key in self.module ) if( 'columnList' != key ) self[key] = angular.copy( self.module[key] );
-
-        // add each column one at a time
-        self.columnList = {};
-
-        for( var key in self.module.columnList ) self.addColumn( key, self.module.columnList[key] );
-
         // restructure and add helper functions to the identifier parent(s)
-        if( angular.isDefined( self.identifier.parent ) ) {
-          if( !angular.isArray( self.identifier.parent ) )
-            self.identifier.parent = [ self.identifier.parent ];
-          for( var i = 0; i < self.identifier.parent.length; i++ ) {
-            self.identifier.parent[i].alias = self.identifier.parent[i].column.replace( '.', '_' );
-            self.identifier.parent[i].getIdentifier = function( record ) {
+        if( angular.isDefined( self.module.identifier.parent ) ) {
+          if( !angular.isArray( self.module.identifier.parent ) )
+            self.module.identifier.parent = [ self.module.identifier.parent ];
+          for( var i = 0; i < self.module.identifier.parent.length; i++ ) {
+            self.module.identifier.parent[i].alias = self.module.identifier.parent[i].column.replace( '.', '_' );
+            self.module.identifier.parent[i].getIdentifier = function( record ) {
               var columnParts = this.column.split( '.' );
               var identifier = record[this.alias];
               if( 2 == columnParts.length ) identifier = columnParts[1] + '=' + identifier;
@@ -2646,8 +2713,9 @@ cenozo.factory( 'CnBaseModelFactory', [
         self.editEnabled = 0 <= self.module.actions.indexOf( 'edit' );
         self.viewEnabled = 0 <= self.module.actions.indexOf( 'view' );
 
-        // process input list
-        for( var key in self.inputList ) { self.inputList[key].key = key; }
+        // process input and column lists one at a time
+        self.columnList = {};
+        for( var key in self.module.columnList ) self.addColumn( key, self.module.columnList[key] );
       }
     };
   }
@@ -2690,7 +2758,7 @@ cenozo.factory( 'CnHttpFactory', [
             return response;
           } )
         };
-        if( null != self.data ) {
+        if( null !== self.data ) {
           if( 'POST' == method || 'PATCH' == method ) object.data = self.data;
           else object.params = self.data;
         }
@@ -3619,6 +3687,10 @@ cenozo.config( [
 
     // add the root states
     var baseRootUrl = cenozo.baseUrl + '/app/root/';
+    var requiredFiles = [
+      baseRootUrl + 'module.js',
+      cenozoApp.baseUrl + '/app/root/module.extend.js'
+    ];
     $stateProvider.state( 'root', { // resolves application/
       url: '',
       controller: 'HomeCtrl',
@@ -3626,7 +3698,7 @@ cenozo.config( [
       resolve: {
         data: [ '$q', function( $q ) {
           var deferred = $q.defer();
-          require( [ baseRootUrl + 'module.js' ], function() { deferred.resolve(); } );
+          require( requiredFiles, function() { deferred.resolve(); } );
           return deferred.promise;
         } ]
       }
@@ -3636,13 +3708,17 @@ cenozo.config( [
 
     // add the error states
     var baseErrorUrl = cenozo.baseUrl + '/app/error/';
+    var requiredFiles = [
+      baseRootUrl + 'module.js',
+      cenozoApp.baseUrl + '/app/root/module.extend.js'
+    ];
     $stateProvider.state( 'error', {
       controller: 'ErrorCtrl',
       template: '<div ui-view class="fade-transition"></div>',
       resolve: {
         data: [ '$q', function( $q ) {
           var deferred = $q.defer();
-          require( [ baseErrorUrl + 'module.js' ], function() { deferred.resolve(); } );
+          require( requiredFiles, function() { deferred.resolve(); } );
           return deferred.promise;
         } ]
       }
@@ -3658,7 +3734,7 @@ cenozo.config( [
 
     // load the 404 state when a state is not found for the provided path
     $urlRouterProvider.otherwise( function( $injector, $location ) {
-      if( !$location.url().endsWith( '/module.js' ) ) $injector.get( '$state' ).go( 'error.404' );
+      $injector.get( '$state' ).go( 'error.404' );
       return $location.path();
     } );
 

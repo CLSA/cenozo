@@ -46,7 +46,4 @@ define( [], function() {
     }
   ] );
 
-  // load any extensions to the module
-  require( [ cenozoApp.baseUrl + '/app/root/module.extend.js' ], function() {} );
-
 } );

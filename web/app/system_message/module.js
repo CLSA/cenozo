@@ -11,40 +11,6 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
       pluralPossessive: 'system messages\'',
       friendlyColumn: 'title'
     },
-    inputList: {
-      application_id: {
-        column: 'system_message.application_id',
-        title: 'Application',
-        type: 'enum',
-        help: 'Leaving the site blank will show the message across all applications.'
-      },
-      site_id: {
-        title: 'Site',
-        type: 'enum', // TODO: Blank for all sites //
-        help: 'Leaving the site blank will show the message across all sites.  If application is blank then this ' +
-              'will be ignored.'
-      },
-      role_id: {
-        title: 'Role',
-        type: 'enum', // TODO: Blank for all roles //
-        help: 'Leaving the site blank will show the message across all roles.'
-      },
-      title: {
-        column: 'system_message.title',
-        title: 'Title',
-        type: 'string'
-      },
-      expiry: {
-        title: 'Expiry',
-        type: 'date',
-        help: 'The day after which the message will no longer appear',
-        min: 'now'
-      },
-      note: {
-        title: 'Note',
-        type: 'text'
-      }
-    },
     columnList: {
       title: {
         column: 'system_message.title',
@@ -70,6 +36,41 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
     defaultOrder: {
       column: 'title',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    application_id: {
+      column: 'system_message.application_id',
+      title: 'Application',
+      type: 'enum',
+      help: 'Leaving the site blank will show the message across all applications.'
+    },
+    site_id: {
+      title: 'Site',
+      type: 'enum', // TODO: Blank for all sites //
+      help: 'Leaving the site blank will show the message across all sites.  If application is blank then this ' +
+            'will be ignored.'
+    },
+    role_id: {
+      title: 'Role',
+      type: 'enum', // TODO: Blank for all roles //
+      help: 'Leaving the site blank will show the message across all roles.'
+    },
+    title: {
+      column: 'system_message.title',
+      title: 'Title',
+      type: 'string'
+    },
+    expiry: {
+      title: 'Expiry',
+      type: 'date',
+      help: 'The day after which the message will no longer appear',
+      min: 'now'
+    },
+    note: {
+      title: 'Note',
+      type: 'text'
     }
   } );
 
@@ -233,8 +234,5 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/system_message/module.extend.js' ], function() {} );
 
 } );

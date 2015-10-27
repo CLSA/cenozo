@@ -10,57 +10,6 @@ define( cenozo.getDependencyList( 'user' ), function() {
       possessive: 'user\'s',
       pluralPossessive: 'users\''
     },
-    inputList: {
-      active: {
-        title: 'Active',
-        type: 'boolean'
-      },
-      name: {
-        title: 'Username',
-        type: 'string',
-        format: 'alpha_num',
-        help: 'May only contain numbers, letters and underscores. Can only be defined when creating a new user.',
-        noedit: true
-      },
-      first_name: {
-        title: 'First Name',
-        type: 'string'
-      },
-      last_name: {
-        title: 'Last Name',
-        type: 'string'
-      },
-      email: {
-        title: 'Email',
-        type: 'string',
-        format: 'email',
-        help: 'Must be in the format "account@domain.name" ' +
-              '(if not provided then the user will be prompted for an email address the next time they login)'
-      },
-      timezone: {
-        title: 'Timezone',
-        type: 'typeahead',
-        typeahead: moment.tz.names(),
-        help: 'Which timezone the user displays times in'
-      },
-      use_12hour_clock: {
-        title: 'Use 12-Hour Clock',
-        type: 'boolean',
-        help: 'Whether to display times using the 12-hour clock (am/pm)'
-      },
-      site_id: {
-        title: 'Initial Site',
-        type: 'enum',
-        help: 'Which site to assign the user to',
-        noview: true
-      },
-      role_id: {
-        title: 'Initial Role',
-        type: 'enum',
-        help: 'Which role to assign the user to',
-        noview: true
-      }
-    },
     columnList: {
       name: {
         column: 'user.name',
@@ -98,6 +47,58 @@ define( cenozo.getDependencyList( 'user' ), function() {
     defaultOrder: {
       column: 'name',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    active: {
+      title: 'Active',
+      type: 'boolean'
+    },
+    name: {
+      title: 'Username',
+      type: 'string',
+      format: 'alpha_num',
+      help: 'May only contain numbers, letters and underscores. Can only be defined when creating a new user.',
+      noedit: true
+    },
+    first_name: {
+      title: 'First Name',
+      type: 'string'
+    },
+    last_name: {
+      title: 'Last Name',
+      type: 'string'
+    },
+    email: {
+      title: 'Email',
+      type: 'string',
+      format: 'email',
+      help: 'Must be in the format "account@domain.name" ' +
+            '(if not provided then the user will be prompted for an email address the next time they login)'
+    },
+    timezone: {
+      title: 'Timezone',
+      type: 'typeahead',
+      typeahead: moment.tz.names(),
+      help: 'Which timezone the user displays times in'
+    },
+    use_12hour_clock: {
+      title: 'Use 12-Hour Clock',
+      type: 'boolean',
+      help: 'Whether to display times using the 12-hour clock (am/pm)'
+    },
+    site_id: {
+      title: 'Initial Site',
+      type: 'enum',
+      help: 'Which site to assign the user to',
+      noview: true
+    },
+    role_id: {
+      title: 'Initial Role',
+      type: 'enum',
+      help: 'Which role to assign the user to',
+      noview: true
     }
   } );
 
@@ -245,8 +246,6 @@ define( cenozo.getDependencyList( 'user' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/user/module.extend.js' ], function() {} );
+  console.log( module );
 
 } );

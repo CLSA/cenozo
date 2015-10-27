@@ -16,47 +16,6 @@ define( cenozo.getDependencyList( 'alternate' ), function() {
       pluralPossessive: 'alternates\'',
       friendlyColumn: 'association'
     },
-    inputList: {
-      participant_id: {
-        column: 'alternate.participant_id',
-        title: 'Participant',
-        type: 'lookup-typeahead',
-        typeahead: {
-          table: 'participant',
-          select: 'CONCAT( first_name, " ", last_name, " (", uid, ")" )',
-          where: [ 'first_name', 'last_name', 'uid' ]
-        }
-      },
-      first_name: {
-        column: 'alternate.first_name',
-        title: 'First Name',
-        type: 'string'
-      },
-      last_name: {
-        column: 'alternate.last_name',
-        title: 'Last Name',
-        type: 'string'
-      },
-      association: {
-        title: 'Association',
-        type: 'string',
-        help: 'How the alternate knows the participant (son, neighbour, wife, etc). ' +
-              'DO NOT include phone numbers.',
-        regex: '^[^0-9]*[0-9]?[^0-9]*$'
-      },
-      alternate: {
-        title: 'Alternate Contact',
-        type: 'boolean'
-      },
-      informant: {
-        title: 'Information Provider',
-        type: 'boolean'
-      },
-      proxy: {
-        title: 'Decision Maker',
-        type: 'boolean'
-      }
-    },
     columnList: {
       uid: {
         column: 'participant.uid',
@@ -80,6 +39,48 @@ define( cenozo.getDependencyList( 'alternate' ), function() {
     defaultOrder: {
       column: 'uid',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    participant_id: {
+      column: 'alternate.participant_id',
+      title: 'Participant',
+      type: 'lookup-typeahead',
+      typeahead: {
+        table: 'participant',
+        select: 'CONCAT( first_name, " ", last_name, " (", uid, ")" )',
+        where: [ 'first_name', 'last_name', 'uid' ]
+      }
+    },
+    first_name: {
+      column: 'alternate.first_name',
+      title: 'First Name',
+      type: 'string'
+    },
+    last_name: {
+      column: 'alternate.last_name',
+      title: 'Last Name',
+      type: 'string'
+    },
+    association: {
+      title: 'Association',
+      type: 'string',
+      help: 'How the alternate knows the participant (son, neighbour, wife, etc). ' +
+            'DO NOT include phone numbers.',
+      regex: '^[^0-9]*[0-9]?[^0-9]*$'
+    },
+    alternate: {
+      title: 'Alternate Contact',
+      type: 'boolean'
+    },
+    informant: {
+      title: 'Information Provider',
+      type: 'boolean'
+    },
+    proxy: {
+      title: 'Decision Maker',
+      type: 'boolean'
     }
   } );
 
@@ -178,8 +179,5 @@ define( cenozo.getDependencyList( 'alternate' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/alternate/module.extend.js' ], function() {} );
 
 } );

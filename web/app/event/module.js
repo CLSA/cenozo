@@ -15,17 +15,6 @@ define( cenozo.getDependencyList( 'event' ), function() {
       possessive: 'event\'s',
       pluralPossessive: 'events\''
     },
-    inputList: {
-      event_type_id: {
-        title: 'Event Type',
-        type: 'enum'
-      },
-      datetime: {
-        title: 'Date & Time',
-        type: 'datetimesecond',
-        max: 'now'
-      }
-    },
     columnList: {
       event_type: {
         column: 'event_type.name',
@@ -39,6 +28,18 @@ define( cenozo.getDependencyList( 'event' ), function() {
     defaultOrder: {
       column: 'datetime',
       reverse: true
+    }
+  } );
+
+  module.addInputGroup( null, {
+    event_type_id: {
+      title: 'Event Type',
+      type: 'enum'
+    },
+    datetime: {
+      title: 'Date & Time',
+      type: 'datetimesecond',
+      max: 'now'
     }
   } );
 
@@ -171,8 +172,5 @@ define( cenozo.getDependencyList( 'event' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/event/module.extend.js' ], function() {} );
 
 } );

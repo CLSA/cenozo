@@ -19,40 +19,6 @@ define( cenozo.getDependencyList( 'phone' ), function() {
       pluralPossessive: 'phone numbers\'',
       friendlyColumn: 'rank'
     },
-    inputList: {
-      address_id: {
-        title: 'Associated Address',
-        type: 'enum',
-        help: 'The address that this phone number is associated with, if any.'
-      },
-      active: {
-        title: 'Active',
-        type: 'boolean'
-      },
-      international: {
-        title: 'International',
-        type: 'boolean',
-        help: 'Cannot be changed once the phone number has been created.',
-        noedit: true
-      },
-      rank: {
-        title: 'Rank',
-        type: 'rank'
-      },
-      type: {
-        title: 'Type',
-        type: 'enum'
-      },
-      number: {
-        title: 'Number',
-        type: 'string',
-        help: 'If not international then must be in 000-000-0000 format.'
-      },
-      note: {
-        title: 'Note',
-        type: 'text'
-      }
-    },
     columnList: {
       rank: {
         title: 'Rank',
@@ -73,6 +39,41 @@ define( cenozo.getDependencyList( 'phone' ), function() {
     defaultOrder: {
       column: 'rank',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    address_id: {
+      title: 'Associated Address',
+      type: 'enum',
+      help: 'The address that this phone number is associated with, if any.'
+    },
+    active: {
+      title: 'Active',
+      type: 'boolean'
+    },
+    international: {
+      title: 'International',
+      type: 'boolean',
+      help: 'Cannot be changed once the phone number has been created.',
+      noedit: true
+    },
+    rank: {
+      title: 'Rank',
+      type: 'rank'
+    },
+    type: {
+      title: 'Type',
+      type: 'enum'
+    },
+    number: {
+      title: 'Number',
+      type: 'string',
+      help: 'If not international then must be in 000-000-0000 format.'
+    },
+    note: {
+      title: 'Note',
+      type: 'text'
     }
   } );
 
@@ -202,8 +203,5 @@ define( cenozo.getDependencyList( 'phone' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/phone/module.extend.js' ], function() {} );
 
 } );

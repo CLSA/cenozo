@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'site' ), function() {
   'use strict';
 
-  angular.extend( cenozo.getModule( 'site' ), {
+  angular.extend( cenozoApp.module( 'site' ), {
     identifier: { column: 'name' },
     name: {
       singular: 'site',
@@ -9,48 +9,6 @@ define( cenozo.getDependencyList( 'site' ), function() {
       possessive: 'site\'s',
       pluralPossessive: 'sites\'',
       friendlyColumn: 'name'
-    },
-    inputList: {
-      name: {
-        title: 'Name',
-        type: 'string'
-      },
-      timezone: {
-        title: 'Time Zone',
-        type: 'typeahead',
-        typeahead: moment.tz.names()
-      },
-      title: {
-        title: 'Institution',
-        type: 'string'
-      },
-      phone_number: {
-        title: 'Phone Number',
-        type: 'string'
-      },
-      address1: {
-        title: 'Address1',
-        type: 'string'
-      },
-      address2: {
-        title: 'Address2',
-        type: 'string'
-      },
-      city: {
-        title: 'City',
-        type: 'string'
-      },
-      region_id: {
-        title: 'Region',
-        type: 'enum',
-        constant: true,
-        help: 'Cannot be changed once the site has been created.'
-      },
-      postcode: {
-        title: 'Postcode',
-        type: 'string',
-        help: 'Must be in "A1A1A1" format, zip codes in "01234" format.'
-      },
     },
     columnList: {
       name: {
@@ -78,6 +36,49 @@ define( cenozo.getDependencyList( 'site' ), function() {
       column: 'name',
       reverse: false
     }
+  } );
+
+  module.addInputGroup( null, {
+    name: {
+      title: 'Name',
+      type: 'string'
+    },
+    timezone: {
+      title: 'Time Zone',
+      type: 'typeahead',
+      typeahead: moment.tz.names()
+    },
+    title: {
+      title: 'Institution',
+      type: 'string'
+    },
+    phone_number: {
+      title: 'Phone Number',
+      type: 'string'
+    },
+    address1: {
+      title: 'Address1',
+      type: 'string'
+    },
+    address2: {
+      title: 'Address2',
+      type: 'string'
+    },
+    city: {
+      title: 'City',
+      type: 'string'
+    },
+    region_id: {
+      title: 'Region',
+      type: 'enum',
+      constant: true,
+      help: 'Cannot be changed once the site has been created.'
+    },
+    postcode: {
+      title: 'Postcode',
+      type: 'string',
+      help: 'Must be in "A1A1A1" format, zip codes in "01234" format.'
+    },
   } );
 
   /* ######################################################################################################## */
@@ -188,7 +189,7 @@ define( cenozo.getDependencyList( 'site' ), function() {
     function( CnBaseModelFactory, CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory, CnHttpFactory ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozo.getModule( 'site' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnSiteAddFactory.instance( this );
         this.listModel = CnSiteListFactory.instance( this );
         this.viewModel = CnSiteViewFactory.instance( this );
@@ -231,8 +232,5 @@ define( cenozo.getDependencyList( 'site' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/site/module.extend.js' ], function() {} );
 
 } );

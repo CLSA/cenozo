@@ -10,24 +10,6 @@ define( cenozo.getDependencyList( 'script' ), function() {
       possessive: 'script\'s',
       pluralPossessive: 'scripts\''
     },
-    inputList: {
-      name: {
-        title: 'Name',
-        type: 'string'
-      },
-      sid: {
-        title: 'Survey',
-        type: 'enum'
-      },
-      repeated: {
-        title: 'Repeated',
-        type: 'boolean'
-      },
-      description: {
-        title: 'Description',
-        type: 'text'
-      }
-    },
     columnList: {
       name: {
         column: 'script.name',
@@ -44,6 +26,25 @@ define( cenozo.getDependencyList( 'script' ), function() {
     defaultOrder: {
       column: 'name',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    name: {
+      title: 'Name',
+      type: 'string'
+    },
+    sid: {
+      title: 'Survey',
+      type: 'enum'
+    },
+    repeated: {
+      title: 'Repeated',
+      type: 'boolean'
+    },
+    description: {
+      title: 'Description',
+      type: 'text'
     }
   } );
 
@@ -169,8 +170,5 @@ define( cenozo.getDependencyList( 'script' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/script/module.extend.js' ], function() {} );
 
 } );

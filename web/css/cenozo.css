@@ -16,6 +16,7 @@ blockquote { font-size: 100%; }
 .checkbox { display: inline-block; font-weight: normal; }
 .form-body { padding-top: 1em; }
 .form-horizontal .form-group { margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
+.first-form-group { padding-top: 15px } /* has to be padding and not margin for header to work right */
 .form-footer { padding: 1em; }
 .footer-total, .form-text { line-height: 34px; }
 .form-long-text { margin-top: 8px; margin-bottom: 8px; }

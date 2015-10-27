@@ -10,31 +10,6 @@ define( cenozo.getDependencyList( 'quota' ), function() {
       possessive: 'quota\'s',
       pluralPossessive: 'quotas\''
     },
-    inputList: {
-      site_id: {
-        title: 'Site',
-        type: 'enum'
-      },
-      region_id: {
-        column: 'quota.region_id',
-        title: 'Region',
-        type: 'enum'
-      },
-      sex: {
-        title: 'Sex',
-        type: 'enum'
-      },
-      age_group_id: {
-        title: 'Age Group',
-        type: 'enum'
-      },
-      population: {
-        title: 'Population',
-        type: 'string',
-        format: 'integer',
-        minValue: 0
-      }
-    },
     columnList: {
       site: {
         column: 'site.name',
@@ -54,6 +29,32 @@ define( cenozo.getDependencyList( 'quota' ), function() {
     defaultOrder: {
       column: 'site',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    site_id: {
+      title: 'Site',
+      type: 'enum'
+    },
+    region_id: {
+      column: 'quota.region_id',
+      title: 'Region',
+      type: 'enum'
+    },
+    sex: {
+      title: 'Sex',
+      type: 'enum'
+    },
+    age_group_id: {
+      title: 'Age Group',
+      type: 'enum'
+    },
+    population: {
+      title: 'Population',
+      type: 'string',
+      format: 'integer',
+      minValue: 0
     }
   } );
 
@@ -220,8 +221,5 @@ define( cenozo.getDependencyList( 'quota' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/quota/module.extend.js' ], function() {} );
 
 } );

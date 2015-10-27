@@ -10,23 +10,6 @@ define( cenozo.getDependencyList( 'region_site' ), function() {
       possessive: 'region site\'s',
       pluralPossessive: 'region sites\''
     },
-    inputList: {
-      site_id: {
-        column: 'region_site.site_id',
-        title: 'Site',
-        type: 'enum'
-      },
-      region_id: {
-        column: 'region_site.region_id',
-        title: 'Region',
-        type: 'enum'
-      },
-      language_id: {
-        column: 'region_site.language_id',
-        title: 'Language',
-        type: 'enum'
-      }
-    },
     columnList: {
       site: {
         column: 'site.name',
@@ -44,6 +27,24 @@ define( cenozo.getDependencyList( 'region_site' ), function() {
     defaultOrder: {
       column: 'region',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    site_id: {
+      column: 'region_site.site_id',
+      title: 'Site',
+      type: 'enum'
+    },
+    region_id: {
+      column: 'region_site.region_id',
+      title: 'Region',
+      type: 'enum'
+    },
+    language_id: {
+      column: 'region_site.language_id',
+      title: 'Language',
+      type: 'enum'
     }
   } );
 
@@ -217,8 +218,5 @@ define( cenozo.getDependencyList( 'region_site' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/region_site/module.extend.js' ], function() {} );
 
 } );

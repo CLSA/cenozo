@@ -10,16 +10,6 @@ define( cenozo.getDependencyList( 'event_type' ), function() {
       possessive: 'event type\'s',
       pluralPossessive: 'event types\''
     },
-    inputList: {
-      name: {
-        title: 'Name',
-        type: 'string'
-      },
-      description: {
-        title: 'Description',
-        type: 'string'
-      }
-    },
     columnList: {
       name: { title: 'Name' },
       event_count: {
@@ -34,6 +24,17 @@ define( cenozo.getDependencyList( 'event_type' ), function() {
     defaultOrder: {
       column: 'name',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    name: {
+      title: 'Name',
+      type: 'string'
+    },
+    description: {
+      title: 'Description',
+      type: 'string'
     }
   } );
 
@@ -102,8 +103,5 @@ define( cenozo.getDependencyList( 'event_type' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/event_type/module.extend.js' ], function() {} );
 
 } );

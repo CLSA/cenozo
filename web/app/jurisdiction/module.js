@@ -10,9 +10,6 @@ define( cenozo.getDependencyList( 'jurisdiction' ), function() {
       possessive: 'jurisdiction\'s',
       pluralPossessive: 'jurisdictions\''
     },
-    inputList: {
-      // TODO: fill out
-    },
     columnList: {
       // TODO: fill out
     },
@@ -20,8 +17,5 @@ define( cenozo.getDependencyList( 'jurisdiction' ), function() {
       // TODO: fill out
     }
   } );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/jurisdiction/module.extend.js' ], function() {} );
 
 } );

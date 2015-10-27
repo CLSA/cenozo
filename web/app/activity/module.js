@@ -10,9 +10,6 @@ define( cenozo.getDependencyList( 'activity' ), function() {
       possessive: 'activity\'s',
       pluralPossessive: 'activities\''
     },
-    inputList: {
-      // not used
-    },
     columnList: {
       user: {
         column: 'user.name',
@@ -76,8 +73,5 @@ define( cenozo.getDependencyList( 'activity' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/activity/module.extend.js' ], function() {} );
 
 } );

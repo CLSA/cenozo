@@ -10,16 +10,6 @@ define( cenozo.getDependencyList( 'consent_type' ), function() {
       possessive: 'consent type\'s',
       pluralPossessive: 'consent types\''
     },
-    inputList: {
-      name: {
-        title: 'Name',
-        type: 'string'
-      },
-      description: {
-        title: 'Description',
-        type: 'string'
-      }
-    },
     columnList: {
       name: { title: 'Name' },
       accept_count: {
@@ -38,6 +28,17 @@ define( cenozo.getDependencyList( 'consent_type' ), function() {
     defaultOrder: {
       column: 'name',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    name: {
+      title: 'Name',
+      type: 'string'
+    },
+    description: {
+      title: 'Description',
+      type: 'string'
     }
   } );
 
@@ -106,8 +107,5 @@ define( cenozo.getDependencyList( 'consent_type' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/consent_type/module.extend.js' ], function() {} );
 
 } );

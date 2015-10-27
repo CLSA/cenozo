@@ -10,20 +10,6 @@ define( cenozo.getDependencyList( 'source' ), function() {
       possessive: 'source\'s',
       pluralPossessive: 'sources\''
     },
-    inputList: {
-      name: {
-        title: 'Name',
-        type: 'string'
-      },
-      override_quota: {
-        title: 'Override Quota',
-        type: 'boolean'
-      },
-      description: {
-        title: 'Description',
-        type: 'text'
-      }
-    },
     columnList: {
       name: { title: 'Name' },
       override_quota: {
@@ -38,6 +24,21 @@ define( cenozo.getDependencyList( 'source' ), function() {
     defaultOrder: {
       column: 'name',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    name: {
+      title: 'Name',
+      type: 'string'
+    },
+    override_quota: {
+      title: 'Override Quota',
+      type: 'boolean'
+    },
+    description: {
+      title: 'Description',
+      type: 'text'
     }
   } );
 
@@ -136,8 +137,5 @@ define( cenozo.getDependencyList( 'source' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/source/module.extend.js' ], function() {} );
 
 } );

@@ -10,9 +10,6 @@ define( cenozo.getDependencyList( 'cohort' ), function() {
       possessive: 'cohort\'s',
       pluralPossessive: 'cohorts\''
     },
-    inputList: {
-      // not used
-    },
     columnList: {
       name: {
         column: 'cohort.name',
@@ -64,8 +61,5 @@ define( cenozo.getDependencyList( 'cohort' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/cohort/module.extend.js' ], function() {} );
 
 } );

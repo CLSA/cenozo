@@ -10,9 +10,6 @@ define( cenozo.getDependencyList( 'role' ), function() {
       possessive: 'role\'s',
       pluralPossessive: 'roles\''
     },
-    inputList: {
-      // not used
-    },
     columnList: {
       name: {
         column: 'role.name',
@@ -64,8 +61,5 @@ define( cenozo.getDependencyList( 'role' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/role/module.extend.js' ], function() {} );
 
 } );

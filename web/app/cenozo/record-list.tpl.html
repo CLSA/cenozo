@@ -1,5 +1,9 @@
 <div class="record-list rounded">
-  <div class="container-fluid bg-primary rounded-top">
+  <div class="container-fluid bg-primary rounded-top"
+       data-toggle="collapse"
+       data-target="#{{ model.module.subject.camel }}List"
+       ng-click="collapsed = !collapsed"
+       style="cursor:pointer;">
     <h4>
       <div class="pull-right">
         <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
@@ -9,16 +13,13 @@
            tooltip-placement="left"></i>
         <i class="glyphicon glyph-hover btn-primary btn-header"
            ng-class="collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
-           data-toggle="collapse"
-           data-target="#{{ model.subject }}List"
-           ng-click="collapsed = !collapsed"
            tooltip="Click to expand participant details"
            tooltip-placement="left"></i>
       </div>
       {{ heading }}
     </h4>
   </div>
-  <div class="collapse" ng-class="{'in':!initCollapsed}" id="{{ model.subject }}List">
+  <div class="collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}List">
     <table class="table table-striped rounded"
            ng-class="{ 'table-hover':model.viewEnabled || model.chooseEnabled }">
       <thead class="bg-info">
@@ -65,7 +66,7 @@
         </tr>
         <tr ng-if="!model.listModel.isLoading && 0 == model.listModel.cache.length">
           <td colspan="{{ numColumns }}">
-            There are no {{ model.name.plural }} found.
+            There are no {{ model.module.name.plural }} found.
           </td>
         </tr>
         <tr ng-if="!model.listModel.isLoading"
@@ -83,10 +84,10 @@
             <td class="tiny" ng-if="model.deleteEnabled">
               <button class="btn btn-xs btn-danger"
                       ng-disabled="0 <= isDeleting.indexOf( record.id )"
-                      tooltip="Delete {{ model.name.singular }}"
+                      tooltip="Delete {{ model.module.name.singular }}"
                       tooltip-placement="left"
                       cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
-                                         item in the {{ model.name.singular }} list?"
+                                         item in the {{ model.module.name.singular }} list?"
                       cn-really-click="deleteRecord( record )"
                       ng-click="$event.stopPropagation()">
                 <i class="glyphicon glyphicon-remove"></i>
@@ -95,7 +96,7 @@
             <td class="tiny" ng-if="model.listModel.chooseMode">
               <button ng-if="record.chosen"
                       class="btn btn-xs btn-danger"
-                      tooltip="Remove {{ model.name.singular }}"
+                      tooltip="Remove {{ model.module.name.singular }}"
                       tooltip-placement="left">
                 <i class="glyphicon glyphicon-remove"></i>
               </button>
@@ -116,7 +117,7 @@
                         next-text="&rsaquo;"></pagination>
             <span class="footer-total">
               {{ model.listModel.total }}
-              {{ 1 == model.listModel.total ? model.name.singular : model.name.plural }} total
+              {{ 1 == model.listModel.total ? model.module.name.singular : model.module.name.plural }} total
             </span>
             <button class="btn btn-default pull-right"
                     ng-if="model.addEnabled && !model.chooseEnabled"
@@ -139,7 +140,7 @@
   <div class="bg-info rounded-bottom collapsed-footer" ng-if="collapsed">
     <span class="footer-total">
       {{ model.listModel.total }}
-      {{ 1 == model.listModel.total ? model.name.singular : model.name.plural }} total
+      {{ 1 == model.listModel.total ? model.module.name.singular : model.module.name.plural }} total
     </span>
     <button class="btn btn-default pull-right"
             ng-if="model.addEnabled && !model.chooseEnabled"

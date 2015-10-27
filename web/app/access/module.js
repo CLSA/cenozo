@@ -18,25 +18,6 @@ define( cenozo.getDependencyList( 'access' ), function() {
       possessive: 'access\'',
       pluralPossessive: 'accesses\''
     },
-    inputList: {
-      user_id: {
-        title: 'User',
-        type: 'lookup-typeahead',
-        typeahead: {
-          table: 'user',
-          select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
-          where: [ 'first_name', 'last_name', 'name' ]
-        }
-      },
-      role_id: {
-        title: 'Role',
-        type: 'enum'
-      },
-      site_id: {
-        title: 'Site',
-        type: 'enum'
-      }
-    },
     columnList: {
       user: {
         column: 'user.name',
@@ -58,6 +39,26 @@ define( cenozo.getDependencyList( 'access' ), function() {
     defaultOrder: {
       column: 'user',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    user_id: {
+      title: 'User',
+      type: 'lookup-typeahead',
+      typeahead: {
+        table: 'user',
+        select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
+        where: [ 'first_name', 'last_name', 'name' ]
+      }
+    },
+    role_id: {
+      title: 'Role',
+      type: 'enum'
+    },
+    site_id: {
+      title: 'Site',
+      type: 'enum'
     }
   } );
 
@@ -116,7 +117,7 @@ define( cenozo.getDependencyList( 'access' ), function() {
     function( CnBaseModelFactory, CnAccessListFactory, CnAccessAddFactory, CnHttpFactory ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozo.getModule( 'access' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnAccessAddFactory.instance( this );
         this.listModel = CnAccessListFactory.instance( this );
 
@@ -169,8 +170,5 @@ define( cenozo.getDependencyList( 'access' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/access/module.extend.js' ], function() {} );
 
 } );

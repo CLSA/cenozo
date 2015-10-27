@@ -116,7 +116,7 @@ class ui extends \cenozo\base_object
   protected function get_framework_module_list()
   {
     return array(
-      'access', 'activity', 'address', 'age_group', 'alternate', 'application', 'cohort', 'collection',
+      'access', 'activity', 'address', 'alternate', 'application', 'cohort', 'collection',
       'consent', 'consent_type', 'event', 'event_type', 'jurisdiction', 'language', 'participant',
       'phone', 'quota', 'region', 'region_site', 'role', 'script', 'site', 'source', 'state',
       'system_message', 'user' );

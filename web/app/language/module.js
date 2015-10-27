@@ -10,29 +10,6 @@ define( cenozo.getDependencyList( 'language' ), function() {
       possessive: 'language\'s',
       pluralPossessive: 'languages\''
     },
-    inputList: {
-      name: {
-        title: 'Name',
-        type: 'string',
-        constant: true
-      },
-      code: {
-        title: 'Code',
-        type: 'string',
-        constant: true
-      },
-      active: {
-        title: 'Active',
-        type: 'boolean',
-        help: 'Setting this to yes will make this language appear in language lists.'
-      },
-      participant_count: {
-        title: 'Participants',
-        type: 'string',
-        constant: true,
-        help: 'Participants can only be added to this language by going directly to participant details.'
-      }
-    },
     columnList: {
       name: { title: 'Name' },
       code: { title: 'Code' },
@@ -53,6 +30,30 @@ define( cenozo.getDependencyList( 'language' ), function() {
     defaultOrder: {
       column: 'active',
       reverse: true
+    }
+  } );
+
+  module.addInputGroup( null, {
+    name: {
+      title: 'Name',
+      type: 'string',
+      constant: true
+    },
+    code: {
+      title: 'Code',
+      type: 'string',
+      constant: true
+    },
+    active: {
+      title: 'Active',
+      type: 'boolean',
+      help: 'Setting this to yes will make this language appear in language lists.'
+    },
+    participant_count: {
+      title: 'Participants',
+      type: 'string',
+      constant: true,
+      help: 'Participants can only be added to this language by going directly to participant details.'
     }
   } );
 
@@ -129,8 +130,5 @@ define( cenozo.getDependencyList( 'language' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/language/module.extend.js' ], function() {} );
 
 } );

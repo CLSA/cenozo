@@ -10,20 +10,6 @@ define( cenozo.getDependencyList( 'state' ), function() {
       possessive: 'state\'s',
       pluralPossessive: 'states\''
     },
-    inputList: {
-      name: {
-        title: 'Name',
-        type: 'string'
-      },
-      rank: {
-        title: 'Rank',
-        type: 'rank'
-      },
-      description: {
-        title: 'Description',
-        type: 'text'
-      }
-    },
     columnList: {
       rank: {
         title: 'Rank',
@@ -42,6 +28,21 @@ define( cenozo.getDependencyList( 'state' ), function() {
     defaultOrder: {
       column: 'rank',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    name: {
+      title: 'Name',
+      type: 'string'
+    },
+    rank: {
+      title: 'Rank',
+      type: 'rank'
+    },
+    description: {
+      title: 'Description',
+      type: 'text'
     }
   } );
 
@@ -140,8 +141,5 @@ define( cenozo.getDependencyList( 'state' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/state/module.extend.js' ], function() {} );
 
 } );

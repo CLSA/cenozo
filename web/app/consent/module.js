@@ -16,32 +16,6 @@ define( cenozo.getDependencyList( 'consent' ), function() {
       pluralPossessive: 'consents\'',
       friendlyColumn: 'date'
     },
-    inputList: {
-      consent_type_id: {
-        title: 'Consent Type',
-        type: 'enum',
-        noedit: true
-      },
-      accept: {
-        title: 'Accept',
-        type: 'boolean',
-        noedit: true
-      },
-      written: {
-        title: 'Written',
-        type: 'boolean',
-        noedit: true
-      },
-      date: {
-        title: 'Date',
-        type: 'date',
-        max: 'now'
-      },
-      note: {
-        title: 'Note',
-        type: 'text'
-      }
-    },
     columnList: {
       consent_type: {
         column: 'consent_type.name',
@@ -63,6 +37,33 @@ define( cenozo.getDependencyList( 'consent' ), function() {
     defaultOrder: {
       column: 'date',
       reverse: true
+    }
+  } );
+
+  module.addInputGroup( null, {
+    consent_type_id: {
+      title: 'Consent Type',
+      type: 'enum',
+      noedit: true
+    },
+    accept: {
+      title: 'Accept',
+      type: 'boolean',
+      noedit: true
+    },
+    written: {
+      title: 'Written',
+      type: 'boolean',
+      noedit: true
+    },
+    date: {
+      title: 'Date',
+      type: 'date',
+      max: 'now'
+    },
+    note: {
+      title: 'Note',
+      type: 'text'
     }
   } );
 
@@ -195,8 +196,5 @@ define( cenozo.getDependencyList( 'consent' ), function() {
       };
     }
   ] );
-
-  // load any extensions to the module
-  if( module.framework ) require( [ cenozoApp.baseUrl + '/app/consent/module.extend.js' ], function() {} );
 
 } );
