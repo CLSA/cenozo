@@ -40,10 +40,10 @@ class read extends service
         $class_name = $this->get_leaf_record_class_name();
         $this->select->add_column( $class_name::get_primary_key_name() );
       }
-      catch( \cenozo\exception\base_exception $e )
+      catch( \cenozo\exception\runtime $e )
       {
-        $this->status->set_code( 400 );
-        throw $e;
+        // a runtime exception means the class name doesn't exist
+        $this->status->set_code( 404 );
       }
     }
 
