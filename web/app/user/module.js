@@ -246,6 +246,5 @@ define( cenozo.getDependencyList( 'user' ), function() {
       };
     }
   ] );
-  console.log( module );
 
 } );
