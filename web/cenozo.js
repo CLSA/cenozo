@@ -2024,9 +2024,9 @@ cenozo.factory( 'CnBaseViewFactory', [
 
             return self.parentModel.getMetadata().then( function() {
               // convert blank enums into empty strings (for ng-options)
-              for( var group in self.parentModel.inputGroupList ) {
-                for( var column in self.parentModel.inputGroupList[group] ) {
-                  var inputObject = self.parentModel.inputGroupList[group][column];
+              for( var group in self.parentModel.module.inputGroupList ) {
+                for( var column in self.parentModel.module.inputGroupList[group] ) {
+                  var inputObject = self.parentModel.module.inputGroupList[group][column];
                   if( 'enum' == inputObject.type && null === self.record[column] ) {
                     var metadata = self.parentModel.metadata.columnList[column];
                     if( angular.isDefined( metadata ) && !metadata.required ) {
