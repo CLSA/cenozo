@@ -1906,8 +1906,8 @@ cenozo.factory( 'CnBaseListFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseViewFactory', [
-  'CnSession', 'CnHttpFactory',
-  function( CnSession, CnHttpFactory ) {
+  'CnSession', 'CnHttpFactory', '$q',
+  function( CnSession, CnHttpFactory, $q ) {
     return {
       construct: function( object, parentModel, args ) {
         var args = args ? Array.prototype.slice.call( args ) : [];
@@ -2015,22 +2015,26 @@ cenozo.factory( 'CnBaseViewFactory', [
             if( model ) model.listModel.onList( true );
           }
 
-          return CnHttpFactory.instance( {
-            path: this.parentModel.getServiceResourcePath(),
-            data: this.parentModel.getServiceData( 'view' )
-          } ).get().then( function success( response ) {
-            // create the record
-            self.record = angular.copy( response.data );
-            self.record.getIdentifier = function() {
-              return self.parentModel.getIdentifierFromRecord( this );
-            };
+          return $q.all( [
 
-            // create the backup record
-            self.backupRecord = angular.copy( self.record );
+            CnHttpFactory.instance( {
+              path: this.parentModel.getServiceResourcePath(),
+              data: this.parentModel.getServiceData( 'view' )
+            } ).get().then( function success( response ) {
+              // create the record
+              self.record = angular.copy( response.data );
+              self.record.getIdentifier = function() {
+                return self.parentModel.getIdentifierFromRecord( this );
+              };
 
-            self.parentModel.metadata.loadingCount++;
+              // create the backup record
+              self.backupRecord = angular.copy( self.record );
 
-            return self.parentModel.getMetadata().then( function() {
+              self.parentModel.metadata.loadingCount++;
+
+            } ),
+
+            self.parentModel.getMetadata().then( function() {
               // convert blank enums into empty strings (for ng-options)
               for( var group in self.parentModel.module.inputGroupList ) {
                 for( var column in self.parentModel.module.inputGroupList[group] ) {
@@ -2050,8 +2054,9 @@ cenozo.factory( 'CnBaseViewFactory', [
 
               // signal that we are done loading metadata
               self.parentModel.metadata.loadingCount--;
-            } ).catch( CnSession.errorHandler );
-          } );
+            } )
+
+          ] ).catch( CnSession.errorHandler );
         };
 
         /**

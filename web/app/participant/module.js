@@ -229,8 +229,10 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantModelFactory', [
-    'CnBaseModelFactory', 'CnParticipantListFactory', 'CnParticipantViewFactory', 'CnHttpFactory',
-    function( CnBaseModelFactory, CnParticipantListFactory, CnParticipantViewFactory, CnHttpFactory ) {
+    'CnBaseModelFactory', 'CnParticipantListFactory', 'CnParticipantViewFactory',
+    'CnHttpFactory', '$q',
+    function( CnBaseModelFactory, CnParticipantListFactory, CnParticipantViewFactory,
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -241,31 +243,30 @@ define( cenozo.getDependencyList( 'participant' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'age_group',
-              data: {
-                select: { column: [ 'id', 'lower', 'upper' ] },
-                modifier: { order: { lower: false } }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.age_group_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.age_group_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].lower + ' to ' + response.data[i].upper
-                } );
-              }
-            } ).then( function() {
-              return CnHttpFactory.instance( {
+            return $q.all( [
+              
+              CnHttpFactory.instance( {
+                path: 'age_group',
+                data: {
+                  select: { column: [ 'id', 'lower', 'upper' ] },
+                  modifier: { order: { lower: false } }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.age_group_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.age_group_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].lower + ' to ' + response.data[i].upper
+                  } );
+                }
+              } ),
+
+              CnHttpFactory.instance( {
                 path: 'language',
                 data: {
                   select: { column: [ 'id', 'name' ] },
                   modifier: {
-                    where: {
-                      column: 'active',
-                      operator: '=',
-                      value: true
-                    },
+                    where: { column: 'active', operator: '=', value: true },
                     order: 'name'
                   }
                 }
@@ -277,9 +278,9 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                     name: response.data[i].name
                   } );
                 }
-              } );
-            } ).then( function() {
-              return CnHttpFactory.instance( {
+              } ),
+
+              CnHttpFactory.instance( {
                 path: 'site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
@@ -293,9 +294,9 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                     name: response.data[i].name
                   } );
                 }
-              } );
-            } ).then( function() {
-              return CnHttpFactory.instance( {
+              } ),
+
+              CnHttpFactory.instance( {
                 path: 'state',
                 data: {
                   select: { column: [ 'id', 'name' ] },
@@ -309,10 +310,9 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                     name: response.data[i].name
                   } );
                 }
-              } );
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+              } )
+
+            ] ).then( function() { self.metadata.loadingCount--; } );
           } );
         };
       };

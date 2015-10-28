@@ -124,9 +124,9 @@ define( cenozo.getDependencyList( 'event' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnEventModelFactory', [
     'CnBaseModelFactory', 'CnEventListFactory', 'CnEventAddFactory', 'CnEventViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnEventListFactory, CnEventAddFactory, CnEventViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -145,6 +145,7 @@ define( cenozo.getDependencyList( 'event' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
+
             return CnHttpFactory.instance( {
               path: 'event_type',
               data: {
@@ -159,9 +160,8 @@ define( cenozo.getDependencyList( 'event' ), function() {
                   name: response.data[i].name
                 } );
               }
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+            } ).then( function() { self.metadata.loadingCount--; } );
+
           } );
         };
       };

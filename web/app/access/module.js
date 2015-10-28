@@ -113,8 +113,10 @@ define( cenozo.getDependencyList( 'access' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAccessModelFactory', [
-    'CnBaseModelFactory', 'CnAccessListFactory', 'CnAccessAddFactory', 'CnHttpFactory',
-    function( CnBaseModelFactory, CnAccessListFactory, CnAccessAddFactory, CnHttpFactory ) {
+    'CnBaseModelFactory', 'CnAccessListFactory', 'CnAccessAddFactory',
+    'CnHttpFactory', '$q',
+    function( CnBaseModelFactory, CnAccessListFactory, CnAccessAddFactory,
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -125,23 +127,26 @@ define( cenozo.getDependencyList( 'access' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'role',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: { name: false } },
-                granting: true // only return roles which we can grant access to
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.role_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.role_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].name
-                } );
-              }
-            } ).then( function() {
-              return CnHttpFactory.instance( {
+            $q.all( [
+
+              CnHttpFactory.instance( {
+                path: 'role',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: { name: false } },
+                  granting: true // only return roles which we can grant access to
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.role_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.role_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } ),
+              
+              CnHttpFactory.instance( {
                 path: 'site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
@@ -156,10 +161,9 @@ define( cenozo.getDependencyList( 'access' ), function() {
                     name: response.data[i].name
                   } );
                 }
-              } );
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+              } )
+
+            ] ).then( function() { self.metadata.loadingCount--; } );
           } );
         };
       };

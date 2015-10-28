@@ -138,12 +138,10 @@ define( cenozo.getDependencyList( 'quota' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQuotaModelFactory', [
-    'CnBaseModelFactory',
-    'CnQuotaListFactory', 'CnQuotaAddFactory', 'CnQuotaViewFactory',
-    'CnHttpFactory', 'CnSession',
-    function( CnBaseModelFactory,
-              CnQuotaListFactory, CnQuotaAddFactory, CnQuotaViewFactory,
-              CnHttpFactory, CnSession ) {
+    'CnBaseModelFactory', 'CnQuotaListFactory', 'CnQuotaAddFactory', 'CnQuotaViewFactory',
+    'CnHttpFactory', 'CnSession', '$q',
+    function( CnBaseModelFactory, CnQuotaListFactory, CnQuotaAddFactory, CnQuotaViewFactory,
+              CnHttpFactory, CnSession, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -155,22 +153,25 @@ define( cenozo.getDependencyList( 'quota' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'age_group',
-              data: {
-                select: { column: [ 'id', 'lower', 'upper' ] },
-                modifier: { order: { lower: false } }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.age_group_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.age_group_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].lower + ' to ' + response.data[i].upper
-                } );
-              }
-            } ).then( function() {
-              return CnHttpFactory.instance( {
+            return $q.all( [
+
+              CnHttpFactory.instance( {
+                path: 'age_group',
+                data: {
+                  select: { column: [ 'id', 'lower', 'upper' ] },
+                  modifier: { order: { lower: false } }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.age_group_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.age_group_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].lower + ' to ' + response.data[i].upper
+                  } );
+                }
+              } ),
+
+              CnHttpFactory.instance( {
                 path: 'region',
                 data: {
                   select: { column: [ 'id', 'name' ] },
@@ -191,9 +192,9 @@ define( cenozo.getDependencyList( 'quota' ), function() {
                     name: response.data[i].name
                   } );
                 }
-              } );
-            } ).then( function() {
-              return CnHttpFactory.instance( {
+              } ),
+
+              CnHttpFactory.instance( {
                 path: 'application/' + CnSession.application.id + '/site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
@@ -207,10 +208,9 @@ define( cenozo.getDependencyList( 'quota' ), function() {
                     name: response.data[i].name
                   } );
                 }
-              } );
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+              } )
+
+            ] ).then( function() { self.metadata.loadingCount--; } );
           } );
         };
       };

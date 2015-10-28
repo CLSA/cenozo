@@ -158,9 +158,9 @@ define( cenozo.getDependencyList( 'phone' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneModelFactory', [
     'CnBaseModelFactory', 'CnPhoneListFactory', 'CnPhoneAddFactory', 'CnPhoneViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -172,7 +172,7 @@ define( cenozo.getDependencyList( 'phone' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            // get the service path from the parent subject and identifier
+
             var parent = self.getParentIdentifier();
             return CnHttpFactory.instance( {
               path: angular.isDefined( parent.subject )
@@ -190,9 +190,8 @@ define( cenozo.getDependencyList( 'phone' ), function() {
                   name: response.data[i].summary
                 } );
               }
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+            } ).then( function() { self.metadata.loadingCount--; } );
+
           } );
         };
       };

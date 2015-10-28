@@ -185,8 +185,10 @@ define( cenozo.getDependencyList( 'site' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSiteModelFactory', [
-    'CnBaseModelFactory', 'CnSiteListFactory', 'CnSiteAddFactory', 'CnSiteViewFactory', 'CnHttpFactory',
-    function( CnBaseModelFactory, CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory, CnHttpFactory ) {
+    'CnBaseModelFactory', 'CnSiteListFactory', 'CnSiteAddFactory', 'CnSiteViewFactory',
+    'CnHttpFactory', '$q',
+    function( CnBaseModelFactory, CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory,
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -198,6 +200,7 @@ define( cenozo.getDependencyList( 'site' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
+
             return CnHttpFactory.instance( {
               path: 'region',
               data: {
@@ -219,9 +222,8 @@ define( cenozo.getDependencyList( 'site' ), function() {
                   name: response.data[i].name
                 } );
               }
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+            } ).then( function() { self.metadata.loadingCount--; } );
+
           } );
         };
       };

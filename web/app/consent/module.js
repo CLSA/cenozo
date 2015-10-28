@@ -148,9 +148,9 @@ define( cenozo.getDependencyList( 'consent' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentModelFactory', [
     'CnBaseModelFactory', 'CnConsentListFactory', 'CnConsentAddFactory', 'CnConsentViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -169,6 +169,7 @@ define( cenozo.getDependencyList( 'consent' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
+
             return CnHttpFactory.instance( {
               path: 'consent_type',
               data: {
@@ -183,9 +184,8 @@ define( cenozo.getDependencyList( 'consent' ), function() {
                   name: response.data[i].name
                 } );
               }
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+            } ).then( function() { self.metadata.loadingCount--; } );
+
           } );
         };
       };

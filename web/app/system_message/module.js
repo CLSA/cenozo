@@ -169,10 +169,10 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
   cenozo.providers.factory( 'CnSystemMessageModelFactory', [
     'CnBaseModelFactory',
     'CnSystemMessageListFactory', 'CnSystemMessageAddFactory', 'CnSystemMessageViewFactory',
-    'CnSession', 'CnHttpFactory',
+    'CnSession', 'CnHttpFactory', '$q',
     function( CnBaseModelFactory,
               CnSystemMessageListFactory, CnSystemMessageAddFactory, CnSystemMessageViewFactory,
-              CnSession, CnHttpFactory ) {
+              CnSession, CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -184,22 +184,25 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'site',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name' }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.site_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.site_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].name
-                } );
-              }
-            } ).then( function() {
-              return CnHttpFactory.instance( {
+            return $q.all( [
+
+              CnHttpFactory.instance( {
+                path: 'site',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.site_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.site_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } ),
+
+              CnHttpFactory.instance( {
                 path: 'role',
                 data: {
                   select: { column: [ 'id', 'name' ] },
@@ -213,8 +216,9 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
                     name: response.data[i].name
                   } );
                 }
-              } );
-            } ).then( function() {
+              } )
+
+            ] ).then( function() {
               // create metadata for application_id (this application only)
               self.metadata.columnList.application_id = {
                 enumList: [ {

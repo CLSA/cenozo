@@ -129,9 +129,9 @@ define( cenozo.getDependencyList( 'script' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnScriptModelFactory', [
     'CnBaseModelFactory', 'CnScriptAddFactory', 'CnScriptListFactory', 'CnScriptViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnScriptAddFactory, CnScriptListFactory, CnScriptViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -143,6 +143,7 @@ define( cenozo.getDependencyList( 'script' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
+
             return CnHttpFactory.instance( {
               path: 'survey',
               data: {
@@ -157,9 +158,8 @@ define( cenozo.getDependencyList( 'script' ), function() {
                   name: response.data[i].title
                 } );
               }
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+            } ).then( function() { self.metadata.loadingCount--; } );
+
           } );
         };        
       };

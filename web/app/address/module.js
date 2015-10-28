@@ -186,9 +186,9 @@ define( cenozo.getDependencyList( 'address' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressModelFactory', [
     'CnBaseModelFactory', 'CnAddressListFactory', 'CnAddressAddFactory', 'CnAddressViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnAddressListFactory, CnAddressAddFactory, CnAddressViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -200,6 +200,7 @@ define( cenozo.getDependencyList( 'address' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
+
             return CnHttpFactory.instance( {
               path: 'region',
               data: {
@@ -221,9 +222,8 @@ define( cenozo.getDependencyList( 'address' ), function() {
                   name: response.data[i].name
                 } );
               }
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+            } ).then( function() { self.metadata.loadingCount--; } );
+
           } );
         };
       };
