@@ -467,9 +467,9 @@ class select extends \cenozo\base_object
             'timestamp' === substr( $item['column'], -9 ) )
           $column = sprintf( 'DATE_FORMAT( %s, "%s" )', $column, '%Y-%m-%dT%T+00:00' );
 
-        // add the alias (but not for *)
-        $column = '*' == $item['column'] ? $column : sprintf( '%s AS %s', $column, $alias );
-        $columns[] = $column;
+        // add the alias when it is different from the column (but not for *)
+        $columns[] = '*' == $item['column'] || $column === $alias ?
+          $column : sprintf( '%s AS %s', $column, $alias );
       }
     }
 
