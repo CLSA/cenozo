@@ -1567,13 +1567,21 @@ cenozo.factory( 'CnSession', [
                  ? response.status : 500;
 
         if( 406 == type && angular.isDefined( response.data ) ) {
-          CnModalMessageFactory.instance( {
+          return CnModalMessageFactory.instance( {
             title: 'Please Note',
             message: response.data,
             error: true
           } ).show();
+        } else if( angular.isDefined( response.config ) ) {
+          return CnModalMessageFactory.instance( {
+            title: 'Please Note',
+            message: 'There was a problem loading the resource at "' + response.config.url + '"',
+            error: true
+          } ).show().then( function() {
+            return self.workingTransition( function() { $state.go( 'error.' + type ) } );
+          } );
         } else {
-          return self.workingTransition( function() { $state.go( 'error.' + type, response ) } );
+          return self.workingTransition( function() { $state.go( 'error.' + type ) } );
         }
       };
 
@@ -3686,51 +3694,47 @@ cenozo.config( [
     cenozo.providers.decorator = $provide.decorator;
 
     // add the root states
-    var baseRootUrl = cenozo.baseUrl + '/app/root/';
-    var requiredFiles = [
-      baseRootUrl + 'module.js',
-      cenozoApp.baseUrl + '/app/root/module.extend.js'
-    ];
     $stateProvider.state( 'root', { // resolves application/
       url: '',
       controller: 'HomeCtrl',
-      templateUrl: baseRootUrl + 'home.tpl.html',
+      templateUrl: cenozo.baseUrl + '/app/root/home.tpl.html',
       resolve: {
         data: [ '$q', function( $q ) {
           var deferred = $q.defer();
-          require( requiredFiles, function() { deferred.resolve(); } );
+          require( [
+            cenozo.baseUrl + '/app/root/module.js',
+            cenozoApp.baseUrl + '/app/root/module.extend.js'
+          ], function() { deferred.resolve(); } );
           return deferred.promise;
         } ]
       }
     } );
     $stateProvider.state( 'root.home', { url: cenozoApp.baseUrl + '/' } );
-    $stateProvider.state( 'wait', { templateUrl: baseRootUrl + 'wait.tpl.html' } );
+    $stateProvider.state( 'wait', { templateUrl: cenozo.baseUrl + '/app/root/wait.tpl.html' } );
 
     // add the error states
-    var baseErrorUrl = cenozo.baseUrl + '/app/error/';
-    var requiredFiles = [
-      baseRootUrl + 'module.js',
-      cenozoApp.baseUrl + '/app/root/module.extend.js'
-    ];
     $stateProvider.state( 'error', {
       controller: 'ErrorCtrl',
       template: '<div ui-view class="fade-transition"></div>',
       resolve: {
         data: [ '$q', function( $q ) {
           var deferred = $q.defer();
-          require( requiredFiles, function() { deferred.resolve(); } );
+          require( [
+            cenozo.baseUrl + '/app/error/module.js',
+            cenozoApp.baseUrl + '/app/error/module.extend.js'
+          ], function() { deferred.resolve(); } );
           return deferred.promise;
         } ]
       }
     } );
-    $stateProvider.state( 'error.400', { templateUrl: baseErrorUrl + '400.tpl.html' } );
-    $stateProvider.state( 'error.403', { templateUrl: baseErrorUrl + '403.tpl.html' } );
-    $stateProvider.state( 'error.404', { templateUrl: baseErrorUrl + '404.tpl.html' } );
+    $stateProvider.state( 'error.400', { templateUrl: cenozo.baseUrl + '/app/error/400.tpl.html' } );
+    $stateProvider.state( 'error.403', { templateUrl: cenozo.baseUrl + '/app/error/403.tpl.html' } );
+    $stateProvider.state( 'error.404', { templateUrl: cenozo.baseUrl + '/app/error/404.tpl.html' } );
     $stateProvider.state( 'error.500', {
-      templateUrl: baseErrorUrl + '500.tpl.html',
-      params: { data: null, }
+      templateUrl: cenozo.baseUrl + '/app/error/500.tpl.html',
+      params: { data: null }
     } );
-    $stateProvider.state( 'error.state', { templateUrl: baseErrorUrl + 'state.tpl.html' } );
+    $stateProvider.state( 'error.state', { templateUrl: cenozo.baseUrl + '/app/error/state.tpl.html' } );
 
     // load the 404 state when a state is not found for the provided path
     $urlRouterProvider.otherwise( function( $injector, $location ) {
