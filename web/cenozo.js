@@ -77,6 +77,9 @@ angular.extend( cenozoApp, {
           },
           framework: framework,
           url: ( framework ? cenozo.baseUrl : this.baseUrl ) + '/app/' + name + '/',
+          inputGroupList: {},
+          columnList: {},
+          viewOperationList: {},
           getRequiredFiles: function() {
             // we require the main module.js
             var modules = [ this.url + 'module.js' ];
@@ -85,7 +88,6 @@ angular.extend( cenozoApp, {
               modules.push( cenozoApp.baseUrl + '/app/' + this.subject.snake + '/module.extend.js' );
             return modules;
           },
-          inputGroupList: {},
           addInput: function( group, key, input ) {
             // make sure the key is unique throughout all groups
             for( var g in this.inputGroupList ) {
@@ -113,6 +115,9 @@ angular.extend( cenozoApp, {
               if( angular.isDefined( this.inputGroupList[group][key] ) )
                 return this.inputGroupList[group][key];
             return null;
+          },
+          addViewOperation: function( name, operation ) {
+            this.viewOperationList[name] = operation;
           }
         } );
       }
@@ -1916,7 +1921,6 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.record = {};
         object.formattedRecord = {};
         object.backupRecord = {};
-        object.operationList = [];
         
         // set up factories
         object.childrenFactoryList = args.splice( 1, parentModel.module.children.length );
@@ -3225,7 +3229,7 @@ cenozo.service( 'CnModalParticipantNoteFactory', [
       var self = this;
 
       if( angular.isUndefined( params.participant ) )
-        throw 'Tried to create CnModalAccountFactory instance without a participant';
+        throw 'Tried to create CnModalParticipantNoteFactory instance without a participant';
 
       this.identifier = angular.isDefined( params.participant.getIdentifier )
                       ? params.participant.getIdentifier()

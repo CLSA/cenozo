@@ -161,6 +161,12 @@ define( cenozo.getDependencyList( 'participant' ), function() {
     }
   } );
 
+  module.addViewOperation( 'Notes', function( viewModel ) {
+    var CnModalParticipantNoteFactory =
+      angular.element( document.body ).injector().get( 'CnModalParticipantNoteFactory' );
+    CnModalParticipantNoteFactory.instance( { participant: viewModel.record } ).show();
+  } );
+
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ParticipantListCtrl', [
     '$scope', 'CnParticipantModelFactory', 'CnSession',
@@ -210,22 +216,12 @@ define( cenozo.getDependencyList( 'participant' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantViewFactory',
     cenozo.getViewModelInjectionList( 'participant' ).concat( [
-      'CnSession', 'CnModalParticipantNoteFactory', function() {
+      'CnSession', function() {
         var args = arguments;
         var CnBaseViewFactory = args[0];
-        var CnSession = args[args.length-2];
-        var CnModalParticipantNoteFactory = args[args.length-1];
+        var CnSession = args[args.length-1];
         var object = function( parentModel ) { 
           CnBaseViewFactory.construct( this, parentModel, args );
-
-          // add operations
-          var self = this;
-          this.operationList.push( {
-            name: 'Notes',
-            execute: function() {
-              CnModalParticipantNoteFactory.instance( { participant: self.record } ).show();
-            }
-          } );
         };
         return { instance: function( parentModel ) { return new object( parentModel ); } };
       }
