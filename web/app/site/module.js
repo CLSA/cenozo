@@ -82,6 +82,14 @@ define( cenozo.getDependencyList( 'site' ), function() {
     },
   } );
 
+  var settingModule = cenozoApp.module( 'setting' );
+  if( 0 <= settingModule.actions.indexOf( 'view' ) ) {
+    module.addViewOperation( 'Settings', function( viewModel ) {
+      angular.element( document.body ).injector().get( '$state' )
+        .go( 'setting.view', { identifier: 'site_id=' + viewModel.record.id } );
+    } );
+  }
+
   /* ######################################################################################################## */
   cenozo.providers.controller( 'SiteAddCtrl', [
     '$scope', 'CnSiteModelFactory', 'CnSession',
@@ -152,23 +160,12 @@ define( cenozo.getDependencyList( 'site' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSiteViewFactory',
-    cenozo.getViewModelInjectionList( 'site' ).concat( [ '$state', 'CnSession', function() {
+    cenozo.getViewModelInjectionList( 'site' ).concat( [ 'CnSession', function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var $state = args[args.length-2];
       var CnSession = args[args.length-1];
       var object = function( parentModel ) {
         CnBaseViewFactory.construct( this, parentModel, args );
-
-        var self = this;
-        if( 0 <= cenozoApp.moduleList.setting.actions.indexOf( 'view' ) ) {
-          this.operationList.push( {
-            name: 'Settings',
-            execute: function() {
-              $state.go( 'setting.view', { identifier: 'site_id=' + self.record.id } );
-            }
-          } );
-        }
 
         // extend the onPatch function
         this.onPatch = function( data ) {
