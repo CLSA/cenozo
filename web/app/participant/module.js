@@ -142,6 +142,11 @@ define( cenozo.getDependencyList( 'participant' ), function() {
       type: 'enum',
       help: 'If set then the participant will be assigned to this site instead of the default site.'
     },
+    out_of_area: {
+      title: 'Out of Area',
+      type: 'boolean',
+      help: 'Whether the participant lives outside of the study\'s serviceable area'
+    },
     email: {
       title: 'Email',
       type: 'string',
