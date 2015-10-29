@@ -313,7 +313,7 @@ cenozo.service( 'CnBaseHeader', [
             help: 'Edit your account details',
             execute: function() {
               CnModalAccountFactory.instance( { user: CnSession.user } ).show().then( function( response ) {
-                if( response ) CnSession.setUserDetails().then( CnSession.updateTime, CnSession.errorHandler );
+                if( response ) CnSession.setUserDetails().catch( CnSession.errorHandler );
               } );
             }
           },
@@ -376,15 +376,22 @@ cenozo.service( 'CnBaseHeader', [
             help: 'Change which timezone to display',
             execute: function() {
               CnModalTimezoneFactory.instance( {
-                timezone: CnSession.user.timezone
+                timezone: CnSession.user.timezone,
+                use12hourClock: CnSession.user.use12hourClock
               } ).show().then( function( response ) {
-                if( response && response != CnSession.user.timezone ) {
-                  // blank content
-                  document.getElementById( 'view' ).innerHTML = '';
-                  CnSession.setTimezone( response ).then(
-                    function success() { $window.location.reload(); },
-                    CnSession.errorHandler
-                  );
+                if( response ) {
+                  if( response.timezone != CnSession.user.timezone ||
+                      response.use12hourClock != CnSession.user.use12hourClock ) {
+                    CnSession.user.timezone = response.timezone;
+                    CnSession.user.use12hourClock = response.use12hourClock;
+                    CnSession.setTimezone( response.timezone, response.use12hourClock ).then(
+                      function success() {
+                        if( response.timezone != CnSession.user.timezone ) $window.location.reload();
+                        else if( response.use12hourClock != CnSession.user.use12hourClock ) CnSession.updateTime();
+                      },
+                      CnSession.errorHandler
+                    );
+                  }
                 }
               } );
             }
@@ -1483,7 +1490,7 @@ cenozo.factory( 'CnSession', [
         // if the user's email isn't set then open the password dialog
         if( !self.user.email ) {
           CnModalAccountFactory.instance( { user: self.user } ).show().then( function( response ) {
-            if( response ) self.setUserDetails().then( self.updateTime, self.errorHandler );
+            if( response ) self.setUserDetails().catch( self.errorHandler );
           } );
         }
       } ).catch( self.errorHandler );
@@ -1524,8 +1531,7 @@ cenozo.factory( 'CnSession', [
             user: {
               first_name: self.user.firstName,
               last_name: self.user.lastName,
-              email: self.user.email,
-              use_12hour_clock: self.user.use12hourClock
+              email: self.user.email
             }
           }
         } ).patch();
@@ -1560,10 +1566,10 @@ cenozo.factory( 'CnSession', [
         self.time = now.format( self.getTimeFormat( false, true ) );
       };
 
-      this.setTimezone = function setTimezone( timezone ) {
+      this.setTimezone = function setTimezone( timezone, use12hourClock ) {
         return CnHttpFactory.instance( {
           path: 'self/0',
-          data: { user: { timezone: timezone } }
+          data: { user: { timezone: timezone, use_12hour_clock: use12hourClock  } }
         } ).patch();
       };
 
@@ -2816,12 +2822,7 @@ cenozo.service( 'CnModalAccountFactory', [
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-account.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.user = params.user;
-            // need to convert boolean to integer for select dropdown
-            $scope.use12hourClock = $scope.user.use12hourClock ? 1 : 0;
-            $scope.ok = function() {
-              $scope.user.use12hourClock = 1 == $scope.use12hourClock;
-              $modalInstance.close( true );
-            };
+            $scope.ok = function() { $modalInstance.close( true ); };
             $scope.cancel = function() { $modalInstance.close( false ); };
             $scope.testEmailFormat = function() {
               $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]+$/.test( $scope.user.email );
@@ -3626,6 +3627,7 @@ cenozo.service( 'CnModalTimezoneFactory', [
       var self = this;
 
       this.timezone = null;
+      this.use12hourClock = false;
       angular.extend( this, params );
 
       this.show = function() {
@@ -3636,6 +3638,7 @@ cenozo.service( 'CnModalTimezoneFactory', [
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-timezone.tpl.html',
           controller: function( $scope, $modalInstance ) {
             $scope.timezone = self.timezone;
+            $scope.use12hourClock = self.use12hourClock ? 1 : 0;
             $scope.timezoneList = moment.tz.names();
 
             $scope.getTypeaheadValues = function( viewValue ) {
@@ -3649,7 +3652,13 @@ cenozo.service( 'CnModalTimezoneFactory', [
               $scope.timezone = CnSession.site.timezone;
             };
 
-            $scope.ok = function() { $modalInstance.close( $scope.timezone ); };
+            $scope.ok = function() {
+              $modalInstance.close( {
+                timezone: $scope.timezone,
+                // need to convert boolean to integer for select dropdown
+                use12hourClock: 1 == parseInt( $scope.use12hourClock )
+              } );
+            };
             $scope.cancel = function() { $modalInstance.close( false ); };
           }
         } ).result;
