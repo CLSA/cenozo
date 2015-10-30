@@ -14,14 +14,34 @@ moment.tz.setDefault( 'UTC' );
 // Extend the Array prototype with extra functions
 angular.extend( Array.prototype, {
   findIndexByProperty: function( property, value ) {
-    for( var i = 0; i < this.length; i++ )
-      if( angular.isDefined( this[i][property] ) && value == this[i][property] )
-        return i;
-    return null;
+    var indexList = [];
+    this.forEach( function( item, index ) {
+      if( angular.isDefined( item[property] ) && value == item[property] ) indexList.push( index );
+    } );
+    if( 1 < indexList.length ) console.warn(
+      'More than one item found while searching array for object with property "' + property +
+      '", only returning the first.' );
+    return 0 == indexList.length ? null : indexList[0];
   },
   findByProperty: function( property, value ) {
-    var index = this.findIndexByProperty( property, value );
-    return null === index ? null : this[index];
+    var filtered = this.filter( function( item ) { return value == item[property]; } );
+    if( 1 < filtered.length ) console.warn(
+      'More than one item found while searching array for object with property "' + property +
+      '", only returning the first.' );
+    return 0 == filtered.length ? null : filtered[0];
+  },
+  isEqualTo: function( array ) {
+    if( this === array ) return true;
+    if( !angular.isArray( array ) ) return false;
+    if( this.length != array.length) return false;
+
+    return this.every( function( item, index ) {
+      if( angular.isArray( item ) )
+        return angular.isArray( array[index] ) ? item.isEqualTo( array[index] ) : false;
+      else if( angular.isObject( item ) )
+        return angular.isObject( array[index] ) ? cenozo.objectsAreEqual( item, array[index] ) : false;
+      else return item == array[index];
+    } );
   }
 } );
 
@@ -151,6 +171,20 @@ angular.extend( cenozo, {
 
   // returns whether a module belongs to the framework or not
   isFrameworkModule: function( moduleName ) { return 0 <= this.frameworkModules.indexOf( moduleName ); },
+
+  objectsAreEqual: function( obj1, obj2 ) {
+    if( !angular.isObject( obj1 ) ) {
+      console.warn( 'When testing if objects are equal the first argument is not an object.' );
+      return false;
+    } else if( !angular.isObject( obj2 ) ) {
+      console.warn( 'When testing if objects are equal the second argument is not an object.' );
+      return false;
+    }
+    if( Object.keys( obj1 ).length != Object.keys( obj2 ).length ) return false;
+    for( var key in obj1 )
+      if( '$' != key[0] && ( angular.isUndefined( obj2[key] ) || obj1[key] != obj2[key] ) ) return false;
+    return true;
+  },
 
   // generate a globally unique identifier
   generateGUID: function() {
@@ -1036,30 +1070,19 @@ cenozo.directive( 'cnRecordView', [
               for( var key in metadata.columnList ) {
                 // find the input in the dataArray groups
                 var input = null;
-                for( var i = 0; i < scope.dataArray.length; i++ ) {
-                  input = scope.dataArray[i].inputList.findByProperty( 'key', key );
-                  if( null != input ) break;
-                }
-                if( input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
-                  input.enumList = 'boolean' === input.type
-                                 ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
-                                 : angular.copy( metadata.columnList[key].enumList );
-                  if( angular.isArray( input.enumList ) ) {
-                    // if needed, remove self record
-                    if( input.noself ) {
-                      for( var i = 0; i < input.enumList.length; i++ ) {
-                        if( input.enumList[i].value == scope.model.viewModel.record.id ) {
-                          input.enumList.splice( i, 1 );
-                          break;
-                        }
-                      }
+                scope.dataArray.forEach( function( item ) {
+                  var input = item.inputList.findByProperty( 'key', key );
+                  if( null != input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
+                    input.enumList = 'boolean' === input.type
+                                   ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
+                                   : angular.copy( metadata.columnList[key].enumList );
+                    if( angular.isArray( input.enumList ) ) {
+                      // add the empty option if input is not required
+                      if( !metadata.columnList[key].required )
+                        input.enumList.unshift( { value: '', name: '(empty)' } );
                     }
-
-                    // add the empty option if input is not required
-                    if( !metadata.columnList[key].required )
-                      input.enumList.unshift( { value: '', name: '(empty)' } );
                   }
-                }
+                } );
               }
               metadataLoaded = true;
               if( recordLoaded && metadataLoaded ) scope.isComplete = true;
@@ -1460,16 +1483,13 @@ cenozo.factory( 'CnSession', [
 
         // process access records
         response.data.access.forEach( function( item ) {
-          // get the site's index
-          var index = 0;
-          for( ; index < self.siteList.length; index++ ) if( item.site_id == self.siteList[index].id ) break;
-
-          // if the site isn't found, add it to the list
-          if( self.siteList.length == index )
-            self.siteList.push( { id: item.site_id, name: item.site_name, roleList: [] } );
-
-          // now add the role to the site's role list
-          self.siteList[index].roleList.push( { id: item.role_id, name: item.role_name } );
+          // get the site, or add it if it's missing, then add the role to the site's role list
+          var site = self.siteList.findByProperty( 'id', item.site_id );
+          if( null == site ) {
+            site = { id: item.site_id, name: item.site_name, roleList: [] };
+            self.siteList.push( site );
+          }
+          site.roleList.push( { id: item.role_id, name: item.role_name } );
         } );
 
         // if the user's password isn't set then open the password dialog
@@ -1745,25 +1765,9 @@ cenozo.factory( 'CnBaseListFactory', [
           if( !angular.isArray( newList ) )
             throw 'Tried to set restrict list for column "' + column + '" to a non-array';
 
-          // see if the new list is different from the current list
-          var changed = false;
-          var currentList = this.columnRestrictLists[column];
-          if( newList.length != currentList.length ) {
-            changed = true;
-          } else {
-            for( var i = 0; i < newList.length; i++ ) {
-              if( i >= currentList.length ||
-                  newList[i].test !== currentList[i].test ||
-                  newList[i].value !== currentList[i].value ||
-                  newList[i].logic !== currentList[i].logic ) {
-                changed = true;
-                break;
-              }
-            }
-          }
-
           // if the new list is different then re-describe and re-list records
-          if( changed ) {
+          var list = this.columnRestrictLists[column];
+          if( !this.columnRestrictLists[column].isEqualTo( newList ) ) {
             this.columnRestrictLists[column] = angular.copy( newList );
 
             // describe the restrict list
@@ -1817,12 +1821,13 @@ cenozo.factory( 'CnBaseListFactory', [
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath( record.getIdentifier() ),
           } ).delete().then( function success() {
-            for( var i = 0; i < self.cache.length; i++ ) {
-              if( self.cache[i].getIdentifier() == record.getIdentifier() ) {
+            self.cache.some( function( item, index, array ) {
+              if( item.getIdentifier() == record.getIdentifier() ) {
                 self.total--;
-                return self.cache.splice( i, 1 );
+                array.splice( index, 1 );
+                return true; // stop processing
               }
-            }
+            } );
           } );
         };
 
@@ -1857,11 +1862,11 @@ cenozo.factory( 'CnBaseListFactory', [
             data: data
           } ).query().then( function success( response ) {
             // add the getIdentifier() method to each row before adding it to the cache
-            for( var i = 0; i < response.data.length; i++ ) {
-              response.data[i].getIdentifier = function() {
+            response.data.forEach( function( item, index, array ) {
+              array[index].getIdentifier = function() {
                 return self.parentModel.getIdentifierFromRecord( this );
               };
-            }
+            } );
             self.cache = self.cache.concat( response.data );
             self.total = response.headers( 'Total' );
           } ).then( function done() {
@@ -2158,15 +2163,14 @@ cenozo.factory( 'CnBaseModelFactory', [
             var action = self.getActionFromState();
             if( 'view' == action && angular.isDefined( self.module.identifier.parent ) ) {
               // return the FIRST "set" parent
-              for( var i = 0; i < self.module.identifier.parent.length; i++ ) {
-                var parent = self.module.identifier.parent[i];
-                if( self.viewModel.record[parent.alias] ) {
-                  response.subject = parent.subject;
-                  if( angular.isDefined( parent.friendly ) ) response.friendly = parent.friendly;
-                  response.identifier = parent.getIdentifier( self.viewModel.record );
-                  break;
+              self.module.identifier.parent.some( function( item ) {
+                if( self.viewModel.record[item.alias] ) {
+                  response.subject = item.subject;
+                  if( angular.isDefined( item.friendly ) ) response.friendly = item.friendly;
+                  response.identifier = item.getIdentifier( self.viewModel.record );
+                  return true; // stop processing
                 }
-              }
+              } );
             } // no need to test the add states as they always have a parentIdentifier in the state params
           }
 
@@ -2237,49 +2241,60 @@ cenozo.factory( 'CnBaseModelFactory', [
             if( 'separator' == list[key].type ) continue;
             if( 'view' == type && true === list[key].noview ) continue;
 
-            var lastJoin = null;
             var parentTable = self.module.subject.snake;
-            var columnParts = angular.isUndefined( list[key].column ) ? [ key ] : list[key].column.split( '.' );
-            for( var k = 0; k < columnParts.length; k++ ) {
-              if( k == columnParts.length - 1 ) {
-                if( 'months' == list[key].type ) {
-                  for( var month = 0; month < 12; month++ )
-                    selectList.push( angular.lowercase( moment().month( month ).format( 'MMMM' ) ) );
-                } else {
-                  // add column to the select list
-                  var select = { column: columnParts[k], alias: key };
-                  if( 0 < k ) select.table = columnParts[k-1];
-                  selectList.push( select );
-                }
-              } else { // part of table list
-                var table = columnParts[k];
 
-                // don't join a table to itself
-                if( table !== parentTable ) {
-                  var onleft = parentTable + '.' + table + '_id';
-                  var onright = table + '.id';
+            // determine the table and column names
+            var tableName = null;
+            var columnName = null;
+            if( angular.isUndefined( list[key].column ) ) {
+              columnName = key;
+            } else { // a column was specified in the item's details module
+              var columnParts = list[key].column.split( '.' );
+              if( 2 == columnParts.length ) {
+                tableName = columnParts[0];
+                columnName = columnParts[1];
+              } else if( 1 == columnParts.length ) {
+                columnName = columnParts[0];
+              } else {
+                console.error(
+                  'Column name "' + list[key].column + '" can have a maximum of two parts: "table.column".' );
+                continue; // skip to the next item in the list
+              }
+            }
 
-                  // see if the join to table already exists
-                  var join = null;
-                  for( var j = 0; j < joinList.length; j++ ) {
-                    if( joinList[j].table == table &&
-                        joinList[j].onleft == onleft &&
-                        joinList[j].onright == onright ) {
-                      join = joinList[j];
-                      break;
-                    }
+            // if a table is specified then build a join to that table
+            if( null != tableName ) {
+              // don't join a table to itself
+              if( tableName !== parentTable ) {
+                var onleft = parentTable + '.' + tableName + '_id';
+                var onright = tableName + '.id';
+
+                // see if the join to table already exists
+                var join = null;
+                joinList.some( function( item ) {
+                  if( item.table == tableName && item.onleft == onleft && item.onright == onright ) {
+                    join = item;
+                    return true; // stop processing
                   }
+                } );
 
-                  // if the join wasn't found then add it to the list
-                  if( null === join ) {
-                    join = { table: table, onleft: onleft, onright: onright };
-                    joinList.push( join );
-                  }
-
-                  var lastJoin = join;
-                  var parentTable = table;
+                // if the join wasn't found then add it to the list
+                if( null === join ) {
+                  join = { table: tableName, onleft: onleft, onright: onright };
+                  joinList.push( join );
                 }
               }
+            }
+
+            // now add the column details to the selectList
+            if( 'months' == list[key].type ) {
+              for( var month = 0; month < 12; month++ )
+                selectList.push( angular.lowercase( moment().month( month ).format( 'MMMM' ) ) );
+            } else {
+              // add column to the select list
+              var select = { column: columnName, alias: key };
+              if( null != tableName ) select.table = tableName;
+              selectList.push( select );
             }
 
             if( 'list' == type && 'hidden' != list[key].type && columnRestrictLists[key] ) {
@@ -3658,7 +3673,7 @@ cenozo.factory( 'CnPaginationFactory',
   function CnPaginationFactory() {
     var object = function( params ) {
       this.currentPage = 1;
-      this.showPageLimit = 10;
+      this.showPageLimit = 5;
       this.itemsPerPage = 20;
       this.changePage = function() {};
       angular.extend( this, params );
