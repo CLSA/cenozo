@@ -254,12 +254,12 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.age_group_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
+                response.data.forEach( function( item ) {
                   self.metadata.columnList.age_group_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].lower + ' to ' + response.data[i].upper
+                    value: item.id,
+                    name: item.lower + ' to ' + item.upper
                   } );
-                }
+                } );
               } ),
 
               CnHttpFactory.instance( {
@@ -273,12 +273,9 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.language_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.language_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } ),
 
               CnHttpFactory.instance( {
@@ -289,12 +286,9 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.preferred_site_id = { enumList: [] };
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.preferred_site_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } ),
 
               CnHttpFactory.instance( {
@@ -305,12 +299,9 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.state_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.state_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.state_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } )
 
             ] ).then( function() { self.metadata.loadingCount--; } );

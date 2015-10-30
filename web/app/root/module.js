@@ -28,14 +28,10 @@ define( [], function() {
           self.isLoading = false;
 
           self.messageList = [];
-          for( var i = 0; i < CnSession.messageList.length; i++ ) {
-            if( null === CnSession.messageList[i].expiry ) {
-              self.messageList.push( CnSession.messageList[i] );
-            } else {
-              var date = moment( new Date( CnSession.messageList[i].expiry ) );
-              if( !date.isBefore( moment(), 'day' ) ) self.messageList.push( CnSession.messageList[i] );
-            }
-          }
+          CnSession.messageList.forEach( function( item ) {
+            if( null === item.expiry || !moment( new Date( item.expiry ).isBefore( moment(), 'day' ) ) )
+              self.messageList.push( item );
+          } );
         } );
       };
 

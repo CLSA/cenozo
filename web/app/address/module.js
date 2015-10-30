@@ -215,13 +215,13 @@ define( cenozo.getDependencyList( 'address' ), function() {
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.region_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
+              response.data.forEach( function( item ) {
                 self.metadata.columnList.region_id.enumList.push( {
-                  value: response.data[i].id,
-                  country: response.data[i].country,
-                  name: response.data[i].name
+                  value: item.id,
+                  country: item.country,
+                  name: item.name
                 } );
-              }
+              } );
             } ).then( function() { self.metadata.loadingCount--; } );
 
           } );

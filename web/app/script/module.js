@@ -152,12 +152,9 @@ define( cenozo.getDependencyList( 'script' ), function() {
               }
             } ).query().then( function( response ) {
               self.metadata.columnList.sid.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.sid.enumList.push( {
-                  value: response.data[i].sid,
-                  name: response.data[i].title
-                } );
-              }
+              response.data.forEach( function( item ) {
+                self.metadata.columnList.sid.enumList.push( { value: item.sid, name: item.title } );
+              } );
             } ).then( function() { self.metadata.loadingCount--; } );
 
           } );

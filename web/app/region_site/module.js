@@ -160,12 +160,9 @@ define( cenozo.getDependencyList( 'region_site' ), function() {
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.language_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.language_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } ),
 
               CnHttpFactory.instance( {
@@ -183,12 +180,9 @@ define( cenozo.getDependencyList( 'region_site' ), function() {
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.region_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.region_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.region_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } ),
 
               CnHttpFactory.instance( {
@@ -199,12 +193,9 @@ define( cenozo.getDependencyList( 'region_site' ), function() {
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.site_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.site_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } )
 
             ] ).then( function() { self.metadata.loadingCount--; } );

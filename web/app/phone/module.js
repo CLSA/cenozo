@@ -184,12 +184,9 @@ define( cenozo.getDependencyList( 'phone' ), function() {
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.address_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.address_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].summary
-                } );
-              }
+              response.data.forEach( function( item ) {
+                self.metadata.columnList.address_id.enumList.push( { value: item.id, name: item.summary } );
+              } );
             } ).then( function() { self.metadata.loadingCount--; } );
 
           } );

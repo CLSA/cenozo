@@ -211,12 +211,9 @@ define( cenozo.getDependencyList( 'user' ), function() {
                   required: true,
                   enumList: []
                 };
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.role_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } ),
 
               CnHttpFactory.instance( {
@@ -231,12 +228,9 @@ define( cenozo.getDependencyList( 'user' ), function() {
                   required: true,
                   enumList: []
                 };
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.site_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } )
 
             ] ).then( function() { self.metadata.loadingCount--; } );
