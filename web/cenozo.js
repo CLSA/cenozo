@@ -678,9 +678,9 @@ cenozo.directive( 'cnRecordAdd', [
           // get the data array and add enum lists for boolean types
           var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
           scope.dataArray = scope.model.getDataArray( removeInputs, 'add' );
-          scope.dataArray.forEach( function( item, index, array ) {
+          scope.dataArray.forEach( function( item ) {
             if( 'boolean' == item.type ) {
-              array[index].enumList = [
+              item.enumList = [
                 { value: undefined, name: '(Select Yes or No)' },
                 { value: true, name: 'Yes' },
                 { value: false, name: 'No' }
@@ -695,7 +695,7 @@ cenozo.directive( 'cnRecordAdd', [
           scope.isComplete = false;
           scope.$watch( 'model.metadata', function( metadata ) {
             if( angular.isDefined( metadata ) && 0 === metadata.loadingCount && !scope.isComplete ) {
-              scope.dataArray.forEach( function( item, index, array ) {
+              scope.dataArray.forEach( function( item ) {
                 var meta = metadata.columnList[item.key];
                 if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
                   var enumList = angular.copy( meta.enumList );
@@ -715,7 +715,7 @@ cenozo.directive( 'cnRecordAdd', [
                   }
 
                   if( 1 == enumList.length ) scope.record[item.key] = enumList[0].value;
-                  array[index].enumList = enumList;
+                  item.enumList = enumList;
                 }
               } );
               scope.isComplete = true;
@@ -1283,9 +1283,7 @@ cenozo.filter( 'cnMetaFilter', [
       if( angular.isDefined( filterStr ) && 0 < filterStr.length ) {
         // convert string into array deliminating by : (but not inside double quotes)
         var args = [].concat.apply( [], filterStr.split( '"' ).map(
-          function( v, i ) {
-            return i%2 ? v : v.split( ':' )
-          }
+          function( item, index ) { return index%2 ? item : item.split( ':' ) }
         ) ).filter( Boolean );
 
         var filter = $filter( args.shift() );
@@ -1862,8 +1860,8 @@ cenozo.factory( 'CnBaseListFactory', [
             data: data
           } ).query().then( function success( response ) {
             // add the getIdentifier() method to each row before adding it to the cache
-            response.data.forEach( function( item, index, array ) {
-              array[index].getIdentifier = function() {
+            response.data.forEach( function( item ) {
+              item.getIdentifier = function() {
                 return self.parentModel.getIdentifierFromRecord( this );
               };
             } );
@@ -2715,9 +2713,9 @@ cenozo.factory( 'CnBaseModelFactory', [
         if( angular.isDefined( self.module.identifier.parent ) ) {
           if( !angular.isArray( self.module.identifier.parent ) )
             self.module.identifier.parent = [ self.module.identifier.parent ];
-          self.module.identifier.parent.forEach( function( item, index, array ) {
-            array[index].alias = item.column.replace( '.', '_' );
-            array[index].getIdentifier = function( record ) {
+          self.module.identifier.parent.forEach( function( item ) {
+            item.alias = item.column.replace( '.', '_' );
+            item.getIdentifier = function( record ) {
               var columnParts = this.column.split( '.' );
               var identifier = record[this.alias];
               if( 2 == columnParts.length ) identifier = columnParts[1] + '=' + identifier;
