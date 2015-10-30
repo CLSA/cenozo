@@ -25,9 +25,9 @@ class post extends write
   /**
    * TODO: document
    */
-  protected function setup()
+  protected function prepare()
   {
-    parent::setup();
+    parent::prepare();
 
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
 
