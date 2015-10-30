@@ -851,7 +851,7 @@ cenozo.directive( 'cnRecordView', [
         $scope.refresh = function() {
           if( $scope.isComplete ) {
             $scope.isComplete = false;
-            $scope.model.viewModel.onView().then( function() { $scope.isComplete = true } ); 
+            $scope.model.viewModel.onView( true ).then( function() { $scope.isComplete = true } ); 
           }
         };
 
@@ -2008,14 +2008,19 @@ cenozo.factory( 'CnBaseViewFactory', [
          * 
          * @return promise
          */
-        object.viewRecord = function() {
+        object.viewRecord = function( simple ) {
           var self = this;
           if( !this.parentModel.viewEnabled ) throw 'Calling viewRecord() but viewEnabled is false';
 
-          this.parentModel.module.children.concat( this.parentModel.module.choosing ).forEach( function( item ) {
-            var model = this[item.subject.camel+'Model'];
-            if( model ) model.listModel.onList( true );
-          }, this );
+          if( true !== simple ) {
+            this.parentModel.module.children.concat( this.parentModel.module.choosing ).forEach(
+              function( item ) {
+                var model = this[item.subject.camel+'Model'];
+                if( model ) model.listModel.onList( true );
+              },
+              this
+            );
+          }
 
           return $q.all( [
 
@@ -2069,7 +2074,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         object.onDelete = function() { return this.deleteRecord(); };
         object.onPatch = function( data ) { return this.patchRecord( data ); };
-        object.onView = function() { return this.viewRecord(); };
+        object.onView = function( simple ) { return this.viewRecord( simple ); };
       }
     };
   }
