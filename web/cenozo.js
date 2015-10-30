@@ -3144,7 +3144,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
         this.maxDate = moment( new Date( this.maxDate ) ).tz( CnSession.user.timezone );
 
       // treat invalid dates as null dates
-      if( '0000-00-00' == this.date.substring( 0, 10 ) ) this.date = null;
+      if( null != this.date && '0000-00-00' == this.date.substring( 0, 10 ) ) this.date = null;
 
       // process the input (starting) date
       if( null === this.date ) {
