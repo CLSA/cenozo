@@ -84,9 +84,8 @@ define( cenozo.getDependencyList( 'site' ), function() {
 
   var settingModule = cenozoApp.module( 'setting' );
   if( 0 <= settingModule.actions.indexOf( 'view' ) ) {
-    module.addViewOperation( 'Settings', function( viewModel ) {
-      angular.element( document.body ).injector().get( '$state' )
-        .go( 'setting.view', { identifier: 'site_id=' + viewModel.record.id } );
+    module.addViewOperation( 'Settings', function( viewModel, $state ) {
+      $state.go( 'setting.view', { identifier: 'site_id=' + viewModel.record.id } );
     } );
   }
 

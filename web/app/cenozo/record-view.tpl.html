@@ -270,7 +270,7 @@
         <button class="btn btn-default"
                 type="button"
                 ng-repeat="(name, execute) in model.module.viewOperationList"
-                ng-click="execute( model.viewModel )">{{ name }}</button>
+                ng-click="execute( model.viewModel, $state, CnHttpFactory )">{{ name }}</button>
       </div>
       <div class="btn-group">
         <button ng-if="model.deleteEnabled"

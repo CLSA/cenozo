@@ -257,6 +257,11 @@ angular.extend( cenozo, {
       if( 0 > ['delete', 'edit'].indexOf( item ) ) { // ignore delete and edit actions
         var url = '/' + item;
         if( 'view' == item ) url += '/{identifier}';
+
+        // if we have a / in the item then remove it
+        var slash = item.indexOf( '/' );
+        if( 0 <= slash ) item = item.substring( 0, slash );
+
         var templateUrl = module.url + item + '.tpl.html';
 
         stateProvider.state( name + '.' + item, {
@@ -837,8 +842,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnSession',
-  function( CnModalDatetimeFactory, CnModalMessageFactory, CnSession ) {
+  'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnSession', 'CnHttpFactory', '$state',
+  function( CnModalDatetimeFactory, CnModalMessageFactory, CnSession, CnHttpFactory, $state ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
@@ -1030,6 +1035,10 @@ cenozo.directive( 'cnRecordView', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-view, no model provided.' );
         } else {
+          // objects passed to the execute functions in viewOperationList
+          scope.CnHttpFactory = CnHttpFactory;
+          scope.$state = $state;
+
           scope.isDeleting = false;
           scope.heading = attrs.heading;
           scope.initCollapsed = scope.collapsed ? true : false;
