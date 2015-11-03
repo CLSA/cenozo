@@ -1,0 +1,43 @@
+<div class="utility-view rounded">
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>
+      <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
+         ng-if="!isLoading"
+         ng-click="refresh( true )"
+         tooltip="Click to refresh data"
+         tooltip-placement="left"></i>
+      Participant History
+      <span ng-if="isLoading">(Loading&hellip;)</span>
+    </h4>
+  </div>
+  <div class="container-fluid">
+    <cn-loading ng-if="isLoading"></cn-loading>
+    <div class="spacer" ng-if="!isLoading">
+      <p class="text-info" style="margin-top: 1em;">
+        Participant history shows all events and operations related to a participant listing them from most
+        to least recent.  You may filter which categories to display by using the buttons below.
+      </p>
+      <div class="btn-group btn-group-justified">
+        <div ng-repeat="(name,category) in model.module.historyCategoryList" class="btn-group">
+          <button class="btn btn-default" ng-model="category.active" btn-checkbox>
+            <span ng-class="{'text-muted':!category.active}">{{ name }}</span>
+          </button>
+        </div>
+      </div>
+      <hr />
+      <div class="panel panel-default"
+           ng-repeat="history in model.historyList"
+           ng-if="model.module.historyCategoryList[history.category].active">
+        <div class="panel-heading">
+          <span class="allow-select">
+            <strong>{{ history.category }}</strong>: {{ history.title }}
+          </span>
+          <span class="allow-select pull-right">{{ history.datetime | cnDatetime:'datetimesecond' }}</span>
+        </div>
+        <div class="panel-body">
+          <span style="white-space: pre-wrap;">{{ history.description }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

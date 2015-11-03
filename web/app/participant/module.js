@@ -167,6 +167,235 @@ define( cenozo.getDependencyList( 'participant' ), function() {
     CnModalParticipantNoteFactory.instance( { participant: viewModel.record } ).show();
   } );
 
+  module.addViewOperation( 'History', function( viewModel, $state ) {
+    $state.go( 'participant.history', { identifier: viewModel.record.getIdentifier() } );
+  } );
+
+  /**
+   * The historyCategoryList object stores the following information
+   *   category:
+   *     active: whether or not to show the category in the history list by default
+   *     promise: a function which gets all history items for that category and which must return a promise
+   * 
+   * This can be extended by applications by adding new history categories or changing existing ones.
+   * Note: make sure the category name (the object's property) matches the property set in the historyList
+   */
+  module.historyCategoryList = {
+    
+    Address: {
+      active: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/address',
+          data: {
+            modifier: {
+              join: {
+                table: 'region',
+                onleft: 'address.region_id',
+                onright: 'region.id'
+              }
+            },
+            select: {
+              column: [ 'create_timestamp', 'rank', 'address1', 'address2',
+                        'city', 'postcode', 'international', {
+                table: 'region',
+                column: 'name',
+                alias: 'region'
+              }, {
+                table: 'region',
+                column: 'country'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            var description = item.address1;
+            if( item.address2 ) description += '\n' + item.address2;
+            description += '\n' + item.city + ', ' + item.region + ', ' + item.country + "\n" + item.postcode;
+            if( item.international ) description += "\n(international)";
+            historyList.push( {
+              datetime: item.create_timestamp,
+              category: 'Address',
+              title: 'added rank ' + item.rank,
+              description: description
+            } );
+          } );
+        } );
+      }
+    },
+
+    Alternate: {
+      active: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/alternate',
+          data: {
+            select: { column: [ 'create_timestamp', 'association', 'alternate', 'informant', 'proxy',
+                                'first_name', 'last_name' ] }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            var description = ' (' + ( item.association ? item.association : 'unknown association' ) + ')\n';
+            var list = [];
+            if( item.alternate ) list.push( 'alternate contact' );
+            if( item.informant ) list.push( 'information provider' );
+            if( item.proxy ) list.push( 'proxy decision maker' );
+            if( 0 == list.length ) {
+              description = '(not registiered for any role)';
+            } else {
+              list.forEach( function( name, index, array ) {
+                if( 0 < index ) description += index == array.length - 1 ? ' and ' : ', ';
+                description += name;
+              } );
+            }
+            historyList.push( {
+              datetime: item.create_timestamp,
+              category: 'Alternate',
+              title: 'added ' + item.first_name + ' ' + item.last_name,
+              description: item.first_name + ' ' + item.last_name + description
+            } );
+          } );
+        } );
+      }
+    },
+
+    Consent: {
+      active: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/consent',
+          data: {
+            modifier: {
+              join: {
+                table: 'consent_type',
+                onleft: 'consent.consent_type_id',
+                onright: 'consent_type.id'
+              },
+              order: { date: true }
+            },
+            select: {
+              column: [ 'date', 'accept', 'written', 'note', {
+                table: 'consent_type',
+                column: 'name'
+              }, {
+                table: 'consent_type',
+                column: 'description'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.date,
+              category: 'Consent',
+              title: ( item.written ? 'Written' : 'Verbal' ) + ' "' + item.name + '" ' +
+                     ( item.accept ? 'accepted' : 'rejected' ),
+              description: item.description + '\n' + item.note
+            } );
+          } );
+        } );
+      }
+    },
+
+    Event: {
+      active: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/event',
+          data: {
+            modifier: {
+              join: {
+                table: 'event_type',
+                onleft: 'event.event_type_id',
+                onright: 'event_type.id'
+              },
+              order: { datetime: true }
+            },
+            select: {
+              column: [ 'datetime', {
+                table: 'event_type',
+                column: 'name'
+              }, {
+                table: 'event_type',
+                column: 'description'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.datetime,
+              category: 'Event',
+              title: 'added "' + item.name + '"',
+              description: item.description
+            } );
+          } );
+        } );
+      }
+    },
+
+    Note: {
+      active: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/note',
+          data: {
+            modifier: {
+              join: {
+                table: 'user',
+                onleft: 'note.user_id',
+                onright: 'user.id'
+              },
+              order: { datetime: true }
+            },
+            select: {
+              column: [ 'datetime', 'note', {
+                table: 'user',
+                column: 'first_name',
+                alias: 'user_first'
+              }, {
+                table: 'user',
+                column: 'last_name',
+                alias: 'user_last'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.datetime,
+              category: 'Note',
+              title: 'added by ' + item.user_first + ' ' + item.user_last,
+              description: item.note
+            } );
+          } );
+        } );
+      }
+    },
+
+    Phone: {
+      active: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/phone',
+          data: {
+            select: { column: [ 'create_timestamp', 'rank', 'type', 'number', 'international' ] }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.create_timestamp,
+              category: 'Phone',
+              title: 'added rank ' + item.rank,
+              description: item.type + ': ' + item.number + ( item.international ? ' (international)' : '' )
+            } );
+          } );
+        } );
+      }
+    }
+
+  };
+
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ParticipantListCtrl', [
     '$scope', 'CnParticipantModelFactory', 'CnSession',
@@ -186,6 +415,23 @@ define( cenozo.getDependencyList( 'participant' ), function() {
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
       } ).catch( CnSession.errorHandler );
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'ParticipantHistoryCtrl', [
+    '$scope', 'CnParticipantHistoryFactory', 'CnSession',
+    function( $scope, CnParticipantHistoryFactory, CnSession ) {
+      $scope.isLoading = false;
+      $scope.model = CnParticipantHistoryFactory.instance();
+      $scope.refresh = function() {
+        $scope.isLoading = true;
+        $scope.model.onView().then( function() {
+          CnSession.setBreadcrumbTrail( [ { title: 'Participant History' } ] );
+          $scope.isLoading = false;
+        } ).catch( CnSession.errorHandler );
+      };
+      $scope.refresh();
     }
   ] );
 
@@ -306,6 +552,45 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
             ] ).then( function() { self.metadata.loadingCount--; } );
           } );
+        };
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnParticipantHistoryFactory', [
+    'CnSession', 'CnHttpFactory', '$state', '$q',
+    function( CnSession, CnHttpFactory, $state, $q ) {
+      var object = function() {
+        var self = this;
+        this.module = module;
+        
+        this.onView = function() {
+          this.historyList = [];
+
+          // get all history category promises, run them and then sort the resulting history list
+          var promiseList = [];
+          for( var name in this.module.historyCategoryList ) {
+            promiseList.push(
+              this.module.historyCategoryList[name].promise( this.historyList, $state, CnHttpFactory )
+            );
+          };
+
+          return $q.all( promiseList ).then( function() {
+            // convert invalid dates to null
+            self.historyList.forEach( function( item ) {
+              if( '0000-00-00' == item.datetime.substring( 0, 10 ) ) item.datetime = null;
+            } );
+            // sort the history list by datetime
+            self.historyList = self.historyList.sort( function( a, b ) {
+              return moment( new Date( a.datetime ) ).isBefore( new Date( b.datetime ) ) ? 1 : -1;
+            } );
+          } ).catch( CnSession.errorHandler );
         };
       };
 
