@@ -462,10 +462,14 @@ class select extends \cenozo\base_object
 
         // convert datetimes to ISO 8601 format
         if( 'datetime' == $type ||
-            'timestamp' == $type ||
-            'datetime' === substr( $item['column'], -8 ) ||
-            'timestamp' === substr( $item['column'], -9 ) )
+            'datetime' === substr( $item['column'], -8 ) )
           $column = sprintf( 'DATE_FORMAT( %s, "%s" )', $column, '%Y-%m-%dT%T+00:00' );
+        else if( 'timestamp' == $type ||
+                 'timestamp' === substr( $item['column'], -9 ) )
+          $column = sprintf( 'DATE_FORMAT( CONVERT_TZ( %s, "%s", "UTC" ), "%s" )',
+                             $column,
+                             date_default_timezone_get(),
+                             '%Y-%m-%dT%T+00:00' );
 
         // add the alias when it is different from the column (but not for *)
         $columns[] = '*' == $item['column'] || $column === $alias ?

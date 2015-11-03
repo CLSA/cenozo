@@ -43,12 +43,17 @@ abstract class record extends \cenozo\base_object
       $default = static::db()->get_column_default( $table_name, $column );
       $this->passive_column_values[$column] = NULL;
       
-      if( 'start_datetime' == $column || ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $column ) )
+      if( 'start_datetime' == $column || 'CURRENT_TIMESTAMP' == $default )
         $this->active_column_values[$column] = $util_class_name::get_datetime_object();
       else if( !is_null( $default ) )
       {
         $type = static::db()->get_column_variable_type( $table_name, $column );
-        if( 'datetime' == $type ) $default = !$default ? NULL : $util_class_name::get_datetime_object( $default );
+        if( 'datetime' == $type || 'timestamp' == $type )
+        {
+          $default = !$default ? NULL : $util_class_name::get_datetime_object( $default );
+          // convert timestamps from server to UTC time
+          if( 'timestamp' == $type && !is_null( $default ) ) $default->setTimezone( new \DateTimeZone( 'UTC' ) );
+        }
         else if( 'string' != $type ) settype( $default, $type );
         $this->active_column_values[$column] = $default;
       }
@@ -131,7 +136,13 @@ abstract class record extends \cenozo\base_object
             if( !is_null( $value ) )
             {
               $type = static::db()->get_column_variable_type( $table_name, $column );
-              if( 'datetime' == $type ) $value = !$value ? NULL : $util_class_name::get_datetime_object( $value );
+              if( 'datetime' == $type || 'timestamp' == $type )
+              {
+                $value = !$value ? NULL : $util_class_name::get_datetime_object( $value );
+                // convert timestamps from server to UTC time
+                if( 'timestamp' == $type && !is_null( $value ) )
+                  $value->setTimezone( new \DateTimeZone( 'UTC' ) );
+              }
               else if( 'string' != $type ) settype( $value, $type );
             }
 
@@ -191,7 +202,13 @@ abstract class record extends \cenozo\base_object
         $type = static::db()->get_column_data_type( $table_name, $column );
 
         // convert from datetime object to mysql-valid datetime string
-        if( 'datetime' == $type ) $value = static::db()->format_datetime( $value );
+        if( 'datetime' == $type || 'timestamp' == $type )
+        {
+          // convert timestamps to server time
+          if( 'timestamp' == $type && !is_null( $value ) )
+            $value->setTimezone( new \DateTimeZone( date_default_timezone_get() ) );
+          $value = static::db()->format_datetime( $value );
+        }
         else if( 'date' == $type ) $value = static::db()->format_date( $value );
         else if( 'time' == $type ) $value = static::db()->format_time( $value );
         else $value = static::db()->format_string( $value );
@@ -354,6 +371,7 @@ abstract class record extends \cenozo\base_object
     if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
 
+    $table_name = static::get_table_name();
     $columns = array();
     
     if( is_null( $select ) )
@@ -363,7 +381,6 @@ abstract class record extends \cenozo\base_object
     else
     {
       // select this table if one hasn't been selected yet
-      $table_name = static::get_table_name();
       if( is_null( $select->get_table_name() ) ) $select->from( $table_name );
 
       if( $select->has_external_table_columns() ||
@@ -413,7 +430,7 @@ abstract class record extends \cenozo\base_object
                 else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
               }
 
-              if( !is_null( $type ) && 'string' != $type && 'datetime' != $type )
+              if( !is_null( $type ) && 'string' != $type && 'datetime' != $type && 'timestamp' != $type )
                 settype( $columns[$column], $type );
             }
           }
@@ -446,8 +463,14 @@ abstract class record extends \cenozo\base_object
             $columns[$column] instanceof \DateTime )
         {
           $type = static::db()->get_column_data_type( $table_name, $column );
-          if( 'datetime' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
-          else if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
+          if( 'datetime' == $type || 'timestamp' == $type )
+          {
+            // convert timestamps to server time
+            if( 'timestamp' == $type )
+              $columns[$column]->setTimezone( new \DateTimeZone( 'UTC' ) );
+            $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
+          }
+          else if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
           else if( 'time' == $type ) $columns[$column] = $columns[$column]->format( 'H:i:s' );
         }
       }
@@ -1070,7 +1093,7 @@ abstract class record extends \cenozo\base_object
                 else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
               }
 
-              if( !is_null( $type ) && 'string' != $type && 'datetime' != $type )
+              if( !is_null( $type ) && 'string' != $type && 'datetime' != $type && 'timestamp' != $type )
                 settype( $return_value[$index][$column], $type );
             }
           }

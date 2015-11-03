@@ -69,8 +69,6 @@ class database extends \cenozo\base_object
 
       $column_mod = lib::create( 'database\modifier' );
       $column_mod->where( 'table_schema', 'IN', $schema_list, false );
-      $column_mod->where( 'column_name', '!=', '"update_timestamp"', false ); // ignore timestamp columns
-      $column_mod->where( 'column_name', '!=', '"create_timestamp"', false );
       $column_mod->where( 'column_type', '!=', '"mediumtext"', false ); // ignore really big data types
       $column_mod->where( 'column_type', '!=', '"longtext"', false );
       $column_mod->where( 'column_type', '!=', '"mediumblob"', false );
@@ -299,7 +297,8 @@ class database extends \cenozo\base_object
   public function get_column_variable_type( $table_name, $column_name )
   {
     $boolean_types = array( 'tinyint' );
-    $datetime_types = array( 'date', 'datetime', 'time', 'timestamp' );
+    $datetime_types = array( 'date', 'datetime', 'time' );
+    $timestamp_types = array( 'timestamp' );
     $integer_types = array( 'bigint', 'int', 'mediumint', 'smallint' );
     $float_types = array( 'decimal', 'double', 'float', 'real' );
     $string_types = array( 'blob', 'char', 'enum', 'longtext', 'text', 'varchar' );
@@ -308,6 +307,7 @@ class database extends \cenozo\base_object
     if( in_array( $data_type, $string_types ) ) return 'string';
     if( in_array( $data_type, $integer_types ) ) return 'integer';
     if( in_array( $data_type, $datetime_types ) ) return 'datetime';
+    if( in_array( $data_type, $timestamp_types ) ) return 'timestamp';
     if( in_array( $data_type, $boolean_types ) ) return 'boolean';
     if( in_array( $data_type, $float_types ) ) return 'float';
     
