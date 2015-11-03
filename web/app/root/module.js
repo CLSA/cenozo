@@ -29,7 +29,7 @@ define( [], function() {
 
           self.messageList = [];
           CnSession.messageList.forEach( function( item ) {
-            if( null === item.expiry || !moment( new Date( item.expiry ).isBefore( moment(), 'day' ) ) )
+            if( null === item.expiry || !moment( new Date( item.expiry ) ).isBefore( moment(), 'day' ) )
               self.messageList.push( item );
           } );
         } );

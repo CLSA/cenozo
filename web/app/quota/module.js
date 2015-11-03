@@ -200,11 +200,8 @@ define( cenozo.getDependencyList( 'quota' ), function() {
               } ).query().then( function success( response ) {
                 self.metadata.columnList.site_id.enumList = [];
                 response.data.forEach( function( item ) {
-                  self.metadata.columnList.site_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } )
 
             ] ).then( function() { self.metadata.loadingCount--; } );
