@@ -114,7 +114,7 @@ class participant extends record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query participant with no primary key.' )
+      log::warning( 'Tried to query participant with no primary key.' );
       return NULL;
     }
 
