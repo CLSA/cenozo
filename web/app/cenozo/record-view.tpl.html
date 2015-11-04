@@ -75,7 +75,7 @@
                     typeahead-min-length="2"
                     cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
                     class="form-control"
-                    ng-class="{ 'loading': model.module.getInput( input.key ).typeahead.isLoading }"
+                    ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
                     type="text"
                     placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
                                  }}type the first few letters to search possible values)"
@@ -91,7 +91,7 @@
                     typeahead-min-length="2"
                     cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
                     class="form-control"
-                    ng-class="{ 'loading': model.module.getInput( input.key ).typeahead.isLoading }"
+                    ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
                     type="text"
                     placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
                                  }}type the first few letters to search possible values)"

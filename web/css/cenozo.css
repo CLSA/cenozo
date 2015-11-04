@@ -126,6 +126,12 @@ tfoot, .modal-footer {
   background-position: center center;
 }
 
+.loading-small {
+  background-image: url( ../img/loading.gif );
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
 /* pointer cursor when hovering over selectable table rows */
 .table-hover > tbody > tr:hover > td,
 .table-hover > tbody > tr:hover > th {
