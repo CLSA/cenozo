@@ -36,6 +36,16 @@ class read extends service
       try
       {
         $this->select = $select_class_name::from_json( $sel_string );
+      }
+      catch( \cenozo\exception\base_exception $e )
+      {
+        // invalid select string
+        $this->status->set_code( 400 );
+        throw $e;
+      }
+
+      try
+      {
         // make sure the primary key is in the select list
         $class_name = $this->get_leaf_record_class_name();
         $this->select->add_column( $class_name::get_primary_key_name() );

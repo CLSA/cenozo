@@ -556,9 +556,10 @@ class select extends \cenozo\base_object
             else throw lib::create( 'exception\runtime', 'Invalid column sub-statement', __METHOD__ );
           }
         }
+        else throw lib::create( 'exception\runtime', sprintf( 'Invalid object property "%s"', $key ), __METHOD__ );
       }
     }
-    else throw lib::create( 'exception\runtime', 'Invalid format', __METHOD__ );
+    else throw lib::create( 'exception\runtime', 'Invalid select format', __METHOD__ );
 
     return $select;
   }
