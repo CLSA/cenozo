@@ -132,7 +132,20 @@ class util
    */
   public static function get_datetime_object( $datetime = NULL )
   {
-    return new \DateTime( $datetime, new \DateTimeZone( 'UTC' ) );
+    if( is_object( $datetime ) )
+    {
+      if( 'DateTime' != get_class( $datetime ) )
+        throw lib::create( 'exception\argument', 'datetime', $datetime, __METHOD__ );
+      return $datetime;
+    }
+    else if( is_string( $datetime ) || is_null( $datetime ) )
+    {
+      if( 'CURRENT_TIMESTAMP' == $datetime ) $datetime = NULL;
+      return new \DateTime( $datetime, new \DateTimeZone( 'UTC' ) );
+    }
+
+    // no way to convert to a datetime object
+    throw lib::create( 'exception\argument', 'datetime', $datetime, __METHOD__ );
   }
 
   /**
