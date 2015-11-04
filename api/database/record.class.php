@@ -174,6 +174,8 @@ abstract class record extends \cenozo\base_object
       return;
     }
 
+    $util_class_name = lib::get_class_name( 'util' );
+
     // do not save anything if there are no active values
     if( 0 == count( $this->active_column_values ) ) return;
 
@@ -204,6 +206,7 @@ abstract class record extends \cenozo\base_object
         // convert from datetime object to mysql-valid datetime string
         if( 'datetime' == $type || 'timestamp' == $type )
         {
+          $value = !$value ? NULL : $util_class_name::get_datetime_object( $value );
           // convert timestamps to server time
           if( 'timestamp' == $type && !is_null( $value ) )
             $value->setTimezone( new \DateTimeZone( date_default_timezone_get() ) );
@@ -311,6 +314,8 @@ abstract class record extends \cenozo\base_object
    */
   public function __set( $column_name, $value )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // make sure the column exists and isn't the primary key
     if( !static::column_exists( $column_name ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
@@ -319,12 +324,27 @@ abstract class record extends \cenozo\base_object
         'Tried to write to record\'s primary key which is forbidden',
         __METHOD__ );
 
+    // do not allow writing of create_timestamp or update_timestamp columns
+    if( 'create_timestamp' == $column_name || 'update_timestamp' == $column_name )
+      throw lib::create( 'exception\runtime', sprintf( 'Cannot edit %s column', $column_name ), __METHOD__ );
+
     if( !is_null( $value ) )
     {
       // if the column is an enum, make sure the new value is valid
       $enum_values = $this->get_enum_values( $column_name );
       if( !is_null( $enum_values ) && !in_array( $value, $enum_values ) )
         throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
+
+      // if the column is a datetime or timestamp
+      $type = static::db()->get_column_data_type( static::get_table_name(), $column_name );
+      if( 'datetime' == $type || 'timestamp' == $type )
+      {
+        // convert to a datetime object
+        $value = $util_class_name::get_datetime_object( $value );
+
+        // convert timestamps from server to UTC time
+        if( 'timestamp' == $type ) $value->setTimezone( new \DateTimeZone( 'UTC' ) );
+      }
     }
 
     if( $this->passive_column_values[$column_name] === $value )
