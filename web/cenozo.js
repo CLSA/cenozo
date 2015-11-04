@@ -1690,7 +1690,9 @@ cenozo.factory( 'CnBaseAddFactory', [
           return this.parentModel.getMetadata().then( function success() {
             // apply default values from the metadata
             for( var column in self.parentModel.metadata.columnList )
-              if( null !== self.parentModel.metadata.columnList[column].default )
+              if( null !== self.parentModel.metadata.columnList[column].default &&
+                  'create_timestamp' != column &&
+                  'update_timestamp' != column )
                 record[column] = 'tinyint' == self.parentModel.metadata.columnList[column].data_type
                                ? 1 == self.parentModel.metadata.columnList[column].default
                                : self.parentModel.metadata.columnList[column].default;
