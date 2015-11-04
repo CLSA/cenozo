@@ -184,6 +184,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
     
     Address: {
       active: true,
+      framework: true,
       promise: function( historyList, $state, CnHttpFactory ) {
         return CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/address',
@@ -226,6 +227,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
     Alternate: {
       active: true,
+      framework: true,
       promise: function( historyList, $state, CnHttpFactory ) {
         return CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/alternate',
@@ -261,6 +263,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
     Consent: {
       active: true,
+      framework: true,
       promise: function( historyList, $state, CnHttpFactory ) {
         return CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/consent',
@@ -299,6 +302,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
     Event: {
       active: true,
+      framework: true,
       promise: function( historyList, $state, CnHttpFactory ) {
         return CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/event',
@@ -336,6 +340,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
     Note: {
       active: true,
+      framework: true,
       promise: function( historyList, $state, CnHttpFactory ) {
         return CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/note',
@@ -375,6 +380,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
     Phone: {
       active: true,
+      framework: true,
       promise: function( historyList, $state, CnHttpFactory ) {
         return CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/phone',
@@ -420,14 +426,39 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ParticipantHistoryCtrl', [
-    '$scope', 'CnParticipantHistoryFactory', 'CnSession',
-    function( $scope, CnParticipantHistoryFactory, CnSession ) {
+    '$scope', '$state', 'CnParticipantHistoryFactory', 'CnSession',
+    function( $scope, $state, CnParticipantHistoryFactory, CnSession ) {
       $scope.isLoading = false;
       $scope.model = CnParticipantHistoryFactory.instance();
+
+      // create an array from the history categories object
+      $scope.historyCategoryArray = [];
+      for( var name in $scope.model.module.historyCategoryList ) {
+        if( angular.isUndefined( $scope.model.module.historyCategoryList[name].framework ) )
+          $scope.model.module.historyCategoryList[name].framework = false;
+        if( angular.isUndefined( $scope.model.module.historyCategoryList[name].name ) )
+          $scope.model.module.historyCategoryList[name].name = name;
+        $scope.historyCategoryArray.push( $scope.model.module.historyCategoryList[name] );
+      }
+
+      $scope.viewParticipant = function() {
+        $state.go( 'participant.view', { identifier: $state.params.identifier } );
+      };
+
       $scope.refresh = function() {
         $scope.isLoading = true;
         $scope.model.onView().then( function() {
-          CnSession.setBreadcrumbTrail( [ { title: 'Participant History' } ] );
+          CnSession.setBreadcrumbTrail(
+            [ {
+              title: 'Participant',
+              go: function() { $state.go( 'participant.list' ); }
+            }, {
+              title: String( $state.params.identifier ).split( '=' ).pop(),
+              go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
+            }, {
+              title: 'History'
+            } ]
+          );
           $scope.isLoading = false;
         } ).catch( CnSession.errorHandler );
       };
@@ -576,9 +607,11 @@ define( cenozo.getDependencyList( 'participant' ), function() {
           // get all history category promises, run them and then sort the resulting history list
           var promiseList = [];
           for( var name in this.module.historyCategoryList ) {
-            promiseList.push(
-              this.module.historyCategoryList[name].promise( this.historyList, $state, CnHttpFactory )
-            );
+            if( 'function' == cenozo.getType( this.module.historyCategoryList[name].promise ) ) {
+              promiseList.push(
+                this.module.historyCategoryList[name].promise( this.historyList, $state, CnHttpFactory, $q )
+              );
+            }
           };
 
           return $q.all( promiseList ).then( function() {

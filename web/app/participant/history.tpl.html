@@ -18,9 +18,18 @@
         to least recent.  You may filter which categories to display by using the buttons below.
       </p>
       <div class="btn-group btn-group-justified">
-        <div ng-repeat="(name,category) in model.module.historyCategoryList" class="btn-group">
+        <div ng-repeat="category in historyCategoryArray | filter:{ framework: true }" class="btn-group">
           <button class="btn btn-default" ng-model="category.active" btn-checkbox>
-            <span ng-class="{'text-muted':!category.active}">{{ name }}</span>
+            {{ category.name }}
+            <i class="glyphicon" ng-class="category.active ? 'glyphicon-check' : 'glyphicon-unchecked'"></i>
+          </button>
+        </div>
+      </div>
+      <div class="btn-group btn-group-justified">
+        <div ng-repeat="category in historyCategoryArray | filter:{ framework: false }" class="btn-group">
+          <button class="btn btn-default" ng-model="category.active" btn-checkbox>
+            {{ category.name }}
+            <i class="glyphicon" ng-class="category.active ? 'glyphicon-check' : 'glyphicon-unchecked'"></i>
           </button>
         </div>
       </div>
@@ -40,4 +49,7 @@
       </div>
     </div>
   </div>
+  <div class="form-footer text-right rounded-bottom bg-info">
+    <button type="button" class="btn btn-primary" ng-click="viewParticipant()">View Participant</button>
+  </div> 
 </div>
