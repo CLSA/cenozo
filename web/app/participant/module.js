@@ -440,6 +440,10 @@ define( cenozo.getDependencyList( 'participant' ), function() {
         $scope.historyCategoryArray.push( $scope.model.module.historyCategoryList[name] );
       }
 
+      $scope.viewNotes = function() {
+        $state.go( 'participant.notes', { identifier: $state.params.identifier } );
+      };
+
       $scope.viewParticipant = function() {
         $state.go( 'participant.view', { identifier: $state.params.identifier } );
       };
@@ -485,6 +489,10 @@ define( cenozo.getDependencyList( 'participant' ), function() {
       $scope.undo = function( id ) {
         $scope.model.undo( id );
         $timeout( function() { angular.element( '#note' + id ).trigger( 'change' ) }, 100 );
+      };
+
+      $scope.viewHistory = function() {
+        $state.go( 'participant.history', { identifier: $state.params.identifier } );
       };
 
       $scope.viewParticipant = function() {
