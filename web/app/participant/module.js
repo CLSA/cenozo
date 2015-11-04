@@ -161,10 +161,8 @@ define( cenozo.getDependencyList( 'participant' ), function() {
     }
   } );
 
-  module.addViewOperation( 'Notes', function( viewModel ) {
-    var CnModalParticipantNoteFactory =
-      angular.element( document.body ).injector().get( 'CnModalParticipantNoteFactory' );
-    CnModalParticipantNoteFactory.instance( { participant: viewModel.record } ).show();
+  module.addViewOperation( 'Notes', function( viewModel, $state ) {
+    $state.go( 'participant.notes', { identifier: viewModel.record.getIdentifier() } );
   } );
 
   module.addViewOperation( 'History', function( viewModel, $state ) {
@@ -430,6 +428,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
     function( $scope, $state, CnParticipantHistoryFactory, CnSession ) {
       $scope.isLoading = false;
       $scope.model = CnParticipantHistoryFactory.instance();
+      $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
 
       // create an array from the history categories object
       $scope.historyCategoryArray = [];
@@ -453,7 +452,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
               title: 'Participant',
               go: function() { $state.go( 'participant.list' ); }
             }, {
-              title: String( $state.params.identifier ).split( '=' ).pop(),
+              title: $scope.uid,
               go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
             }, {
               title: 'History'
@@ -466,6 +465,54 @@ define( cenozo.getDependencyList( 'participant' ), function() {
     }
   ] );
 
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'ParticipantNotesCtrl', [
+    '$scope', '$state', '$timeout', 'CnParticipantNotesFactory', 'CnSession',
+    function( $scope, $state, $timeout, CnParticipantNotesFactory, CnSession ) {
+      $scope.isLoading = false;
+      $scope.model = CnParticipantNotesFactory.instance();
+      $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
+      $scope.allowAdd = 0 <= CnSession.noteActions.indexOf( 'add' );
+      $scope.allowDelete = 0 <= CnSession.noteActions.indexOf( 'delete' );
+      $scope.allowEdit = 0 <= CnSession.noteActions.indexOf( 'edit' );
+
+      // trigger the elastic directive when adding a note or undoing
+      $scope.addNote = function() {
+        $scope.model.addNote();
+        $timeout( function() { angular.element( '#newNote' ).trigger( 'change' ) }, 100 );
+      };
+
+      $scope.undo = function( id ) {
+        $scope.model.undo( id );
+        $timeout( function() { angular.element( '#note' + id ).trigger( 'change' ) }, 100 );
+      };
+
+      $scope.viewParticipant = function() {
+        $state.go( 'participant.view', { identifier: $state.params.identifier } );
+      };
+
+      $scope.refresh = function() {
+        $scope.isLoading = true;
+        $scope.model.onView().then( function() {
+          CnSession.setBreadcrumbTrail(
+            [ {
+              title: 'Participant',
+              go: function() { $state.go( 'participant.list' ); }
+            }, {
+              title: $scope.uid,
+              go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
+            }, {
+              title: 'Notes'
+            } ]
+          );
+          $scope.isLoading = false;
+        } ).catch( CnSession.errorHandler );
+      };
+      $scope.refresh();
+    }
+  ] );
+
+  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantAdd', function () {
     return {
       templateUrl: 'app/participant/add.tpl.html',
@@ -622,6 +669,131 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             // sort the history list by datetime
             self.historyList = self.historyList.sort( function( a, b ) {
               return moment( new Date( a.datetime ) ).isBefore( new Date( b.datetime ) ) ? 1 : -1;
+            } );
+          } ).catch( CnSession.errorHandler );
+        };
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnParticipantNotesFactory', [
+    'CnSession', 'CnHttpFactory', '$state',
+    function( CnSession, CnHttpFactory, $state ) {
+      var object = function() {
+        var self = this;
+        this.module = module;
+        this.newNote = '';
+        
+        this.addNote = function() {
+          var note = {
+            user_id: CnSession.user.id,
+            datetime: moment().format(),
+            note: self.newNote 
+          };
+        
+          CnHttpFactory.instance( {
+            path: 'participant/' + $state.params.identifier + '/note',
+            data: note 
+          } ).post().then( function( response ) {
+            note.id = response.data;
+            note.sticky = false;
+            note.noteBackup = note.note;
+            note.userFirst = CnSession.user.firstName;
+            note.userLast = CnSession.user.lastName;
+            return note;
+          } ).then( function( note ) {
+            self.noteList.push( note );
+          } ).catch( CnSession.errorHandler );
+
+          this.newNote = '';
+        };
+
+        this.deleteNote = function( id ) {
+          var index = this.noteList.findIndexByProperty( 'id', id );
+          if( null !== index ) {
+            CnHttpFactory.instance( {
+              path: 'participant/' + $state.params.identifier + '/note/' + this.noteList[index].id
+            } ).delete().then( function() {
+              self.noteList.splice( index, 1 );
+            } ).catch( CnSession.errorHandler );
+          }
+        };
+
+        this.noteChanged = function( id ) {
+          var note = this.noteList.findByProperty( 'id', id );
+          if( note ) {
+            CnHttpFactory.instance( {
+              path: 'participant/' + $state.params.identifier + '/note/' + note.id,
+              data: { note: note.note }
+            } ).patch().catch( CnSession.errorHandler );
+          }
+        };
+
+        this.stickyChanged = function( id ) {
+          var note = this.noteList.findByProperty( 'id', id );
+          if( note ) {
+            note.sticky = !note.sticky;
+            CnHttpFactory.instance( {
+              path: 'participant/' + $state.params.identifier + '/note/' + note.id,
+              data: { sticky: note.sticky } 
+            } ).patch().catch( CnSession.errorHandler );
+          }
+        };
+
+        this.undo = function( id ) {
+          var note = this.noteList.findByProperty( 'id', id );
+          if( note && note.note != note.noteBackup ) {
+            note.note = note.noteBackup;
+            CnHttpFactory.instance( {
+              path: 'participant/' + $state.params.identifier + '/note/' + note.id,
+              data: { note: note.note }
+            } ).patch().catch( CnSession.errorHandler );
+          }
+        };
+
+        this.onView = function() {
+          this.noteList = [];
+
+          return CnHttpFactory.instance( {
+            path: 'participant/' + $state.params.identifier + '/note',
+            data: {
+              modifier: {
+                join: {
+                  table: 'user',
+                  onleft: 'note.user_id',
+                  onright: 'user.id'
+                },
+                order: { 'datetime': true }
+              },
+              select: {
+                column: [ 'sticky', 'datetime', 'note', {
+                  table: 'user',
+                  column: 'first_name',
+                  alias: 'user_first'
+                } , {
+                  table: 'user',
+                  column: 'last_name',
+                  alias: 'user_last'
+                } ]
+              }
+            }
+          } ).query().then( function( response ) {
+            response.data.forEach( function( item ) {
+              self.noteList.push( {
+                id: item.id,
+                datetime: '0000-00-00' == item.datetime.substring( 0, 10 ) ? null : item.datetime,
+                sticky: item.sticky,
+                userFirst: item.user_first,
+                userLast: item.user_last,
+                note: item.note,
+                noteBackup: item.note
+              } );
             } );
           } ).catch( CnSession.errorHandler );
         };
