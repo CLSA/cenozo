@@ -62,7 +62,7 @@ class user extends base_access
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to remove access from user with no id.' );
+      log::warning( 'Tried to remove access from user with no primary key.' );
       return;
     }
 

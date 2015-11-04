@@ -88,7 +88,7 @@ class site extends base_access
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to add access to site with no id.' );
+      log::warning( 'Tried to add access to site with no primary key.' );
       return;
     }
 
@@ -130,7 +130,7 @@ class site extends base_access
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to remove access from site with no id.' );
+      log::warning( 'Tried to remove access from site with no primary key.' );
       return;
     }
 
@@ -149,7 +149,7 @@ class site extends base_access
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get setting for site with no id.' );
+      log::warning( 'Tried to get setting for site with no primary key.' );
       return NULL;
     }
 

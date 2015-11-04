@@ -60,7 +60,7 @@ class participant extends record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no primary key.' );
       return NULL;
     }
 
@@ -87,7 +87,7 @@ class participant extends record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no primary key.' );
       return NULL;
     }
 
@@ -114,7 +114,7 @@ class participant extends record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no primary key.' )
       return NULL;
     }
 
@@ -140,7 +140,7 @@ class participant extends record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no primary key.' );
       return NULL;
     }
 
@@ -167,7 +167,7 @@ class participant extends record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no primary key.' );
       return NULL;
     }
 
@@ -220,7 +220,7 @@ class participant extends record
     // no primary key means no preferred site
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to change preferred site of participant with no id.' );
+      log::warning( 'Tried to change preferred site of participant with no primary key.' );
       return NULL;
     }
 

@@ -25,7 +25,7 @@ class role extends base_access
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine whether role has operation for role with no id.' );
+      log::warning( 'Tried to determine whether role has operation for role with no primary key.' );
       return false;
     }
 
@@ -45,7 +45,7 @@ class role extends base_access
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine whether role has service for role with no id.' );
+      log::warning( 'Tried to determine whether role has service for role with no primary key.' );
       return false;
     }
 
@@ -65,7 +65,7 @@ class role extends base_access
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine whether role has state for role with no id.' );
+      log::warning( 'Tried to determine whether role has state for role with no primary key.' );
       return false;
     }
 

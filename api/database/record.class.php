@@ -265,10 +265,9 @@ abstract class record extends \cenozo\base_object
     // check the primary key value
     if( is_null( $this->passive_column_values[static::$primary_key_name] ) )
     {
-      log::warning( 'Tried to delete record with no id.' );
+      log::warning( 'Tried to delete record with no primary key.' );
       return;
     }
-
 
     // not using a modifier here is ok since we're forcing id to be an integer
     $sql = sprintf( 'DELETE FROM %s WHERE %s = %d',
@@ -647,13 +646,6 @@ abstract class record extends \cenozo\base_object
    */
   protected function get_record( $record_type )
   {
-    // check the primary key value
-    if( is_null( $this->passive_column_values[static::$primary_key_name] ) )
-    {
-      log::warning( 'Tried to query record with no id.' );
-      return NULL;
-    }
-
     $foreign_key_name = $record_type.'_id';
 
     // make sure this table has the correct foreign key
@@ -706,7 +698,7 @@ abstract class record extends \cenozo\base_object
     $primary_key_value = $this->passive_column_values[static::$primary_key_name];
     if( is_null( $primary_key_value ) )
     {
-      log::warning( 'Tried to query record with no id.' );
+      log::warning( 'Tried to query record with no primary key.' );
       return array();
     }
 
@@ -830,7 +822,7 @@ abstract class record extends \cenozo\base_object
     $primary_key_value = $this->passive_column_values[static::$primary_key_name];
     if( is_null( $primary_key_value ) )
     {
-      log::warning( 'Tried to query record with no id.' );
+      log::warning( 'Tried to query record with no primary key.' );
       return;
     }
 
@@ -898,7 +890,7 @@ abstract class record extends \cenozo\base_object
     $primary_key_value = $this->passive_column_values[static::$primary_key_name];
     if( is_null( $primary_key_value ) )
     {
-      log::warning( 'Tried to query record with no id.' );
+      log::warning( 'Tried to query record with no primary key.' );
       return;
     }
 

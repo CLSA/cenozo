@@ -90,7 +90,7 @@ class application extends record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get cohort gropuing for application with no id.' );
+      log::warning( 'Tried to get cohort gropuing for application with no primary key.' );
       return '';
     }
 
@@ -118,7 +118,7 @@ class application extends record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get cohort gropuing for application with no id.' );
+      log::warning( 'Tried to get cohort gropuing for application with no primary key.' );
       return '';
     }
 
@@ -141,12 +141,6 @@ class application extends record
    */
   public function get_release_event_type()
   {
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to get release event_type for application with no id.' );
-      return '';
-    }
-
     return is_null( $this->release_event_type_id ) ?
       NULL : lib::create( 'database\event_type', $this->release_event_type_id );
   }

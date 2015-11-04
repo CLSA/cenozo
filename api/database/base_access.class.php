@@ -53,7 +53,7 @@ abstract class base_access extends record
     // now that we are relatively sure the method name is valid, make sure we have a valid record
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query user with no id.' );
+      log::warning( 'Tried to query user with no primary key.' );
       return 0;
     }
 
