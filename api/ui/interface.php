@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en" ng-app="cenozoApp">
-<head>
+<head ng-controller="HeadCtrl">
   <meta charset="utf-8">
-  <title><?php echo ucwords( INSTANCE ); ?></title>
+  <title><?php echo ucwords( INSTANCE ); ?>{{ getPageTitle() }}</title>
   <link rel="shortcut icon" href="<?php print ROOT_URL; ?>/img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
@@ -37,6 +37,13 @@
       function( $stateProvider ) {
         for( var module in cenozoApp.moduleList )
           cenozo.routeModule( $stateProvider, module, cenozoApp.moduleList[module] );
+      }
+    ] );
+
+    cenozoApp.controller( 'HeadCtrl', [
+      '$scope', 'CnSession',
+      function( $scope, CnSession ) {
+        $scope.getPageTitle = function() { return CnSession.pageTitle; };
       }
     ] );
 

@@ -1407,6 +1407,7 @@ cenozo.factory( 'CnSession', [
             CnModalMessageFactory, CnModalPasswordFactory, CnModalAccountFactory ) {
     return new ( function() {
       var self = this;
+      this.pageTitle = '';
       this.promise = null;
       this.working = false;
       this.workingGUIDList = {};
@@ -3649,6 +3650,20 @@ cenozo.run( [
       if( 0 < CnSession.working ) CnSession.transitionWhileWorking = true;
     } );
     $rootScope.$on( '$stateChangeSuccess', function( event, toState, toParams, fromState, fromParams ) {
+      if( angular.isUndefined( toState ) ) {
+        CnSession.pageTitle = 'Home';
+      } else {
+        CnSession.pageTitle = toState.name.split( '.' ).filter( function( item ) {
+          return 'root' != item;
+        } ).map( function( item ) {
+          return item.replace( /\b./g, function( match ) { return match.toUpperCase(); } );
+        } ).join( ' / ' );
+      }
+
+      CnSession.pageTitle = ': ' + CnSession.pageTitle;
+      if( angular.isDefined( toParams ) && angular.isDefined( toParams.identifier ) )
+        CnSession.pageTitle += ' / ' + String( toParams.identifier ).split( '=' ).pop();
+
       console.info( 'Completed state change to %s',
         toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
       );
