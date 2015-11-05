@@ -87,9 +87,6 @@ class module extends \cenozo\service\module
       $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
       $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
 
-      // restrict to users who have access to this site (for some roles)
-      if( !$db_role->all_sites ) $join_mod->where( 'site.id', '=', $db_site->id );
-
       $modifier->left_join(
         sprintf( '( %s %s ) AS collection_join_user', $join_sel->get_sql(), $join_mod->get_sql() ),
         'collection.id',
