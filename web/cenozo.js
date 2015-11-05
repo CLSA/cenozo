@@ -499,15 +499,17 @@ cenozo.directive( 'cnChange', [
         element.bind( 'blur', function() {
           scope.$evalAsync( function() { if( element.val() != oldValue ) scope.$eval( attrs.cnChange ); } );
         } );
-        element.bind( 'keydown', function( event ) {
-          scope.$evalAsync( function() {
-            if( 13 == event.which ) {
-              scope.$eval( attrs.cnChange );
-              oldValue = element.val(); // update the old value, otherwise the blur event will fire
-              event.target.blur();
-            }
+        if( !element.is( 'textarea' ) ) {
+          element.bind( 'keydown', function( event ) {
+            scope.$evalAsync( function() {
+              if( 13 == event.which ) {
+                scope.$eval( attrs.cnChange );
+                oldValue = element.val(); // update the old value, otherwise the blur event will fire
+                event.target.blur();
+              }
+            } );
           } );
-        } );
+        }
       }
     };
   }

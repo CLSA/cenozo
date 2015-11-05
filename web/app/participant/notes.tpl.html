@@ -53,7 +53,7 @@
         <div style="position:relative;">
           <textarea id="note{{ note.id }}"
                     ng-model="note.note"
-                    ng-blur="model.noteChanged( note.id )"
+                    cn-change="model.noteChanged( note.id )"
                     class="form-control note"
                     ng-disabled="!allowEdit"
                     cn-elastic></textarea>
