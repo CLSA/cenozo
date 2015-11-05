@@ -22,6 +22,7 @@ class module extends \cenozo\service\module
     parent::prepare_read( $select, $modifier );
 
     $session = lib::create( 'business\session' );
+    $db_role = $session->get_role();
 
     // left join to application, site and role since they may be null
     $modifier->left_join( 'application', 'system_message.application_id', 'application.id' );
@@ -32,11 +33,13 @@ class module extends \cenozo\service\module
     $column = sprintf( 'IFNULL( system_message.application_id, %d )', $application_id );
     $modifier->where( $column, '=', $application_id );
 
-    if( !$session->get_role()->all_sites )
+    if( !$db_role->all_sites )
     {
       $site_id = $session->get_site()->id;
       $column = sprintf( 'IFNULL( system_message.site_id, %d )', $site_id );
       $modifier->where( $column, '=', $site_id );
     }
+
+    $modifier->where( 'IFNULL( role.tier, 1 )', '<=', $db_role->tier );
   }
 }
