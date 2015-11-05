@@ -175,7 +175,11 @@ define( cenozo.getDependencyList( 'user' ), function() {
     cenozo.getViewModelInjectionList( 'user' ).concat( function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var object = function( parentModel ) {
+        CnBaseViewFactory.construct( this, parentModel, args );
+        if( angular.isDefined( this.languageModel ) )
+          this.languageModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
+      }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     } )
   );

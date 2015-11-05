@@ -806,9 +806,13 @@ cenozo.directive( 'cnRecordList', [
           console.error( 'Cannot render cn-record-list, no model provided.' );
         } else {
           scope.isDeleting = [];
-          scope.heading = angular.isUndefined( attrs.heading )
-                        ? scope.model.module.name.singular.ucWords() + ' List'
-                        : attrs.heading;
+          if( angular.isDefined( attrs.heading ) ) {
+            scope.heading = attrs.heading;
+          } else if( angular.isDefined( scope.model.heading ) ) {
+            scope.heading = scope.model.heading;
+          } else {
+            scope.heading = scope.model.module.name.singular.ucWords() + ' List'
+          }
 
           scope.initCollapsed = scope.collapsed ? true : false;
 

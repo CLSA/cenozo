@@ -135,7 +135,8 @@ define( cenozo.getDependencyList( 'collection' ), function() {
       var CnHttpFactory = args[args.length-1];
       var object = function( parentModel ) {
         CnBaseViewFactory.construct( this, parentModel, args );
-        
+        if( angular.isDefined( this.userModel ) ) this.userModel.heading = 'User Control List';
+
         var self = this;
         var defaultEditEnabled = this.parentModel.editEnabled;
         this.onView = function() {
