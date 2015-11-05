@@ -142,8 +142,10 @@ define( cenozo.getDependencyList( 'collection' ), function() {
         this.onView = function() {
           return this.viewRecord().then( function() {
             // if the collection is locked then don't allow users/participants to be changed
-            self.participantModel.enableChoose( !self.record.locked );
-            self.userModel.enableChoose( !self.record.locked );
+            if( angular.isDefined( self.participantModel ) )
+              self.participantModel.enableChoose( !self.record.locked );
+            if( angular.isDefined( self.userModel ) )
+              self.userModel.enableChoose( !self.record.locked );
 
             // only allow users belonging to this collection to edit it when it is locked
             if( self.record.locked ) {
@@ -161,8 +163,10 @@ define( cenozo.getDependencyList( 'collection' ), function() {
           return this.patchRecord( data ).then( function() {
             if( angular.isDefined( data.locked ) ) {
               // update the choose and edit modes
-              self.participantModel.enableChoose( !self.record.locked );
-              self.userModel.enableChoose( !self.record.locked );
+              if( angular.isDefined( self.participantModel ) )
+                self.participantModel.enableChoose( !self.record.locked );
+              if( angular.isDefined( self.userModel ) )
+                self.userModel.enableChoose( !self.record.locked );
 
               if( self.record.locked ) {
                 return CnHttpFactory.instance( {
