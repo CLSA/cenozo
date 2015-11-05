@@ -145,18 +145,20 @@ angular.extend( cenozoApp, {
     }
 
     // replace dependent names with references to the module objects themselves
-    self.moduleList['participant'].children.push( 'rawr' );
     for( var name in this.moduleList ) {
+      var children = [];
       this.moduleList[name].children.forEach( function( item, index, array ) {
         var module = this.module( item );
-        if( module ) array[index] = this.module( item );
-        else array.splice( index, 1 );
+        if( module ) children.push( module );
       }, this );
+      this.moduleList[name].children = children;
+
+      var choosing = [];
       this.moduleList[name].choosing.forEach( function( item, index, array ) {
         var module = this.module( item );
-        if( module ) array[index] = this.module( item );
-        else array.splice( index, 1 );
+        if( module ) choosing.push( module );
       }, this );
+      this.moduleList[name].choosing = choosing;
     }
   }
 } );
