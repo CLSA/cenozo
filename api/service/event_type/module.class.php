@@ -23,8 +23,6 @@ class module extends \cenozo\service\module
 
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
-    $db_site = $session->get_site();
-    $db_role = $session->get_role();
 
     // add the total number of events
     if( $select->has_column( 'event_count' ) )
@@ -36,6 +34,26 @@ class module extends \cenozo\service\module
 
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->group( 'event_type_id' );
+
+      // restrict to participants in this application
+      if( $db_application->release_based )
+      {
+        $sub_mod = lib::create( 'database\modifier' );
+        $sub_mod->where( 'event.participant_id', '=', 'application_has_participant.participant_id', false );
+        $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+        $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
+        $join_mod->join_modifier( 'application_has_participant', $sub_mod );
+      }
+
+      // restrict to participants in this site (for some roles)
+      if( !$session->get_role()->all_sites )
+      {
+        $sub_mod = lib::create( 'database\modifier' );
+        $sub_mod->where( 'event.participant_id', '=', 'participant_site.participant_id', false );
+        $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
+        $sub_mod->where( 'participant_site.site_id', '=', $session->get_site()->id );
+        $join_mod->join_modifier( 'participant_site', $sub_mod );
+      }
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS event_type_join_event', $join_sel->get_sql(), $join_mod->get_sql() ),
