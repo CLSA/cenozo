@@ -60,12 +60,12 @@
       </thead>
       <tbody>
         <tr ng-if="model.listModel.isLoading">
-          <td colspan="{{ numColumns }}" class="bg-white">
+          <td colspan="{{ numColumns + ( model.deleteEnabled ? 1 : 0 ) }}" class="bg-white">
             <div class="loading" tooltip="Loading&hellip;"></div>
           </td>
         </tr>
         <tr ng-if="!model.listModel.isLoading && 0 == model.listModel.cache.length">
-          <td colspan="{{ numColumns }}">
+          <td colspan="{{ numColumns + ( model.deleteEnabled ? 1 : 0 ) }}">
             There are no {{ model.module.name.plural }} found.
           </td>
         </tr>
@@ -105,7 +105,8 @@
       </tbody>
       <tfoot class="bg-info">
         <tr>
-          <td colspan="{{ numColumns + ( model.listModel.chooseMode ? 1 : 0 ) }}" class="rounded-bottom">
+          <td colspan="{{ numColumns + ( model.deleteEnabled ? 1 : 0 ) + ( model.listModel.chooseMode ? 1 : 0 ) }}"
+              class="rounded-bottom">
             <pagination class="pagination pull-left"
                         ng-model="model.listModel.paginationFactory.currentPage"
                         ng-show="model.listModel.cache.length > model.listModel.paginationFactory.itemsPerPage"

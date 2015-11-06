@@ -835,7 +835,6 @@ cenozo.directive( 'cnRecordList', [
 
           // get the total number of columns in the table
           scope.numColumns = scope.dataArray.length;
-          if( scope.model.deleteEnabled ) scope.numColumns++;
         }
       }
     };
