@@ -43,6 +43,18 @@ define( cenozo.getDependencyList( 'consent_type' ), function() {
   } );
 
   /* ######################################################################################################## */
+  cenozo.providers.controller( 'ConsentTypeAddCtrl', [
+    '$scope', 'CnConsentTypeModelFactory', 'CnSession',
+    function( $scope, CnConsentTypeModelFactory, CnSession ) { 
+      $scope.model = CnConsentTypeModelFactory.root;
+      $scope.record = {}; 
+      $scope.model.addModel.onNew( $scope.record ).then( function() {
+        $scope.model.setupBreadcrumbTrail( 'add' );
+      } ).catch( CnSession.errorHandler );
+    }
+  ] );
+
+  /* ######################################################################################################## */
   cenozo.providers.controller( 'ConsentTypeListCtrl', [
     '$scope', 'CnConsentTypeModelFactory', 'CnSession',
     function( $scope, CnConsentTypeModelFactory, CnSession ) {
@@ -65,12 +77,29 @@ define( cenozo.getDependencyList( 'consent_type' ), function() {
   ] );
 
   /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnConsentTypeAdd', function () {
+    return {
+      templateUrl: 'app/consent_type/add.tpl.html',
+      restrict: 'E'
+    };
+  } );
+
+  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnConsentTypeView', function () {
     return {
       templateUrl: 'app/consent_type/view.tpl.html',
       restrict: 'E'
     };
   } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnConsentTypeAddFactory', [
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentTypeListFactory', [
@@ -93,10 +122,11 @@ define( cenozo.getDependencyList( 'consent_type' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentTypeModelFactory', [
-    'CnBaseModelFactory', 'CnConsentTypeListFactory', 'CnConsentTypeViewFactory',
-    function( CnBaseModelFactory, CnConsentTypeListFactory, CnConsentTypeViewFactory ) {
+    'CnBaseModelFactory', 'CnConsentTypeAddFactory', 'CnConsentTypeListFactory', 'CnConsentTypeViewFactory',
+    function( CnBaseModelFactory, CnConsentTypeAddFactory, CnConsentTypeListFactory, CnConsentTypeViewFactory ) {
       var object = function() {
         CnBaseModelFactory.construct( this, module );
+        this.addModel = CnConsentTypeAddFactory.instance( this );
         this.listModel = CnConsentTypeListFactory.instance( this );
         this.viewModel = CnConsentTypeViewFactory.instance( this );
       };
