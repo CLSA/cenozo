@@ -476,9 +476,10 @@ define( cenozo.getDependencyList( 'participant' ), function() {
       $scope.isLoading = false;
       $scope.model = CnParticipantNotesFactory.instance();
       $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
-      $scope.allowAdd = 0 <= CnSession.noteActions.indexOf( 'add' );
-      $scope.allowDelete = 0 <= CnSession.noteActions.indexOf( 'delete' );
-      $scope.allowEdit = 0 <= CnSession.noteActions.indexOf( 'edit' );
+
+      // note actions are stored in the participant module in cenozo.js
+      $scope.allowDelete = module.allowNoteDelete;
+      $scope.allowEdit = module.allowNoteEdit;
 
       // trigger the elastic directive when adding a note or undoing
       $scope.addNote = function() {

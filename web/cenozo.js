@@ -85,8 +85,10 @@ angular.extend( cenozoApp, {
     this.moduleList = list;
     for( var name in this.moduleList ) {
       if( "note" == name ) {
-        // notes are handled by a modal only
-        cenozo.noteActions = this.moduleList.note.actions;
+        // notes are handled by the participant module
+        var participantModule = cenozoApp.module( 'participant' );
+        participantModule.allowNoteDelete = 0 <= this.moduleList.note.actions.indexOf( 'delete' );
+        participantModule.allowNoteEdit = 0 <= this.moduleList.note.actions.indexOf( 'edit' );
         delete this.moduleList.note;
       } else {
         var framework = cenozo.isFrameworkModule( name );
@@ -1427,8 +1429,6 @@ cenozo.factory( 'CnSession', [
       this.siteList = [];
       this.messageList = [];
       this.breadcrumbTrail = [];
-      this.noteActions = cenozo.noteActions;
-      delete cenozo.noteActions;
 
       // handle watching of http requests that take a long time to return
       var workingPromise = null;
