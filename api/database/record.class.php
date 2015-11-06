@@ -604,20 +604,21 @@ abstract class record extends \cenozo\base_object
         { // calling: get_<record>_list( $select = NULL, $modifier = NULL )
           return $this->get_record_list(
             $subject,
-            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL,
-            1 < count( $args ) && !is_null( $args[1] ) ? $args[1] : NULL );
+            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL,   // select
+            1 < count( $args ) && !is_null( $args[1] ) ? $args[1] : NULL ); // modifier
         }
         else if( 'object_list' == $sub_action )
         { // calling: get_<record>_object_list( $modifier = NULL )
           return $this->get_record_object_list(
             $subject,
-            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL );
+            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL ); // modifier
         }
         else if( 'count' == $sub_action )
         { // calling: get_<record>_count( $modifier = NULL )
           return $this->get_record_count(
             $subject,
-            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL );
+            0 < count( $args ) && !is_null( $args[0] ) ? $args[0] : NULL,    // modifier
+            1 < count( $args ) && !is_null( $args[1] ) ? $args[1] : false ); // distinct bool
         }
         else
         {
@@ -674,10 +675,13 @@ abstract class record extends \cenozo\base_object
    * @param database\select $select Which columns to select
    * @param database\modifier $modifier A modifier to apply to the list
    * @param boolean $return_alternate One of "object" or "count" to return objects or a count total
+   * @param bool $distinct Whether to count only distinct primary keys for the joining table (only used when
+   *                       return_alternate is 'count')
    * @return array( associative or array ) | int
    * @access protected
    */
-  protected function get_record_list( $record_type, $select = NULL, $modifier = NULL, $return_alternate = '' )
+  protected function get_record_list(
+    $record_type, $select = NULL, $modifier = NULL, $return_alternate = '', $distinct = false )
   {
     if( !is_string( $record_type ) || 0 == strlen( $record_type ) )
       throw lib::create( 'exception\argument', 'record_type', $record_type, __METHOD__ );
@@ -749,7 +753,7 @@ abstract class record extends \cenozo\base_object
 
       if( 'count' == $return_alternate )
       {
-        $return_value = $foreign_class_name::count( $modifier );
+        $return_value = $foreign_class_name::count( $modifier, $distinct );
       }
       else
       {
@@ -787,12 +791,13 @@ abstract class record extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param database\modifier $modifier A modifier to apply to the list or count.
+   * @param bool $distinct Whether to count only distinct primary keys for the joining table
    * @return associative array
    * @access protected
    */
-  public function get_record_count( $record_type, $modifier = NULL )
+  public function get_record_count( $record_type, $modifier = NULL, $distinct  = false )
   {
-    return $this->get_record_list( $record_type, NULL, $modifier, 'count' );
+    return $this->get_record_list( $record_type, NULL, $modifier, 'count', $distinct );
   }
 
   /**
@@ -1136,13 +1141,23 @@ abstract class record extends \cenozo\base_object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
+   * @param bool $distinct Whether to count only distinct primary keys for this table
    * @return int
    * @static
    * @access public
    */
-  public static function count( $modifier = NULL )
+  public static function count( $modifier = NULL, $distinct = false )
   {
-    return static::select( NULL, $modifier, 'count' );
+    $select = NULL;
+    if( $distinct )
+    { // add a count(distinct) to the select
+      $select = lib::create( 'database\select' );
+      $select->add_column(
+        sprintf( 'COUNT( DISTINCT %s.%s )', static::get_table_name(), static::$primary_key_name ),
+        'total',
+        false );
+    }
+    return static::select( $select, $modifier, 'count' );
   }
 
   /**

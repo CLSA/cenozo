@@ -36,9 +36,8 @@ class query extends \cenozo\service\query
     $modifier = clone $this->modifier;
     $modifier->join( 'event', 'participant.id', 'event.participant_id' );
     $modifier->where( 'event.event_type_id', '=', $db_event_type->id );
-    $modifier->group( 'participant.id' );
 
-    return $participant_class_name::count( $modifier );
+    return $participant_class_name::count( $modifier, true ); // distinct
   }
 
   /**
@@ -49,11 +48,12 @@ class query extends \cenozo\service\query
     $participant_class_name = lib::create( 'database\participant' );
 
     $db_event_type = $this->get_parent_record();
+    $select = clone $this->select;
+    $select->set_distinct( true );
     $modifier = clone $this->modifier;
     $modifier->join( 'event', 'participant.id', 'event.participant_id' );
     $modifier->where( 'event.event_type_id', '=', $db_event_type->id );
-    $modifier->group( 'participant.id' );
 
-    return $participant_class_name::select( $this->select, $modifier );
+    return $participant_class_name::select( $select, $modifier );
   }
 }
