@@ -57,14 +57,8 @@ class ui extends \cenozo\base_object
       // prepare which operations to show above the lists (not sorted)
       $operation_items = $this->get_operation_items();
       
-      // prepare which modules to show in the list and add the list item to the module's actions
-      $list_items = $this->get_list_items();
-      foreach( $list_items as $title => $subject )
-      {
-        if( !array_key_exists( $subject, $module_list ) )
-          $module_list[$subject] = array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
-        $module_list[$subject]['actions'][] = 'list';
-      }
+      // prepare which modules to show in the list
+      $list_items = $this->get_list_items( $module_list );
       ksort( $list_items );
 
       // remove list items the role doesn't have access to
@@ -147,7 +141,6 @@ class ui extends \cenozo\base_object
     $modifier->where( 'service.restricted', '=', false );
     $modifier->or_where( 'role_has_service.role_id', '!=', NULL );
     $modifier->where_bracket( false );
-    $modifier->where( 'subject', '!=', 'self' );
     $modifier->order( 'subject' );
     $modifier->order( 'method' );
 
@@ -156,17 +149,32 @@ class ui extends \cenozo\base_object
     {
       $subject = $service['subject'];
       if( !array_key_exists( $subject, $module_list ) )
-        $module_list[$subject] = array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
+        $module_list[$subject] = array(
+          'actions' => array(),
+          'children' => array(),
+          'choosing' => array(),
+          'list_menu' => false );
 
-      // add delete, view, edit and add actions (list actions are depending on the list items so not added here)
+      // add delete, view, list, edit and add actions
       if( 'DELETE' == $service['method'] )
+      {
         $module_list[$subject]['actions'][] = 'delete';
-      else if( 'GET' == $service['method'] && $service['resource'] )
-        $module_list[$subject]['actions'][] = 'view';
+      }
+      else if( 'GET' == $service['method'] )
+      {
+        $module_list[$subject]['actions'][] = $service['resource'] ? 'view' : 'list';
+        // add the module to the list menu if we can both view and list it
+        if( in_array( 'list', $module_list[$subject]['actions'] ) &&
+            in_array( 'view', $module_list[$subject]['actions'] ) ) $module_list[$subject]['list_menu'] = true;
+      }
       else if( 'PATCH' == $service['method'] )
+      {
         $module_list[$subject]['actions'][] = 'edit';
+      }
       else if( 'POST' == $service['method'] )
+      {
         $module_list[$subject]['actions'][] = 'add';
+      }
     }
 
     // add child/choose actions to certain modules
@@ -227,41 +235,57 @@ class ui extends \cenozo\base_object
    * @return array( title, add )
    * @access protected
    */
-  protected function get_list_items()
+  protected function get_list_items( $module_list )
   {
     $session = lib::create( 'business\session' );
     $db_role = $session->get_role();
 
-    $list = array(
-      'Alternates'      => 'alternate',
-      'Collections'     => 'collection',
-      'Languages'       => 'language',
-      'Participants'    => 'participant'
-    );
-
-    if( $db_role->all_sites ) $list['Sites'] = 'site';
-    if( 2 <= $db_role->tier )
-    {
-      $list['Activities']      = 'activity';
-      $list['Consent Types']     = 'consent_type';
-      $list['Event Types']     = 'event_type';
-      $list['Quotas']          = 'quota';
-      $list['States']          = 'state';
-      $list['System Messages'] = 'system_message';
-      $list['Users']           = 'user';
-    }
-    if( 3 <= $db_role->tier )
-    {
-      $list['Applications']    = 'application';
-      $list['Scripts']         = 'script';
-      $list['Settings']        = 'setting';
-      $list['Sources']         = 'source';
-    }
-
     // determine which grouping type to use
     $grouping_list = $session->get_application()->get_cohort_groupings();
-    if( in_array( 'jurisdiction', $grouping_list ) ) $list['Jurisdictions'] = 'jurisdiction';
-    if( in_array( 'region', $grouping_list ) ) $list['Region Sites'] = 'region_site';
+
+    $list = array();
+    if( array_key_exists( 'activity', $module_list ) && $module_list['activity']['list_menu'] )
+      $list['Activities'] = 'activity';
+    if( array_key_exists( 'activity', $module_list ) && $module_list['activity']['list_menu'] )
+      $list['Activities'] = 'activity';
+    if( array_key_exists( 'alternate', $module_list ) && $module_list['alternate']['list_menu'] )
+      $list['Alternates'] = 'alternate';
+    if( array_key_exists( 'application', $module_list ) && $module_list['application']['list_menu'] )
+      $list['Applications'] = 'application';
+    if( array_key_exists( 'collection', $module_list ) && $module_list['collection']['list_menu'] )
+      $list['Collections'] = 'collection';
+    if( array_key_exists( 'consent_type', $module_list ) && $module_list['consent_type']['list_menu'] )
+      $list['Consent Types'] = 'consent_type';
+    if( array_key_exists( 'event_type', $module_list ) && $module_list['event_type']['list_menu'] )
+      $list['Event Types'] = 'event_type';
+    if( in_array( 'jurisdiction', $grouping_list ) &&
+        array_key_exists( 'jurisdiction', $module_list ) && $module_list['jurisdiction']['list_menu'] )
+      $list['Jurisdictions'] = 'jurisdiction';
+    if( array_key_exists( 'language', $module_list ) && $module_list['language']['list_menu'] )
+      $list['Languages'] = 'language';
+    if( array_key_exists( 'participant', $module_list ) && $module_list['participant']['list_menu'] )
+      $list['Participants'] = 'participant';
+    if( array_key_exists( 'quota', $module_list ) && $module_list['quota']['list_menu'] )
+      $list['Quotas'] = 'quota';
+    if( in_array( 'region', $grouping_list ) &&
+        array_key_exists( 'region_site', $module_list ) && $module_list['region_site']['list_menu'] )
+      $list['Region Sites'] = 'region_site';
+    if( 3 <= $db_role->tier &&
+        array_key_exists( 'script', $module_list ) && $module_list['script']['list_menu'] )
+      $list['Scripts'] = 'script';
+    if( array_key_exists( 'setting', $module_list ) && $module_list['setting']['list_menu'] )
+      $list['Settings'] = 'setting';
+    if( $db_role->all_sites &&
+        array_key_exists( 'site', $module_list ) && $module_list['site']['list_menu'] )
+      $list['Sites'] = 'site';
+    if( array_key_exists( 'source', $module_list ) && $module_list['source']['list_menu'] )
+      $list['Sources'] = 'source';
+    if( array_key_exists( 'state', $module_list ) && $module_list['state']['list_menu'] )
+      $list['States'] = 'state';
+    if( array_key_exists( 'system_message', $module_list ) && $module_list['system_message']['list_menu'] )
+      $list['System Messages'] = 'system_message';
+    if( array_key_exists( 'user', $module_list ) && $module_list['user']['list_menu'] )
+      $list['Users'] = 'user';
 
     return $list;
   }
@@ -280,14 +304,12 @@ class ui extends \cenozo\base_object
     $list = array();
 
     if( 2 <= $db_role->tier )
-    {
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
+    if( 2 <= $db_role->tier )
       $list['Participant Multinote'] = array( 'subject' => 'participant', 'action' => 'multinote' );
-      $list['Participant Search']    = array( 'subject' => 'participant', 'action' => 'search' );
-    }
-
     if( 3 <= $db_role->tier )
       $list['Participant Reassign'] = array( 'subject' => 'participant', 'action' => 'reassign' );
+    $list['Participant Search']    = array( 'subject' => 'participant', 'action' => 'search' );
 
     return $list;
   }
