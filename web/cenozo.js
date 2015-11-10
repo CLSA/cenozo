@@ -533,9 +533,11 @@ cenozo.directive( 'cnElastic', [
         $scope.initialHeight = $scope.initialHeight || element[0].style.height;
         var resize = function() {
           element[0].style.height = $scope.initialHeight; // affects scrollHeight
-          element[0].style.height = '' + ( element[0].scrollHeight + 2 ) + 'px';
+          var height = element[0].scrollHeight + 2;
+          if( height > 700 ) height = 700; // maximum height of 700 pixels
+          element[0].style.height = height + 'px';
         };
-        element.on( 'blur keyup change', resize );
+        element.on( 'blur focus keyup mouseup change', function() { $timeout( resize, 200 ) } );
         $timeout( resize, 200 );
       }
     };
@@ -1288,6 +1290,36 @@ cenozo.filter( 'cnDatetime', [
     };
   }
 ] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.filter( 'cnIsEmpty',
+  function() {
+    return function( input ) {
+      if( angular.isArray( input ) ) return 0 == input.length;
+      else if( angular.isObject( input ) ) return 0 == Object.keys( input ).length;
+      else angular.isUndefined( input );
+    };
+  }
+);
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.filter( 'cnIsNotEmpty',
+  function() {
+    return function( input ) {
+      if( angular.isArray( input ) ) return 0 != input.length;
+      else if( angular.isObject( input ) ) return 0 != Object.keys( input ).length;
+      else angular.isDefined( input );
+    };
+  }
+);
 
 /* ######################################################################################################## */
 
