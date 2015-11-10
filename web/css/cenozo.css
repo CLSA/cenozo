@@ -5,6 +5,7 @@ td { border: 0px !important; }
 td.tiny { width: 1px; white-space: nowrap; }
 .collapsed-footer { padding: 8px; }
 blockquote { font-size: 100%; }
+.panel { border-radius: 6px; }
 .btn { font-weight: bold; }
 .btn-narrow { padding-left: 6px; padding-right: 6px; }
 .btn-muted { background-color: #eaeaea; }
