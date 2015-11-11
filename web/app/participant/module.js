@@ -470,6 +470,22 @@ define( cenozo.getDependencyList( 'participant' ), function() {
   ] );
 
   /* ######################################################################################################## */
+  cenozo.providers.controller( 'ParticipantMultieditCtrl', [
+    '$scope', '$state', 'CnParticipantMultieditFactory', 'CnSession',
+    function( $scope, $state, CnParticipantMultieditFactory, CnSession ) {
+      $scope.model = CnParticipantMultieditFactory.instance();
+      CnSession.setBreadcrumbTrail(
+        [ {
+          title: 'Participant',
+          go: function() { $state.go( 'participant.list' ); }
+        }, {
+          title: 'Multi-Edit'
+        } ]
+      );
+    }
+  ] );
+
+  /* ######################################################################################################## */
   cenozo.providers.controller( 'ParticipantNotesCtrl', [
     '$scope', '$state', '$timeout', 'CnParticipantNotesFactory', 'CnSession',
     function( $scope, $state, $timeout, CnParticipantNotesFactory, CnSession ) {
@@ -681,6 +697,160 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             } );
           } ).catch( CnSession.errorHandler );
         };
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnParticipantMultieditFactory', [
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnParticipantModelFactory',
+    function( CnSession, CnHttpFactory, CnModalMessageFactory, CnParticipantModelFactory ) {
+      var object = function() {
+        var self = this;
+        this.module = module;
+        this.confirmInProgress = false;
+        this.confirmedCount = null;
+        this.uidList = '';
+        this.activeInput = '';
+        this.hasActiveInputs = false;
+        this.inputListIsBuilt = false;
+        this.inputList = [
+          'active', 'honorific', 'first_name', 'other_name', 'last_name', 'sex', 'date_of_birth',
+          'age_group_id', 'state_id', 'language_id', 'out_of_area', 'email', 'mass_email'
+        ];
+        
+        function buildInputList() {
+          var metadata = CnParticipantModelFactory.root.metadata.columnList;
+          self.inputList.forEach( function( column, index, array ) {
+            // find this column's title and type in the module's input group list
+            var title = null, type = null;
+            for( var group in module.inputGroupList ) {
+              for( var groupListColumn in module.inputGroupList[group] ) {
+                if( column == groupListColumn ) {
+                  title = module.inputGroupList[group][groupListColumn].title;
+                  type = module.inputGroupList[group][groupListColumn].type;
+                  break;
+                }
+              }
+              if( null != title ) break;
+            }
+
+            // convert the column name into an object
+            array[index] = {
+              column: column,
+              title: title,
+              type: type,
+              active: false,
+              value: metadata[column].default,
+              required: metadata[column].required,
+              max_length: metadata[column].max_length,
+              enumList: metadata[column].enumList
+            };
+          } );
+          
+          // add the placeholder to the column list
+          self.inputList.unshift( {
+            column: '',
+            title: 'Select which column to edit',
+            active: false
+          } );
+
+          self.inputListIsBuilt = true;
+        };
+
+        this.model = CnParticipantModelFactory.root;
+        if( angular.isDefined( CnParticipantModelFactory.root.metadata.columnList ) &&
+            0 < Object.keys( CnParticipantModelFactory.root.metadata.columnList ).length ) buildInputList();
+        else CnParticipantModelFactory.root.getMetadata().then( function() { buildInputList(); } );
+
+        this.uidListChanged = function() {
+          this.confirmedCount = null;
+        };
+
+        this.confirm = function() {
+          this.confirmInProgress = true;
+          this.confirmedCount = null;
+
+          // clean up the uid list
+          var fixedList =
+            this.uidList.toUpperCase() // convert to uppercase
+                        .replace( /[\s,;|\/]/g, ' ' ) // replace whitespace and separation chars with a space
+                        .replace( /[^a-zA-Z0-9 ]/g, '' ) // remove anything that isn't a letter, number of space
+                        .split( ' ' ) // delimite string by spaces and create array from result
+                        .filter( function( uid ) { // match UIDs (eg: A123456)
+                          return null != uid.match( /^[A-Z][0-9]{6}$/ );
+                        } )
+                        .filter( function( uid, index, array ) { // make array unique
+                          return index <= array.indexOf( uid );
+                        } )
+                        .sort(); // sort the array
+
+          // now confirm UID list with server
+          if( 0 == fixedList.length ) {
+            self.uidList = '';
+            self.confirmInProgress = false;
+          } else {
+            CnHttpFactory.instance( {
+              path: 'participant',
+              data: { uid_list: fixedList }
+            } ).post().then( function( response ) {
+              self.confirmedCount = response.data.length;
+              self.uidList = response.data.join( ' ' );
+              self.confirmInProgress = false;
+            } ).catch( CnSession.errorHandler );
+          }
+        };
+
+        this.activateInput = function( column ) {
+          this.inputList.findByProperty( 'column', column ).active = true;
+          this.hasActiveInputs = true;
+          if( column == this.activeInput ) this.activeInput = '';
+        };
+
+        this.deactivateInput = function( column ) {
+          this.inputList.findByProperty( 'column', column ).active = false;
+          this.hasActiveInputs = 0 < this.inputList.filter( function( input ) { return input.active; } ).length;
+        };
+
+        this.changeDetails = function() {
+          // test the formats of all active columns
+          var error = false;
+          this.inputList.filter( function( input ) { return input.active; } ).forEach( function( input ) {
+            var item = angular.element(
+              angular.element( document.querySelector( '#' + input.column ) ) ).
+                scope().$parent.innerForm.name;
+            if( item ) {
+              var valid = self.model.testFormat( input.column, input.value );
+              item.$error.format = !valid;
+              cenozo.updateFormElement( item, true );
+              error = !valid;
+            }
+          } );
+
+          if( !error && false ) {
+            var uidArray = this.uidList.split( ' ' );
+            CnHttpFactory.instance( {
+              path: 'participant',
+              data: {
+                uid_list: uidArray,
+                input_list: this.inputList.filter( function( input ) { return input.active; } )
+                                            .map( function( input ) { return input.value; } )
+              }
+            } ).post().then( function( response ) {
+              CnModalMessageFactory.instance( {
+                title: 'Operation Complete',
+                message: 'The operation has been successfully completed on ' + uidArray.length +
+                         ' participant records, affecting ' + response.data + ' of them.'
+              } ).show();
+            } ).catch( CnSession.errorHandler );
+          }
+        };
+
       };
 
       return {

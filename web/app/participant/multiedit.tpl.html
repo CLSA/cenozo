@@ -1,0 +1,163 @@
+<div class="utility-view rounded">
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>Participant Multiedit</h4>
+  </div>
+  <div class="container-fluid">
+    <cn-loading ng-if="isLoading"></cn-loading>
+    <div class="spacer" ng-if="!isLoading">
+      <p class="text-info" style="margin-top: 1em;">
+        In order to edit multiple participants at once you must first select which participants to edit.
+        This can be done typing the unique identifiers (eg: A123456) of all participants you wish to have
+        included in the operation, then confirm that list to ensure each of the identifiers can be linked
+        to a participant.
+      </p>
+      <p class="text-info">
+        Once you have confirmed the list of participant identifiers you may apply changes to all participants
+        in the list by using one of the dialogues below which will appear below the participant selection
+        dialog.
+      </p>
+      <hr />
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <span class="allow-select">
+            <strong>Participant selection</strong>
+          </span>
+          <span class="pull-right">
+            <span ng-if="model.confirmInProgress">working, please wait...</span>
+            <span ng-if="!model.confirmInProgress">
+              {{ model.confirmedCount ?
+                 model.confirmedCount + ' participants confirmed' :
+                 'no confirmed participants' }}
+              <i class="glyphicon" ng-class="model.confirmedCount ? 'glyphicon-ok' : 'glyphicon-remove'"></i>
+            </span>
+          </span>
+        </div>
+        <textarea id="uidList"
+                  name="uidList"
+                  cn-elastic
+                  ng-change="model.uidListChanged()"
+                  ng-model="model.uidList"
+                  ng-disabled="model.confirmInProgress"
+                  class="form-control no-rounding"></textarea>
+        <div class="form-footer text-right rounded-bottom bg-info">
+          <button type="button"
+                  class="btn btn-primary"
+                  ng-disabled="null != model.confirmedCount || model.confirmInProgress"
+                  ng-click="model.confirm()">Confirm List</button>
+        </div> 
+      </div>
+      <div class="panel panel-default" ng-if="model.confirmedCount">
+        <div class="panel-heading">
+          <span class="allow-select">
+            <strong>Change details</strong>
+          </span>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <form name="detailForm" novalidate>
+              <div class="col-sm-12 vertical-spacer text-info"
+                   ng-if="!model.hasActiveInputs">
+                Select which detail to edit from the list below.
+              </div>
+              <ng-form ng-if="input.active"
+                       ng-repeat="input in model.inputList"
+                       name="innerForm">
+                <label for="{{ input.column }}" class="col-sm-3 control-label">{{ input.title }}</label>
+                <div class="col-sm-8">
+                  <div class="input-group"
+                       ng-switch="input.type"
+                       ng-class="{ 'has-feedback has-error': innerForm.name.$dirty &&
+                                                             innerForm.name.$invalid }">
+                    <input ng-switch-when="string"
+                           ng-attr-id="{{ input.column }}"
+                           name="name"
+                           class="form-control"
+                           ng-model="input.value"
+                           autocomplete="off"
+                           maxlength="{{ input.max_length }}"
+                           ng-required="input.required"></input>
+                    <select ng-switch-when="boolean"
+                            ng-attr-id="{{ input.column }}"
+                            name="name"
+                            class="form-control"
+                            ng-model="input.value">
+                      <option value="1">Yes</option>
+                      <option value="0">No</option>
+                    </select>
+                    <select ng-switch-when="enum"
+                            ng-attr-id="{{ input.column }}"
+                            name="name"
+                            ng-options="item.value as item.name for item in input.enumList"
+                            ng-model="input.value"
+                            class="form-control"></select>
+                    <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+                      <span class="help-block" ng-if="innerForm.name.$error.required">
+                        Cannot be blank
+                      </span>
+                      <span class="help-block" ng-if="innerForm.name.$error.format">
+                        Invalid format
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <div class="col-sm-1 col-slim" style="line-height:30px;">
+                  <button class="btn btn-xs btn-danger"
+                          ng-click="model.deactivateInput( input.column )"
+                          tooltip="Remove column">
+                    <i class="glyphicon glyphicon-remove"></i>
+                  </button>
+                </div>
+              </ng-form>
+            </form>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-12"><hr /></div>
+            <div class="col-sm-3">
+              <button type="button"
+                      class="btn btn-default full-width"
+                      ng-disabled="0 == model.activeInput.length"
+                      ng-click="model.activateInput( model.activeInput )">Add Column</button>
+            </div>
+            <div class="col-sm-9">
+              <select ng-model="model.activeInput"
+                      ng-disabled="!model.inputListIsBuilt"
+                      ng-options="item.column as item.title for item in
+                        model.inputList|cnByObjectProperty:'active':false"
+                      class="form-control">
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-footer text-right rounded-bottom bg-info">
+          <button type="button"
+                  class="btn btn-primary"
+                  ng-disabled="!model.confirmedCount || !model.inputListIsBuilt || !model.hasActiveInputs"
+                  ng-click="model.changeDetails()">Change Details</button>
+        </div> 
+      </div>
+      <div class="panel panel-default" ng-if="model.confirmedCount">
+        <div class="panel-heading">
+          <span class="allow-select">
+            <strong>Add note</strong>
+          </span>
+        </div>
+        <div class="panel-body">
+          stuff goes here
+        </div>
+      </div>
+      <div class="panel panel-default" ng-if="model.confirmedCount">
+        <div class="panel-heading">
+          <span class="allow-select">
+            <strong>Add event</strong>
+          </span>
+        </div>
+        <div class="panel-body">
+          stuff goes here
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="form-footer text-right rounded-bottom bg-info">
+    <button type="button" class="btn btn-primary" ng-click="listParticipants()">View Participant List</button>
+  </div> 
+</div>

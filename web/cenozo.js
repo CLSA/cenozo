@@ -602,8 +602,7 @@ cenozo.directive( 'cnRecordAdd', [
             angular.element( document.querySelector( '#' + property ) ) ).
               scope().$parent.innerForm.name;
           if( item ) {
-            var valid = $scope.model.testFormat( property, $scope.record[property] );
-            item.$error.format = !valid;
+            item.$error.format = !$scope.model.testFormat( property, $scope.record[property] );
             cenozo.updateFormElement( item, true );
           }
         };
@@ -1222,6 +1221,17 @@ cenozo.directive( 'cnLoading',
     };
   }
 );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.filter( 'cnByObjectProperty', function() {
+  return function( input, prop, value ) {
+    return input.filter( function( object ) { return value == object[prop]; } );
+  };
+} );
 
 /* ######################################################################################################## */
 
@@ -2697,10 +2707,15 @@ cenozo.factory( 'CnBaseModelFactory', [
 
         /**
          * Determines whether a value meets its property's format
+         * 
+         * Note that if the value is null or an empty string then this test will pass as it
+         * only returns a failed test response when there is something to test in the first place.
+         * Failing a test due to a missing value is determined by the required parameter, not
+         * format checking.
          */
         self.testFormat = function( property, value ) {
           var input = self.module.getInput( property );
-          if( null === input ) return true;
+          if( null === input || !value ) return true;
 
           // check format
           if( angular.isDefined( input.format ) ) {

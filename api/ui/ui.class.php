@@ -305,11 +305,7 @@ class ui extends \cenozo\base_object
 
     if( 2 <= $db_role->tier )
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
-    if( 2 <= $db_role->tier )
-      $list['Participant Multinote'] = array( 'subject' => 'participant', 'action' => 'multinote' );
-    if( 3 <= $db_role->tier )
-      $list['Participant Reassign'] = array( 'subject' => 'participant', 'action' => 'reassign' );
-    $list['Participant Search']    = array( 'subject' => 'participant', 'action' => 'search' );
+    $list['Participant Search'] = array( 'subject' => 'participant', 'action' => 'search' );
 
     return $list;
   }
