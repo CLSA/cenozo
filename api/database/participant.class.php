@@ -466,14 +466,14 @@ class participant extends record
         throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
 
       $sql .= sprintf( '%s %s = %s',
-                       $first ? 'SET ' : ', ',
+                       $first ? 'SET' : ',',
                        $column,
                        static::db()->format_string( $value ) );
       $first = false;
     }
 
     $sql .= ' '.$modifier->get_sql();
-    static::db()->execute( $sql );
+    return static::db()->execute( $sql );
   }
 
   /**
