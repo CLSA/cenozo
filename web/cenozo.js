@@ -1301,7 +1301,7 @@ cenozo.filter( 'cnIsEmpty',
     return function( input ) {
       if( angular.isArray( input ) ) return 0 == input.length;
       else if( angular.isObject( input ) ) return 0 == Object.keys( input ).length;
-      else angular.isUndefined( input );
+      else return angular.isUndefined( input );
     };
   }
 );
@@ -1316,7 +1316,7 @@ cenozo.filter( 'cnIsNotEmpty',
     return function( input ) {
       if( angular.isArray( input ) ) return 0 != input.length;
       else if( angular.isObject( input ) ) return 0 != Object.keys( input ).length;
-      else angular.isDefined( input );
+      else return angular.isDefined( input );
     };
   }
 );
