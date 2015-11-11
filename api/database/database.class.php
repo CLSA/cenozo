@@ -453,11 +453,11 @@ class database extends \cenozo\base_object
       }
     }
 
-    if( self::$debug ) log::debug( sprintf( '(DB) result "%s" [%0.2fs]',
-                                            $result ? 'y' : 'n',
+    if( self::$debug ) log::debug( sprintf( '(DB) affected rows %d [%0.2fs]',
+                                            $this->connection->affected_rows,
                                             $util_class_name::get_elapsed_time() - $time ) );
 
-    return $result;
+    return $this->connection->affected_rows;
   }
 
   /**
