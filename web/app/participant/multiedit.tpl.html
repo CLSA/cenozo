@@ -68,28 +68,38 @@
                        ng-switch="input.type"
                        ng-class="{ 'has-feedback has-error': innerForm.name.$dirty &&
                                                              innerForm.name.$invalid }">
-                    <input ng-switch-when="string"
-                           ng-attr-id="{{ input.column }}"
-                           name="name"
-                           class="form-control"
-                           ng-model="input.value"
-                           autocomplete="off"
-                           maxlength="{{ input.max_length }}"
-                           ng-required="input.required"></input>
+                    <input
+                      ng-switch-when="string"
+                      ng-attr-id="{{ input.column }}"
+                      name="name"
+                      class="form-control"
+                      ng-model="input.value"
+                      autocomplete="off"
+                      maxlength="{{ input.max_length }}"
+                      ng-required="input.required"></input>
                     <select ng-switch-when="boolean"
-                            ng-attr-id="{{ input.column }}"
-                            name="name"
-                            class="form-control"
-                            ng-model="input.value">
+                       ng-attr-id="{{ input.column }}"
+                       name="name"
+                       class="form-control"
+                       ng-model="input.value">
                       <option value="1">Yes</option>
                       <option value="0">No</option>
                     </select>
-                    <select ng-switch-when="enum"
-                            ng-attr-id="{{ input.column }}"
-                            name="name"
-                            ng-options="item.value as item.name for item in input.enumList"
-                            ng-model="input.value"
-                            class="form-control"></select>
+                    <select
+                      ng-switch-when="enum"
+                      ng-attr-id="{{ input.column }}"
+                      name="name"
+                      ng-options="item.value as item.name for item in input.enumList"
+                      ng-model="input.value"
+                      class="form-control"></select>
+                    <input ng-switch-when="date"
+                      ng-attr-id="{{ input.column }}"
+                      name="name"
+                      ng-model="input.formattedValue"
+                      class="form-control"
+                      type="text"
+                      ng-click="model.selectDatetime( input )"
+                      onkeydown="return false"></input>
                     <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
                       <span class="help-block" ng-if="innerForm.name.$error.required">
                         Cannot be blank

@@ -708,8 +708,10 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantMultieditFactory', [
-    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnParticipantModelFactory',
-    function( CnSession, CnHttpFactory, CnModalMessageFactory, CnParticipantModelFactory ) {
+    'CnSession', 'CnHttpFactory',
+    'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnParticipantModelFactory',
+    function( CnSession, CnHttpFactory,
+              CnModalDatetimeFactory, CnModalMessageFactory, CnParticipantModelFactory ) {
       var object = function() {
         var self = this;
         this.module = module;
@@ -727,24 +729,25 @@ define( cenozo.getDependencyList( 'participant' ), function() {
         function buildInputList() {
           var metadata = CnParticipantModelFactory.root.metadata.columnList;
           self.inputList.forEach( function( column, index, array ) {
-            // find this column's title and type in the module's input group list
-            var title = null, type = null;
+            // find this column's input details in the module's input group list
+            var input = null
             for( var group in module.inputGroupList ) {
               for( var groupListColumn in module.inputGroupList[group] ) {
                 if( column == groupListColumn ) {
-                  title = module.inputGroupList[group][groupListColumn].title;
-                  type = module.inputGroupList[group][groupListColumn].type;
+                  input = module.inputGroupList[group][groupListColumn];
                   break;
                 }
               }
-              if( null != title ) break;
+              if( null != input ) break;
             }
 
             // convert the column name into an object
             array[index] = {
               column: column,
-              title: title,
-              type: type,
+              title: input.title,
+              type: input.type,
+              min: input.min,
+              max: input.max,
               active: false,
               value: metadata[column].default,
               required: metadata[column].required,
@@ -753,7 +756,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             };
 
             // Inputs with enum types need to do a bit of extra work with the enumList and default value
-            if( 'enum' == type ) {
+            if( 'enum' == array[index].type ) {
               if( !array[index].required ) {
                 // enums which are not required should have an empty value
                 array[index].enumList.unshift( {
@@ -764,9 +767,10 @@ define( cenozo.getDependencyList( 'participant' ), function() {
               
               // always select the first value, whatever it is
               array[index].value = array[index].enumList[0].value;
+            } else if( 'date' == array[index].type ) {
+              array[index].formattedValue = '(empty)';
             }
           } );
-          console.log( self.inputList );
           
           // add the placeholder to the column list
           self.inputList.unshift( {
@@ -820,6 +824,22 @@ define( cenozo.getDependencyList( 'participant' ), function() {
               self.confirmInProgress = false;
             } ).catch( CnSession.errorHandler );
           }
+        };
+
+        this.selectDatetime = function( input ) {
+          CnModalDatetimeFactory.instance( {
+            title: input.title,
+            date: input.value,
+            minDate: angular.isDefined( input.min ) ? input.min : input.min,
+            maxDate: angular.isDefined( input.max ) ? input.max : input.max,
+            pickerType: input.type,
+            emptyAllowed: !input.required
+          } ).show().then( function( response ) {
+            if( false !== response ) {
+              input.value = response;
+              input.formattedValue = CnSession.formatValue( response, input.type, true );
+            }
+          } );
         };
 
         this.activateInput = function( column ) {
