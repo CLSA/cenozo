@@ -101,7 +101,8 @@
                   </div>
                 </div>
                 <div class="col-sm-1 col-slim" style="line-height:30px;">
-                  <button class="btn btn-xs btn-danger"
+                  <button type="button"
+                          class="btn btn-xs btn-danger"
                           ng-click="model.deactivateInput( input.column )"
                           tooltip="Remove column">
                     <i class="glyphicon glyphicon-remove"></i>
@@ -112,19 +113,13 @@
           </div>
           <div class="form-group">
             <div class="col-sm-12"><hr /></div>
-            <div class="col-sm-3">
-              <button type="button"
-                      class="btn btn-default full-width"
-                      ng-disabled="0 == model.activeInput.length"
-                      ng-click="model.activateInput( model.activeInput )">Add Column</button>
-            </div>
-            <div class="col-sm-9">
+            <div class="col-sm-12">
               <select ng-model="model.activeInput"
                       ng-disabled="!model.inputListIsBuilt"
+                      ng-change="model.activateInput( model.activeInput )"
                       ng-options="item.column as item.title for item in
                         model.inputList|cnByObjectProperty:'active':false"
-                      class="form-control">
-              </select>
+                      class="form-control"></select>
             </div>
           </div>
         </div>

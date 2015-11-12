@@ -749,9 +749,24 @@ define( cenozo.getDependencyList( 'participant' ), function() {
               value: metadata[column].default,
               required: metadata[column].required,
               max_length: metadata[column].max_length,
-              enumList: metadata[column].enumList
+              enumList: angular.copy( metadata[column].enumList )
             };
+
+            // Inputs with enum types need to do a bit of extra work with the enumList and default value
+            if( 'enum' == type ) {
+              if( !array[index].required ) {
+                // enums which are not required should have an empty value
+                array[index].enumList.unshift( {
+                  value: '',
+                  name: '(empty)'
+                } );
+              }
+              
+              // always select the first value, whatever it is
+              array[index].value = array[index].enumList[0].value;
+            }
           } );
+          console.log( self.inputList );
           
           // add the placeholder to the column list
           self.inputList.unshift( {
@@ -759,14 +774,15 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             title: 'Select which column to edit',
             active: false
           } );
-
-          self.inputListIsBuilt = true;
         };
 
         this.model = CnParticipantModelFactory.root;
-        if( angular.isDefined( CnParticipantModelFactory.root.metadata.columnList ) &&
-            0 < Object.keys( CnParticipantModelFactory.root.metadata.columnList ).length ) buildInputList();
-        else CnParticipantModelFactory.root.getMetadata().then( function() { buildInputList(); } );
+        if( !this.inputListIsBuilt ) {
+          if( angular.isDefined( CnParticipantModelFactory.root.metadata.columnList ) &&
+              0 < Object.keys( CnParticipantModelFactory.root.metadata.columnList ).length ) buildInputList();
+          else CnParticipantModelFactory.root.getMetadata().then( function() { buildInputList(); } );
+          this.inputListIsBuilt = true;
+        }
 
         this.uidListChanged = function() {
           this.confirmedCount = null;
@@ -807,9 +823,11 @@ define( cenozo.getDependencyList( 'participant' ), function() {
         };
 
         this.activateInput = function( column ) {
-          this.inputList.findByProperty( 'column', column ).active = true;
-          this.hasActiveInputs = true;
-          if( column == this.activeInput ) this.activeInput = '';
+          if( column ) {
+            this.inputList.findByProperty( 'column', column ).active = true;
+            this.hasActiveInputs = true;
+            if( column == this.activeInput ) this.activeInput = '';
+          }
         };
 
         this.deactivateInput = function( column ) {
@@ -828,19 +846,18 @@ define( cenozo.getDependencyList( 'participant' ), function() {
               var valid = self.model.testFormat( input.column, input.value );
               item.$error.format = !valid;
               cenozo.updateFormElement( item, true );
-              error = !valid;
+              error = error || item.$invalid;
             }
           } );
 
-          if( !error && false ) {
+          if( !error ) {
             var uidArray = this.uidList.split( ' ' );
+            var inputList = {};
+            this.inputList.filter( function( input ) { return input.active; } )
+                          .forEach( function( input ) { inputList[input.column] = input.value; } );
             CnHttpFactory.instance( {
               path: 'participant',
-              data: {
-                uid_list: uidArray,
-                input_list: this.inputList.filter( function( input ) { return input.active; } )
-                                            .map( function( input ) { return input.value; } )
-              }
+              data: { uid_list: uidArray, input_list: inputList }
             } ).post().then( function( response ) {
               CnModalMessageFactory.instance( {
                 title: 'Operation Complete',
