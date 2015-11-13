@@ -564,17 +564,12 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantViewFactory',
-    cenozo.getViewModelInjectionList( 'participant' ).concat( [
-      'CnSession', function() {
-        var args = arguments;
-        var CnBaseViewFactory = args[0];
-        var CnSession = args[args.length-1];
-        var object = function( parentModel ) { 
-          CnBaseViewFactory.construct( this, parentModel, args );
-        };
-        return { instance: function( parentModel ) { return new object( parentModel ); } };
-      }
-    ] )
+    cenozo.getViewModelInjectionList( 'participant' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
+    } )
   );
 
   /* ######################################################################################################## */
