@@ -92,6 +92,78 @@ class opal_manager extends \cenozo\factory
   }
 
   /**
+   * Get a participant's set of values for a particular table
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $datasource The datasource to get a value from
+   * @param string $table The table to get the values from
+   * @param database\participant $db_participant The participant to get a value from
+   * @return string
+   * @throws exception\argument, exception\runtime
+   * @access public
+   */
+  public function get_values( $datasource, $table, $db_participant )
+  {
+    if( is_null( $db_participant ) )
+      throw lib::create( 'exception\argument', 'db_participant', $db_participant, __METHOD__ );
+
+    // prepare cURL request
+    $headers = array(
+      sprintf( 'Authorization: X-Opal-Auth %s',
+               base64_encode( sprintf( '%s:%s', $this->username, $this->password ) ) ) );
+
+    $url = sprintf(
+      'https://%s:%d/ws/datasource/%s/table/%s/valueSet/%s',
+      $this->server,
+      $this->port,
+      rawurlencode( $datasource ),
+      rawurlencode( $table ),
+      $db_participant->uid );
+
+    $curl = curl_init();
+
+    // set URL and other appropriate options
+    curl_setopt( $curl, CURLOPT_URL, $url );
+    curl_setopt( $curl, CURLOPT_HTTPHEADER, $headers );
+    curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, false );
+    curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+
+    $data = curl_exec( $curl );
+    $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
+
+    if( 404 == $code )
+    { // 404 on missing data
+      throw lib::create( 'exception\argument', 'participant', $db_participant->uid, __METHOD__ );
+    }
+    else if( 200 != $code )
+    {
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Unable to connect to Opal service for url "%s" (code: %s)', $url, $code ),
+        __METHOD__ );
+    }
+
+    if( is_null( $result ) )
+      log::warning( sprintf( 'Values of Opal table "%s" was not found.', $table ) );
+    else
+    {
+      // Opal should have returned the data in the following format:
+      // {
+      //   "variables": [ "CCT_OAKNEE_TRM", "CCT_OAHAND_TRM", ...  ],
+      //   "valueSets": [ {
+      //     "identifier": "A003019",
+      //     "values": [ {"value": "NO"}, {"value": "NO"}, ...  ],
+      //   } ]
+      // }
+      $object = $util_class_name::json_decode( $result );
+      $values = array();
+      foreach( $object->variables as $index => $variable )
+        $values[$variable] = $object->valuesSets[0]->values[$index];
+    }
+
+    return $values;
+  }
+
+  /**
    * Get a label for a particular variable's value
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

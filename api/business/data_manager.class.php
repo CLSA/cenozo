@@ -381,17 +381,47 @@ class data_manager extends \cenozo\singleton
         // opal.<datasource>.<table>.<variable> (returns value)
         try
         {
-          $value = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
-
           if( 5 == count( $parts ) )
           {
-            // participant.opal.<datasource>.<table>.<variable>.label (returns label) or
-            // opal.<datasource>.<table>.<variable>.label (returns label)
-            if( 'label' != $parts[4] )
-              throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+            if( 'label' == $parts[4] )
+            {
+              // participant.opal.<datasource>.<table>.<variable>.label (returns label) or
+              // opal.<datasource>.<table>.<variable>.label (returns label)
+              $value = $opal_manager->get_label(
+                $datasource, $table, $variable, $value, $db_participant->get_language() );
+            }
+            else if( 'cache' == $parts[4] )
+            {
+              // participant.opal.<datasource>.<table>.<variable>.cache (caches data)
+              // opal.<datasource>.<table>.<variable>.cache (caches data)
+              
+              $variable_cache_class_name = lib::get_class_name( 'database\variable_cache' );
 
-            $value = $opal_manager->get_label(
-              $datasource, $table, $variable, $value, $db_participant->get_language() );
+              // get the data from the cache, or if it is missing then cache them
+              $variable_cache_sel = lib::create( 'database\select' );
+              $variable_cache_sel->add_column( 'value' );
+              $variable_cache_sel->from( 'variable_cache' );
+              $variable_cache_mod = lib::create( 'database\modifier' );
+              $variable_cache_mod->where( 'variable', '=', $variable );
+              $rows = $db_participant->get_variable_cache_list( $variable_cache_sel, $variable_cache_mod );
+              if( 0 == count( $rows ) )
+              {
+                $expiry = $util_class_name::get_datetime_object();
+                $expiry->add( new \DateInterval( 'P1D' ) );
+                $values = $opal_manager->get_values( $datasource, $table, $db_participant );
+                $variable_cache_class_name::overwrite_values( $db_participant, $values, $expiry );
+                $value = $values[$variable];
+              }
+              else
+              {
+                $value = $rows[0]['value'];
+              }
+            }
+            else throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+          }
+          else
+          {
+            $value = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
           }
         }
         catch( \cenozo\exception\base_exception $e )
