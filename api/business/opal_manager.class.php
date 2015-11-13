@@ -142,24 +142,34 @@ class opal_manager extends \cenozo\factory
         __METHOD__ );
     }
 
-    if( is_null( $result ) )
-      log::warning( sprintf( 'Values of Opal table "%s" was not found.', $table ) );
-    else
+    $object = $util_class_name::json_decode( $result );
+    if( !is_object( $object ) || 
+        !property_exists( $object, 'variables' ) || 
+        !is_array( $object->variables ) ||
+        !property_exists( $object, 'valueSets' ) ||
+        !is_array( $object->valueSets ) ||
+        1 != count( $object->valueSets ) )
     {
-      // Opal should have returned the data in the following format:
-      // {
-      //   "variables": [ "CCT_OAKNEE_TRM", "CCT_OAHAND_TRM", ...  ],
-      //   "valueSets": [ {
-      //     "identifier": "A003019",
-      //     "values": [ {"value": "NO"}, {"value": "NO"}, ...  ],
-      //   } ]
-      // }
-      $object = $util_class_name::json_decode( $result );
-      $values = array();
-      foreach( $object->variables as $index => $variable )
-        $values[$variable] = isset( $object->valuesSets[0]->values[$index]->value )
-                           ? $object->valuesSets[0]->values[$index]->value
-                           : NULL;
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Unrecognized response from Opal service for url "%s"', $url ),
+        __METHOD__ );
+    }
+
+    // Opal should have returned the data in the following format:
+    // {
+    //   "variables": [ "CCT_OAKNEE_TRM", "CCT_OAHAND_TRM", ...  ],
+    //   "valueSets": [ {
+    //     "identifier": "A003019",
+    //     "values": [ {"value": "NO"}, {"value": "NO"}, ...  ],
+    //   } ]
+    // }
+    $values = array();
+    foreach( $object->variables as $index => $variable )
+    {
+      $values[$variable] = is_object( $object->valueSets[0]->values[$index] ) &&
+                           property_exists( $object->valueSets[0]->values[$index], 'value' )
+                         ? $object->valuesSets[0]->values[$index]->value
+                         : NULL;
     }
 
     return $values;

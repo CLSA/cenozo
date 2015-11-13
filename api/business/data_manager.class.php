@@ -377,8 +377,6 @@ class data_manager extends \cenozo\singleton
 
       if( $opal_manager->get_enabled() )
       {
-        // participant.opal.<datasource>.<table>.<variable> (returns value) or
-        // opal.<datasource>.<table>.<variable> (returns value)
         try
         {
           if( 5 == count( $parts ) )
@@ -396,6 +394,7 @@ class data_manager extends \cenozo\singleton
               // opal.<datasource>.<table>.<variable>.cache (caches data)
               
               $variable_cache_class_name = lib::get_class_name( 'database\variable_cache' );
+              $variable_cache_class_name::remove_expired(); // make sure to clean-up before searching
 
               // get the data from the cache, or if it is missing then cache them
               $variable_cache_sel = lib::create( 'database\select' );
@@ -406,10 +405,8 @@ class data_manager extends \cenozo\singleton
               $rows = $db_participant->get_variable_cache_list( $variable_cache_sel, $variable_cache_mod );
               if( 0 == count( $rows ) )
               {
-                $expiry = $util_class_name::get_datetime_object();
-                $expiry->add( new \DateInterval( 'P1D' ) );
                 $values = $opal_manager->get_values( $datasource, $table, $db_participant );
-                $variable_cache_class_name::overwrite_values( $db_participant, $values, $expiry );
+                $variable_cache_class_name::overwrite_values( $db_participant, $values );
                 $value = $values[$variable];
               }
               else
@@ -421,6 +418,8 @@ class data_manager extends \cenozo\singleton
           }
           else
           {
+            // participant.opal.<datasource>.<table>.<variable> (returns value) or
+            // opal.<datasource>.<table>.<variable> (returns value)
             $value = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
           }
         }
