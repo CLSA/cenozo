@@ -92,9 +92,9 @@ class script extends record
         if( $started_events && !is_null( $survey['startdate'] ) )
         {
           $from_datetime = $util_class_name::get_datetime_object( $survey['startdate'] );
-          $from_datetime->sub( new \DateInterval( 'P1M' ) );
+          $from_datetime->sub( new \DateInterval( 'PT1M' ) );
           $to_datetime = $util_class_name::get_datetime_object( $survey['startdate'] );
-          $to_datetime->add( new \DateInterval( 'P1M' ) );
+          $to_datetime->add( new \DateInterval( 'PT1M' ) );
 
           $event_mod = lib::create( 'database\modifier' );
           $event_mod->where( 'event_type_id', '=', $script['started_event_type_id'] );
@@ -114,9 +114,9 @@ class script extends record
         if( $completed_events && !is_null( $survey['submitdate'] ) )
         {
           $from_datetime = $util_class_name::get_datetime_object( $survey['submitdate'] );
-          $from_datetime->sub( new \DateInterval( 'P1M' ) );
+          $from_datetime->sub( new \DateInterval( 'PT1M' ) );
           $to_datetime = $util_class_name::get_datetime_object( $survey['submitdate'] );
-          $to_datetime->add( new \DateInterval( 'P1M' ) );
+          $to_datetime->add( new \DateInterval( 'PT1M' ) );
 
           $event_mod = lib::create( 'database\modifier' );
           $event_mod->where( 'event_type_id', '=', $script['completed_event_type_id'] );
