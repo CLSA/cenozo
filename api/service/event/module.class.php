@@ -35,6 +35,21 @@ class module extends \cenozo\service\module
   /**
    * Extend parent method
    */
+  public function prepare_read( $select, $modifier )
+  {
+    parent::prepare_read( $select, $modifier );
+
+    if( $select->has_table_columns( 'event_address' ) || $select->has_table_columns( 'region' ) )
+    {
+      $modifier->left_join( 'event_address', 'event.id', 'event_address.event_id' );
+      if( $select->has_table_columns( 'region' ) )
+        $modifier->left_join( 'region', 'event_address.region_id', 'region.id' );
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
   public function pre_write( $record )
   {
     $util_class_name = lib::get_class_name( 'util' );

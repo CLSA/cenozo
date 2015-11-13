@@ -32,6 +32,10 @@ define( cenozo.getDependencyList( 'event_type' ), function() {
       title: 'Name',
       type: 'string'
     },
+    record_address: {
+      title: 'Record Address',
+      type: 'boolean'
+    },
     description: {
       title: 'Description',
       type: 'string'

@@ -16,6 +16,7 @@ SOURCE jurisdiction.sql
 SOURCE region_site.sql
 SOURCE user.sql
 SOURCE address.sql
+SOURCE event_address.sql
 SOURCE consent_type.sql
 SOURCE consent.sql
 SOURCE event.sql
