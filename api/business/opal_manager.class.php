@@ -157,7 +157,9 @@ class opal_manager extends \cenozo\factory
       $object = $util_class_name::json_decode( $result );
       $values = array();
       foreach( $object->variables as $index => $variable )
-        $values[$variable] = $object->valuesSets[0]->values[$index];
+        $values[$variable] = isset( $object->valuesSets[0]->values[$index]->value )
+                           ? $object->valuesSets[0]->values[$index]->value
+                           : NULL;
     }
 
     return $values;
