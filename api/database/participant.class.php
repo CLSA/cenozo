@@ -198,8 +198,8 @@ class participant extends record
     if( is_null( $db_application ) ) $db_application = lib::create( 'business\session' )->get_application();
 
     $select = lib::create( 'database\select' );
-    $select->from( 'participant_site' );
-    $select->add_column( 'site_id' );
+    $select->from( 'application_has_participant' );
+    $select->add_column( 'preferred_site_id' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'application_id', '=', $db_application->id );
     $modifier->where( 'participant_id', '=', $this->id );
