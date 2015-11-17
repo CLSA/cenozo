@@ -21,8 +21,12 @@ class module extends \cenozo\service\module
   {
     parent::validate();
 
-    // make sure the application has access to the participant
+    $session = lib::create( 'business\session' );
     $db_application = lib::create( 'business\session' )->get_application();
+    $db_role = lib::create( 'business\session' )->get_role();
+    $db_site = lib::create( 'business\session' )->get_site();
+
+    // make sure the application has access to the participant
     $db_participant = $this->get_resource();
     if( $db_application->release_based && !is_null( $db_participant ) )
     {
@@ -30,6 +34,11 @@ class module extends \cenozo\service\module
       $modifier->where( 'participant_id', '=', $db_participant->id );
       if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
     }
+
+    // make sure the user has access ot the participant
+    if( !is_null( $db_participant ) &&
+        !$db_role->all_sites &&
+        $db_site->id != $db_participant->get_effective_site()->id ) $this->get_status()->set_code( 403 );
   }
 
   /**
