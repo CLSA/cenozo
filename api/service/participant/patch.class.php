@@ -31,6 +31,17 @@ class patch extends \cenozo\service\patch
     return $patch_array;
   }
 
+  protected function validate()
+  {
+    parent::validate();
+
+    $this->get_file_as_array(); // make sure to process the site array before the following check
+
+    // make sure that only all-site roles can change the preferred site
+    if( $this->update_preferred_site && !lib::create( 'business\session' )->get_role()->all_sites )
+      $this->status->set_code( 403 );
+  }
+
   /**
    * Override parent method
    */
