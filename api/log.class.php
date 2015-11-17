@@ -492,15 +492,18 @@ final class log extends singleton
         $session = lib::create( 'business\session' );
 
         // we need to complete the transaction if there is one in progress
-        $session->get_database()->fail_transaction();
-        $session->set_error_code( $e->get_code() );
+        $db = $session->get_database();
+        if( $db ) $db->fail_transaction();
       }
 
       $title = ucwords( $e->get_type() ).' Error!';
       $notice = 'There was a problem while trying to communicate with the server. '.
                 'Please contact support for help with this error.';
       $code = $e->get_code();
-      include CENOZO_PATH.'/api/ui/error.php';
+
+      header( 'HTTP/1.1 500 Internal Server Error' );
+      if( false === strpos( $_SERVER['REDIRECT_URL'], '/api' ) ) include CENOZO_PATH.'/api/ui/error.php';
+      else print $e->get_code();
       exit;
     }
     else if( E_COMPILE_WARNING == $level ||

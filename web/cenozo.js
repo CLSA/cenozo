@@ -986,9 +986,8 @@ cenozo.directive( 'cnRecordView', [
                       cenozo.updateFormElement( element, true );
                     } );
                   } else {
-                    // make sure to put the data back when we get a notice
-                    if( 406 == response.status )
-                      $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
+                    // make sure to put the data back
+                    $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
                     CnSession.errorHandler( response );
                   }
                 }
@@ -1645,24 +1644,38 @@ cenozo.factory( 'CnSession', [
       this.errorHandler = function errorHandler( response ) {
         var type = angular.isDefined( response ) && angular.isDefined( response.status )
                  ? response.status : 500;
+        var title = 'Error';
+        var message = 'Unfortunately your request cannot be processed ';
 
-        if( 406 == type && angular.isDefined( response.data ) ) {
-          return CnModalMessageFactory.instance( {
-            title: 'Please Note',
-            message: response.data,
-            error: true
-          } ).show();
-        } else if( angular.isDefined( response.config ) ) {
-          return CnModalMessageFactory.instance( {
-            title: 'Please Note',
-            message: 'There was a problem loading the resource at "' + response.config.url + '"',
-            error: true
-          } ).show().then( function() {
-            return self.workingTransition( function() { $state.go( 'error.' + type ) } );
-          } );
+        if( 403 == type ) {
+          title = 'Permission Denied';
+          message += 'because your current role does not have permission to proceed.';
+        } else if( 404 == type ) {
+          title = 'Not Found';
+          message += 'because the needed resource could not be found.';
+        } else if( 406 == type && angular.isDefined( response.data ) ) {
+          title = 'Please Note';
+          message = response.data;
+        } else if( 409 == type ) {
+          title = 'Conflict';
+          message += 'due to a pre-existing conflict.';
         } else {
-          return self.workingTransition( function() { $state.go( 'error.' + type ) } );
+          title = 'Server Error';
+          message += 'due to a server-based error. Please provide the resource and error code to support.';
         }
+        message += '\n';
+
+        if( angular.isDefined( response.config ) ) {
+          // add the url to the message
+          var re = new RegExp( '^' + cenozoApp.baseUrl + '/(api/?)?' );
+          message += '\n    Resource "' + response.config.url.replace( re, '' ) + '"';
+        }
+        if( response.data ) message += '\n    Error Code: ' + response.data;
+        return CnModalMessageFactory.instance( {
+          title: title,
+          message: message,
+          error: true
+        } ).show();
       };
 
       this.formatValue = function formatValue( value, type, longForm ) {
@@ -1915,6 +1928,7 @@ cenozo.factory( 'CnBaseListFactory', [
             data.modifier.order[column] = this.order.reverse;
           }
 
+          this.total = 0;
           this.isLoading = true;
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceCollectionPath(),
@@ -1928,7 +1942,7 @@ cenozo.factory( 'CnBaseListFactory', [
             } );
             self.cache = self.cache.concat( response.data );
             self.total = response.headers( 'Total' );
-          } ).then( function done() {
+          } ).finally( function() {
             self.isLoading = false;
           } );
         };
@@ -1973,8 +1987,8 @@ cenozo.factory( 'CnBaseListFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseViewFactory', [
-  'CnSession', 'CnHttpFactory', '$q',
-  function( CnSession, CnHttpFactory, $q ) {
+  'CnSession', 'CnHttpFactory', '$state', '$q',
+  function( CnSession, CnHttpFactory, $state, $q ) {
     return {
       construct: function( object, parentModel, args ) {
         var args = args ? Array.prototype.slice.call( args ) : [];
@@ -2100,6 +2114,9 @@ cenozo.factory( 'CnBaseViewFactory', [
 
               self.parentModel.metadata.loadingCount++;
 
+            } ).catch( function( response ) {
+              return CnSession.workingTransition( function() { $state.go( 'error.' + response.status ) } );
+              console.log( response );
             } ),
 
             self.parentModel.getMetadata().then( function() {
