@@ -110,7 +110,7 @@ class module extends \cenozo\service\module
   {
     parent::post_write( $record );
 
-    if( $record )
+    if( $record && 'POST' == $this->get_method() )
     {
       // add the site to the current application (if it is new)
       if( 0 == $record->get_application_count() )
