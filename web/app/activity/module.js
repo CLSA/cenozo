@@ -40,12 +40,12 @@ define( cenozo.getDependencyList( 'activity' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ActivityListCtrl', [
-    '$scope', 'CnActivityModelFactory', 'CnSession',
-    function( $scope, CnActivityModelFactory, CnSession ) {
+    '$scope', 'CnActivityModelFactory',
+    function( $scope, CnActivityModelFactory ) {
       $scope.model = CnActivityModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 

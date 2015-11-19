@@ -48,40 +48,40 @@ define( cenozo.getDependencyList( 'state' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'StateAddCtrl', [
-    '$scope', 'CnStateModelFactory', 'CnSession',
-    function( $scope, CnStateModelFactory, CnSession ) {
+    '$scope', 'CnStateModelFactory',
+    function( $scope, CnStateModelFactory ) {
       $scope.model = CnStateModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'StateListCtrl', [
-    '$scope', 'CnStateModelFactory', 'CnSession',
-    function( $scope, CnStateModelFactory, CnSession ) {
+    '$scope', 'CnStateModelFactory',
+    function( $scope, CnStateModelFactory ) {
       $scope.model = CnStateModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'StateViewCtrl', [
-    '$scope', 'CnStateModelFactory', 'CnSession',
-    function( $scope, CnStateModelFactory, CnSession ) {
+    '$scope', 'CnStateModelFactory',
+    function( $scope, CnStateModelFactory ) {
       $scope.model = CnStateModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnStateAdd', function () {
+  cenozo.providers.directive( 'cnStateAdd', function() {
     return {
       templateUrl: 'app/state/add.tpl.html',
       restrict: 'E'
@@ -89,7 +89,7 @@ define( cenozo.getDependencyList( 'state' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnStateView', function () {
+  cenozo.providers.directive( 'cnStateView', function() {
     return {
       templateUrl: 'app/state/view.tpl.html',
       restrict: 'E'

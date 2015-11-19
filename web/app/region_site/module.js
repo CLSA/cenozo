@@ -50,40 +50,40 @@ define( cenozo.getDependencyList( 'region_site' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'RegionSiteAddCtrl', [
-    '$scope', 'CnRegionSiteModelFactory', 'CnSession',
-    function( $scope, CnRegionSiteModelFactory, CnSession ) {
+    '$scope', 'CnRegionSiteModelFactory',
+    function( $scope, CnRegionSiteModelFactory ) {
       $scope.model = CnRegionSiteModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'RegionSiteListCtrl', [
-    '$scope', 'CnRegionSiteModelFactory', 'CnSession',
-    function( $scope, CnRegionSiteModelFactory, CnSession ) {
+    '$scope', 'CnRegionSiteModelFactory',
+    function( $scope, CnRegionSiteModelFactory ) {
       $scope.model = CnRegionSiteModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'RegionSiteViewCtrl', [
-    '$scope', 'CnRegionSiteModelFactory', 'CnSession',
-    function( $scope, CnRegionSiteModelFactory, CnSession ) {
+    '$scope', 'CnRegionSiteModelFactory',
+    function( $scope, CnRegionSiteModelFactory ) {
       $scope.model = CnRegionSiteModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnRegionSiteAdd', function () {
+  cenozo.providers.directive( 'cnRegionSiteAdd', function() {
     return {
       templateUrl: 'app/region_site/add.tpl.html',
       restrict: 'E'
@@ -91,7 +91,7 @@ define( cenozo.getDependencyList( 'region_site' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnRegionSiteView', function () {
+  cenozo.providers.directive( 'cnRegionSiteView', function() {
     return {
       templateUrl: 'app/region_site/view.tpl.html',
       restrict: 'E'

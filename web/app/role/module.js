@@ -28,12 +28,12 @@ define( cenozo.getDependencyList( 'role' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'RoleListCtrl', [
-    '$scope', 'CnRoleModelFactory', 'CnSession',
-    function( $scope, CnRoleModelFactory, CnSession ) {
+    '$scope', 'CnRoleModelFactory',
+    function( $scope, CnRoleModelFactory ) {
       $scope.model = CnRoleModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 

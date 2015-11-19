@@ -50,40 +50,40 @@ define( cenozo.getDependencyList( 'script' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ScriptAddCtrl', [
-    '$scope', 'CnScriptModelFactory', 'CnSession',
-    function( $scope, CnScriptModelFactory, CnSession ) {
+    '$scope', 'CnScriptModelFactory',
+    function( $scope, CnScriptModelFactory ) {
       $scope.model = CnScriptModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ScriptListCtrl', [
-    '$scope', 'CnScriptModelFactory', 'CnSession',
-    function( $scope, CnScriptModelFactory, CnSession ) {
+    '$scope', 'CnScriptModelFactory',
+    function( $scope, CnScriptModelFactory ) {
       $scope.model = CnScriptModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ScriptViewCtrl', [
-    '$scope', 'CnScriptModelFactory', 'CnSession',
-    function( $scope, CnScriptModelFactory, CnSession ) {
+    '$scope', 'CnScriptModelFactory',
+    function( $scope, CnScriptModelFactory ) {
       $scope.model = CnScriptModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnScriptAdd', function () {
+  cenozo.providers.directive( 'cnScriptAdd', function() {
     return {
       templateUrl: 'app/script/add.tpl.html',
       restrict: 'E'
@@ -91,7 +91,7 @@ define( cenozo.getDependencyList( 'script' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnScriptView', function () {
+  cenozo.providers.directive( 'cnScriptView', function() {
     return {
       templateUrl: 'app/script/view.tpl.html',
       restrict: 'E'

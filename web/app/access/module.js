@@ -64,29 +64,29 @@ define( cenozo.getDependencyList( 'access' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'AccessAddCtrl', [
-    '$scope', 'CnAccessModelFactory', 'CnSession',
-    function( $scope, CnAccessModelFactory, CnSession ) {
+    '$scope', 'CnAccessModelFactory',
+    function( $scope, CnAccessModelFactory ) {
       $scope.model = CnAccessModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'AccessListCtrl', [
-    '$scope', 'CnAccessModelFactory', 'CnSession',
-    function( $scope, CnAccessModelFactory, CnSession ) {
+    '$scope', 'CnAccessModelFactory',
+    function( $scope, CnAccessModelFactory ) {
       $scope.model = CnAccessModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAccessAdd', function () {
+  cenozo.providers.directive( 'cnAccessAdd', function() {
     return {
       templateUrl: 'app/access/add.tpl.html',
       restrict: 'E'

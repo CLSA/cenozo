@@ -76,40 +76,40 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'SystemMessageAddCtrl', [
-    '$scope', 'CnSystemMessageModelFactory', 'CnSession',
-    function( $scope, CnSystemMessageModelFactory, CnSession ) {
+    '$scope', 'CnSystemMessageModelFactory',
+    function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'SystemMessageListCtrl', [
-    '$scope', 'CnSystemMessageModelFactory', 'CnSession',
-    function( $scope, CnSystemMessageModelFactory, CnSession ) {
+    '$scope', 'CnSystemMessageModelFactory',
+    function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'SystemMessageViewCtrl', [
-    '$scope', 'CnSystemMessageModelFactory', 'CnSession',
-    function( $scope, CnSystemMessageModelFactory, CnSession ) {
+    '$scope', 'CnSystemMessageModelFactory',
+    function( $scope, CnSystemMessageModelFactory ) {
       $scope.model = CnSystemMessageModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSystemMessageAdd', function () {
+  cenozo.providers.directive( 'cnSystemMessageAdd', function() {
     return {
       templateUrl: 'app/system_message/add.tpl.html',
       restrict: 'E'
@@ -117,7 +117,7 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSystemMessageView', function () {
+  cenozo.providers.directive( 'cnSystemMessageView', function() {
     return {
       templateUrl: 'app/system_message/view.tpl.html',
       restrict: 'E'
@@ -134,7 +134,7 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
         ////////////////////////////////////
         // factory customizations start here
         this.onNew = function view( record ) {
-          return this.newRecord( record ).then( function() {
+          return this.$$onNew( record ).then( function() {
             // force the default application to be this application
             record.application_id = CnSession.application.id;
           } );

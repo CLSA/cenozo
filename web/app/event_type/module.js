@@ -44,40 +44,40 @@ define( cenozo.getDependencyList( 'event_type' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'EventTypeAddCtrl', [
-    '$scope', 'CnEventTypeModelFactory', 'CnSession',
-    function( $scope, CnEventTypeModelFactory, CnSession ) {
+    '$scope', 'CnEventTypeModelFactory',
+    function( $scope, CnEventTypeModelFactory ) {
       $scope.model = CnEventTypeModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'EventTypeListCtrl', [
-    '$scope', 'CnEventTypeModelFactory', 'CnSession',
-    function( $scope, CnEventTypeModelFactory, CnSession ) {
+    '$scope', 'CnEventTypeModelFactory',
+    function( $scope, CnEventTypeModelFactory ) {
       $scope.model = CnEventTypeModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'EventTypeViewCtrl', [
-    '$scope', 'CnEventTypeModelFactory', 'CnSession',
-    function( $scope, CnEventTypeModelFactory, CnSession ) { 
+    '$scope', 'CnEventTypeModelFactory',
+    function( $scope, CnEventTypeModelFactory ) { 
       $scope.model = CnEventTypeModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }   
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnEventTypeAdd', function () {
+  cenozo.providers.directive( 'cnEventTypeAdd', function() {
     return {
       templateUrl: 'app/event_type/add.tpl.html',
       restrict: 'E'
@@ -85,7 +85,7 @@ define( cenozo.getDependencyList( 'event_type' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnEventTypeView', function () {
+  cenozo.providers.directive( 'cnEventTypeView', function() {
     return {
       templateUrl: 'app/event_type/view.tpl.html',
       restrict: 'E'

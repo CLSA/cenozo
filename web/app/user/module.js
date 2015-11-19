@@ -104,40 +104,40 @@ define( cenozo.getDependencyList( 'user' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'UserAddCtrl', [
-    '$scope', 'CnUserModelFactory', 'CnSession',
-    function( $scope, CnUserModelFactory, CnSession ) {
+    '$scope', 'CnUserModelFactory',
+    function( $scope, CnUserModelFactory ) {
       $scope.model = CnUserModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'UserListCtrl', [
-    '$scope', 'CnUserModelFactory', 'CnSession',
-    function( $scope, CnUserModelFactory, CnSession ) {
+    '$scope', 'CnUserModelFactory',
+    function( $scope, CnUserModelFactory ) {
       $scope.model = CnUserModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'UserViewCtrl', [
-    '$scope', 'CnUserModelFactory', 'CnSession',
-    function( $scope, CnUserModelFactory, CnSession ) {
+    '$scope', 'CnUserModelFactory',
+    function( $scope, CnUserModelFactory ) {
       $scope.model = CnUserModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnUserAdd', function () {
+  cenozo.providers.directive( 'cnUserAdd', function() {
     return {
       templateUrl: 'app/user/add.tpl.html',
       restrict: 'E'
@@ -145,7 +145,7 @@ define( cenozo.getDependencyList( 'user' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnUserView', function () {
+  cenozo.providers.directive( 'cnUserView', function() {
     return {
       templateUrl: 'app/user/view.tpl.html',
       restrict: 'E'

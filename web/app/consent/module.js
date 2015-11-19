@@ -69,40 +69,40 @@ define( cenozo.getDependencyList( 'consent' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ConsentAddCtrl', [
-    '$scope', 'CnConsentModelFactory', 'CnSession',
-    function( $scope, CnConsentModelFactory, CnSession ) {
+    '$scope', 'CnConsentModelFactory',
+    function( $scope, CnConsentModelFactory ) {
       $scope.model = CnConsentModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ConsentListCtrl', [
-    '$scope', 'CnConsentModelFactory', 'CnSession',
-    function( $scope, CnConsentModelFactory, CnSession ) {
+    '$scope', 'CnConsentModelFactory',
+    function( $scope, CnConsentModelFactory ) {
       $scope.model = CnConsentModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ConsentViewCtrl', [
-    '$scope', 'CnConsentModelFactory', 'CnSession',
-    function( $scope, CnConsentModelFactory, CnSession ) {
+    '$scope', 'CnConsentModelFactory',
+    function( $scope, CnConsentModelFactory ) {
       $scope.model = CnConsentModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentAdd', function () {
+  cenozo.providers.directive( 'cnConsentAdd', function() {
     return {
       templateUrl: 'app/consent/add.tpl.html',
       restrict: 'E'
@@ -110,7 +110,7 @@ define( cenozo.getDependencyList( 'consent' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentView', function () {
+  cenozo.providers.directive( 'cnConsentView', function() {
     return {
       templateUrl: 'app/consent/view.tpl.html',
       restrict: 'E'

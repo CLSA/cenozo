@@ -84,40 +84,40 @@ define( cenozo.getDependencyList( 'event' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'EventAddCtrl', [
-    '$scope', 'CnEventModelFactory', 'CnSession',
-    function( $scope, CnEventModelFactory, CnSession ) {
+    '$scope', 'CnEventModelFactory',
+    function( $scope, CnEventModelFactory ) {
       $scope.model = CnEventModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'EventListCtrl', [
-    '$scope', 'CnEventModelFactory', 'CnSession',
-    function( $scope, CnEventModelFactory, CnSession ) {
+    '$scope', 'CnEventModelFactory',
+    function( $scope, CnEventModelFactory ) {
       $scope.model = CnEventModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'EventViewCtrl', [
-    '$scope', 'CnEventModelFactory', 'CnSession',
-    function( $scope, CnEventModelFactory, CnSession ) {
+    '$scope', 'CnEventModelFactory',
+    function( $scope, CnEventModelFactory ) {
       $scope.model = CnEventModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnEventAdd', function () {
+  cenozo.providers.directive( 'cnEventAdd', function() {
     return {
       templateUrl: 'app/event/add.tpl.html',
       restrict: 'E'
@@ -125,7 +125,7 @@ define( cenozo.getDependencyList( 'event' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnEventView', function () {
+  cenozo.providers.directive( 'cnEventView', function() {
     return {
       templateUrl: 'app/event/view.tpl.html',
       restrict: 'E'
@@ -161,7 +161,7 @@ define( cenozo.getDependencyList( 'event' ), function() {
 
         // extend onView
         this.onView = function( simple ) {
-          return this.viewRecord( simple ).then( function() {
+          return this.$$onView( simple ).then( function() {
             // Since the international column is read-only and belongs to a different table we can fake
             // the expected Yes/No value by changing it here
             if( null != self.record.international ) 

@@ -60,40 +60,40 @@ define( cenozo.getDependencyList( 'collection' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'CollectionAddCtrl', [
-    '$scope', 'CnCollectionModelFactory', 'CnSession',
-    function( $scope, CnCollectionModelFactory, CnSession ) {
+    '$scope', 'CnCollectionModelFactory',
+    function( $scope, CnCollectionModelFactory ) {
       $scope.model = CnCollectionModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'CollectionListCtrl', [
-    '$scope', 'CnCollectionModelFactory', 'CnSession',
-    function( $scope, CnCollectionModelFactory, CnSession ) {
+    '$scope', 'CnCollectionModelFactory',
+    function( $scope, CnCollectionModelFactory ) {
       $scope.model = CnCollectionModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'CollectionViewCtrl', [
-    '$scope', 'CnCollectionModelFactory', 'CnSession',
-    function( $scope, CnCollectionModelFactory, CnSession ) {
+    '$scope', 'CnCollectionModelFactory',
+    function( $scope, CnCollectionModelFactory ) {
       $scope.model = CnCollectionModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCollectionAdd', function () {
+  cenozo.providers.directive( 'cnCollectionAdd', function() {
     return {
       templateUrl: 'app/collection/add.tpl.html',
       restrict: 'E'
@@ -101,7 +101,7 @@ define( cenozo.getDependencyList( 'collection' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCollectionView', function () {
+  cenozo.providers.directive( 'cnCollectionView', function() {
     return {
       templateUrl: 'app/collection/view.tpl.html',
       restrict: 'E'
@@ -140,7 +140,7 @@ define( cenozo.getDependencyList( 'collection' ), function() {
         var self = this;
         var defaultEditEnabled = this.parentModel.editEnabled;
         this.onView = function() {
-          return this.viewRecord().then( function() {
+          return this.$$onView().then( function() {
             // if the collection is locked then don't allow users/participants to be changed
             if( angular.isDefined( self.participantModel ) )
               self.participantModel.enableChoose( !self.record.locked );
@@ -150,17 +150,18 @@ define( cenozo.getDependencyList( 'collection' ), function() {
             // only allow users belonging to this collection to edit it when it is locked
             if( self.record.locked ) {
               return CnHttpFactory.instance( {
-                path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id
-              } ).get().catch( function() {
-                // 404 when searching for current user in collection means we should turn off editing
-                self.parentModel.enableEdit( false );
-              } );
+                path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id,
+                onError: function error() {
+                  // 404 when searching for current user in collection means we should turn off editing
+                  self.parentModel.enableEdit( false );
+                }
+              } ).get();
             }
           } );
         };
 
         this.onPatch = function( data ) {
-          return this.patchRecord( data ).then( function() {
+          return this.$$onPatch( data ).then( function() {
             if( angular.isDefined( data.locked ) ) {
               // update the choose and edit modes
               if( angular.isDefined( self.participantModel ) )
@@ -170,13 +171,14 @@ define( cenozo.getDependencyList( 'collection' ), function() {
 
               if( self.record.locked ) {
                 return CnHttpFactory.instance( {
-                  path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id
+                  path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id,
+                  onError: function error() {
+                    // 404 when searching for current user in collection means we should turn off editing
+                    self.parentModel.enableEdit( false );
+                  }
                 } ).get().then( function() {
                   // if the user is found then they may edit
                   self.parentModel.enableEdit( defaultEditEnabled );
-                } ).catch( function() {
-                  // 404 when searching for current user in collection means we should turn off editing
-                  self.parentModel.enableEdit( false );
                 } );
               }
             }

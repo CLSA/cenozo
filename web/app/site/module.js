@@ -91,40 +91,40 @@ define( cenozo.getDependencyList( 'site' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'SiteAddCtrl', [
-    '$scope', 'CnSiteModelFactory', 'CnSession',
-    function( $scope, CnSiteModelFactory, CnSession ) {
+    '$scope', 'CnSiteModelFactory',
+    function( $scope, CnSiteModelFactory ) {
       $scope.model = CnSiteModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'SiteListCtrl', [
-    '$scope', 'CnSiteModelFactory', 'CnSession',
-    function( $scope, CnSiteModelFactory, CnSession ) {
+    '$scope', 'CnSiteModelFactory',
+    function( $scope, CnSiteModelFactory ) {
       $scope.model = CnSiteModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'SiteViewCtrl', [
-    '$scope', 'CnSiteModelFactory', 'CnSession',
-    function( $scope, CnSiteModelFactory, CnSession ) {
+    '$scope', 'CnSiteModelFactory',
+    function( $scope, CnSiteModelFactory ) {
       $scope.model = CnSiteModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSiteAdd', function () {
+  cenozo.providers.directive( 'cnSiteAdd', function() {
     return {
       templateUrl: 'app/site/add.tpl.html',
       restrict: 'E'
@@ -132,7 +132,7 @@ define( cenozo.getDependencyList( 'site' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSiteView', function () {
+  cenozo.providers.directive( 'cnSiteView', function() {
     return {
       templateUrl: 'app/site/view.tpl.html',
       restrict: 'E'
@@ -164,11 +164,12 @@ define( cenozo.getDependencyList( 'site' ), function() {
       var CnBaseViewFactory = args[0];
       var CnSession = args[args.length-1];
       var object = function( parentModel ) {
+        var self = this;
         CnBaseViewFactory.construct( this, parentModel, args );
 
         // extend the onPatch function
         this.onPatch = function( data ) {
-          return self.patchRecord( data ).then( function() {
+          return self.$$onPatch( data ).then( function() {
             if( angular.isDefined( data.postcode ) ) {
               // update the region
               self.onView();

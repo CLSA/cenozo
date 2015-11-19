@@ -402,23 +402,21 @@ define( cenozo.getDependencyList( 'participant' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ParticipantListCtrl', [
-    '$scope', 'CnParticipantModelFactory', 'CnSession',
-    function( $scope, CnParticipantModelFactory, CnSession ) {
+    '$scope', 'CnParticipantModelFactory',
+    function( $scope, CnParticipantModelFactory ) {
       $scope.model = CnParticipantModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ParticipantViewCtrl', [
-    '$scope', 'CnParticipantModelFactory', 'CnSession',
-    function( $scope, CnParticipantModelFactory, CnSession ) {
+    '$scope', 'CnParticipantModelFactory',
+    function( $scope, CnParticipantModelFactory ) {
       $scope.model = CnParticipantModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      $scope.model.viewModel.onView().then( function() { $scope.model.setupBreadcrumbTrail( 'view' ); } );
     }
   ] );
 
@@ -463,7 +461,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             } ]
           );
           $scope.isLoading = false;
-        } ).catch( CnSession.errorHandler );
+        } );
       };
       $scope.refresh();
     }
@@ -531,14 +529,14 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             } ]
           );
           $scope.isLoading = false;
-        } ).catch( CnSession.errorHandler );
+        } );
       };
       $scope.refresh();
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnParticipantAdd', function () {
+  cenozo.providers.directive( 'cnParticipantAdd', function() {
     return {
       templateUrl: 'app/participant/add.tpl.html',
       restrict: 'E'
@@ -546,7 +544,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnParticipantView', function () {
+  cenozo.providers.directive( 'cnParticipantView', function() {
     return {
       templateUrl: 'app/participant/view.tpl.html',
       restrict: 'E'
@@ -690,7 +688,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             self.historyList = self.historyList.sort( function( a, b ) {
               return moment( new Date( a.datetime ) ).isBefore( new Date( b.datetime ) ) ? 1 : -1;
             } );
-          } ).catch( CnSession.errorHandler );
+          } );
         };
       };
 
@@ -817,7 +815,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
               self.confirmedCount = response.data.length;
               self.uidList = response.data.join( ' ' );
               self.confirmInProgress = false;
-            } ).catch( CnSession.errorHandler );
+            } );
           }
         };
 
@@ -879,7 +877,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                 message: 'The operation has been successfully completed on ' + uidArray.length +
                          ' participant records, affecting ' + response.data + ' of them.'
               } ).show();
-            } ).catch( CnSession.errorHandler );
+            } );
           }
         };
 
@@ -920,7 +918,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             return note;
           } ).then( function( note ) {
             self.noteList.push( note );
-          } ).catch( CnSession.errorHandler );
+          } );
 
           this.newNote = '';
         };
@@ -932,7 +930,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
               path: 'participant/' + $state.params.identifier + '/note/' + this.noteList[index].id
             } ).delete().then( function() {
               self.noteList.splice( index, 1 );
-            } ).catch( CnSession.errorHandler );
+            } );
           }
         };
 
@@ -942,7 +940,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             CnHttpFactory.instance( {
               path: 'participant/' + $state.params.identifier + '/note/' + note.id,
               data: { note: note.note }
-            } ).patch().catch( CnSession.errorHandler );
+            } );
           }
         };
 
@@ -953,7 +951,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             CnHttpFactory.instance( {
               path: 'participant/' + $state.params.identifier + '/note/' + note.id,
               data: { sticky: note.sticky } 
-            } ).patch().catch( CnSession.errorHandler );
+            } );
           }
         };
 
@@ -964,7 +962,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             CnHttpFactory.instance( {
               path: 'participant/' + $state.params.identifier + '/note/' + note.id,
               data: { note: note.note }
-            } ).patch().catch( CnSession.errorHandler );
+            } );
           }
         };
 
@@ -993,7 +991,8 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                   alias: 'user_last'
                 } ]
               }
-            }
+            },
+            redirectOnError: true
           } ).query().then( function( response ) {
             response.data.forEach( function( item ) {
               self.noteList.push( {
@@ -1006,7 +1005,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                 noteBackup: item.note
               } );
             } );
-          } ).catch( CnSession.errorHandler );
+          } );
         };
       };
 
