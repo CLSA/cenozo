@@ -68,14 +68,6 @@ class module extends \cenozo\service\module
         'user.id',
         'user_join_access.user_id' );
 
-      // restrict to sites who have access to this application
-      $sub_mod = lib::create( 'database\modifier' );
-      $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-      $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
-
-      // restrict to sites who have access to this site (for some roles)
-      if( !$db_role->all_sites ) $join_mod->where( 'application_has_site.site_id', '=', $db_site->id );
-
       // override columns so that we can fake these columns being in the user table
       if( $select->has_column( 'role_count' ) )
         $select->add_column( 'IFNULL( role_count, 0 )', 'role_count', false );

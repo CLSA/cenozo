@@ -23,8 +23,8 @@ class module extends \cenozo\service\module
 
     $session = lib::create( 'business\session' );
     $db_application = lib::create( 'business\session' )->get_application();
-    $db_role = lib::create( 'business\session' )->get_role();
-    $db_site = lib::create( 'business\session' )->get_site();
+    $db_role = $session->get_role();
+    $db_site = $session->get_site();
 
     // make sure the application has access to the participant
     $db_participant = $this->get_resource();
