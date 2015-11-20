@@ -12,7 +12,6 @@ namespace cenozo;
  * @category external
  */
 require_once 'Log.php';
-require_once 'FirePHPCore/FirePHP.class.php';
 
 /**
  * log: handles all logging
@@ -39,7 +38,6 @@ final class log extends singleton
   {
     $this->loggers['display'] = NULL;
     $this->loggers['file'] = NULL;
-    $this->loggers['firebug'] = NULL;
 
     $this->policy_list = array(
       PEAR_LOG_EMERG => array(
@@ -267,38 +265,6 @@ final class log extends singleton
       $message = $message ? 'true' : 'false';
     }
 
-    // if in devel mode log to firephp
-    if( lib::in_development_mode() )
-    {
-      $firephp_message = $message;
-
-      // break the message lines into an array for easier viewing
-      if( is_string( $firephp_message ) )
-      {
-        $firephp_message = preg_split( '/\'?\n\'?/', $firephp_message );
-        if( 1 == count( $firephp_message ) ) $firephp_message = current( $firephp_message );
-      }
-
-      $type_string = self::log_level_to_string( $type );
-      $firephp = \FirePHP::getInstance( true );
-      if( PEAR_LOG_INFO == $type ||
-          PEAR_LOG_NOTICE == $type ||
-          PEAR_LOG_DEBUG == $type )
-      {
-        $firephp->info( $firephp_message, $type_string );
-      }
-      else
-      {
-        $method_name = PEAR_LOG_EMERG == $type ||
-                       PEAR_LOG_ALERT == $type ||
-                       PEAR_LOG_CRIT == $type ||
-                       PEAR_LOG_ERR == $type
-                     ? 'error' : 'warn';
-
-        $firephp->$method_name( $firephp_message, $type_string );
-      }
-    }
-
     // log to file
     if( $this->policy_list[$type]['log'] )
     {
@@ -414,16 +380,6 @@ final class log extends singleton
           'locking' => true,
           'timeFormat' => '%Y-%m-%d (%a) %H:%M:%S' );
         $this->loggers[ 'file' ] = \Log::singleton( 'file', LOG_FILE_PATH, '', $conf );
-      }
-    }
-    else if( 'firebug' == $type )
-    {
-      if( NULL == $this->loggers[ 'firebug' ] )
-      {
-        $conf = array(
-          'lineFormat' => '%3$s in %8$s::%7$s (%6$s): %4$s',
-          'timeFormat' => '%H:%M:%S' );
-        $this->loggers[ 'firebug' ] = \Log::singleton( 'firebug', '', '', $conf );
       }
     }
     else
