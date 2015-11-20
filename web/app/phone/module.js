@@ -171,10 +171,12 @@ define( cenozo.getDependencyList( 'phone' ), function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
+          var parent = self.getParentIdentifier();
+          return $q.all( [
 
-            var parent = self.getParentIdentifier();
-            return CnHttpFactory.instance( {
+            this.loadMetadata(),
+
+            CnHttpFactory.instance( {
               path: angular.isDefined( parent.subject )
                   ? [ parent.subject, parent.identifier, 'address' ].join( '/' )
                   : self.getServiceCollectionPath().replace( 'phone', 'address' ),
@@ -187,9 +189,9 @@ define( cenozo.getDependencyList( 'phone' ), function() {
               response.data.forEach( function( item ) {
                 self.metadata.columnList.address_id.enumList.push( { value: item.id, name: item.summary } );
               } );
-            } ).then( function() { self.metadata.loadingCount--; } );
+            } )
 
-          } );
+          ] ).finally( function finished() { self.metadata.loadingCount--; } );
         };
       };
 

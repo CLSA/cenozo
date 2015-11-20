@@ -220,8 +220,7 @@ define( cenozo.getDependencyList( 'system_message' ), function() {
                   name: CnSession.application.title
                 } ]
               };
-              self.metadata.loadingCount--;
-            } );
+            } ).finally( function finish() { self.metadata.loadingCount--; } );
           } );
         };
       };

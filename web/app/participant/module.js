@@ -460,8 +460,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
               title: 'History'
             } ]
           );
-          $scope.isLoading = false;
-        } );
+        } ).finally( function finished() { $scope.isLoading = false; } );
       };
       $scope.refresh();
     }
@@ -528,8 +527,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
               title: 'Notes'
             } ]
           );
-          $scope.isLoading = false;
-        } );
+        } ).finally( function finish() { $scope.isLoading = false; } );
       };
       $scope.refresh();
     }
@@ -585,69 +583,69 @@ define( cenozo.getDependencyList( 'participant' ), function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
-            return $q.all( [
-              
-              CnHttpFactory.instance( {
-                path: 'age_group',
-                data: {
-                  select: { column: [ 'id', 'lower', 'upper' ] },
-                  modifier: { order: { lower: false } }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.age_group_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.age_group_id.enumList.push( {
-                    value: item.id,
-                    name: item.lower + ' to ' + item.upper
-                  } );
-                } );
-              } ),
+          return $q.all( [
 
-              CnHttpFactory.instance( {
-                path: 'language',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: {
-                    where: { column: 'active', operator: '=', value: true },
-                    order: 'name'
-                  }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.language_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
+            this.loadMetadata(),
+            
+            CnHttpFactory.instance( {
+              path: 'age_group',
+              data: {
+                select: { column: [ 'id', 'lower', 'upper' ] },
+                modifier: { order: { lower: false } }
+              }
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.age_group_id.enumList = [];
+              response.data.forEach( function( item ) {
+                self.metadata.columnList.age_group_id.enumList.push( {
+                  value: item.id,
+                  name: item.lower + ' to ' + item.upper
                 } );
-              } ),
+              } );
+            } ),
 
-              CnHttpFactory.instance( {
-                path: 'site',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name' }
+            CnHttpFactory.instance( {
+              path: 'language',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: {
+                  where: { column: 'active', operator: '=', value: true },
+                  order: 'name'
                 }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.preferred_site_id = { enumList: [] };
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } ),
+              }
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.language_id.enumList = [];
+              response.data.forEach( function( item ) {
+                self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
+              } );
+            } ),
 
-              CnHttpFactory.instance( {
-                path: 'state',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'rank' }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.state_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.state_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } )
+            CnHttpFactory.instance( {
+              path: 'site',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name' }
+              }
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.preferred_site_id = { enumList: [] };
+              response.data.forEach( function( item ) {
+                self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
+              } );
+            } ),
 
-            ] ).then( function() { self.metadata.loadingCount--; } );
-          } );
+            CnHttpFactory.instance( {
+              path: 'state',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'rank' }
+              }
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.state_id.enumList = [];
+              response.data.forEach( function( item ) {
+                self.metadata.columnList.state_id.enumList.push( { value: item.id, name: item.name } );
+              } );
+            } )
+
+          ] ).finally( function finished() { self.metadata.loadingCount--; } );
         };
       };
 

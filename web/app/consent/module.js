@@ -168,9 +168,11 @@ define( cenozo.getDependencyList( 'consent' ), function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
+          return $q.all( [
+            
+            this.loadMetadata(),
 
-            return CnHttpFactory.instance( {
+            CnHttpFactory.instance( {
               path: 'consent_type',
               data: {
                 select: { column: [ 'id', 'name' ] },
@@ -181,9 +183,9 @@ define( cenozo.getDependencyList( 'consent' ), function() {
               response.data.forEach( function( item ) {
                 self.metadata.columnList.consent_type_id.enumList.push( { value: item.id, name: item.name } );
               } );
-            } ).then( function() { self.metadata.loadingCount--; } );
+            } )
 
-          } );
+          ] ).finally( function finished() { self.metadata.loadingCount--; } );
         };
       };
 

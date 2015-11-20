@@ -196,9 +196,11 @@ define( cenozo.getDependencyList( 'event' ), function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
+          return $q.all( [
 
-            return CnHttpFactory.instance( {
+            this.loadMetadata(),
+
+            CnHttpFactory.instance( {
               path: 'event_type',
               data: {
                 select: { column: [ 'id', 'name' ] },
@@ -209,9 +211,9 @@ define( cenozo.getDependencyList( 'event' ), function() {
               response.data.forEach( function( item ) {
                 self.metadata.columnList.event_type_id.enumList.push( { value: item.id, name: item.name } );
               } );
-            } ).then( function() { self.metadata.loadingCount--; } );
+            } )
 
-          } );
+          ] ).finally( function finished() { self.metadata.loadingCount--; } );
         };
       };
 

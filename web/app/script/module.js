@@ -142,9 +142,10 @@ define( cenozo.getDependencyList( 'script' ), function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
+          return $q.all( [
+            this.loadMetadata(),
 
-            return CnHttpFactory.instance( {
+            CnHttpFactory.instance( {
               path: 'survey',
               data: {
                 select: { column: [ 'sid', 'title' ] },
@@ -155,9 +156,9 @@ define( cenozo.getDependencyList( 'script' ), function() {
               response.data.forEach( function( item ) {
                 self.metadata.columnList.sid.enumList.push( { value: item.sid, name: item.title } );
               } );
-            } ).then( function() { self.metadata.loadingCount--; } );
+            } )
 
-          } );
+          ] ).finally( function finished() { self.metadata.loadingCount--; } );
         };        
       };
 

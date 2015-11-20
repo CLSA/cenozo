@@ -199,9 +199,11 @@ define( cenozo.getDependencyList( 'address' ), function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
+          return $q.all( [
 
-            return CnHttpFactory.instance( {
+            this.loadMetadata(),
+
+            CnHttpFactory.instance( {
               path: 'region',
               data: {
                 select: {
@@ -222,9 +224,9 @@ define( cenozo.getDependencyList( 'address' ), function() {
                   name: item.name
                 } );
               } );
-            } ).then( function() { self.metadata.loadingCount--; } );
+            } )
 
-          } );
+          ] ).finally( function finished() { self.metadata.loadingCount--; } );
         };
       };
 

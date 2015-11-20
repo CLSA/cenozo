@@ -418,7 +418,7 @@ cenozo.service( 'CnBaseHeader', [
     return {
       construct: function( scope ) {
         // update the time once the session has finished loading
-        CnSession.promise.then( function() {
+        CnSession.promise.finally( function() {
           CnSession.updateTime();
           $interval( CnSession.updateTime, 4000 );
           scope.isLoading = false;
@@ -1769,11 +1769,8 @@ cenozo.factory( 'CnBaseAddFactory', [
                   record[column] = 'tinyint' == self.parentModel.metadata.columnList[column].data_type
                                  ? 1 == self.parentModel.metadata.columnList[column].default
                                  : self.parentModel.metadata.columnList[column].default;
-
-              // signal that we are done loading metadata
-              self.parentModel.metadata.loadingCount--;
             }
-          );
+          ).finally( function finished() { self.parentModel.metadata.loadingCount--; } );
         };
 
         /**
@@ -2200,6 +2197,7 @@ cenozo.factory( 'CnBaseViewFactory', [
             );
           }
 
+          parentModel.metadata.loadingCount++;
           return $q.all( [
 
             // 1) get the record's data
@@ -2217,7 +2215,6 @@ cenozo.factory( 'CnBaseViewFactory', [
 
                 // create the backup record
                 self.backupRecord = angular.copy( self.record );
-                parentModel.metadata.loadingCount++;
               }
             ),
 
@@ -2240,11 +2237,8 @@ cenozo.factory( 'CnBaseViewFactory', [
 
                 // update all properties in the formatted record
                 self.updateFormattedRecord();
-
-                // signal that we are done loading metadata
-                parentModel.metadata.loadingCount--;
               }
-            )
+            ).finally( function finished() { parentModel.metadata.loadingCount--; } )
 
           ] );
         };
@@ -2729,27 +2723,21 @@ cenozo.factory( 'CnBaseModelFactory', [
                 } );
               } );
             }
+
             return CnHttpFactory.instance( {
               path: input.typeahead.table,
               data: {
                 select: {
-                  column: [
-                    'id',
-                    {
-                      column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.typeahead.select,
-                      alias: 'value',
-                      table_prefix: false
-                    }
-                  ]
+                  column: [ 'id', {
+                    column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.typeahead.select,
+                    alias: 'value',
+                    table_prefix: false
+                  } ]
                 },
                 modifier: { where: where }
               }
-            } ).get().then(
-              function success( response ) {
-                input.typeahead.isLoading = false;
-                return angular.copy( response.data );
-              }
-            );
+            } ).get().then( function success( response ) { return angular.copy( response.data ); } )
+                     .finally( function finished() { input.typeahead.isLoading = false; } );
           }
         };
 
@@ -2823,14 +2811,11 @@ cenozo.factory( 'CnBaseModelFactory', [
                         }
                       }
                     }
-                    // signal that we are done loading metadata
-                    self.metadata.loadingCount--;
                   }
-                );
+                ).finally( function finished() { self.metadata.loadingCount--; } );
               }
-              self.metadata.loadingCount--;
             }
-          );
+          ).finally( function finished() { self.metadata.loadingCount--; } );
         };
 
         /**
