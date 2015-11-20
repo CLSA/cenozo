@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'region_site' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'region_site' );
+  try { var module = cenozoApp.module( 'region_site', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {}, // standard
     name: {

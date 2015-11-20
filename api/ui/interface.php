@@ -27,27 +27,27 @@
 <body class="background">
   <script>
     // set the application's base url (the object is created for us in cenozo.js)
-    cenozoApp.baseUrl = "<?php print ROOT_URL; ?>";
+    window.cenozoApp.baseUrl = "<?php print ROOT_URL; ?>";
 
     // define framework modules, set the applications module list then route them all
-    cenozo.defineFrameworkModules( <?php print $framework_module_string; ?> );
-    cenozoApp.setModuleList( <?php print $module_string; ?> );
-    cenozoApp.config( [
+    window.cenozo.defineFrameworkModules( <?php print $framework_module_string; ?> );
+    window.cenozoApp.setModuleList( <?php print $module_string; ?> );
+    window.cenozoApp.config( [
       '$stateProvider',
       function( $stateProvider ) {
-        for( var module in cenozoApp.moduleList )
-          cenozo.routeModule( $stateProvider, module, cenozoApp.moduleList[module] );
+        for( var module in window.cenozoApp.moduleList )
+          window.cenozo.routeModule( $stateProvider, module, window.cenozoApp.moduleList[module] );
       }
     ] );
 
-    cenozoApp.controller( 'HeadCtrl', [
+    window.cenozoApp.controller( 'HeadCtrl', [
       '$scope', 'CnSession',
       function( $scope, CnSession ) {
         $scope.getPageTitle = function() { return CnSession.pageTitle; };
       }
     ] );
 
-    cenozoApp.controller( 'MenuCtrl', [
+    window.cenozoApp.controller( 'MenuCtrl', [
       '$scope', '$state',
       function( $scope, $state ) {
         $scope.isCurrentState = function isCurrentState( state ) { return $state.is( state ); };

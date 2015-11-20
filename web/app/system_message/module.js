@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'system_message' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'system_message' );
+  try { var module = cenozoApp.module( 'system_message', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {}, // standard
     name: {

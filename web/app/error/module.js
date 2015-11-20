@@ -1,6 +1,8 @@
 define( [], function() { 
   'use strict';
 
+  try { var module = cenozoApp.module( 'error', true ); } catch( err ) { console.warn( err ); return; }
+
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ErrorCtrl', [
     '$scope', '$window', 'CnErrorModelFactory',

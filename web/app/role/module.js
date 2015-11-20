@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'role' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'role' );
+  try { var module = cenozoApp.module( 'role', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {}, // standard
     name: {

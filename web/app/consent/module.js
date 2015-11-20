@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'consent' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'consent' );
+  try { var module = cenozoApp.module( 'consent', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {

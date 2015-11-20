@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'access' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'access' );
+  try { var module = cenozoApp.module( 'access', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: [ {

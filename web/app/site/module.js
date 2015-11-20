@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'site' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'site' );
+  try { var module = cenozoApp.module( 'site', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {

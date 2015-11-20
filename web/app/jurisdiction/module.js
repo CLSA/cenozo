@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'jurisdiction' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'jurisdiction' );
+  try { var module = cenozoApp.module( 'jurisdiction', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {}, // standard
     name: {

@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'collection' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'collection' );
+  try { var module = cenozoApp.module( 'collection', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {

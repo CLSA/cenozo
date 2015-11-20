@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'consent_type' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'consent_type' );
+  try { var module = cenozoApp.module( 'consent_type', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {

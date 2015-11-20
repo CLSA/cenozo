@@ -1,12 +1,21 @@
-'use strict';
+/**
+ * Cenozo client framework
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ */
+( function( window, document ) { 'use strict';
 
-try { var cenozo = angular.module( 'cenozo' ); }
-catch( err ) { var cenozo = angular.module( 'cenozo', ['ngAnimate'] ); }
+try {
+  var cenozo = angular.module( 'cenozo' );
+  console.warn( 'Trying to load cenozo.js more than once.' );
+  return;
+} catch( err ) {
+  var cenozo = angular.module( 'cenozo', ['ngAnimate'] );
+}
 
 // determine cenozo's base url
 var tempUrl = document.getElementById( 'cenozo' ).src;
 cenozo.baseUrl = tempUrl.substr( 0, tempUrl.indexOf( '/cenozo.js' ) );
-tempUrl = undefined;
 
 // setup moment.timezone
 moment.tz.setDefault( 'UTC' );
@@ -77,7 +86,24 @@ angular.extend( cenozoApp, {
   moduleList: {},
 
   // returns a reference to a module
-  module: function( moduleName ) { return this.moduleList[moduleName]; },
+  module: function( moduleName, mark ) {
+    // by default modules are not marked
+    if( angular.isUndefined( mark ) ) mark = false;
+
+    if( angular.isUndefined( this.moduleList[moduleName] ) )
+      throw new Error( 'Tried to load module "' + moduleName + '" which doesn\'t exist.' );
+
+    var module = this.moduleList[moduleName];
+
+    // check to make sure this particular function call only ever happens once
+    if( mark ) {
+      if( mark && module.marked )
+        throw new Error( 'Tried to load module "' + moduleName + '" which has already been loaded.' );
+      module.marked = true;
+    }
+
+    return module;
+  },
 
   // Defines all modules belonging to the Application
   setModuleList: function( list ) {
@@ -93,6 +119,7 @@ angular.extend( cenozoApp, {
       } else {
         var framework = cenozo.isFrameworkModule( name );
         angular.extend( this.moduleList[name], {
+          marked: false,
           subject: {
             snake: name,
             camel: name.snakeToCamel( false ),
@@ -112,10 +139,6 @@ angular.extend( cenozoApp, {
             return modules;
           },
           addInput: function( group, key, input ) {
-            if( null == group && 'active' == key ) {
-              var test = 0;
-            }
-
             // make sure the key is unique throughout all groups
             for( var g in this.inputGroupList ) {
               if( g != group && angular.isDefined( this.inputGroupList[g][key] ) ) {
@@ -166,6 +189,32 @@ angular.extend( cenozoApp, {
       }, this );
       this.moduleList[name].choosing = choosing;
     }
+
+    // add the root and error pseudo-modules
+    this.moduleList['root'] = {
+      marked: false,
+      subject: { snake: 'root', camel: 'root', Camel: 'Root' },
+      framework: true,
+      url: cenozo.baseUrl + '/app/root/',
+      getRequiredFiles: function() {
+        return [
+          this.url + 'module.js',
+          self.baseUrl + '/app/' + this.subject.snake + '/module.extend.js'
+        ];
+      },
+    };
+    this.moduleList['error'] = {
+      marked: false,
+      subject: { snake: 'error', camel: 'error', Camel: 'Error' },
+      framework: true,
+      url: cenozo.baseUrl + '/app/error/',
+      getRequiredFiles: function() {
+        return [
+          this.url + 'module.js',
+          self.baseUrl + '/app/' + this.subject.snake + '/module.extend.js'
+        ];
+      },
+    };
   }
 } );
 
@@ -242,58 +291,84 @@ angular.extend( cenozo, {
 
   // Sets up the routing for a module
   routeModule: function( stateProvider, name, module ) {
-    if( angular.isUndefined( stateProvider ) ) throw 'routeModule requires exactly 3 parameters';
-    if( angular.isUndefined( name ) ) throw 'routeModule requires exactly 3 parameters';
-    if( angular.isUndefined( module ) ) throw 'routeModule requires exactly 3 parameters';
+    if( angular.isUndefined( stateProvider ) ) throw new Error( 'routeModule requires exactly 3 parameters' );
+    if( angular.isUndefined( name ) ) throw new Error( 'routeModule requires exactly 3 parameters' );
+    if( angular.isUndefined( module ) ) throw new Error( 'routeModule requires exactly 3 parameters' );
 
-    // add base state
-    stateProvider.state( name, {
-      abstract: true,
-      url: cenozoApp.baseUrl + '/' + name,
-      templateUrl: this.baseUrl + '/app/cenozo/view-frame.tpl.html',
-      resolve: {
-        data: [ '$q', function( $q ) {
-          var deferred = $q.defer();
-          require( module.getRequiredFiles(), function() { deferred.resolve(); } );
-          return deferred.promise;
-        } ]
-      }
-    } );
+    var resolve = {
+      data: [ '$q', function( $q ) {
+        var deferred = $q.defer();
+        require( module.getRequiredFiles(), function() { deferred.resolve(); } );
+        return deferred.promise;
+      } ]
+    };
 
-    // add action states
-    module.actions.forEach( function( item ) {
-      if( 0 > ['delete', 'edit'].indexOf( item ) ) { // ignore delete and edit actions
-        var url = '/' + item;
-        if( 'view' == item ) url += '/{identifier}';
+    if( 'root' == name ) {
+      // add the root states
+      stateProvider.state( name, { // resolves application/
+        url: '',
+        controller: 'HomeCtrl',
+        templateUrl: module.url + 'home.tpl.html',
+        resolve: resolve
+      } );
+      stateProvider.state( name + '.home', { url: cenozoApp.baseUrl + '/' } );
+      stateProvider.state( 'wait', { templateUrl: module.url + 'wait.tpl.html' } );
+    } else if( 'error' == name ) {
+      // add the error states
+      stateProvider.state( name, {
+        controller: 'ErrorCtrl',
+        template: '<div ui-view class="fade-transition"></div>',
+        resolve: resolve
+      } );
+      stateProvider.state( name + '.400', { templateUrl: module.url + '400.tpl.html' } );
+      stateProvider.state( name + '.403', { templateUrl: module.url + '403.tpl.html' } );
+      stateProvider.state( name + '.404', { templateUrl: module.url + '404.tpl.html' } );
+      stateProvider.state( name + '.500', { templateUrl: module.url + '500.tpl.html', params: { data: null } } );
+      stateProvider.state( name + '.state', { templateUrl: module.url + 'state.tpl.html' } );
+    } else {
+      // add base state
+      stateProvider.state( name, {
+        abstract: true,
+        url: cenozoApp.baseUrl + '/' + name,
+        templateUrl: this.baseUrl + '/app/cenozo/view-frame.tpl.html',
+        resolve: resolve
+      } );
 
-        // if we have a / in the item then remove it
-        var slash = item.indexOf( '/' );
-        if( 0 <= slash ) item = item.substring( 0, slash );
+      // add action states
+      module.actions.forEach( function( item ) {
+        if( 0 > ['delete', 'edit'].indexOf( item ) ) { // ignore delete and edit actions
+          var url = '/' + item;
+          if( 'view' == item ) url += '/{identifier}';
 
-        var templateUrl = module.url + item + '.tpl.html';
+          // if we have a / in the item then remove it
+          var slash = item.indexOf( '/' );
+          if( 0 <= slash ) item = item.substring( 0, slash );
 
-        stateProvider.state( name + '.' + item, {
-          url: url,
-          controller: ( name + '_' + item + '_ctrl' ).snakeToCamel( true ),
-          templateUrl: templateUrl
+          var templateUrl = module.url + item + '.tpl.html';
+
+          stateProvider.state( name + '.' + item, {
+            url: url,
+            controller: ( name + '_' + item + '_ctrl' ).snakeToCamel( true ),
+            templateUrl: templateUrl
+          } );
+        }
+      } );
+
+      // add child states to the list
+      module.children.forEach( function( item ) {
+        stateProvider.state( name + '.add_' + item.subject.snake, {
+          url: '/view/{parentIdentifier}/' + item.subject.snake,
+          controller: item.subject.Camel + 'AddCtrl',
+          templateUrl: item.url + 'add.tpl.html'
         } );
-      }
-    } );
 
-    // add child states to the list
-    module.children.forEach( function( item ) {
-      stateProvider.state( name + '.add_' + item.subject.snake, {
-        url: '/view/{parentIdentifier}/' + item.subject.snake,
-        controller: item.subject.Camel + 'AddCtrl',
-        templateUrl: item.url + 'add.tpl.html'
+        stateProvider.state( name + '.view_' + item.subject.snake, {
+          url: '/view/{parentIdentifier}/' + item.subject.snake + '/{identifier}',
+          controller: item.subject.Camel + 'ViewCtrl',
+          templateUrl: item.url + 'view.tpl.html'
+        } );
       } );
-
-      stateProvider.state( name + '.view_' + item.subject.snake, {
-        url: '/view/{parentIdentifier}/' + item.subject.snake + '/{identifier}',
-        controller: item.subject.Camel + 'ViewCtrl',
-        templateUrl: item.url + 'view.tpl.html'
-      } );
-    } );
+    }
   },
 
   // Used to set up the routing for a module
@@ -849,11 +924,11 @@ cenozo.directive( 'cnRecordView', [
 
         $scope.viewParent = function( subject ) {
           if( !$scope.hasParent() )
-            throw 'Calling viewParent() but "' + $scope.model.subject + '" module has no parent';
+            throw new Error( 'Calling viewParent() but "' + $scope.model.subject + '" module has no parent' );
 
           var parent = $scope.model.module.identifier.parent.findByProperty( 'subject', subject );
           if( null === parent )
-            throw 'Calling viewParent() but "' + $scope.model.subject + '" record has no parent';
+            throw new Error( 'Calling viewParent() but "' + $scope.model.subject + '" record has no parent' );
 
           $scope.model.transitionToParentViewState(
             parent.subject, parent.getIdentifier( $scope.model.viewModel.record ) );
@@ -1644,7 +1719,7 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         object.$$onAdd = function( record ) {
           var self = this;
-          if( !this.parentModel.addEnabled ) throw 'Calling $$onAdd() but addEnabled is false';
+          if( !this.parentModel.addEnabled ) throw new Error( 'Calling $$onAdd() but addEnabled is false' );
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: record };
           httpObj.onError = function error( response ) { self.onAddError( response ); };
           return CnHttpFactory.instance( httpObj ).post();
@@ -1680,7 +1755,7 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         object.$$onNew = function( record ) {
           var self = this;
-          if( !this.parentModel.addEnabled ) throw 'Calling $$onNew() but addEnabled is false';
+          if( !this.parentModel.addEnabled ) throw new Error( 'Calling $$onNew() but addEnabled is false' );
 
           // load the metadata and use it to apply default values to the record
           this.parentModel.metadata.loadingCount++;
@@ -1769,7 +1844,7 @@ cenozo.factory( 'CnBaseListFactory', [
 
           // sanity check
           if( !angular.isArray( newList ) )
-            throw 'Tried to set restrict list for column "' + column + '" to a non-array';
+            throw new Error( 'Tried to set restrict list for column "' + column + '" to a non-array' );
 
           // if the new list is different then re-describe and re-list records
           var list = this.columnRestrictLists[column];
@@ -1797,7 +1872,8 @@ cenozo.factory( 'CnBaseListFactory', [
          */
         object.$$onChoose = function( record ) {
           var self = this;
-          if( !this.parentModel.chooseEnabled ) throw 'Calling $$onChoose() but chooseEnabled is false';
+          if( !this.parentModel.chooseEnabled )
+            throw new Error( 'Calling $$onChoose() but chooseEnabled is false' );
 
           // note: don't use the record's getIdentifier since choosing requires the ID only
 
@@ -1831,7 +1907,8 @@ cenozo.factory( 'CnBaseListFactory', [
          */
         object.$$onDelete = function( record ) {
           var self = this;
-          if( !this.parentModel.deleteEnabled ) throw 'Calling $$onDelete() but deleteEnabled is false';
+          if( !this.parentModel.deleteEnabled )
+            throw new Error( 'Calling $$onDelete() but deleteEnabled is false' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
           httpObj.onError = function error( response ) { self.onDeleteError( response ); }
@@ -1933,7 +2010,8 @@ cenozo.factory( 'CnBaseListFactory', [
          * @return promise
          */
         object.$$onSelect = function( record ) {
-          if( !this.parentModel.viewEnabled ) throw 'Calling $$onSelect() but viewEnabled is false';
+          if( !this.parentModel.viewEnabled )
+            throw new Error( 'Calling $$onSelect() but viewEnabled is false' );
           return this.parentModel.transitionToViewState( record );
         };
 
@@ -2028,7 +2106,8 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         object.$$onDelete = function() {
           var self = this;
-          if( !parentModel.deleteEnabled ) throw 'Calling $$onDelete() but deleteEnabled is false';
+          if( !parentModel.deleteEnabled )
+            throw new Error( 'Calling $$onDelete() but deleteEnabled is false' );
 
           var httpObj = { path: parentModel.getServiceResourcePath() };
           httpObj.onError = function error( response ) { self.onDeleteError( response ); }
@@ -2063,7 +2142,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         object.$$onPatch = function( data ) {
           var self = this;
-          if( !parentModel.editEnabled ) throw 'Calling $$onPatch() but editEnabled is false';
+          if( !parentModel.editEnabled ) throw new Error( 'Calling $$onPatch() but editEnabled is false' );
 
           var httpObj = {
             path: parentModel.getServiceResourcePath(),
@@ -2109,7 +2188,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         object.$$onView = function( simple ) {
           var self = this;
-          if( !parentModel.viewEnabled ) throw 'Calling $$onView() but viewEnabled is false';
+          if( !parentModel.viewEnabled ) throw new Error( 'Calling $$onView() but viewEnabled is false' );
 
           if( true !== simple ) {
             parentModel.module.children.concat( parentModel.module.choosing ).forEach(
@@ -2243,7 +2322,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         self.getSubjectFromState = function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
-            throw 'State "' + $state.current.name + '" is expected to have exactly 2 parts';
+            throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts' );
           return stateNameParts[0];
         };
 
@@ -2253,7 +2332,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         self.getActionFromState = function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
-            throw 'State "' + $state.current.name + '" is expected to have exactly 2 parts';
+            throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts' );
           return stateNameParts[1];
         };
 
@@ -2316,7 +2395,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         self.getServiceData = function( type, columnRestrictLists ) {
           if( angular.isUndefined( type ) || 0 > ['list','view'].indexOf( type ) )
-            throw 'getServiceData requires one argument which is either "list" or "view"';
+            throw new Error( 'getServiceData requires one argument which is either "list" or "view"' );
 
           if( angular.isUndefined( columnRestrictLists ) ) columnRestrictLists = {};
 
@@ -2532,7 +2611,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             }, {
               title: self.getBreadcrumbTitle()
             } ] );
-          } else throw 'Tried to setup breadcrumb trail for invalid type "' + type + '"';
+          } else throw new Error( 'Tried to setup breadcrumb trail for invalid type "' + type + '"' );
 
           CnSession.setBreadcrumbTrail( trail );
         };
@@ -2607,17 +2686,18 @@ cenozo.factory( 'CnBaseModelFactory', [
         self.getTypeaheadValues = function( input, viewValue ) {
           // sanity checking
           if( angular.isUndefined( input ) )
-            throw 'Typeahead used without a valid input key (' + key + ').';
+            throw new Error( 'Typeahead used without a valid input key (' + key + ').' );
           if( 0 > ['typeahead','lookup-typeahead'].indexOf( input.type ) )
-            throw 'Tried getting typeahead values for input of type "' + input.type + '"';
+            throw new Error( 'Tried getting typeahead values for input of type "' + input.type + '"' );
           if( 'typeahead' == input.type ) {
             if( !angular.isArray( input.typeahead ) )
-              throw 'Typeaheads require the input list\'s "typeahead" property to be an array';
+              throw new Error( 'Typeaheads require the input list\'s "typeahead" property to be an array' );
           } else if ( 'lookup-typeahead' == input.type ) {
             if( !angular.isObject( input.typeahead ) )
-              throw 'Lookup-typeaheads require the input list\'s "typeahead" property to be an Object';
+              throw new Error(
+                'Lookup-typeaheads require the input list\'s "typeahead" property to be an object' );
           } else {
-            throw 'Tried getting typeahead values for input of type "' + input.type + '"';
+            throw new Error( 'Tried getting typeahead values for input of type "' + input.type + '"' );
           }
 
           if( 'typeahead' == input.type ) {
@@ -2883,7 +2963,7 @@ cenozo.factory( 'CnHttpFactory', [
 
     var object = function( params ) {
       if( angular.isUndefined( params.path ) )
-        throw 'Tried to create CnHttpFactory instance without a path';
+        throw new Error( 'Tried to create CnHttpFactory instance without a path' );
 
       this.path = null;
       this.data = {};
@@ -2961,7 +3041,7 @@ cenozo.service( 'CnModalAccountFactory', [
       var self = this;
 
       if( angular.isUndefined( params.user ) )
-        throw 'Tried to create CnModalAccountFactory instance without a user';
+        throw new Error( 'Tried to create CnModalAccountFactory instance without a user' );
 
       this.show = function() {
         return $modal.open( {
@@ -3472,7 +3552,7 @@ cenozo.service( 'CnModalRestrictFactory', [
     var object = function( params ) {
       var self = this;
       if( angular.isUndefined( params.column ) )
-        throw 'Tried to create CnModalRestrictFactory instance without a column';
+        throw new Error( 'Tried to create CnModalRestrictFactory instance without a column' );
 
       this.name = null;
       this.column = null;
@@ -3733,9 +3813,9 @@ cenozo.factory( 'CnPaginationFactory',
  */
 cenozo.config( [
   '$controllerProvider', '$compileProvider', '$filterProvider', '$locationProvider',
-  '$provide', '$stateProvider', '$tooltipProvider', '$urlRouterProvider',
+  '$provide', '$tooltipProvider', '$urlRouterProvider',
   function( $controllerProvider, $compileProvider, $filterProvider, $locationProvider,
-            $provide, $stateProvider, $tooltipProvider, $urlRouterProvider ) {
+            $provide, $tooltipProvider, $urlRouterProvider ) {
     // create an object containing all providers
     cenozo.providers.controller = $controllerProvider.register;
     cenozo.providers.directive = $compileProvider.directive;
@@ -3746,49 +3826,6 @@ cenozo.config( [
     cenozo.providers.value = $provide.value;
     cenozo.providers.constant = $provide.constant;
     cenozo.providers.decorator = $provide.decorator;
-
-    // add the root states
-    $stateProvider.state( 'root', { // resolves application/
-      url: '',
-      controller: 'HomeCtrl',
-      templateUrl: cenozo.baseUrl + '/app/root/home.tpl.html',
-      resolve: {
-        data: [ '$q', function( $q ) {
-          var deferred = $q.defer();
-          require( [
-            cenozo.baseUrl + '/app/root/module.js',
-            cenozoApp.baseUrl + '/app/root/module.extend.js'
-          ], function() { deferred.resolve(); } );
-          return deferred.promise;
-        } ]
-      }
-    } );
-    $stateProvider.state( 'root.home', { url: cenozoApp.baseUrl + '/' } );
-    $stateProvider.state( 'wait', { templateUrl: cenozo.baseUrl + '/app/root/wait.tpl.html' } );
-
-    // add the error states
-    $stateProvider.state( 'error', {
-      controller: 'ErrorCtrl',
-      template: '<div ui-view class="fade-transition"></div>',
-      resolve: {
-        data: [ '$q', function( $q ) {
-          var deferred = $q.defer();
-          require( [
-            cenozo.baseUrl + '/app/error/module.js',
-            cenozoApp.baseUrl + '/app/error/module.extend.js'
-          ], function() { deferred.resolve(); } );
-          return deferred.promise;
-        } ]
-      }
-    } );
-    $stateProvider.state( 'error.400', { templateUrl: cenozo.baseUrl + '/app/error/400.tpl.html' } );
-    $stateProvider.state( 'error.403', { templateUrl: cenozo.baseUrl + '/app/error/403.tpl.html' } );
-    $stateProvider.state( 'error.404', { templateUrl: cenozo.baseUrl + '/app/error/404.tpl.html' } );
-    $stateProvider.state( 'error.500', {
-      templateUrl: cenozo.baseUrl + '/app/error/500.tpl.html',
-      params: { data: null }
-    } );
-    $stateProvider.state( 'error.state', { templateUrl: cenozo.baseUrl + '/app/error/state.tpl.html' } );
 
     // load the 404 state when a state is not found for the provided path
     $urlRouterProvider.otherwise( function( $injector, $location ) {
@@ -3854,3 +3891,8 @@ cenozo.run( [
     } );
   }
 ] );
+
+window.cenozo = cenozo;
+window.cenozoApp = cenozoApp;
+
+} )( window, document );
