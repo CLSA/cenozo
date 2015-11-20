@@ -184,8 +184,11 @@ angular.extend( cenozoApp, {
 
       var choosing = [];
       this.moduleList[name].choosing.forEach( function( item, index, array ) {
-        var module = this.module( item );
-        if( module ) choosing.push( module );
+        // get dependencies, but only if they exist in the module list
+        if( angular.isDefined( this.moduleList[item] ) ) {
+          var module = this.module( item );
+          if( module ) choosing.push( module );
+        }
       }, this );
       this.moduleList[name].choosing = choosing;
     }
