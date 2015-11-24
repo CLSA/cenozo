@@ -2201,49 +2201,45 @@ cenozo.factory( 'CnBaseViewFactory', [
           }
 
           parentModel.metadata.loadingCount++;
-          return $q.all( [
+          // 1) get the record's data
+          return CnHttpFactory.instance( {
+            path: parentModel.getServiceResourcePath(),
+            data: parentModel.getServiceData( 'view' ),
+            redirectOnError: true
+          } ).get().then(
+            function success( response ) {
+              // create the record
+              self.record = angular.copy( response.data );
+              self.record.getIdentifier = function() {
+                return parentModel.getIdentifierFromRecord( this );
+              };
 
-            // 1) get the record's data
-            CnHttpFactory.instance( {
-              path: parentModel.getServiceResourcePath(),
-              data: parentModel.getServiceData( 'view' ),
-              redirectOnError: true
-            } ).get().then(
-              function success( response ) {
-                // create the record
-                self.record = angular.copy( response.data );
-                self.record.getIdentifier = function() {
-                  return parentModel.getIdentifierFromRecord( this );
-                };
+              // create the backup record
+              self.backupRecord = angular.copy( self.record );
 
-                // create the backup record
-                self.backupRecord = angular.copy( self.record );
-              }
-            ),
-
-            // 2) get the record's metadata
-            parentModel.getMetadata().then(
-              function success() {
-                // convert blank enums into empty strings (for ng-options)
-                for( var group in parentModel.module.inputGroupList ) {
-                  for( var column in parentModel.module.inputGroupList[group] ) {
-                    var inputObject = parentModel.module.inputGroupList[group][column];
-                    if( 'enum' == inputObject.type && null === self.record[column] ) {
-                      var metadata = parentModel.metadata.columnList[column];
-                      if( angular.isDefined( metadata ) && !metadata.required ) {
-                        self.record[column] = '';
-                        self.backupRecord[column] = '';
+              // 2) now get the record's metadata
+              return parentModel.getMetadata().then(
+                function success() {
+                  // convert blank enums into empty strings (for ng-options)
+                  for( var group in parentModel.module.inputGroupList ) {
+                    for( var column in parentModel.module.inputGroupList[group] ) {
+                      var inputObject = parentModel.module.inputGroupList[group][column];
+                      if( 'enum' == inputObject.type && null === self.record[column] ) {
+                        var metadata = parentModel.metadata.columnList[column];
+                        if( angular.isDefined( metadata ) && !metadata.required ) {
+                          self.record[column] = '';
+                          self.backupRecord[column] = '';
+                        }
                       }
                     }
                   }
+
+                  // update all properties in the formatted record
+                  self.updateFormattedRecord();
                 }
-
-                // update all properties in the formatted record
-                self.updateFormattedRecord();
-              }
-            ).finally( function finished() { parentModel.metadata.loadingCount--; } )
-
-          ] );
+              );
+            }
+          ).finally( function finished() { parentModel.metadata.loadingCount--; } );
         };
 
         /**
@@ -2755,14 +2751,19 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Is usually called by the getMetadata() function in order to load the model's base metadata
          * This function should not be changed, override the getMetadata() function instead.
          * 
-         * Note: this function will override the usual error mechanism to change the state to one of
-         * the error states.  This is because not having metadata is considered to be too severy an
-         * error to show the usual user interface.
+         * Note: when extending this function with functions that update the metadata object after a
+         * promise has been resolved it should be called in parallel to those promises using $q.all()
          * @return promise
          */
         self.loadMetadata = function() {
+          // Pre-build empty objects for every colum in all input groups
+          // We do this so that if getMetadata is extended it can call this function and its own
+          // in parallel instead of having to wait for this function's promise to resolve
           self.metadata.columnList = {};
-          self.metadata.isComplete = false;
+          for( var group in self.module.inputGroupList )
+            for( var column in self.module.inputGroupList[group] )
+              self.metadata.columnList[column] = {};
+
           self.metadata.loadingCount++;
           return CnHttpFactory.instance( {
             path: self.module.subject.snake
@@ -2778,8 +2779,10 @@ cenozo.factory( 'CnBaseModelFactory', [
                     columnList[column].enumList.push( { value: item, name: item } );
                   } );
                 }
+                if( angular.isUndefined( self.metadata.columnList[column] ) )
+                  self.metadata.columnList[column] = {};
+                angular.extend( self.metadata.columnList[column], columnList[column] );
               }
-              self.metadata.columnList = columnList;
 
               if( angular.isDefined( self.metadata.columnList.rank ) ) { // create enum for rank columns
                 self.metadata.loadingCount++;
