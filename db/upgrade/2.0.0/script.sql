@@ -27,6 +27,7 @@ DROP PROCEDURE IF EXISTS patch_script;
         INDEX fk_started_event_type_id (started_event_type_id ASC),
         INDEX fk_completed_event_type_id (completed_event_type_id ASC),
         UNIQUE INDEX uq_name (name ASC),
+        UNIQUE INDEX uq_sid (sid ASC),
         CONSTRAINT fk_script_started_event_type_id
           FOREIGN KEY (started_event_type_id)
           REFERENCES event_type (id)
