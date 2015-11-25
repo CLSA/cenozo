@@ -73,6 +73,7 @@
               ng-disabled="input.constant || !input.enumList || 1 >= input.enumList.length"
               ng-required="model.metadata.columnList[input.key].required"></select>
             <textarea ng-switch-when="text"
+              cn-elastic
               ng-attr-id="{{ input.key }}"
               name="name"
               ng-model="record[input.key]"
