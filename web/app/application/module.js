@@ -115,8 +115,8 @@ define( cenozo.getDependencyList( 'application' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ApplicationViewCtrl', [
-    '$scope', '$state', 'CnApplicationModelFactory',
-    function( $scope, $state, CnApplicationModelFactory ) {
+    '$scope', '$state', 'CnApplicationModelFactory', 'CnSession',
+    function( $scope, $state, CnApplicationModelFactory, CnSession ) {
       $scope.model = CnApplicationModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
