@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'phone' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'phone', true ); } catch( err ) { console.warn( err ); return; }
@@ -146,14 +146,15 @@ define( cenozo.getDependencyList( 'phone' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnPhoneViewFactory',
-    cenozo.getViewModelInjectionList( 'phone' ).concat( function() {
+  cenozo.providers.factory( 'CnPhoneViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); };
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneModelFactory', [

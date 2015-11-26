@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'role' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'role', true ); } catch( err ) { console.warn( err ); return; }

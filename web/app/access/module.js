@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'access' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'access', true ); } catch( err ) { console.warn( err ); return; }
@@ -143,7 +143,7 @@ define( cenozo.getDependencyList( 'access' ), function() {
                 self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
               } );
             } ),
-            
+
             CnHttpFactory.instance( {
               path: 'site',
               data: {

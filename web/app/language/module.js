@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'language' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'language', true ); } catch( err ) { console.warn( err ); return; }
@@ -105,14 +105,15 @@ define( cenozo.getDependencyList( 'language' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnLanguageViewFactory',
-    cenozo.getViewModelInjectionList( 'language' ).concat( function() {
+  cenozo.providers.factory( 'CnLanguageViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnLanguageModelFactory', [

@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'activity' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'activity', true ); } catch( err ) { console.warn( err ); return; }

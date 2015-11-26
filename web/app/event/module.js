@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'event' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'event', true ); } catch( err ) { console.warn( err ); return; }
@@ -151,27 +151,28 @@ define( cenozo.getDependencyList( 'event' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnEventViewFactory',
-    cenozo.getViewModelInjectionList( 'event' ).concat( function() {
+  cenozo.providers.factory( 'CnEventViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, args );
+        CnBaseViewFactory.construct( this, parentModel );
 
         // extend onView
         this.onView = function( simple ) {
           return this.$$onView( simple ).then( function() {
             // Since the international column is read-only and belongs to a different table we can fake
             // the expected Yes/No value by changing it here
-            if( null != self.record.international ) 
+            if( null != self.record.international )
               self.record.international = self.record.international ? 'Yes' : 'No';
           } );
         };
       }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnEventModelFactory', [

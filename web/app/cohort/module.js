@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'cohort' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'cohort', true ); } catch( err ) { console.warn( err ); return; }

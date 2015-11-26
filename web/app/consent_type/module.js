@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'consent_type' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'consent_type', true ); } catch( err ) { console.warn( err ); return; }
@@ -45,9 +45,9 @@ define( cenozo.getDependencyList( 'consent_type' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ConsentTypeAddCtrl', [
     '$scope', 'CnConsentTypeModelFactory',
-    function( $scope, CnConsentTypeModelFactory ) { 
+    function( $scope, CnConsentTypeModelFactory ) {
       $scope.model = CnConsentTypeModelFactory.root;
-      $scope.record = {}; 
+      $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
       } );
@@ -68,12 +68,12 @@ define( cenozo.getDependencyList( 'consent_type' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ConsentTypeViewCtrl', [
     '$scope', 'CnConsentTypeModelFactory',
-    function( $scope, CnConsentTypeModelFactory ) { 
+    function( $scope, CnConsentTypeModelFactory ) {
       $scope.model = CnConsentTypeModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
       } );
-    }   
+    }
   ] );
 
   /* ######################################################################################################## */
@@ -111,14 +111,15 @@ define( cenozo.getDependencyList( 'consent_type' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentTypeViewFactory',
-    cenozo.getViewModelInjectionList( 'consent_type' ).concat( function() {
+  cenozo.providers.factory( 'CnConsentTypeViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); };
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );  
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentTypeModelFactory', [

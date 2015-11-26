@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'consent' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'consent', true ); } catch( err ) { console.warn( err ); return; }
@@ -136,14 +136,15 @@ define( cenozo.getDependencyList( 'consent' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentViewFactory',
-    cenozo.getViewModelInjectionList( 'consent' ).concat( function() {
+  cenozo.providers.factory( 'CnConsentViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentModelFactory', [
@@ -169,7 +170,7 @@ define( cenozo.getDependencyList( 'consent' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return $q.all( [
-            
+
             this.loadMetadata(),
 
             CnHttpFactory.instance( {
@@ -178,8 +179,8 @@ define( cenozo.getDependencyList( 'consent' ), function() {
                 select: { column: [ 'id', 'name' ] },
                 modifier: { order: 'name' }
               }
-            } ).query().then( function success( response ) { 
-              self.metadata.columnList.consent_type_id.enumList = []; 
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.consent_type_id.enumList = [];
               response.data.forEach( function( item ) {
                 self.metadata.columnList.consent_type_id.enumList.push( { value: item.id, name: item.name } );
               } );

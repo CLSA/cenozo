@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'site' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'site', true ); } catch( err ) { console.warn( err ); return; }
@@ -158,28 +158,24 @@ define( cenozo.getDependencyList( 'site' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSiteViewFactory',
-    cenozo.getViewModelInjectionList( 'site' ).concat( [ 'CnSession', function() {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
-      var CnSession = args[args.length-1];
+  cenozo.providers.factory( 'CnSiteViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var object = function( parentModel ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, args );
+        CnBaseViewFactory.construct( this, parentModel );
 
         // extend the onPatch function
         this.onPatch = function( data ) {
           return self.$$onPatch( data ).then( function() {
-            if( angular.isDefined( data.postcode ) ) {
-              // update the region
-              self.onView();
-            }
+            // update the region
+            if( angular.isDefined( data.postcode ) ) self.onView();
           } );
         };
       }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } ] )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSiteModelFactory', [

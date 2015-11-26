@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'user' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'user', true ); } catch( err ) { console.warn( err ); return; }
@@ -171,18 +171,19 @@ define( cenozo.getDependencyList( 'user' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnUserViewFactory',
-    cenozo.getViewModelInjectionList( 'user' ).concat( function() {
+  cenozo.providers.factory( 'CnUserViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel, args );
+        CnBaseViewFactory.construct( this, parentModel );
         if( angular.isDefined( this.languageModel ) )
           this.languageModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
       }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserModelFactory', [

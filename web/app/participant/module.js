@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'participant' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'participant', true ); } catch( err ) { console.warn( err ); return; }
@@ -179,7 +179,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
    * Note: make sure the category name (the object's property) matches the property set in the historyList
    */
   module.historyCategoryList = {
-    
+
     Address: {
       active: true,
       framework: true,
@@ -559,14 +559,15 @@ define( cenozo.getDependencyList( 'participant' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnParticipantViewFactory',
-    cenozo.getViewModelInjectionList( 'participant' ).concat( function() {
+  cenozo.providers.factory( 'CnParticipantViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); };
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantModelFactory', [
@@ -586,7 +587,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
           return $q.all( [
 
             this.loadMetadata(),
-            
+
             CnHttpFactory.instance( {
               path: 'age_group',
               data: {
@@ -663,7 +664,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
       var object = function() {
         var self = this;
         this.module = module;
-        
+
         this.onView = function() {
           this.historyList = [];
 
@@ -716,7 +717,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
           'active', 'honorific', 'first_name', 'other_name', 'last_name', 'sex', 'date_of_birth',
           'age_group_id', 'state_id', 'language_id', 'out_of_area', 'email', 'mass_email'
         ];
-        
+
         function buildInputList() {
           var metadata = CnParticipantModelFactory.root.metadata.columnList;
           self.inputList.forEach( function( column, index, array ) {
@@ -755,14 +756,14 @@ define( cenozo.getDependencyList( 'participant' ), function() {
                   name: '(empty)'
                 } );
               }
-              
+
               // always select the first value, whatever it is
               array[index].value = array[index].enumList[0].value;
             } else if( 'date' == array[index].type ) {
               array[index].formattedValue = '(empty)';
             }
           } );
-          
+
           // add the placeholder to the column list
           self.inputList.unshift( {
             column: '',
@@ -896,17 +897,17 @@ define( cenozo.getDependencyList( 'participant' ), function() {
         var self = this;
         this.module = module;
         this.newNote = '';
-        
+
         this.addNote = function() {
           var note = {
             user_id: CnSession.user.id,
             datetime: moment().format(),
-            note: self.newNote 
+            note: self.newNote
           };
-        
+
           CnHttpFactory.instance( {
             path: 'participant/' + $state.params.identifier + '/note',
-            data: note 
+            data: note
           } ).post().then( function( response ) {
             note.id = response.data;
             note.sticky = false;
@@ -948,7 +949,7 @@ define( cenozo.getDependencyList( 'participant' ), function() {
             note.sticky = !note.sticky;
             CnHttpFactory.instance( {
               path: 'participant/' + $state.params.identifier + '/note/' + note.id,
-              data: { sticky: note.sticky } 
+              data: { sticky: note.sticky }
             } );
           }
         };

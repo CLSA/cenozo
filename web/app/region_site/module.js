@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'region_site' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'region_site', true ); } catch( err ) { console.warn( err ); return; }
@@ -117,14 +117,15 @@ define( cenozo.getDependencyList( 'region_site' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnRegionSiteViewFactory',
-    cenozo.getViewModelInjectionList( 'region_site' ).concat( function() {
+  cenozo.providers.factory( 'CnRegionSiteViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnRegionSiteModelFactory', [

@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'script' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'script', true ); } catch( err ) { console.warn( err ); return; }
@@ -104,7 +104,7 @@ define( cenozo.getDependencyList( 'script' ), function() {
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } 
+    }
   ] );
 
   /* ######################################################################################################## */
@@ -117,14 +117,15 @@ define( cenozo.getDependencyList( 'script' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnScriptViewFactory',
-    cenozo.getViewModelInjectionList( 'script' ).concat( function() {
+  cenozo.providers.factory( 'CnScriptViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnScriptModelFactory', [
@@ -159,7 +160,7 @@ define( cenozo.getDependencyList( 'script' ), function() {
             } )
 
           ] ).finally( function finished() { self.metadata.loadingCount--; } );
-        };        
+        };
       };
 
       return {

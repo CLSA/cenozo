@@ -1,4 +1,4 @@
-define( [], function() { 
+define( [], function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'error', true ); } catch( err ) { console.warn( err ); return; }

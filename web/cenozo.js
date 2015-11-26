@@ -23,10 +23,10 @@ moment.tz.setDefault( 'UTC' );
 // Extend the Array prototype with extra functions
 angular.extend( Array.prototype, {
   findIndexByProperty: function( property, value ) {
-    var indexList = [];
-    this.forEach( function( item, index ) {
-      if( angular.isDefined( item[property] ) && value == item[property] ) indexList.push( index );
-    } );
+    var indexList = this.reduce( function( array, item ) {
+      if( angular.isDefined( item[property] ) && value == item[property] ) array.push( index );
+      return array;
+    }, [] );
     if( 1 < indexList.length ) console.warn(
       'More than one item found while searching array for object with property "' + property +
       '", only returning the first.' );
@@ -97,7 +97,7 @@ angular.extend( cenozoApp, {
 
     // check to make sure this particular function call only ever happens once
     if( mark ) {
-      if( mark && module.marked )
+      if( module.marked )
         throw new Error( 'Tried to load module "' + moduleName + '" which has already been loaded.' );
       module.marked = true;
     }
@@ -112,14 +112,17 @@ angular.extend( cenozoApp, {
     for( var name in this.moduleList ) {
       if( "note" == name ) {
         // notes are handled by the participant module
-        var participantModule = cenozoApp.module( 'participant' );
-        participantModule.allowNoteDelete = 0 <= this.moduleList.note.actions.indexOf( 'delete' );
-        participantModule.allowNoteEdit = 0 <= this.moduleList.note.actions.indexOf( 'edit' );
+        try {
+          var participantModule = cenozoApp.module( 'participant' );
+          participantModule.allowNoteDelete = 0 <= this.moduleList.note.actions.indexOf( 'delete' );
+          participantModule.allowNoteEdit = 0 <= this.moduleList.note.actions.indexOf( 'edit' );
+        } catch( err ) {} // do nothing if an exception was thrown
         delete this.moduleList.note;
       } else {
         var framework = cenozo.isFrameworkModule( name );
         angular.extend( this.moduleList[name], {
           marked: false,
+          ready: false,
           subject: {
             snake: name,
             camel: name.snakeToCamel( false ),
@@ -175,22 +178,20 @@ angular.extend( cenozoApp, {
 
     // replace dependent names with references to the module objects themselves
     for( var name in this.moduleList ) {
-      var children = [];
-      this.moduleList[name].children.forEach( function( item, index, array ) {
-        var module = this.module( item );
-        if( module ) children.push( module );
-      }, this );
-      this.moduleList[name].children = children;
-
-      var choosing = [];
-      this.moduleList[name].choosing.forEach( function( item, index, array ) {
-        // get dependencies, but only if they exist in the module list
-        if( angular.isDefined( this.moduleList[item] ) ) {
-          var module = this.module( item );
-          if( module ) choosing.push( module );
-        }
-      }, this );
-      this.moduleList[name].choosing = choosing;
+      this.moduleList[name].children = this.moduleList[name].children.reduce( function( array, item ) {
+        try {
+          var module = self.module( item );
+          if( module ) array.push( module );
+        } catch( err ) {} // do nothing if an exception was thrown
+        return array;
+      }, [] );
+      this.moduleList[name].choosing = this.moduleList[name].choosing.reduce( function( array, item ) {
+        try {
+          var module = self.module( item );
+          if( module ) array.push( module );
+        } catch( err ) {} // do nothing if an exception was thrown
+        return array;
+      }, [] );
     }
 
     // add the root and error pseudo-modules
@@ -272,26 +273,6 @@ angular.extend( cenozo, {
     return columnMetadata.type.replace( /^enum\(['"]/i, '' ).replace( /['"]\)$/, '' ).split( "','" );
   },
   
-  // Returns a list of includes needed by a module's service file
-  getDependencyList: function( moduleName ) {
-    var list = [];
-    var module = cenozoApp.module( moduleName );
-    module.children.concat( module.choosing ).forEach( function( item ) {
-      list = list.concat( item.getRequiredFiles() );
-    } );
-    return list;
-  },
-
-  // Returns a list of includes needed by a module's list model factory
-  getViewModelInjectionList: function( moduleName ) {
-    var list = ['CnBaseViewFactory'];
-    var module = cenozoApp.module( moduleName );
-    module.children.concat( module.choosing ).forEach( function( item ) {
-      list.push( 'Cn' + item.subject.Camel + 'ModelFactory' );
-    } );
-    return list;
-  },
-
   // Sets up the routing for a module
   routeModule: function( stateProvider, name, module ) {
     if( angular.isUndefined( stateProvider ) ) throw new Error( 'routeModule requires exactly 3 parameters' );
@@ -413,11 +394,9 @@ cenozo.animation( '.fade-transition', function() {
  */
 cenozo.service( 'CnBaseHeader', [
   '$state', '$interval', '$window', 'CnSession',
-  'CnModalMessageFactory', 'CnModalAccountFactory',
-  'CnModalPasswordFactory', 'CnModalSiteRoleFactory', 'CnModalTimezoneFactory',
+  'CnModalAccountFactory', 'CnModalPasswordFactory', 'CnModalSiteRoleFactory', 'CnModalTimezoneFactory',
   function( $state, $interval, $window, CnSession,
-            CnModalMessageFactory, CnModalAccountFactory,
-            CnModalPasswordFactory, CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
+            CnModalAccountFactory, CnModalPasswordFactory, CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
     return {
       construct: function( scope ) {
         // update the time once the session has finished loading
@@ -658,8 +637,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$filter', 'CnSession', 'CnModalMessageFactory', 'CnModalDatetimeFactory',
-  function( $filter, CnSession, CnModalMessageFactory, CnModalDatetimeFactory ) {
+  '$filter', 'CnSession', 'CnModalDatetimeFactory',
+  function( $filter, CnSession, CnModalDatetimeFactory ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -805,8 +784,8 @@ cenozo.directive( 'cnRecordAdd', [
  * @attr removeColumns: An array of columns (by key) to remove from the list
  */
 cenozo.directive( 'cnRecordList', [
-  'CnSession', 'CnModalMessageFactory', 'CnModalRestrictFactory',
-  function( CnSession, CnModalMessageFactory, CnModalRestrictFactory ) {
+  'CnSession', 'CnModalRestrictFactory',
+  function( CnSession, CnModalRestrictFactory ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-list.tpl.html',
       restrict: 'E',
@@ -898,8 +877,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnSession', 'CnHttpFactory', '$state',
-  function( CnModalDatetimeFactory, CnModalMessageFactory, CnSession, CnHttpFactory, $state ) {
+  'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state',
+  function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-view.tpl.html',
       restrict: 'E',
@@ -1102,7 +1081,6 @@ cenozo.directive( 'cnRecordView', [
               // build enum lists
               for( var key in metadata.columnList ) {
                 // find the input in the dataArray groups
-                var input = null;
                 scope.dataArray.forEach( function( item ) {
                   var input = item.inputList.findByProperty( 'key', key );
                   if( null != input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
@@ -2039,37 +2017,49 @@ cenozo.factory( 'CnBaseListFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseViewFactory', [
-  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$state', '$q',
-  function( CnSession, CnHttpFactory, CnModalMessageFactory, $state, $q ) {
+  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$injector', '$q',
+  function( CnSession, CnHttpFactory, CnModalMessageFactory, $injector, $q ) {
     return {
-      construct: function( object, parentModel, args ) {
-        var args = args ? Array.prototype.slice.call( args ) : [];
-
+      construct: function( object, parentModel ) {
         object.parentModel = parentModel;
         object.record = {};
         object.formattedRecord = {};
         object.backupRecord = {};
-        
-        // set up factories
-        object.childrenFactoryList = args.splice( 1, parentModel.module.children.length );
-        object.choosingFactoryList = args.splice( 1, parentModel.module.choosing.length );
+        object.deferred = $q.defer();
 
-        // setup child models
-        parentModel.module.children.forEach( function( item, index ) {
-          var model = object.childrenFactoryList[index].instance();
-          if( !parentModel.editEnabled ) model.enableAdd( false );
-          if( !parentModel.editEnabled ) model.enableDelete( false );
-          if( !parentModel.viewEnabled ) model.enableView( false );
-          object[item.subject.camel+'Model'] = model;
-        } );
-        parentModel.module.choosing.forEach( function( item, index ) {
-          var model = object.choosingFactoryList[index].instance();
-          model.enableChoose( true );
-          model.enableAdd( false );
-          model.enableDelete( false );
-          model.enableEdit( false );
-          object[item.subject.camel+'Model'] = model;
-        } );
+        // for all dependencies require its files, inject and set up the model
+        if( !parentModel.module.ready ) {
+          parentModel.module.ready = true;
+          require(
+            parentModel.module.children.concat( parentModel.module.choosing ).reduce(
+              function( array, item ) { return array.concat( item.getRequiredFiles() ); }, []
+            ),
+            function() {
+              // set up factories
+              object.childrenFactoryList = parentModel.module.children.map( function( item ) {
+                // setup child models
+                var factory = $injector.get( 'Cn' + item.subject.Camel + 'ModelFactory' );
+                var model = factory.instance();
+                if( !parentModel.editEnabled ) model.enableAdd( false );
+                if( !parentModel.editEnabled ) model.enableDelete( false );
+                if( !parentModel.viewEnabled ) model.enableView( false );
+                object[item.subject.camel+'Model'] = model;
+                return factory;
+              } );
+              object.choosingFactoryList = parentModel.module.choosing.map( function( item ) {
+                var factory = $injector.get( 'Cn' + item.subject.Camel + 'ModelFactory' );
+                var model = factory.instance();
+                model.enableChoose( true );
+                model.enableAdd( false );
+                model.enableDelete( false );
+                model.enableEdit( false );
+                object[item.subject.camel+'Model'] = model;
+                return factory;
+              } );
+              object.deferred.resolve();
+            }
+          );
+        }
 
         /**
          * Updates a property of the formatted copy of the record
@@ -2191,13 +2181,15 @@ cenozo.factory( 'CnBaseViewFactory', [
           if( !parentModel.viewEnabled ) throw new Error( 'Calling $$onView() but viewEnabled is false' );
 
           if( true !== simple ) {
-            parentModel.module.children.concat( parentModel.module.choosing ).forEach(
-              function( item ) {
-                var model = this[item.subject.camel+'Model'];
-                if( model ) model.listModel.onList( true );
-              },
-              this
-            );
+            this.deferred.promise.then( function() {
+              parentModel.module.children.concat( parentModel.module.choosing ).forEach(
+                function( item ) {
+                  var model = self[item.subject.camel+'Model'];
+                  if( model ) model.listModel.onList( true );
+                },
+                self
+              );
+            } );
           }
 
           parentModel.metadata.loadingCount++;
@@ -3444,7 +3436,7 @@ cenozo.service( 'CnModalMessageFactory', [
 
         if( 403 == type ) {
           title = 'Permission Denied';
-          message += 'because your current role does not have permission to proceed.';
+          message += 'because you do not have access to the requested resource.';
         } else if( 404 == type ) {
           title = 'Not Found';
           message += 'because the needed resource could not be found.';
@@ -3461,9 +3453,11 @@ cenozo.service( 'CnModalMessageFactory', [
         message += '\n';
 
         if( angular.isDefined( response.config ) ) {
+          console.log( response );
           // add the url to the message
           var re = new RegExp( '^' + cenozoApp.baseUrl + '/(api/?)?' );
-          message += '\n    Resource "' + response.config.url.replace( re, '' ) + '"';
+          message += '\n    Resource "' + response.config.method + ':'
+                   + response.config.url.replace( re, '' ) + '"';
         }
         if( response.data ) message += '\n    Error Code: ' + response.data;
         var modal = new object( { title: title, message: message, error: true } );

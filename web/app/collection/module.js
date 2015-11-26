@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'collection' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'collection', true ); } catch( err ) { console.warn( err ); return; }
@@ -127,14 +127,11 @@ define( cenozo.getDependencyList( 'collection' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnCollectionViewFactory',
-    cenozo.getViewModelInjectionList( 'collection' ).concat( [ 'CnSession', 'CnHttpFactory', function() {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
-      var CnSession = args[args.length-2];
-      var CnHttpFactory = args[args.length-1];
+  cenozo.providers.factory( 'CnCollectionViewFactory', [
+    'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
+    function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
       var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel, args );
+        CnBaseViewFactory.construct( this, parentModel );
         if( angular.isDefined( this.userModel ) ) this.userModel.heading = 'User Control List';
 
         var self = this;
@@ -151,9 +148,12 @@ define( cenozo.getDependencyList( 'collection' ), function() {
             if( self.record.locked ) {
               return CnHttpFactory.instance( {
                 path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id,
-                onError: function error() {
-                  // 404 when searching for current user in collection means we should turn off editing
-                  self.parentModel.enableEdit( false );
+                onError: function error( response ) {
+                  if( 404 == response.status ) {
+                    // 404 when searching for current user in collection means we should turn off editing
+                    console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
+                    self.parentModel.enableEdit( false );
+                  } else CnModalMessageFactory.httpError( response );
                 }
               } ).get();
             }
@@ -187,8 +187,8 @@ define( cenozo.getDependencyList( 'collection' ), function() {
       };
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } ] )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCollectionModelFactory', [

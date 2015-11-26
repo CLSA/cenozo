@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'jurisdiction' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'jurisdiction', true ); } catch( err ) { console.warn( err ); return; }
