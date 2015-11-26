@@ -194,6 +194,7 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'participant', $module_list ) )
     {
       $module_list['participant']['children'] = array( 'address', 'phone', 'consent', 'alternate', 'event' );
+      $module_list['participant']['choosing'] = array( 'collection' );
       $module_list['participant']['actions'][] = 'history/{identifier}';
       $module_list['participant']['actions'][] = 'notes/{identifier}';
     }
