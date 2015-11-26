@@ -17,6 +17,29 @@ class module extends \cenozo\service\module
   /**
    * Extend parent method
    */
+  public function validate()
+  {
+    parent::validate();
+
+    // don't allow modifying a locked collection
+    if( in_array( $this->get_method(), array( 'DELETE', 'PATCH', 'POST' ) ) )
+    {
+      $db_collection = 'POST' == $this->get_method()
+                     ? lib::create( 'database\collection', $this->get_file_as_raw() )
+                     : $this->get_resource();
+      if( $db_collection->locked )
+      {
+        // see if user has collection, if not then 403
+        $user_mod = lib::create( 'database\modifier' );
+        $user_mod->where( 'user.id', '=', lib::create( 'business\session' )->get_user()->id );
+        if( 0 == $db_collection->get_user_count( $user_mod ) ) $this->get_status()->set_code( 403 );
+      }
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
