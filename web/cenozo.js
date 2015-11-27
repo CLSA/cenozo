@@ -3453,7 +3453,6 @@ cenozo.service( 'CnModalMessageFactory', [
         message += '\n';
 
         if( angular.isDefined( response.config ) ) {
-          console.log( response );
           // add the url to the message
           var re = new RegExp( '^' + cenozoApp.baseUrl + '/(api/?)?' );
           message += '\n    Resource "' + response.config.method + ':'
