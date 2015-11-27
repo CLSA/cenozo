@@ -2463,6 +2463,9 @@ cenozo.factory( 'CnBaseModelFactory', [
             if( 'months' == list[key].type ) {
               for( var month = 0; month < 12; month++ )
                 selectList.push( angular.lowercase( moment().month( month ).format( 'MMMM' ) ) );
+            } else if( 'days' == list[key].type ) {
+              for( var day = 0; day < 7; day++ )
+                selectList.push( angular.lowercase( moment().day( day ).format( 'dddd' ) ) );
             } else {
               // add column to the select list
               var select = { column: columnName, alias: key };

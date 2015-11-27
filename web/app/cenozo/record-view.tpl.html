@@ -128,9 +128,74 @@
                     class="form-control"
                     ng-readonly="!model.editEnabled || input.constant || input.noedit"
                     ng-required="model.metadata.columnList[input.key].required"></textarea>
+                  <div ng-switch-when="days" class="row">
+                    <div class="col-sm-1" style="width: 14.28%">
+                      <label class="checkbox" style="left: 20px" for="monday">
+                        <input id="monday" name="name"
+                          ng-model="model.viewModel.record.monday"
+                          ng-change="patch( 'monday' )"
+                          ng-disabled="!model.editEnabled"
+                          type="checkbox"></input> Monday
+                      </label>
+                    </div>
+                    <div class="col-sm-1" style="width: 14.28%">
+                      <label class="checkbox" style="left: 20px" for="tuesday">
+                        <input id="tuesday" name="name"
+                          ng-model="model.viewModel.record.tuesday"
+                          ng-change="patch( 'tuesday' )"
+                          ng-disabled="!model.editEnabled"
+                          type="checkbox"></input> Tuesday
+                      </label>
+                    </div>
+                    <div class="col-sm-1" style="width: 14.28%">
+                      <label class="checkbox" style="left: 20px" for="wednesday">
+                        <input id="wednesday" name="name"
+                          ng-model="model.viewModel.record.wednesday"
+                          ng-change="patch( 'wednesday' )"
+                          ng-disabled="!model.editEnabled"
+                          type="checkbox"></input> Wednesday
+                      </label>
+                    </div>
+                    <div class="col-sm-1" style="width: 14.28%">
+                      <label class="checkbox" style="left: 20px" for="thursday">
+                        <input id="thursday" name="name"
+                          ng-model="model.viewModel.record.thursday"
+                          ng-change="patch( 'thursday' )"
+                          ng-disabled="!model.editEnabled"
+                          type="checkbox"></input> Thursday
+                      </label>
+                    </div>
+                    <div class="col-sm-1" style="width: 14.28%">
+                      <label class="checkbox" style="left: 20px" for="friday">
+                        <input id="friday" name="name"
+                          ng-model="model.viewModel.record.friday"
+                          ng-change="patch( 'friday' )"
+                          ng-disabled="!model.editEnabled"
+                          type="checkbox"></input> Friday
+                      </label>
+                    </div>
+                    <div class="col-sm-1" style="width: 14.28%">
+                      <label class="checkbox" style="left: 20px" for="saturday">
+                        <input id="saturday" name="name"
+                          ng-model="model.viewModel.record.saturday"
+                          ng-change="patch( 'saturday' )"
+                          ng-disabled="!model.editEnabled"
+                          type="checkbox"></input> Saturday
+                      </label>
+                    </div>
+                    <div class="col-sm-1" style="width: 14.28%">
+                      <label class="checkbox" style="left: 20px" for="sunday">
+                        <input id="sunday" name="name"
+                          ng-model="model.viewModel.record.sunday"
+                          ng-change="patch( 'sunday' )"
+                          ng-disabled="!model.editEnabled"
+                          type="checkbox"></input> Sunday
+                      </label>
+                    </div>
+                  </div>
                   <div ng-switch-when="months" class="row">
                     <div class="col-sm-2">
-                      <label class="checkbox" for="january">
+                      <label class="checkbox" style="left: 20px" for="january">
                         <input id="january" name="name"
                           ng-model="model.viewModel.record.january"
                           ng-change="patch( 'january' )"
@@ -139,7 +204,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="february">
+                      <label class="checkbox" style="left: 20px" for="february">
                         <input id="february" name="name"
                           ng-model="model.viewModel.record.february"
                           ng-change="patch( 'february' )"
@@ -148,7 +213,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="march">
+                      <label class="checkbox" style="left: 20px" for="march">
                         <input id="march" name="name"
                           ng-model="model.viewModel.record.march"
                           ng-change="patch( 'march' )"
@@ -157,7 +222,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="april">
+                      <label class="checkbox" style="left: 20px" for="april">
                         <input id="april" name="name"
                           ng-model="model.viewModel.record.april"
                           ng-change="patch( 'april' )"
@@ -166,7 +231,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="may">
+                      <label class="checkbox" style="left: 20px" for="may">
                         <input id="may" name="name"
                           ng-model="model.viewModel.record.may"
                           ng-change="patch( 'may' )"
@@ -175,7 +240,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="june">
+                      <label class="checkbox" style="left: 20px" for="june">
                         <input id="june" name="name"
                           ng-model="model.viewModel.record.june"
                           ng-change="patch( 'june' )"
@@ -186,7 +251,7 @@
                   </div>
                   <div ng-switch-when="months" class="row">
                     <div class="col-sm-2">
-                      <label class="checkbox" for="july">
+                      <label class="checkbox" style="left: 20px" for="july">
                         <input id="july" name="name"
                           ng-model="model.viewModel.record.july"
                           ng-change="patch( 'july' )"
@@ -195,7 +260,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="august">
+                      <label class="checkbox" style="left: 20px" for="august">
                         <input id="august" name="name"
                           ng-model="model.viewModel.record.august"
                           ng-change="patch( 'august' )"
@@ -204,7 +269,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="september">
+                      <label class="checkbox" style="left: 20px" for="september">
                         <input id="september" name="name"
                           ng-model="model.viewModel.record.september"
                           ng-change="patch( 'september' )"
@@ -212,7 +277,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="october">
+                      <label class="checkbox" style="left: 20px" for="october">
                         <input id="october" name="name"
                           ng-model="model.viewModel.record.october"
                           ng-change="patch( 'october' )"
@@ -221,7 +286,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="november">
+                      <label class="checkbox" style="left: 20px" for="november">
                         <input id="november" name="name"
                           ng-model="model.viewModel.record.november"
                           ng-change="patch( 'november' )"
@@ -230,7 +295,7 @@
                       </label>
                     </div>
                     <div class="col-sm-2">
-                      <label class="checkbox" for="december">
+                      <label class="checkbox" style="left: 20px" for="december">
                         <input id="december" name="name"
                           ng-model="model.viewModel.record.december"
                           ng-change="patch( 'december' )"
