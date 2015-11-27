@@ -483,8 +483,11 @@ cenozo.service( 'CnBaseHeader', [
                     CnSession.user.use12hourClock = response.use12hourClock;
                     CnSession.setTimezone( response.timezone, response.use12hourClock ).then(
                       function success() {
-                        if( response.timezone != CnSession.user.timezone ) $window.location.reload();
-                        else if( response.use12hourClock != CnSession.user.use12hourClock ) CnSession.updateTime();
+                        if( response.timezone != CnSession.user.timezone ) {
+                          $window.location.reload();
+                        } else if( response.use12hourClock != CnSession.user.use12hourClock ) {
+                          CnSession.updateTime();
+                        }
                       }
                     );
                   }
@@ -3123,245 +3126,264 @@ cenozo.service( 'CnModalDatetimeFactory', [
       // service vars/functions which cannot be defined by the constructor's params
 
       // functions
-      this.getMinDate = function() {
-        return 'now' === this.minDate
-             ? moment().tz( CnSession.user.timezone )
-             : ( null === this.minDate ? null : angular.copy( this.minDate ) );
-      };
-      this.isBeforeMinDate = function( date, granularity ) {
-        if( angular.isUndefined( granularity ) ) granularity = 'second';
-        var minDate = this.getMinDate();
-        return null !== minDate && date.isBefore( minDate, granularity );
-      };
-      this.getMaxDate = function() {
-        return 'now' === this.maxDate
-             ? moment().tz( CnSession.user.timezone )
-             : ( null === this.maxDate ? null : angular.copy( this.maxDate ) );
-      };
-      this.isAfterMaxDate = function( date, granularity ) {
-        if( angular.isUndefined( granularity ) ) granularity = 'second';
-        var maxDate = this.getMaxDate();
-        return null !== maxDate && date.isAfter( maxDate, granularity );
-      };
-      this.isDateAllowed = function( date, granularity ) {
-        if( this.isBeforeMinDate( date, granularity ) ) return false;
-        if( this.isAfterMaxDate( date, granularity ) ) return false;
-        return true;
-      };
-      this.resolveDate = function( date ) {
-        if( this.isBeforeMinDate( date, 'second' ) ) return this.getMinDate();
-        if( this.isAfterMaxDate( date, 'second' ) ) return this.getMaxDate();
-        return date;
-      };
-      this.updateSlidersFromDate = function( date ) {
-        this.hourSliderValue = date.format( 'H' );
-        this.minuteSliderValue = date.format( 'm' );
-        this.secondSliderValue = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType
-                               ? date.format( 's' )
-                               : 0;
-      };
-      this.updateDateFromSliders = function() {
-        // only change the time if the current day is within the min/max boundaries
-        if( !this.isBeforeMinDate( this.date, 'day' ) && !this.isAfterMaxDate( this.date, 'day' ) ) {
-          this.date.hour( this.hourSliderValue ).minute( this.minuteSliderValue ).second(
-            'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType ? this.secondSliderValue : 0 );
-          this.date = this.resolveDate( this.date );
-        }
-        this.updateSlidersFromDate( this.date );
-      };
-      this.prevMode = function() {
-        this.mode = 'year' == this.mode ? 'month' : 'day';
-        this.update();
-      };
-      this.nextMode = function() {
-        this.mode = 'day' == this.mode ? 'month' : 'year';
-        this.update();
-      };
-      this.viewPrev = function() {
-        var gap = viewMoveGaps[this.mode];
-        this.viewingDate.subtract( gap.amount, gap.unit );
-        this.update();
-      };
-      this.viewNext = function() {
-        var gap = viewMoveGaps[this.mode];
-        this.viewingDate.add( gap.amount, gap.unit );
-        this.update();
-      };
-      this.select = function( when ) {
-        if( 'now' == when ) {
-          this.date = moment().tz( CnSession.user.timezone );
-          if( 'datetimesecond' != this.pickerType && 'timeseond' != this.pickerType ) this.date.second( 0 );
+      angular.extend( this, {
+        getMinDate: function() {
+          return 'now' === this.minDate
+               ? moment().tz( CnSession.user.timezone )
+               : ( null === this.minDate ? null : angular.copy( this.minDate ) );
+        },
+        isBeforeMinDate: function( date, granularity ) {
+          if( angular.isUndefined( granularity ) ) granularity = 'second';
+          var minDate = this.getMinDate();
+          return null !== minDate && date.isBefore( minDate, granularity );
+        },
+        getMaxDate: function() {
+          return 'now' === this.maxDate
+               ? moment().tz( CnSession.user.timezone )
+               : ( null === this.maxDate ? null : angular.copy( this.maxDate ) );
+        },
+        isAfterMaxDate: function( date, granularity ) {
+          if( angular.isUndefined( granularity ) ) granularity = 'second';
+          var maxDate = this.getMaxDate();
+          return null !== maxDate && date.isAfter( maxDate, granularity );
+        },
+        isDateAllowed: function( date, granularity ) {
+          if( this.isBeforeMinDate( date, granularity ) ) return false;
+          if( this.isAfterMaxDate( date, granularity ) ) return false;
+          return true;
+        },
+        resolveDate: function( date ) {
+          if( this.isBeforeMinDate( date, 'second' ) ) {
+            var utc = '+00:00' == date.format( 'Z' );
+            date = this.getMinDate();
+            if( utc ) date.tz( 'UTC' );
+          }
+          if( this.isAfterMaxDate( date, 'second' ) ) {
+            var utc = '+00:00' == date.format( 'Z' );
+            date = this.getMaxDate();
+            if( utc ) date.tz( 'UTC' );
+          }
+          return date;
+        },
+        updateSlidersFromDate: function( date ) {
+          this.hourSliderValue = date.format( 'H' );
+          this.minuteSliderValue = date.format( 'm' );
+          this.secondSliderValue = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType
+                                 ? date.format( 's' )
+                                 : 0;
+        },
+        updateDateFromSliders: function() {
+          // only change the time if the current day is within the min/max boundaries
+          if( !this.isBeforeMinDate( this.date, 'day' ) && !this.isAfterMaxDate( this.date, 'day' ) ) {
+            this.date.hour( this.hourSliderValue ).minute( this.minuteSliderValue ).second(
+              'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType ?
+                this.secondSliderValue : 0 );
+            this.date = this.resolveDate( this.date );
+          }
           this.updateSlidersFromDate( this.date );
-        } else if( 'today' == when ) {
-          this.date = moment().tz( CnSession.user.timezone );
-          this.updateDateFromSliders();
-        } else {
-          if( null === when ) {
-            this.date = null;
+        },
+        prevMode: function() {
+          this.mode = 'year' == this.mode ? 'month' : 'day';
+          this.update();
+        },
+        nextMode: function() {
+          this.mode = 'day' == this.mode ? 'month' : 'year';
+          this.update();
+        },
+        viewPrev: function() {
+          var gap = viewMoveGaps[this.mode];
+          this.viewingDate.subtract( gap.amount, gap.unit );
+          this.update();
+        },
+        viewNext: function() {
+          var gap = viewMoveGaps[this.mode];
+          this.viewingDate.add( gap.amount, gap.unit );
+          this.update();
+        },
+        select: function( when ) {
+          if( 'now' == when ) {
+            this.date = moment().tz( CnSession.user.timezone );
+            if( 'datetimesecond' != this.pickerType && 'timeseond' != this.pickerType ) this.date.second( 0 );
+            this.updateSlidersFromDate( this.date );
+          } else if( 'today' == when ) {
+            this.date = moment().tz( CnSession.user.timezone );
+            this.updateDateFromSliders();
           } else {
-            if( null === this.date ) {
-              this.date = moment().tz( CnSession.user.timezone );
+            if( null === when ) {
+              this.date = null;
+            } else {
+              if( null === this.date ) {
+                this.date = moment().tz( CnSession.user.timezone );
+                this.updateDateFromSliders();
+              }
+              this.date.year( when.year() ).month( when.month() ).date( when.date() );
               this.updateDateFromSliders();
             }
-            this.date.year( when.year() ).month( when.month() ).date( when.date() );
-            this.updateDateFromSliders();
           }
+
+          if( null !== this.date ) this.viewingDate = moment( this.date );
+          this.prevMode(); // will call update()
+        },
+        updateDisplayTime: function() {
+          var seconds = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType;
+          var timezone = 'time' != this.pickerType;
+          this.displayTime = null === this.date
+                           ? '(empty)'
+                           : this.date.format( CnSession.getTimeFormat( seconds, timezone ) );
+        },
+        update: function() {
+          if( 'time' != this.pickerType ) {
+            if( 'day' == this.mode ) {
+              this.modeTitle = this.viewingDate.format( 'MMMM YYYY' );
+              var cellList = [];
+
+              // get forward dates
+              var date = moment( this.viewingDate );
+              date.hour( 12 ).minute( 0 ).second( 0 );
+              for( ; date.month() == this.viewingDate.month() || 0 < date.day(); date.add( 1, 'days' ) ) {
+                var cellDate = moment( date );
+                cellList.push( {
+                  date: cellDate,
+                  label: cellDate.format( 'DD' ),
+                  current: null !== this.date &&
+                           this.date.isSame( cellDate, 'year' ) &&
+                           this.date.isSame( cellDate, 'month' ) &&
+                           this.date.isSame( cellDate, 'day' ),
+                  offMonth: !this.viewingDate.isSame( cellDate, 'month' ),
+                  weekend: 0 <= [0,6].indexOf( cellDate.day() ),
+                  disabled: !this.isDateAllowed( cellDate, 'day' )
+                } );
+              }
+
+              // get backward dates
+              var date = moment( this.viewingDate ).subtract( 1, 'days' );
+              date.hour( 12 ).minute( 0 ).second( 0 );
+              for( ; date.month() == this.viewingDate.month() || 6 > date.day(); date.subtract( 1, 'days' ) ) {
+                var cellDate = moment( date );
+                cellList.unshift( {
+                  date: cellDate,
+                  label: cellDate.format( 'DD' ),
+                  current: null !== this.date &&
+                           this.date.isSame( cellDate, 'year' ) &&
+                           this.date.isSame( cellDate, 'month' ) &&
+                           this.date.isSame( cellDate, 'day' ),
+                  offMonth: !this.viewingDate.isSame( cellDate, 'month' ),
+                  weekend: 0 <= [0,6].indexOf( cellDate.day() ),
+                  disabled: !this.isDateAllowed( cellDate, 'day' )
+                } );
+              }
+
+              this.cellList = split( cellList, 7 );
+            } else if( 'month' == this.mode ) {
+              this.modeTitle = this.viewingDate.format( 'YYYY' );
+              var cellList = [];
+
+              // one date per month
+              var date = moment( this.viewingDate );
+              for( var month = 0; month < 12; month++ ) {
+                date.month( month );
+                var cellDate = moment( date );
+                cellList.push( {
+                  date: cellDate,
+                  label: cellDate.format( 'MMMM' ),
+                  current: null !== this.date &&
+                           this.date.isSame( cellDate, 'year' ) &&
+                           this.date.isSame( cellDate, 'month' ),
+                  offMonth: false,
+                  weekend: false,
+                  disabled: !this.isDateAllowed( cellDate, 'month' )
+                } );
+              }
+
+              this.cellList = split( cellList, 3 );
+            } else { // 'year' == this.mode
+              var lowerYear = Math.floor( this.viewingDate.year() / 20 ) * 20;
+              var upperYear = lowerYear + 20 - 1;
+              this.modeTitle = lowerYear + ' - ' + upperYear;
+              var cellList = [];
+
+              // one date per year
+              var date = moment( this.viewingDate );
+              for( var year = lowerYear; year <= upperYear; year++ ) {
+                date.year( year );
+                var cellDate = moment( date );
+                cellList.push( {
+                  date: cellDate,
+                  label: cellDate.format( 'YYYY' ),
+                  current: null !== this.date &&
+                           this.date.isSame( cellDate, 'year' ),
+                  offMonth: false,
+                  weekend: false,
+                  disabled: !this.isDateAllowed( cellDate, 'year' )
+                } );
+              }
+
+              this.cellList = split( cellList, 5 );
+            }
+          }
+
+          this.updateDisplayTime();
+
+          // need to send a resize event so the sliders update
+          $window.dispatchEvent( new Event( 'resize' ) );
+        },
+        show: function() {
+          return $modal.open( {
+            backdrop: 'static',
+            keyboard: true,
+            modalFade: true,
+            templateUrl: cenozo.baseUrl + '/app/cenozo/modal-datetime.tpl.html',
+            controller: function( $scope, $modalInstance ) {
+              $scope.local = self;
+              $scope.nowDisabled = !self.isDateAllowed( moment(), 'second' );
+              $scope.todayDisabled = !self.isDateAllowed( moment(), 'day' );
+              $scope.ok = function() {
+                var response = null;
+                if( null !== $scope.local.date ) {
+                  response = 'time' == self.pickerType || 'timesecond' == self.pickerType
+                           ? $scope.local.date.format( 'time' == self.pickerType ? 'HH:mm' : 'HH:mm:ss' )
+                           : $scope.local.date.tz( 'utc' ).format();
+                }
+                $modalInstance.close( response );
+              };
+              $scope.cancel = function() { $modalInstance.close( false ); };
+
+              $scope.$watch( 'local.hourSliderValue', function( hour ) {
+                if( 'moment' == cenozo.getType( $scope.local.date ) ) {
+                  $scope.local.updateDateFromSliders();
+                  $scope.local.updateDisplayTime();
+                }
+              } );
+              $scope.$watch( 'local.minuteSliderValue', function( minute ) {
+                if( 'moment' == cenozo.getType( $scope.local.date ) ) {
+                  $scope.local.updateDateFromSliders();
+                  $scope.local.updateDisplayTime();
+                }
+              } );
+              $scope.$watch( 'local.secondSliderValue', function( second ) {
+                if( 'moment' == cenozo.getType( $scope.local.date ) ) {
+                  $scope.local.updateDateFromSliders();
+                  $scope.local.updateDisplayTime();
+                }
+              } );
+            }
+          } ).result;
         }
-
-        if( null !== this.date ) this.viewingDate = moment( this.date );
-        this.prevMode(); // will call update()
-      };
-      this.updateDisplayTime = function() {
-        var seconds = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType;
-        var timezone = 'time' != this.pickerType;
-        this.displayTime = null === this.date
-                         ? '(empty)'
-                         : this.date.format( CnSession.getTimeFormat( seconds, timezone ) );
-      };
-      this.update = function() {
-        if( 'day' == this.mode ) {
-          this.modeTitle = this.viewingDate.format( 'MMMM YYYY' );
-          var cellList = [];
-
-          // get forward dates
-          var date = moment( this.viewingDate );
-          date.hour( 12 ).minute( 0 ).second( 0 );
-          for( ; date.month() == this.viewingDate.month() || 0 < date.day(); date.add( 1, 'days' ) ) {
-            var cellDate = moment( date );
-            cellList.push( {
-              date: cellDate,
-              label: cellDate.format( 'DD' ),
-              current: null !== this.date &&
-                       this.date.isSame( cellDate, 'year' ) &&
-                       this.date.isSame( cellDate, 'month' ) &&
-                       this.date.isSame( cellDate, 'day' ),
-              offMonth: !this.viewingDate.isSame( cellDate, 'month' ),
-              weekend: 0 <= [0,6].indexOf( cellDate.day() ),
-              disabled: !this.isDateAllowed( cellDate, 'day' )
-            } );
-          }
-
-          // get backward dates
-          var date = moment( this.viewingDate ).subtract( 1, 'days' );
-          date.hour( 12 ).minute( 0 ).second( 0 );
-          for( ; date.month() == this.viewingDate.month() || 6 > date.day(); date.subtract( 1, 'days' ) ) {
-            var cellDate = moment( date );
-            cellList.unshift( {
-              date: cellDate,
-              label: cellDate.format( 'DD' ),
-              current: null !== this.date &&
-                       this.date.isSame( cellDate, 'year' ) &&
-                       this.date.isSame( cellDate, 'month' ) &&
-                       this.date.isSame( cellDate, 'day' ),
-              offMonth: !this.viewingDate.isSame( cellDate, 'month' ),
-              weekend: 0 <= [0,6].indexOf( cellDate.day() ),
-              disabled: !this.isDateAllowed( cellDate, 'day' )
-            } );
-          }
-
-          this.cellList = split( cellList, 7 );
-        } else if( 'month' == this.mode ) {
-          this.modeTitle = this.viewingDate.format( 'YYYY' );
-          var cellList = [];
-
-          // one date per month
-          var date = moment( this.viewingDate );
-          for( var month = 0; month < 12; month++ ) {
-            date.month( month );
-            var cellDate = moment( date );
-            cellList.push( {
-              date: cellDate,
-              label: cellDate.format( 'MMMM' ),
-              current: null !== this.date &&
-                       this.date.isSame( cellDate, 'year' ) &&
-                       this.date.isSame( cellDate, 'month' ),
-              offMonth: false,
-              weekend: false,
-              disabled: !this.isDateAllowed( cellDate, 'month' )
-            } );
-          }
-
-          this.cellList = split( cellList, 3 );
-        } else { // 'year' == this.mode
-          var lowerYear = Math.floor( this.viewingDate.year() / 20 ) * 20;
-          var upperYear = lowerYear + 20 - 1;
-          this.modeTitle = lowerYear + ' - ' + upperYear;
-          var cellList = [];
-
-          // one date per year
-          var date = moment( this.viewingDate );
-          for( var year = lowerYear; year <= upperYear; year++ ) {
-            date.year( year );
-            var cellDate = moment( date );
-            cellList.push( {
-              date: cellDate,
-              label: cellDate.format( 'YYYY' ),
-              current: null !== this.date &&
-                       this.date.isSame( cellDate, 'year' ),
-              offMonth: false,
-              weekend: false,
-              disabled: !this.isDateAllowed( cellDate, 'year' )
-            } );
-          }
-
-          this.cellList = split( cellList, 5 );
-        }
-
-        this.updateDisplayTime();
-
-        // need to send a resize event so the sliders update
-        $window.dispatchEvent( new Event( 'resize' ) );
-      };
-      this.show = function() {
-        return $modal.open( {
-          backdrop: 'static',
-          keyboard: true,
-          modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-datetime.tpl.html',
-          controller: function( $scope, $modalInstance ) {
-            $scope.local = self;
-            $scope.nowDisabled = !self.isDateAllowed( moment(), 'second' );
-            $scope.todayDisabled = !self.isDateAllowed( moment(), 'day' );
-            $scope.ok = function() {
-              var response = null;
-              if( null !== $scope.local.date ) {
-                response = 'time' == self.pickerType || 'timesecond' == self.pickerType
-                         ? $scope.local.date.format( 'time' == self.pickerType ? 'HH:mm' : 'HH:mm:ss' )
-                         : $scope.local.date.tz( 'utc' ).format();
-              }
-              $modalInstance.close( response );
-            };
-            $scope.cancel = function() { $modalInstance.close( false ); };
-
-            $scope.$watch( 'local.hourSliderValue', function( hour ) {
-              if( 'moment' == cenozo.getType( $scope.local.date ) ) {
-                $scope.local.updateDateFromSliders();
-                $scope.local.updateDisplayTime();
-              }
-            } );
-            $scope.$watch( 'local.minuteSliderValue', function( minute ) {
-              if( 'moment' == cenozo.getType( $scope.local.date ) ) {
-                $scope.local.updateDateFromSliders();
-                $scope.local.updateDisplayTime();
-              }
-            } );
-            $scope.$watch( 'local.secondSliderValue', function( second ) {
-              if( 'moment' == cenozo.getType( $scope.local.date ) ) {
-                $scope.local.updateDateFromSliders();
-                $scope.local.updateDisplayTime();
-              }
-            } );
-          }
-        } ).result;
-      };
+      } );
 
       // process the boundary dates
       if( angular.isUndefined( this.minDate ) || null === this.minDate ) this.minDate = null;
-      else if( 'now' !== this.minDate )
+      else if( 'now' !== this.minDate ) {
+        if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.minDate ) )
+          this.minDate = moment().format( 'YYYY-MM-DD' ) + 'T' + this.minDate + 'Z';
         this.minDate = moment( new Date( this.minDate ) ).tz( CnSession.user.timezone );
+      }
       if( angular.isUndefined( this.maxDate ) || null === this.maxDate ) this.maxDate = null;
-      else if( 'now' !== this.maxDate )
+      else if( 'now' !== this.maxDate ) {
+        if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.maxDate ) )
+          this.maxDate = moment().format( 'YYYY-MM-DD' ) + 'T' + this.maxDate + 'Z';
         this.maxDate = moment( new Date( this.maxDate ) ).tz( CnSession.user.timezone );
+      }
 
       // treat invalid dates as null dates
       if( null != this.date && '0000-00-00' == this.date.substring( 0, 10 ) ) this.date = null;
@@ -3373,8 +3395,9 @@ cenozo.service( 'CnModalDatetimeFactory', [
         if( angular.isUndefined( this.date ) ) {
           this.date = this.resolveDate( moment().tz( CnSession.user.timezone ) );
         } else {
-          if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.date ) )
+          if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.date ) ) {
             this.date = moment().format( 'YYYY-MM-DD' ) + 'T' + this.date + 'Z';
+          }
           this.date = moment( new Date( this.date ) );
         }
 
