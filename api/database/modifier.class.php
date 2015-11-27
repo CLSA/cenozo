@@ -759,6 +759,22 @@ class modifier extends \cenozo\base_object
       $type = sprintf( "\n%sJOIN", $prefix );
       $on_clause = $join['modifier']->get_where();
       $table = $join['table'];
+      if( preg_match( '/\(.+\)/', str_replace( "\n", ' ', $table ) ) )
+      { // table name is sql statement enclosed in (), reformat accordingly
+        $lines = [];
+        foreach( explode( "\n", $table ) as $line )
+        {
+          $line = preg_replace( '/^\( *(.+)/', "(\n  $1", $line );
+          $line = preg_replace( '/^[^(].*/', '  $0', $line );
+          $lines[] = $line;
+        }
+        $last = count( $lines ) - 1;
+        if( preg_match( '/\)/', $lines[$last] ) )
+        {
+          $lines[$last] = preg_replace( '/ *\)/', "\n)", $lines[$last] );
+        }
+        $table = implode( "\n", $lines );
+      }
       if( $alias != $join['table'] ) $table .= ' AS '.$alias;
       $sql .= sprintf( "%s %s\n  ON %s ", $type, $table, $on_clause );
     }
