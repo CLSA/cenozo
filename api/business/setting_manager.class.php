@@ -32,9 +32,34 @@ class setting_manager extends \cenozo\singleton
     $this->read_settings( 'ldap', $args );
     $this->read_settings( 'opal', $args );
     $this->read_settings( 'path', $args );
-    $this->read_settings( 'survey_db', $args );
     $this->read_settings( 'url', $args );
     $this->read_settings( 'voip', $args );
+
+    $file = LIMESURVEY_PATH.'/application/config/config.php';
+    if( file_exists( $file ) )
+    {
+      define( 'BASEPATH', '' ); // needed to read the config file
+      $config = require( $file );
+      $db = explode( ';', $config['components']['db']['connectionString'] );
+
+      $parts = explode( ':', $db[0], 2 );
+      $driver = current( $parts );
+      $parts = explode( '=', $db[0], 2 );
+      $server = next( $parts );
+      $parts = explode( '=', $db[2], 2 );
+      $database = next( $parts );
+
+      $this->setting_list['survey_db'] =
+        array( 'driver' => $driver,
+               'server' => $server,
+               'username' => $config['components']['db']['username'],
+               'password' => $config['components']['db']['password'],
+               'database' => $database,
+               'prefix' => $config['components']['db']['tablePrefix'] );
+    }
+    else throw lib::create( 'exception\runtime',
+      sprintf( 'Cannot find limesurvey config.php file (tried %s).', $file ),
+      __METHOD__ );
   }
 
   /**
