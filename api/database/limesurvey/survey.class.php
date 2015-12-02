@@ -27,6 +27,7 @@ class survey extends sid_record
     $select = lib::create( 'database\select' );
     $select->add_column( 'gid' );
     $select->add_column( 'qid' );
+    $select->add_column( 'parent_qid' );
     $select->from( 'questions' );
 
     // the questions table has more than one column in its primary key so custom sql is needed
@@ -42,7 +43,9 @@ class survey extends sid_record
     if( 0 == count( $row ) )
       throw lib::create( 'exception\runtime', 'Question code not found in survey.', __METHOD__ );
 
-    $column_name = sprintf( '%sX%sX%s', static::get_sid(), $row['gid'], $row['qid'] );
+    $column_name = $row['parent_qid']
+                 ? sprintf( '%sX%sX%s%s', static::get_sid(), $row['gid'], $row['parent_qid'], $question_code )
+                 : sprintf( '%sX%sX%s', static::get_sid(), $row['gid'], $row['qid'] );
     return $this->$column_name;
   }
 
@@ -60,6 +63,7 @@ class survey extends sid_record
     $question_sel = lib::create( 'database\select' );
     $question_sel->add_column( 'gid' );
     $question_sel->add_column( 'qid' );
+    $select->add_column( 'parent_qid' );
     $question_sel->from( 'questions' );
 
     // the questions table has more than one column in its primary key so custom sql is needed
@@ -76,7 +80,10 @@ class survey extends sid_record
       throw lib::create( 'exception\runtime', 'Question code not found in survey.', __METHOD__ );
 
     $select = lib::create( 'database\select' );
-    $select->add_column( sprintf( '%sX%sX%s', static::get_sid(), $row['gid'], $row['qid'] ) );
+    $select->add_column(
+      $row['parent_qid'] ?
+      sprintf( '%sX%sX%s%s', static::get_sid(), $row['gid'], $row['parent_qid'], $question_code ) :
+      sprintf( '%sX%sX%s', static::get_sid(), $row['gid'], $row['qid'] ) );
     $select->from( static::get_table_name() );
 
     $sql = $select->get_sql();
