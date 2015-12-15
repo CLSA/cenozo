@@ -560,11 +560,27 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', '$state',
+    function( CnBaseViewFactory, $state ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        if( root ) {
+          // override the collection model's getServiceData function (list active collections only)
+          this.deferred.promise.then( function() {
+            self.collectionModel.getServiceData = function( type, columnRestrictLists ) {
+              var data = this.$$getServiceData( type, columnRestrictLists );
+              if( angular.isUndefined( data.modifier ) ) data.modifier = { where: [] };
+              else if( angular.isUndefined( data.modifier.where ) ) data.modifier.where = [];
+              data.modifier.where.push( { column: 'collection.active', operator: '=', value: true } );
+              return data;
+            };
+          } );
+        }
+      };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
@@ -586,7 +602,7 @@ define( function() {
           this.metadata.loadingCount++;
           return $q.all( [
 
-            this.loadMetadata(),
+            this.$$getMetadata(),
 
             CnHttpFactory.instance( {
               path: 'age_group',

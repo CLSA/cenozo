@@ -227,6 +227,12 @@ angular.extend( cenozo, {
   providers: {},
   frameworkModules: {},
 
+  // adds an extendable function to an object
+  addExtendableFunction: function( object, name, fn ) {
+    object['$$'+name] = fn;
+    object[name] = function() { return object['$$'+name].apply( this, arguments ); }
+  },
+
   // defines all modules belonging to the framework
   defineFrameworkModules: function( list ) { this.frameworkModules = list; },
 
@@ -1743,27 +1749,25 @@ cenozo.factory( 'CnBaseAddFactory', [
         object.parentModel = parentModel;
 
         /**
-         * Is usually called by the onAdd() function in order to send the new record to the server.
-         * This function should not be changed, override the onAdd() function instead.
+         * Sends a new record to the server.
          * 
          * @param object record: The record to add
          * @return promise
          */
-        object.$$onAdd = function( record ) {
+        cenozo.addExtendableFunction( object, 'onAdd', function( record ) {
           var self = this;
-          if( !this.parentModel.addEnabled ) throw new Error( 'Calling $$onAdd() but addEnabled is false' );
+          if( !this.parentModel.addEnabled ) throw new Error( 'Calling onAdd() but addEnabled is false' );
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: record };
           httpObj.onError = function error( response ) { self.onAddError( response ); };
           return CnHttpFactory.instance( httpObj ).post();
-        };
+        } );
 
         /**
-         * Is usually called by the onAddError() function in order to handle erros when adding records.
-         * This function should not be changed, override the onAddError() function instead.
+         * Handles errors when adding records.
          * 
          * @param object response: The response of a failed http call
          */
-        object.$$onAddError = function( response ) {
+        cenozo.addExtendableFunction( object, 'onAddError', function( response ) {
           if( 409 == response.status ) {
             // report which inputs are included in the conflict
             response.data.forEach( function( item ) {
@@ -1776,18 +1780,17 @@ cenozo.factory( 'CnBaseAddFactory', [
               }
             } );
           } else { CnModalMessageFactory.httpError( response ); }
-        };
+        } );
 
         /**
-         * Is usually called by the onNew() function in order to create a new local record.
-         * This function should not be changed, override the onNew() function instead.
+         * Creates a new local record.
          * 
          * @param object record: The object to initialize as a new record
          * @return promise
          */
-        object.$$onNew = function( record ) {
+        cenozo.addExtendableFunction( object, 'onNew', function( record ) {
           var self = this;
-          if( !this.parentModel.addEnabled ) throw new Error( 'Calling $$onNew() but addEnabled is false' );
+          if( !this.parentModel.addEnabled ) throw new Error( 'Calling onNew() but addEnabled is false' );
 
           // load the metadata and use it to apply default values to the record
           this.parentModel.metadata.loadingCount++;
@@ -1803,25 +1806,7 @@ cenozo.factory( 'CnBaseAddFactory', [
                                  : self.parentModel.metadata.columnList[column].default;
             }
           ).finally( function finished() { self.parentModel.metadata.loadingCount--; } );
-        };
-
-        /**
-         * Override this function when needing to make additional operations when adding or creating
-         * this model's records.  Unlike onNew this creates the record on the server which has already
-         * been created on the client side.
-         * 
-         * @return promise
-         */
-        object.onAdd = function( record ) { return this.$$onAdd( record ); };
-        object.onAddError = function( response ) { object.$$onAddError( response ); }
-
-        /**
-         * Override this function when needing to make additional operations when creating a new record
-         * for this model.  Unlike onAdd this creates the record on the client side (not the server).
-         * 
-         * @return promise
-         */
-        object.onNew = function( record ) { return this.$$onNew( record ); };
+        } );
       }
     };
   }
@@ -1868,24 +1853,23 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         };
 
         // should be called by when the month is changed
-        object.checkCache = function() {
+        cenozo.addExtendableFunction( object, 'checkCache', function() {
           if( null === this.cacheMinDate ||
               null === this.cacheMaxDate ||
               this.viewingMaxDate < this.cacheMinDate ||
               this.viewingMinDate > this.cacheMaxDate ) this.onList();
-        };
+        } );
 
         /**
-         * Is usually called by the onDelete() function in order to delete an event from the server.
-         * This function should not be changed, override the onDelete() function instead.
+         * Deletes an event from the server.
          * 
          * @param object event: The event to delete
          * @return promise
          */
-        object.$$onDelete = function( record ) {
+        cenozo.addExtendableFunction( object, 'onDelete', function( record ) {
           var self = this;
           if( !this.parentModel.deleteEnabled )
-            throw new Error( 'Calling $$onDelete() but deleteEnabled is false' );
+            throw new Error( 'Calling onDelete() but deleteEnabled is false' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
           httpObj.onError = function error( response ) { self.onDeleteError( response ); }
@@ -1899,15 +1883,14 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               } );
             }
           );
-        };
+        } );
 
         /**
-         * Is usually called by the onDeleteError() function in order to handle errors when deleting events.
-         * This function should not be changed, override the onDeleteError() function instead.
+         * Handles errors when deleting events.
          * 
          * @param object response: The response of a failed http call
          */
-        object.$$onDeleteError = function( response ) {
+        cenozo.addExtendableFunction( object, 'onDeleteError', function( response ) {
           if( 409 == response.status ) {
             CnModalMessageFactory.instance( {
               title: 'Unable to delete ' + object.parentModel.module.name.singular + ' event',
@@ -1917,16 +1900,15 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               error: true
             } ).show();
           } else { CnModalMessageFactory.httpError( response ); }
-        };
+        } );
 
         /**
-         * Is usually called by the onList() function in order to load events from the server.
-         * This function should not be changed, override the onList() function instead.
+         * Loads events from the server.
          * 
          * @param boolean replace: Whether to replace the cached list or append to it
          * @return promise
          */
-        object.$$onList = function( replace ) {
+        cenozo.addExtendableFunction( object, 'onList', function( replace ) {
           var self = this;
           if( angular.isUndefined( replace ) ) replace = false;
           if( replace ) this.cache = [];
@@ -1967,28 +1949,16 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               self.cacheMaxDate = maxDate;
             }
           ).finally( function finished() { self.isLoading = false; } );
-        };
+        } );
 
         /**
-         * Is usually called by the onListError() function in order to handle errors when listing records.
-         * This function should not be changed, override the onListError() function instead.
+         * Handles errors when listing records.
          * 
          * @param object response: The response of a failed http call
          */
-        object.$$onListError = function( response ) {
+        cenozo.addExtendableFunction( object, 'onListError', function( response ) {
           CnModalMessageFactory.httpError( response );
-        };
-
-        /**
-         * Override these function when needing to make additional operations when choosing, deleting
-         * or listing this model's records.
-         * 
-         * @return promise
-         */
-        object.onDelete = function( record ) { return this.$$onDelete( record ); };
-        object.onDeleteError = function( response ) { object.$$onDeleteError( response ); }
-        object.onList = function( replace ) { return this.$$onList( replace ); };
-        object.onListError = function( response ) { object.$$onListError( response ); }
+        } );
       }
     };
   }
@@ -2010,12 +1980,13 @@ cenozo.factory( 'CnBaseListFactory', [
         object.cache = [];
         object.paginationFactory = CnPaginationFactory.instance();
         object.isLoading = false;
+        object.chooseMode = false;
 
         // initialize the restrict lists
         object.columnRestrictLists = {};
         for( var column in parentModel.columnList ) object.columnRestrictLists[column] = [];
 
-        object.orderBy = function( column, doNotList ) {
+        cenozo.addExtendableFunction( object, 'orderBy', function( column, doNotList ) {
           var self = this;
 
           if( angular.isUndefined( doNotList ) ) doNotList = false;
@@ -2033,9 +2004,9 @@ cenozo.factory( 'CnBaseListFactory', [
               this.paginationFactory.currentPage = 1;
             }
           }
-        };
+        } );
 
-        object.setRestrictList = function( column, newList ) {
+        cenozo.addExtendableFunction( object, 'setRestrictList', function( column, newList ) {
           var self = this;
 
           // sanity check
@@ -2050,26 +2021,24 @@ cenozo.factory( 'CnBaseListFactory', [
             // describe the restrict list
             this.onList( true ).then( function success() { self.paginationFactory.currentPage = 1; } );
           }
-        };
+        } );
 
         // should be called by pagination when the page is changed
-        object.checkCache = function() {
+        cenozo.addExtendableFunction( object, 'checkCache', function() {
           if( this.cache.length < this.total && this.paginationFactory.getMaxIndex() >= this.cache.length )
             this.onList();
-        };
+        } );
 
         /**
-         * Is usually called by the onChoose() function in order to add a record on the server in a
-         * many-to-many relationship.
-         * This function should not be changed, override the onChoose() function instead.
+         * Adds a record on the server in a many-to-many relationship.
          * 
          * @param object record: The record to choose
          * @return promise
          */
-        object.$$onChoose = function( record ) {
+        cenozo.addExtendableFunction( object, 'onChoose', function( record ) {
           var self = this;
           if( !this.parentModel.chooseEnabled )
-            throw new Error( 'Calling $$onChoose() but chooseEnabled is false' );
+            throw new Error( 'Calling onChoose() but chooseEnabled is false' );
 
           // note: don't use the record's getIdentifier since choosing requires the ID only
 
@@ -2082,29 +2051,27 @@ cenozo.factory( 'CnBaseListFactory', [
                       : CnHttpFactory.instance( httpObj ).post();
 
           return promise.then( function success() { record.chosen = record.chosen ? 0 : 1 } );
-        };
+        } );
 
         /**
-         * Is usually called by the onChooseError() function in order to handle erros when choosing records.
-         * This function should not be changed, override the onChooseError() function instead.
+         * Handles erros when choosing records.
          * 
          * @param object response: The response of a failed http call
          */
-        object.$$onChooseError = function( response ) {
+        cenozo.addExtendableFunction( object, 'onChooseError', function( response ) {
           CnModalMessageFactory.httpError( response );
-        };
+        } );
 
         /**
-         * Is usually called by the onDelete() function in order to delete a record from the server.
-         * This function should not be changed, override the onDelete() function instead.
+         * Deletes a record from the server.
          * 
          * @param object record: The record to delete
          * @return promise
          */
-        object.$$onDelete = function( record ) {
+        cenozo.addExtendableFunction( object, 'onDelete', function( record ) {
           var self = this;
           if( !this.parentModel.deleteEnabled )
-            throw new Error( 'Calling $$onDelete() but deleteEnabled is false' );
+            throw new Error( 'Calling onDelete() but deleteEnabled is false' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
           httpObj.onError = function error( response ) { self.onDeleteError( response ); }
@@ -2119,15 +2086,14 @@ cenozo.factory( 'CnBaseListFactory', [
               } );
             }
           );
-        };
+        } );
 
         /**
-         * Is usually called by the onDeleteError() function in order to handle errors when deleting records.
-         * This function should not be changed, override the onDeleteError() function instead.
+         * Handles errors when deleting records.
          * 
          * @param object response: The response of a failed http call
          */
-        object.$$onDeleteError = function( response ) {
+        cenozo.addExtendableFunction( object, 'onDeleteError', function( response ) {
           if( 409 == response.status ) {
             CnModalMessageFactory.instance( {
               title: 'Unable to delete ' + object.parentModel.module.name.singular + ' record',
@@ -2137,16 +2103,15 @@ cenozo.factory( 'CnBaseListFactory', [
               error: true
             } ).show();
           } else { CnModalMessageFactory.httpError( response ); }
-        };
+        } );
 
         /**
-         * Is usually called by the onList() function in order to load records from the server.
-         * This function should not be changed, override the onList() function instead.
+         * Loads records from the server.
          * 
          * @param boolean replace: Whether to replace the cached list or append to it
          * @return promise
          */
-        object.$$onList = function( replace ) {
+        cenozo.addExtendableFunction( object, 'onList', function( replace ) {
           var self = this;
           if( angular.isUndefined( replace ) ) replace = false;
           if( replace ) this.cache = [];
@@ -2179,51 +2144,35 @@ cenozo.factory( 'CnBaseListFactory', [
               self.total = response.headers( 'Total' );
             }
           ).finally( function finished() { self.isLoading = false; } );
-        };
+        } );
 
         /**
-         * Is usually called by the onListError() function in order to handle errors when listing records.
-         * This function should not be changed, override the onListError() function instead.
+         * Handles errors when listing records.
          * 
          * @param object response: The response of a failed http call
          */
-        object.$$onListError = function( response ) {
+        cenozo.addExtendableFunction( object, 'onListError', function( response ) {
           CnModalMessageFactory.httpError( response );
-        };
-
-        object.chooseMode = false;
-        object.toggleChooseMode = function() {
-          this.chooseMode = !this.chooseMode;
-          return this.onList( true );
-        };
+        } );
 
         /**
-         * Is usually called by the onSelect() function in order to add a record on the server in a
+         * Adds a record on the server in a
          * many-to-many relationship.
-         * This function should not be changed, override the onSelect() function instead.
          * 
          * @param object record: The record to select
          * @return promise
          */
-        object.$$onSelect = function( record ) {
+        cenozo.addExtendableFunction( object, 'onSelect', function( record ) {
           if( !this.parentModel.viewEnabled )
-            throw new Error( 'Calling $$onSelect() but viewEnabled is false' );
+            throw new Error( 'Calling onSelect() but viewEnabled is false' );
           return this.parentModel.transitionToViewState( record );
-        };
+        } );
 
-        /**
-         * Override these function when needing to make additional operations when choosing, deleting
-         * or listing this model's records.
-         * 
-         * @return promise
-         */
-        object.onChoose = function( record ) { return this.$$onChoose( record ); };
-        object.onChooseError = function( response ) { object.$$onChooseError( response ); }
-        object.onDelete = function( record ) { return this.$$onDelete( record ); };
-        object.onDeleteError = function( response ) { object.$$onDeleteError( response ); }
-        object.onList = function( replace ) { return this.$$onList( replace ); };
-        object.onListError = function( response ) { object.$$onListError( response ); }
-        object.onSelect = function( record ) { return this.$$onSelect( record ); };
+        cenozo.addExtendableFunction( object, 'toggleChooseMode', function() {
+          this.chooseMode = !this.chooseMode;
+          return this.onList( true );
+        } );
+
       }
     };
   }
@@ -2295,7 +2244,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         /**
          * Updates a property of the formatted copy of the record
          */
-        object.updateFormattedRecord = function( property ) {
+        cenozo.addExtendableFunction( object, 'updateFormattedRecord', function( property ) {
           if( angular.isDefined( property ) ) {
             var input = parentModel.module.getInput( property );
             if( null !== input ) {
@@ -2317,31 +2266,29 @@ cenozo.factory( 'CnBaseViewFactory', [
             // update all properties
             for( var property in this.record ) this.updateFormattedRecord( property );
           }
-        };
+        } );
 
         /**
-         * Is usually called by the onDelete() function in order to delete the viewed record from the server.
-         * This function should not be changed, override the onDelete() function instead.
+         * Deletes the viewed record from the server.
          * 
          * @return promise
          */
-        object.$$onDelete = function() {
+        cenozo.addExtendableFunction( object, 'onDelete', function() {
           var self = this;
           if( !parentModel.deleteEnabled )
-            throw new Error( 'Calling $$onDelete() but deleteEnabled is false' );
+            throw new Error( 'Calling onDelete() but deleteEnabled is false' );
 
           var httpObj = { path: parentModel.getServiceResourcePath() };
           httpObj.onError = function error( response ) { self.onDeleteError( response ); }
           return CnHttpFactory.instance( httpObj ).delete();
-        };
+        } );
 
         /**
-         * Is usually called by the onDeleteError() function in order to handle erros when deleting records.
-         * This function should not be changed, override the onDeleteError() function instead.
+         * Handles erros when deleting records.
          * 
          * @param object response: The response of a failed http call
          */
-        object.$$onDeleteError = function( response ) {
+        cenozo.addExtendableFunction( object, 'onDeleteError', function( response ) {
           if( 409 == response.status ) {
             CnModalMessageFactory.instance( {
               title: 'Unable to delete ' + parentModel.module.name.singular + ' record',
@@ -2351,19 +2298,17 @@ cenozo.factory( 'CnBaseViewFactory', [
               error: true
             } ).show();
           } else { CnModalMessageFactory.httpError( response ); }
-        };
+        } );
 
         /**
-         * Is usually called by the onPatch() function in order to make changes on the server to the viewed
-         * record.
-         * This function should not be changed, override the onPatch() function instead.
+         * Makes changes to a record on the server.
          * 
          * @param object data: An object of column -> value pairs to change
          * @return promise
          */
-        object.$$onPatch = function( data ) {
+        cenozo.addExtendableFunction( object, 'onPatch', function( data ) {
           var self = this;
-          if( !parentModel.editEnabled ) throw new Error( 'Calling $$onPatch() but editEnabled is false' );
+          if( !parentModel.editEnabled ) throw new Error( 'Calling onPatch() but editEnabled is false' );
 
           var httpObj = {
             path: parentModel.getServiceResourcePath(),
@@ -2371,15 +2316,14 @@ cenozo.factory( 'CnBaseViewFactory', [
           };
           httpObj.onError = function error( response ) { self.onPatchError( response ); }
           return CnHttpFactory.instance( httpObj ).patch();
-        };
+        } );
 
         /**
-         * Is usually called by the onPatchError() function in order to handle erros when patching records.
-         * This function should not be changed, override the onPatchError() function instead.
+         * Handles erros when patching records.
          * 
          * @param object response: The response of a failed http call
          */
-        object.$$onPatchError = function( response ) {
+        cenozo.addExtendableFunction( object, 'onPatchError', function( response ) {
           if( 409 == response.status ) {
             // report which inputs are included in the conflict
             response.data.forEach( function( item ) {
@@ -2395,11 +2339,10 @@ cenozo.factory( 'CnBaseViewFactory', [
             object.record[property] = object.backupRecord[property];
             CnModalMessageFactory.httpError( response );
           }
-        };
+        } );
 
         /**
-         * Is usually called by the onView() function in order to load data from the server to view the record.
-         * This function should not be changed, override the onView() function instead.
+         * Loads data from the server to view the record.
          * 
          * Note: this function will override the usual error mechanism to change the state to one of
          * the error states.  This is because not having a view record is considered to be too severy an
@@ -2407,9 +2350,9 @@ cenozo.factory( 'CnBaseViewFactory', [
          * 
          * @return promise
          */
-        object.$$onView = function( simple ) {
+        cenozo.addExtendableFunction( object, 'onView', function( simple ) {
           var self = this;
-          if( !parentModel.viewEnabled ) throw new Error( 'Calling $$onView() but viewEnabled is false' );
+          if( !parentModel.viewEnabled ) throw new Error( 'Calling onView() but viewEnabled is false' );
 
           if( true !== simple ) {
             this.deferred.promise.then( function() {
@@ -2463,19 +2406,7 @@ cenozo.factory( 'CnBaseViewFactory', [
               );
             }
           ).finally( function finished() { parentModel.metadata.loadingCount--; } );
-        };
-
-        /**
-         * Override these function when needing to make additional operations when deleting, patching
-         * or viewing this model's records.
-         * 
-         * @return promise
-         */
-        object.onDelete = function() { return this.$$onDelete(); };
-        object.onDeleteError = function( response ) { object.$$onDeleteError( response ); }
-        object.onPatch = function( data ) { return this.$$onPatch( data ); };
-        object.onPatchError = function( response ) { object.$$onPatchError( response ); }
-        object.onView = function( simple ) { return this.$$onView( simple ); };
+        } );
       }
     };
   }
@@ -2497,18 +2428,18 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * get the identifier based on what is in the model's module
          */
-        self.getIdentifierFromRecord = function( record, valueOnly ) {
+        cenozo.addExtendableFunction( self, 'getIdentifierFromRecord', function( record, valueOnly ) {
           var valueOnly = angular.isUndefined( valueOnly ) ? false : valueOnly;
           var column = angular.isDefined( self.module.identifier.column ) ? self.module.identifier.column : 'id';
           return valueOnly || 'id' == column ? String( record[column] ) : column + '=' + record[column];
-        };
+        } );
 
         /**
          * Get a user-friendly name for the record (may not be unique)
          * 
          * This method is sometimes extended by a module's event factory
          */
-        self.getBreadcrumbTitle = function() {
+        cenozo.addExtendableFunction( self, 'getBreadcrumbTitle', function() {
           // first try for a friendly name
           var friendlyColumn = self.module.name.friendlyColumn;
           if( angular.isDefined( friendlyColumn ) && angular.isDefined( self.viewModel.record[friendlyColumn] ) )
@@ -2518,46 +2449,46 @@ cenozo.factory( 'CnBaseModelFactory', [
           return angular.isDefined( self.module.identifier.column )
                ? self.getIdentifierFromRecord( self.viewModel.record, true )
                : 'view'; // database IDs aren't friendly so just return "view"
-        };
+        } );
 
         /**
          * Get a user-friendly name for the record's parent (may not be unique)
          * 
          * This method is sometimes extended by a module's event factory
          */
-        self.getBreadcrumbParentTitle = function() {
+        cenozo.addExtendableFunction( self, 'getBreadcrumbParentTitle', function() {
           var parent = self.getParentIdentifier();
           return angular.isDefined( parent.friendly )
                ? self.viewModel.record[parent.friendly]
                : String( parent.identifier ).split( '=' ).pop();
-        };
+        } );
 
         /**
          * get the state's subject
          */
-        self.getSubjectFromState = function() {
+        cenozo.addExtendableFunction( self, 'getSubjectFromState', function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
             throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts' );
           return stateNameParts[0];
-        };
+        } );
 
         /**
          * get the state's action
          */
-        self.getActionFromState = function() {
+        cenozo.addExtendableFunction( self, 'getActionFromState', function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
             throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts' );
           return stateNameParts[1];
-        };
+        } );
 
         /**
          * get the parent identifier (either from the state or the module)
          * NOTE: when viewing the function will return the first parent that is set in the view record
          *       (there may be multiple)
          */
-        self.getParentIdentifier = function() {
+        cenozo.addExtendableFunction( self, 'getParentIdentifier', function() {
           var response = {
             subject: self.getSubjectFromState(),
             identifier: $state.params.parentIdentifier
@@ -2582,12 +2513,12 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( angular.isUndefined( response.identifier ) ) response.subject = undefined;
 
           return response;
-        };
+        } );
 
         /**
          * TODO: document
          */
-        self.getServiceCollectionPath = function() {
+        cenozo.addExtendableFunction( self, 'getServiceCollectionPath', function() {
           var path = '';
           if( self.getSubjectFromState() != self.module.subject.snake ) {
             var identifier = $state.params.parentIdentifier
@@ -2596,20 +2527,20 @@ cenozo.factory( 'CnBaseModelFactory', [
             path += self.getSubjectFromState() + '/' + identifier + '/';
           }
           return path + self.module.subject.snake;
-        }
+        } );
 
         /**
          * TODO: document
          */
-        self.getServiceResourcePath = function( resource ) {
+        cenozo.addExtendableFunction( self, 'getServiceResourcePath', function( resource ) {
           var identifier = angular.isUndefined( resource ) ? $state.params.identifier : resource;
           return self.getServiceCollectionPath() + '/' + identifier;
-        }
+        } );
 
         /**
          * TODO: document
          */
-        self.getServiceData = function( type, columnRestrictLists ) {
+        cenozo.addExtendableFunction( self, 'getServiceData', function( type, columnRestrictLists ) {
           if( angular.isUndefined( type ) || 0 > ['calendar','list','view'].indexOf( type ) )
             throw new Error( 'getServiceData expects an argument which is either "calendar", "list" or "view"' );
 
@@ -2747,62 +2678,62 @@ cenozo.factory( 'CnBaseModelFactory', [
             if( 0 < whereList.length ) data.modifier.where = whereList;
           }
           return data;
-        }
+        } );
 
         /**
          * TODO: document
          */
-        self.reloadState = function( record ) {
+        cenozo.addExtendableFunction( self, 'reloadState', function( record ) {
           if( angular.isUndefined( record ) ) {
             return $state.reload();
           } else {
             $state.params.identifier = record.getIdentifier();
             return $state.transitionTo( $state.current, $state.params, { reload: true } );
           }
-        };
+        } );
 
         /**
          * TODO: document
          */
-        self.transitionToLastState = function() {
+        cenozo.addExtendableFunction( self, 'transitionToLastState', function() {
           var parent = self.getParentIdentifier();
           return angular.isDefined( parent.subject ) ?
             $state.go( parent.subject + '.view', { identifier: parent.identifier } ) :
             $state.go( '^.list' );
-        };
+        } );
         
         /**
          * TODO: document
          */
-        self.transitionToAddState = function() {
+        cenozo.addExtendableFunction( self, 'transitionToAddState', function() {
           var stateName = $state.current.name;
           return 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ?
             $state.go( '^.add_' + self.module.subject.snake, { parentIdentifier: $state.params.identifier } ) :
             $state.go( '^.add' );
-        };
+        } );
         
         /**
          * TODO: document
          */
-        self.transitionToViewState = function( record ) {
+        cenozo.addExtendableFunction( self, 'transitionToViewState', function( record ) {
           var stateName = $state.current.name;
           var stateParams = { identifier: record.getIdentifier() };
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) )
             stateParams.parentIdentifier = $state.params.identifier;
           return $state.go( self.module.subject.snake + '.view', stateParams );
-        };
+        } );
         
         /**
          * TODO: document
          */
-        self.transitionToParentViewState = function( subject, identifier ) {
+        cenozo.addExtendableFunction( self, 'transitionToParentViewState', function( subject, identifier ) {
           return $state.go( subject + '.view', { identifier: identifier } );
-        };
+        } );
         
         /**
          * Creates the breadcrumb trail using module and a specific type (add, list or view)
          */
-        self.setupBreadcrumbTrail = function( type ) {
+        cenozo.addExtendableFunction( self, 'setupBreadcrumbTrail', function( type ) {
           var trail = [];
 
           // check the module for parents
@@ -2845,7 +2776,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           } else throw new Error( 'Tried to setup breadcrumb trail for invalid type "' + type + '"' );
 
           CnSession.setBreadcrumbTrail( trail );
-        };
+        } );
 
         /**
          * Makes an array containing items to be used by record add/view/list directives
@@ -2856,7 +2787,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          * "view" array contains an array of groups, each of which contains the items belonging to them.
          * NOTE: The returned arrays are COPIES of the module's items, not references.
          */
-        self.getDataArray = function( removeList, type ) {
+        cenozo.addExtendableFunction( self, 'getDataArray', function( removeList, type ) {
           if( angular.isUndefined( removeList ) ) removeList = [];
 
           // make a copy of the input list and remove any parent column(s)
@@ -2909,12 +2840,12 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
 
           return data;
-        };
+        } );
 
         /**
          * Returns an array of possible values for typeahead inputs
          */
-        self.getTypeaheadValues = function( input, viewValue ) {
+        cenozo.addExtendableFunction( self, 'getTypeaheadValues', function( input, viewValue ) {
           // sanity checking
           if( angular.isUndefined( input ) )
             throw new Error( 'Typeahead used without a valid input key (' + key + ').' );
@@ -2976,24 +2907,23 @@ cenozo.factory( 'CnBaseModelFactory', [
             } ).get().then( function success( response ) { return angular.copy( response.data ); } )
                      .finally( function finished() { input.typeahead.isLoading = false; } );
           }
-        };
+        } );
 
         // enable/disable module functionality
-        self.enableAdd = function( enable ) { self.addEnabled = enable; };
-        self.enableChoose = function( enable ) { self.chooseEnabled = enable; };
-        self.enableDelete = function( enable ) { self.deleteEnabled = enable; };
-        self.enableEdit = function( enable ) { self.editEnabled = enable; };
-        self.enableView = function( enable ) { self.viewEnabled = enable; };
+        cenozo.addExtendableFunction( self, 'enableAdd', function( enable ) { self.addEnabled = enable; } );
+        cenozo.addExtendableFunction( self, 'enableChoose', function( enable ) { self.chooseEnabled = enable; } );
+        cenozo.addExtendableFunction( self, 'enableDelete', function( enable ) { self.deleteEnabled = enable; } );
+        cenozo.addExtendableFunction( self, 'enableEdit', function( enable ) { self.editEnabled = enable; } );
+        cenozo.addExtendableFunction( self, 'enableView', function( enable ) { self.viewEnabled = enable; } );
 
         /**
-         * Is usually called by the getMetadata() function in order to load the model's base metadata
-         * This function should not be changed, override the getMetadata() function instead.
+         * Loads the model's base metadata
          * 
          * Note: when extending this function with functions that update the metadata object after a
          * promise has been resolved it should be called in parallel to those promises using $q.all()
          * @return promise
          */
-        self.loadMetadata = function() {
+        cenozo.addExtendableFunction( self, 'getMetadata', function() {
           // Pre-build empty objects for every colum in all input groups
           // We do this so that if getMetadata is extended it can call this function and its own
           // in parallel instead of having to wait for this function's promise to resolve
@@ -3060,14 +2990,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
           ).finally( function finished() { self.metadata.loadingCount--; } );
-        };
-
-        /**
-         * Override the function when additional metadata is required by the model.
-         * 
-         * @return promise
-         */
-        self.getMetadata = function() { return self.loadMetadata(); };
+        } );
 
         /**
          * Determines whether a value meets its property's format
@@ -3077,7 +3000,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Failing a test due to a missing value is determined by the required parameter, not
          * format checking.
          */
-        self.testFormat = function( property, value ) {
+        cenozo.addExtendableFunction( self, 'testFormat', function( property, value ) {
           var input = self.module.getInput( property );
           if( null === input || !value ) return true;
 
@@ -3108,14 +3031,14 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           // if we get here then the format is okay
           return true;
-        };
+        } );
 
         /**
          * This function adds a column to the model which is used by the list model.
          * A separate copy of the column list is kept from the module as columns may need to
          * be added or removed at run-time
          */
-        self.addColumn = function( key, column, index ) {
+        cenozo.addExtendableFunction( self, 'addColumn', function( key, column, index ) {
           column.key = key;
           if( angular.isUndefined( column.type ) ) column.type = 'string';
           var type = column.type;
@@ -3137,7 +3060,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             }
             self.columnList = newColumnList;
           }
-        };
+        } );
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // DEFINE ALL OBJECT PROPERTIES HERE

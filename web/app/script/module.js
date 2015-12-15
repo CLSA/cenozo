@@ -144,7 +144,7 @@ define( function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return $q.all( [
-            this.loadMetadata(),
+            this.$$getMetadata(),
 
             CnHttpFactory.instance( {
               path: 'survey',

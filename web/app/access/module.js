@@ -128,7 +128,7 @@ define( function() {
           this.metadata.loadingCount++;
           return $q.all( [
 
-            this.loadMetadata(),
+            this.$$getMetadata(),
 
             CnHttpFactory.instance( {
               path: 'role',

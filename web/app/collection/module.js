@@ -146,7 +146,7 @@ define( function() {
 
             // only allow users belonging to this collection to edit it when it is locked
             if( self.record.locked ) {
-              return CnHttpFactory.instance( {
+              CnHttpFactory.instance( {
                 path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id,
                 onError: function error( response ) {
                   if( 404 == response.status ) {
@@ -156,7 +156,7 @@ define( function() {
                   } else CnModalMessageFactory.httpError( response );
                 }
               } ).get();
-            }
+            } else { self.parentModel.enableEdit( true ); }
           } );
         };
 
@@ -170,7 +170,7 @@ define( function() {
                 self.userModel.enableChoose( !self.record.locked );
 
               if( self.record.locked ) {
-                return CnHttpFactory.instance( {
+                CnHttpFactory.instance( {
                   path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id,
                   onError: function error() {
                     // 404 when searching for current user in collection means we should turn off editing

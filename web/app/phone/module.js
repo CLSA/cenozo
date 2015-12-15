@@ -175,7 +175,7 @@ define( function() {
           var parent = self.getParentIdentifier();
           return $q.all( [
 
-            this.loadMetadata(),
+            this.$$getMetadata(),
 
             CnHttpFactory.instance( {
               path: angular.isDefined( parent.subject )

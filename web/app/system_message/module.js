@@ -184,7 +184,7 @@ define( function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
+          return this.$$getMetadata().then( function() {
             return $q.all( [
 
               CnHttpFactory.instance( {
