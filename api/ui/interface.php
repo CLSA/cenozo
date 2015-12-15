@@ -6,6 +6,7 @@
   <link rel="shortcut icon" href="<?php print ROOT_URL; ?>/img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
+  <link rel="stylesheet" href="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.css">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css">
   <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css">
 
@@ -18,6 +19,7 @@
   <script src="<?php print LIB_URL; ?>/angular-animate/angular-animate.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
+  <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.js"></script>
 
   <script src="<?php print CENOZO_URL; ?>/cenozo.js" id="cenozo"></script>
   <script src="<?php print ROOT_URL; ?>/app.js" id="app"></script>

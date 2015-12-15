@@ -1,0 +1,34 @@
+<div class="record-calendar rounded">
+  <div class="container-fluid bg-primary rounded-top"
+       data-toggle="collapse"
+       data-target="#{{ model.module.subject.camel }}Calendar"
+       ng-click="collapsed = !collapsed"
+       style="cursor:pointer;">
+    <h4>
+      <div class="pull-right">
+        <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
+           ng-if="!model.calendarModel.isLoading"
+           ng-click="refresh(); $event.stopPropagation()"
+           tooltip="Click to refresh data"
+           tooltip-placement="left"></i>
+        <i class="glyphicon glyph-hover btn-primary btn-header"
+           ng-class="collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
+           tooltip="Click to expand {{ model.module.name.singular }} calendar"
+           tooltip-placement="left"></i>
+      </div>
+      {{ heading }}
+    </h4>
+  </div>
+  <div class="container-fluid spacer calendar"
+       ng-class="{'in':!initCollapsed}"
+       id="{{ model.module.subject.camel }}Calendar"></div>
+  <div class="form-footer text-right rounded-bottom bg-info">
+    <div class="btn-group">
+      <button class="btn btn-primary"
+              type="button"
+              ng-click="viewList()">
+        View {{ model.module.name.singular | cnUCWords }} List
+      </button>
+    </div>
+  </div>
+</div>
