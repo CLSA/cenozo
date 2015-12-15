@@ -62,7 +62,7 @@ define( function() {
   cenozo.providers.factory( 'CnActivityModelFactory', [
     'CnBaseModelFactory', 'CnActivityListFactory',
     function( CnBaseModelFactory, CnActivityListFactory ) {
-      var object = function() {
+      var object = function( root ) {
         CnBaseModelFactory.construct( this, cenozoApp.module( 'activity' ) );
         this.listModel = CnActivityListFactory.instance( this );
       };

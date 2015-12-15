@@ -345,16 +345,7 @@ angular.extend( cenozo, {
         stateProvider.state( name + '.add_' + item.subject.snake, {
           url: '/view/{parentIdentifier}/' + item.subject.snake,
           controller: item.subject.Camel + 'AddCtrl',
-          templateUrl: item.url + 'add.tpl.html' /*,
-          resolve: {
-            data: [ '$q', function( $q ) {
-              if( null == item.deferred ) {
-                item.deferred = $q.defer();
-                require( item.getRequiredFiles(), function() { item.deferred.resolve(); } );
-              }
-              return deferred.promise;
-            } ]
-          } */
+          templateUrl: item.url + 'add.tpl.html'
         } );
 
         stateProvider.state( name + '.view_' + item.subject.snake, {

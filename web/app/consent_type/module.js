@@ -125,11 +125,11 @@ define( function() {
   cenozo.providers.factory( 'CnConsentTypeModelFactory', [
     'CnBaseModelFactory', 'CnConsentTypeAddFactory', 'CnConsentTypeListFactory', 'CnConsentTypeViewFactory',
     function( CnBaseModelFactory, CnConsentTypeAddFactory, CnConsentTypeListFactory, CnConsentTypeViewFactory ) {
-      var object = function() {
+      var object = function( root ) {
         CnBaseModelFactory.construct( this, cenozoApp.module( 'consent_type' ) );
         this.addModel = CnConsentTypeAddFactory.instance( this );
         this.listModel = CnConsentTypeListFactory.instance( this );
-        this.viewModel = CnConsentTypeViewFactory.instance( this );
+        this.viewModel = CnConsentTypeViewFactory.instance( this, root );
       };
 
       return {

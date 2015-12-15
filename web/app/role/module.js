@@ -50,7 +50,7 @@ define( function() {
   cenozo.providers.factory( 'CnRoleModelFactory', [
     'CnBaseModelFactory', 'CnRoleListFactory',
     function( CnBaseModelFactory, CnRoleListFactory ) {
-      var object = function() {
+      var object = function( root ) {
         CnBaseModelFactory.construct( this, cenozoApp.module( 'role' ) );
         this.listModel = CnRoleListFactory.instance( this );
       };

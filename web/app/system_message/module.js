@@ -174,12 +174,12 @@ define( function() {
     function( CnBaseModelFactory,
               CnSystemMessageListFactory, CnSystemMessageAddFactory, CnSystemMessageViewFactory,
               CnSession, CnHttpFactory, $q ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'system_message' ) );
         this.addModel = CnSystemMessageAddFactory.instance( this );
         this.listModel = CnSystemMessageListFactory.instance( this );
-        this.viewModel = CnSystemMessageViewFactory.instance( this );
+        this.viewModel = CnSystemMessageViewFactory.instance( this, root );
 
         // extend getMetadata
         this.getMetadata = function() {

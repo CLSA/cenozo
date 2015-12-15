@@ -133,12 +133,12 @@ define( function() {
     'CnHttpFactory', 'CnSession', '$q',
     function( CnBaseModelFactory, CnRegionSiteListFactory, CnRegionSiteAddFactory, CnRegionSiteViewFactory,
               CnHttpFactory, CnSession, $q ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'region_site' ) );
         this.addModel = CnRegionSiteAddFactory.instance( this );
         this.listModel = CnRegionSiteListFactory.instance( this );
-        this.viewModel = CnRegionSiteViewFactory.instance( this );
+        this.viewModel = CnRegionSiteViewFactory.instance( this, root );
 
         // extend getMetadata
         this.getMetadata = function() {

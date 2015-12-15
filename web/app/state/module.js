@@ -129,11 +129,11 @@ define( function() {
   cenozo.providers.factory( 'CnStateModelFactory', [
     'CnBaseModelFactory', 'CnStateListFactory', 'CnStateAddFactory', 'CnStateViewFactory',
     function( CnBaseModelFactory, CnStateListFactory, CnStateAddFactory, CnStateViewFactory ) {
-      var object = function() {
+      var object = function( root ) {
         CnBaseModelFactory.construct( this, cenozoApp.module( 'state' ) );
         this.addModel = CnStateAddFactory.instance( this );
         this.listModel = CnStateListFactory.instance( this );
-        this.viewModel = CnStateViewFactory.instance( this );
+        this.viewModel = CnStateViewFactory.instance( this, root );
       };
 
       return {

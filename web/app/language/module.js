@@ -119,10 +119,10 @@ define( function() {
   cenozo.providers.factory( 'CnLanguageModelFactory', [
     'CnBaseModelFactory', 'CnLanguageListFactory', 'CnLanguageViewFactory',
     function( CnBaseModelFactory, CnLanguageListFactory, CnLanguageViewFactory ) {
-      var object = function() {
+      var object = function( root ) {
         CnBaseModelFactory.construct( this, cenozoApp.module( 'language' ) );
         this.listModel = CnLanguageListFactory.instance( this );
-        this.viewModel = CnLanguageViewFactory.instance( this );
+        this.viewModel = CnLanguageViewFactory.instance( this, root );
       };
 
       return {

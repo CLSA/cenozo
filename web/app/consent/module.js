@@ -152,12 +152,12 @@ define( function() {
     'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory,
               CnHttpFactory, $q ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'consent' ) );
         this.addModel = CnConsentAddFactory.instance( this );
         this.listModel = CnConsentListFactory.instance( this );
-        this.viewModel = CnConsentViewFactory.instance( this );
+        this.viewModel = CnConsentViewFactory.instance( this, root );
 
         // extend getBreadcrumbTitle
         this.getBreadcrumbTitle = function() {

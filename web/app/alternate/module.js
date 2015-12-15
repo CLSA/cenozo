@@ -167,11 +167,11 @@ define( function() {
   cenozo.providers.factory( 'CnAlternateModelFactory', [
     '$state', 'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
     function( $state, CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory ) {
-      var object = function() {
+      var object = function( root ) {
         CnBaseModelFactory.construct( this, cenozoApp.module( 'alternate' ) );
         this.addModel = CnAlternateAddFactory.instance( this );
         this.listModel = CnAlternateListFactory.instance( this );
-        this.viewModel = CnAlternateViewFactory.instance( this );
+        this.viewModel = CnAlternateViewFactory.instance( this, root );
       };
 
       return {

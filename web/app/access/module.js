@@ -117,7 +117,7 @@ define( function() {
     'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnAccessListFactory, CnAccessAddFactory,
               CnHttpFactory, $q ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'access' ) );
         this.addModel = CnAccessAddFactory.instance( this );

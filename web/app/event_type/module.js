@@ -125,11 +125,11 @@ define( function() {
   cenozo.providers.factory( 'CnEventTypeModelFactory', [
     'CnBaseModelFactory', 'CnEventTypeAddFactory', 'CnEventTypeListFactory', 'CnEventTypeViewFactory',
     function( CnBaseModelFactory, CnEventTypeAddFactory, CnEventTypeListFactory, CnEventTypeViewFactory ) {
-      var object = function() {
+      var object = function( root ) {
         CnBaseModelFactory.construct( this, cenozoApp.module( 'event_type' ) );
         this.addModel = CnEventTypeAddFactory.instance( this );
         this.listModel = CnEventTypeListFactory.instance( this );
-        this.viewModel = CnEventTypeViewFactory.instance( this );
+        this.viewModel = CnEventTypeViewFactory.instance( this, root );
       };
 
       return {

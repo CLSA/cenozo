@@ -167,11 +167,11 @@ define( function() {
     'CnHttpFactory',
     function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationViewFactory,
               CnHttpFactory ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'application' ) );
         this.listModel = CnApplicationListFactory.instance( this );
-        this.viewModel = CnApplicationViewFactory.instance( this );
+        this.viewModel = CnApplicationViewFactory.instance( this, root );
       };
 
       return {

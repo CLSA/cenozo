@@ -16,7 +16,7 @@ define( [], function() {
   cenozo.providers.factory( 'CnHomeModelFactory', [
     'CnSession',
     function( CnSession ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         this.isLoading = true;
         this.setupBreadcrumbTrail = function() {

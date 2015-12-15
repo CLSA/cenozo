@@ -180,12 +180,12 @@ define( function() {
     'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnEventListFactory, CnEventAddFactory, CnEventViewFactory,
               CnHttpFactory, $q ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'event' ) );
         this.addModel = CnEventAddFactory.instance( this );
         this.listModel = CnEventListFactory.instance( this );
-        this.viewModel = CnEventViewFactory.instance( this );
+        this.viewModel = CnEventViewFactory.instance( this, root );
 
         // extend getBreadcrumbTitle
         this.getBreadcrumbTitle = function() {

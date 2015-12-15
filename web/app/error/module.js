@@ -18,7 +18,7 @@ define( [], function() {
   cenozo.providers.factory( 'CnErrorModelFactory', [
     '$state', 'CnSession',
     function( $state, CnSession ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         if( angular.isDefined( $state.params.data ) ) self.errorCode = $state.params.data;
         this.setupBreadcrumbTrail = function() {

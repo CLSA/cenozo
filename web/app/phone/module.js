@@ -162,12 +162,12 @@ define( function() {
     'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory,
               CnHttpFactory, $q ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'phone' ) );
         this.addModel = CnPhoneAddFactory.instance( this );
         this.listModel = CnPhoneListFactory.instance( this );
-        this.viewModel = CnPhoneViewFactory.instance( this );
+        this.viewModel = CnPhoneViewFactory.instance( this, root );
 
         // extend getMetadata
         this.getMetadata = function() {
