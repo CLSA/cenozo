@@ -71,6 +71,14 @@ abstract class module extends \cenozo\base_object
   public function validate() {}
 
   /**
+   * Returns whether this is the leaf module (has no children)
+   */
+  protected function is_leaf_module()
+  {
+    return $this->get_subject() == $this->service->get_leaf_subject();
+  }
+
+  /**
    * Returns the method of the parent service
    */
   protected function get_method()
