@@ -22,11 +22,18 @@ class module extends \cenozo\service\module
     parent::validate();
 
     // don't allow modifying a locked collection
-    if( in_array( $this->get_method(), array( 'DELETE', 'PATCH', 'POST' ) ) )
+    $db_collection = NULL;
+    if( 'DELETE' == $this->get_method() || 'PATCH' == $this->get_method() )
+      $db_collection = $this->get_resource();
+    else if( 'POST' == $this->get_method() && ( !$this->is_leaf_module() || $this->get_parent_subject() ) )
     {
-      $db_collection = 'POST' == $this->get_method()
-                     ? lib::create( 'database\collection', $this->get_file_as_raw() )
-                     : $this->get_resource();
+      $db_collection = $this->get_resource();
+      if( is_null( $db_collection ) )
+        $db_collection = lib::create( 'database\collection', $this->get_file_as_raw() );
+    }
+
+    if( !is_null( $db_collection ) )
+    {
       if( $db_collection->locked )
       {
         // see if user has collection, if not then 403
