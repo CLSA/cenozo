@@ -13,13 +13,13 @@
            tooltip-placement="left"></i>
         <i class="glyphicon glyph-hover btn-primary btn-header"
            ng-class="collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
-           tooltip="Click to expand participant details"
+           tooltip="Click to expand {{ model.module.name.singular }} list"
            tooltip-placement="left"></i>
       </div>
       {{ heading }}
     </h4>
   </div>
-  <div class="collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}List">
+  <div ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}List">
     <table class="table table-striped rounded"
            ng-class="{ 'table-hover':model.viewEnabled || model.chooseEnabled }">
       <thead class="bg-info">

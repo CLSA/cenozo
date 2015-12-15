@@ -13,14 +13,14 @@
            tooltip-placement="left"></i>
         <i class="glyphicon glyph-hover btn-primary btn-header"
            ng-class="collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
-           tooltip="Click to expand participant details"
+           tooltip="Click to expand {{ model.module.name.singular }} details"
            tooltip-placement="left"></i>
       </div>
       {{ heading }}{{ model.editEnabled ? '' : ' (read only)' }} <span ng-if="!isComplete">(Loading&hellip;)</span>
     </h4>
   </div>
   <form name="form" class="form-horizontal" novalidate>
-    <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
+    <div class="form-body" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
       <div ng-repeat="group in dataArray">
         <div ng-if="'null' !== group.title"
              class="container-fluid bg-info"
