@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'event', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'event', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'event' ), {
     identifier: {
       parent: {
         subject: 'participant',
@@ -31,7 +31,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'event' ).addInputGroup( null, {
     event_type_id: {
       title: 'Event Type',
       type: 'enum'
@@ -43,7 +43,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( 'Event Address', {
+  cenozoApp.module( 'event' ).addInputGroup( 'Event Address', {
     international: {
       column: 'event_address.international',
       title: 'International',
@@ -156,9 +156,9 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) {
+      var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel );
+        CnBaseViewFactory.construct( this, parentModel, root );
 
         // extend onView
         this.onView = function( simple ) {
@@ -170,7 +170,7 @@ define( function() {
           } );
         };
       }
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -182,7 +182,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'event' ) );
         this.addModel = CnEventAddFactory.instance( this );
         this.listModel = CnEventListFactory.instance( this );
         this.viewModel = CnEventViewFactory.instance( this );
@@ -219,8 +219,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

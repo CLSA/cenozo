@@ -1,7 +1,7 @@
 define( [], function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'error', true ); } catch( err ) { console.warn( err ); return; }
+  try { cenozoApp.module( 'error', true ); } catch( err ) { console.warn( err ); return; }
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'ErrorCtrl', [
@@ -33,8 +33,8 @@ define( [], function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

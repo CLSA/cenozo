@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'collection', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'collection', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'collection' ), {
     identifier: { column: 'name' },
     name: {
       singular: 'collection',
@@ -35,7 +35,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'collection' ).addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string',
@@ -130,8 +130,8 @@ define( function() {
   cenozo.providers.factory( 'CnCollectionViewFactory', [
     'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
-      var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel );
+      var object = function( parentModel, root ) {
+        CnBaseViewFactory.construct( this, parentModel, root );
         if( angular.isDefined( this.userModel ) ) this.userModel.heading = 'User Control List';
 
         var self = this;
@@ -186,7 +186,7 @@ define( function() {
         };
       };
 
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -194,16 +194,16 @@ define( function() {
   cenozo.providers.factory( 'CnCollectionModelFactory', [
     'CnBaseModelFactory', 'CnCollectionListFactory', 'CnCollectionAddFactory', 'CnCollectionViewFactory',
     function( CnBaseModelFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
-      var object = function() {
-        CnBaseModelFactory.construct( this, module );
+      var object = function( root ) {
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'collection' ) );
         this.addModel = CnCollectionAddFactory.instance( this );
         this.listModel = CnCollectionListFactory.instance( this );
-        this.viewModel = CnCollectionViewFactory.instance( this );
+        this.viewModel = CnCollectionViewFactory.instance( this, root );
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

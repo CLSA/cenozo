@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'system_message', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'system_message', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'system_message' ), {
     identifier: {}, // standard
     name: {
       singular: 'system message',
@@ -39,7 +39,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'system_message' ).addInputGroup( null, {
     application_id: {
       column: 'system_message.application_id',
       title: 'Application',
@@ -161,8 +161,8 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); }
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -176,7 +176,7 @@ define( function() {
               CnSession, CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'system_message' ) );
         this.addModel = CnSystemMessageAddFactory.instance( this );
         this.listModel = CnSystemMessageListFactory.instance( this );
         this.viewModel = CnSystemMessageViewFactory.instance( this );
@@ -227,8 +227,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

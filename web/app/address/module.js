@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'address', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'address', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'address' ), {
     identifier: {
       parent: [ {
         subject: 'participant',
@@ -46,7 +46,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'address' ).addInputGroup( null, {
     active: {
       title: 'Active',
       type: 'boolean'
@@ -179,8 +179,8 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -192,7 +192,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'address' ) );
         this.addModel = CnAddressAddFactory.instance( this );
         this.listModel = CnAddressListFactory.instance( this );
         this.viewModel = CnAddressViewFactory.instance( this );
@@ -232,8 +232,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

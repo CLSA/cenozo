@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'alternate', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'alternate', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'alternate' ), {
     identifier: {
       parent: {
         subject: 'participant',
@@ -42,7 +42,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'alternate' ).addInputGroup( null, {
     participant_id: {
       column: 'alternate.participant_id',
       title: 'Participant',
@@ -158,8 +158,8 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); }
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -168,15 +168,15 @@ define( function() {
     '$state', 'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
     function( $state, CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory ) {
       var object = function() {
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'alternate' ) );
         this.addModel = CnAlternateAddFactory.instance( this );
         this.listModel = CnAlternateListFactory.instance( this );
         this.viewModel = CnAlternateViewFactory.instance( this );
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

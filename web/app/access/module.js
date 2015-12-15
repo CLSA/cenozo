@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'access', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'access', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'access' ), {
     identifier: {
       parent: [ {
         subject: 'site',
@@ -42,7 +42,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'access' ).addInputGroup( null, {
     user_id: {
       title: 'User',
       type: 'lookup-typeahead',
@@ -119,7 +119,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'access' ) );
         this.addModel = CnAccessAddFactory.instance( this );
         this.listModel = CnAccessListFactory.instance( this );
 
@@ -163,8 +163,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

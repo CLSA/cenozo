@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'user', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'user', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'user' ), {
     identifier: { column: 'name' },
     name: {
       singular: 'user',
@@ -50,7 +50,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'user' ).addInputGroup( null, {
     active: {
       title: 'Active',
       type: 'boolean'
@@ -176,12 +176,12 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel );
+      var object = function( parentModel, root ) {
+        CnBaseViewFactory.construct( this, parentModel, root );
         if( angular.isDefined( this.languageModel ) )
           this.languageModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
       }
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -193,7 +193,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'user' ) );
         this.addModel = CnUserAddFactory.instance( this );
         this.listModel = CnUserListFactory.instance( this );
         this.viewModel = CnUserViewFactory.instance( this );
@@ -244,8 +244,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

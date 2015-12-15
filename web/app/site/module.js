@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'site', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'site', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'site' ), {
     identifier: { column: 'name' },
     name: {
       singular: 'site',
@@ -39,7 +39,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'site' ).addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string'
@@ -84,7 +84,7 @@ define( function() {
 
   var settingModule = cenozoApp.module( 'setting' );
   if( 0 <= settingModule.actions.indexOf( 'view' ) ) {
-    module.addViewOperation( 'Settings', function( viewModel, $state ) {
+    cenozoApp.module( 'site' ).addViewOperation( 'Settings', function( viewModel, $state ) {
       $state.go( 'setting.view', { identifier: 'site_id=' + viewModel.record.id } );
     } );
   }
@@ -161,9 +161,9 @@ define( function() {
   cenozo.providers.factory( 'CnSiteViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var object = function( parentModel ) {
+      var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel );
+        CnBaseViewFactory.construct( this, parentModel, root );
 
         // extend the onPatch function
         this.onPatch = function( data ) {
@@ -173,7 +173,7 @@ define( function() {
           } );
         };
       }
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -185,7 +185,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'site' ) );
         this.addModel = CnSiteAddFactory.instance( this );
         this.listModel = CnSiteListFactory.instance( this );
         this.viewModel = CnSiteViewFactory.instance( this );
@@ -225,8 +225,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

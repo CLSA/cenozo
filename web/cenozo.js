@@ -122,7 +122,7 @@ angular.extend( cenozoApp, {
         var framework = cenozo.isFrameworkModule( name );
         angular.extend( this.moduleList[name], {
           marked: false,
-          ready: false,
+          deferred: null,
           subject: {
             snake: name,
             camel: name.snakeToCamel( false ),
@@ -281,9 +281,11 @@ angular.extend( cenozo, {
 
     var resolve = {
       data: [ '$q', function( $q ) {
-        var deferred = $q.defer();
-        require( module.getRequiredFiles(), function() { deferred.resolve(); } );
-        return deferred.promise;
+        if( null == module.deferred ) {
+          module.deferred = $q.defer();
+          require( module.getRequiredFiles(), function() { module.deferred.resolve(); } );
+        }
+        return module.deferred.promise;
       } ]
     };
 
@@ -343,7 +345,16 @@ angular.extend( cenozo, {
         stateProvider.state( name + '.add_' + item.subject.snake, {
           url: '/view/{parentIdentifier}/' + item.subject.snake,
           controller: item.subject.Camel + 'AddCtrl',
-          templateUrl: item.url + 'add.tpl.html'
+          templateUrl: item.url + 'add.tpl.html' /*,
+          resolve: {
+            data: [ '$q', function( $q ) {
+              if( null == item.deferred ) {
+                item.deferred = $q.defer();
+                require( item.getRequiredFiles(), function() { item.deferred.resolve(); } );
+              }
+              return deferred.promise;
+            } ]
+          } */
         } );
 
         stateProvider.state( name + '.view_' + item.subject.snake, {
@@ -778,6 +789,52 @@ cenozo.directive( 'cnRecordAdd', [
     };
   }
 ] );
+
+/* ######################################################################################################## */
+
+/**
+ * A directive wrapper for FullCalendar
+ */
+cenozo.directive( 'cnRecordCalendar',
+  function() {
+    return {
+      templateUrl: cenozo.baseUrl + '/app/cenozo/record-calendar.tpl.html',
+      restrict: 'E',
+      scope: {
+        model: '=',
+        collapsed: '@'
+      },
+      controller: function( $scope ) {
+        $scope.refresh = function() {
+          if( !$scope.model.calendarModel.isLoading ) $scope.model.calendarModel.onList( true );
+        };
+      },
+      link: function( scope, element, attrs ) {
+        if( angular.isUndefined( scope.model ) ) {
+          console.error( 'Cannot render cn-record-calendar, no model provided.' );
+        } else {
+          if( angular.isDefined( attrs.heading ) ) {
+            scope.heading = attrs.heading;
+          } else if( angular.isDefined( scope.model.heading ) ) {
+            scope.heading = scope.model.heading;
+          } else {
+            scope.heading = scope.model.module.name.singular.ucWords() + ' Calendar'
+          }
+
+          // use the full calendar lib to create the calendar
+          var el = element.find( 'div.calendar' );
+          el.fullCalendar( scope.model.calendarModel.settings );
+
+          // integrate classes and styles
+          el.find( 'button' ).removeClass( 'fc-button fc-corner-left fc-corner-right fc-state-default' );
+          el.find( 'button' ).not( '.fc-today-button' ).addClass( 'btn btn-default' );
+          el.find( '.fc-today-button' ).addClass( 'btn btn-info' );
+          el.find( 'h2' ).css( { 'font-size': '18px', 'line-height': '1.6' } );
+        }
+      }
+    };
+  }
+);
 
 /* ######################################################################################################## */
 
@@ -1784,6 +1841,173 @@ cenozo.factory( 'CnBaseAddFactory', [
 /**
  * TODO: document
  */
+cenozo.factory( 'CnBaseCalendarFactory', [
+  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
+  function( CnSession, CnHttpFactory, CnModalMessageFactory ) {
+    return {
+      construct: function( object, parentModel ) {
+        object.parentModel = parentModel;
+        object.cache = [];
+        object.viewingMinDate = moment();
+        object.viewingMaxDate = moment();
+        object.cacheMinDate = null;
+        object.cacheMaxDate = null;
+        object.isLoading = false;
+
+        object.settings = {
+          firstDay: 1,
+          timezone: CnSession.user.timezone,
+          timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
+          smallTimeFormat: CnSession.user.use12hourClock ? 'h(:mm)t' : 'HH(:mm)',
+          header: {
+            left: 'title',
+            center: 'today prevYear,prev,next,nextYear',
+            right: 'month,agendaWeek,agendaDay'
+          },
+          businessHours: {
+            start: CnSession.setting.callingStartTime,
+            end: CnSession.setting.callingEndTime,
+            dow: [1, 2, 3, 4, 5]
+          },
+          viewRender: function( view, element ) {
+            object.viewingMinDate = view.start;
+            object.viewingMaxDate = view.end;
+            object.checkCache();
+          }
+        };
+
+        // should be called by when the month is changed
+        object.checkCache = function() {
+          if( null === this.cacheMinDate ||
+              null === this.cacheMaxDate ||
+              this.viewingMaxDate < this.cacheMinDate ||
+              this.viewingMinDate > this.cacheMaxDate ) this.onList();
+        };
+
+        /**
+         * Is usually called by the onDelete() function in order to delete an event from the server.
+         * This function should not be changed, override the onDelete() function instead.
+         * 
+         * @param object event: The event to delete
+         * @return promise
+         */
+        object.$$onDelete = function( record ) {
+          var self = this;
+          if( !this.parentModel.deleteEnabled )
+            throw new Error( 'Calling $$onDelete() but deleteEnabled is false' );
+
+          var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
+          httpObj.onError = function error( response ) { self.onDeleteError( response ); }
+          return CnHttpFactory.instance( httpObj ).delete().then(
+            function success() {
+              self.cache.some( function( item, index, array ) {
+                if( item.getIdentifier() == record.getIdentifier() ) {
+                  array.splice( index, 1 );
+                  return true; // stop processing
+                }
+              } );
+            }
+          );
+        };
+
+        /**
+         * Is usually called by the onDeleteError() function in order to handle errors when deleting events.
+         * This function should not be changed, override the onDeleteError() function instead.
+         * 
+         * @param object response: The response of a failed http call
+         */
+        object.$$onDeleteError = function( response ) {
+          if( 409 == response.status ) {
+            CnModalMessageFactory.instance( {
+              title: 'Unable to delete ' + object.parentModel.module.name.singular + ' event',
+              message: 'It is not possible to delete this ' + object.parentModel.module.name.singular +
+                       ' event because it is being referenced by "' + response.data +
+                       '" in the database.',
+              error: true
+            } ).show();
+          } else { CnModalMessageFactory.httpError( response ); }
+        };
+
+        /**
+         * Is usually called by the onList() function in order to load events from the server.
+         * This function should not be changed, override the onList() function instead.
+         * 
+         * @param boolean replace: Whether to replace the cached list or append to it
+         * @return promise
+         */
+        object.$$onList = function( replace ) {
+          var self = this;
+          if( angular.isUndefined( replace ) ) replace = false;
+          if( replace ) this.cache = [];
+
+          // determine the min/max dates for this data request
+          var midpoint = moment( ( this.viewingMinDate + this.viewingMaxDate ) / 2 );
+          var minDate = moment( midpoint ).date( 1 )
+                                                  .startOf( 'isoWeek' );
+          var maxDate = moment( midpoint ).date( midpoint.daysInMonth() )
+                                                  .endOf( 'isoWeek' )
+                                                  .add( 1, 'week' );
+          if( null !== this.cacheMinDate && null !== this.cacheMaxDate ) {
+            // we already have data, so only ask for what is needed
+            if( midpoint < this.cacheMinDate ) {
+              maxDate = moment( this.cacheMinDate ).subtract( 1, 'day' );
+            } else if( midpoint > this.cacheMaxDate ) {
+              minDate = moment( this.cacheMaxDate ).add( 1, 'day' );
+            }
+          }
+
+          var data = this.parentModel.getServiceData( 'calendar' );
+          if( angular.isUndefined( data.modifier ) ) data.modifier = {};
+          data.min_date = minDate.format( 'YYYY-MM-DD' );
+          data.max_date = maxDate.format( 'YYYY-MM-DD' );
+
+          this.isLoading = true;
+
+          var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
+          httpObj.onError = function error( response ) { self.onListError( response ); }
+          return CnHttpFactory.instance( httpObj ).query().then(
+            function success( response ) {
+              // add the getIdentifier() method to each row before adding it to the cache
+              response.data.forEach( function( item ) {
+                item.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
+              } );
+              self.cache = self.cache.concat( response.data );
+              self.cacheMinDate = minDate;
+              self.cacheMaxDate = maxDate;
+            }
+          ).finally( function finished() { self.isLoading = false; } );
+        };
+
+        /**
+         * Is usually called by the onListError() function in order to handle errors when listing records.
+         * This function should not be changed, override the onListError() function instead.
+         * 
+         * @param object response: The response of a failed http call
+         */
+        object.$$onListError = function( response ) {
+          CnModalMessageFactory.httpError( response );
+        };
+
+        /**
+         * Override these function when needing to make additional operations when choosing, deleting
+         * or listing this model's records.
+         * 
+         * @return promise
+         */
+        object.onDelete = function( record ) { return this.$$onDelete( record ); };
+        object.onDeleteError = function( response ) { object.$$onDeleteError( response ); }
+        object.onList = function( replace ) { return this.$$onList( replace ); };
+        object.onListError = function( response ) { object.$$onListError( response ); }
+      }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.factory( 'CnBaseListFactory', [
   'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory',
   function( CnPaginationFactory, CnHttpFactory, CnModalMessageFactory ) {
@@ -2022,8 +2246,19 @@ cenozo.factory( 'CnBaseListFactory', [
 cenozo.factory( 'CnBaseViewFactory', [
   'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$injector', '$q',
   function( CnSession, CnHttpFactory, CnModalMessageFactory, $injector, $q ) {
+    // mechanism to cache factories
+    var factoryCacheList = {};
+    function getFactory( name ) {
+      if( angular.isUndefined( factoryCacheList[name] ) ) {
+        if( !$injector.has( name ) ) throw 'Unable to get ' + name + ' dependency';
+        factoryCacheList[name] = $injector.get( name );
+      }
+      return factoryCacheList[name];
+    };
+
     return {
-      construct: function( object, parentModel ) {
+      construct: function( object, parentModel, addDependencies ) {
+        if( angular.isUndefined( addDependencies ) ) addDependencies = false;
         object.parentModel = parentModel;
         object.record = {};
         object.formattedRecord = {};
@@ -2031,37 +2266,39 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.deferred = $q.defer();
 
         // for all dependencies require its files, inject and set up the model
-        if( !parentModel.module.ready ) {
-          parentModel.module.ready = true;
-          require(
-            parentModel.module.children.concat( parentModel.module.choosing ).reduce(
-              function( array, item ) { return array.concat( item.getRequiredFiles() ); }, []
-            ),
-            function() {
-              // set up factories
-              object.childrenFactoryList = parentModel.module.children.map( function( item ) {
-                // setup child models
-                var factory = $injector.get( 'Cn' + item.subject.Camel + 'ModelFactory' );
-                var model = factory.instance();
-                if( !parentModel.editEnabled ) model.enableAdd( false );
-                if( !parentModel.editEnabled ) model.enableDelete( false );
-                if( !parentModel.viewEnabled ) model.enableView( false );
-                object[item.subject.camel+'Model'] = model;
-                return factory;
-              } );
-              object.choosingFactoryList = parentModel.module.choosing.map( function( item ) {
-                var factory = $injector.get( 'Cn' + item.subject.Camel + 'ModelFactory' );
-                var model = factory.instance();
-                model.enableChoose( true );
-                model.enableAdd( false );
-                model.enableDelete( false );
-                model.enableEdit( false );
-                object[item.subject.camel+'Model'] = model;
-                return factory;
-              } );
-              object.deferred.resolve();
+        var promiseList = parentModel.module.children.concat( parentModel.module.choosing ).reduce(
+          function( array, item ) {
+            if( null == item.deferred ) {
+              item.deferred = $q.defer();
+              require( item.getRequiredFiles(), function() { item.deferred.resolve(); } );
             }
-          );
+            return array.concat( item.deferred.promise );
+          }, []
+        );
+
+        $q.all( promiseList ).then( function() { object.deferred.resolve(); } );
+
+        // when ready set up dependent models
+        if( addDependencies ) {
+          object.deferred.promise.then( function() {
+            parentModel.module.children.forEach( function( item ) {
+              var factoryName = 'Cn' + item.subject.Camel + 'ModelFactory';
+              var model = getFactory( factoryName ).instance();
+              if( !parentModel.editEnabled ) model.enableAdd( false );
+              if( !parentModel.editEnabled ) model.enableDelete( false );
+              if( !parentModel.viewEnabled ) model.enableView( false );
+              object[item.subject.camel+'Model'] = model;
+            } );
+            parentModel.module.choosing.forEach( function( item ) {
+              var factoryName = 'Cn' + item.subject.Camel + 'ModelFactory';
+              var model = getFactory( factoryName ).instance();
+              model.enableChoose( true );
+              model.enableAdd( false );
+              model.enableDelete( false );
+              model.enableEdit( false );
+              object[item.subject.camel+'Model'] = model;
+            } );
+          } );
         }
 
         /**
@@ -2382,8 +2619,8 @@ cenozo.factory( 'CnBaseModelFactory', [
          * TODO: document
          */
         self.getServiceData = function( type, columnRestrictLists ) {
-          if( angular.isUndefined( type ) || 0 > ['list','view'].indexOf( type ) )
-            throw new Error( 'getServiceData requires one argument which is either "list" or "view"' );
+          if( angular.isUndefined( type ) || 0 > ['calendar','list','view'].indexOf( type ) )
+            throw new Error( 'getServiceData expects an argument which is either "calendar", "list" or "view"' );
 
           if( angular.isUndefined( columnRestrictLists ) ) columnRestrictLists = {};
 
@@ -2393,7 +2630,13 @@ cenozo.factory( 'CnBaseModelFactory', [
           var whereList = [];
 
           var list = {};
-          if( 'list' == type ) {
+          if( 'calendar' == type ) {
+            // the calendar list is not module dependent
+            list = {
+              title: { type: 'string', column: 'title' },
+              '*': { tyle: 'string', column: '*' }
+            };
+          } else if( 'list' == type ) {
             list = self.columnList;
           } else {
             // we need to get a list of all inputs from the module's input groups
@@ -2590,12 +2833,18 @@ cenozo.factory( 'CnBaseModelFactory', [
             }, {
               title: 'New'
             } ] );
+          } else if( 'calendar' == type ) {
+            trail = trail.concat( [ {
+              title: self.module.name.singular.ucWords(),
+              go: function() { return $state.go( self.module.subject.snake + '.list' ); }
+            }, {
+              title: self.getBreadcrumbTitle()
+            } ] );
           } else if( 'list' == type ) {
             trail = trail.concat( [ {
               title: self.module.name.plural.ucWords()
             } ] );
           } else if( 'view' == type ) {
-            // now put the model's details
             trail = trail.concat( [ {
               title: self.module.name.singular.ucWords(),
               go: angular.isDefined( parent.subject ) ? undefined : function() { self.transitionToLastState(); }

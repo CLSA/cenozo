@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'event_type', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'event_type', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'event_type' ), {
     identifier: { column: 'name' },
     name: {
       singular: 'event type',
@@ -27,7 +27,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'event_type' ).addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string'
@@ -116,8 +116,8 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -126,15 +126,15 @@ define( function() {
     'CnBaseModelFactory', 'CnEventTypeAddFactory', 'CnEventTypeListFactory', 'CnEventTypeViewFactory',
     function( CnBaseModelFactory, CnEventTypeAddFactory, CnEventTypeListFactory, CnEventTypeViewFactory ) {
       var object = function() {
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'event_type' ) );
         this.addModel = CnEventTypeAddFactory.instance( this );
         this.listModel = CnEventTypeListFactory.instance( this );
         this.viewModel = CnEventTypeViewFactory.instance( this );
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

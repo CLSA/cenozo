@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'participant', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'participant', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'participant' ), {
     identifier: { column: 'uid' },
     name: {
       singular: 'participant',
@@ -48,7 +48,7 @@ define( function() {
   } );
 
   // define inputs
-  module.addInputGroup( null, {
+  cenozoApp.module( 'participant' ).addInputGroup( null, {
     active: {
       title: 'Active',
       type: 'boolean',
@@ -76,7 +76,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( 'Naming Details', {
+  cenozoApp.module( 'participant' ).addInputGroup( 'Naming Details', {
     honorific: {
       title: 'Honorific',
       type: 'string',
@@ -97,7 +97,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( 'Defining Details', {
+  cenozoApp.module( 'participant' ).addInputGroup( 'Defining Details', {
     sex: {
       title: 'Sex',
       type: 'enum'
@@ -128,7 +128,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( 'Site & Contact Details', {
+  cenozoApp.module( 'participant' ).addInputGroup( 'Site & Contact Details', {
     default_site: {
       column: 'default_site.name',
       title: 'Default Site',
@@ -161,11 +161,11 @@ define( function() {
     }
   } );
 
-  module.addViewOperation( 'Notes', function( viewModel, $state ) {
+  cenozoApp.module( 'participant' ).addViewOperation( 'Notes', function( viewModel, $state ) {
     $state.go( 'participant.notes', { identifier: viewModel.record.getIdentifier() } );
   } );
 
-  module.addViewOperation( 'History', function( viewModel, $state ) {
+  cenozoApp.module( 'participant' ).addViewOperation( 'History', function( viewModel, $state ) {
     $state.go( 'participant.history', { identifier: viewModel.record.getIdentifier() } );
   } );
 
@@ -178,7 +178,7 @@ define( function() {
    * This can be extended by applications by adding new history categories or changing existing ones.
    * Note: make sure the category name (the object's property) matches the property set in the historyList
    */
-  module.historyCategoryList = {
+  cenozoApp.module( 'participant' ).historyCategoryList = {
 
     Address: {
       active: true,
@@ -491,8 +491,8 @@ define( function() {
       $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
 
       // note actions are stored in the participant module in cenozo.js
-      $scope.allowDelete = module.allowNoteDelete;
-      $scope.allowEdit = module.allowNoteEdit;
+      $scope.allowDelete = $scope.model.module.allowNoteDelete;
+      $scope.allowEdit = $scope.model.module.allowNoteEdit;
 
       // trigger the elastic directive when adding a note or undoing
       $scope.addNote = function() {
@@ -564,8 +564,8 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -575,11 +575,11 @@ define( function() {
     'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnParticipantListFactory, CnParticipantViewFactory,
               CnHttpFactory, $q ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'participant' ) );
         this.listModel = CnParticipantListFactory.instance( this );
-        this.viewModel = CnParticipantViewFactory.instance( this );
+        this.viewModel = CnParticipantViewFactory.instance( this, root );
 
         // extend getMetadata
         this.getMetadata = function() {
@@ -651,8 +651,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );
@@ -663,7 +663,7 @@ define( function() {
     function( CnSession, CnHttpFactory, $state, $q ) {
       var object = function() {
         var self = this;
-        this.module = module;
+        this.module = cenozoApp.module( 'participant' );
 
         this.onView = function() {
           this.historyList = [];
@@ -691,10 +691,7 @@ define( function() {
         };
       };
 
-      return {
-        root: new object(),
-        instance: function() { return new object(); }
-      };
+      return { instance: function() { return new object( false ); } };
     }
   ] );
 
@@ -706,7 +703,7 @@ define( function() {
               CnModalDatetimeFactory, CnModalMessageFactory, CnParticipantModelFactory ) {
       var object = function() {
         var self = this;
-        this.module = module;
+        this.module = cenozoApp.module( 'participant' );
         this.confirmInProgress = false;
         this.confirmedCount = null;
         this.uidList = '';
@@ -723,10 +720,10 @@ define( function() {
           self.inputList.forEach( function( column, index, array ) {
             // find this column's input details in the module's input group list
             var input = null
-            for( var group in module.inputGroupList ) {
-              for( var groupListColumn in module.inputGroupList[group] ) {
+            for( var group in self.module.inputGroupList ) {
+              for( var groupListColumn in self.module.inputGroupList[group] ) {
                 if( column == groupListColumn ) {
-                  input = module.inputGroupList[group][groupListColumn];
+                  input = self.module.inputGroupList[group][groupListColumn];
                   break;
                 }
               }
@@ -882,10 +879,7 @@ define( function() {
 
       };
 
-      return {
-        root: new object(),
-        instance: function() { return new object(); }
-      };
+      return { instance: function() { return new object( false ); } };
     }
   ] );
 
@@ -895,7 +889,7 @@ define( function() {
     function( CnSession, CnHttpFactory, $state ) {
       var object = function() {
         var self = this;
-        this.module = module;
+        this.module = cenozoApp.module( 'participant' );
         this.newNote = '';
 
         this.addNote = function() {
@@ -1008,10 +1002,7 @@ define( function() {
         };
       };
 
-      return {
-        root: new object(),
-        instance: function() { return new object(); }
-      };
+      return { instance: function() { return new object( false ); } };
     }
   ] );
 

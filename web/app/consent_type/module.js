@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'consent_type', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'consent_type', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'consent_type' ), {
     identifier: { column: 'name' },
     name: {
       singular: 'consent type',
@@ -31,7 +31,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'consent_type' ).addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string'
@@ -116,8 +116,8 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -126,15 +126,15 @@ define( function() {
     'CnBaseModelFactory', 'CnConsentTypeAddFactory', 'CnConsentTypeListFactory', 'CnConsentTypeViewFactory',
     function( CnBaseModelFactory, CnConsentTypeAddFactory, CnConsentTypeListFactory, CnConsentTypeViewFactory ) {
       var object = function() {
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'consent_type' ) );
         this.addModel = CnConsentTypeAddFactory.instance( this );
         this.listModel = CnConsentTypeListFactory.instance( this );
         this.viewModel = CnConsentTypeViewFactory.instance( this );
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );
