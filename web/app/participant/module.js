@@ -115,7 +115,8 @@ define( function() {
       title: 'Condition',
       type: 'enum',
       help: 'A condition defines the reason that a participant should no longer be contacted. ' +
-            'If this value is not empty then the participant will no longer be contacted for interviews.'
+            'If this value is not empty then the participant will no longer be contacted for interviews. ' +
+            'Note that some roles do not have access to all conditions.'
     },
     language_id: {
       title: 'Preferred Language',
@@ -652,13 +653,17 @@ define( function() {
             CnHttpFactory.instance( {
               path: 'state',
               data: {
-                select: { column: [ 'id', 'name' ] },
+                select: { column: [ 'id', 'name', 'access' ] },
                 modifier: { order: 'rank' }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.state_id.enumList = [];
               response.data.forEach( function( item ) {
-                self.metadata.columnList.state_id.enumList.push( { value: item.id, name: item.name } );
+                self.metadata.columnList.state_id.enumList.push( {
+                  value: item.id,
+                  name: item.name,
+                  disabled: !item.access
+                } );
               } );
             } )
 

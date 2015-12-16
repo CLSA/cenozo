@@ -3,6 +3,7 @@ thead, tfoot, .collapsed-footer { font-weight: bold; }
 thead td, tbody td, tfoot, .collapsed-footer { text-align: center; }
 td { border: 0px !important; }
 td.tiny { width: 1px; white-space: nowrap; }
+option[disabled="disabled"] { color: #ccc; }
 .collapsed-footer { padding: 8px; }
 blockquote { font-size: 100%; }
 .panel { border-radius: 6px; }
@@ -275,7 +276,7 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
   margin: -6px;
 }
 
-.record-list, .record-view, .utility-view { box-shadow: 0px 2px 2px #A0A0A0; }
+.record-list, .record-view, .utility-view { box-shadow: 0px 2px 2px #a0a0a0; }
 
 .restrict-description { font-size: 80%; margin: 0; }
 .restrict-add { display: table; width: 100%; }

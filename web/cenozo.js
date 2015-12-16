@@ -606,7 +606,51 @@ cenozo.directive( 'cnElastic', [
       }
     };
   }
-]);
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.directive( 'cnOptionsDisabled', [
+  '$parse',
+  function( $parse ) {
+    function disableOptions( scope, attr, element, data, fnDisableIfTrue ) {
+      // refresh the disabled options in the select element.
+      if( angular.isDefined( data ) ) {
+        var options = element.find( 'option' );
+        for( var pos = 0, index = 0; pos < options.length; pos++ ) {
+          var elem = angular.element( options[pos] );
+          if( elem.val() != '' ) {
+            var locals = {};
+            locals[attr] = data[index];
+            elem.attr( 'disabled', fnDisableIfTrue( scope, locals ) );
+            index++;
+          }
+        }
+      }
+    };
+    return {
+      priority: 0,
+      require: 'ngModel',
+      link: function( scope, element, attrs, ctrl ) {
+        // parse expression and build array of disabled options
+        var expElements = attrs.cnOptionsDisabled.match( /^\s*(.+)\s+for\s+(.+)\s+in\s+(.+)?\s*/ );
+        var attrToWatch = expElements[3];
+        var fnDisableIfTrue = $parse( expElements[1] );
+        scope.$watch( attrToWatch, function( newValue, oldValue ) {
+          if( newValue ) disableOptions( scope, expElements[2], element, newValue, fnDisableIfTrue );
+        }, true );
+        // handle model updates properly
+        scope.$watch( attrs.ngModel, function( newValue, oldValue ) {
+          var disOptions = $parse( attrToWatch )( scope );
+          if( newValue ) disableOptions( scope, expElements[2], element, disOptions, fnDisableIfTrue );
+        } );
+      }
+    };
+  }
+] );
 
 /* ######################################################################################################## */
 

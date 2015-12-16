@@ -22,7 +22,18 @@ class module extends \cenozo\service\module
     parent::prepare_read( $select, $modifier );
 
     $session = lib::create( 'business\session' );
+    $db_role = $session->get_role();
     $db_application = $session->get_application();
+
+    // add the access column (wether the role has access)
+    if( $select->has_column( 'access' ) )
+    {
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'state.id', '=', 'role_has_state.state_id', false );
+      $join_mod->where( 'role_has_state.role_id', '=', $db_role->id );
+      $modifier->join_modifier( 'role_has_state', $join_mod, 'left' );
+      $select->add_column( 'role_has_state.state_id IS NOT NULL', 'access', false, 'boolean' );
+    }
 
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )
@@ -48,7 +59,7 @@ class module extends \cenozo\service\module
       }
 
       // restrict to participants in this site (for some roles)
-      if( !$session->get_role()->all_sites )
+      if( !$db_role->all_sites )
       {
         $sub_mod = lib::create( 'database\modifier' );
         $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
@@ -92,8 +103,7 @@ class module extends \cenozo\service\module
       // restrict to roles belonging to this application
       $sub_mod = lib::create( 'database\modifier' );
       $join_mod->join( 'application_has_role', 'role_has_state.role_id', 'application_has_role.role_id' );
-      $join_mod->where( 'application_has_role.application_id', '=',
-        lib::create( 'business\session' )->get_application()->id );
+      $join_mod->where( 'application_has_role.application_id', '=', $db_application->id );
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS state_join_role', $join_sel->get_sql(), $join_mod->get_sql() ),
