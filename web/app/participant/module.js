@@ -589,12 +589,22 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantModelFactory', [
     'CnBaseModelFactory', 'CnParticipantListFactory', 'CnParticipantViewFactory',
-    'CnHttpFactory', '$q',
+    'CnHttpFactory', 'CnSession', '$q',
     function( CnBaseModelFactory, CnParticipantListFactory, CnParticipantViewFactory,
-              CnHttpFactory, $q ) {
+              CnHttpFactory, CnSession, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'participant' ) );
+
+        // before constructing the model change some input types depending on the role's tier
+        var module = cenozoApp.module( 'participant' );
+        if( 3 > CnSession.role.tier ) {
+          module.inputGroupList['Defining Details'].sex.constant = true;
+          module.inputGroupList['Defining Details'].age_group_id.constant = true;
+          if( 2 > CnSession.role.tier ) 
+            module.inputGroupList[null].active.constant = true;
+        }
+
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnParticipantListFactory.instance( this );
         this.viewModel = CnParticipantViewFactory.instance( this, root );
 
