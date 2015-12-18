@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'quota', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'quota', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'quota' ), {
     identifier: {}, // standard
     name: {
@@ -59,54 +59,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'QuotaAddCtrl', [
-    '$scope', 'CnQuotaModelFactory',
-    function( $scope, CnQuotaModelFactory ) {
-      $scope.model = CnQuotaModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnQuotaAdd', [
+    'CnQuotaModelFactory',
+    function( CnQuotaModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQuotaModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'QuotaListCtrl', [
-    '$scope', 'CnQuotaModelFactory',
-    function( $scope, CnQuotaModelFactory ) {
-      $scope.model = CnQuotaModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnQuotaList', [
+    'CnQuotaModelFactory',
+    function( CnQuotaModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQuotaModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'QuotaViewCtrl', [
-    '$scope', 'CnQuotaModelFactory',
-    function( $scope, CnQuotaModelFactory ) {
-      $scope.model = CnQuotaModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnQuotaView', [
+    'CnQuotaModelFactory',
+    function( CnQuotaModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQuotaModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQuotaAdd', function() {
-    return {
-      templateUrl: 'app/quota/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQuotaView', function() {
-    return {
-      templateUrl: 'app/quota/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQuotaAddFactory', [

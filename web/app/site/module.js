@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'site', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'site', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'site' ), {
     identifier: { column: 'name' },
     name: {
@@ -29,7 +29,7 @@ define( function() {
         type: 'number'
       },
       last_access_datetime: {
-        title: 'Last Access',
+        title: 'Last Site',
         type: 'datetime'
       }
     },
@@ -90,54 +90,56 @@ define( function() {
   }
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SiteAddCtrl', [
-    '$scope', 'CnSiteModelFactory',
-    function( $scope, CnSiteModelFactory ) {
-      $scope.model = CnSiteModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnSiteAdd', [
+    'CnSiteModelFactory',
+    function( CnSiteModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSiteModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SiteListCtrl', [
-    '$scope', 'CnSiteModelFactory',
-    function( $scope, CnSiteModelFactory ) {
-      $scope.model = CnSiteModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnSiteList', [
+    'CnSiteModelFactory',
+    function( CnSiteModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSiteModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SiteViewCtrl', [
-    '$scope', 'CnSiteModelFactory',
-    function( $scope, CnSiteModelFactory ) {
-      $scope.model = CnSiteModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnSiteView', [
+    'CnSiteModelFactory',
+    function( CnSiteModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSiteModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSiteAdd', function() {
-    return {
-      templateUrl: 'app/site/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSiteView', function() {
-    return {
-      templateUrl: 'app/site/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSiteAddFactory', [

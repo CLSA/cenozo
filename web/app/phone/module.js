@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'phone', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'phone', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'phone' ), {
     identifier: {
       parent: [ {
@@ -78,54 +78,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'PhoneAddCtrl', [
-    '$scope', 'CnPhoneModelFactory',
-    function( $scope, CnPhoneModelFactory ) {
-      $scope.model = CnPhoneModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnPhoneAdd', [
+    'CnPhoneModelFactory',
+    function( CnPhoneModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnPhoneModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'PhoneListCtrl', [
-    '$scope', 'CnPhoneModelFactory',
-    function( $scope, CnPhoneModelFactory ) {
-      $scope.model = CnPhoneModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnPhoneList', [
+    'CnPhoneModelFactory',
+    function( CnPhoneModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnPhoneModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'PhoneViewCtrl', [
-    '$scope', 'CnPhoneModelFactory',
-    function( $scope, CnPhoneModelFactory ) {
-      $scope.model = CnPhoneModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnPhoneView', [
+    'CnPhoneModelFactory',
+    function( CnPhoneModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnPhoneModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnPhoneAdd', function() {
-    return {
-      templateUrl: 'app/phone/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnPhoneView', function() {
-    return {
-      templateUrl: 'app/phone/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneAddFactory', [

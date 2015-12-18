@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'language', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'language', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'language' ), {
     identifier: { column: 'code' },
     name: {
@@ -58,42 +58,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'LanguageListCtrl', [
-    '$scope', 'CnLanguageModelFactory',
-    function( $scope, CnLanguageModelFactory ) {
-      $scope.model = CnLanguageModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnLanguageAdd', [
+    'CnLanguageModelFactory',
+    function( CnLanguageModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnLanguageModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'LanguageViewCtrl', [
-    '$scope', 'CnLanguageModelFactory',
-    function( $scope, CnLanguageModelFactory ) {
-      $scope.model = CnLanguageModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnLanguageList', [
+    'CnLanguageModelFactory',
+    function( CnLanguageModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnLanguageModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnLanguageAdd', function() {
-    return {
-      templateUrl: 'app/language/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnLanguageView', function() {
-    return {
-      templateUrl: 'app/language/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
+  cenozo.providers.directive( 'cnLanguageView', [
+    'CnLanguageModelFactory',
+    function( CnLanguageModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnLanguageModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnLanguageListFactory', [

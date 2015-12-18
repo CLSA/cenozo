@@ -1,16 +1,23 @@
 define( [], function() {
   'use strict';
 
-  try { cenozoApp.module( 'error', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'error', true ).url; } catch( err ) { console.warn( err ); return; }
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ErrorCtrl', [
-    '$scope', '$window', 'CnErrorModelFactory',
-    function( $scope, $window, CnErrorModelFactory ) {
-      $scope.model = CnErrorModelFactory.root;
-      $scope.model.setupBreadcrumbTrail();
-      $scope.back = function() { $window.history.back(); };
-      $scope.reload = function() { $window.location.reload(); };
+  cenozo.providers.directive( 'cnError', [
+    'CnErrorModelFactory', '$window', '$state',
+    function( CnErrorModelFactory, $window, $state ) {
+      var type = angular.isDefined( $state.params['type'] ) ? $state.params['type'] : 500;
+      return {
+        templateUrl: url + type + '.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnErrorModelFactory.root;
+          $scope.model.setupBreadcrumbTrail();
+          $scope.back = function() { $window.history.back(); };
+          $scope.reload = function() { $window.location.reload(); };
+        }
+      };
     }
   ] );
 

@@ -1,14 +1,20 @@
 define( [], function() {
   'use strict';
 
-  try { cenozoApp.module( 'root', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'root', true ).url; } catch( err ) { console.warn( err ); return; }
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'HomeCtrl', [
-    '$scope', 'CnHomeModelFactory',
-    function( $scope, CnHomeModelFactory ) {
-      $scope.model = CnHomeModelFactory.root;
-      $scope.model.setupBreadcrumbTrail();
+  cenozo.providers.directive( 'cnHome', [
+    'CnHomeModelFactory',
+    function( CnHomeModelFactory ) {
+      return {
+        templateUrl: url + 'home.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnHomeModelFactory.root;
+          $scope.model.setupBreadcrumbTrail();
+        }
+      };
     }
   ] );
 

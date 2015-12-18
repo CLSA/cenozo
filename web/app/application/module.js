@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'application', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'application', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'application' ), {
     identifier: { column: 'name' },
     name: {
@@ -103,43 +103,57 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ApplicationListCtrl', [
-    '$scope', 'CnApplicationModelFactory',
-    function( $scope, CnApplicationModelFactory ) {
-      $scope.model = CnApplicationModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnApplicationAdd', [
+    'CnApplicationModelFactory',
+    function( CnApplicationModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnApplicationModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ApplicationViewCtrl', [
-    '$scope', '$state', 'CnApplicationModelFactory', 'CnSession',
-    function( $scope, $state, CnApplicationModelFactory, CnSession ) {
-      $scope.model = CnApplicationModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
-      $scope.showChildren = $state.params.identifier.split( '=' ).pop() == CnSession.application.name;
+  cenozo.providers.directive( 'cnApplicationList', [
+    'CnApplicationModelFactory',
+    function( CnApplicationModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnApplicationModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnApplicationAdd', function() {
-    return {
-      templateUrl: 'app/application/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnApplicationView', function() {
-    return {
-      templateUrl: 'app/application/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
+  cenozo.providers.directive( 'cnApplicationView', [
+    'CnApplicationModelFactory', '$state',
+    function( CnApplicationModelFactory, $state ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnApplicationModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+          $scope.showChildren = $state.params.identifier.split( '=' ).pop() == CnSession.application.name;
+        }
+      };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationListFactory', [

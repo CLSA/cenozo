@@ -16,7 +16,8 @@
            tooltip="Click to expand {{ model.module.name.singular }} calendar"
            tooltip-placement="left"></i>
       </div>
-      {{ heading }}
+      {{ heading }}{{ model.editEnabled ? '' : ' (read only)' }}
+      <span ng-if="model.calendarModel.isLoading">(Loading&hellip;)</span>
     </h4>
   </div>
   <div class="container-fluid spacer calendar"

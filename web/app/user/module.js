@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'user', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'user', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'user' ), {
     identifier: { column: 'name' },
     name: {
@@ -39,7 +39,7 @@ define( function() {
         help: 'The number of sites the user has access to for this application.'
       },
       last_access_datetime: {
-        title: 'Last Access',
+        title: 'Last User',
         type: 'datetime',
         help: 'The last time the user accessed this application.'
       }
@@ -103,54 +103,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'UserAddCtrl', [
-    '$scope', 'CnUserModelFactory',
-    function( $scope, CnUserModelFactory ) {
-      $scope.model = CnUserModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnUserAdd', [
+    'CnUserModelFactory',
+    function( CnUserModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnUserModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'UserListCtrl', [
-    '$scope', 'CnUserModelFactory',
-    function( $scope, CnUserModelFactory ) {
-      $scope.model = CnUserModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnUserList', [
+    'CnUserModelFactory',
+    function( CnUserModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnUserModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'UserViewCtrl', [
-    '$scope', 'CnUserModelFactory',
-    function( $scope, CnUserModelFactory ) {
-      $scope.model = CnUserModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnUserView', [
+    'CnUserModelFactory',
+    function( CnUserModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnUserModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnUserAdd', function() {
-    return {
-      templateUrl: 'app/user/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnUserView', function() {
-    return {
-      templateUrl: 'app/user/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserAddFactory', [

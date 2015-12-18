@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'consent', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'consent', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'consent' ), {
     identifier: {
       parent: {
@@ -68,54 +68,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ConsentAddCtrl', [
-    '$scope', 'CnConsentModelFactory',
-    function( $scope, CnConsentModelFactory ) {
-      $scope.model = CnConsentModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnConsentAdd', [
+    'CnConsentModelFactory',
+    function( CnConsentModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnConsentModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ConsentListCtrl', [
-    '$scope', 'CnConsentModelFactory',
-    function( $scope, CnConsentModelFactory ) {
-      $scope.model = CnConsentModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnConsentList', [
+    'CnConsentModelFactory',
+    function( CnConsentModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnConsentModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ConsentViewCtrl', [
-    '$scope', 'CnConsentModelFactory',
-    function( $scope, CnConsentModelFactory ) {
-      $scope.model = CnConsentModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnConsentView', [
+    'CnConsentModelFactory',
+    function( CnConsentModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnConsentModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentAdd', function() {
-    return {
-      templateUrl: 'app/consent/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentView', function() {
-    return {
-      templateUrl: 'app/consent/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentAddFactory', [

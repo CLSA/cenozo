@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'region_site', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'region_site', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'region_site' ), {
     identifier: {}, // standard
     name: {
@@ -49,54 +49,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'RegionSiteAddCtrl', [
-    '$scope', 'CnRegionSiteModelFactory',
-    function( $scope, CnRegionSiteModelFactory ) {
-      $scope.model = CnRegionSiteModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnRegionSiteAdd', [
+    'CnRegionSiteModelFactory',
+    function( CnRegionSiteModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnRegionSiteModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'RegionSiteListCtrl', [
-    '$scope', 'CnRegionSiteModelFactory',
-    function( $scope, CnRegionSiteModelFactory ) {
-      $scope.model = CnRegionSiteModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnRegionSiteList', [
+    'CnRegionSiteModelFactory',
+    function( CnRegionSiteModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnRegionSiteModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'RegionSiteViewCtrl', [
-    '$scope', 'CnRegionSiteModelFactory',
-    function( $scope, CnRegionSiteModelFactory ) {
-      $scope.model = CnRegionSiteModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnRegionSiteView', [
+    'CnRegionSiteModelFactory',
+    function( CnRegionSiteModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnRegionSiteModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnRegionSiteAdd', function() {
-    return {
-      templateUrl: 'app/region_site/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnRegionSiteView', function() {
-    return {
-      templateUrl: 'app/region_site/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnRegionSiteAddFactory', [

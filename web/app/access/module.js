@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'access', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'access', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'access' ), {
     identifier: {
       parent: [ {
@@ -63,35 +63,39 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AccessAddCtrl', [
-    '$scope', 'CnAccessModelFactory',
-    function( $scope, CnAccessModelFactory ) {
-      $scope.model = CnAccessModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnAccessAdd', [
+    'CnAccessModelFactory',
+    function( CnAccessModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAccessModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AccessListCtrl', [
-    '$scope', 'CnAccessModelFactory',
-    function( $scope, CnAccessModelFactory ) {
-      $scope.model = CnAccessModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnAccessList', [
+    'CnAccessModelFactory',
+    function( CnAccessModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAccessModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAccessAdd', function() {
-    return {
-      templateUrl: 'app/access/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAccessAddFactory', [

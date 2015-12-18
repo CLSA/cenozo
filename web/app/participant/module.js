@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'participant', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'participant', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'participant' ), {
     identifier: { column: 'uid' },
     name: {
@@ -402,153 +402,187 @@ define( function() {
   };
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ParticipantListCtrl', [
-    '$scope', 'CnParticipantModelFactory',
-    function( $scope, CnParticipantModelFactory ) {
-      $scope.model = CnParticipantModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnParticipantAdd', [
+    'CnParticipantModelFactory',
+    function( CnParticipantModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnParticipantModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ParticipantViewCtrl', [
-    '$scope', 'CnParticipantModelFactory',
-    function( $scope, CnParticipantModelFactory ) {
-      $scope.model = CnParticipantModelFactory.root;
-      $scope.model.viewModel.onView().then( function() { $scope.model.setupBreadcrumbTrail( 'view' ); } );
+  cenozo.providers.directive( 'cnParticipantHistory', [
+    'CnParticipantHistoryFactory', 'CnSession', '$state',
+    function( CnParticipantHistoryFactory, CnSession, $state ) {
+      return {
+        templateUrl: url + 'history.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.isLoading = false;
+          $scope.model = CnParticipantHistoryFactory.instance();
+          $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
+
+          // create an array from the history categories object
+          $scope.historyCategoryArray = [];
+          for( var name in $scope.model.module.historyCategoryList ) {
+            if( angular.isUndefined( $scope.model.module.historyCategoryList[name].framework ) )
+              $scope.model.module.historyCategoryList[name].framework = false;
+            if( angular.isUndefined( $scope.model.module.historyCategoryList[name].name ) )
+              $scope.model.module.historyCategoryList[name].name = name;
+            $scope.historyCategoryArray.push( $scope.model.module.historyCategoryList[name] );
+          }
+
+          $scope.viewNotes = function() {
+            $state.go( 'participant.notes', { identifier: $state.params.identifier } );
+          };
+
+          $scope.viewParticipant = function() {
+            $state.go( 'participant.view', { identifier: $state.params.identifier } );
+          };
+
+          $scope.refresh = function() {
+            $scope.isLoading = true;
+            $scope.model.onView().then( function() {
+              CnSession.setBreadcrumbTrail(
+                [ {
+                  title: 'Participant',
+                  go: function() { $state.go( 'participant.list' ); }
+                }, {
+                  title: $scope.uid,
+                  go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
+                }, {
+                  title: 'History'
+                } ]
+              );
+            } ).finally( function finished() { $scope.isLoading = false; } );
+          };
+          $scope.refresh();
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ParticipantHistoryCtrl', [
-    '$scope', '$state', 'CnParticipantHistoryFactory', 'CnSession',
-    function( $scope, $state, CnParticipantHistoryFactory, CnSession ) {
-      $scope.isLoading = false;
-      $scope.model = CnParticipantHistoryFactory.instance();
-      $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
-
-      // create an array from the history categories object
-      $scope.historyCategoryArray = [];
-      for( var name in $scope.model.module.historyCategoryList ) {
-        if( angular.isUndefined( $scope.model.module.historyCategoryList[name].framework ) )
-          $scope.model.module.historyCategoryList[name].framework = false;
-        if( angular.isUndefined( $scope.model.module.historyCategoryList[name].name ) )
-          $scope.model.module.historyCategoryList[name].name = name;
-        $scope.historyCategoryArray.push( $scope.model.module.historyCategoryList[name] );
-      }
-
-      $scope.viewNotes = function() {
-        $state.go( 'participant.notes', { identifier: $state.params.identifier } );
+  cenozo.providers.directive( 'cnParticipantList', [
+    'CnParticipantModelFactory',
+    function( CnParticipantModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnParticipantModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
       };
+    }
+  ] );
 
-      $scope.viewParticipant = function() {
-        $state.go( 'participant.view', { identifier: $state.params.identifier } );
-      };
-
-      $scope.refresh = function() {
-        $scope.isLoading = true;
-        $scope.model.onView().then( function() {
+  /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnParticipantMultiedit', [
+    'CnParticipantMultieditFactory', 'CnSession', '$state',
+    function( CnParticipantMultieditFactory, CnSession, $state ) {
+      return {
+        templateUrl: url + 'multiedit.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnParticipantMultieditFactory.instance();
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Participant',
               go: function() { $state.go( 'participant.list' ); }
             }, {
-              title: $scope.uid,
-              go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
-            }, {
-              title: 'History'
+              title: 'Multi-Edit'
             } ]
           );
-        } ).finally( function finished() { $scope.isLoading = false; } );
+        }
       };
-      $scope.refresh();
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ParticipantMultieditCtrl', [
-    '$scope', '$state', 'CnParticipantMultieditFactory', 'CnSession',
-    function( $scope, $state, CnParticipantMultieditFactory, CnSession ) {
-      $scope.model = CnParticipantMultieditFactory.instance();
-      CnSession.setBreadcrumbTrail(
-        [ {
-          title: 'Participant',
-          go: function() { $state.go( 'participant.list' ); }
-        }, {
-          title: 'Multi-Edit'
-        } ]
-      );
+  cenozo.providers.directive( 'cnParticipantNotes', [
+    'CnParticipantNotesFactory', 'CnSession', '$state', '$timeout',
+    function( CnParticipantNotesFactory, CnSession, $state, $timeout) {
+      return {
+        templateUrl: url + 'notes.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.isLoading = false;
+          $scope.model = CnParticipantNotesFactory.instance();
+          $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
+
+          // note actions are stored in the participant module in cenozo.js
+          $scope.allowDelete = $scope.model.module.allowNoteDelete;
+          $scope.allowEdit = $scope.model.module.allowNoteEdit;
+
+          // trigger the elastic directive when adding a note or undoing
+          $scope.addNote = function() {
+            $scope.model.addNote();
+            $timeout( function() { angular.element( '#newNote' ).trigger( 'change' ) }, 100 );
+          };
+
+          $scope.undo = function( id ) {
+            $scope.model.undo( id );
+            $timeout( function() { angular.element( '#note' + id ).trigger( 'change' ) }, 100 );
+          };
+
+          $scope.viewHistory = function() {
+            $state.go( 'participant.history', { identifier: $state.params.identifier } );
+          };
+
+          $scope.viewParticipant = function() {
+            $state.go( 'participant.view', { identifier: $state.params.identifier } );
+          };
+
+          $scope.refresh = function() {
+            $scope.isLoading = true;
+            $scope.model.onView().then( function() {
+              CnSession.setBreadcrumbTrail(
+                [ {
+                  title: 'Participant',
+                  go: function() { $state.go( 'participant.list' ); }
+                }, {
+                  title: $scope.uid,
+                  go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
+                }, {
+                  title: 'Notes'
+                } ]
+              );
+            } ).finally( function finish() { $scope.isLoading = false; } );
+          };
+          $scope.refresh();
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ParticipantNotesCtrl', [
-    '$scope', '$state', '$timeout', 'CnParticipantNotesFactory', 'CnSession',
-    function( $scope, $state, $timeout, CnParticipantNotesFactory, CnSession ) {
-      $scope.isLoading = false;
-      $scope.model = CnParticipantNotesFactory.instance();
-      $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
-
-      // note actions are stored in the participant module in cenozo.js
-      $scope.allowDelete = $scope.model.module.allowNoteDelete;
-      $scope.allowEdit = $scope.model.module.allowNoteEdit;
-
-      // trigger the elastic directive when adding a note or undoing
-      $scope.addNote = function() {
-        $scope.model.addNote();
-        $timeout( function() { angular.element( '#newNote' ).trigger( 'change' ) }, 100 );
+  cenozo.providers.directive( 'cnParticipantView', [
+    'CnParticipantModelFactory',
+    function( CnParticipantModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnParticipantModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
       };
-
-      $scope.undo = function( id ) {
-        $scope.model.undo( id );
-        $timeout( function() { angular.element( '#note' + id ).trigger( 'change' ) }, 100 );
-      };
-
-      $scope.viewHistory = function() {
-        $state.go( 'participant.history', { identifier: $state.params.identifier } );
-      };
-
-      $scope.viewParticipant = function() {
-        $state.go( 'participant.view', { identifier: $state.params.identifier } );
-      };
-
-      $scope.refresh = function() {
-        $scope.isLoading = true;
-        $scope.model.onView().then( function() {
-          CnSession.setBreadcrumbTrail(
-            [ {
-              title: 'Participant',
-              go: function() { $state.go( 'participant.list' ); }
-            }, {
-              title: $scope.uid,
-              go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
-            }, {
-              title: 'Notes'
-            } ]
-          );
-        } ).finally( function finish() { $scope.isLoading = false; } );
-      };
-      $scope.refresh();
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnParticipantAdd', function() {
-    return {
-      templateUrl: 'app/participant/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnParticipantView', function() {
-    return {
-      templateUrl: 'app/participant/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantListFactory', [

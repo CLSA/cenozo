@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'address', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'address', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'address' ), {
     identifier: {
       parent: [ {
@@ -106,54 +106,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AddressAddCtrl', [
-    '$scope', 'CnAddressModelFactory',
-    function( $scope, CnAddressModelFactory ) {
-      $scope.model = CnAddressModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnAddressAdd', [
+    'CnAddressModelFactory',
+    function( CnAddressModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAddressModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AddressListCtrl', [
-    '$scope', 'CnAddressModelFactory',
-    function( $scope, CnAddressModelFactory ) {
-      $scope.model = CnAddressModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnAddressList', [
+    'CnAddressModelFactory',
+    function( CnAddressModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAddressModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AddressViewCtrl', [
-    '$scope', 'CnAddressModelFactory',
-    function( $scope, CnAddressModelFactory ) {
-      $scope.model = CnAddressModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnAddressView', [
+    'CnAddressModelFactory',
+    function( CnAddressModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAddressModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAddressAdd', function() {
-    return {
-      templateUrl: 'app/address/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAddressView', function() {
-    return {
-      templateUrl: 'app/address/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressAddFactory', [

@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'alternate', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'alternate', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'alternate' ), {
     identifier: {
       parent: {
@@ -85,54 +85,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AlternateAddCtrl', [
-    '$scope', 'CnAlternateModelFactory',
-    function( $scope, CnAlternateModelFactory ) {
-      $scope.model = CnAlternateModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnAlternateAdd', [
+    'CnAlternateModelFactory',
+    function( CnAlternateModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAlternateModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AlternateListCtrl', [
-    '$scope', 'CnAlternateModelFactory',
-    function( $scope, CnAlternateModelFactory ) {
-      $scope.model = CnAlternateModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnAlternateList', [
+    'CnAlternateModelFactory',
+    function( CnAlternateModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAlternateModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AlternateViewCtrl', [
-    '$scope', 'CnAlternateModelFactory',
-    function( $scope, CnAlternateModelFactory ) {
-      $scope.model = CnAlternateModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnAlternateView', [
+    'CnAlternateModelFactory',
+    function( CnAlternateModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAlternateModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAlternateAdd', function() {
-    return {
-      templateUrl: 'app/alternate/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAlternateView', function() {
-    return {
-      templateUrl: 'app/alternate/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateAddFactory', [

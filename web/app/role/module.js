@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'role', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'role', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'role' ), {
     identifier: {}, // standard
     name: {
@@ -27,13 +27,19 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'RoleListCtrl', [
-    '$scope', 'CnRoleModelFactory',
-    function( $scope, CnRoleModelFactory ) {
-      $scope.model = CnRoleModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnRoleList', [
+    'CnRoleModelFactory',
+    function( CnRoleModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnRoleModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 

@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'system_message', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'system_message', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'system_message' ), {
     identifier: {}, // standard
     name: {
@@ -75,54 +75,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SystemMessageAddCtrl', [
-    '$scope', 'CnSystemMessageModelFactory',
-    function( $scope, CnSystemMessageModelFactory ) {
-      $scope.model = CnSystemMessageModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnSystemMessageAdd', [
+    'CnSystemMessageModelFactory',
+    function( CnSystemMessageModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSystemMessageModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SystemMessageListCtrl', [
-    '$scope', 'CnSystemMessageModelFactory',
-    function( $scope, CnSystemMessageModelFactory ) {
-      $scope.model = CnSystemMessageModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnSystemMessageList', [
+    'CnSystemMessageModelFactory',
+    function( CnSystemMessageModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSystemMessageModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SystemMessageViewCtrl', [
-    '$scope', 'CnSystemMessageModelFactory',
-    function( $scope, CnSystemMessageModelFactory ) {
-      $scope.model = CnSystemMessageModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnSystemMessageView', [
+    'CnSystemMessageModelFactory',
+    function( CnSystemMessageModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSystemMessageModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSystemMessageAdd', function() {
-    return {
-      templateUrl: 'app/system_message/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSystemMessageView', function() {
-    return {
-      templateUrl: 'app/system_message/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSystemMessageAddFactory', [

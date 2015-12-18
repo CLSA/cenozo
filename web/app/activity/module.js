@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'activity', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'activity', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'activity' ), {
     identifier: {}, // standard
     name: {
@@ -39,13 +39,19 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'ActivityListCtrl', [
-    '$scope', 'CnActivityModelFactory',
-    function( $scope, CnActivityModelFactory ) {
-      $scope.model = CnActivityModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnActivityList', [
+    'CnActivityModelFactory',
+    function( CnActivityModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnActivityModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 

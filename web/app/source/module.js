@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'source', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'source', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'source' ), {
     identifier: { column: 'name' },
     name: {
@@ -43,54 +43,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SourceAddCtrl', [
-    '$scope', 'CnSourceModelFactory',
-    function( $scope, CnSourceModelFactory ) {
-      $scope.model = CnSourceModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnSourceAdd', [
+    'CnSourceModelFactory',
+    function( CnSourceModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSourceModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SourceListCtrl', [
-    '$scope', 'CnSourceModelFactory',
-    function( $scope, CnSourceModelFactory ) {
-      $scope.model = CnSourceModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnSourceList', [
+    'CnSourceModelFactory',
+    function( CnSourceModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSourceModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SourceViewCtrl', [
-    '$scope', 'CnSourceModelFactory',
-    function( $scope, CnSourceModelFactory ) {
-      $scope.model = CnSourceModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnSourceView', [
+    'CnSourceModelFactory',
+    function( CnSourceModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSourceModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSourceAdd', function() {
-    return {
-      templateUrl: 'app/source/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSourceView', function() {
-    return {
-      templateUrl: 'app/source/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSourceAddFactory', [

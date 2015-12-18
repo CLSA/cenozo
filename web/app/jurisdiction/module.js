@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'jurisdiction', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'jurisdiction', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'jurisdiction' ), {
     identifier: {}, // standard
     name: {

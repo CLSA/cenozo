@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'collection', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'collection', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'collection' ), {
     identifier: { column: 'name' },
     name: {
@@ -59,54 +59,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'CollectionAddCtrl', [
-    '$scope', 'CnCollectionModelFactory',
-    function( $scope, CnCollectionModelFactory ) {
-      $scope.model = CnCollectionModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnCollectionAdd', [
+    'CnCollectionModelFactory',
+    function( CnCollectionModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnCollectionModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'CollectionListCtrl', [
-    '$scope', 'CnCollectionModelFactory',
-    function( $scope, CnCollectionModelFactory ) {
-      $scope.model = CnCollectionModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnCollectionList', [
+    'CnCollectionModelFactory',
+    function( CnCollectionModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnCollectionModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'CollectionViewCtrl', [
-    '$scope', 'CnCollectionModelFactory',
-    function( $scope, CnCollectionModelFactory ) {
-      $scope.model = CnCollectionModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnCollectionView', [
+    'CnCollectionModelFactory',
+    function( CnCollectionModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnCollectionModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCollectionAdd', function() {
-    return {
-      templateUrl: 'app/collection/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCollectionView', function() {
-    return {
-      templateUrl: 'app/collection/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCollectionAddFactory', [

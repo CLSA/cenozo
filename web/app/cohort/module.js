@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'cohort', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'cohort', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'cohort' ), {
     identifier: { column: 'name' },
     name: {
@@ -27,13 +27,19 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'CohortListCtrl', [
-    '$scope', 'CnCohortModelFactory',
-    function( $scope, CnCohortModelFactory ) {
-      $scope.model = CnCohortModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnCohortList', [
+    'CnCohortModelFactory',
+    function( CnCohortModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnCohortModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 

@@ -299,8 +299,7 @@ angular.extend( cenozo, {
       // add the root states
       stateProvider.state( name, { // resolves application/
         url: '',
-        controller: 'HomeCtrl',
-        templateUrl: module.url + 'home.tpl.html',
+        template: '<cn-home></cn-home>',
         resolve: resolve
       } );
       stateProvider.state( name + '.home', { url: cenozoApp.baseUrl + '/' } );
@@ -308,15 +307,16 @@ angular.extend( cenozo, {
     } else if( 'error' == name ) {
       // add the error states
       stateProvider.state( name, {
-        controller: 'ErrorCtrl',
         template: '<div ui-view class="fade-transition"></div>',
         resolve: resolve
       } );
-      stateProvider.state( name + '.400', { templateUrl: module.url + '400.tpl.html' } );
-      stateProvider.state( name + '.403', { templateUrl: module.url + '403.tpl.html' } );
-      stateProvider.state( name + '.404', { templateUrl: module.url + '404.tpl.html' } );
-      stateProvider.state( name + '.500', { templateUrl: module.url + '500.tpl.html', params: { data: null } } );
-      stateProvider.state( name + '.state', { templateUrl: module.url + 'state.tpl.html' } );
+      stateProvider.state( name + '.state', { template: '<cn-error></cn-error>', params: { type: 'state' } } );
+      stateProvider.state( name + '.400', { template: '<cn-error></cn-error>', params: { type: 400 } } );
+      stateProvider.state( name + '.403', { template: '<cn-error></cn-error>', params: { type: 403 } } );
+      stateProvider.state( name + '.404', { template: '<cn-error></cn-error>', params: { type: 404 } } );
+      stateProvider.state( name + '.500', {
+        template: '<cn-error></cn-error>', params: { type: 500, data: null }
+      } );
     } else {
       // add base state
       stateProvider.state( name, {
@@ -329,35 +329,39 @@ angular.extend( cenozo, {
       // add action states
       module.actions.forEach( function( item ) {
         if( 0 > ['delete', 'edit'].indexOf( item ) ) { // ignore delete and edit actions
-          var url = '/' + item;
-          if( 'view' == item ) url += '/{identifier}';
-
           // if we have a / in the item then remove it
+          var url = '/' + item + ( 'view' == item ? '/{identifier}' : '' );
           var slash = item.indexOf( '/' );
           if( 0 <= slash ) item = item.substring( 0, slash );
-
-          var templateUrl = module.url + item + '.tpl.html';
-
+          var directive = 'cn-' + module.subject.snake.replace( '_', '-' ) + '-' + item;
           stateProvider.state( name + '.' + item, {
             url: url,
-            controller: ( name + '_' + item + '_ctrl' ).snakeToCamel( true ),
-            templateUrl: templateUrl
+            template: '<' + directive + ' model="model"></' + directive + '>'
           } );
         }
       } );
 
       // add child states to the list
       module.children.forEach( function( item ) {
+        var directive = 'cn-' + item.subject.snake.replace( '_', '-' ) + '-add';
         stateProvider.state( name + '.add_' + item.subject.snake, {
           url: '/view/{parentIdentifier}/' + item.subject.snake,
-          controller: item.subject.Camel + 'AddCtrl',
-          templateUrl: item.url + 'add.tpl.html'
+          template: '<' + directive + ' model="model"></' + directive + '>',
+          resolve: {
+            data: [ '$q', function( $q ) {
+              var actionModule = cenozoApp.module( item.subject.snake );
+              if( null == actionModule.deferred ) {
+                actionModule.deferred = $q.defer();
+                require( actionModule.getRequiredFiles(), function() { actionModule.deferred.resolve(); } );
+              }
+              return actionModule.deferred.promise;
+            } ]
+          }
         } );
 
         stateProvider.state( name + '.view_' + item.subject.snake, {
           url: '/view/{parentIdentifier}/' + item.subject.snake + '/{identifier}',
-          controller: item.subject.Camel + 'ViewCtrl',
-          templateUrl: item.url + 'view.tpl.html'
+          template: '<' + directive + ' model="model"></' + directive + '>'
         } );
       } );
     }
@@ -836,8 +840,10 @@ cenozo.directive( 'cnRecordAdd', [
 /**
  * A directive wrapper for FullCalendar
  */
-cenozo.directive( 'cnRecordCalendar',
-  function() {
+cenozo.directive( 'cnRecordCalendar', [
+  '$state',
+  function( $state ) {
+    var calendarElement = null;
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-calendar.tpl.html',
       restrict: 'E',
@@ -845,10 +851,15 @@ cenozo.directive( 'cnRecordCalendar',
         model: '=',
         collapsed: '@'
       },
-      controller: function( $scope ) {
+      controller: function( $scope, $element ) {
         $scope.refresh = function() {
-          if( !$scope.model.calendarModel.isLoading ) $scope.model.calendarModel.onList( true );
+          if( !$scope.model.calendarModel.isLoading ) {
+            $scope.model.calendarModel.onList( true ).then( function() {
+              $element.find( 'div.calendar' ).fullCalendar( 'refetchEvents' );
+            } );
+          }
         };
+        $scope.viewList = function() { $state.go( '^.list' ); };
       },
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -863,8 +874,9 @@ cenozo.directive( 'cnRecordCalendar',
           }
 
           // use the full calendar lib to create the calendar
+          scope.model.calendarModel.settings.defaultDate = scope.model.calendarModel.viewDate;
           var el = element.find( 'div.calendar' );
-          el.fullCalendar( scope.model.calendarModel.settings );
+          var test = el.fullCalendar( scope.model.calendarModel.settings );
 
           // integrate classes and styles
           el.find( 'button' ).removeClass( 'fc-button fc-corner-left fc-corner-right fc-state-default' );
@@ -875,7 +887,7 @@ cenozo.directive( 'cnRecordCalendar',
       }
     };
   }
-);
+] );
 
 /* ######################################################################################################## */
 
@@ -1862,47 +1874,16 @@ cenozo.factory( 'CnBaseAddFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseCalendarFactory', [
-  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
-  function( CnSession, CnHttpFactory, CnModalMessageFactory ) {
+  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
+  function( CnSession, CnHttpFactory, CnModalMessageFactory, $q ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
+        object.viewDate = moment();
+        object.isLoading = false;
         object.cache = [];
-        object.viewingMinDate = moment();
-        object.viewingMaxDate = moment();
         object.cacheMinDate = null;
         object.cacheMaxDate = null;
-        object.isLoading = false;
-
-        object.settings = {
-          firstDay: 1,
-          timezone: CnSession.user.timezone,
-          timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
-          smallTimeFormat: CnSession.user.use12hourClock ? 'h(:mm)t' : 'HH(:mm)',
-          header: {
-            left: 'title',
-            center: 'today prevYear,prev,next,nextYear',
-            right: 'month,agendaWeek,agendaDay'
-          },
-          businessHours: {
-            start: CnSession.setting.callingStartTime,
-            end: CnSession.setting.callingEndTime,
-            dow: [1, 2, 3, 4, 5]
-          },
-          viewRender: function( view, element ) {
-            object.viewingMinDate = view.start;
-            object.viewingMaxDate = view.end;
-            object.checkCache();
-          }
-        };
-
-        // should be called by when the month is changed
-        cenozo.addExtendableFunction( object, 'checkCache', function() {
-          if( null === this.cacheMinDate ||
-              null === this.cacheMaxDate ||
-              this.viewingMaxDate < this.cacheMinDate ||
-              this.viewingMinDate > this.cacheMaxDate ) this.onList();
-        } );
 
         /**
          * Deletes an event from the server.
@@ -1919,12 +1900,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           httpObj.onError = function error( response ) { self.onDeleteError( response ); }
           return CnHttpFactory.instance( httpObj ).delete().then(
             function success() {
-              self.cache.some( function( item, index, array ) {
-                if( item.getIdentifier() == record.getIdentifier() ) {
-                  array.splice( index, 1 );
-                  return true; // stop processing
-                }
-              } );
+              // TODO: implement
             }
           );
         } );
@@ -1937,8 +1913,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         cenozo.addExtendableFunction( object, 'onDeleteError', function( response ) {
           if( 409 == response.status ) {
             CnModalMessageFactory.instance( {
-              title: 'Unable to delete ' + object.parentModel.module.name.singular + ' event',
-              message: 'It is not possible to delete this ' + object.parentModel.module.name.singular +
+              title: 'Unable to delete ' + this.parentModel.module.name.singular + ' event',
+              message: 'It is not possible to delete this ' + this.parentModel.module.name.singular +
                        ' event because it is being referenced by "' + response.data +
                        '" in the database.',
               error: true
@@ -1949,50 +1925,69 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         /**
          * Loads events from the server.
          * 
+         * This method will cache events, loading event date spans outside of the cache when
+         * necessary.  If the requested date span falls too far outside the current cache then
+         * the cache will be replaced instead of appended.
+         * All events will be stored in this.cache
          * @param boolean replace: Whether to replace the cached list or append to it
+         * @param moment minDate: The lower date span to get events for
+         * @param moment maxDate: The upper date span to get events for
          * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onList', function( replace ) {
+        cenozo.addExtendableFunction( object, 'onList', function( replace, minDate, maxDate ) {
           var self = this;
-          if( angular.isUndefined( replace ) ) replace = false;
-          if( replace ) this.cache = [];
+          var query = false;
+          var loadMinDate = minDate;
+          var loadMaxDate = maxDate;
+          if( replace || null == this.cacheMinDate || null == this.cacheMaxDate ||
+              6 < Math.abs( this.cacheMinDate.diff( minDate, 'months' ) ) ) {
+            // rebuild the cache for the requested date span
+            this.cache = [];
+            this.cacheMinDate = null == loadMinDate ? null : moment( loadMinDate );
+            this.cacheMaxDate = null == loadMaxDate ? null : moment( loadMaxDate );
+            query = null != minDate && null != maxDate;
+          } else if( null != minDate && null != maxDate ) {
+            // if the min date comes after the cache's min date then load from the new min date
+            if( this.cacheMinDate.isAfter( minDate ) ) {
+              loadMinDate = minDate;
+              this.cacheMinDate = moment( minDate );
+              query = true;
+            } else {
+              loadMinDate = this.cacheMaxDate;
+            }
 
-          // determine the min/max dates for this data request
-          var midpoint = moment( ( this.viewingMinDate + this.viewingMaxDate ) / 2 );
-          var minDate = moment( midpoint ).date( 1 )
-                                                  .startOf( 'isoWeek' );
-          var maxDate = moment( midpoint ).date( midpoint.daysInMonth() )
-                                                  .endOf( 'isoWeek' )
-                                                  .add( 1, 'week' );
-          if( null !== this.cacheMinDate && null !== this.cacheMaxDate ) {
-            // we already have data, so only ask for what is needed
-            if( midpoint < this.cacheMinDate ) {
-              maxDate = moment( this.cacheMinDate ).subtract( 1, 'day' );
-            } else if( midpoint > this.cacheMaxDate ) {
-              minDate = moment( this.cacheMaxDate ).add( 1, 'day' );
+            // if the max date comes before the cache's max date then load to the new max date
+            if( this.cacheMaxDate.isBefore( maxDate ) ) {
+              loadMaxDate = maxDate;
+              this.cacheMaxDate = moment( maxDate );
+              query = true;
+            } else {
+              loadMaxDate = this.cacheMinDate;
             }
           }
 
-          var data = this.parentModel.getServiceData( 'calendar' );
-          if( angular.isUndefined( data.modifier ) ) data.modifier = {};
-          data.min_date = minDate.format( 'YYYY-MM-DD' );
-          data.max_date = maxDate.format( 'YYYY-MM-DD' );
+          if( query ) {
+            var data = this.parentModel.getServiceData( 'calendar' );
+            if( angular.isUndefined( data.modifier ) ) data.modifier = {};
+            data.min_date = loadMinDate.format( 'YYYY-MM-DD' );
+            data.max_date = loadMaxDate.format( 'YYYY-MM-DD' );
 
-          this.isLoading = true;
+            this.isLoading = true;
 
-          var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
-          httpObj.onError = function error( response ) { self.onListError( response ); }
-          return CnHttpFactory.instance( httpObj ).query().then(
-            function success( response ) {
-              // add the getIdentifier() method to each row before adding it to the cache
-              response.data.forEach( function( item ) {
-                item.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
-              } );
-              self.cache = self.cache.concat( response.data );
-              self.cacheMinDate = minDate;
-              self.cacheMaxDate = maxDate;
-            }
-          ).finally( function finished() { self.isLoading = false; } );
+            var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
+            httpObj.onError = function error( response ) { this.onListError( response ); }
+            return CnHttpFactory.instance( httpObj ).query().then(
+              function success( response ) {
+                // add the getIdentifier() method to each row before adding it to the cache
+                response.data.forEach( function( item ) {
+                  item.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( item ); };
+                } );
+                self.cache = self.cache.concat( response.data );
+              }
+            ).finally( function finished() { self.isLoading = false; } );
+          } else {
+            return $q.all(); // return an already-resolved promise
+          }
         } );
 
         /**
@@ -2003,6 +1998,43 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         cenozo.addExtendableFunction( object, 'onListError', function( response ) {
           CnModalMessageFactory.httpError( response );
         } );
+
+        // fullcalendar's settings object, used by the cn-record-calendar directive
+        object.settings = {
+          defaultDate: object.viewDate,
+          firstDay: 1,
+          timezone: CnSession.user.timezone,
+          timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
+          smallTimeFormat: CnSession.user.use12hourClock ? 'h(:mm)t' : 'HH(:mm)',
+          header: {
+            left: 'title',
+            center: 'today prevYear,prev,next,nextYear',
+            right: 'month,agendaWeek,agendaDay'
+          },
+          businessHours: {
+            start: CnSession.setting.callingStartTime,
+            end: CnSession.setting.callingEndTime,
+            dow: [1, 2, 3, 4, 5]
+          },
+          events: function( start, end, timezone, callback ) {
+            // track the viewing date
+            object.viewDate = this.getDate();
+            //this.options.defaultDate = object.viewDate;
+            //console.log( this.options.defaultDate );
+            //this.defaultDate = object.viewDate;
+
+            // call onList if the given date span is outside of the cache's date span
+            object.onList( false, start, end ).then( function() {
+              callback(
+                object.cache.reduce( function( eventList, e ) {
+                  if( moment( e.start ).isBefore( end ) && moment( e.end ).isAfter( start ) ) eventList.push( e );
+                  return eventList;
+                }, [] )
+              );
+            } );
+          },
+          eventClick: function( record ) { return object.parentModel.transitionToViewState( record ); }
+        };
       }
     };
   }
