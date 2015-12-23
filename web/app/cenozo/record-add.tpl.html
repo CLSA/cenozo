@@ -83,6 +83,11 @@
               ng-required="model.metadata.columnList[input.key].required"></textarea>
             <div ng-switch-when="days" class="row">
               <div class="col-sm-1" style="width: 14.28%">
+                <label class="checkbox" style="left: 20px" for="sunday">
+                  <input id="sunday" name="name" ng-model="record.sunday" type="checkbox"> Sunday
+                </label>
+              </div>
+              <div class="col-sm-1" style="width: 14.28%">
                 <label class="checkbox" style="left: 20px" for="monday">
                   <input id="monday" name="name" ng-model="record.monday" type="checkbox"> Monday
                 </label>
@@ -110,11 +115,6 @@
               <div class="col-sm-1" style="width: 14.28%">
                 <label class="checkbox" style="left: 20px" for="saturday">
                   <input id="saturday" name="name" ng-model="record.saturday" type="checkbox"> Saturday
-                </label>
-              </div>
-              <div class="col-sm-1" style="width: 14.28%">
-                <label class="checkbox" style="left: 20px" for="sunday">
-                  <input id="sunday" name="name" ng-model="record.sunday" type="checkbox"> Sunday
                 </label>
               </div>
             </div>
