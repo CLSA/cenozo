@@ -146,7 +146,7 @@ angular.extend( cenozoApp, {
             for( var g in this.inputGroupList ) {
               if( g != group && angular.isDefined( this.inputGroupList[g][key] ) ) {
                 console.error(
-                  "Cannot add input '" + key + "' to group '" + group + 
+                  "Cannot add input '" + key + "' to group '" + group +
                   "' as it already exists in the existing group '" + g + "'." );
                 return;
               }
@@ -268,17 +268,17 @@ angular.extend( cenozo, {
     if( 'object' == type && variable._isAMomentObject ) type = 'moment';
     return type;
   },
-  
+
   // determines whether a type is one of the datetime types
-  isDatetimeType: function( type ) {        
+  isDatetimeType: function( type ) {
     return 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type );
   },
-  
+
   // parse an enum list returned as column metadata
   parseEnumList: function( columnMetadata ) {
     return columnMetadata.type.replace( /^enum\(['"]/i, '' ).replace( /['"]\)$/, '' ).split( "','" );
   },
-  
+
   // Sets up the routing for a module
   routeModule: function( stateProvider, name, module ) {
     if( angular.isUndefined( stateProvider ) ) throw new Error( 'routeModule requires exactly 3 parameters' );
@@ -421,7 +421,7 @@ cenozo.service( 'CnBaseHeader', [
         scope.isCollapsed = false;
         scope.isLoading = true;
         scope.session = CnSession;
-        
+
         // a list of all possible operations that the menu controller has to choose from
         scope.operationList = {
           account: {
@@ -731,7 +731,7 @@ cenozo.directive( 'cnRecordAdd', [
             }
           } else {
             $scope.isAdding = true;
-            $scope.model.addModel.onAdd( $scope.$parent.record).then(
+            $scope.model.addModel.onAdd( $scope.$parent.record ).then(
               function success( response ) {
                 // create a new record to be created (in case another record is added)
                 $scope.model.addModel.onNew( $scope.$parent.record );
@@ -883,6 +883,9 @@ cenozo.directive( 'cnRecordCalendar', [
           el.find( 'button' ).not( '.fc-today-button' ).addClass( 'btn btn-default' );
           el.find( '.fc-today-button' ).addClass( 'btn btn-info' );
           el.find( 'h2' ).css( { 'font-size': '18px', 'line-height': '1.6' } );
+          el.find( '.fc-left' ).css( 'width', '33%' );
+          el.find( '.fc-right' ).css( 'width', '33%' ).children().css( 'float', 'right' );
+          el.find( '.fc-button-group' ).addClass( 'btn-group' );
         }
       }
     };
@@ -1004,7 +1007,7 @@ cenozo.directive( 'cnRecordView', [
         $scope.refresh = function() {
           if( $scope.isComplete ) {
             $scope.isComplete = false;
-            $scope.model.viewModel.onView( true ).finally( function finished() { $scope.isComplete = true } ); 
+            $scope.model.viewModel.onView( true ).finally( function finished() { $scope.isComplete = true } );
           }
         };
 
@@ -1803,6 +1806,7 @@ cenozo.factory( 'CnBaseAddFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
+        object.formattedRecord = {};
 
         /**
          * Sends a new record to the server.
@@ -1815,7 +1819,9 @@ cenozo.factory( 'CnBaseAddFactory', [
           if( !this.parentModel.addEnabled ) throw new Error( 'Calling onAdd() but addEnabled is false' );
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: record };
           httpObj.onError = function error( response ) { self.onAddError( response ); };
-          return CnHttpFactory.instance( httpObj ).post();
+          return CnHttpFactory.instance( httpObj ).post().then( function success( response ) {
+            record.id = response.data;
+          } );
         } );
 
         /**
@@ -1886,6 +1892,36 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         object.cacheMaxDate = null;
 
         /**
+         * Determines the lower date boundary for which the cache will require given a new minimum date
+         */
+        object.getLoadMinDate = function( replace, minDate ) {
+          return replace ||
+                 null == minDate ||
+                 null == this.cacheMinDate ||
+                 // the requested date span is too far outside the existing one
+                 6 < Math.abs( this.cacheMinDate.diff( minDate, 'months' ) ) ||
+                 // if the min date comes after the cache's min date then load from the new min date
+                 this.cacheMinDate.isAfter( minDate )
+               ? minDate
+               : this.cacheMaxDate;
+        };
+
+        /**
+         * Determines the upper date boundary for which the cache will require given a new maximum date
+         */
+        object.getLoadMaxDate = function( replace, maxDate ) {
+          return replace ||
+                 null == maxDate ||
+                 null == this.cacheMaxDate ||
+                 // the requested date span is too far outside the existing one
+                 6 < Math.abs( this.cacheMaxDate.diff( maxDate, 'months' ) ) ||
+                 // if the max date comes before the cache's max date then load to the new max date
+                 this.cacheMaxDate.isBefore( maxDate )
+               ? maxDate
+               : this.cacheMinDate;
+        };
+
+        /**
          * Deletes an event from the server.
          * 
          * @param object event: The event to delete
@@ -1936,9 +1972,13 @@ cenozo.factory( 'CnBaseCalendarFactory', [
          */
         cenozo.addExtendableFunction( object, 'onList', function( replace, minDate, maxDate ) {
           var self = this;
+
+          // change the parent model's listing state
+          this.parentModel.listingState = 'calendar';
+
           var query = false;
-          var loadMinDate = minDate;
-          var loadMaxDate = maxDate;
+          var loadMinDate = this.getLoadMinDate( replace, minDate );
+          var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
           if( replace || null == this.cacheMinDate || null == this.cacheMaxDate ||
               6 < Math.abs( this.cacheMinDate.diff( minDate, 'months' ) ) ) {
             // rebuild the cache for the requested date span
@@ -1949,20 +1989,14 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           } else if( null != minDate && null != maxDate ) {
             // if the min date comes after the cache's min date then load from the new min date
             if( this.cacheMinDate.isAfter( minDate ) ) {
-              loadMinDate = minDate;
               this.cacheMinDate = moment( minDate );
               query = true;
-            } else {
-              loadMinDate = this.cacheMaxDate;
             }
 
             // if the max date comes before the cache's max date then load to the new max date
             if( this.cacheMaxDate.isBefore( maxDate ) ) {
-              loadMaxDate = maxDate;
               this.cacheMaxDate = moment( maxDate );
               query = true;
-            } else {
-              loadMaxDate = this.cacheMinDate;
             }
           }
 
@@ -2002,7 +2036,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         // fullcalendar's settings object, used by the cn-record-calendar directive
         object.settings = {
           defaultDate: object.viewDate,
-          firstDay: 1,
+          firstDay: 0,
           timezone: CnSession.user.timezone,
           timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
           smallTimeFormat: CnSession.user.use12hourClock ? 'h(:mm)t' : 'HH(:mm)',
@@ -2019,11 +2053,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           events: function( start, end, timezone, callback ) {
             // track the viewing date
             object.viewDate = this.getDate();
-            //this.options.defaultDate = object.viewDate;
-            //console.log( this.options.defaultDate );
-            //this.defaultDate = object.viewDate;
 
-            // call onList if the given date span is outside of the cache's date span
+            // call onList to make sure we have the events in the requested date span
             object.onList( false, start, end ).then( function() {
               callback(
                 object.cache.reduce( function( eventList, e ) {
@@ -2033,7 +2064,13 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               );
             } );
           },
-          eventClick: function( record ) { return object.parentModel.transitionToViewState( record ); }
+          dayClick: function( date ) {
+            object.parentModel.addModel.calendarStartDate = date;
+            return object.parentModel.transitionToAddState();
+          },
+          eventClick: function( record ) {
+            return object.parentModel.transitionToViewState( record );
+          }
         };
       }
     };
@@ -2189,6 +2226,10 @@ cenozo.factory( 'CnBaseListFactory', [
          */
         cenozo.addExtendableFunction( object, 'onList', function( replace ) {
           var self = this;
+
+          // change the parent model's listing state
+          this.parentModel.listingState = 'list';
+
           if( angular.isUndefined( replace ) ) replace = false;
           if( replace ) this.cache = [];
 
@@ -2629,11 +2670,7 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           var list = {};
           if( 'calendar' == type ) {
-            // the calendar list is not module dependent
-            list = {
-              title: { type: 'string', column: 'title' },
-              '*': { tyle: 'string', column: '*' }
-            };
+            // the calendar doesn't need anything added to list
           } else if( 'list' == type ) {
             list = self.columnList;
           } else {
@@ -2775,9 +2812,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           var parent = self.getParentIdentifier();
           return angular.isDefined( parent.subject ) ?
             $state.go( parent.subject + '.view', { identifier: parent.identifier } ) :
-            $state.go( '^.list' );
+            $state.go( '^.' + self.listingState );
         } );
-        
+
         /**
          * TODO: document
          */
@@ -2787,7 +2824,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             $state.go( '^.add_' + self.module.subject.snake, { parentIdentifier: $state.params.identifier } ) :
             $state.go( '^.add' );
         } );
-        
+
         /**
          * TODO: document
          */
@@ -2798,14 +2835,14 @@ cenozo.factory( 'CnBaseModelFactory', [
             stateParams.parentIdentifier = $state.params.identifier;
           return $state.go( self.module.subject.snake + '.view', stateParams );
         } );
-        
+
         /**
          * TODO: document
          */
         cenozo.addExtendableFunction( self, 'transitionToParentViewState', function( subject, identifier ) {
           return $state.go( subject + '.view', { identifier: identifier } );
         } );
-        
+
         /**
          * Creates the breadcrumb trail using module and a specific type (add, list or view)
          */
@@ -3164,6 +3201,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         self.deleteEnabled = 0 <= self.module.actions.indexOf( 'delete' );
         self.editEnabled = 0 <= self.module.actions.indexOf( 'edit' );
         self.viewEnabled = 0 <= self.module.actions.indexOf( 'view' );
+        self.listingState = 'list';
 
         // process input and column lists one at a time
         self.columnList = {};
@@ -3914,7 +3952,7 @@ cenozo.service( 'CnModalRestrictFactory', [
                     var optionList = document.querySelector( 'select[name="test' + index + '"]' ).
                                      getElementsByClassName( 'not-nullable' );
                     optionList.map( function( item ) { item.disabled = null === response } );
-                    
+
                     // update the empty list
                     self.updateEmpty( index );
 
