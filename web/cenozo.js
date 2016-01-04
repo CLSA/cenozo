@@ -179,7 +179,6 @@ angular.extend( cenozoApp, {
               throw new Error( 'Adding extra operation with invalid type "' + type + '"' );
 
             this.extraOperationList[type][name] = operation;
-            console.log( this.extraOperationList.list );
           }
         } );
       }
@@ -2023,7 +2022,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             this.isLoading = true;
 
             var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
-            httpObj.onError = function error( response ) { this.onListError( response ); }
+            httpObj.onError = function error( response ) { self.onListError( response ); }
             return CnHttpFactory.instance( httpObj ).query().then(
               function success( response ) {
                 // add the getIdentifier() method to each row before adding it to the cache
