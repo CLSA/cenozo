@@ -19,9 +19,17 @@ define( function() {
       pluralPossessive: 'accesses\''
     },
     columnList: {
-      user: {
+      username: {
         column: 'user.name',
         title: 'User'
+      },
+      firstname: {
+        column: 'user.first_name',
+        title: 'First Name'
+      },
+      lastname: {
+        column: 'user.last_name',
+        title: 'Last Name'
       },
       role: {
         column: 'role.name',
@@ -37,7 +45,7 @@ define( function() {
       }
     },
     defaultOrder: {
-      column: 'user',
+      column: 'username',
       reverse: false
     }
   } );
