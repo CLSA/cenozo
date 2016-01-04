@@ -884,7 +884,8 @@ cenozo.directive( 'cnRecordCalendar', [
           }
 
           // use the full calendar lib to create the calendar
-          scope.model.calendarModel.settings.defaultDate = scope.model.calendarModel.viewDate;
+          scope.model.calendarModel.settings.defaultDate = scope.model.calendarModel.currentDate;
+          scope.model.calendarModel.settings.defaultView = scope.model.calendarModel.currentView;
           var el = element.find( 'div.calendar' );
           var test = el.fullCalendar( scope.model.calendarModel.settings );
 
@@ -1898,7 +1899,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
-        object.viewDate = moment();
+        object.currentDate = moment();
+        object.currentView = 'month';
         object.isLoading = false;
         object.cache = [];
         object.cacheMinDate = null;
@@ -2048,7 +2050,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
 
         // fullcalendar's settings object, used by the cn-record-calendar directive
         object.settings = {
-          defaultDate: object.viewDate,
+          defaultDate: object.currentDate,
+          defaultView: object.currentView,
           firstDay: 0,
           timezone: CnSession.user.timezone,
           timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
@@ -2064,8 +2067,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             dow: [1, 2, 3, 4, 5]
           },
           events: function( start, end, timezone, callback ) {
-            // track the viewing date
-            object.viewDate = this.getDate();
+            // track the current date
+            object.currentDate = this.getDate();
 
             // call onList to make sure we have the events in the requested date span
             object.onList( false, start, end ).then( function() {
@@ -2076,6 +2079,10 @@ cenozo.factory( 'CnBaseCalendarFactory', [
                 }, [] )
               );
             } );
+          },
+          eventAfterAllRender: function( view ) {
+            // track the current view
+            object.currentView = view.name;
           },
           dayClick: function( date ) {
             object.parentModel.addModel.calendarStartDate = date;
