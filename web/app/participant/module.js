@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'participant', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'participant' ), {
+  try { var module = cenozoApp.module( 'participant', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'uid' },
     name: {
       singular: 'participant',
@@ -48,7 +48,7 @@ define( function() {
   } );
 
   // define inputs
-  cenozoApp.module( 'participant' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     active: {
       title: 'Active',
       type: 'boolean',
@@ -76,7 +76,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'participant' ).addInputGroup( 'Naming Details', {
+  module.addInputGroup( 'Naming Details', {
     honorific: {
       title: 'Honorific',
       type: 'string',
@@ -97,7 +97,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'participant' ).addInputGroup( 'Defining Details', {
+  module.addInputGroup( 'Defining Details', {
     sex: {
       title: 'Sex',
       type: 'enum'
@@ -129,7 +129,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'participant' ).addInputGroup( 'Site & Contact Details', {
+  module.addInputGroup( 'Site & Contact Details', {
     default_site: {
       column: 'default_site.name',
       title: 'Default Site',
@@ -162,11 +162,11 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'participant' ).addExtraOperation( 'view', 'Notes', function( viewModel, $state ) {
+  module.addExtraOperation( 'view', 'Notes', function( viewModel, $state ) {
     $state.go( 'participant.notes', { identifier: viewModel.record.getIdentifier() } );
   } );
 
-  cenozoApp.module( 'participant' ).addExtraOperation( 'view', 'History', function( viewModel, $state ) {
+  module.addExtraOperation( 'view', 'History', function( viewModel, $state ) {
     $state.go( 'participant.history', { identifier: viewModel.record.getIdentifier() } );
   } );
 
@@ -179,7 +179,7 @@ define( function() {
    * This can be extended by applications by adding new history categories or changing existing ones.
    * Note: make sure the category name (the object's property) matches the property set in the historyList
    */
-  cenozoApp.module( 'participant' ).historyCategoryList = {
+  module.historyCategoryList = {
 
     Address: {
       active: true,
@@ -406,7 +406,7 @@ define( function() {
     'CnParticipantModelFactory',
     function( CnParticipantModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnParticipantModelFactory.root;
@@ -424,7 +424,7 @@ define( function() {
     'CnParticipantHistoryFactory', 'CnSession', '$state',
     function( CnParticipantHistoryFactory, CnSession, $state ) {
       return {
-        templateUrl: url + 'history.tpl.html',
+        templateUrl: module.url + 'history.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.isLoading = false;
@@ -476,7 +476,7 @@ define( function() {
     'CnParticipantModelFactory',
     function( CnParticipantModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnParticipantModelFactory.root;
@@ -493,7 +493,7 @@ define( function() {
     'CnParticipantMultieditFactory', 'CnSession', '$state',
     function( CnParticipantMultieditFactory, CnSession, $state ) {
       return {
-        templateUrl: url + 'multiedit.tpl.html',
+        templateUrl: module.url + 'multiedit.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnParticipantMultieditFactory.instance();
@@ -515,7 +515,7 @@ define( function() {
     'CnParticipantNotesFactory', 'CnSession', '$state', '$timeout',
     function( CnParticipantNotesFactory, CnSession, $state, $timeout) {
       return {
-        templateUrl: url + 'notes.tpl.html',
+        templateUrl: module.url + 'notes.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.isLoading = false;
@@ -572,7 +572,7 @@ define( function() {
     'CnParticipantModelFactory',
     function( CnParticipantModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnParticipantModelFactory.root;
@@ -630,7 +630,6 @@ define( function() {
         var self = this;
 
         // before constructing the model change some input types depending on the role's tier
-        var module = cenozoApp.module( 'participant' );
         if( 3 > CnSession.role.tier ) {
           module.inputGroupList['Defining Details'].sex.constant = true;
           module.inputGroupList['Defining Details'].age_group_id.constant = true;
@@ -728,7 +727,7 @@ define( function() {
     function( CnSession, CnHttpFactory, $state, $q ) {
       var object = function() {
         var self = this;
-        this.module = cenozoApp.module( 'participant' );
+        this.module = module;
 
         this.onView = function() {
           this.historyList = [];
@@ -768,7 +767,7 @@ define( function() {
               CnModalDatetimeFactory, CnModalMessageFactory, CnParticipantModelFactory ) {
       var object = function() {
         var self = this;
-        this.module = cenozoApp.module( 'participant' );
+        this.module = module;
         this.confirmInProgress = false;
         this.confirmedCount = null;
         this.uidList = '';
@@ -954,7 +953,7 @@ define( function() {
     function( CnSession, CnHttpFactory, $state ) {
       var object = function() {
         var self = this;
-        this.module = cenozoApp.module( 'participant' );
+        this.module = module;
         this.newNote = '';
 
         this.addNote = function() {

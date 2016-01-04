@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'state', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'state' ), {
+  try { var module = cenozoApp.module( 'state', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'state',
@@ -31,7 +31,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'state' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string'
@@ -51,7 +51,7 @@ define( function() {
     'CnStateModelFactory',
     function( CnStateModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnStateModelFactory.root;
@@ -69,7 +69,7 @@ define( function() {
     'CnStateModelFactory',
     function( CnStateModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnStateModelFactory.root;
@@ -86,7 +86,7 @@ define( function() {
     'CnStateModelFactory',
     function( CnStateModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnStateModelFactory.root;
@@ -132,7 +132,7 @@ define( function() {
     'CnBaseModelFactory', 'CnStateListFactory', 'CnStateAddFactory', 'CnStateViewFactory',
     function( CnBaseModelFactory, CnStateListFactory, CnStateAddFactory, CnStateViewFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'state' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnStateAddFactory.instance( this );
         this.listModel = CnStateListFactory.instance( this );
         this.viewModel = CnStateViewFactory.instance( this, root );

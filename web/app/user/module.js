@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'user', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'user' ), {
+  try { var module = cenozoApp.module( 'user', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'user',
@@ -50,7 +50,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'user' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     active: {
       title: 'Active',
       type: 'boolean'
@@ -107,7 +107,7 @@ define( function() {
     'CnUserModelFactory',
     function( CnUserModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnUserModelFactory.root;
@@ -125,7 +125,7 @@ define( function() {
     'CnUserModelFactory',
     function( CnUserModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnUserModelFactory.root;
@@ -142,7 +142,7 @@ define( function() {
     'CnUserModelFactory',
     function( CnUserModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnUserModelFactory.root;
@@ -195,7 +195,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'user' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnUserAddFactory.instance( this );
         this.listModel = CnUserListFactory.instance( this );
         this.viewModel = CnUserViewFactory.instance( this, root );

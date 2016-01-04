@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'site', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'site' ), {
+  try { var module = cenozoApp.module( 'site', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'site',
@@ -39,7 +39,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'site' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string'
@@ -82,9 +82,9 @@ define( function() {
     },
   } );
 
-  var settingModule = cenozoApp.module( 'setting' );
+  var settingModule = module;
   if( 0 <= settingModule.actions.indexOf( 'view' ) ) {
-    cenozoApp.module( 'site' ).addExtraOperation( 'view', 'Settings', function( viewModel, $state ) {
+    module.addExtraOperation( 'view', 'Settings', function( viewModel, $state ) {
       $state.go( 'setting.view', { identifier: 'site_id=' + viewModel.record.id } );
     } );
   }
@@ -94,7 +94,7 @@ define( function() {
     'CnSiteModelFactory',
     function( CnSiteModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSiteModelFactory.root;
@@ -112,7 +112,7 @@ define( function() {
     'CnSiteModelFactory',
     function( CnSiteModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSiteModelFactory.root;
@@ -129,7 +129,7 @@ define( function() {
     'CnSiteModelFactory',
     function( CnSiteModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSiteModelFactory.root;
@@ -187,7 +187,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'site' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnSiteAddFactory.instance( this );
         this.listModel = CnSiteListFactory.instance( this );
         this.viewModel = CnSiteViewFactory.instance( this, root );

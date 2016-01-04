@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'event', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'event' ), {
+  try { var module = cenozoApp.module( 'event', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: {
         subject: 'participant',
@@ -31,7 +31,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'event' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     event_type_id: {
       title: 'Event Type',
       type: 'enum'
@@ -43,7 +43,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'event' ).addInputGroup( 'Event Address', {
+  module.addInputGroup( 'Event Address', {
     international: {
       column: 'event_address.international',
       title: 'International',
@@ -87,7 +87,7 @@ define( function() {
     'CnEventModelFactory',
     function( CnEventModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnEventModelFactory.root;
@@ -105,7 +105,7 @@ define( function() {
     'CnEventModelFactory',
     function( CnEventModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnEventModelFactory.root;
@@ -122,7 +122,7 @@ define( function() {
     'CnEventModelFactory',
     function( CnEventModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnEventModelFactory.root;
@@ -184,7 +184,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'event' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnEventAddFactory.instance( this );
         this.listModel = CnEventListFactory.instance( this );
         this.viewModel = CnEventViewFactory.instance( this, root );

@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'event_type', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'event_type' ), {
+  try { var module = cenozoApp.module( 'event_type', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'event type',
@@ -27,7 +27,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'event_type' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string'
@@ -47,7 +47,7 @@ define( function() {
     'CnEventTypeModelFactory',
     function( CnEventTypeModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnEventTypeModelFactory.root;
@@ -65,7 +65,7 @@ define( function() {
     'CnEventTypeModelFactory',
     function( CnEventTypeModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnEventTypeModelFactory.root;
@@ -82,7 +82,7 @@ define( function() {
     'CnEventTypeModelFactory',
     function( CnEventTypeModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnEventTypeModelFactory.root;
@@ -128,7 +128,7 @@ define( function() {
     'CnBaseModelFactory', 'CnEventTypeAddFactory', 'CnEventTypeListFactory', 'CnEventTypeViewFactory',
     function( CnBaseModelFactory, CnEventTypeAddFactory, CnEventTypeListFactory, CnEventTypeViewFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'event_type' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnEventTypeAddFactory.instance( this );
         this.listModel = CnEventTypeListFactory.instance( this );
         this.viewModel = CnEventTypeViewFactory.instance( this, root );

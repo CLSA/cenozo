@@ -1,7 +1,7 @@
 define( [], function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'error', true ).url; } catch( err ) { console.warn( err ); return; }
+  try { var module = cenozoApp.module( 'error', true ); } catch( err ) { console.warn( err ); return; }
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnError', [
@@ -9,7 +9,7 @@ define( [], function() {
     function( CnErrorModelFactory, $window, $state ) {
       var type = angular.isDefined( $state.params['type'] ) ? $state.params['type'] : 500;
       return {
-        templateUrl: url + type + '.tpl.html',
+        templateUrl: module.url + type + '.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnErrorModelFactory.root;

@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'language', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'language' ), {
+  try { var module = cenozoApp.module( 'language', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'code' },
     name: {
       singular: 'language',
@@ -33,7 +33,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'language' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string',
@@ -62,7 +62,7 @@ define( function() {
     'CnLanguageModelFactory',
     function( CnLanguageModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnLanguageModelFactory.root;
@@ -80,7 +80,7 @@ define( function() {
     'CnLanguageModelFactory',
     function( CnLanguageModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnLanguageModelFactory.root;
@@ -97,7 +97,7 @@ define( function() {
     'CnLanguageModelFactory',
     function( CnLanguageModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnLanguageModelFactory.root;
@@ -134,7 +134,7 @@ define( function() {
     'CnBaseModelFactory', 'CnLanguageListFactory', 'CnLanguageViewFactory',
     function( CnBaseModelFactory, CnLanguageListFactory, CnLanguageViewFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'language' ) );
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnLanguageListFactory.instance( this );
         this.viewModel = CnLanguageViewFactory.instance( this, root );
       };

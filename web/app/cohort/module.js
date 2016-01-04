@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'cohort', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'cohort' ), {
+  try { var module = cenozoApp.module( 'cohort', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'cohort',
@@ -31,7 +31,7 @@ define( function() {
     'CnCohortModelFactory',
     function( CnCohortModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnCohortModelFactory.root;
@@ -57,7 +57,7 @@ define( function() {
     'CnBaseModelFactory', 'CnCohortListFactory',
     function( CnBaseModelFactory, CnCohortListFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'cohort' ) );
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnCohortListFactory.instance( this );
       };
 

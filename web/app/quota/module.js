@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'quota', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'quota' ), {
+  try { var module = cenozoApp.module( 'quota', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {}, // standard
     name: {
       singular: 'quota',
@@ -32,7 +32,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'quota' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     site_id: {
       title: 'Site',
       type: 'enum'
@@ -63,7 +63,7 @@ define( function() {
     'CnQuotaModelFactory',
     function( CnQuotaModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQuotaModelFactory.root;
@@ -81,7 +81,7 @@ define( function() {
     'CnQuotaModelFactory',
     function( CnQuotaModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQuotaModelFactory.root;
@@ -98,7 +98,7 @@ define( function() {
     'CnQuotaModelFactory',
     function( CnQuotaModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQuotaModelFactory.root;
@@ -147,7 +147,7 @@ define( function() {
               CnHttpFactory, CnSession, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'quota' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnQuotaAddFactory.instance( this );
         this.listModel = CnQuotaListFactory.instance( this );
         this.viewModel = CnQuotaViewFactory.instance( this, root );

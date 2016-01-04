@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'activity', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'activity' ), {
+  try { var module = cenozoApp.module( 'activity', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {}, // standard
     name: {
       singular: 'activity',
@@ -43,7 +43,7 @@ define( function() {
     'CnActivityModelFactory',
     function( CnActivityModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnActivityModelFactory.root;
@@ -69,7 +69,7 @@ define( function() {
     'CnBaseModelFactory', 'CnActivityListFactory',
     function( CnBaseModelFactory, CnActivityListFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'activity' ) );
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnActivityListFactory.instance( this );
       };
 

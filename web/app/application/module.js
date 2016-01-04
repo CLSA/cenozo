@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'application', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'application' ), {
+  try { var module = cenozoApp.module( 'application', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'application',
@@ -40,7 +40,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'application' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string',
@@ -107,7 +107,7 @@ define( function() {
     'CnApplicationModelFactory',
     function( CnApplicationModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnApplicationModelFactory.root;
@@ -125,7 +125,7 @@ define( function() {
     'CnApplicationModelFactory',
     function( CnApplicationModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnApplicationModelFactory.root;
@@ -142,7 +142,7 @@ define( function() {
     'CnApplicationModelFactory', '$state',
     function( CnApplicationModelFactory, $state ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnApplicationModelFactory.root;
@@ -183,7 +183,7 @@ define( function() {
               CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'application' ) );
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnApplicationListFactory.instance( this );
         this.viewModel = CnApplicationViewFactory.instance( this, root );
       };

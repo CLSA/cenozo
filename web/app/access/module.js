@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'access', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'access' ), {
+  try { var module = cenozoApp.module( 'access', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: [ {
         subject: 'site',
@@ -50,7 +50,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'access' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     user_id: {
       title: 'User',
       type: 'lookup-typeahead',
@@ -75,7 +75,7 @@ define( function() {
     'CnAccessModelFactory',
     function( CnAccessModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAccessModelFactory.root;
@@ -93,7 +93,7 @@ define( function() {
     'CnAccessModelFactory',
     function( CnAccessModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAccessModelFactory.root;
@@ -131,7 +131,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'access' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnAccessAddFactory.instance( this );
         this.listModel = CnAccessListFactory.instance( this );
 

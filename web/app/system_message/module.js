@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'system_message', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'system_message' ), {
+  try { var module = cenozoApp.module( 'system_message', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {}, // standard
     name: {
       singular: 'system message',
@@ -39,7 +39,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'system_message' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     application_id: {
       column: 'system_message.application_id',
       title: 'Application',
@@ -79,7 +79,7 @@ define( function() {
     'CnSystemMessageModelFactory',
     function( CnSystemMessageModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSystemMessageModelFactory.root;
@@ -97,7 +97,7 @@ define( function() {
     'CnSystemMessageModelFactory',
     function( CnSystemMessageModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSystemMessageModelFactory.root;
@@ -114,7 +114,7 @@ define( function() {
     'CnSystemMessageModelFactory',
     function( CnSystemMessageModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSystemMessageModelFactory.root;
@@ -178,7 +178,7 @@ define( function() {
               CnSession, CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'system_message' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnSystemMessageAddFactory.instance( this );
         this.listModel = CnSystemMessageListFactory.instance( this );
         this.viewModel = CnSystemMessageViewFactory.instance( this, root );

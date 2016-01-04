@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'region_site', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'region_site' ), {
+  try { var module = cenozoApp.module( 'region_site', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {}, // standard
     name: {
       singular: 'region site',
@@ -30,7 +30,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'region_site' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     site_id: {
       column: 'region_site.site_id',
       title: 'Site',
@@ -53,7 +53,7 @@ define( function() {
     'CnRegionSiteModelFactory',
     function( CnRegionSiteModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnRegionSiteModelFactory.root;
@@ -71,7 +71,7 @@ define( function() {
     'CnRegionSiteModelFactory',
     function( CnRegionSiteModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnRegionSiteModelFactory.root;
@@ -88,7 +88,7 @@ define( function() {
     'CnRegionSiteModelFactory',
     function( CnRegionSiteModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnRegionSiteModelFactory.root;
@@ -137,7 +137,7 @@ define( function() {
               CnHttpFactory, CnSession, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'region_site' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnRegionSiteAddFactory.instance( this );
         this.listModel = CnRegionSiteListFactory.instance( this );
         this.viewModel = CnRegionSiteViewFactory.instance( this, root );

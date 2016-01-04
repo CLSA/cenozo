@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'source', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'source' ), {
+  try { var module = cenozoApp.module( 'source', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'source',
@@ -27,7 +27,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'source' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string'
@@ -47,7 +47,7 @@ define( function() {
     'CnSourceModelFactory',
     function( CnSourceModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSourceModelFactory.root;
@@ -65,7 +65,7 @@ define( function() {
     'CnSourceModelFactory',
     function( CnSourceModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSourceModelFactory.root;
@@ -82,7 +82,7 @@ define( function() {
     'CnSourceModelFactory',
     function( CnSourceModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSourceModelFactory.root;
@@ -128,7 +128,7 @@ define( function() {
     'CnBaseModelFactory', 'CnSourceListFactory', 'CnSourceAddFactory', 'CnSourceViewFactory',
     function( CnBaseModelFactory, CnSourceListFactory, CnSourceAddFactory, CnSourceViewFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'source' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnSourceAddFactory.instance( this );
         this.listModel = CnSourceListFactory.instance( this );
         this.viewModel = CnSourceViewFactory.instance( this, root );

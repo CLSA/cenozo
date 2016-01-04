@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'script', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'script' ), {
+  try { var module = cenozoApp.module( 'script', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'script',
@@ -29,7 +29,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'script' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string'
@@ -53,7 +53,7 @@ define( function() {
     'CnScriptModelFactory',
     function( CnScriptModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnScriptModelFactory.root;
@@ -71,7 +71,7 @@ define( function() {
     'CnScriptModelFactory',
     function( CnScriptModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnScriptModelFactory.root;
@@ -88,7 +88,7 @@ define( function() {
     'CnScriptModelFactory',
     function( CnScriptModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnScriptModelFactory.root;
@@ -137,7 +137,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'script' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnScriptAddFactory.instance( this );
         this.listModel = CnScriptListFactory.instance( this );
         this.viewModel = CnScriptViewFactory.instance( this, root );

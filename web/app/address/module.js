@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'address', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'address' ), {
+  try { var module = cenozoApp.module( 'address', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: [ {
         subject: 'participant',
@@ -46,7 +46,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'address' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     active: {
       title: 'Active',
       type: 'boolean'
@@ -110,7 +110,7 @@ define( function() {
     'CnAddressModelFactory',
     function( CnAddressModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAddressModelFactory.root;
@@ -128,7 +128,7 @@ define( function() {
     'CnAddressModelFactory',
     function( CnAddressModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAddressModelFactory.root;
@@ -145,7 +145,7 @@ define( function() {
     'CnAddressModelFactory',
     function( CnAddressModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAddressModelFactory.root;
@@ -194,7 +194,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'address' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnAddressAddFactory.instance( this );
         this.listModel = CnAddressListFactory.instance( this );
         this.viewModel = CnAddressViewFactory.instance( this, root );

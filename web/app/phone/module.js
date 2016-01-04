@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'phone', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'phone' ), {
+  try { var module = cenozoApp.module( 'phone', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: [ {
         subject: 'participant',
@@ -42,7 +42,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'phone' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     address_id: {
       title: 'Associated Address',
       type: 'enum',
@@ -82,7 +82,7 @@ define( function() {
     'CnPhoneModelFactory',
     function( CnPhoneModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnPhoneModelFactory.root;
@@ -100,7 +100,7 @@ define( function() {
     'CnPhoneModelFactory',
     function( CnPhoneModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnPhoneModelFactory.root;
@@ -117,7 +117,7 @@ define( function() {
     'CnPhoneModelFactory',
     function( CnPhoneModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnPhoneModelFactory.root;
@@ -166,7 +166,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'phone' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnPhoneAddFactory.instance( this );
         this.listModel = CnPhoneListFactory.instance( this );
         this.viewModel = CnPhoneViewFactory.instance( this, root );

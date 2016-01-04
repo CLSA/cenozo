@@ -1,14 +1,14 @@
 define( [], function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'root', true ).url; } catch( err ) { console.warn( err ); return; }
+  try { var module = cenozoApp.module( 'root', true ); } catch( err ) { console.warn( err ); return; }
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnHome', [
     'CnHomeModelFactory',
     function( CnHomeModelFactory ) {
       return {
-        templateUrl: url + 'home.tpl.html',
+        templateUrl: module.url + 'home.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnHomeModelFactory.root;

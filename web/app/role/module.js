@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'role', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'role' ), {
+  try { var module = cenozoApp.module( 'role', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {}, // standard
     name: {
       singular: 'role',
@@ -31,7 +31,7 @@ define( function() {
     'CnRoleModelFactory',
     function( CnRoleModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnRoleModelFactory.root;
@@ -57,7 +57,7 @@ define( function() {
     'CnBaseModelFactory', 'CnRoleListFactory',
     function( CnBaseModelFactory, CnRoleListFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'role' ) );
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnRoleListFactory.instance( this );
       };
 

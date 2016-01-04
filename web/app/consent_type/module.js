@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'consent_type', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'consent_type' ), {
+  try { var module = cenozoApp.module( 'consent_type', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'consent type',
@@ -31,7 +31,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'consent_type' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string'
@@ -47,7 +47,7 @@ define( function() {
     'CnConsentTypeModelFactory',
     function( CnConsentTypeModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnConsentTypeModelFactory.root;
@@ -65,7 +65,7 @@ define( function() {
     'CnConsentTypeModelFactory',
     function( CnConsentTypeModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnConsentTypeModelFactory.root;
@@ -82,7 +82,7 @@ define( function() {
     'CnConsentTypeModelFactory',
     function( CnConsentTypeModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnConsentTypeModelFactory.root;
@@ -128,7 +128,7 @@ define( function() {
     'CnBaseModelFactory', 'CnConsentTypeAddFactory', 'CnConsentTypeListFactory', 'CnConsentTypeViewFactory',
     function( CnBaseModelFactory, CnConsentTypeAddFactory, CnConsentTypeListFactory, CnConsentTypeViewFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'consent_type' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnConsentTypeAddFactory.instance( this );
         this.listModel = CnConsentTypeListFactory.instance( this );
         this.viewModel = CnConsentTypeViewFactory.instance( this, root );

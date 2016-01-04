@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'alternate', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'alternate' ), {
+  try { var module = cenozoApp.module( 'alternate', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: {
         subject: 'participant',
@@ -42,7 +42,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'alternate' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     participant_id: {
       column: 'alternate.participant_id',
       title: 'Participant',
@@ -84,7 +84,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'alternate' ).addExtraOperation( 'view', 'Alternate List', function( viewModel, $state ) {
+  module.addExtraOperation( 'view', 'Alternate List', function( viewModel, $state ) {
     $state.go( 'alternate.list' );
   } );
 
@@ -93,7 +93,7 @@ define( function() {
     'CnAlternateModelFactory',
     function( CnAlternateModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAlternateModelFactory.root;
@@ -111,7 +111,7 @@ define( function() {
     'CnAlternateModelFactory',
     function( CnAlternateModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAlternateModelFactory.root;
@@ -128,7 +128,7 @@ define( function() {
     'CnAlternateModelFactory',
     function( CnAlternateModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAlternateModelFactory.root;
@@ -174,7 +174,7 @@ define( function() {
     '$state', 'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
     function( $state, CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'alternate' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnAlternateAddFactory.instance( this );
         this.listModel = CnAlternateListFactory.instance( this );
         this.viewModel = CnAlternateViewFactory.instance( this, root );

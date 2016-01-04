@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'consent', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'consent' ), {
+  try { var module = cenozoApp.module( 'consent', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: {
         subject: 'participant',
@@ -40,7 +40,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'consent' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     consent_type_id: {
       title: 'Consent Type',
       type: 'enum',
@@ -72,7 +72,7 @@ define( function() {
     'CnConsentModelFactory',
     function( CnConsentModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnConsentModelFactory.root;
@@ -90,7 +90,7 @@ define( function() {
     'CnConsentModelFactory',
     function( CnConsentModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnConsentModelFactory.root;
@@ -107,7 +107,7 @@ define( function() {
     'CnConsentModelFactory',
     function( CnConsentModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnConsentModelFactory.root;
@@ -156,7 +156,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'consent' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnConsentAddFactory.instance( this );
         this.listModel = CnConsentListFactory.instance( this );
         this.viewModel = CnConsentViewFactory.instance( this, root );

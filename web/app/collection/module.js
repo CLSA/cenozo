@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'collection', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'collection' ), {
+  try { var module = cenozoApp.module( 'collection', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'collection',
@@ -35,7 +35,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'collection' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     name: {
       title: 'Name',
       type: 'string',
@@ -63,7 +63,7 @@ define( function() {
     'CnCollectionModelFactory',
     function( CnCollectionModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnCollectionModelFactory.root;
@@ -81,7 +81,7 @@ define( function() {
     'CnCollectionModelFactory',
     function( CnCollectionModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnCollectionModelFactory.root;
@@ -98,7 +98,7 @@ define( function() {
     'CnCollectionModelFactory',
     function( CnCollectionModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnCollectionModelFactory.root;
@@ -197,7 +197,7 @@ define( function() {
     'CnBaseModelFactory', 'CnCollectionListFactory', 'CnCollectionAddFactory', 'CnCollectionViewFactory',
     function( CnBaseModelFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
       var object = function( root ) {
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'collection' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnCollectionAddFactory.instance( this );
         this.listModel = CnCollectionListFactory.instance( this );
         this.viewModel = CnCollectionViewFactory.instance( this, root );
