@@ -84,7 +84,7 @@ define( function() {
 
   var settingModule = cenozoApp.module( 'setting' );
   if( 0 <= settingModule.actions.indexOf( 'view' ) ) {
-    cenozoApp.module( 'site' ).addViewOperation( 'Settings', function( viewModel, $state ) {
+    cenozoApp.module( 'site' ).addExtraOperation( 'view', 'Settings', function( viewModel, $state ) {
       $state.go( 'setting.view', { identifier: 'site_id=' + viewModel.record.id } );
     } );
   }

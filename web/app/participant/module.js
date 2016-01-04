@@ -162,11 +162,11 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'participant' ).addViewOperation( 'Notes', function( viewModel, $state ) {
+  cenozoApp.module( 'participant' ).addExtraOperation( 'view', 'Notes', function( viewModel, $state ) {
     $state.go( 'participant.notes', { identifier: viewModel.record.getIdentifier() } );
   } );
 
-  cenozoApp.module( 'participant' ).addViewOperation( 'History', function( viewModel, $state ) {
+  cenozoApp.module( 'participant' ).addExtraOperation( 'view', 'History', function( viewModel, $state ) {
     $state.go( 'participant.history', { identifier: viewModel.record.getIdentifier() } );
   } );
 
