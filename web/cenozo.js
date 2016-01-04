@@ -132,7 +132,12 @@ angular.extend( cenozoApp, {
           url: ( framework ? cenozo.baseUrl : this.baseUrl ) + '/app/' + name + '/',
           inputGroupList: {},
           columnList: {},
-          viewOperationList: {},
+          extraOperationList: {
+            add: {},
+            calendar: {},
+            list: {},
+            view: {}
+          },
           getRequiredFiles: function() {
             // we require the main module.js
             var modules = [ this.url + 'module.js' ];
@@ -169,8 +174,12 @@ angular.extend( cenozoApp, {
                 return this.inputGroupList[group][key];
             return null;
           },
-          addViewOperation: function( name, operation ) {
-            this.viewOperationList[name] = operation;
+          addExtraOperation: function( type, name, operation ) {
+            if( 0 > ['add','calendar','list','view'].indexOf( type ) )
+              throw new Error( 'Adding extra operation with invalid type "' + type + '"' );
+
+            this.extraOperationList[type][name] = operation;
+            console.log( this.extraOperationList.list );
           }
         } );
       }
@@ -696,8 +705,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$filter', 'CnSession', 'CnModalDatetimeFactory',
-  function( $filter, CnSession, CnModalDatetimeFactory ) {
+  '$filter', '$state', 'CnSession', 'CnModalDatetimeFactory',
+  function( $filter, $state, CnSession, CnModalDatetimeFactory ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-add.tpl.html',
       restrict: 'E',
@@ -775,6 +784,7 @@ cenozo.directive( 'cnRecordAdd', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-add, no model provided.' );
         } else {
+          scope.$state = $state;
           scope.isAdding = false;
           scope.record = {};
           scope.formattedRecord = {};
@@ -865,6 +875,7 @@ cenozo.directive( 'cnRecordCalendar', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-calendar, no model provided.' );
         } else {
+          scope.$state = $state;
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
           } else if( angular.isDefined( scope.model.heading ) ) {
@@ -900,8 +911,8 @@ cenozo.directive( 'cnRecordCalendar', [
  * @attr removeColumns: An array of columns (by key) to remove from the list
  */
 cenozo.directive( 'cnRecordList', [
-  'CnSession', 'CnModalRestrictFactory',
-  function( CnSession, CnModalRestrictFactory ) {
+  '$state', 'CnSession', 'CnModalRestrictFactory',
+  function( $state, CnSession, CnModalRestrictFactory ) {
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-list.tpl.html',
       restrict: 'E',
@@ -949,6 +960,7 @@ cenozo.directive( 'cnRecordList', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-list, no model provided.' );
         } else {
+          scope.$state = $state;
           scope.isDeleting = [];
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
@@ -1154,15 +1166,17 @@ cenozo.directive( 'cnRecordView', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-view, no model provided.' );
         } else {
-          // objects passed to the execute functions in viewOperationList
           scope.CnHttpFactory = CnHttpFactory;
           scope.$state = $state;
 
           scope.isDeleting = false;
           scope.heading = attrs.heading;
+          scope.viewTitle = attrs.viewTitle;
           scope.initCollapsed = scope.collapsed ? true : false;
           if( angular.isUndefined( scope.heading ) )
             scope.heading = scope.model.module.name.singular.ucWords() + ' Details';
+          if( angular.isUndefined( scope.viewTitle ) )
+            scope.viewTitle = 'View ' + scope.model.module.name.singular.ucWords() + ' List';
 
           // when leaving turn off any activated toggle modes
           scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {

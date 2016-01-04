@@ -335,7 +335,7 @@
       <div class="btn-group pull-left">
         <button class="btn btn-default"
                 type="button"
-                ng-repeat="(name, execute) in model.module.viewOperationList"
+                ng-repeat="(name, execute) in model.module.extraOperationList.view"
                 ng-click="execute( model.viewModel, $state, CnHttpFactory )">{{ name }}</button>
       </div>
       <div class="btn-group">
@@ -351,7 +351,7 @@
                 type="button"
                 class="btn btn-primary"
                 ng-click="back()">
-          View {{ model.module.name.singular | cnUCWords }} List
+          {{ viewTitle }}
         </button>
         <button ng-repeat="parent in model.module.identifier.parent"
                 ng-if="parentExists( parent.subject )"

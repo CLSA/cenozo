@@ -133,6 +133,12 @@
                  ng-class="model.listModel.chooseMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
               {{ model.listModel.chooseMode ? 'Done' : 'Choose' }}
             </button>
+            <div class="btn-group pull-right">
+              <button class="btn btn-default"
+                      type="button"
+                      ng-repeat="(name, execute) in model.module.extraOperationList.list"
+                      ng-click="execute( model.viewModel, $state, CnHttpFactory )">{{ name }}</button>
+            </div>
           </td>
         </tr>
       </tfoot>
@@ -148,5 +154,11 @@
             ng-click="addRecord()">
       <i class="glyphicon glyphicon-plus"></i> Add
     </button>
+    <div class="btn-group pull-right">
+      <button class="btn btn-default"
+              type="button"
+              ng-repeat="(name, execute) in model.module.extraOperationList.list"
+              ng-click="execute( model.viewModel, $state, CnHttpFactory )">{{ name }}</button>
+    </div>
   </div>
 </div>
