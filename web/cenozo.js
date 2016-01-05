@@ -2085,7 +2085,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             object.currentView = view.name;
           },
           dayClick: function( date ) {
-            object.parentModel.addModel.calendarStartDate = date;
+            object.parentModel.addModel.calendarDate = date;
             return object.parentModel.transitionToAddState();
           },
           eventClick: function( record ) {
