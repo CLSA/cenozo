@@ -174,11 +174,15 @@ angular.extend( cenozoApp, {
                 return this.inputGroupList[group][key];
             return null;
           },
-          addExtraOperation: function( type, name, operation ) {
+          addExtraOperation: function( type, name, operation, disabled ) {
             if( 0 > ['add','calendar','list','view'].indexOf( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '"' );
 
-            this.extraOperationList[type][name] = operation;
+            this.extraOperationList[type][name] = {
+              operation: operation,
+              disabled: disabled
+            }
+            console.log( type, name, this.extraOperationList[type][name] );
           }
         } );
       }
@@ -1900,7 +1904,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
         object.currentDate = moment();
-        object.currentView = 'month';
+        object.currentView = 'agendaWeek';
         object.isLoading = false;
         object.cache = [];
         object.cacheMinDate = null;
@@ -2052,8 +2056,9 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         object.settings = {
           defaultDate: object.currentDate,
           defaultView: object.currentView,
+          allDaySlot: false,
           firstDay: 0,
-          timezone: CnSession.user.timezone,
+          scrollTime: '07:00:00',
           timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
           smallTimeFormat: CnSession.user.use12hourClock ? 'h(:mm)t' : 'HH(:mm)',
           header: {
@@ -2085,7 +2090,10 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             object.currentView = view.name;
           },
           dayClick: function( date ) {
-            object.parentModel.addModel.calendarDate = date;
+            // mark which date has been chosen in the add model
+            // Note: it is up to the add model's module to implement what to do with this variable
+            object.parentModel.addModel.calendarDate =
+              moment().date( date.date() ).tz( CnSession.user.timezone ).hour( 12 ).minute( 0 ).second( 0 );
             return object.parentModel.transitionToAddState();
           },
           eventClick: function( record ) {
@@ -2804,9 +2812,10 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
 
           var data = {};
+          if( 'calendar' == type ) data.modifier = { limit: 1000000 }; // make sure to get all records
           if( 0 < selectList.length ) data.select = { column: selectList };
           if( 0 < joinList.length || 0 < whereList.length ) {
-            data.modifier = {};
+            if( angular.isUndefined( data.modifier ) ) data.modifier = {};
             if( 0 < joinList.length ) data.modifier.join = joinList;
             if( 0 < whereList.length ) data.modifier.where = whereList;
           }
