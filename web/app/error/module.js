@@ -27,7 +27,7 @@ define( function() {
     function( $state, CnSession ) {
       var object = function( root ) {
         var self = this;
-        if( angular.isDefined( $state.params.data ) ) self.errorCode = $state.params.data;
+        self.data = $state.params.data;
         this.setupBreadcrumbTrail = function() {
           CnSession.setBreadcrumbTrail( [ { title: $state.current.name.replace( '.', ' ' ).ucWords() } ] );
         };

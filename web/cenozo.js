@@ -176,13 +176,12 @@ angular.extend( cenozoApp, {
           },
           addExtraOperation: function( type, name, operation, disabled ) {
             if( 0 > ['add','calendar','list','view'].indexOf( type ) )
-              throw new Error( 'Adding extra operation with invalid type "' + type + '"' );
+              throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
 
             this.extraOperationList[type][name] = {
               operation: operation,
               disabled: disabled
             }
-            console.log( type, name, this.extraOperationList[type][name] );
           }
         } );
       }
@@ -293,9 +292,9 @@ angular.extend( cenozo, {
 
   // Sets up the routing for a module
   routeModule: function( stateProvider, name, module ) {
-    if( angular.isUndefined( stateProvider ) ) throw new Error( 'routeModule requires exactly 3 parameters' );
-    if( angular.isUndefined( name ) ) throw new Error( 'routeModule requires exactly 3 parameters' );
-    if( angular.isUndefined( module ) ) throw new Error( 'routeModule requires exactly 3 parameters' );
+    if( angular.isUndefined( stateProvider ) ) throw new Error( 'routeModule requires exactly 3 parameters.' );
+    if( angular.isUndefined( name ) ) throw new Error( 'routeModule requires exactly 3 parameters.' );
+    if( angular.isUndefined( module ) ) throw new Error( 'routeModule requires exactly 3 parameters.' );
 
     var resolve = {
       data: [ '$q', function( $q ) {
@@ -326,6 +325,9 @@ angular.extend( cenozo, {
       stateProvider.state( name + '.400', { template: '<cn-error></cn-error>', params: { type: 400 } } );
       stateProvider.state( name + '.403', { template: '<cn-error></cn-error>', params: { type: 403 } } );
       stateProvider.state( name + '.404', { template: '<cn-error></cn-error>', params: { type: 404 } } );
+      stateProvider.state( name + '.406', {
+        template: '<cn-error></cn-error>', params: { type: 406, data: null }
+      } );
       stateProvider.state( name + '.500', {
         template: '<cn-error></cn-error>', params: { type: 500, data: null }
       } );
@@ -1038,11 +1040,11 @@ cenozo.directive( 'cnRecordView', [
 
         $scope.viewParent = function( subject ) {
           if( !$scope.hasParent() )
-            throw new Error( 'Calling viewParent() but "' + $scope.model.subject + '" module has no parent' );
+            throw new Error( 'Calling viewParent() but "' + $scope.model.subject + '" module has no parent.' );
 
           var parent = $scope.model.module.identifier.parent.findByProperty( 'subject', subject );
           if( null === parent )
-            throw new Error( 'Calling viewParent() but "' + $scope.model.subject + '" record has no parent' );
+            throw new Error( 'Calling viewParent() but "' + $scope.model.subject + '" record has no parent.' );
 
           $scope.model.transitionToParentViewState(
             parent.subject, parent.getIdentifier( $scope.model.viewModel.record ) );
@@ -1592,8 +1594,8 @@ cenozo.factory( 'CnSession', [
       this.application = {};
       this.user = {};
       this.site = {};
-      this.setting = {};
       this.role = {};
+      this.setting = {};
       this.siteList = [];
       this.messageList = [];
       this.breadcrumbTrail = [];
@@ -1662,6 +1664,9 @@ cenozo.factory( 'CnSession', [
           for( var property in response.data.role )
             self.role[property.snakeToCamel()] = response.data.role[property];
           self.messageList = angular.copy( response.data.system_message_list );
+
+          // initialize the http factory so that all future requests match the same credentials
+          CnHttpFactory.initialize( self.site.name, self.user.name, self.role.name );
 
           // sanitize the timezone
           if( !moment.tz.zone( self.user.timezone ) ) self.user.timezone = 'UTC';
@@ -1834,7 +1839,7 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         cenozo.addExtendableFunction( object, 'onAdd', function( record ) {
           var self = this;
-          if( !this.parentModel.addEnabled ) throw new Error( 'Calling onAdd() but addEnabled is false' );
+          if( !this.parentModel.addEnabled ) throw new Error( 'Calling onAdd() but addEnabled is false.' );
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: record };
           httpObj.onError = function error( response ) { self.onAddError( response ); };
           return CnHttpFactory.instance( httpObj ).post().then( function success( response ) {
@@ -1870,7 +1875,7 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         cenozo.addExtendableFunction( object, 'onNew', function( record ) {
           var self = this;
-          if( !this.parentModel.addEnabled ) throw new Error( 'Calling onNew() but addEnabled is false' );
+          if( !this.parentModel.addEnabled ) throw new Error( 'Calling onNew() but addEnabled is false.' );
 
           // load the metadata and use it to apply default values to the record
           this.parentModel.metadata.loadingCount++;
@@ -1949,7 +1954,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         cenozo.addExtendableFunction( object, 'onDelete', function( record ) {
           var self = this;
           if( !this.parentModel.deleteEnabled )
-            throw new Error( 'Calling onDelete() but deleteEnabled is false' );
+            throw new Error( 'Calling onDelete() but deleteEnabled is false.' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
           httpObj.onError = function error( response ) { self.onDeleteError( response ); }
@@ -2152,7 +2157,7 @@ cenozo.factory( 'CnBaseListFactory', [
 
           // sanity check
           if( !angular.isArray( newList ) )
-            throw new Error( 'Tried to set restrict list for column "' + column + '" to a non-array' );
+            throw new Error( 'Tried to set restrict list for column "' + column + '" to a non-array.' );
 
           // if the new list is different then re-describe and re-list records
           var list = this.columnRestrictLists[column];
@@ -2179,7 +2184,7 @@ cenozo.factory( 'CnBaseListFactory', [
         cenozo.addExtendableFunction( object, 'onChoose', function( record ) {
           var self = this;
           if( !this.parentModel.chooseEnabled )
-            throw new Error( 'Calling onChoose() but chooseEnabled is false' );
+            throw new Error( 'Calling onChoose() but chooseEnabled is false.' );
 
           // note: don't use the record's getIdentifier since choosing requires the ID only
 
@@ -2212,7 +2217,7 @@ cenozo.factory( 'CnBaseListFactory', [
         cenozo.addExtendableFunction( object, 'onDelete', function( record ) {
           var self = this;
           if( !this.parentModel.deleteEnabled )
-            throw new Error( 'Calling onDelete() but deleteEnabled is false' );
+            throw new Error( 'Calling onDelete() but deleteEnabled is false.' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
           httpObj.onError = function error( response ) { self.onDeleteError( response ); }
@@ -2309,7 +2314,7 @@ cenozo.factory( 'CnBaseListFactory', [
          */
         cenozo.addExtendableFunction( object, 'onSelect', function( record ) {
           if( !this.parentModel.viewEnabled )
-            throw new Error( 'Calling onSelect() but viewEnabled is false' );
+            throw new Error( 'Calling onSelect() but viewEnabled is false.' );
           return this.parentModel.transitionToViewState( record );
         } );
 
@@ -2335,7 +2340,7 @@ cenozo.factory( 'CnBaseViewFactory', [
     var factoryCacheList = {};
     function getFactory( name ) {
       if( angular.isUndefined( factoryCacheList[name] ) ) {
-        if( !$injector.has( name ) ) throw 'Unable to get ' + name + ' dependency';
+        if( !$injector.has( name ) ) throw new Error( 'Unable to get ' + name + ' dependency.' );
         factoryCacheList[name] = $injector.get( name );
       }
       return factoryCacheList[name];
@@ -2421,7 +2426,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         cenozo.addExtendableFunction( object, 'onDelete', function() {
           var self = this;
           if( !parentModel.deleteEnabled )
-            throw new Error( 'Calling onDelete() but deleteEnabled is false' );
+            throw new Error( 'Calling onDelete() but deleteEnabled is false.' );
 
           var httpObj = { path: parentModel.getServiceResourcePath() };
           httpObj.onError = function error( response ) { self.onDeleteError( response ); }
@@ -2453,7 +2458,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onPatch', function( data ) {
           var self = this;
-          if( !parentModel.editEnabled ) throw new Error( 'Calling onPatch() but editEnabled is false' );
+          if( !parentModel.editEnabled ) throw new Error( 'Calling onPatch() but editEnabled is false.' );
 
           var httpObj = {
             path: parentModel.getServiceResourcePath(),
@@ -2497,7 +2502,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onView', function( simple ) {
           var self = this;
-          if( !parentModel.viewEnabled ) throw new Error( 'Calling onView() but viewEnabled is false' );
+          if( !parentModel.viewEnabled ) throw new Error( 'Calling onView() but viewEnabled is false.' );
 
           if( true !== simple ) {
             this.deferred.promise.then( function() {
@@ -2614,7 +2619,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         cenozo.addExtendableFunction( self, 'getSubjectFromState', function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
-            throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts' );
+            throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts.' );
           return stateNameParts[0];
         } );
 
@@ -2624,7 +2629,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         cenozo.addExtendableFunction( self, 'getActionFromState', function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
-            throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts' );
+            throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts.' );
           return stateNameParts[1];
         } );
 
@@ -2687,7 +2692,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         cenozo.addExtendableFunction( self, 'getServiceData', function( type, columnRestrictLists ) {
           if( angular.isUndefined( type ) || 0 > ['calendar','list','view'].indexOf( type ) )
-            throw new Error( 'getServiceData expects an argument which is either "calendar", "list" or "view"' );
+            throw new Error( 'getServiceData expects an argument which is either "calendar", "list" or "view".' );
 
           if( angular.isUndefined( columnRestrictLists ) ) columnRestrictLists = {};
 
@@ -2915,7 +2920,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             }, {
               title: self.getBreadcrumbTitle()
             } ] );
-          } else throw new Error( 'Tried to setup breadcrumb trail for invalid type "' + type + '"' );
+          } else throw new Error( 'Tried to setup breadcrumb trail for invalid type "' + type + '".' );
 
           CnSession.setBreadcrumbTrail( trail );
         } );
@@ -2992,16 +2997,16 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( angular.isUndefined( input ) )
             throw new Error( 'Typeahead used without a valid input key (' + key + ').' );
           if( 0 > ['typeahead','lookup-typeahead'].indexOf( input.type ) )
-            throw new Error( 'Tried getting typeahead values for input of type "' + input.type + '"' );
+            throw new Error( 'Tried getting typeahead values for input of type "' + input.type + '".' );
           if( 'typeahead' == input.type ) {
             if( !angular.isArray( input.typeahead ) )
-              throw new Error( 'Typeaheads require the input list\'s "typeahead" property to be an array' );
+              throw new Error( 'Typeaheads require the input list\'s "typeahead" property to be an array.' );
           } else if ( 'lookup-typeahead' == input.type ) {
             if( !angular.isObject( input.typeahead ) )
               throw new Error(
-                'Lookup-typeaheads require the input list\'s "typeahead" property to be an object' );
+                'Lookup-typeaheads require the input list\'s "typeahead" property to be an object.' );
           } else {
-            throw new Error( 'Tried getting typeahead values for input of type "' + input.type + '"' );
+            throw new Error( 'Tried getting typeahead values for input of type "' + input.type + '".' );
           }
 
           if( 'typeahead' == input.type ) {
@@ -3246,12 +3251,18 @@ cenozo.factory( 'CnBaseModelFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnHttpFactory', [
-  'CnModalMessageFactory', '$http', '$state', '$rootScope', '$timeout',
-  function CnHttpFactory( CnModalMessageFactory, $http, $state, $rootScope, $timeout ) {
+  'CnModalMessageFactory', '$http', '$state', '$rootScope', '$timeout', '$window',
+  function CnHttpFactory( CnModalMessageFactory, $http, $state, $rootScope, $timeout, $window ) {
     function appendTransform( defaults, transform ) {
       defaults = angular.isArray(defaults) ? defaults : [defaults];
       return defaults.concat( transform );
     };
+
+    // used top track current login credentials
+    var login = { site: null, user: null, role: null };
+
+    // used to track whether the login mismatch dialog has been shown
+    var hasLoginMismatch = false;
 
     // used to track how to handle errors below
     var hasRedirectedOnError = false;
@@ -3283,7 +3294,36 @@ cenozo.factory( 'CnHttpFactory', [
           ),
           transformResponse: appendTransform(
             $http.defaults.transformResponse,
-            function( response ) {
+            function( response, getHeader, status ) {
+              var site = angular.fromJson( getHeader( 'Site' ) );
+              var user = angular.fromJson( getHeader( 'User' ) );
+              var role = angular.fromJson( getHeader( 'Role' ) );
+
+              // assert login
+              if( ( null != login.site && site != login.site ) ||
+                  ( null != login.user && user != login.user ) ||
+                  ( null != login.role && role != login.role ) ) {
+                var err = new Error;
+                err.name = 'Login Mismatch',
+                err.message =
+                  'The server reports that you are no longer logged in as:\n' +
+                  '\n' +
+                  '        site: ' + login.site + '\n' +
+                  '        user: ' + login.user + '\n' +
+                  '        role: ' + login.role + '\n' +
+                  '\n' +
+                  'The application will now be reloaded after which you will be logged in as:\n' +
+                  '\n' +
+                  '        site: ' + site + '\n' +
+                  '        user: ' + user + '\n' +
+                  '        role: ' + role + '\n' +
+                  '\n' +
+                  'This should only happen as a result of accessing the application from a different ' +
+                  'browser window.  If this message persists then please contact support as someone ' +
+                  'else may be logged into your account.';
+                throw err;
+              }
+
               $rootScope.$broadcast( 'httpResponse', self.guid, response );
               return response;
             }
@@ -3295,20 +3335,38 @@ cenozo.factory( 'CnHttpFactory', [
           else object.params = self.data;
         }
 
-        var promise = $http( object );
+        var promise = $http( object )
         promise.catch( function( response ) {
-          if( self.redirectOnError ) {
-            // only redirect once, afterwords ignore any additional error redirect requests
-            if( !hasRedirectedOnError && null == $state.current.name.match( /^error\./ ) ) {
-              hasRedirectedOnError = true;
-              $state.go( 'error.' + ( angular.isDefined( response ) ? response.status : 500 ), response );
+          if( response instanceof Error ) {
+            // blank content
+            document.getElementById( 'view' ).innerHTML = '';
+            
+            if( 'Login Mismatch' == response.name ) {
+              if( hasLoginMismatch ) return; // do nothing if we've already been here
+              hasLoginMismatch = true;
             }
-          } else {
-            // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
-            // don't want to bother showing a non-redirecting error message
-            $timeout( function() { if( !hasRedirectedOnError ) self.onError( response ); }, 200 );
+            CnModalMessageFactory.instance( {
+              title: response.name,
+              message: response.message,
+              error: true
+            } ).show().then( function() {
+              if( hasLoginMismatch ) $window.location.assign( cenozoApp.baseUrl );
+            } );
+          } else { 
+            if( self.redirectOnError ) {
+              // only redirect once, afterwords ignore any additional error redirect requests
+              if( !hasRedirectedOnError && null == $state.current.name.match( /^error\./ ) ) {
+                hasRedirectedOnError = true;
+                $state.go( 'error.' + ( angular.isDefined( response ) ? response.status : 500 ), response );
+              }
+            } else {
+              // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
+              // don't want to bother showing a non-redirecting error message
+              $timeout( function() { if( !hasRedirectedOnError ) self.onError( response ); }, 200 );
+            }
           }
         } );
+
         return promise;
       };
 
@@ -3320,7 +3378,16 @@ cenozo.factory( 'CnHttpFactory', [
       this.query = function() { return http( 'GET', 'api/' + this.path ); };
     };
 
-    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+    return {
+      initialize: function( site, user, role ) {
+        if( null != login.site || null != login.user || null != login.role )
+          throw new Error( 'Tried to initialize CnHttpFactory after it has already been initialized.' );
+        login.site = site;
+        login.user = user;
+        login.role = role;
+      },
+      instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); }
+    };
   }
 ] );
 
@@ -3336,7 +3403,7 @@ cenozo.service( 'CnModalAccountFactory', [
       var self = this;
 
       if( angular.isUndefined( params.user ) )
-        throw new Error( 'Tried to create CnModalAccountFactory instance without a user' );
+        throw new Error( 'Tried to create CnModalAccountFactory instance without a user.' );
 
       this.show = function() {
         return $modal.open( {
@@ -3868,7 +3935,7 @@ cenozo.service( 'CnModalRestrictFactory', [
     var object = function( params ) {
       var self = this;
       if( angular.isUndefined( params.column ) )
-        throw new Error( 'Tried to create CnModalRestrictFactory instance without a column' );
+        throw new Error( 'Tried to create CnModalRestrictFactory instance without a column.' );
 
       this.name = null;
       this.column = null;

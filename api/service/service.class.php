@@ -56,35 +56,43 @@ abstract class service extends \cenozo\base_object
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    if( self::$debug ) $time['begin'] = $util_class_name::get_elapsed_time();
-
-    if( 300 <= $this->status->get_code() ) return;
-    $this->prepare();
-    if( self::$debug ) $time['prepare'] = $util_class_name::get_elapsed_time();
-
-    if( 300 <= $this->status->get_code() ) return;
-    $this->validate();
-    if( self::$debug ) $time['validate'] = $util_class_name::get_elapsed_time();
-
-    if( 300 <= $this->status->get_code() ) return;
-    $this->setup();
-    if( self::$debug ) $time['setup'] = $util_class_name::get_elapsed_time();
-
-    if( 300 <= $this->status->get_code() ) return;
-    $this->execute();
-    if( self::$debug ) $time['execute'] = $util_class_name::get_elapsed_time();
-
-    if( 300 <= $this->status->get_code() ) return;
-    $this->finish();
-    if( self::$debug ) $time['finish'] = $util_class_name::get_elapsed_time();
-
-    if( self::$debug )
+    try
     {
-      log::debug( sprintf( '[%s] %s times: (%s) => (%s)',
-                           $this->method,
-                           $this->path,
-                           implode( ', ', array_keys( $time ) ),
-                           implode( ', ', array_values( $time ) ) ) );
+      if( self::$debug ) $time['begin'] = $util_class_name::get_elapsed_time();
+
+      if( 300 <= $this->status->get_code() ) return;
+      $this->prepare();
+      if( self::$debug ) $time['prepare'] = $util_class_name::get_elapsed_time();
+
+      if( 300 <= $this->status->get_code() ) return;
+      $this->validate();
+      if( self::$debug ) $time['validate'] = $util_class_name::get_elapsed_time();
+
+      if( 300 <= $this->status->get_code() ) return;
+      $this->setup();
+      if( self::$debug ) $time['setup'] = $util_class_name::get_elapsed_time();
+
+      if( 300 <= $this->status->get_code() ) return;
+      $this->execute();
+      if( self::$debug ) $time['execute'] = $util_class_name::get_elapsed_time();
+
+      if( 300 <= $this->status->get_code() ) return;
+      $this->finish();
+      if( self::$debug ) $time['finish'] = $util_class_name::get_elapsed_time();
+
+      if( self::$debug )
+      {
+        log::debug( sprintf( '[%s] %s times: (%s) => (%s)',
+                             $this->method,
+                             $this->path,
+                             implode( ', ', array_keys( $time ) ),
+                             implode( ', ', array_values( $time ) ) ) );
+      }
+    }
+    catch( \cenozo\exception\notice $e )
+    {
+      $this->set_data( $e->get_notice() );
+      $this->status->set_code( 406 );
     }
   }
 
@@ -98,6 +106,14 @@ abstract class service extends \cenozo\base_object
   {
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
+    $db_user = $session->get_user();
+    $db_site = $session->get_site();
+    $db_role = $session->get_role();
+
+    // set up the identification headers
+    $this->headers['User'] = $db_user->name;
+    $this->headers['Site'] = $db_site->name;
+    $this->headers['Role'] = $db_role->name;
 
     // go through all collection/resource pairs
     foreach( $this->collection_name_list as $index => $subject )
@@ -139,9 +155,9 @@ abstract class service extends \cenozo\base_object
         'self' != $this->get_leaf_subject() )
     { // record to the write log if the method is of write type
       $this->db_writelog = lib::create( 'database\writelog' );
-      $this->db_writelog->user_id = $session->get_user()->id;
-      $this->db_writelog->site_id = $session->get_site()->id;
-      $this->db_writelog->role_id = $session->get_role()->id;
+      $this->db_writelog->user_id = $db_user->id;
+      $this->db_writelog->site_id = $db_site->id;
+      $this->db_writelog->role_id = $db_role->id;
       $this->db_writelog->method = $this->method;
       $this->db_writelog->path = $this->path;
       $this->db_writelog->datetime = $util_class_name::get_datetime_object();

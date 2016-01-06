@@ -1,12 +1,11 @@
 <div class="inner-view-frame">
   <div class="container-fluid bg-white">
-    <h3 class="text-primary">Internal Server Error (500)</h3>
+    <h3 class="text-primary">Please Note (406)</h3>
     <div class="container-fluid">
       <blockquote>
-        Sorry, the server was unable to respond to your request.
+        {{ model.data }}<br>
         Please <a ng-click="reload()">reload</a> the page or
         <a ng-click="back()">go back</a> to the previous page.
-        <h4 ng-if="model.data" class="text-warning">Error Code: {{ model.data }}</h4>
       </blockquote>
     </div>
   </div>
