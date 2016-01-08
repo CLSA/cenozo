@@ -110,11 +110,6 @@ abstract class service extends \cenozo\base_object
     $db_site = $session->get_site();
     $db_role = $session->get_role();
 
-    // set up the identification headers
-    $this->headers['User'] = $db_user->name;
-    $this->headers['Site'] = $db_site->name;
-    $this->headers['Role'] = $db_role->name;
-
     // go through all collection/resource pairs
     foreach( $this->collection_name_list as $index => $subject )
     {

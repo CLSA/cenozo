@@ -245,6 +245,11 @@ final class bootstrap
       $this->session->initialize();
       $db = $this->session->get_database();
 
+      // set up the identification headers
+      header( sprintf( 'Site: %s', $util_class_name::json_encode( $this->session->get_site()->name ) ) );
+      header( sprintf( 'User: %s', $util_class_name::json_encode( $this->session->get_user()->name ) ) );
+      header( sprintf( 'Role: %s', $util_class_name::json_encode( $this->session->get_role()->name ) ) );
+
       // make sure the software and database versions match
       if( $this->settings['general']['version'] != $this->session->get_application()->version )
         throw lib::create( 'exception\notice',
