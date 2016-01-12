@@ -1934,7 +1934,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
                  // the requested date span is too far outside the existing one
                  6 < Math.abs( this.cacheMinDate.diff( minDate, 'months' ) ) ||
                  // if the min date comes after the cache's min date then load from the new min date
-                 this.cacheMinDate.isAfter( minDate )
+                 this.cacheMinDate.isAfter( minDate, 'day' )
                ? minDate
                : this.cacheMaxDate;
         };
@@ -1949,7 +1949,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
                  // the requested date span is too far outside the existing one
                  6 < Math.abs( this.cacheMaxDate.diff( maxDate, 'months' ) ) ||
                  // if the max date comes before the cache's max date then load to the new max date
-                 this.cacheMaxDate.isBefore( maxDate )
+                 this.cacheMaxDate.isBefore( maxDate, 'day' )
                ? maxDate
                : this.cacheMinDate;
         };
@@ -2012,6 +2012,14 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           var query = false;
           var loadMinDate = this.getLoadMinDate( replace, minDate );
           var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
+
+          // If the new min/max date eclipses the cache's min/max date then just replace the cache.
+          // This happens when looking at a week and switching to a month
+          if( null != loadMinDate && null != loadMaxDate &&
+              null != this.cacheMinDate && null != this.cacheMaxDate &&
+              loadMinDate.isBefore( this.cacheMinDate, 'day' ) &&
+              loadMaxDate.isAfter( this.cacheMaxDate, 'day' ) ) replace = true;
+
           if( replace || null == this.cacheMinDate || null == this.cacheMaxDate ||
               6 < Math.abs( this.cacheMinDate.diff( minDate, 'months' ) ) ) {
             // rebuild the cache for the requested date span
@@ -2021,13 +2029,13 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             query = null != minDate && null != maxDate;
           } else if( null != minDate && null != maxDate ) {
             // if the min date comes after the cache's min date then load from the new min date
-            if( this.cacheMinDate.isAfter( minDate ) ) {
+            if( this.cacheMinDate.isAfter( minDate, 'day' ) ) {
               this.cacheMinDate = moment( minDate );
               query = true;
             }
 
             // if the max date comes before the cache's max date then load to the new max date
-            if( this.cacheMaxDate.isBefore( maxDate ) ) {
+            if( this.cacheMaxDate.isBefore( maxDate, 'day' ) ) {
               this.cacheMaxDate = moment( maxDate );
               query = true;
             }
@@ -2093,7 +2101,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             object.onList( false, start, end ).then( function() {
               callback(
                 object.cache.reduce( function( eventList, e ) {
-                  if( moment( e.start ).isBefore( end ) && moment( e.end ).isAfter( start ) ) eventList.push( e );
+                  if( moment( e.start ).isBefore( end, 'day' ) &&
+                      moment( e.end ).isAfter( start, 'day' ) ) eventList.push( e );
                   return eventList;
                 }, [] )
               );
