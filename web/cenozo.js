@@ -110,6 +110,7 @@ angular.extend( cenozoApp, {
     var self = this;
     this.moduleList = list;
     for( var name in this.moduleList ) {
+      // TODO: make note an auxiliary module so we don't have to do this custom code
       if( "note" == name ) {
         // notes are handled by the participant module
         try {
@@ -133,10 +134,10 @@ angular.extend( cenozoApp, {
           inputGroupList: {},
           columnList: {},
           extraOperationList: {
-            add: {},
-            calendar: {},
-            list: {},
-            view: {}
+            add: [],
+            calendar: [],
+            list: [],
+            view: []
           },
           getRequiredFiles: function() {
             // we require the main module.js
@@ -174,14 +175,15 @@ angular.extend( cenozoApp, {
                 return this.inputGroupList[group][key];
             return null;
           },
-          addExtraOperation: function( type, name, operation, disabled ) {
+          addExtraOperation: function( type, name, operation, classes ) {
             if( 0 > ['add','calendar','list','view'].indexOf( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
 
-            this.extraOperationList[type][name] = {
+            this.extraOperationList[type].push( {
+              name: name,
               operation: operation,
-              disabled: disabled
-            }
+              classes: classes
+            } );
           }
         } );
       }
@@ -874,7 +876,15 @@ cenozo.directive( 'cnRecordCalendar', [
             } );
           }
         };
-        $scope.viewList = function() { $state.go( '^.list' ); };
+
+        // only include a viewList operation if the state exists
+        var find = $state.current.name.substr( 0, $state.current.name.indexOf( '.' ) ) + '.list';
+        $state.get().some( function( state ) {
+          if( find == state.name ) {
+            $scope.viewList = function() { $state.go( '^.list' ); };
+            return true; // stop processing
+          }
+        } );
       },
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -1172,7 +1182,6 @@ cenozo.directive( 'cnRecordView', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-view, no model provided.' );
         } else {
-          scope.CnHttpFactory = CnHttpFactory;
           scope.$state = $state;
 
           scope.isDeleting = false;

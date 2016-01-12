@@ -162,12 +162,12 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', 'Notes', function( viewModel, $state ) {
-    $state.go( 'participant.notes', { identifier: viewModel.record.getIdentifier() } );
+  module.addExtraOperation( 'view', 'Notes', function( $state, model ) {
+    $state.go( 'participant.notes', { identifier: model.viewModel.record.getIdentifier() } );
   } );
 
-  module.addExtraOperation( 'view', 'History', function( viewModel, $state ) {
-    $state.go( 'participant.history', { identifier: viewModel.record.getIdentifier() } );
+  module.addExtraOperation( 'view', 'History', function( $state, model ) {
+    $state.go( 'participant.history', { identifier: model.viewModel.record.getIdentifier() } );
   } );
 
   /**

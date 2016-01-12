@@ -27,16 +27,19 @@
     <div class="btn-group pull-left">
       <button class="btn btn-default"
               type="button"
-              ng-repeat="(name, op) in model.module.extraOperationList.calendar"
+              ng-repeat="op in model.module.extraOperationList.calendar"
               ng-disabled="op.disabled"
-              ng-click="op.operation( model.viewModel, $state, CnHttpFactory )">{{ name }}</button>
+              ng-class="op.classes"
+              ng-click="op.operation( $state, model )">{{ op.name }}</button>
     </div>
-    <div class="btn-group">
+    <div class="btn-group" ng-if="viewList">
       <button class="btn btn-primary"
               type="button"
               ng-click="viewList()">
         View {{ model.module.name.singular | cnUCWords }} List
       </button>
     </div>
+    <!-- if we have extra operations but not list button then we need this to size the form-footer -->
+    <div class="footer-total" ng-if="0 < model.module.extraOperationList.calendar.length && !viewList">&#160;</div>
   </div>
 </div>

@@ -84,8 +84,8 @@ define( function() {
 
   var settingModule = module;
   if( 0 <= settingModule.actions.indexOf( 'view' ) ) {
-    module.addExtraOperation( 'view', 'Settings', function( viewModel, $state ) {
-      $state.go( 'setting.view', { identifier: 'site_id=' + viewModel.record.id } );
+    module.addExtraOperation( 'view', 'Settings', function( $state, model ) {
+      $state.go( 'setting.view', { identifier: 'site_id=' + model.viewModel.record.id } );
     } );
   }
 

@@ -205,8 +205,10 @@
     <div class="btn-group pull-left">
       <button class="btn btn-default"
               type="button"
-              ng-repeat="(name, execute) in model.module.extraOperationList.add"
-              ng-click="execute( model.viewModel, $state, CnHttpFactory )">{{ name }}</button>
+              ng-repeat="op in model.module.extraOperationList.add"
+              ng-disabled="op.disabled"
+              ng-class="op.classes"
+              ng-click="op.operation( $state, model )">{{ op.name }}</button>
     </div>
     <button type="button" class="btn btn-default" ng-click="back()">Cancel</button>
     <button type="button" class="btn btn-primary" ng-click="submit()" ng-disabled="isAdding">

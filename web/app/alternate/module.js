@@ -84,9 +84,7 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', 'Alternate List', function( viewModel, $state ) {
-    $state.go( 'alternate.list' );
-  } );
+  module.addExtraOperation( 'view', 'Alternate List', function( $state ) { $state.go( 'alternate.list' ); } );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAlternateAdd', [

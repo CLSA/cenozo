@@ -79,6 +79,15 @@ class ui extends \cenozo\base_object
       }
       ksort( $utility_items );
      
+      // add auxiliary modules
+      $auxiliary_items = $this->get_auxiliary_items();
+      foreach( $auxiliary_items as $module )
+      {
+        if( !array_key_exists( $module, $module_list ) )
+          $module_list[$module] =
+            array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
+      }
+     
       // prepare which reports to show in the list
       $report_items = $this->get_report_items();
       ksort( $report_items );
@@ -308,6 +317,19 @@ class ui extends \cenozo\base_object
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
     $list['Participant Search'] = array( 'subject' => 'participant', 'action' => 'search' );
 
+    return $list;
+  }
+
+  /**
+   * Returns an array of all auxiliary modules
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access protected
+   */
+  protected function get_auxiliary_items()
+  {
+    $list = array();
     return $list;
   }
 

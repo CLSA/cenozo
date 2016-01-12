@@ -20,9 +20,9 @@ blockquote { font-size: 100%; }
 .form-horizontal .form-group { margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
 .first-form-group { padding-top: 15px } /* has to be padding and not margin for header to work right */
 .form-footer { padding: 1em; }
-.footer-total, .form-text { line-height: 34px; }
+.footer-total { line-height: 32px; }
 .form-long-text { margin-top: 8px; margin-bottom: 8px; }
-.spacer { margin: 0.5em; content: "&nbsp;" }
+.spacer { margin: 0.5em; content: " " }
 .vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
 .horizontal-spacer { margin-left: 0.5em; margin-right: 0.5em; }
 .rounded, .rounded-top, .rounded-bottom, .rounded-left, .rounded-right { border-radius: 6px !important; }
