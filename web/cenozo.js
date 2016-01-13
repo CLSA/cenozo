@@ -352,33 +352,47 @@ angular.extend( cenozo, {
           var directive = 'cn-' + module.subject.snake.replace( '_', '-' ) + '-' + item;
           stateProvider.state( name + '.' + item, {
             url: url,
-            template: '<' + directive + ' model="model"></' + directive + '>'
+            template: '<' + directive + ' model="model"></' + directive + '>',
+            // require that all child modules have loaded
+            resolve: {
+              data: [ '$q', function( $q ) {
+                // require that all child modules have loaded
+                var promiseList = [];
+                module.children.forEach( function( item ) {
+                  var childModule = cenozoApp.module( item.subject.snake );
+                  if( null == childModule.deferred ) {
+                    childModule.deferred = $q.defer();
+                    require( childModule.getRequiredFiles(), function() { childModule.deferred.resolve(); } );
+                  }
+                  promiseList.push( childModule.deferred );
+                } );
+                return $q.all( promiseList );
+              } ]
+            }
           } );
         }
       } );
 
-      // add child states to the list
+      // add child add states (if they exist)
       module.children.forEach( function( item ) {
-        var directive = 'cn-' + item.subject.snake.replace( '_', '-' ) + '-add';
-        stateProvider.state( name + '.add_' + item.subject.snake, {
-          url: '/view/{parentIdentifier}/' + item.subject.snake,
-          template: '<' + directive + ' model="model"></' + directive + '>',
-          resolve: {
-            data: [ '$q', function( $q ) {
-              var actionModule = cenozoApp.module( item.subject.snake );
-              if( null == actionModule.deferred ) {
-                actionModule.deferred = $q.defer();
-                require( actionModule.getRequiredFiles(), function() { actionModule.deferred.resolve(); } );
-              }
-              return actionModule.deferred.promise;
-            } ]
-          }
-        } );
-
-        stateProvider.state( name + '.view_' + item.subject.snake, {
-          url: '/view/{parentIdentifier}/' + item.subject.snake + '/{identifier}',
-          template: '<' + directive + ' model="model"></' + directive + '>'
-        } );
+        var childModule = cenozoApp.module( item.subject.snake );
+        if( -1 < childModule.actions.indexOf( 'add' ) ) {
+          var directive = 'cn-' + item.subject.snake.replace( '_', '-' ) + '-add';
+          stateProvider.state( name + '.add_' + item.subject.snake, {
+            url: '/view/{parentIdentifier}/' + item.subject.snake,
+            template: '<' + directive + ' model="model"></' + directive + '>',
+            resolve: {
+              data: [ '$q', function( $q ) {
+                // require that the action module has loaded
+                if( null == childModule.deferred ) {
+                  childModule.deferred = $q.defer();
+                  require( childModule.getRequiredFiles(), function() { childModule.deferred.resolve(); } );
+                }
+                return childModule.deferred.promise;
+              } ]
+            }
+          } );
+        }
       } );
     }
   },
