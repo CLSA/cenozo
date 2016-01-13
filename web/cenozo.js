@@ -1848,7 +1848,6 @@ cenozo.factory( 'CnBaseAddFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
-        object.formattedRecord = {};
 
         /**
          * Sends a new record to the server.
