@@ -20,7 +20,7 @@
     </h4>
   </div>
   <form name="form" class="form-horizontal" novalidate>
-    <div class="form-body" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
+    <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
       <div ng-repeat="group in dataArray">
         <div ng-if="'null' !== group.title"
              class="container-fluid bg-info"
@@ -38,7 +38,7 @@
             {{ group.title }}
           </h4>
         </div>
-        <div id="inputGroup{{ $index }}" ng-class="{'collapse':'null'!=group.title}">
+        <div id="inputGroup{{ $index }}" ng-class="{'collapse':group.collapsed}">
           <ng-form ng-repeat="input in group.inputList" name="innerForm">
             <div class="form-group"
                  ng-class="{'first-form-group':'null'!=group.title && $first}"

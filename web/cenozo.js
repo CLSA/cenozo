@@ -864,10 +864,7 @@ cenozo.directive( 'cnRecordCalendar', [
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-calendar.tpl.html',
       restrict: 'E',
-      scope: {
-        model: '=',
-        collapsed: '@'
-      },
+      scope: { model: '=' },
       controller: function( $scope, $element ) {
         $scope.refresh = function() {
           if( !$scope.model.calendarModel.isLoading ) {
@@ -891,6 +888,7 @@ cenozo.directive( 'cnRecordCalendar', [
           console.error( 'Cannot render cn-record-calendar, no model provided.' );
         } else {
           scope.$state = $state;
+
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
           } else if( angular.isDefined( scope.model.heading ) ) {
@@ -935,7 +933,7 @@ cenozo.directive( 'cnRecordList', [
       scope: {
         model: '=',
         removeColumns: '@',
-        collapsed: '@'
+        initCollapsed: '@'
       },
       controller: function( $scope ) {
         $scope.refresh = function() {
@@ -977,6 +975,7 @@ cenozo.directive( 'cnRecordList', [
           console.error( 'Cannot render cn-record-list, no model provided.' );
         } else {
           scope.$state = $state;
+          scope.collapsed = scope.initCollapsed;
           scope.isDeleting = [];
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
@@ -985,8 +984,6 @@ cenozo.directive( 'cnRecordList', [
           } else {
             scope.heading = scope.model.module.name.singular.ucWords() + ' List'
           }
-
-          scope.initCollapsed = scope.collapsed ? true : false;
 
           // add site to removeColumns if role doesn't allow for all sites
           var removeColumns = angular.isDefined( scope.removeColumns ) ? scope.removeColumns.split( ' ' ) : []
@@ -1029,7 +1026,7 @@ cenozo.directive( 'cnRecordView', [
       scope: {
         model: '=',
         removeInputs: '@',
-        collapsed: '@'
+        initCollapsed: '@'
       },
       controller: function( $scope ) {
         $scope.refresh = function() {
@@ -1183,11 +1180,10 @@ cenozo.directive( 'cnRecordView', [
           console.error( 'Cannot render cn-record-view, no model provided.' );
         } else {
           scope.$state = $state;
-
+          scope.collapsed = scope.initCollapsed;
           scope.isDeleting = false;
           scope.heading = attrs.heading;
           scope.viewTitle = attrs.viewTitle;
-          scope.initCollapsed = scope.collapsed ? true : false;
           if( angular.isUndefined( scope.heading ) )
             scope.heading = scope.model.module.name.singular.ucWords() + ' Details';
           if( angular.isUndefined( scope.viewTitle ) )
@@ -2997,7 +2993,7 @@ cenozo.factory( 'CnBaseModelFactory', [
                     // we haven't added this group yet, so add it now
                     var index = data.push( {
                       title: group,
-                      collapsed: true, // always initialize collapsed
+                      collapsed: 'null' != group, // always initialize sub-groups collapsed
                       inputList: []
                     } );
                     groupObj = data[index-1];

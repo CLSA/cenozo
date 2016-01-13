@@ -19,7 +19,7 @@
       {{ heading }}
     </h4>
   </div>
-  <div ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}List">
+  <div class="collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}List">
     <table class="table table-striped rounded"
            ng-class="{ 'table-hover':model.viewEnabled || model.chooseEnabled }">
       <thead class="bg-info">

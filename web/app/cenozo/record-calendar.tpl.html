@@ -20,9 +20,9 @@
       <span ng-if="model.calendarModel.isLoading">(Loading&hellip;)</span>
     </h4>
   </div>
-  <div class="container-fluid spacer calendar"
-       ng-class="{'in':!initCollapsed}"
-       id="{{ model.module.subject.camel }}Calendar"></div>
+  <div id="{{ model.module.subject.camel }}Calendar" class="collapse in">
+    <div class="container-fluid spacer calendar"></div>
+  </div>
   <div class="form-footer text-right rounded-bottom bg-info">
     <div class="btn-group pull-left">
       <button class="btn btn-default"
