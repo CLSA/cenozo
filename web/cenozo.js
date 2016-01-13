@@ -2001,9 +2001,10 @@ cenozo.factory( 'CnBaseCalendarFactory', [
          * @param boolean replace: Whether to replace the cached list or append to it
          * @param moment minDate: The lower date span to get events for
          * @param moment maxDate: The upper date span to get events for
+         * @param boolean ignoreParent: Whether to ignore the parent state and show all events
          * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onList', function( replace, minDate, maxDate ) {
+        cenozo.addExtendableFunction( object, 'onList', function( replace, minDate, maxDate, ignoreParent ) {
           var self = this;
 
           // change the parent model's listing state
@@ -2049,7 +2050,10 @@ cenozo.factory( 'CnBaseCalendarFactory', [
 
             this.isLoading = true;
 
-            var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
+            var httpObj = {
+              path: ignoreParent ? parentModel.module.subject.snake : this.parentModel.getServiceCollectionPath(),
+              data: data
+            };
             httpObj.onError = function error( response ) { self.onListError( response ); }
             return CnHttpFactory.instance( httpObj ).query().then(
               function success( response ) {
