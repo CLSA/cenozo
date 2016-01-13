@@ -10,6 +10,7 @@ define( function() {
       return {
         templateUrl: module.url + 'home.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnHomeModelFactory.root;
           $scope.model.setupBreadcrumbTrail();

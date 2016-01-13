@@ -33,6 +33,7 @@ define( function() {
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnCohortModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {

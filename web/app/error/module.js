@@ -11,6 +11,7 @@ define( function() {
       return {
         templateUrl: module.url + type + '.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnErrorModelFactory.root;
           $scope.model.setupBreadcrumbTrail();
