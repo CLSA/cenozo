@@ -915,7 +915,7 @@ cenozo.directive( 'cnRecordCalendar', [
           scope.model.calendarModel.settings.defaultDate = scope.model.calendarModel.currentDate;
           scope.model.calendarModel.settings.defaultView = scope.model.calendarModel.currentView;
           var el = element.find( 'div.calendar' );
-          var test = el.fullCalendar( scope.model.calendarModel.settings );
+          el.fullCalendar( scope.model.calendarModel.settings );
 
           // integrate classes and styles
           el.find( 'button' ).removeClass( 'fc-button fc-corner-left fc-corner-right fc-state-default' );
@@ -2136,6 +2136,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             return object.parentModel.transitionToViewState( record );
           }
         };
+        CnSession.promise.then( function() { object.settings.timezone = CnSession.user.timezone; } );
       }
     };
   }
