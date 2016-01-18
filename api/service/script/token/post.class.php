@@ -103,15 +103,24 @@ class post extends \cenozo\service\post
    */
   protected function create_resource( $index )
   {
+    $record = NULL;
+
     if( 'token' == $this->get_subject( $index ) )
     {
       // make sure to set the token class name SID
       if( is_null( $this->db_script ) ) $this->db_script = $this->get_parent_record();
       $tokens_class_name = $this->get_record_class_name( $index );
+      $old_sid = $tokens_class_name::get_sid();
       $tokens_class_name::set_sid( $this->db_script->sid );
+      $record = parent::create_resource( $index );
+      $tokens_class_name::set_sid( $old_sid );
+    }
+    else
+    {
+      $record = parent::create_resource( $index );
     }
 
-    return parent::create_resource( $index );
+    return $record;
   }
 
   /**

@@ -28,11 +28,14 @@ class get extends \cenozo\service\get
    */
   protected function create_resource( $index )
   {
+    $record = NULL;
+
     if( 'token' == $this->get_subject( $index ) )
     {
       // make sure to set the token class name SID
       $db_script = $this->get_parent_record();
       $tokens_class_name = $this->get_record_class_name( $index );
+      $old_sid = $tokens_class_name::get_sid();
       $tokens_class_name::set_sid( $db_script->sid );
 
       // handle special case of token resource value being uid=<uid>
@@ -40,7 +43,7 @@ class get extends \cenozo\service\get
       $matches = array();
       if( 1 === preg_match( '/^token=([^;=]+)$/', $resource_value, $matches ) )
       {
-        return $tokens_class_name::get_unique_record( 'token', $matches[1] );
+        $record = $tokens_class_name::get_unique_record( 'token', $matches[1] );
       }
       else if( 1 === preg_match( '/^uid=([^;=]+)$/', $resource_value, $matches ) )
       {
@@ -48,10 +51,12 @@ class get extends \cenozo\service\get
         $participant_class_name = lib::get_class_name( 'database\participant' );
         $db_participant = $participant_class_name::get_unique_record( 'uid', $matches[1] );
         $token = $tokens_class_name::determine_token_string( $db_participant, $db_script->repeated );
-        return $tokens_class_name::get_unique_record( 'token', $token );
+        $record = $tokens_class_name::get_unique_record( 'token', $token );
       }
+
+      $tokens_class_name::set_sid( $old_sid );
     }
 
-    return parent::create_resource( $index );
+    return is_null( $record ) ? parent::create_resource( $index ) : $record;
   }
 }

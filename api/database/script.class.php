@@ -69,6 +69,7 @@ class script extends record
 
     foreach( $db_application->get_script_list( $select, $modifier ) as $script )
     {
+      $old_sid = $survey_class_name::get_sid();
       $survey_class_name::set_sid( $script['sid'] );
 
       $survey_sel = lib::create( 'database\select' );
@@ -132,6 +133,8 @@ class script extends record
           }
         }
       }
+
+      $survey_class_name::set_sid( $old_sid );
     }
   }
 
@@ -143,8 +146,12 @@ class script extends record
     if( !$this->sid ) return 0;
 
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $old_sid = $tokens_class_name::get_sid();
     $tokens_class_name::set_sid( $this->sid );
-    return $tokens_class_name::count( $modifier );
+    $count = $tokens_class_name::count( $modifier );
+    $tokens_class_name::set_sid( $old_sid );
+
+    return $count;
   }
 
   /**

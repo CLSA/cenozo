@@ -41,6 +41,7 @@ class survey_manager extends \cenozo\singleton
     $data_manager = lib::create( 'business\data_manager' );
 
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $old_sid = $tokens_class_name::get_sid();
     $tokens_class_name::set_sid( $db_script->sid );
     if( is_null( $db_tokens ) ) $db_tokens = lib::create( 'database\limesurvey\tokens' ); 
 
@@ -82,6 +83,7 @@ class survey_manager extends \cenozo\singleton
     }
 
     $db_tokens->save();
+    $tokens_class_name::set_sid( $old_sid );
     return $db_tokens;
   }
 
@@ -110,6 +112,7 @@ class survey_manager extends \cenozo\singleton
         __METHOD__ );
     $db_surveys = lib::create( 'database\limesurvey\surveys', $withdraw_sid );
 
+    $old_sid = tokens_class_name::get_sid();
     $tokens_class_name::set_sid( $withdraw_sid );
     $token = $db_participant->uid;
     $tokens_mod = lib::create( 'database\modifier' );
@@ -143,6 +146,8 @@ class survey_manager extends \cenozo\singleton
     {
       $withdraw_manager->process( $db_participant );
     }
+
+    $tokens_class_name::set_sid( $old_sid );
     */
   }
 }
