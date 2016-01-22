@@ -36,9 +36,12 @@ class module extends \cenozo\service\module
     }
 
     // make sure the user has access ot the participant
-    if( !is_null( $db_participant ) &&
-        !$db_role->all_sites &&
-        $db_site->id != $db_participant->get_effective_site()->id ) $this->get_status()->set_code( 403 );
+    if( !is_null( $db_participant ) && !$db_role->all_sites )
+    {
+      $db_effective_site = $db_participant->get_effective_site();
+      if( is_null( $db_effective_site ) || $db_site->id != $db_effective_site->id )
+        $this->get_status()->set_code( 403 );
+    }
   }
 
   /**
