@@ -123,6 +123,23 @@ class util
   }
 
   /**
+   * Returns a site's timezone offset for a particular datetime
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|DateTime The default is the current datetime
+   * @param database\site $db_site The default is the user's current site
+   * @return float
+   * @access public
+   */
+  public static function get_timezone_offset( $datetime = NULL, $db_site = NULL )
+  {
+    $datetime = static::get_datetime_object( $datetime );
+    if( is_null( $db_site ) ) $db_site = lib::create( 'business\session' )->get_site();
+    $time_zone_obj = new \DateTimeZone( $db_site->timezone );
+    return $time_zone_obj->getOffset( $datetime ) / 3600;
+  }
+
+  /**
    * Returns a DateTime object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -136,7 +153,7 @@ class util
     {
       if( 'DateTime' != get_class( $datetime ) )
         throw lib::create( 'exception\argument', 'datetime', $datetime, __METHOD__ );
-      return $datetime;
+      return clone $datetime;
     }
     else if( is_string( $datetime ) || is_null( $datetime ) )
     {
