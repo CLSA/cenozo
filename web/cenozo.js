@@ -3889,7 +3889,7 @@ cenozo.service( 'CnModalMessageFactory', [
           message += '\n    Resource "' + response.config.method + ':'
                    + response.config.url.replace( re, '' ) + '"';
         }
-        if( response.data ) message += '\n    Error Code: ' + response.data;
+        if( response.data && 406 != type ) message += '\n    Error Code: ' + response.data;
         var modal = new object( { title: title, message: message, error: true } );
         modal.show();
       }
