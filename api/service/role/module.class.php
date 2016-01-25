@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \cenozo\service\site_restricted_module
 {
   /**
    * Extend parent method
@@ -21,10 +21,7 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    $session = lib::create( 'business\session' );
-    $db_application = $session->get_application();
-    $db_site = $session->get_site();
-    $db_role = $session->get_role();
+    $db_application = lib::create( 'business\session' )->get_application();
 
     // only include roles which belong to this application
     $modifier->join( 'application_has_role', 'role.id', 'application_has_role.role_id' );
@@ -54,8 +51,9 @@ class module extends \cenozo\service\module
       $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
       $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
 
-      // restrict to the current site (for some roles)
-      if( !$db_role->all_sites ) $join_mod->where( 'site.id', '=', $db_site->id );
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) ) $join_mod->where( 'site.id', '=', $db_restrict_site->id );
 
       // override columns so that we can fake these columns being in the role table
       if( $select->has_column( 'user_count' ) )

@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \cenozo\service\site_restricted_module
 {
   /**
    * Extend parent method
@@ -21,10 +21,7 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    $session = lib::create( 'business\session' );
-    $db_application = $session->get_application();
-    $db_site = $session->get_site();
-    $db_role = $session->get_role();
+    $db_application = lib::create( 'business\session' )->get_application();
 
     // only include cohorts which belong to this application
     $modifier->join( 'application_has_cohort', 'cohort.id', 'application_has_cohort.cohort_id' );
@@ -51,13 +48,14 @@ class module extends \cenozo\service\module
         $join_mod->join_modifier( 'application_has_participant', $sub_mod );
       }
 
-      // restrict to participants in this site (for some roles)
-      if( !$db_role->all_sites )
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) )
       {
         $sub_mod = lib::create( 'database\modifier' );
         $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
         $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
-        $sub_mod->where( 'participant_site.site_id', '=', $db_site->id );
+        $sub_mod->where( 'participant_site.site_id', '=', $db_restrict_site->id );
         $join_mod->join_modifier( 'participant_site', $sub_mod );
       }
 
