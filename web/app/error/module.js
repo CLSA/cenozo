@@ -13,7 +13,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnErrorModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnErrorModelFactory.root;
           $scope.model.setupBreadcrumbTrail();
           $scope.back = function() { $window.history.back(); };
           $scope.reload = function() { $window.location.reload(); };

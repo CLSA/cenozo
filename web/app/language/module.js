@@ -66,7 +66,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnLanguageModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnLanguageModelFactory.root;
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'add' );
@@ -85,7 +85,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnLanguageModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnLanguageModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'list' );
           } );
@@ -103,7 +103,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnLanguageModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnLanguageModelFactory.root;
           $scope.model.viewModel.onView().then( function() {
             $scope.model.setupBreadcrumbTrail( 'view' );
           } );

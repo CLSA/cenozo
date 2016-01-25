@@ -47,7 +47,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnActivityModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnActivityModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'list' );
           } );

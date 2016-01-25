@@ -352,7 +352,7 @@ angular.extend( cenozo, {
           var directive = 'cn-' + module.subject.snake.replace( '_', '-' ) + '-' + item;
           stateProvider.state( name + '.' + item, {
             url: url,
-            template: '<' + directive + ' model="model"></' + directive + '>',
+            template: '<' + directive + '></' + directive + '>',
             // require that all child modules have loaded
             resolve: {
               data: [ '$q', function( $q ) {
@@ -380,7 +380,7 @@ angular.extend( cenozo, {
           var directive = 'cn-' + item.subject.snake.replace( '_', '-' ) + '-add';
           stateProvider.state( name + '.add_' + item.subject.snake, {
             url: '/view/{parentIdentifier}/' + item.subject.snake,
-            template: '<' + directive + ' model="model"></' + directive + '>',
+            template: '<' + directive + '></' + directive + '>',
             resolve: {
               data: [ '$q', function( $q ) {
                 // require that the action module has loaded

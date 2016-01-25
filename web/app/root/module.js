@@ -12,7 +12,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnHomeModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHomeModelFactory.root;
           $scope.model.setupBreadcrumbTrail();
         }
       };

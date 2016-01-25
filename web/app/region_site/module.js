@@ -57,7 +57,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnRegionSiteModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnRegionSiteModelFactory.root;
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'add' );
@@ -76,7 +76,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnRegionSiteModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnRegionSiteModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'list' );
           } );
@@ -94,7 +94,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnRegionSiteModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnRegionSiteModelFactory.root;
           $scope.model.viewModel.onView().then( function() {
             $scope.model.setupBreadcrumbTrail( 'view' );
           } );

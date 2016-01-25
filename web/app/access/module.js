@@ -79,7 +79,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnAccessModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAccessModelFactory.root;
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'add' );
@@ -98,7 +98,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnAccessModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAccessModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'list' );
           } );
