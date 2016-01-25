@@ -2060,7 +2060,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             this.isLoading = true;
 
             var httpObj = {
-              path: ignoreParent ? parentModel.module.subject.snake : this.parentModel.getServiceCollectionPath(),
+              path: this.parentModel.getServiceCollectionPath( ignoreParent ),
               data: data
             };
             httpObj.onError = function error( response ) { self.onListError( response ); }
@@ -2704,9 +2704,10 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * TODO: document
          */
-        cenozo.addExtendableFunction( self, 'getServiceCollectionPath', function() {
+        cenozo.addExtendableFunction( self, 'getServiceCollectionPath', function( ignoreParent ) {
+          if( angular.isUndefined( ignoreParent ) ) ignoreParent = false;
           var path = '';
-          if( self.getSubjectFromState() != self.module.subject.snake ) {
+          if( !ignoreParent && self.getSubjectFromState() != self.module.subject.snake ) {
             var identifier = $state.params.parentIdentifier
                            ? $state.params.parentIdentifier
                            : $state.params.identifier;
