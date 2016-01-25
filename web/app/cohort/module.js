@@ -33,7 +33,7 @@ define( function() {
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnCohortModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {

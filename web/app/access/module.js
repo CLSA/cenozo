@@ -77,7 +77,7 @@ define( function() {
       return {
         templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAccessModelFactory.root;
           $scope.record = {};
@@ -96,7 +96,7 @@ define( function() {
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAccessModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {

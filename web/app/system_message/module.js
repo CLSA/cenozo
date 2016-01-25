@@ -81,7 +81,7 @@ define( function() {
       return {
         templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnSystemMessageModelFactory.root;
           $scope.record = {};
@@ -100,7 +100,7 @@ define( function() {
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnSystemMessageModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
@@ -118,7 +118,7 @@ define( function() {
       return {
         templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnSystemMessageModelFactory.root;
           $scope.model.viewModel.onView().then( function() {

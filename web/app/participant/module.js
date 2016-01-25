@@ -408,7 +408,7 @@ define( function() {
       return {
         templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnParticipantModelFactory.root;
           $scope.record = {};
@@ -427,7 +427,6 @@ define( function() {
       return {
         templateUrl: module.url + 'history.tpl.html',
         restrict: 'E',
-        scope: true,
         controller: function( $scope ) {
           $scope.isLoading = false;
           $scope.model = CnParticipantHistoryFactory.instance();
@@ -480,7 +479,7 @@ define( function() {
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnParticipantModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
@@ -498,7 +497,6 @@ define( function() {
       return {
         templateUrl: module.url + 'multiedit.tpl.html',
         restrict: 'E',
-        scope: true,
         controller: function( $scope ) {
           $scope.model = CnParticipantMultieditFactory.instance();
           CnSession.setBreadcrumbTrail(
@@ -521,7 +519,6 @@ define( function() {
       return {
         templateUrl: module.url + 'notes.tpl.html',
         restrict: 'E',
-        scope: true,
         controller: function( $scope ) {
           $scope.isLoading = false;
           $scope.model = CnParticipantNotesFactory.instance();
@@ -579,7 +576,7 @@ define( function() {
       return {
         templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnParticipantModelFactory.root;
           $scope.model.viewModel.onView().then( function() {

@@ -11,7 +11,6 @@ define( function() {
       return {
         templateUrl: module.url + type + '.tpl.html',
         restrict: 'E',
-        scope: true,
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnErrorModelFactory.root;
           $scope.model.setupBreadcrumbTrail();
@@ -26,23 +25,20 @@ define( function() {
   cenozo.providers.factory( 'CnErrorModelFactory', [
     '$state', 'CnSession',
     function( $state, CnSession ) {
-      var object = function( root ) {
-        var self = this;
-        self.data = $state.params.data;
-        this.setupBreadcrumbTrail = function() {
-          CnSession.setBreadcrumbTrail( [ { title: $state.current.name.replace( '.', ' ' ).ucWords() } ] );
-        };
-        this.promise = CnSession.promise.then( function() {
-          self.application = CnSession.application;
-          self.user = CnSession.user;
-          self.role = CnSession.role;
-          self.site = CnSession.site;
-        } );
-      };
-
       return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
+        root: new function() {
+          var self = this;
+          self.data = $state.params.data;
+          this.setupBreadcrumbTrail = function() {
+            CnSession.setBreadcrumbTrail( [ { title: $state.current.name.replace( '.', ' ' ).ucWords() } ] );
+          };
+          this.promise = CnSession.promise.then( function() {
+            self.application = CnSession.application;
+            self.user = CnSession.user;
+            self.role = CnSession.role;
+            self.site = CnSession.site;
+          } );
+        }
       };
     }
   ] );
