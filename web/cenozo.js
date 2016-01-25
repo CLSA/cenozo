@@ -2622,15 +2622,19 @@ cenozo.factory( 'CnBaseModelFactory', [
          * This method is sometimes extended by a module's event factory
          */
         cenozo.addExtendableFunction( self, 'getBreadcrumbTitle', function() {
+          var type = self.getActionFromState();
+          var index = type.indexOf( '_' );
+          if( 0 <= index ) type = type.substring( 0, index );
+
           // first try for a friendly name
           var friendlyColumn = self.module.name.friendlyColumn;
           if( angular.isDefined( friendlyColumn ) && angular.isDefined( self.viewModel.record[friendlyColumn] ) )
-            return self.viewModel.record[friendlyColumn] ? self.viewModel.record[friendlyColumn] : 'view';
+            return self.viewModel.record[friendlyColumn] ? self.viewModel.record[friendlyColumn] : type;
 
           // no friendly name, try for an identifier column
           return angular.isDefined( self.module.identifier.column )
                ? self.getIdentifierFromRecord( self.viewModel.record, true )
-               : 'view'; // database IDs aren't friendly so just return "view"
+               : type; // database IDs aren't friendly so just return the type (view, calendar, etc)
         } );
 
         /**
@@ -2912,7 +2916,12 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * Creates the breadcrumb trail using module and a specific type (add, list or view)
          */
-        cenozo.addExtendableFunction( self, 'setupBreadcrumbTrail', function( type ) {
+        cenozo.addExtendableFunction( self, 'setupBreadcrumbTrail', function() {
+          // determine whether the type matches the state's action and ignore if it doesn't
+          var type = self.getActionFromState();
+          var index = type.indexOf( '_' );
+          if( 0 <= index ) type = type.substring( 0, index );
+
           var trail = [];
 
           // check the module for parents

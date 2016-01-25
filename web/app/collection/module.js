@@ -70,7 +70,7 @@ define( function() {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnCollectionModelFactory.root;
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
-            $scope.model.setupBreadcrumbTrail( 'add' );
+            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };
@@ -88,7 +88,7 @@ define( function() {
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnCollectionModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail( 'list' );
+            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };
@@ -106,7 +106,7 @@ define( function() {
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnCollectionModelFactory.root;
           $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail( 'view' );
+            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };

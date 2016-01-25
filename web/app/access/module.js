@@ -82,7 +82,7 @@ define( function() {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAccessModelFactory.root;
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
-            $scope.model.setupBreadcrumbTrail( 'add' );
+            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };
@@ -100,7 +100,7 @@ define( function() {
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAccessModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail( 'list' );
+            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };
