@@ -23,7 +23,7 @@ moment.tz.setDefault( 'UTC' );
 // Extend the Array prototype with extra functions
 angular.extend( Array.prototype, {
   findIndexByProperty: function( property, value ) {
-    var indexList = this.reduce( function( array, item ) {
+    var indexList = this.reduce( function( array, item, index ) {
       if( angular.isDefined( item[property] ) && value == item[property] ) array.push( index );
       return array;
     }, [] );
@@ -175,6 +175,11 @@ angular.extend( cenozoApp, {
                 return this.inputGroupList[group][key];
             return null;
           },
+
+          /**
+           * Add buttons in the footer of record-based directives which will execute the
+           * "operation" function.  This function will be passed two arguments: $state and model
+           */
           addExtraOperation: function( type, name, operation, classes ) {
             if( 0 > ['add','calendar','list','view'].indexOf( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
@@ -299,13 +304,16 @@ angular.extend( cenozo, {
     if( angular.isUndefined( module ) ) throw new Error( 'routeModule requires exactly 3 parameters.' );
 
     var resolve = {
-      data: [ '$q', function( $q ) {
+      // resolve the required files
+      files: [ '$q', function( $q ) {
         if( null == module.deferred ) {
           module.deferred = $q.defer();
           require( module.getRequiredFiles(), function() { module.deferred.resolve(); } );
         }
         return module.deferred.promise;
-      } ]
+      } ],
+      // resolve the session
+      session: function( CnSession ) { return CnSession.promise; }
     };
 
     if( 'root' == name ) {
@@ -343,23 +351,25 @@ angular.extend( cenozo, {
       } );
 
       // add action states
-      module.actions.forEach( function( item ) {
-        if( 0 > ['delete', 'edit'].indexOf( item ) ) { // ignore delete and edit actions
-          // if we have a / in the item then remove it
-          var url = '/' + item + ( 'view' == item ? '/{identifier}' : '' );
-          var slash = item.indexOf( '/' );
-          if( 0 <= slash ) item = item.substring( 0, slash );
-          var directive = 'cn-' + module.subject.snake.replace( '_', '-' ) + '-' + item;
-          stateProvider.state( name + '.' + item, {
+      module.actions.forEach( function( action ) {
+        if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
+          // if we have a / in the action then remove it
+          var url = '/' + action;
+          if( 'calendar' == action ) url += '/{identifier}';
+          else if ( 'view' == action ) url += '/{identifier}';
+          var slash = action.indexOf( '/' );
+          if( 0 <= slash ) action = action.substring( 0, slash );
+          var directive = 'cn-' + module.subject.snake.replace( '_', '-' ) + '-' + action;
+          stateProvider.state( name + '.' + action, {
             url: url,
             template: '<' + directive + '></' + directive + '>',
             // require that all child modules have loaded
             resolve: {
-              data: [ '$q', function( $q ) {
+              childFiles: [ '$q', function( $q ) {
                 // require that all child modules have loaded
                 var promiseList = [];
-                module.children.forEach( function( item ) {
-                  var childModule = cenozoApp.module( item.subject.snake );
+                module.children.forEach( function( action ) {
+                  var childModule = cenozoApp.module( action.subject.snake );
                   if( null == childModule.deferred ) {
                     childModule.deferred = $q.defer();
                     require( childModule.getRequiredFiles(), function() { childModule.deferred.resolve(); } );
@@ -374,15 +384,15 @@ angular.extend( cenozo, {
       } );
 
       // add child add states (if they exist)
-      module.children.forEach( function( item ) {
-        var childModule = cenozoApp.module( item.subject.snake );
+      module.children.forEach( function( child ) {
+        var childModule = cenozoApp.module( child.subject.snake );
         if( -1 < childModule.actions.indexOf( 'add' ) ) {
-          var directive = 'cn-' + item.subject.snake.replace( '_', '-' ) + '-add';
-          stateProvider.state( name + '.add_' + item.subject.snake, {
-            url: '/view/{parentIdentifier}/' + item.subject.snake,
+          var directive = 'cn-' + child.subject.snake.replace( '_', '-' ) + '-add';
+          stateProvider.state( name + '.add_' + child.subject.snake, {
+            url: '/view/{parentIdentifier}/' + child.subject.snake,
             template: '<' + directive + '></' + directive + '>',
             resolve: {
-              data: [ '$q', function( $q ) {
+              childFiles: [ '$q', function( $q ) {
                 // require that the action module has loaded
                 if( null == childModule.deferred ) {
                   childModule.deferred = $q.defer();
@@ -444,7 +454,7 @@ cenozo.service( 'CnBaseHeader', [
         // update the time once the session has finished loading
         CnSession.promise.finally( function() {
           CnSession.updateTime();
-          $interval( CnSession.updateTime, 4000 );
+          $interval( CnSession.updateTime, 1000 );
           scope.isLoading = false;
         } );
 
@@ -641,6 +651,21 @@ cenozo.directive( 'cnElastic', [
     };
   }
 ] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.directive( 'cnLoading',
+  function() {
+    return {
+      templateUrl: cenozo.baseUrl + '/app/cenozo/loading.tpl.html',
+      restrict: 'E',
+      scope: { message: '@' }
+    };
+  }
+);
 
 /* ######################################################################################################## */
 
@@ -872,13 +897,16 @@ cenozo.directive( 'cnRecordAdd', [
  * A directive wrapper for FullCalendar
  */
 cenozo.directive( 'cnRecordCalendar', [
-  '$state',
-  function( $state ) {
+  '$state', 'CnSession', 'CnModalSiteFactory',
+  function( $state, CnSession, CnModalSiteFactory ) {
     var calendarElement = null;
     return {
       templateUrl: cenozo.baseUrl + '/app/cenozo/record-calendar.tpl.html',
       restrict: 'E',
-      scope: { model: '=' },
+      scope: {
+        model: '=',
+        preventSiteChange: '@?'
+      },
       controller: function( $scope, $element ) {
         $scope.refresh = function() {
           if( !$scope.model.calendarModel.isLoading ) {
@@ -886,6 +914,16 @@ cenozo.directive( 'cnRecordCalendar', [
               $element.find( 'div.calendar' ).fullCalendar( 'refetchEvents' );
             } );
           }
+        };
+
+        $scope.clickHeading = function() {
+          CnModalSiteFactory.instance( { id: $scope.model.site.id } ).show().then( function( siteId ) {
+            if( siteId ) {
+              $state.go( $state.current.name, {
+                identifier: CnSession.siteList.findByProperty( 'id', siteId ).getIdentifier()
+              } );
+            }
+          } );
         };
 
         // only include a viewList operation if the state exists
@@ -901,7 +939,10 @@ cenozo.directive( 'cnRecordCalendar', [
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-calendar, no model provided.' );
         } else {
+          if( angular.isString( scope.preventSiteChange ) )
+            scope.preventSiteChange = 'true' == scope.preventSiteChange;
           scope.$state = $state;
+          scope.allowChangeSite = CnSession.role.allSites && !scope.preventSiteChange;
 
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
@@ -1359,21 +1400,6 @@ cenozo.directive( 'cnTreeBranch', [
 /**
  * TODO: document
  */
-cenozo.directive( 'cnLoading',
-  function() {
-    return {
-      templateUrl: cenozo.baseUrl + '/app/cenozo/loading.tpl.html',
-      restrict: 'E',
-      scope: { message: '@' }
-    };
-  }
-);
-
-/* ######################################################################################################## */
-
-/**
- * TODO: document
- */
 cenozo.filter( 'cnByObjectProperty', function() {
   return function( input, prop, value ) {
     return input.filter( function( object ) { return value == object[prop]; } );
@@ -1616,6 +1642,7 @@ cenozo.factory( 'CnSession', [
       this.role = {};
       this.setting = {};
       this.siteList = [];
+      this.siteAccessList = [];
       this.messageList = [];
       this.breadcrumbTrail = [];
 
@@ -1691,14 +1718,26 @@ cenozo.factory( 'CnSession', [
           if( !moment.tz.zone( self.user.timezone ) ) self.user.timezone = 'UTC';
 
           // process access records
-          response.data.access.forEach( function( item ) {
+          response.data.access.forEach( function( access ) {
             // get the site, or add it if it's missing, then add the role to the site's role list
-            var site = self.siteList.findByProperty( 'id', item.site_id );
+            var site = self.siteAccessList.findByProperty( 'id', access.site_id );
             if( null == site ) {
-              site = { id: item.site_id, name: item.site_name, roleList: [] };
-              self.siteList.push( site );
+              site = {
+                id: access.site_id,
+                name: access.site_name,
+                timezone: access.timezone,
+                roleList: [],
+                getIdentifier: function() { return 'name=' + this.name }
+              };
+              self.siteAccessList.push( site );
             }
-            site.roleList.push( { id: item.role_id, name: item.role_name } );
+            site.roleList.push( { id: access.role_id, name: access.role_name } );
+          } );
+
+          // process site records
+          self.siteList = response.data.site_list;
+          self.siteList.forEach( function( site ) {
+            site.getIdentifier = function() { return 'name=' + this.name };
           } );
 
           // if the user's password isn't set then open the password dialog
@@ -2094,6 +2133,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           allDaySlot: false,
           firstDay: 0,
           scrollTime: '07:00:00',
+          timezone: CnSession.user.timezone,
           timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
           smallTimeFormat: CnSession.user.use12hourClock ? 'h(:mm)t' : 'HH(:mm)',
           header: {
@@ -2136,7 +2176,6 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             return object.parentModel.transitionToViewState( record );
           }
         };
-        CnSession.promise.then( function() { object.settings.timezone = CnSession.user.timezone; } );
       }
     };
   }
@@ -2219,7 +2258,6 @@ cenozo.factory( 'CnBaseListFactory', [
             throw new Error( 'Calling onChoose() but chooseEnabled is false.' );
 
           // note: don't use the record's getIdentifier since choosing requires the ID only
-
           var httpObj = record.chosen
                       ? { path: this.parentModel.getServiceResourcePath( record.id ) }
                       : { path: this.parentModel.getServiceCollectionPath(), data: record.id };
@@ -2558,9 +2596,7 @@ cenozo.factory( 'CnBaseViewFactory', [
             function success( response ) {
               // create the record
               self.record = angular.copy( response.data );
-              self.record.getIdentifier = function() {
-                return parentModel.getIdentifierFromRecord( this );
-              };
+              self.record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( this ); };
 
               // create the backup record
               self.backupRecord = angular.copy( self.record );
@@ -4114,6 +4150,39 @@ cenozo.service( 'CnModalRestrictFactory', [
 /**
  * TODO: document
  */
+cenozo.service( 'CnModalSiteFactory', [
+  '$modal', 'CnSession',
+  function( $modal, CnSession ) {
+    var object = function( params ) {
+      var self = this;
+      angular.extend( this, params );
+      this.show = function() {
+        return $modal.open( {
+          backdrop: 'static',
+          keyboard: true,
+          modalFade: true,
+          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-site.tpl.html',
+          controller: function( $scope, $modalInstance ) {
+            // load the data from the session once it is available
+            $scope.siteList = CnSession.siteList;
+            $scope.siteId = self.id;
+
+            $scope.ok = function() { $modalInstance.close( $scope.siteId ); };
+            $scope.cancel = function() { $modalInstance.close( false ); };
+          }
+        } ).result;
+      };
+    };
+
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.service( 'CnModalSiteRoleFactory', [
   '$modal', 'CnSession',
   function( $modal, CnSession ) {
@@ -4126,12 +4195,9 @@ cenozo.service( 'CnModalSiteRoleFactory', [
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-site-role.tpl.html',
           controller: function( $scope, $modalInstance ) {
             // load the data from the session once it is available
-            CnSession.promise.then( function() {
-              $scope.siteList = CnSession.siteList;
-              $scope.siteId = CnSession.site.id;
-              $scope.refreshRoleList();
-              $scope.roleId = CnSession.role.id;
-            } );
+            $scope.siteList = CnSession.siteAccessList;
+            $scope.siteId = CnSession.site.id;
+            $scope.roleId = CnSession.role.id;
 
             $scope.refreshRoleList = function() {
               this.siteList.forEach( function( item, index ) {
@@ -4147,6 +4213,8 @@ cenozo.service( 'CnModalSiteRoleFactory', [
               } );
             };
             $scope.cancel = function() { $modalInstance.close( false ); };
+
+            $scope.refreshRoleList();
           }
         } ).result;
       };

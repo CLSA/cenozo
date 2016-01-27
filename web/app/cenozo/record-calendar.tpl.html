@@ -16,7 +16,11 @@
            tooltip="Click to expand {{ model.module.name.singular }} calendar"
            tooltip-placement="left"></i>
       </div>
-      {{ heading }}{{ model.editEnabled ? '' : ' (read only)' }}
+      <a class="btn-primary"
+         ng-if="allowChangeSite"
+         ng-click="clickHeading(); $event.stopPropagation()">{{ heading }}</a>
+      <span ng-if="!allowChangeSite">{{ heading }}</span>
+      {{ model.editEnabled ? '' : '(read only)' }}
       <span ng-if="model.calendarModel.isLoading">(Loading&hellip;)</span>
     </h4>
   </div>

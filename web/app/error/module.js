@@ -32,12 +32,7 @@ define( function() {
           this.setupBreadcrumbTrail = function() {
             CnSession.setBreadcrumbTrail( [ { title: $state.current.name.replace( '.', ' ' ).ucWords() } ] );
           };
-          this.promise = CnSession.promise.then( function() {
-            self.application = CnSession.application;
-            self.user = CnSession.user;
-            self.role = CnSession.role;
-            self.site = CnSession.site;
-          } );
+          self.role = CnSession.role;
         }
       };
     }

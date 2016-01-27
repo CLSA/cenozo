@@ -62,11 +62,11 @@
   </script>
 
   <div ng-controller="HeaderCtrl">
-    <nav class="navigation-header navbar navbar-default noselect" ng-if="!isLoading">
+    <nav class="navigation-header navbar navbar-default noselect">
       <div class="container-fluid bg-primary no-line-height" ng-class="{'working': session.working}">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-          <a class="navbar-brand" data-toggle="dropdown">{{ session.application.title }}</a>
+          <a class="navbar-brand" data-toggle="dropdown"><?php echo ucwords( INSTANCE ); ?></a>
           <ul class="dropdown-menu navigation-menu">
             <li ng-controller="MenuCtrl">
               <div class="container-fluid operation-list">
@@ -138,7 +138,7 @@
               </li>
             </ul>
           </ul>
-          <ul class="nav navbar-nav navbar-right">
+          <ul class="nav navbar-nav navbar-right" ng-if="!isLoading">
             <li class="navbar-item navbar-link siterole" ng-click="operationList.siteRole.execute()">
               {{ session.role.name | cnUCWords }} @ {{ session.site.name }}
             </li>
@@ -149,6 +149,10 @@
         </div>
       </div>
     </nav>
+    <div class="container-fluid outer-view-frame fade-transition noselect" ng-if="isLoading">
+      <div class="inner-view-frame"><cn-loading></cn-loading></div>
+      <div class="gradient-footer"></div>
+    </div>
   </div>
 
   <div id="view" ui-view class="container-fluid outer-view-frame fade-transition noselect"></div>

@@ -1,0 +1,24 @@
+<form ng-submit="ok()" novalidate name="form" class="noselect">
+  <div class="modal-header bg-primary">
+    <h4 class="modal-title">Select a Site</h4>
+  </div>
+  <div class="modal-body">
+    <p class="text-info">
+      Select which site you would like to switch to.
+    </p>
+    <hr/>
+    <div class="row container-fluid vertical-spacer">
+      <label for="timezone" class="col-sm-3 control-label">Site</label>
+      <div class="col-sm-9">
+        <select id="siteId"
+                name="siteId"
+                ng-options="site.id as site.name for site in siteList"
+                ng-model="siteId"
+                class="form-control"></select>
+      </div>
+    </div>
+  <div class="modal-footer bg-info">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">OK</button>
+  </div>
+</form>
