@@ -36,6 +36,10 @@ class get extends \cenozo\service\service
     $system_message_class_name = lib::get_class_name( 'database\system_message' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_site = $session->get_site();
+    $db_role = $session->get_role();
+    $db_user = $session->get_user();
 
     $application_sel = lib::create( 'database\select' );
     $application_sel->from( 'application' );
@@ -58,6 +62,10 @@ class get extends \cenozo\service\service
     $site_sel->add_column( 'name' );
     $site_sel->add_column( 'timezone' );
 
+    $site_mod = lib::create( 'database\modifier' );
+    if( !$db_role->all_sites ) $site_mod->where( 'site.id', '=', $db_site->id );
+    $site_mod->order( 'site.name' );
+
     $user_sel = lib::create( 'database\select' );
     $user_sel->from( 'user' );
     $user_sel->add_column( 'id' );
@@ -73,6 +81,7 @@ class get extends \cenozo\service\service
     $access_sel->from( 'access' );
     $access_sel->add_column( 'site_id' );
     $access_sel->add_table_column( 'site', 'name', 'site_name' );
+    $access_sel->add_table_column( 'site', 'timezone' );
     $access_sel->add_column( 'role_id' );
     $access_sel->add_table_column( 'role', 'name', 'role_name' );
 
@@ -81,19 +90,20 @@ class get extends \cenozo\service\service
     $access_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
     $access_mod->join( 'site', 'application_has_site.site_id', 'site.id' );
     $access_mod->join( 'role', 'access.role_id', 'role.id' );
-    $access_mod->where( 'access.user_id', '=', lib::create( 'business\session' )->get_user()->id );
+    $access_mod->where( 'access.user_id', '=', $db_user->id );
     $access_mod->where(
-      'application_has_site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
+      'application_has_site.application_id', '=', $db_application->id );
     $access_mod->order( 'site.name' );
     $access_mod->order( 'role.name' );
 
     $pseudo_record = array(
       'voip_enabled' => $setting_manager->get_setting( 'voip', 'enabled' ),
-      'application' => $session->get_application()->get_column_values( $application_sel ),
-      'role' => $session->get_role()->get_column_values( $role_sel ),
-      'site' => $session->get_site()->get_column_values( $site_sel ),
-      'user' => $session->get_user()->get_column_values( $user_sel ),
-      'access' => $session->get_user()->get_access_list( $access_sel, $access_mod ),
+      'application' => $db_application->get_column_values( $application_sel ),
+      'role' => $db_role->get_column_values( $role_sel ),
+      'site' => $db_site->get_column_values( $site_sel ),
+      'user' => $db_user->get_column_values( $user_sel ),
+      'access' => $db_user->get_access_list( $access_sel, $access_mod ),
+      'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
       'no_password' => 'password' === $_SERVER[ 'PHP_AUTH_PW' ] );
 
     // include the last (closed) activity for this user
@@ -108,7 +118,7 @@ class get extends \cenozo\service\service
     $activity_mod->where( 'end_datetime', '!=', NULL );
     $activity_mod->order_desc( 'start_datetime' );
     $activity_mod->limit( 1 );
-    $activity_list = $session->get_user()->get_activity_list( $activity_sel, $activity_mod );
+    $activity_list = $db_user->get_activity_list( $activity_sel, $activity_mod );
     $last_activity = current( $activity_list );
     $pseudo_record['user']['last_activity'] = $last_activity ? $last_activity : NULL;
 
@@ -116,14 +126,14 @@ class get extends \cenozo\service\service
     $activity_mod = lib::create( 'database\modifier' );
     $activity_mod->join( 'application_has_site', 'activity.site_id', 'application_has_site.site_id' );
     $activity_mod->where( 'end_datetime', '=', NULL );
-    $activity_mod->where( 'application_has_site.application_id', '=', $session->get_application()->id );
+    $activity_mod->where( 'application_has_site.application_id', '=', $db_application->id );
     $pseudo_record['application']['active_users'] = $activity_class_name::count( $activity_mod );
     $pseudo_record['application']['development_mode'] = lib::in_development_mode();
 
     // include the number of active users for the site
     $activity_mod = lib::create( 'database\modifier' );
     $activity_mod->where( 'end_datetime', '=', NULL );
-    $activity_mod->where( 'site_id', '=', $session->get_site()->id );
+    $activity_mod->where( 'site_id', '=', $db_site->id );
     $pseudo_record['site']['active_users'] = $activity_class_name::count( $activity_mod );
 
     // include the appropriate system messages
@@ -132,13 +142,13 @@ class get extends \cenozo\service\service
     $system_message_sel->add_column( 'expiry' );
     $system_message_sel->add_column( 'note' );
     $system_message_mod = lib::create( 'database\modifier' );
-    $application_id = $session->get_application()->id;
+    $application_id = $db_application->id;
     $column = sprintf( 'IFNULL( system_message.application_id, %d )', $application_id );
     $system_message_mod->where( $column, '=', $application_id );
-    $site_id = $session->get_site()->id;
+    $site_id = $db_site->id;
     $column = sprintf( 'IFNULL( system_message.site_id, %d )', $site_id );
     $system_message_mod->where( $column, '=', $site_id );
-    $role_id = $session->get_role()->id;
+    $role_id = $db_role->id;
     $column = sprintf( 'IFNULL( system_message.role_id, %d )', $role_id );
     $system_message_mod->where( $column, '=', $role_id );
     $system_message_mod->order_desc( 'id' );
