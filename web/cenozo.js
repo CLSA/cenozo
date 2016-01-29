@@ -4298,11 +4298,6 @@ cenozo.service( 'CnModalSiteRoleFactory', [
           modalFade: true,
           templateUrl: cenozo.baseUrl + '/app/cenozo/modal-site-role.tpl.html',
           controller: function( $scope, $modalInstance ) {
-            // load the data from the session once it is available
-            $scope.siteList = CnSession.siteAccessList;
-            $scope.siteId = CnSession.site.id;
-            $scope.roleId = CnSession.role.id;
-
             $scope.refreshRoleList = function() {
               this.siteList.forEach( function( item, index ) {
                 if( this.siteId == item.id ) this.roleList = item.roleList;
@@ -4318,7 +4313,10 @@ cenozo.service( 'CnModalSiteRoleFactory', [
             };
             $scope.cancel = function() { $modalInstance.close( false ); };
 
+            $scope.siteList = CnSession.siteAccessList;
+            $scope.siteId = CnSession.site.id;
             $scope.refreshRoleList();
+            $scope.roleId = CnSession.role.id;
           }
         } ).result;
       };
