@@ -48,9 +48,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnActivityModelFactory.root;
-          $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }

@@ -411,10 +411,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnParticipantModelFactory.root;
-          $scope.record = {};
-          $scope.model.addModel.onNew( $scope.record ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -482,9 +478,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnParticipantModelFactory.root;
-          $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -579,9 +572,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnParticipantModelFactory.root;
-          $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -840,7 +830,7 @@ define( function() {
         if( !this.inputListIsBuilt ) {
           if( angular.isDefined( CnParticipantModelFactory.root.metadata.columnList ) &&
               0 < Object.keys( CnParticipantModelFactory.root.metadata.columnList ).length ) buildInputList();
-          else CnParticipantModelFactory.root.getMetadata().then( function() { buildInputList(); } );
+          else CnParticipantModelFactory.root.metadata.getPromise().then( function() { buildInputList(); } );
           this.inputListIsBuilt = true;
         }
 

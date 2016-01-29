@@ -77,10 +77,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnConsentModelFactory.root;
-          $scope.record = {};
-          $scope.model.addModel.onNew( $scope.record ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -96,9 +92,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnConsentModelFactory.root;
-          $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -114,9 +107,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnConsentModelFactory.root;
-          $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -165,6 +155,7 @@ define( function() {
         this.viewModel = CnConsentViewFactory.instance( this, root );
 
         // extend getBreadcrumbTitle
+        // (metadata's promise will have already returned so we don't have to wait for it)
         this.getBreadcrumbTitle = function() {
           var consentType = self.metadata.columnList.consent_type_id.enumList.findByProperty(
             'value', this.viewModel.record.consent_type_id );

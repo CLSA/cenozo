@@ -87,10 +87,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnPhoneModelFactory.root;
-          $scope.record = {};
-          $scope.model.addModel.onNew( $scope.record ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -106,9 +102,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnPhoneModelFactory.root;
-          $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -124,9 +117,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnPhoneModelFactory.root;
-          $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -152,11 +142,37 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnHttpFactory', '$q',
+    function( CnBaseViewFactory, CnHttpFactory, $q ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        // extend onView
+        this.onView = function() {
+          return this.$$onView().then( function() {
+            var parent = self.parentModel.getParentIdentifier();
+            return CnHttpFactory.instance( {
+              path: angular.isDefined( parent.subject )
+                  ? [ parent.subject, parent.identifier, 'address' ].join( '/' )
+                  : self.parentModel.getServiceCollectionPath().replace( 'phone', 'address' ),
+              data: {
+                select: { column: [ 'id', 'summary' ] },
+                modifier: { order: 'rank' }
+              }
+            } ).query().then( function success( response ) {
+              self.parentModel.metadata.columnList.address_id.enumList = [];
+              response.data.forEach( function( item ) {
+                self.parentModel.metadata.columnList.address_id.enumList.push( {
+                  value: item.id, name: item.summary
+                } );
+              } );
+            } );
+          } );
+        };
+      };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
@@ -164,41 +180,12 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneModelFactory', [
     'CnBaseModelFactory', 'CnPhoneListFactory', 'CnPhoneAddFactory', 'CnPhoneViewFactory',
-    'CnHttpFactory', '$q',
-    function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory,
-              CnHttpFactory, $q ) {
+    function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnPhoneAddFactory.instance( this );
         this.listModel = CnPhoneListFactory.instance( this );
         this.viewModel = CnPhoneViewFactory.instance( this, root );
-
-        // extend getMetadata
-        this.getMetadata = function() {
-          this.metadata.loadingCount++;
-          var parent = self.getParentIdentifier();
-          return $q.all( [
-
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
-              path: angular.isDefined( parent.subject )
-                  ? [ parent.subject, parent.identifier, 'address' ].join( '/' )
-                  : self.getServiceCollectionPath().replace( 'phone', 'address' ),
-              data: {
-                select: { column: [ 'id', 'summary' ] },
-                modifier: { order: 'rank' }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.address_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.address_id.enumList.push( { value: item.id, name: item.summary } );
-              } );
-            } )
-
-          ] ).finally( function finished() { self.metadata.loadingCount--; } );
-        };
       };
 
       return {
