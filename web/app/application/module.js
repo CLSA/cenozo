@@ -134,8 +134,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnApplicationView', [
-    'CnApplicationModelFactory', '$state',
-    function( CnApplicationModelFactory, $state ) {
+    'CnApplicationModelFactory', 'CnSession', '$state',
+    function( CnApplicationModelFactory, CnSession, $state ) {
       return {
         templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',

@@ -2853,7 +2853,8 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           if( angular.isUndefined( response.identifier ) ) {
             var action = self.getActionFromState();
-            if( 'view' == action && angular.isDefined( self.module.identifier.parent ) ) {
+            if( 'view' == action && angular.isDefined( self.module.identifier.parent ) &&
+                angular.isDefined( self.viewModel ) ) {
               // return the FIRST "set" parent
               self.module.identifier.parent.some( function( item ) {
                 if( self.viewModel.record[item.alias] ) {
