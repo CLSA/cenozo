@@ -30,15 +30,6 @@ CREATE PROCEDURE patch_user()
       -- add column
       ALTER TABLE user
       ADD COLUMN timezone VARCHAR(45) NOT NULL DEFAULT 'Canada/Eastern';
-
-      UPDATE user
-      SET timezone = IFNULL( (
-        SELECT timezone
-        FROM site
-        JOIN access ON site.id = access.site_id
-        WHERE access.user_id = user.id
-        LIMIT 1
-      ), 'Canada/Eastern' );
     END IF;
 
     SELECT "Adding use_12hour_clock column to user table" AS "";

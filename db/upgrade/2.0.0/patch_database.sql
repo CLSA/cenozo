@@ -3,7 +3,6 @@
 SET AUTOCOMMIT=0;
 
 SOURCE person_first_address.sql
-SOURCE access.sql
 SOURCE application.sql
 SOURCE application_has_participant.sql
 SOURCE application_has_cohort.sql
@@ -16,6 +15,7 @@ SOURCE application_has_site.sql
 SOURCE jurisdiction.sql
 SOURCE region_site.sql
 SOURCE user.sql
+SOURCE access.sql
 SOURCE address.sql
 SOURCE event_address.sql
 SOURCE consent_type.sql

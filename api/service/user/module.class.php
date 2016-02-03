@@ -23,24 +23,25 @@ class module extends \cenozo\service\site_restricted_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
-    // restrict to users who have access to this application
-    $join_sel = lib::create( 'database\select' );
-    $join_sel->from( 'access' );
-    $join_sel->set_distinct( true );
-    $join_sel->add_column( 'user_id' );
-
-    $join_mod = lib::create( 'database\modifier' );
-    $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-    $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
-
     // restrict by site
     $db_restrict_site = $this->get_restricted_site();
-    if( !is_null( $db_restrict_site ) ) $join_mod->where( 'access.site_id', '=', $db_restrict_site->id );
+    if( !is_null( $db_restrict_site ) )
+    {
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'access' );
+      $join_sel->set_distinct( true );
+      $join_sel->add_column( 'user_id' );
 
-    $modifier->join(
-      sprintf( '( %s %s ) AS user_join_application ', $join_sel->get_sql(), $join_mod->get_sql() ),
-      'user.id',
-      'user_join_application.user_id' );
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
+      $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
+      $join_mod->where( 'access.site_id', '=', $db_restrict_site->id );
+
+      $modifier->join(
+        sprintf( '( %s %s ) AS user_join_application ', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'user.id',
+        'user_join_application.user_id' );
+    }
 
     // add the total number of related records
     if( $select->has_column( 'role_count' ) ||
