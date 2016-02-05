@@ -146,7 +146,7 @@ class patch extends \cenozo\service\service
     {
       $has_site = array_key_exists( 'site', $patch_array );
       $has_role = array_key_exists( 'role', $patch_array );
-    
+
       if( ( 1 == count( $patch_array ) && ( $has_site || $has_role ) ) ||
           ( 2 == count( $patch_array ) && $has_site && $has_role ) )
       {

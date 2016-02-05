@@ -392,7 +392,7 @@ class data_manager extends \cenozo\singleton
             {
               // participant.opal.<datasource>.<table>.<variable>.cache (caches data)
               // opal.<datasource>.<table>.<variable>.cache (caches data)
-              
+
               $variable_cache_class_name = lib::get_class_name( 'database\variable_cache' );
               $variable_cache_class_name::remove_expired(); // make sure to clean-up before searching
 

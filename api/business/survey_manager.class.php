@@ -43,11 +43,11 @@ class survey_manager extends \cenozo\singleton
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $old_sid = $tokens_class_name::get_sid();
     $tokens_class_name::set_sid( $db_script->sid );
-    if( is_null( $db_tokens ) ) $db_tokens = lib::create( 'database\limesurvey\tokens' ); 
+    if( is_null( $db_tokens ) ) $db_tokens = lib::create( 'database\limesurvey\tokens' );
 
     // fill in the token based on the script and participant
     $db_tokens->firstname = $db_participant->honorific.' '.$db_participant->first_name;
-    if( 0 < strlen( $db_participant->other_name ) ) 
+    if( 0 < strlen( $db_participant->other_name ) )
       $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
     $db_tokens->lastname = $db_participant->last_name;
     $db_tokens->email = $db_participant->email;

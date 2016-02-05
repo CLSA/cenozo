@@ -56,7 +56,7 @@ class ui extends \cenozo\base_object
 
       // prepare which operations to show above the lists (not sorted)
       $operation_items = $this->get_operation_items();
-      
+
       // prepare which modules to show in the list
       $list_items = $this->get_list_items( $module_list );
       ksort( $list_items );
@@ -78,7 +78,7 @@ class ui extends \cenozo\base_object
           $module_list[$module['subject']]['actions'][] = $module['action'];
       }
       ksort( $utility_items );
-     
+
       // add auxiliary modules
       $auxiliary_items = $this->get_auxiliary_items();
       foreach( $auxiliary_items as $module )
@@ -87,7 +87,7 @@ class ui extends \cenozo\base_object
           $module_list[$module] =
             array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
       }
-     
+
       // prepare which reports to show in the list
       $report_items = $this->get_report_items();
       ksort( $report_items );

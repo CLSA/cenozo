@@ -57,7 +57,7 @@ abstract class site_restricted_module extends module
   /**
    * The site to restrict to.  Will be false until determined, then it may be NULL.
    * @var database\site
-   * @access private 
+   * @access private
    */
   private $db_restricted_site = false;
 }

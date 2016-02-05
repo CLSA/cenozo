@@ -143,8 +143,8 @@ class opal_manager extends \cenozo\factory
     }
 
     $object = $util_class_name::json_decode( $result );
-    if( !is_object( $object ) || 
-        !property_exists( $object, 'variables' ) || 
+    if( !is_object( $object ) ||
+        !property_exists( $object, 'variables' ) ||
         !is_array( $object->variables ) ||
         !property_exists( $object, 'valueSets' ) ||
         !is_array( $object->valueSets ) ||
@@ -233,7 +233,7 @@ class opal_manager extends \cenozo\factory
         sprintf( 'Unable to connect to Opal service for url "%s" (code: %s)', $url, $code ),
         __METHOD__ );
     }
-    
+
     // find the variable in the response
     $object = $util_class_name::json_decode( $result );
     if( !is_object( $object ) || !property_exists( $object, 'categories' ) )

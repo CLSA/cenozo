@@ -310,7 +310,7 @@ class database extends \cenozo\base_object
     if( in_array( $data_type, $timestamp_types ) ) return 'timestamp';
     if( in_array( $data_type, $boolean_types ) ) return 'boolean';
     if( in_array( $data_type, $float_types ) ) return 'float';
-    
+
     log::warning( sprintf(
       'Database contains column type "%s" which is not categorized by database layer',
       $data_type ) );

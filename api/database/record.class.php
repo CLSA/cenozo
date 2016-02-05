@@ -42,7 +42,7 @@ abstract class record extends \cenozo\base_object
       // NOW() we need to set the default here manually
       $default = static::db()->get_column_default( $table_name, $column );
       $this->passive_column_values[$column] = NULL;
-      
+
       if( 'start_datetime' == $column || 'CURRENT_TIMESTAMP' == $default )
         $this->active_column_values[$column] = $util_class_name::get_datetime_object();
       else if( !is_null( $default ) )
@@ -392,7 +392,7 @@ abstract class record extends \cenozo\base_object
 
     $table_name = static::get_table_name();
     $columns = array();
-    
+
     if( is_null( $select ) )
     {
       $columns = $this->passive_column_values;

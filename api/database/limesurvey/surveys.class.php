@@ -94,7 +94,7 @@ class surveys extends record
     $join_mod->where( 'surveys_languagesettings.surveyls_survey_id', '=', 'surveys.sid', false );
     $join_mod->where( 'surveys_languagesettings.surveyls_language', '=', 'surveys.language', false );
     $modifier->join_modifier( 'surveys_languagesettings', $join_mod );
-    
+
     $array = array();
     foreach( static::select( $select, $modifier ) as $row ) $array[$row['sid']] = $row['title'];
     return $array;
