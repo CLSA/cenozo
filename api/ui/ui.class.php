@@ -33,7 +33,7 @@ class ui extends \cenozo\base_object
     $interface = '';
     if( $maintenance || !is_null( $error ) )
     {
-      $title = $maintenance ? ucwords( INSTANCE ).' is Offline' : $error['title'];
+      $title = $maintenance ? ucwords( str_replace( '_', ' ', INSTANCE ) ).' is Offline' : $error['title'];
       $message = $maintenance
                ? 'Sorry, the system is currently offline for maintenance. '.
                  'Please check with an administrator or try again at a later time.'
