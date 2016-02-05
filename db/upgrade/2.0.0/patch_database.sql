@@ -2,6 +2,8 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE collection.sql
+SOURCE state.sql
 SOURCE person_first_address.sql
 SOURCE application.sql
 SOURCE application_has_participant.sql

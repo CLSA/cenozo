@@ -45,13 +45,13 @@ class post extends \cenozo\service\post
     $db_started_event_type->save();
     $db_script->started_event_type_id = $db_started_event_type->id;
 
-    $db_completed_event_type = lib::create( 'database\event_type' );
-    $db_completed_event_type->name = sprintf( 'completed (%s)', $db_script->name );
-    $db_completed_event_type->record_address = true;
-    $db_completed_event_type->description =
-      sprintf( 'Completed the "%s" script.', $db_script->name );
-    $db_completed_event_type->save();
-    $db_script->completed_event_type_id = $db_completed_event_type->id;
+    $db_finished_event_type = lib::create( 'database\event_type' );
+    $db_finished_event_type->name = sprintf( 'finished (%s)', $db_script->name );
+    $db_finished_event_type->record_address = true;
+    $db_finished_event_type->description =
+      sprintf( 'Started the "%s" script.', $db_script->name );
+    $db_finished_event_type->save();
+    $db_script->finished_event_type_id = $db_finished_event_type->id;
   }
 
   /**

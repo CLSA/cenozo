@@ -19,13 +19,13 @@ DROP PROCEDURE IF EXISTS patch_script;
         create_timestamp TIMESTAMP NOT NULL,
         name VARCHAR(255) NOT NULL,
         started_event_type_id INT UNSIGNED NOT NULL,
-        completed_event_type_id INT UNSIGNED NOT NULL,
+        finished_event_type_id INT UNSIGNED NOT NULL,
         sid INT NOT NULL,
         repeated TINYINT(1) NOT NULL DEFAULT 0,
         description TEXT NULL,
         PRIMARY KEY (id),
         INDEX fk_started_event_type_id (started_event_type_id ASC),
-        INDEX fk_completed_event_type_id (completed_event_type_id ASC),
+        INDEX fk_finished_event_type_id (finished_event_type_id ASC),
         UNIQUE INDEX uq_name (name ASC),
         UNIQUE INDEX uq_sid (sid ASC),
         CONSTRAINT fk_script_started_event_type_id
@@ -33,8 +33,8 @@ DROP PROCEDURE IF EXISTS patch_script;
           REFERENCES event_type (id)
           ON DELETE NO ACTION
           ON UPDATE NO ACTION,
-        CONSTRAINT fk_script_completed_event_type_id
-          FOREIGN KEY (completed_event_type_id)
+        CONSTRAINT fk_script_finished_event_type_id
+          FOREIGN KEY (finished_event_type_id)
           REFERENCES event_type (id)
           ON DELETE NO ACTION
           ON UPDATE NO ACTION)

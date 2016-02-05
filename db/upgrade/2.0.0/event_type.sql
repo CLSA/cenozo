@@ -1,3 +1,28 @@
+DROP PROCEDURE IF EXISTS patch_event_type;
+DELIMITER //
+CREATE PROCEDURE patch_event_type()
+  BEGIN
+
+    SELECT "Extending event_type name column size" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "event_type"
+      AND COLUMN_NAME = "name"
+      AND COLUMN_TYPE = "varchar(45)" );
+    IF @test = 1 THEN
+      ALTER TABLE event_type MODIFY name VARCHAR(100) NOT NULL;
+    END IF;
+
+  END //
+DELIMITER ;
+
+CALL patch_event_type();
+DROP PROCEDURE IF EXISTS patch_event_type;
+
+
 SELECT "Adding new triggers to event_type table" AS "";
 
 DELIMITER $$

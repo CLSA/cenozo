@@ -42,10 +42,10 @@ class module extends \cenozo\service\module
     if( !is_null( $participant_id ) ) $db_participant = lib::create( 'database\participant', $participant_id );
     else if( !is_null( $uid ) ) $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
 
-    // if a participant is specified then update the started/completed events
+    // if a participant is specified then update the started/finished events
     if( !is_null( $db_participant ) ) $script_class_name::add_all_event_types( $db_participant );
 
-    if( $select->has_table_columns( 'started_event' ) || $select->has_table_columns( 'completed_event' ) )
+    if( $select->has_table_columns( 'started_event' ) || $select->has_table_columns( 'finished_event' ) )
     {
       if( is_null( $db_participant ) )
       {
@@ -64,14 +64,14 @@ class module extends \cenozo\service\module
             'event', 'started_last_event.event_id', 'started_event.id', 'started_event' );
         }
 
-        if( $select->has_table_columns( 'completed_event' ) )
+        if( $select->has_table_columns( 'finished_event' ) )
         {
           $join_mod = lib::create( 'database\modifier' );
-          $join_mod->where( 'script.completed_event_type_id', '=', 'completed_last_event.event_type_id', false );
-          $join_mod->where( 'completed_last_event.participant_id', '=', $db_participant->id );
-          $modifier->join_modifier( 'participant_last_event', $join_mod, 'left', 'completed_last_event' );
+          $join_mod->where( 'script.finished_event_type_id', '=', 'finished_last_event.event_type_id', false );
+          $join_mod->where( 'finished_last_event.participant_id', '=', $db_participant->id );
+          $modifier->join_modifier( 'participant_last_event', $join_mod, 'left', 'finished_last_event' );
           $modifier->left_join(
-            'event', 'completed_last_event.event_id', 'completed_event.id', 'completed_event' );
+            'event', 'finished_last_event.event_id', 'finished_event.id', 'finished_event' );
         }
       }
     }
