@@ -2254,7 +2254,6 @@ cenozo.factory( 'CnBaseListFactory', [
 
         // initialize the restrict lists
         object.columnRestrictLists = {};
-        for( var column in parentModel.columnList ) object.columnRestrictLists[column] = [];
 
         cenozo.addExtendableFunction( object, 'orderBy', function( column, doNotList ) {
           var self = this;
@@ -2283,7 +2282,8 @@ cenozo.factory( 'CnBaseListFactory', [
           if( !angular.isArray( newList ) )
             throw new Error( 'Tried to set restrict list for column "' + column + '" to a non-array.' );
 
-          // if the new list is different then re-describe and re-list records
+          // if the new list is different then re-describe and re-list records (and initialize, if necessary)
+          if( !angular.isArray( object.columnRestrictLists[column] ) ) object.columnRestrictLists[column] = [];
           var list = this.columnRestrictLists[column];
           if( !this.columnRestrictLists[column].isEqualTo( newList ) ) {
             this.columnRestrictLists[column] = angular.copy( newList );
@@ -2996,7 +2996,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               selectList.push( select );
             }
 
-            if( 'list' == type && 'hidden' != list[key].type && columnRestrictLists[key] ) {
+            if( 'list' == type && 'hidden' != list[key].type && angular.isArray( columnRestrictLists[key] ) ) {
               columnRestrictLists[key].forEach( function( item ) {
                 var test = item.test;
                 var value = item.value;
@@ -4123,9 +4123,9 @@ cenozo.service( 'CnModalRestrictFactory', [
       this.name = null;
       this.column = null;
       this.type = 'string';
-      this.restrictList = [];
-      this.emptyList = [];
       angular.extend( this, params );
+      if( !angular.isArray( this.emptyList ) ) this.emptyList = [];
+      if( !angular.isArray( this.restrictList ) ) this.restrictList = [];
 
       this.getInitialValue = function() {
         var value = 1; // boolean, number, rank
@@ -4169,7 +4169,7 @@ cenozo.service( 'CnModalRestrictFactory', [
 
       this.toggleEmpty = function( index ) {
         if( this.emptyList[index].isEmpty ) {
-          this.restrictList[index].value = undefined === this.emptyList[index].oldValue
+          this.restrictList[index].value = angular.isUndefined( this.emptyList[index].oldValue )
                                          ? this.getInitialValue()
                                          : this.emptyList[index].oldValue;
         } else {
@@ -4207,7 +4207,8 @@ cenozo.service( 'CnModalRestrictFactory', [
               restrictList.filter( function( item ) { return angular.isDefined( item ); } );
 
               // make sure the first item in the list has no logic set
-              if( 0 < restrictList.length && undefined !== restrictList[0].logic ) delete restrictList[0].logic;
+              if( 0 < restrictList.length && angular.isDefined( restrictList[0].logic ) )
+                delete restrictList[0].logic;
 
               $modalInstance.close( restrictList );
             };
