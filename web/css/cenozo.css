@@ -22,7 +22,7 @@ a { text-decoration: none !important; }
 .first-form-group { padding-top: 15px } /* has to be padding and not margin for header to work right */
 .form-footer { padding: 1em; }
 .footer-total { line-height: 32px; }
-.form-long-text { margin-top: 8px; margin-bottom: 8px; }
+.form-text { margin-top: 7px; }
 .spacer { margin: 0.5em; content: " " }
 .vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
 .horizontal-spacer { margin-left: 0.5em; margin-right: 0.5em; }
