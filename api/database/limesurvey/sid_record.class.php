@@ -41,8 +41,7 @@ abstract class sid_record extends record
   public static function set_sid( $sid )
   {
     $class_index = lib::get_class_name( get_called_class(), true );
-    if( is_null( $sid ) ) unset( self::$table_sid_list[$class_index] );
-    else self::$table_sid_list[$class_index] = $sid;
+    if( !is_null( $sid ) ) self::$table_sid_list[$class_index] = $sid;
   }
 
   /**
