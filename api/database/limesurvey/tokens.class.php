@@ -58,7 +58,7 @@ class tokens extends sid_record
       $select->add_column( 'MAX( tid )', 'max_tid', false );
       $select->from( static::get_table_name() );
       $modifier = lib::create( 'database\modifier' );
-      static::where_token( $modifier, $db_participant->uid, true );
+      static::where_token( $modifier, $db_participant, true );
       $sub_select = sprintf( '( %s %s )', $select->get_sql(), $modifier->get_sql() );
 
       $select = lib::create( 'database\select' );
