@@ -75,7 +75,7 @@ define( function() {
     'CnAccessModelFactory',
     function( CnAccessModelFactory ) {
       return {
-        templateUrl: module.url + 'add.tpl.html',
+        templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -90,7 +90,7 @@ define( function() {
     'CnAccessModelFactory',
     function( CnAccessModelFactory ) {
       return {
-        templateUrl: module.url + 'list.tpl.html',
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {

@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.css">
-  <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css">
-  <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css">
+  <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css?build=<?php print CENOZO_BUILD; ?>">
+  <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css?_">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.js"></script>
@@ -21,13 +21,16 @@
   <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
   <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.js"></script>
 
-  <script src="<?php print CENOZO_URL; ?>/cenozo.js" id="cenozo"></script>
-  <script src="<?php print ROOT_URL; ?>/app.js" id="app"></script>
-  <script src="<?php print LIB_URL; ?>/requirejs/require.js"
-          data-main="<?php print APP_URL; ?>/require.js"></script>
+  <script src="<?php print CENOZO_URL; ?>/cenozo.js?build=<?php print CENOZO_BUILD; ?>" id="cenozo"></script>
+  <script src="<?php print ROOT_URL; ?>/app.js?build=<?php print APP_BUILD; ?>" id="app"></script>
+  <script src="<?php print LIB_URL; ?>/requirejs/require.js"></script>
 </head>
 <body class="background">
   <script>
+    // define the framework and application build numbers
+    window.cenozo.build = "<?php print CENOZO_BUILD; ?>";
+    window.cenozoApp.build = "<?php print APP_BUILD; ?>";
+
     // set the application's base url (the object is created for us in cenozo.js)
     window.cenozoApp.baseUrl = "<?php print ROOT_URL; ?>";
 

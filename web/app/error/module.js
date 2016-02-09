@@ -9,7 +9,7 @@ define( function() {
     function( CnErrorModelFactory, $window, $state ) {
       var type = angular.isDefined( $state.params['type'] ) ? $state.params['type'] : 500;
       return {
-        templateUrl: module.url + type + '.tpl.html',
+        templateUrl: module.getFileUrl( type + '.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnErrorModelFactory.root;

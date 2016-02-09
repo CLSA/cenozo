@@ -144,6 +144,8 @@ final class bootstrap
       }
     }
 
+    define( 'CENOZO_BUILD', $this->settings['general']['cenozo_build'] );
+    define( 'APP_BUILD', $this->settings['general']['build'] );
     define( 'APPLICATION', $this->settings['general']['application_name'] );
     define( 'INSTANCE', $this->settings['general']['instance_name'] );
     $this->settings['path']['CENOZO_API'] = $this->settings['path']['CENOZO'].'/api';

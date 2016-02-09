@@ -62,7 +62,7 @@ define( function() {
     'CnLanguageModelFactory',
     function( CnLanguageModelFactory ) {
       return {
-        templateUrl: module.url + 'add.tpl.html',
+        templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -77,7 +77,7 @@ define( function() {
     'CnLanguageModelFactory',
     function( CnLanguageModelFactory ) {
       return {
-        templateUrl: module.url + 'list.tpl.html',
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -92,7 +92,7 @@ define( function() {
     'CnLanguageModelFactory',
     function( CnLanguageModelFactory ) {
       return {
-        templateUrl: module.url + 'view.tpl.html',
+        templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {

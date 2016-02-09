@@ -406,7 +406,7 @@ define( function() {
     'CnParticipantModelFactory',
     function( CnParticipantModelFactory ) {
       return {
-        templateUrl: module.url + 'add.tpl.html',
+        templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -421,7 +421,7 @@ define( function() {
     'CnParticipantHistoryFactory', 'CnSession', '$state',
     function( CnParticipantHistoryFactory, CnSession, $state ) {
       return {
-        templateUrl: module.url + 'history.tpl.html',
+        templateUrl: module.getFileUrl( 'history.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           $scope.isLoading = false;
@@ -473,7 +473,7 @@ define( function() {
     'CnParticipantModelFactory',
     function( CnParticipantModelFactory ) {
       return {
-        templateUrl: module.url + 'list.tpl.html',
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -488,7 +488,7 @@ define( function() {
     'CnParticipantMultieditFactory', 'CnSession', '$state',
     function( CnParticipantMultieditFactory, CnSession, $state ) {
       return {
-        templateUrl: module.url + 'multiedit.tpl.html',
+        templateUrl: module.getFileUrl( 'multiedit.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnParticipantMultieditFactory.instance();
@@ -510,7 +510,7 @@ define( function() {
     'CnParticipantNotesFactory', 'CnSession', '$state', '$timeout',
     function( CnParticipantNotesFactory, CnSession, $state, $timeout) {
       return {
-        templateUrl: module.url + 'notes.tpl.html',
+        templateUrl: module.getFileUrl( 'notes.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           $scope.isLoading = false;
@@ -567,7 +567,7 @@ define( function() {
     'CnParticipantModelFactory',
     function( CnParticipantModelFactory ) {
       return {
-        templateUrl: module.url + 'view.tpl.html',
+        templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {

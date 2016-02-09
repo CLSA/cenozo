@@ -85,6 +85,14 @@ var cenozoApp = angular.module( 'cenozoApp', [
 angular.extend( cenozoApp, {
   moduleList: {},
 
+  getFileUrl: function( module, file, build ) {
+    if( angular.isUndefined( build ) ) build = this.build;
+    var url = this.baseUrl + '/app/';
+    if( angular.isDefined( module ) ) url += module + '/';
+    if( angular.isDefined( file ) ) url += file + '?build=' + build;
+    return url;
+  },
+
   // returns a reference to a module
   module: function( moduleName, mark ) {
     // by default modules are not marked
@@ -130,7 +138,13 @@ angular.extend( cenozoApp, {
             Camel: name.snakeToCamel( true )
           },
           framework: framework,
-          url: ( framework ? cenozo.baseUrl : this.baseUrl ) + '/app/' + name + '/',
+          getFileUrl: function( file ) {
+            var build = this.framework ? cenozo.build : cenozoApp.build;
+            var url = ( this.framework ? cenozo.baseUrl : cenozoApp.baseUrl ) +
+                      '/app/' + this.subject.snake + '/';
+            if( angular.isDefined( file ) ) url += file + '?build=' + build;
+            return url;
+          },
           inputGroupList: {},
           columnList: {},
           extraOperationList: {
@@ -141,10 +155,9 @@ angular.extend( cenozoApp, {
           },
           getRequiredFiles: function() {
             // we require the main module.js
-            var modules = [ this.url + 'module.js' ];
+            var modules = [ this.getFileUrl( 'module.js' ) ];
             // if this is a framework module then also require the application's module extention
-            if( this.framework )
-              modules.push( self.baseUrl + '/app/' + this.subject.snake + '/module.extend.js' );
+            if( this.framework ) modules.push( cenozoApp.getFileUrl( this.subject.snake, 'module.extend.js' ) );
             return modules;
           },
           addInput: function( group, key, input ) {
@@ -217,11 +230,15 @@ angular.extend( cenozoApp, {
       marked: false,
       subject: { snake: 'root', camel: 'root', Camel: 'Root' },
       framework: true,
-      url: cenozo.baseUrl + '/app/root/',
+      getFileUrl: function( file ) {
+        var url = cenozo.baseUrl + '/app/' + this.subject.snake + '/';
+        if( angular.isDefined( file ) ) url += file + '?build=' + cenozo.build;
+        return url;
+      },
       getRequiredFiles: function() {
         return [
-          this.url + 'module.js',
-          self.baseUrl + '/app/' + this.subject.snake + '/module.extend.js'
+          getFileUrl( 'module.js' ),
+          cenozoApp.getFileUrl( this.snake, 'module.extend.js' )
         ];
       },
     };
@@ -229,11 +246,15 @@ angular.extend( cenozoApp, {
       marked: false,
       subject: { snake: 'error', camel: 'error', Camel: 'Error' },
       framework: true,
-      url: cenozo.baseUrl + '/app/error/',
+      getFileUrl: function( file ) {
+        var url = cenozo.baseUrl + '/app/' + this.subject.snake + '/';
+        if( angular.isDefined( file ) ) url += file + '?build=' + cenozo.build;
+        return url;
+      },
       getRequiredFiles: function() {
         return [
-          this.url + 'module.js',
-          self.baseUrl + '/app/' + this.subject.snake + '/module.extend.js'
+          getFileUrl( 'module.js' ),
+          cenozoApp.getFileUrl( this.snake, 'module.extend.js' )
         ];
       },
     };
@@ -244,6 +265,14 @@ angular.extend( cenozoApp, {
 angular.extend( cenozo, {
   providers: {},
   frameworkModules: {},
+
+  getFileUrl: function( module, file, build ) {
+    if( angular.isUndefined( build ) ) build = cenozo.build;
+    var url = this.baseUrl + '/app/';
+    if( angular.isDefined( module ) ) url += module + '/';
+    if( angular.isDefined( file ) ) url += file + '?build=' + build;
+    return url;
+  },
 
   // adds an extendable function to an object
   addExtendableFunction: function( object, name, fn ) {
@@ -324,7 +353,7 @@ angular.extend( cenozo, {
         resolve: resolve
       } );
       stateProvider.state( name + '.home', { url: cenozoApp.baseUrl + '/' } );
-      stateProvider.state( 'wait', { templateUrl: module.url + 'wait.tpl.html' } );
+      stateProvider.state( 'wait', { templateUrl: cenozo.getFileUrl( 'root', 'wait.tpl.html' ) } );
     } else if( 'error' == name ) {
       // add the error states
       stateProvider.state( name, {
@@ -346,7 +375,7 @@ angular.extend( cenozo, {
       stateProvider.state( name, {
         abstract: true,
         url: cenozoApp.baseUrl + '/' + name,
-        templateUrl: this.baseUrl + '/app/cenozo/view-frame.tpl.html',
+        templateUrl: this.getFileUrl( 'cenozo', 'view-frame.tpl.html' ),
         resolve: resolve
       } );
 
@@ -660,7 +689,7 @@ cenozo.directive( 'cnElastic', [
 cenozo.directive( 'cnLoading',
   function() {
     return {
-      templateUrl: cenozo.baseUrl + '/app/cenozo/loading.tpl.html',
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'loading.tpl.html' ),
       restrict: 'E',
       scope: { message: '@' },
       controller: function( $scope ) { $scope.directive = 'cnLoading'; }
@@ -757,7 +786,7 @@ cenozo.directive( 'cnRecordAdd', [
   '$filter', '$state', 'CnSession', 'CnModalDatetimeFactory',
   function( $filter, $state, CnSession, CnModalDatetimeFactory ) {
     return {
-      templateUrl: cenozo.baseUrl + '/app/cenozo/record-add.tpl.html',
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'record-add.tpl.html' ),
       restrict: 'E',
       scope: {
         model: '=',
@@ -900,7 +929,7 @@ cenozo.directive( 'cnRecordCalendar', [
   function( $state, CnSession, CnModalSiteFactory ) {
     var calendarElement = null;
     return {
-      templateUrl: cenozo.baseUrl + '/app/cenozo/record-calendar.tpl.html',
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'record-calendar.tpl.html' ),
       restrict: 'E',
       scope: {
         model: '=',
@@ -983,7 +1012,7 @@ cenozo.directive( 'cnRecordList', [
   '$state', 'CnSession', 'CnModalRestrictFactory',
   function( $state, CnSession, CnModalRestrictFactory ) {
     return {
-      templateUrl: cenozo.baseUrl + '/app/cenozo/record-list.tpl.html',
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'record-list.tpl.html' ),
       restrict: 'E',
       scope: {
         model: '=',
@@ -1081,7 +1110,7 @@ cenozo.directive( 'cnRecordView', [
   'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state',
   function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state ) {
     return {
-      templateUrl: cenozo.baseUrl + '/app/cenozo/record-view.tpl.html',
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'record-view.tpl.html' ),
       restrict: 'E',
       scope: {
         model: '=',
@@ -1354,7 +1383,7 @@ cenozo.directive( 'cnTimer', [
 cenozo.directive( 'cnTree',
   function() {
     return {
-      templateUrl: cenozo.baseUrl + '/app/cenozo/tree.tpl.html',
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'tree.tpl.html' ),
       restrict: 'E',
       scope: { model: '=' },
       controller: function( $scope ) { $scope.directive = 'cnTree'; }
@@ -1371,7 +1400,7 @@ cenozo.directive( 'cnTreeBranch', [
   'CnRecursionHelper',
   function( CnRecursionHelper ) {
     return {
-      templateUrl: cenozo.baseUrl + '/app/cenozo/tree-branch.tpl.html',
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'tree-branch.tpl.html' ),
       restrict: 'E',
       scope: { model: '=', last: '=' },
       controller: function( $scope ) {
@@ -3593,7 +3622,7 @@ cenozo.service( 'CnModalAccountFactory', [
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-account.tpl.html',
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-account.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
             $scope.user = params.user;
             $scope.ok = function() { $modalInstance.close( true ); };
@@ -3630,7 +3659,7 @@ cenozo.service( 'CnModalConfirmFactory', [
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-confirm.tpl.html',
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-confirm.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
@@ -3888,7 +3917,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
             backdrop: 'static',
             keyboard: true,
             modalFade: true,
-            templateUrl: cenozo.baseUrl + '/app/cenozo/modal-datetime.tpl.html',
+            templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-datetime.tpl.html' ),
             controller: function( $scope, $modalInstance ) {
               $scope.local = self;
               $scope.nowDisabled = !self.isDateAllowed( moment(), 'second' );
@@ -3992,7 +4021,7 @@ cenozo.service( 'CnModalMessageFactory', [
           backdrop: 'static',
           keyboard: !self.block,
           modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-message.tpl.html',
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-message.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
@@ -4067,7 +4096,7 @@ cenozo.service( 'CnModalPasswordFactory', [
           backdrop: 'static',
           keyboard: this.confirm,
           modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-password.tpl.html',
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-password.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
             $scope.confirm = self.confirm;
             $scope.showPasswords = self.showPasswords;
@@ -4199,7 +4228,7 @@ cenozo.service( 'CnModalRestrictFactory', [
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-restrict.tpl.html',
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-restrict.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
             $scope.local = self;
             $scope.ok = function( restrictList ) {
@@ -4267,7 +4296,7 @@ cenozo.service( 'CnModalSiteFactory', [
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-site.tpl.html',
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-site.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
             // load the data from the session once it is available
             $scope.siteList = CnSession.siteList;
@@ -4298,7 +4327,7 @@ cenozo.service( 'CnModalSiteRoleFactory', [
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-site-role.tpl.html',
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-site-role.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
             $scope.refreshRoleList = function() {
               this.siteList.forEach( function( item, index ) {
@@ -4348,7 +4377,7 @@ cenozo.service( 'CnModalTimezoneFactory', [
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
-          templateUrl: cenozo.baseUrl + '/app/cenozo/modal-timezone.tpl.html',
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-timezone.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
             $scope.timezone = self.timezone;
             $scope.use12hourClock = self.use12hourClock ? 1 : 0;

@@ -8,7 +8,7 @@ define( function() {
     'CnHomeModelFactory',
     function( CnHomeModelFactory ) {
       return {
-        templateUrl: module.url + 'home.tpl.html',
+        templateUrl: module.getFileUrl( 'home.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnHomeModelFactory.root;
