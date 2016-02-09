@@ -35,23 +35,26 @@ class post extends \cenozo\service\post
   {
     parent::setup();
 
-    // create a tracking event types for the new script
     $db_script = $this->get_leaf_record();
 
-    $db_started_event_type = lib::create( 'database\event_type' );
-    $db_started_event_type->name = sprintf( 'started (%s)', $db_script->name );
-    $db_started_event_type->description =
-      sprintf( 'Started the "%s" script.', $db_script->name );
-    $db_started_event_type->save();
-    $db_script->started_event_type_id = $db_started_event_type->id;
+    // create a tracking event types for the new non-repeating scripts
+    if( false == $db_script->repeated )
+    {
+      $db_started_event_type = lib::create( 'database\event_type' );
+      $db_started_event_type->name = sprintf( 'started (%s)', $db_script->name );
+      $db_started_event_type->description =
+        sprintf( 'Started the "%s" script.', $db_script->name );
+      $db_started_event_type->save();
+      $db_script->started_event_type_id = $db_started_event_type->id;
 
-    $db_finished_event_type = lib::create( 'database\event_type' );
-    $db_finished_event_type->name = sprintf( 'finished (%s)', $db_script->name );
-    $db_finished_event_type->record_address = true;
-    $db_finished_event_type->description =
-      sprintf( 'Started the "%s" script.', $db_script->name );
-    $db_finished_event_type->save();
-    $db_script->finished_event_type_id = $db_finished_event_type->id;
+      $db_finished_event_type = lib::create( 'database\event_type' );
+      $db_finished_event_type->name = sprintf( 'finished (%s)', $db_script->name );
+      $db_finished_event_type->record_address = true;
+      $db_finished_event_type->description =
+        sprintf( 'Started the "%s" script.', $db_script->name );
+      $db_finished_event_type->save();
+      $db_script->finished_event_type_id = $db_finished_event_type->id;
+    }
   }
 
   /**

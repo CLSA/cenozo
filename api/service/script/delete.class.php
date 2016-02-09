@@ -36,8 +36,8 @@ class delete extends \cenozo\service\delete
     try
     {
       // delete the associated event types
-      $this->db_started_event_type->delete();
-      $this->db_finished_event_type->delete();
+      if( !is_null( $this->db_started_event_type ) ) $this->db_started_event_type->delete();
+      if( !is_null( $this->db_finished_event_type ) ) $this->db_finished_event_type->delete();
     }
     catch( \cenozo\exception\notice $e )
     {

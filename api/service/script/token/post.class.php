@@ -66,23 +66,20 @@ class post extends \cenozo\service\post
 
     $util_class_name = lib::get_class_name( 'util' );
 
-    $add_event = true;
-
+    // if the script doesn't repeat and the participant doesn't have its start event yet, then create it
     if( !$this->db_script->repeated )
-    { // if the script doesn't repeat then avoid adding duplicate start events
+    {
       $event_mod = lib::create( 'database\modifier' );
       $event_mod->where( 'participant_id', '=', $this->db_participant->id );
       $event_mod->where( 'event_type_id', '=', $this->db_script->started_event_type_id );
-      if( 0 < $this->db_participant->get_event_count( $event_mod ) ) $add_event = false;
-    }
-
-    if( $add_event )
-    {
-      $db_event = lib::create( 'database\event' );
-      $db_event->participant_id = $this->db_participant->id;
-      $db_event->event_type_id = $this->db_script->started_event_type_id;
-      $db_event->datetime = $util_class_name::get_datetime_object();
-      $db_event->save();
+      if( 0 == $this->db_participant->get_event_count( $event_mod ) )
+      {
+        $db_event = lib::create( 'database\event' );
+        $db_event->participant_id = $this->db_participant->id;
+        $db_event->event_type_id = $this->db_script->started_event_type_id;
+        $db_event->datetime = $util_class_name::get_datetime_object();
+        $db_event->save();
+      }
     }
   }
 

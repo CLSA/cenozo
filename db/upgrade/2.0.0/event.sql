@@ -41,6 +41,31 @@ DROP PROCEDURE IF EXISTS patch_event;
       ON UPDATE NO ACTION;
     END IF;
 
+    SELECT "Adding new participant-event_type-datetime unique key to event table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.STATISTICS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "event"
+      AND INDEX_NAME = "uq_participant_id_event_type_id_datetime" );
+    IF @test = 0 THEN
+      -- remove duplicate records
+      CREATE TEMPORARY TABLE uq_event
+      SELECT * FROM event GROUP BY participant_id, event_type_id, datetime;
+      ALTER TABLE uq_event ADD INDEX dk_id( id );
+      DELETE FROM event WHERE id IN (
+        SELECT * FROM (
+          SELECT event.id FROM event
+          LEFT JOIN uq_event USING( id )
+          WHERE uq_event.id IS NULL
+        ) AS t
+      );
+
+      ALTER TABLE event
+      ADD UNIQUE KEY uq_participant_id_event_type_id_datetime( participant_id, event_type_id, datetime );
+    END IF;
+
   END //
 DELIMITER ;
 

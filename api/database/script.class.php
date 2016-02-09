@@ -60,12 +60,12 @@ class script extends record
 
     $select = lib::create( 'database\select' );
     $select->add_column( 'sid' );
-    $select->add_column( 'repeated' );
     if( $started_events ) $select->add_column( 'started_event_type_id' );
     if( $finished_events ) $select->add_column( 'finished_event_type_id' );
     $select->from( 'script' );
     $modifier = lib::create( 'database\modifier' );
     if( !is_null( $db_script ) ) $modifier->where( 'script.id', '=', $db_script->id );
+    $modifier->where( 'repeated', '=', false );
 
     foreach( $db_application->get_script_list( $select, $modifier ) as $script )
     {
@@ -85,7 +85,7 @@ class script extends record
           false );
       $survey_sel->from( $survey_class_name::get_table_name() );
       $survey_mod = lib::create( 'database\modifier' );
-      $tokens_class_name::where_token( $survey_mod, $db_participant, $script['repeated'] );
+      $tokens_class_name::where_token( $survey_mod, $db_participant, false );
 
       foreach( $survey_class_name::select( $survey_sel, $survey_mod ) as $survey )
       {
