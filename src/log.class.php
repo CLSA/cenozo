@@ -458,7 +458,7 @@ final class log extends singleton
       $code = $e->get_code();
 
       header( 'HTTP/1.1 500 Internal Server Error' );
-      if( false === strpos( $_SERVER['REDIRECT_URL'], '/api' ) ) include CENOZO_PATH.'/api/ui/error.php';
+      if( false === strpos( $_SERVER['REDIRECT_URL'], '/src' ) ) include CENOZO_PATH.'/src/ui/error.php';
       else print $e->get_code();
       exit;
     }

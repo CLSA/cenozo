@@ -81,10 +81,10 @@ final class bootstrap
     $this->read_settings();
 
     // include the autoloader and error code files (search for app_path::util first)
-    require_once CENOZO_API_PATH.'/lib.class.php';
-    require_once CENOZO_API_PATH.'/exception/error_codes.inc.php';
-    if( file_exists( API_PATH.'/exception/error_codes.inc.php' ) )
-      require_once API_PATH.'/exception/error_codes.inc.php';
+    require_once CENOZO_SRC_PATH.'/lib.class.php';
+    require_once CENOZO_SRC_PATH.'/exception/error_codes.inc.php';
+    if( file_exists( APP_SRC_PATH.'/exception/error_codes.inc.php' ) )
+      require_once APP_SRC_PATH.'/exception/error_codes.inc.php';
 
     // registers an autoloader so classes don't have to be included manually
     lib::register( $this->method, $this->settings['general']['development_mode'] );
@@ -152,8 +152,8 @@ final class bootstrap
             implode( ' ', array_map( function( $word ) {
               return 3 > strlen( $word ) ? strtoupper( $word ) : ucfirst( $word );
             }, explode( '_', INSTANCE ) ) ) );
-    $this->settings['path']['CENOZO_API'] = $this->settings['path']['CENOZO'].'/api';
-    $this->settings['path']['API'] = $this->settings['path']['APPLICATION'].'/api';
+    $this->settings['path']['CENOZO_SRC'] = $this->settings['path']['CENOZO'].'/src';
+    $this->settings['path']['APP_SRC'] = $this->settings['path']['APPLICATION'].'/src';
     $this->settings['path']['WEB'] = $this->settings['path']['CENOZO'].'/web';
 
     foreach( $this->settings['path'] as $path_name => $path_value )
@@ -185,7 +185,7 @@ final class bootstrap
         if( $this->settings['general']['version'] != $this->session->get_application()->version )
           throw lib::create( 'exception\runtime',
             sprintf(
-              'The software version (%s) does not match the database version (%s).  The api will '.
+              'The software version (%s) does not match the database version (%s).  The web application will '.
               'remain unavailable until this problem is corrected by an administrator.',
               $this->settings['general']['version'],
               $this->session->get_application()->version ),

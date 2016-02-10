@@ -110,8 +110,8 @@ final class lib
 
   /**
    * This method is called by PHP whenever an undefined class is used.
-   * It searches for an appropriate file in the application's api directory and loads it,
-   * or if no file is found then it searches in the cenozo api directory.
+   * It searches for an appropriate file in the application's src directory and loads it,
+   * or if no file is found then it searches in the cenozo src directory.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
    * @throws exception\runtime
@@ -162,7 +162,7 @@ final class lib
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $class_name The name of the class including the namespace but without the base
-   *               (application) name (so api\ui\widget and not cenozo\api\ui\widget)
+   *               (application) name (so src\database\user and not cenozo\src\database\user)
    * @param boolean $force_framework_namespace Whether to force the class file to be loaded from
    *                the framework and not the application.
    * @return string (NULL if file not found)
@@ -266,14 +266,14 @@ final class lib
     }
 
     // see if the application has a matching class
-    $file_path = sprintf( '%s/%s.class.php', API_PATH, $class_name );
+    $file_path = sprintf( '%s/%s.class.php', APP_SRC_PATH, $class_name );
     if( file_exists( $file_path ) )
     {
       return $file_path;
     }
 
     // see if the application has a matching interface
-    $file_path = sprintf( '%s/%s.interface.php', API_PATH, $class_name );
+    $file_path = sprintf( '%s/%s.interface.php', APP_SRC_PATH, $class_name );
     if( file_exists( $file_path ) ) return $file_path;
 
     return NULL;
@@ -301,11 +301,11 @@ final class lib
     }
 
     // see if the application has a matching class
-    $file_path = sprintf( '%s/%s.class.php', CENOZO_API_PATH, $class_name );
+    $file_path = sprintf( '%s/%s.class.php', CENOZO_SRC_PATH, $class_name );
     if( file_exists( $file_path ) ) return $file_path;
 
     // see if the application has a matching interface
-    $file_path = sprintf( '%s/%s.interface.php', CENOZO_API_PATH, $class_name );
+    $file_path = sprintf( '%s/%s.interface.php', CENOZO_SRC_PATH, $class_name );
     if( file_exists( $file_path ) ) return $file_path;
 
     return NULL;

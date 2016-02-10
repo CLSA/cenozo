@@ -5,8 +5,8 @@ A PHP/Angular framework used to build participant-based web applications which t
 integrate with one another.  See GitHub projects Sabretooth, Beartooth, Cedar and Mastodon
 for examples of web applications using this framework.
 
-api/
-  This is where the programming interface belongs.
+src/
+  This is where the source code belongs.
   This includes all packages, classes, functions, settings, etc.
 
 aux/
@@ -21,3 +21,9 @@ sql/
 
 web/
   This is the public web directory that a web server links to.
+
+web/app/
+  This is where the client-side source code goes.
+
+web/lib/
+  This is where third-party client-side libraries go.
