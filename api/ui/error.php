@@ -2,7 +2,7 @@
 <html lang="en" ng-app="cenozoApp">
 <head>
   <meta charset="utf-8">
-  <title><?php echo ucwords( INSTANCE ); ?></title>
+  <title><?php echo APP_TITLE; ?></title>
   <link rel="shortcut icon" href="img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css">

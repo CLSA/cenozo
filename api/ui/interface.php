@@ -2,7 +2,7 @@
 <html lang="en" ng-app="cenozoApp">
 <head ng-controller="HeadCtrl">
   <meta charset="utf-8">
-  <title><?php echo ucwords( str_replace( '_', ' ', INSTANCE ) ); ?>{{ getPageTitle() }}</title>
+  <title><?php echo APP_TITLE; ?>{{ getPageTitle() }}</title>
   <link rel="shortcut icon" href="<?php print ROOT_URL; ?>/img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
@@ -70,7 +70,7 @@
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
           <a class="navbar-brand" data-toggle="dropdown">
-            <?php echo ucwords( str_replace( '_', ' ', INSTANCE ) ); ?>
+            <?php echo APP_TITLE; ?>
           </a>
           <ul class="dropdown-menu navigation-menu">
             <li ng-controller="MenuCtrl">

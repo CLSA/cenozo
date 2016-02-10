@@ -148,6 +148,10 @@ final class bootstrap
     define( 'APP_BUILD', $this->settings['general']['build'] );
     define( 'APPLICATION', $this->settings['general']['application_name'] );
     define( 'INSTANCE', $this->settings['general']['instance_name'] );
+    define( 'APP_TITLE',
+            implode( ' ', array_map( function( $word ) {
+              return 3 > strlen( $word ) ? strtoupper( $word ) : ucfirst( $word );
+            }, explode( '_', INSTANCE ) ) ) );
     $this->settings['path']['CENOZO_API'] = $this->settings['path']['CENOZO'].'/api';
     $this->settings['path']['API'] = $this->settings['path']['APPLICATION'].'/api';
     $this->settings['path']['WEB'] = $this->settings['path']['CENOZO'].'/web';
