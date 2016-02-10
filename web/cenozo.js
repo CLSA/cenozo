@@ -237,8 +237,8 @@ angular.extend( cenozoApp, {
       },
       getRequiredFiles: function() {
         return [
-          getFileUrl( 'module.js' ),
-          cenozoApp.getFileUrl( this.snake, 'module.extend.js' )
+          this.getFileUrl( 'module.js' ),
+          cenozoApp.getFileUrl( this.subject.snake, 'module.extend.js' )
         ];
       },
     };
@@ -253,8 +253,8 @@ angular.extend( cenozoApp, {
       },
       getRequiredFiles: function() {
         return [
-          getFileUrl( 'module.js' ),
-          cenozoApp.getFileUrl( this.snake, 'module.extend.js' )
+          this.getFileUrl( 'module.js' ),
+          cenozoApp.getFileUrl( this.subject.snake, 'module.extend.js' )
         ];
       },
     };
@@ -691,8 +691,15 @@ cenozo.directive( 'cnLoading',
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'loading.tpl.html' ),
       restrict: 'E',
-      scope: { message: '@' },
-      controller: function( $scope ) { $scope.directive = 'cnLoading'; }
+      scope: false,
+      controller: function( $scope ) {
+        $scope.directive = 'cnLoading';
+      },
+      link: function( scope, element, attrs ) {
+        scope.message = angular.isDefined( attrs.message )
+                      ? attrs.message
+                      : 'Waiting for a response from the server';
+      }
     };
   }
 );
