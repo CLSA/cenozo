@@ -53,10 +53,15 @@ class get extends \cenozo\service\get
         $token = $tokens_class_name::determine_token_string( $db_participant, $db_script->repeated );
         $record = $tokens_class_name::get_unique_record( 'token', $token );
       }
+      else $record = parent::create_resource( $index );
 
       $tokens_class_name::set_sid( $old_sid );
     }
+    else
+    {
+      $record = parent::create_resource( $index );
+    }
 
-    return is_null( $record ) ? parent::create_resource( $index ) : $record;
+    return $record;
   }
 }
