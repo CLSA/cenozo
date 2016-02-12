@@ -3176,6 +3176,16 @@ cenozo.factory( 'CnBaseModelFactory', [
             } ] );
           } else throw new Error( 'Tried to setup breadcrumb trail for invalid type "' + type + '".' );
 
+          // truncate the full trail if it is too long
+          var length = trail.reduce( function( total, crumb ) {
+            return total + ( angular.isString( crumb.title ) ? crumb.title.length + 3 : 0 );
+          }, 0 ) - 3;
+          var lastCrumb = trail[trail.length-1];
+          if( 60 < length && ( length - 58 ) <= lastCrumb.title.length ) {
+            lastCrumb.title = lastCrumb.title.substring( 0, lastCrumb.title.length - ( length - 58 ) )
+                            + '...';
+          }
+
           CnSession.setBreadcrumbTrail( trail );
         } );
 
