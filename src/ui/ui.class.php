@@ -121,7 +121,7 @@ class ui extends \cenozo\base_object
     return array(
       'access', 'activity', 'address', 'alternate', 'application', 'cohort', 'collection',
       'consent', 'consent_type', 'event', 'event_type', 'jurisdiction', 'language', 'participant',
-      'phone', 'quota', 'region', 'region_site', 'role', 'script', 'site', 'source', 'state',
+      'phone', 'quota', 'region', 'region_site', 'role', 'script', 'search', 'site', 'source', 'state',
       'system_message', 'user' );
   }
 
@@ -315,7 +315,7 @@ class ui extends \cenozo\base_object
 
     if( 2 <= $db_role->tier )
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
-    $list['Participant Search'] = array( 'subject' => 'participant', 'action' => 'search' );
+    $list['Search'] = array( 'subject' => 'search', 'action' => 'list' );
 
     return $list;
   }

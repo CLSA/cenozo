@@ -580,6 +580,60 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Runs a search on all text and varchar columns found in the application and framework databases
+   * 
+   * This will return an array of matches to the search term in the form of an associative arrays.
+   * Each result will contain the following:
+   *   table_name: the name of the table
+   *   primary_column_name: the name of the primary key column for the table
+   *   column_name: the name of the column
+   *   primary_value: the value of the primary key for the record
+   *   value: the value that matched
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $term string Mysql LIKE search term
+   * @return array (empty if no records are found)
+   * @throws exception\database
+   * @access public
+   */
+  public function search( $term )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    if( self::$debug )
+    {
+      $time = $util_class_name::get_elapsed_time();
+      log::debug( sprintf( "(DB) searching for \"%s\"\n", $term ) );
+    }
+
+    $rows = array();
+    $cenozo = $this->tables['application']['database'];
+    if( !$this->connection->multi_query( sprintf( 'CALL %s.search( "%s" )', $cenozo, $term ) ) )
+    {
+      // pass the db error code instead of a class error code
+      throw lib::create( 'exception\database',
+        $this->connection->error, $term, $this->connection->errno );
+    }
+    else
+    {
+      do
+      {
+        if( $result = $this->connection->store_result() )
+        {
+          while( $row = $result->fetch_assoc() ) $rows[] = $row;
+          $result->free();
+        }
+      } while( $this->connection->more_results() && $this->connection->next_result() );
+    }
+
+    if( self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
+                                            $rows ? count( $rows ) : 0,
+                                            $util_class_name::get_elapsed_time() - $time ) );
+
+    return $rows;
+  }
+
+  /**
    * Database convenience method.
    * 
    * Executes the SQL and returns all elements of the first column as a 1-dimensional array.
