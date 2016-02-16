@@ -116,13 +116,18 @@ class select extends \cenozo\base_object
    * @param mixed $constant The value to add (may be a string, number or boolean)
    * @param string $alias The optional alias for the column (must be unique)
    * @param string $type A hint at what type the column is (doesn't have to be provided)
+   * @param string $format Whether to format the constant
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function add_constant( $constant, $alias = NULL, $type = NULL )
+  public function add_constant( $constant, $alias = NULL, $type = NULL, $format = true )
   {
-    $db = lib::create( 'business\session' )->get_database();
-    $this->add_table_column( '', $db->format_string( $constant ), $alias, false, $type );
+    if( $format )
+    {
+      $db = lib::create( 'business\session' )->get_database();
+      $constant = $db->format_string( $constant );
+    }
+    $this->add_table_column( '', $constant, $alias, false, $type );
   }
 
   /**

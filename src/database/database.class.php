@@ -77,9 +77,10 @@ class database extends \cenozo\base_object
       $column_mod->order( 'column_name' );
 
       $rows = $this->get_all(
-        sprintf( 'SELECT table_schema, table_name, column_name, column_type, data_type, character_maximum_length, '.
-                 "\n".'column_key, column_default, is_nullable != "YES" AS is_nullable '.
-                 "\n".'FROM information_schema.columns %s ',
+        sprintf( 'SELECT table_schema, table_name, column_name, column_type, data_type, '."\n".
+                 'character_maximum_length, column_key, column_default, '."\n".
+                 'is_nullable != "YES" AS is_nullable '."\n".
+                 'FROM information_schema.columns %s ',
                  $column_mod->get_sql() ),
         false ); // do not add table names
 
@@ -354,6 +355,25 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Returns a column's max_length.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table_name The name of the table to check for.
+   * @param string $column_name A column name in the record's corresponding table.
+   * @return string
+   * @access public
+   */
+  public function get_column_max_length( $table_name, $column_name )
+  {
+    if( !$this->column_exists( $table_name, $column_name ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Tried to get column max_length for "%s.%s" which doesn\'t exist.',
+                 $table_name,
+                 $column_name ), __METHOD__ );
+
+    return $this->tables[$table_name]['columns'][$column_name]['max_length'];
+  }
+
+  /**
    * Returns a column's default.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
@@ -576,60 +596,6 @@ class database extends \cenozo\base_object
     if( self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
                                             $rows ? count( $rows ) : 0,
                                             $util_class_name::get_elapsed_time() - $time ) );
-    return $rows;
-  }
-
-  /**
-   * Runs a search on all text and varchar columns found in the application and framework databases
-   * 
-   * This will return an array of matches to the search term in the form of an associative arrays.
-   * Each result will contain the following:
-   *   table_name: the name of the table
-   *   primary_column_name: the name of the primary key column for the table
-   *   column_name: the name of the column
-   *   primary_value: the value of the primary key for the record
-   *   value: the value that matched
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $term string Mysql LIKE search term
-   * @return array (empty if no records are found)
-   * @throws exception\database
-   * @access public
-   */
-  public function search( $term )
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-
-    if( self::$debug )
-    {
-      $time = $util_class_name::get_elapsed_time();
-      log::debug( sprintf( "(DB) searching for \"%s\"\n", $term ) );
-    }
-
-    $rows = array();
-    $cenozo = $this->tables['application']['database'];
-    if( !$this->connection->multi_query( sprintf( 'CALL %s.search( "%s" )', $cenozo, $term ) ) )
-    {
-      // pass the db error code instead of a class error code
-      throw lib::create( 'exception\database',
-        $this->connection->error, $term, $this->connection->errno );
-    }
-    else
-    {
-      do
-      {
-        if( $result = $this->connection->store_result() )
-        {
-          while( $row = $result->fetch_assoc() ) $rows[] = $row;
-          $result->free();
-        }
-      } while( $this->connection->more_results() && $this->connection->next_result() );
-    }
-
-    if( self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
-                                            $rows ? count( $rows ) : 0,
-                                            $util_class_name::get_elapsed_time() - $time ) );
-
     return $rows;
   }
 

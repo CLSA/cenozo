@@ -386,6 +386,7 @@ angular.extend( cenozo, {
           var url = '/' + action;
           if( 'calendar' == action ) url += '/{identifier}';
           else if ( 'view' == action ) url += '/{identifier}';
+          else if( 'search' == name && 'list' == action ) url += '?{q}';
           var slash = action.indexOf( '/' );
           if( 0 <= slash ) action = action.substring( 0, slash );
           var directive = 'cn-' + module.subject.snake.replace( '_', '-' ) + '-' + action;

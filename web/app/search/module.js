@@ -5,18 +5,26 @@ define( function() {
   angular.extend( module, {
     identifier: { column: 'query' },
     name: {
-      singular: 'search',
-      plural: 'searches',
-      possessive: 'search\'s',
-      pluralPossessive: 'searches\''
+      singular: 'search result',
+      plural: 'search results',
+      possessive: 'search result\'s',
+      pluralPossessive: 'search results\''
     },
     columnList: {
-      name: {
-        column: 'subject',
-        title: 'Subject'
+      uid: {
+        column: 'participant.uid',
+        title: 'UID',
+        width: '15%',
       },
-      active: {
-        column: 'value',
+      subject: {
+        title: 'Subject',
+        width: '15%',
+      },
+      column_name: {
+        title: 'Key',
+        width: '15%'
+      },
+      value: {
         title: 'Value',
         type: 'text'
       },
@@ -29,14 +37,22 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnSearchList', [
-    'CnSearchModelFactory',
-    function( CnSearchModelFactory ) {
+    'CnSearchModelFactory', '$state',
+    function( CnSearchModelFactory, $state ) {
       return {
         templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnSearchModelFactory.root;
+          $scope.q = $state.params.q;
+
+          $scope.search = function() {
+            $state.params.q = $scope.q;
+            $state.go( 'search.list', $state.params ).then( function() {
+              $scope.model.listModel.onList( true );
+            } );
+          };
         }
       };
     }
@@ -53,12 +69,31 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSearchModelFactory', [
-    'CnBaseModelFactory', 'CnSearchListFactory',
-    function( CnBaseModelFactory, CnSearchListFactory ) {
+    'CnBaseModelFactory', 'CnSearchListFactory', 'CnHttpFactory', '$state',
+    function( CnBaseModelFactory, CnSearchListFactory, CnHttpFactory, $state ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnSearchListFactory.instance( this );
+        this.enableView( true );
+
+        this.transitionToViewState = function( record ) {
+          var subject = record.subject;
+          var identifier = record.id;
+          /*
+          if( 'note' == record.subject ) {
+            subject = 'participant';
+            identifier = 
+          }
+          */
+          $state.go( record.subject + '.view', { identifier: record.id } );
+        };
+
+        this.getServiceData = function( type, columnRestrictLists ) {
+          var data = this.$$getServiceData( type, columnRestrictLists );
+          if( 'list' == type ) data.q = $state.params.q;
+          return data;
+        };
       };
 
       return {

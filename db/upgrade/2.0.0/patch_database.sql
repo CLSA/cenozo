@@ -33,6 +33,7 @@ SOURCE system_message.sql
 SOURCE script.sql
 SOURCE application_has_script.sql
 SOURCE event_type.sql
+SOURCE search.sql
 
 SOURCE participant_default_site.sql
 SOURCE participant_preferred_site.sql

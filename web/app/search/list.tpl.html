@@ -1,1 +1,20 @@
+<form class="form-horizontal container-fluid">
+  <div class="form-body">
+    <div class="form-group">
+      <label for="q" class="col-sm-1 control-label">Search</label>
+      <div class="col-sm-11">
+        <div class="input-group">
+        <input id="q"
+               name="q"
+               ng-model="q"
+               cn-change="search()"
+               class="form-control"
+               type="text"
+               maxlength="255"></input>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
 <cn-record-list model="model"></cn-record-list>

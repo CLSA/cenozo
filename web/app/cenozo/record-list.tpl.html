@@ -81,6 +81,7 @@
             ng-click="model.listModel.chooseMode ? chooseRecord( record ) : selectRecord( record )"
             ng-class="{ success:model.listModel.chooseMode && record.chosen }">
             <td ng-repeat="column in dataArray"
+                ng-style="column.width && {'width': column.width}"
                 ng-class="{'text-left':'left'==column.align,'text-right':'right'==column.align}">
               <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
             </td>

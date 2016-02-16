@@ -97,9 +97,8 @@ class read extends service
     $leaf_module = $this->get_leaf_module();
     if( !is_null( $leaf_module ) )
     {
-      $data = $this->get_data();
-      if( is_array( $data ) && is_array( current( $data ) ) )
-        foreach( $data as $row ) $leaf_module->post_read( $row );
+      if( is_array( $this->data ) && is_array( current( $this->data ) ) )
+        foreach( $this->data as $index => $row ) $leaf_module->post_read( $this->data[$index] );
     }
   }
 

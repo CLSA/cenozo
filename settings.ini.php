@@ -22,8 +22,11 @@ $settings['general']['maintenance_mode'] = false;
 // always leave as false when running as production server
 $settings['general']['development_mode'] = false;
 
+// how long before a search result is considered out of date
+$settings['general']['search_timeout'] = '5 MINUTE';
+
 // how much inactivity before activity logs are considered closed (in mysql interval format)
-$settings['general']['activity_timeout'] = '2 HOUR';
+$settings['general']['activity_timeout'] = '30 MINUTE';
 
 // cenozo's sub-directory urls
 $settings['url']['ROOT'] = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) );
