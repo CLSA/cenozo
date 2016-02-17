@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace cenozo\service\search;
+namespace cenozo\service\search_result;
 use cenozo\lib, cenozo\log;
 
 /**
@@ -24,45 +24,37 @@ class module extends \cenozo\service\site_restricted_module
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
 
-    // convert the query into a modifier
-    $query = $this->get_argument( 'q', '' );
+    // always join to the search table
+    $modifier->join( 'search', 'search_result.search_id', 'search.id' );
 
-    if( 2 < strlen( $query ) )
+    // get the search words from the query
+    $search_manager = lib::create( 'business\search_manager' );
+    $query = $this->get_argument( 'q', '' );
+    $word_list = $search_manager->get_keywords( $query );
+
+    if( 0 < count( $word_list ) )
     {
-      $search_manager = lib::create( 'business\search_manager' );
       $search_manager->search( $query );
-      $word_list = $search_manager->get_keywords( $query );
-      $modifier->where( 'query', 'IN', $word_list );
+      $modifier->where( 'search.word', 'IN', $word_list );
     }
     else
     {
       // purposefully return nothing
-      $modifier->where( 'query', '=', NULL );
+      $modifier->where( 'search.word', '=', NULL );
     }
 
-    // add a little search ranking magic
-    $modifier->group( 'search.participant_id' );
+    // add a little search_result ranking magic
+    $modifier->group( 'search_result.participant_id' );
+    $select->add_column( 'COUNT( DISTINCT CONCAT( search_result.subject, ".", column_name ) )', 'hits', false );
     $select->add_column(
-      'COUNT( DISTINCT CONCAT( search.subject, ".", column_name ) )', 'hits', false );
-    $select->add_column(
-      'GROUP_CONCAT( CONCAT( " ", search.subject, ".", column_name, "=\"", value, "\"" ) )', 'value', false );
+      'GROUP_CONCAT( CONCAT( search_result.subject, ".", column_name, ": \"", value, "\"" ) SEPARATOR "\n" )',
+      'value', false );
 
-
-    // join to which service subjects the role has access to
-    $modifier->join( 'service', 'search.subject', 'service.subject' );
-    $modifier->where( 'method', '=', 'GET' );
-    $modifier->where( 'resource', '=', true );
-    $modifier->left_join( 'role_has_service', 'service.id', 'role_has_service.service_id' );
-    $modifier->where_bracket( true );
-    $modifier->where( 'role_has_service.role_id', '=', $session->get_role()->id );
-    $modifier->or_where( 'restricted', '=', false );
-    $modifier->where_bracket( false );
-
-    // make sure the user has access to the participant related to the search result
+    // make sure the user has access to the participant related to the search_result result
     if( $db_application->release_based )
     {
       $sub_mod = lib::create( 'database\modifier' );
-      $sub_mod->where( 'search.participant_id', '=', 'application_has_participant.participant_id', false );
+      $sub_mod->where( 'search_result.participant_id', '=', 'application_has_participant.participant_id', false );
       $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
       $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
       $modifier->join_modifier(
@@ -78,7 +70,7 @@ class module extends \cenozo\service\site_restricted_module
     if( !is_null( $db_restrict_site ) )
     {
       $sub_mod = lib::create( 'database\modifier' );
-      $sub_mod->where( 'search.participant_id', '=', 'participant_site.participant_id', false );
+      $sub_mod->where( 'search_result.participant_id', '=', 'participant_site.participant_id', false );
       $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
       $sub_mod->where( 'participant_site.site_id', '=', $db_restrict_site->id );
       $modifier->join_modifier( 'participant_site', $sub_mod );

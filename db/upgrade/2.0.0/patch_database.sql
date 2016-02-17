@@ -34,6 +34,7 @@ SOURCE script.sql
 SOURCE application_has_script.sql
 SOURCE event_type.sql
 SOURCE search.sql
+SOURCE search_result.sql
 
 SOURCE participant_default_site.sql
 SOURCE participant_preferred_site.sql

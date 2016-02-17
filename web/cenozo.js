@@ -10,7 +10,7 @@ try {
   console.warn( 'Trying to load cenozo.js more than once.' );
   return;
 } catch( err ) {
-  var cenozo = angular.module( 'cenozo', ['ngAnimate'] );
+  var cenozo = angular.module( 'cenozo', ['ngAnimate','ngSanitize'] );
 }
 
 // determine cenozo's base url
@@ -386,7 +386,7 @@ angular.extend( cenozo, {
           var url = '/' + action;
           if( 'calendar' == action ) url += '/{identifier}';
           else if ( 'view' == action ) url += '/{identifier}';
-          else if( 'search' == name && 'list' == action ) url += '?{q}';
+          else if( 'search_result' == name && 'list' == action ) url += '?{q}';
           var slash = action.indexOf( '/' );
           if( 0 <= slash ) action = action.substring( 0, slash );
           var directive = 'cn-' + module.subject.snake.replace( '_', '-' ) + '-' + action;
@@ -1557,6 +1557,15 @@ cenozo.filter( 'cnMetaFilter', [
     };
   }
 ] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.filter( 'cnNewlines', function () {
+  return function( text ) { return text.replace( /\r?\n/g, '<br/>' ); }
+} );
 
 /* ######################################################################################################## */
 

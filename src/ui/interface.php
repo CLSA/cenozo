@@ -17,6 +17,7 @@
   <script src="<?php print LIB_URL; ?>/angular/angular.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-bootstrap/ui-bootstrap-tpls.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-animate/angular-animate.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-sanitize/angular-sanitize.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
   <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.js"></script>

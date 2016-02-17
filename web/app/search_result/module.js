@@ -1,9 +1,9 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'search', true ); } catch( err ) { console.warn( err ); return; }
+  try { var module = cenozoApp.module( 'search_result', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
-    identifier: { column: 'query' },
+    identifier: {},
     name: {
       singular: 'search result',
       plural: 'search results',
@@ -25,7 +25,8 @@ define( function() {
       },
       value: {
         title: 'Value',
-        type: 'string'
+        type: 'string',
+        filter: 'cnNewlines'
       },
     },
     defaultOrder: {
@@ -35,20 +36,20 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSearchList', [
-    'CnSearchModelFactory', '$state',
-    function( CnSearchModelFactory, $state ) {
+  cenozo.providers.directive( 'cnSearchResultList', [
+    'CnSearchResultModelFactory', '$state',
+    function( CnSearchResultModelFactory, $state ) {
       return {
         templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnSearchModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnSearchResultModelFactory.root;
           $scope.q = $state.params.q;
 
           $scope.search = function() {
             $state.params.q = $scope.q;
-            $state.go( 'search.list', $state.params ).then( function() {
+            $state.go( 'search_result.list', $state.params ).then( function() {
               $scope.model.listModel.onList( true );
             } );
           };
@@ -58,7 +59,7 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSearchListFactory', [
+  cenozo.providers.factory( 'CnSearchResultListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -67,13 +68,13 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSearchModelFactory', [
-    'CnBaseModelFactory', 'CnSearchListFactory', 'CnHttpFactory', '$state',
-    function( CnBaseModelFactory, CnSearchListFactory, CnHttpFactory, $state ) {
+  cenozo.providers.factory( 'CnSearchResultModelFactory', [
+    'CnBaseModelFactory', 'CnSearchResultListFactory', 'CnHttpFactory', '$state',
+    function( CnBaseModelFactory, CnSearchResultListFactory, CnHttpFactory, $state ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.listModel = CnSearchListFactory.instance( this );
+        this.listModel = CnSearchResultListFactory.instance( this );
         this.enableView( true );
 
         this.transitionToViewState = function( record ) {

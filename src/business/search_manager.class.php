@@ -62,6 +62,7 @@ class search_manager extends \cenozo\singleton
    */
   public function search( $query )
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $search_class_name = lib::get_class_name( 'database\search' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $timeout = $setting_manager->get_setting( 'general', 'search_timeout' );
@@ -75,199 +76,15 @@ class search_manager extends \cenozo\singleton
     foreach( $this->get_keywords( $query ) as $word )
     {
       $search_mod = lib::create( 'database\modifier' );
-      $search_mod->where( 'query', '=', $word );
-      if( 0 == $search_class_name::count( $search_mod ) ) $this->search_keyword( $word );
-    }
-  }
-
-  /**
-   * TODO: document
-   */
-  protected function search_keyword( $word )
-  {
-    $db = lib::create( 'business\session' )->get_database();
-
-    // a base select object used by all selects below
-    $base_sel = lib::create( 'database\select' );
-    $base_sel->add_constant( 'NULL', 'create_timestamp', NULL, false );
-    $base_sel->add_constant( $word, 'query' );
-    $base_sel->add_constant( 'UTC_TIMESTAMP()', 'datetime', NULL, false );
-    $base_sel->add_column( 'id' );
-
-    // participant table
-    /////////////////////////////////////////////////////////////////////////////////////
-    $column_list = array( 'honorific', 'first_name', 'other_name', 'last_name', 'date_of_birth', 'email' );
-
-    foreach( $column_list as $column )
-    {
-      $select = clone $base_sel;
-      $select->from( 'participant' );
-      $select->add_constant( 'participant', 'subject' );
-      $select->add_constant( $column, 'column_name' );
-      $select->add_column( 'id', 'participant_id' );
-      if( 255 < $db->get_column_max_length( 'participant', $column ) )
+      $search_mod->where( 'word', '=', $word );
+      if( 0 == $search_class_name::count( $search_mod ) )
       {
-        $select->add_column(
-          sprintf( 'IF( CHAR_LENGTH( %s ) > 255, CONCAT( SUBSTRING( %s, 1, 252 ), "..." ), %s ) ',
-                   $column, $column, $column ),
-          'value', false );
+        // create the search (a database trigger will fill in the search_results table)
+        $db_search = lib::create( 'database\search' );
+        $db_search->word = $word;
+        $db_search->datetime = $util_class_name::get_datetime_object()->format( 'Y-m-d H:i:s' );
+        $db_search->save();
       }
-      else $select->add_column( $column );
-
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( $column, 'LIKE', $word );
-
-      $sql = sprintf(
-        'REPLACE INTO search( create_timestamp, query, datetime, record_id, '.
-                             'subject, column_name, participant_id, value )'."\n".
-        '%s %s',
-        $select->get_sql(),
-        $modifier->get_sql() );
-      $db->execute( $sql );
-    }
-
-    // participant-related tables
-    /////////////////////////////////////////////////////////////////////////////////////
-    $table_list = array(
-      array( 'name' => 'alternate', 'column_list' => array( 'first_name', 'last_name', 'association' ) ),
-      array( 'name' => 'consent', 'column_list' => array( 'note' ) ),
-      array( 'name' => 'hin', 'column_list' => array( 'code' ) )
-    );
-
-    foreach( $table_list as $table )
-    {
-      foreach( $table['column_list'] as $column )
-      {
-        $select = clone $base_sel;
-        $select->from( $table['name'] );
-        $select->add_constant( $table['name'], 'subject' );
-        $select->add_constant( $column, 'column_name' );
-        $select->add_column( 'participant_id' );
-        if( 255 < $db->get_column_max_length( $table['name'], $column ) )
-        {
-          $select->add_column(
-            sprintf( 'IF( CHAR_LENGTH( %s ) > 255, CONCAT( SUBSTRING( %s, 1, 252 ), "..." ), %s ) ',
-                     $column, $column, $column ),
-            'value', false );
-        }
-        else $select->add_column( $column );
-
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( $column, 'LIKE', $word );
-
-        $sql = sprintf(
-          'REPLACE INTO search( create_timestamp, query, datetime, record_id, '.
-                               'subject, column_name, participant_id, value )'."\n".
-          '%s %s',
-          $select->get_sql(),
-          $modifier->get_sql() );
-        $db->execute( $sql );
-      }
-    }
-
-    // participant/alternate shared tables
-    /////////////////////////////////////////////////////////////////////////////////////
-    $table_list = array(
-      array( 'name' => 'address',
-             'column_list' => array( 'address1', 'address2', 'city', 'postcode', 'note' ) ),
-      array( 'name' => 'phone',
-             'column_list' => array( 'number', 'note' ) ),
-      array( 'name' => 'note',
-             'column_list' => array( 'note' ) )
-    );
-
-    foreach( $table_list as $table )
-    {
-      foreach( $table['column_list'] as $column )
-      {
-        // participant's record
-        $select = clone $base_sel;
-        $select->from( $table['name'] );
-        $select->add_constant( $table['name'], 'subject' );
-        $select->add_constant( $column, 'column_name' );
-        $select->add_column( 'participant_id' );
-        if( 255 < $db->get_column_max_length( $table['name'], $column ) )
-        {
-          $select->add_column(
-            sprintf( 'IF( CHAR_LENGTH( %s ) > 255, CONCAT( SUBSTRING( %s, 1, 252 ), "..." ), %s ) ',
-                     $column, $column, $column ),
-            'value', false );
-        }
-        else $select->add_column( $column );
-
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( $column, 'LIKE', $word );
-        $modifier->where( 'participant_id', '!=', NULL ); // make sure it doesn't belong to an alternate
-
-        $sql = sprintf(
-          'REPLACE INTO search( create_timestamp, query, datetime, record_id, '.
-                               'subject, column_name, participant_id, value )'."\n".
-          '%s %s',
-          $select->get_sql(),
-          $modifier->get_sql() );
-        $db->execute( $sql );
-
-        // alternate's record
-        $select = clone $base_sel;
-        $select->from( $table['name'] );
-        $select->add_constant( $table['name'], 'subject' );
-        $select->add_constant( $column, 'column_name' );
-        $select->add_column( 'alternate.participant_id', 'participant_id', false );
-        if( 255 < $db->get_column_max_length( $table['name'], $column ) )
-        {
-          $select->add_column(
-            sprintf( 'IF( CHAR_LENGTH( %s ) > 255, CONCAT( SUBSTRING( %s, 1, 252 ), "..." ), %s ) ',
-                     $column, $column, $column ),
-            'value', false );
-        }
-        else $select->add_column( $column );
-
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( $column, 'LIKE', $word );
-        // make sure it belongs to an alternate
-        $modifier->join( 'alternate', $table['name'].'.alternate_id', 'alternate.id' );
-
-        $sql = sprintf(
-          'REPLACE INTO search( create_timestamp, query, datetime, record_id, '.
-                               'subject, column_name, participant_id, value )'."\n".
-          '%s %s',
-          $select->get_sql(),
-          $modifier->get_sql() );
-        $db->execute( $sql );
-      }
-    }
-
-    // event_address table
-    /////////////////////////////////////////////////////////////////////////////////////
-    $column_list = array( 'address1', 'address2', 'city', 'postcode' );
-
-    foreach( $column_list as $column )
-    {
-      $select = clone $base_sel;
-      $select->from( 'event_address' );
-      $select->add_constant( 'event_address', 'subject' );
-      $select->add_constant( $column, 'column_name' );
-      $select->add_column( 'event.participant_id', 'participant_id', false );
-      if( 255 < $db->get_column_max_length( 'event_address', $column ) )
-      {
-        $select->add_column(
-          sprintf( 'IF( CHAR_LENGTH( %s ) > 255, CONCAT( SUBSTRING( %s, 1, 252 ), "..." ), %s ) ',
-                   $column, $column, $column ),
-          'value', false );
-      }
-      else $select->add_column( $column );
-
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( $column, 'LIKE', $word );
-      $modifier->join( 'event', 'event_address.event_id', 'event.id' );
-
-      $sql = sprintf(
-        'REPLACE INTO search( create_timestamp, query, datetime, record_id, '.
-                             'subject, column_name, participant_id, value )'."\n".
-        '%s %s',
-        $select->get_sql(),
-        $modifier->get_sql() );
-      $db->execute( $sql );
     }
   }
 }

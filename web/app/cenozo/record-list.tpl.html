@@ -83,7 +83,7 @@
             <td ng-repeat="column in dataArray"
                 ng-style="column.width && {'width': column.width}"
                 ng-class="{'text-left':'left'==column.align,'text-right':'right'==column.align}">
-              <div>{{ record[column.key] | cnMetaFilter:column.filter }}</div>
+              <span ng-bind-html="record[column.key] | cnMetaFilter:column.filter"></span>
             </td>
             <td class="tiny" ng-if="model.deleteEnabled">
               <button class="btn btn-xs btn-danger"
