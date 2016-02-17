@@ -31,13 +31,22 @@ class module extends \cenozo\service\site_restricted_module
     {
       $search_manager = lib::create( 'business\search_manager' );
       $search_manager->search( $query );
-      $modifier->where( 'query', '=', $query );
+      $word_list = $search_manager->get_keywords( $query );
+      $modifier->where( 'query', 'IN', $word_list );
     }
     else
     {
       // purposefully return nothing
       $modifier->where( 'query', '=', NULL );
     }
+
+    // add a little search ranking magic
+    $modifier->group( 'search.participant_id' );
+    $select->add_column(
+      'COUNT( DISTINCT CONCAT( search.subject, ".", column_name ) )', 'hits', false );
+    $select->add_column(
+      'GROUP_CONCAT( CONCAT( " ", search.subject, ".", column_name, "=\"", value, "\"" ) )', 'value', false );
+
 
     // join to which service subjects the role has access to
     $modifier->join( 'service', 'search.subject', 'service.subject' );

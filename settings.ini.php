@@ -23,7 +23,7 @@ $settings['general']['maintenance_mode'] = false;
 $settings['general']['development_mode'] = false;
 
 // how long before a search result is considered out of date
-$settings['general']['search_timeout'] = '5 MINUTE';
+$settings['general']['search_timeout'] = '10 MINUTE';
 
 // how much inactivity before activity logs are considered closed (in mysql interval format)
 $settings['general']['activity_timeout'] = '30 MINUTE';

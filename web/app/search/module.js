@@ -11,27 +11,26 @@ define( function() {
       pluralPossessive: 'search results\''
     },
     columnList: {
+      record_id: { type: 'hidden' },
+      participant_id: { type: 'hidden' },
+      hits: {
+        title: 'Hits',
+        type: 'number',
+        width: '15%',
+      },
       uid: {
         column: 'participant.uid',
         title: 'UID',
         width: '15%',
       },
-      subject: {
-        title: 'Subject',
-        width: '15%',
-      },
-      column_name: {
-        title: 'Key',
-        width: '15%'
-      },
       value: {
         title: 'Value',
-        type: 'text'
+        type: 'string'
       },
     },
     defaultOrder: {
-      column: 'query',
-      reverse: false
+      column: 'hits',
+      reverse: true
     }
   } );
 
@@ -78,15 +77,7 @@ define( function() {
         this.enableView( true );
 
         this.transitionToViewState = function( record ) {
-          var subject = record.subject;
-          var identifier = record.id;
-          /*
-          if( 'note' == record.subject ) {
-            subject = 'participant';
-            identifier = 
-          }
-          */
-          $state.go( record.subject + '.view', { identifier: record.id } );
+          $state.go( 'participant.view', { identifier: record.participant_id } );
         };
 
         this.getServiceData = function( type, columnRestrictLists ) {
