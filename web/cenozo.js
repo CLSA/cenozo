@@ -1036,7 +1036,7 @@ cenozo.directive( 'cnRecordList', [
         $scope.refresh = function() {
           if( !$scope.model.listModel.isLoading ) {
             $scope.model.listModel.onList( true ).then( function() {
-              $scope.model.listModel.paginationFactory.currentPage = 1;
+              $scope.model.listModel.paginationModel.currentPage = 1;
             } );
           }
         };
@@ -2295,7 +2295,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.order = object.parentModel.module.defaultOrder;
         object.total = 0;
         object.cache = [];
-        object.paginationFactory = CnPaginationFactory.instance();
+        object.paginationModel = CnPaginationFactory.instance();
         object.isLoading = false;
         object.chooseMode = false;
 
@@ -2315,9 +2315,11 @@ cenozo.factory( 'CnBaseListFactory', [
           // call onList unless explicitely told not to
           if( !doNotList ) {
             if( this.cache.length < this.total ) {
-              this.onList( true ).then( function() { self.paginationFactory.currentPage = 1; } );
+              this.onList( true ).then( function() {
+                self.paginationModel.currentPage = 1;
+              } );
             } else {
-              this.paginationFactory.currentPage = 1;
+              this.paginationModel.currentPage = 1;
             }
           }
         } );
@@ -2336,13 +2338,15 @@ cenozo.factory( 'CnBaseListFactory', [
             this.columnRestrictLists[column] = angular.copy( newList );
 
             // describe the restrict list
-            this.onList( true ).then( function() { self.paginationFactory.currentPage = 1; } );
+            this.onList( true ).then( function() {
+              self.paginationModel.currentPage = 1;
+            } );
           }
         } );
 
         // should be called by pagination when the page is changed
         cenozo.addExtendableFunction( object, 'checkCache', function() {
-          if( this.cache.length < this.total && this.paginationFactory.getMaxIndex() >= this.cache.length )
+          if( this.cache.length < this.total && this.paginationModel.getMaxIndex() >= this.cache.length )
             this.onList();
         } );
 
@@ -2480,7 +2484,10 @@ cenozo.factory( 'CnBaseListFactory', [
 
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
           httpObj.onError = function( response ) { self.onListError( response ); }
+          var currentPage = this.paginationModel.currentPage;
           return CnHttpFactory.instance( httpObj ).query().then( function( response ) {
+            // the query call will reset the page to 1, so it is saved before the call and set back now
+            self.paginationModel.currentPage = currentPage;
             // add the getIdentifier() method to each row before adding it to the cache
             response.data.forEach( function( item ) {
               item.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };

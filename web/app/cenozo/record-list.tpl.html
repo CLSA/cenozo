@@ -75,9 +75,9 @@
         <tr ng-if="!model.listModel.isLoading"
             ng-repeat="record in model.listModel.cache
                        | orderBy: model.listModel.order.column:model.listModel.order.reverse
-                       | limitTo: ( model.listModel.paginationFactory.currentPage - 1 ) *
-                                  model.listModel.paginationFactory.itemsPerPage - model.listModel.cache.length
-                       | limitTo: model.listModel.paginationFactory.itemsPerPage"
+                       | limitTo: ( model.listModel.paginationModel.currentPage - 1 ) *
+                                  model.listModel.paginationModel.itemsPerPage - model.listModel.cache.length
+                       | limitTo: model.listModel.paginationModel.itemsPerPage"
             ng-click="model.listModel.chooseMode ? chooseRecord( record ) : selectRecord( record )"
             ng-class="{ success:model.listModel.chooseMode && record.chosen }">
             <td ng-repeat="column in dataArray"
@@ -112,11 +112,11 @@
           <td colspan="{{ numColumns + ( model.deleteEnabled ? 1 : 0 ) + ( model.listModel.chooseMode ? 1 : 0 ) }}"
               class="rounded-bottom">
             <pagination class="pagination pull-left"
-                        ng-model="model.listModel.paginationFactory.currentPage"
-                        ng-show="model.listModel.cache.length > model.listModel.paginationFactory.itemsPerPage"
+                        ng-model="model.listModel.paginationModel.currentPage"
+                        ng-show="model.listModel.cache.length > model.listModel.paginationModel.itemsPerPage"
                         ng-change="model.listModel.checkCache()"
-                        max-size="model.listModel.paginationFactory.showPageLimit"
-                        items-per-page="model.listModel.paginationFactory.itemsPerPage"
+                        max-size="model.listModel.paginationModel.showPageLimit"
+                        items-per-page="model.listModel.paginationModel.itemsPerPage"
                         total-items="model.listModel.total"
                         previous-text="&lsaquo;"
                         next-text="&rsaquo;"></pagination>
