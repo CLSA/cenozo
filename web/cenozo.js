@@ -2251,6 +2251,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
 
             // call onCalendar to make sure we have the events in the requested date span
             object.onCalendar( false, start, end ).then( function() {
+              object.parentModel.setupBreadcrumbTrail();
               callback(
                 object.cache.reduce( function( eventList, e ) {
                   if( moment( e.start ).isBefore( end, 'day' ) &&
