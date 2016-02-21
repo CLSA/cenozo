@@ -45,14 +45,6 @@ final class bootstrap
   public function initialize( $launch )
   {
     // WARNING!  Do not use the log class in this method!
-    if( is_array( $this->arguments ) && array_key_exists( 'logout', $this->arguments ) )
-    {
-      header( sprintf( 'Location: %s://none:none@%s%s',
-                       'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' ),
-                       $_SERVER['HTTP_HOST'],
-                       $_SERVER['REQUEST_URI'] ) );
-      exit;
-    }
 
     // determine the request path
     if( array_key_exists( 'REDIRECT_URL', $_SERVER ) )
@@ -69,12 +61,10 @@ final class bootstrap
       $this->path = '';
     }
 
-    // turn on output buffering from here on out
+    // setup
     ob_start();
-
-    $_SESSION['time']['script_start_time'] = microtime( true );
-
-    // set up error handling
+    session_start();
+    define( 'START_TIME', microtime( true ) );
     ini_set( 'display_errors', '0' );
     error_reporting( E_ALL | E_STRICT );
 
@@ -252,9 +242,12 @@ final class bootstrap
       $db = $this->session->get_database();
 
       // set up the identification headers
-      header( sprintf( 'Site: %s', $util_class_name::json_encode( $this->session->get_site()->name ) ) );
-      header( sprintf( 'User: %s', $util_class_name::json_encode( $this->session->get_user()->name ) ) );
-      header( sprintf( 'Role: %s', $util_class_name::json_encode( $this->session->get_role()->name ) ) );
+      if( !is_null( $this->session->get_site() ) )
+        header( sprintf( 'Site: %s', $util_class_name::json_encode( $this->session->get_site()->name ) ) );
+      if( !is_null( $this->session->get_user() ) )
+        header( sprintf( 'User: %s', $util_class_name::json_encode( $this->session->get_user()->name ) ) );
+      if( !is_null( $this->session->get_role() ) )
+        header( sprintf( 'Role: %s', $util_class_name::json_encode( $this->session->get_role()->name ) ) );
 
       // make sure the software and database versions match
       if( $this->settings['general']['version'] != $this->session->get_application()->version )

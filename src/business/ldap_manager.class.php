@@ -29,7 +29,8 @@ class ldap_manager extends \cenozo\singleton
     $this->base = $setting_manager->get_setting( 'ldap', 'base' );
     $this->username = $setting_manager->get_setting( 'ldap', 'username' );
     $this->password = $setting_manager->get_setting( 'ldap', 'password' );
-    $this->active_directory = $setting_manager->get_setting( 'ldap', 'active_directory' );
+    $this->type = $setting_manager->get_setting( 'ldap', 'type' );
+    $this->timeout = $setting_manager->get_setting( 'ldap', 'timeout' );
   }
 
   /**
@@ -55,19 +56,196 @@ class ldap_manager extends \cenozo\singleton
   protected function connect()
   {
     if( !$this->enabled ) return;
-    if( is_resource( $this->resource ) ) return;
-
-    $this->resource = ldap_connect( $this->server, $this->port );
-    if( $this->active_directory )
+    if( 'samba' == $this->type )
     {
-      if( false == @ldap_set_option( $this->resource, LDAP_OPT_PROTOCOL_VERSION, 3 ) )
+      // make sure the group exists
+    }
+    else
+    {
+      if( is_resource( $this->resource ) ) return;
+
+      $this->resource = ldap_connect( $this->server, $this->port );
+      if( 'active' == $this->type )
+      {
+        if( false == @ldap_set_option( $this->resource, LDAP_OPT_PROTOCOL_VERSION, 3 ) )
+          throw lib::create( 'exception\ldap',
+            ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      }
+
+      if( !( @ldap_bind( $this->resource, $this->username, $this->password ) ) )
         throw lib::create( 'exception\ldap',
           ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     }
+  }
 
-    if( !( @ldap_bind( $this->resource, $this->username, $this->password ) ) )
-      throw lib::create( 'exception\ldap',
-        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+  /**
+   * Creates a new group.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $group The new group to create
+   * @param string $description The group's description
+   * @access public
+   */
+  public function new_group( $name, $description )
+  {
+    if( !$this->enabled ) return;
+
+    if( 'samba' == $this->type )
+    {
+      // command: group add "GROUP NAME"
+      // arguments: --group-type="Distribution" --description="DESCRIPTION"
+      // error response:
+      // succesROR(ldb): Failed to create group "GROUP NAME" - LDAP error 68 LDAP_ENTRY_ALREADY_EXISTS - \
+      //                 <00002071: samldb: Account name (sAMAccountName) 'GROUP NAME' already in use!> <>
+      // success response: Added GROUP NAME group
+      $command = sprintf( 'group add "%s" --group-type="Distribution" --description="%s"', $name, $description );
+      
+      $command = sprintf( 'timeout %d samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
+                          $this->timeout,
+                          $command,
+                          $this->server,
+                          $this->username,
+                          $this->password );
+      $output = '';
+      $return_var = NULL;
+      exec( $command, $output, $return_var );
+      log::debug( array(
+        'output' => $output,
+        'return_var' => $return_var ) );
+    }
+    else
+    {
+      throw lib::create( 'exception\runtime',
+        'LDAP groups are only used for type "samba"',
+        __METHOD__ );
+    }
+  }
+
+  /**
+   * Deletes a group.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $group The group to delete
+   * @access public
+   */
+  public function delete_group( $name )
+  {
+    if( !$this->enabled ) return;
+
+    if( 'samba' == $this->type )
+    {
+      // command: group delete "GROUP NAME"
+      // error response:
+      // ERROR(exception): Failed to remove group GROUP NAME - Unable to find group GROUP NAME
+      //  File "/usr/lib/python2.7/dist-packages/samba/netcmd/group.py", line 166, in run
+      //    samdb.deletegroup(groupname)
+      //  File "/usr/lib/python2.7/dist-packages/samba/samdb.py", line 220, in deletegroup
+      //    raise Exception('Unable to find group "%s"' % groupname)
+      // success response: Deleted group "GROUP NAME"
+      $command = sprintf( 'group delete "%s"', $name );
+      
+      $command = sprintf( 'timeout %d samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
+                          $this->timeout,
+                          $command,
+                          $this->server,
+                          $this->username,
+                          $this->password );
+      $output = '';
+      $return_var = NULL;
+      exec( $command, $output, $return_var );
+      log::debug( array(
+        'output' => $output,
+        'return_var' => $return_var ) );
+    }
+    else
+    {
+      throw lib::create( 'exception\runtime',
+        'LDAP groups are only used for type "samba"',
+        __METHOD__ );
+    }
+  }
+
+  /**
+   * Determines whether a group exists
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $group The group to search for
+   * @access public
+   */
+  public function group_exists( $name )
+  {
+    if( !$this->enabled ) return;
+
+    $result = false;
+    if( 'samba' == $this->type )
+    {
+      // command: command: group list
+      // response: list of all groups
+      $command = sprintf( 'group list | grep "^%s$"', $group );
+      
+      $command = sprintf( 'timeout %d samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
+                          $this->timeout,
+                          $command,
+                          $this->server,
+                          $this->username,
+                          $this->password );
+      $output = '';
+      $return_var = NULL;
+      exec( $command, $output, $return_var );
+      log::debug( array(
+        'output' => $output,
+        'return_var' => $return_var ) );
+    }
+    else
+    {
+      throw lib::create( 'exception\runtime',
+        'LDAP groups are only used for type "samba"',
+        __METHOD__ );
+    }
+
+    return $result;
+  }
+
+  /**
+   * Determines whether a user belongs to a group
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $group The group to search in
+   * @param string $username The user to search for
+   * @access public
+   */
+  public function user_exists_in_group( $username, $group )
+  {
+    if( !$this->enabled ) return;
+
+    $result = false;
+    if( 'samba' == $this->type )
+    {
+      // command: group listmembers "GROUP NAME"
+      // response: list
+      $command = sprintf( 'group listmembers "%s" | grep "^%s$"', $group, $username );
+      
+      $command = sprintf( 'timeout %d samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
+                          $this->timeout,
+                          $command,
+                          $this->server,
+                          $this->username,
+                          $this->password );
+      $output = '';
+      $return_var = NULL;
+      exec( $command, $output, $return_var );
+      log::debug( array(
+        'output' => $output,
+        'return_var' => $return_var ) );
+    }
+    else
+    {
+      throw lib::create( 'exception\runtime',
+        'LDAP groups are only used for type "samba"',
+        __METHOD__ );
+    }
+
+    return $result;
   }
 
   /**
@@ -85,24 +263,54 @@ class ldap_manager extends \cenozo\singleton
   {
     if( !$this->enabled ) return;
     $util_class_name = lib::get_class_name( 'util' );
-    $this->connect();
 
-    $data = array (
-      'cn' => $first_name.' '.$last_name,
-      'sn' => $last_name,
-      'givenname' => $first_name,
-      'sAMAccountName' => $username,
-      'objectClass' => array (
-        'inetOrgPerson',
-        'passwordHolder' ),
-      'description' => 'clsa',
-      'userpassword' => $util_class_name::sha1_hash( $password ) );
+    if( 'samba' == $this->type )
+    {
+      // command: user create USERNAME "password"
+      // arguments: --given-name="John" --surname="Smith"
+      // on success: User 'USERNAME' created successfully
+      // on error: ERROR(ldb): Failed to add user 'USERNAME':  - LDAP error 68 LDAP_ENTRY_ALREADY_EXISTS - \
+      //           <00002071: samldb: Account name (sAMAccountName) 'USERNAME' already in use!> <> 
+      $command = sprintf( 'user create "%s" "%s" --given-name="%s" --surname="%s"',
+                          $username,
+                          $password,
+                          $first_name,
+                          $last_name );
+      
+      $command = sprintf( 'timeout %d samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
+                          $this->timeout,
+                          $command,
+                          $this->server,
+                          $this->username,
+                          $this->password );
+      $output = '';
+      $return_var = NULL;
+      exec( $command, $output, $return_var );
+      log::debug( array(
+        'output' => $output,
+        'return_var' => $return_var ) );
+    }
+    else
+    {
+      $this->connect();
 
-    $dn = sprintf( 'sAMAccountName=%s,ou=Users,%s', $username, $this->base );
-    if( !( @ldap_add( $this->resource, $dn, $data ) ) )
-      if( 68 != ldap_errno( $this->resource ) ) // ignore already exists errors
-        throw lib::create( 'exception\ldap',
-          ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      $data = array (
+        'cn' => $first_name.' '.$last_name,
+        'sn' => $last_name,
+        'givenname' => $first_name,
+        'sAMAccountName' => $username,
+        'objectClass' => array (
+          'inetOrgPerson',
+          'passwordHolder' ),
+        'description' => 'clsa',
+        'userpassword' => $util_class_name::sha1_hash( $password ) );
+
+      $dn = sprintf( 'sAMAccountName=%s,ou=Users,%s', $username, $this->base );
+      if( !( @ldap_add( $this->resource, $dn, $data ) ) )
+        if( 68 != ldap_errno( $this->resource ) ) // ignore already exists errors
+          throw lib::create( 'exception\ldap',
+            ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+    }
   }
 
   /**
@@ -116,12 +324,41 @@ class ldap_manager extends \cenozo\singleton
   public function delete_user( $username )
   {
     if( !$this->enabled ) return;
-    $this->connect();
 
-    $dn = sprintf( 'sAMAccountName=%s,ou=Users,%s', $username, $this->base );
-    if( !( @ldap_delete( $this->resource, $dn ) ) )
-      throw lib::create( 'exception\ldap',
-        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+    if( 'samba' == $this->type )
+    {
+      // command: user delete USERNAME
+      // error response: 
+      // ERROR(exception): Failed to remove user "USERNAME" - Unable to find user "USERNAME"
+      //   File "/usr/lib/python2.7/dist-packages/samba/netcmd/user.py", line 238, in run
+      //     samdb.deleteuser(username)
+      //   File "/usr/lib/python2.7/dist-packages/samba/samdb.py", line 449, in deleteuser
+      //     raise Exception('Unable to find user "%s"' % username)
+      // success response: Deleted user USERNAME 
+      $command = sprintf( 'user delete "%s"', $username );
+
+      $command = sprintf( 'timeout %d samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
+                          $this->timeout,
+                          $command,
+                          $this->server,
+                          $this->username,
+                          $this->password );
+      $output = '';
+      $return_var = NULL;
+      exec( $command, $output, $return_var );
+      log::debug( array(
+        'output' => $output,
+        'return_var' => $return_var ) );
+    }
+    else
+    {
+      $this->connect();
+
+      $dn = sprintf( 'sAMAccountName=%s,ou=Users,%s', $username, $this->base );
+      if( !( @ldap_delete( $this->resource, $dn ) ) )
+        throw lib::create( 'exception\ldap',
+          ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+    }
   }
 
   /**
@@ -137,31 +374,50 @@ class ldap_manager extends \cenozo\singleton
   public function validate_user( $username, $password )
   {
     if( !$this->enabled ) return false;
-    $this->connect();
 
-    $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(sAMAccountName=%s))', $username ) );
-    if( !$search )
-      throw lib::create( 'exception\ldap',
-        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+    $result = false;
 
-    $entries = @ldap_get_entries( $this->resource, $search );
-    ldap_free_result( $search );
-    if( !$entries )
-      throw lib::create( 'exception\ldap',
-        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+    if( 'samba' == $this->type )
+    {
+      // try any command to test user/pass, if valid the return var will be 0
+      $command = sprintf( 'timeout %d samba-tool group list --URL="ldap://%s" --username="%s" --password="%s"',
+                          $this->timeout,
+                          $this->server,
+                          $username,
+                          $password );
+      $output = '';
+      $return_var = NULL;
+      exec( $command, $output, $return_var );
+      $result = 0 == $return_var;
+    }
+    else
+    {
+      $this->connect();
 
-    if( 0 == $entries['count'] )
-      throw lib::create( 'exception\runtime',
-        sprintf( 'User %s not found.', $username ), __METHOD__ );
+      $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(sAMAccountName=%s))', $username ) );
+      if( !$search )
+        throw lib::create( 'exception\ldap',
+          ldap_error( $this->resource ), ldap_errno( $this->resource ) );
 
-    $dn = $entries[0]['dn'];
-    $test = @ldap_bind( $this->resource, $dn, $password );
+      $entries = @ldap_get_entries( $this->resource, $search );
+      ldap_free_result( $search );
+      if( !$entries )
+        throw lib::create( 'exception\ldap',
+          ldap_error( $this->resource ), ldap_errno( $this->resource ) );
 
-    if( !$test && 49 != ldap_errno( $this->resource ) )
-      throw lib::create( 'exception\ldap',
-        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      if( 0 == $entries['count'] )
+        throw lib::create( 'exception\runtime',
+          sprintf( 'User %s not found.', $username ), __METHOD__ );
 
-    return $test;
+      $dn = $entries[0]['dn'];
+      $result = @ldap_bind( $this->resource, $dn, $password );
+
+      if( !$result && 49 != ldap_errno( $this->resource ) )
+        throw lib::create( 'exception\ldap',
+          ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+    }
+
+    return $result;
   }
 
   /**
@@ -177,28 +433,53 @@ class ldap_manager extends \cenozo\singleton
   {
     if( !$this->enabled ) return;
     $util_class_name = lib::get_class_name( 'util' );
-    $this->connect();
 
-    $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(sAMAccountName=%s))', $username ) );
-    if( !$search )
-      throw lib::create( 'exception\ldap',
-        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+    if( 'samba' == $this->type )
+    {
+      // command: user setpassword "USERNAME" --newpassword="PASSWORD"
+      // error response: (may timeout if newpassword is empty string)
+      // ERROR: Failed to set password for user 'USERNAME2': Unable to find user "USERNAME2"
+      // success response: Changed password OK 
+      $command = sprintf( 'user setpassword "%s" --newpassword="%s"', $username, $password );
+      
+      $command = sprintf( 'timeout %d samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
+                          $this->timeout,
+                          $command,
+                          $this->server,
+                          $this->username,
+                          $this->password );
+      $output = '';
+      $return_var = NULL;
+      exec( $command, $output, $return_var );
+      log::debug( array(
+        'output' => $output,
+        'return_var' => $return_var ) );
+    }
+    else
+    {
+      $this->connect();
 
-    $entries = @ldap_get_entries( $this->resource, $search );
-    ldap_free_result( $search );
-    if( !$entries )
-      throw lib::create( 'exception\ldap',
-        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(sAMAccountName=%s))', $username ) );
+      if( !$search )
+        throw lib::create( 'exception\ldap',
+          ldap_error( $this->resource ), ldap_errno( $this->resource ) );
 
-    if( 0 == $entries['count'] )
-      throw lib::create( 'exception\runtime', 'LDAP user '.$username.' not found.', __METHOD__ );
+      $entries = @ldap_get_entries( $this->resource, $search );
+      ldap_free_result( $search );
+      if( !$entries )
+        throw lib::create( 'exception\ldap',
+          ldap_error( $this->resource ), ldap_errno( $this->resource ) );
 
-    $data = array( 'userpassword' => $util_class_name::sha1_hash( $password ) );
+      if( 0 == $entries['count'] )
+        throw lib::create( 'exception\runtime', 'LDAP user '.$username.' not found.', __METHOD__ );
 
-    $dn = $entries[0]['dn'];
-    if( !( @ldap_mod_replace( $this->resource, $dn, $data ) ) )
-      throw lib::create( 'exception\ldap',
-        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      $data = array( 'userpassword' => $util_class_name::sha1_hash( $password ) );
+
+      $dn = $entries[0]['dn'];
+      if( !( @ldap_mod_replace( $this->resource, $dn, $data ) ) )
+        throw lib::create( 'exception\ldap',
+          ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+    }
   }
 
   /** 
@@ -259,9 +540,9 @@ class ldap_manager extends \cenozo\singleton
   protected $password = '';
 
   /**
-   * Whether the server is in active directory mode.
+   * What type of connection to use.
    * @var bool
    * @access protected
    */
-  protected $active_directory = false;
+  protected $type = 'standard';
 }

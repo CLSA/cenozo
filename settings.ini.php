@@ -73,7 +73,8 @@ $settings['ldap']['port'] = 389;
 $settings['ldap']['base'] = '';
 $settings['ldap']['username'] = '';
 $settings['ldap']['password'] = '';
-$settings['ldap']['active_directory'] = true;
+$settings['ldap']['type'] = 'samba'; // can be standard, active or samba
+$settings['ldap']['timeout'] = 10; // in seconds
 
 // opal settings
 $settings['opal']['enabled'] = false;

@@ -484,9 +484,9 @@ cenozo.animation( '.fade-transition', function() {
  * Controller for the header/menu system
  */
 cenozo.service( 'CnBaseHeader', [
-  '$state', '$interval', '$window', 'CnSession',
+  '$state', '$interval', '$window', 'CnSession', 'CnHttpFactory',
   'CnModalAccountFactory', 'CnModalPasswordFactory', 'CnModalSiteRoleFactory', 'CnModalTimezoneFactory',
-  function( $state, $interval, $window, CnSession,
+  function( $state, $interval, $window, CnSession, CnHttpFactory,
             CnModalAccountFactory, CnModalPasswordFactory, CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
     return {
       construct: function( scope ) {
@@ -514,11 +514,13 @@ cenozo.service( 'CnBaseHeader', [
           },
           logout: {
             title: 'Logout',
-            help: 'Click and close window to logout the system',
+            help: 'Logout of the application',
             execute: function() {
               // blank content
               document.getElementById( 'view' ).innerHTML = '';
-              $window.location.assign( '?logout' );
+              CnHttpFactory.instance( {
+                path: 'self/0'
+              } ).delete().then( function() { $window.location.reload(); } );
             }
           },
           password: {
@@ -1778,11 +1780,13 @@ cenozo.factory( 'CnSession', [
         } );
 
         // if the user's password isn't set then open the password dialog
+        /* TODO: new mechanism for forcing users to change their password when logging in
         if( response.data.no_password ) {
           CnModalPasswordFactory.instance( { confirm: false } ).show().then( function( response ) {
             self.setPassword( 'password', response.requestedPass );
           } );
         }
+        */
 
         // if the user's email isn't set then open the password dialog
         if( !self.user.email ) {

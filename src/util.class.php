@@ -37,7 +37,7 @@ class util
    */
   public static function get_elapsed_time()
   {
-    return microtime( true ) - $_SESSION['time']['script_start_time'];
+    return microtime( true ) - START_TIME;
   }
 
   /**

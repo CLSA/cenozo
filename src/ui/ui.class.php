@@ -44,6 +44,12 @@ class ui extends \cenozo\base_object
       include( dirname( __FILE__ ).'/error.php' );
       $interface = ob_get_clean();
     }
+    else if( is_null( lib::create( 'business\session' )->get_user() ) )
+    { // no user means we haven't logged in, so show the login interface
+      ob_start();
+      include( dirname( __FILE__ ).'/login.php' );
+      $interface = ob_get_clean();
+    }
     else
     {
       // prepare the framework module list (used to identify which modules are provided by the framework)

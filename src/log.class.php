@@ -248,8 +248,8 @@ final class log extends singleton
   private function send( $message, $type )
   {
     // make sure we have a session
-    $class_name = lib::get_class_name( 'business\session' );
-    if( !class_exists( $class_name ) || !$class_name::exists() ) return;
+    $session_class_name = lib::get_class_name( 'business\session' );
+    if( !class_exists( $session_class_name ) || !$session_class_name::exists() ) return;
 
     if( is_string( $message ) )
     { // replace cenozo and application path strings with something smaller
@@ -442,8 +442,8 @@ final class log extends singleton
       log::emerg( $message );
 
       // try and set the current operations error code, if possible
-      $class_name = lib::get_class_name( 'business\session' );
-      if( class_exists( $class_name ) && $class_name::exists() )
+      $session_class_name = lib::get_class_name( 'business\session' );
+      if( class_exists( $session_class_name ) && $session_class_name::exists() )
       {
         $session = lib::create( 'business\session' );
 

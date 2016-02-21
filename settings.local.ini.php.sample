@@ -34,11 +34,9 @@ $settings['db']['database_prefix'] = '';
 // ldap settings
 $settings['ldap']['enabled'] = true;
 $settings['ldap']['server'] = 'localhost';
-$settings['ldap']['port'] = 389;
-$settings['ldap']['base'] = '';
 $settings['ldap']['username'] = '';
 $settings['ldap']['password'] = '';
-$settings['ldap']['active_directory'] = true;
+$settings['ldap']['type'] = 'samba';
 
 // opal settings
 $settings['opal']['enabled'] = false;

@@ -70,18 +70,16 @@
       <div class="container-fluid bg-primary no-line-height" ng-class="{'working': session.working}">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-          <a class="navbar-brand" data-toggle="dropdown">
-            <?php echo APP_TITLE; ?>
-          </a>
+          <a class="navbar-brand" data-toggle="dropdown"><?php echo APP_TITLE; ?></a>
           <ul class="dropdown-menu navigation-menu">
             <li ng-controller="MenuCtrl">
               <div class="container-fluid operation-list">
-                  <div class="btn-group btn-group-justified">
-                    <div class="btn-group" ng-repeat="op in operations">
-                      <button class="btn btn-info"
-                              ng-click="operationList[op].execute()"
-                              tooltip="{{ operationList[op].help }}">{{ operationList[op].title }}</button>
-                    </div>
+                <div class="btn-group btn-group-justified">
+                  <div class="btn-group" ng-repeat="op in operations">
+                    <button class="btn btn-info"
+                            ng-click="operationList[op].execute()"
+                            tooltip="{{ operationList[op].help }}">{{ operationList[op].title }}</button>
+                  </div>
                   </div>
               </div>
               <div class="container-fluid row">

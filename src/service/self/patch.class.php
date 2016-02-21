@@ -33,7 +33,6 @@ class patch extends \cenozo\service\service
    */
   protected function create_resource( $index )
   {
-    $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
 
     $pseudo_record = array(
