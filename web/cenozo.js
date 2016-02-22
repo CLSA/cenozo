@@ -1780,13 +1780,11 @@ cenozo.factory( 'CnSession', [
         } );
 
         // if the user's password isn't set then open the password dialog
-        /* TODO: new mechanism for forcing users to change their password when logging in
         if( response.data.no_password ) {
           CnModalPasswordFactory.instance( { confirm: false } ).show().then( function( response ) {
-            self.setPassword( 'password', response.requestedPass );
+            self.setPassword( null, response.requestedPass );
           } );
         }
-        */
 
         // if the user's email isn't set then open the password dialog
         if( !self.user.email ) {

@@ -21,6 +21,8 @@ class post extends \cenozo\service\post
   {
     parent::execute();
 
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     if( 300 > $this->status->get_code() )
     {
       $db_user = $this->get_leaf_record();
@@ -40,7 +42,8 @@ class post extends \cenozo\service\post
       $ldap_manager = lib::create( 'business\ldap_manager' );
       try
       {
-        $ldap_manager->new_user( $db_user->name, $db_user->first_name, $db_user->last_name, 'password' );
+        $default_pw = $setting_manager->get_setting( 'general', 'default_password' );
+        $ldap_manager->new_user( $db_user->name, $db_user->first_name, $db_user->last_name, $default_pw );
       }
       catch( \cenozo\exception\ldap $e )
       {

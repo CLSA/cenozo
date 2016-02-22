@@ -28,6 +28,9 @@ $settings['general']['search_timeout'] = '10 MINUTE';
 // how much inactivity before activity logs are considered closed (in mysql interval format)
 $settings['general']['activity_timeout'] = '30 MINUTE';
 
+// the default password given to all new users
+$settings['general']['default_password'] = 'password';
+
 // cenozo's sub-directory urls
 $settings['url']['ROOT'] = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) );
 if( array_key_exists( 'CENOZO', $this->settings['url'] ) )

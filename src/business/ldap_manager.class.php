@@ -31,6 +31,15 @@ class ldap_manager extends \cenozo\singleton
     $this->password = $setting_manager->get_setting( 'ldap', 'password' );
     $this->type = $setting_manager->get_setting( 'ldap', 'type' );
     $this->timeout = $setting_manager->get_setting( 'ldap', 'timeout' );
+    $this->group = lib::create( 'business\session' )->get_database()->get_name();
+
+    /* TODO
+    if( 'samba' == $this->type )
+    {
+      // make sure the group exists
+      if( !$this->group_exists( $this->group ) ) $this->new_group( $this->group );
+    }
+    */
   }
 
   /**
@@ -56,26 +65,19 @@ class ldap_manager extends \cenozo\singleton
   protected function connect()
   {
     if( !$this->enabled ) return;
-    if( 'samba' == $this->type )
-    {
-      // make sure the group exists
-    }
-    else
-    {
-      if( is_resource( $this->resource ) ) return;
+    if( is_resource( $this->resource ) ) return;
 
-      $this->resource = ldap_connect( $this->server, $this->port );
-      if( 'active' == $this->type )
-      {
-        if( false == @ldap_set_option( $this->resource, LDAP_OPT_PROTOCOL_VERSION, 3 ) )
-          throw lib::create( 'exception\ldap',
-            ldap_error( $this->resource ), ldap_errno( $this->resource ) );
-      }
-
-      if( !( @ldap_bind( $this->resource, $this->username, $this->password ) ) )
+    $this->resource = ldap_connect( $this->server, $this->port );
+    if( 'active' == $this->type )
+    {
+      if( false == @ldap_set_option( $this->resource, LDAP_OPT_PROTOCOL_VERSION, 3 ) )
         throw lib::create( 'exception\ldap',
           ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     }
+
+    if( !( @ldap_bind( $this->resource, $this->username, $this->password ) ) )
+      throw lib::create( 'exception\ldap',
+        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
 
   /**
@@ -451,9 +453,8 @@ class ldap_manager extends \cenozo\singleton
       $output = '';
       $return_var = NULL;
       exec( $command, $output, $return_var );
-      log::debug( array(
-        'output' => $output,
-        'return_var' => $return_var ) );
+      if( 0 != $return_var )
+        throw lib::create( 'exception\ldap', 'Unable to change user password', $return_var );
     }
     else
     {
@@ -545,4 +546,19 @@ class ldap_manager extends \cenozo\singleton
    * @access protected
    */
   protected $type = 'standard';
+
+  /**
+   * How many seconds to wait before giving up on ldap commands
+   * @var integer $timeout
+   * @access protected
+   */
+  protected $timeout = 10;
+
+  /**
+   * The name of the ldap group to reference users in for this application
+   * (Note, this will always be the same as the main database name)
+   * @var string $group
+   * @access protected
+   */
+  protected $group = NULL;
 }

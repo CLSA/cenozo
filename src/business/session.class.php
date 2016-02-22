@@ -251,6 +251,19 @@ class session extends \cenozo\singleton
   }
 
   /**
+   * Store in the session whether the user must change their password (given an input password)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $password
+   * @access public
+   */
+  public function set_no_password( $password )
+  {
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $_SESSION['no_password'] = $setting_manager->get_setting( 'general', 'default_password' ) == $password;
+  }
+
+  /**
    * Change the user's active site and role
    * 
    * Will return whether the user has access to the site/role pair

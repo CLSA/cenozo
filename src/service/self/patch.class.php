@@ -55,6 +55,7 @@ class patch extends \cenozo\service\service
     $role_class_name = lib::get_class_name( 'database\role' );
 
     $session = lib::create( 'business\session' );
+    $setting_manager = lib::create( 'business\setting_manager' );
     $patch_array = $this->get_file_as_array();
 
     // make sure to only allow editing of user OR site+role
@@ -72,6 +73,10 @@ class patch extends \cenozo\service\service
         }
         else
         {
+          // use the default password if the current is null
+          if( is_null( $password->current ) )
+            $password->current = $setting_manager->get_setting( 'general', 'default_password' );
+
           // validate the user's current password
           if( !$util_class_name::validate_user( $db_user->name, $password->current ) )
           {
@@ -86,6 +91,7 @@ class patch extends \cenozo\service\service
               $db_user->password = $util_class_name::encrypt( $password->requested );
               $db_user->save();
             }
+            $session->set_no_password( $password->requested );
           }
         }
       }
