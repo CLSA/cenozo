@@ -63,12 +63,12 @@ final class bootstrap
 
     // setup
     ob_start();
-    session_start();
     define( 'START_TIME', microtime( true ) );
     ini_set( 'display_errors', '0' );
     error_reporting( E_ALL | E_STRICT );
-
     $this->read_settings();
+    ini_set( 'session.save_path', TEMPORARY_FILES_PATH );
+    session_start();
 
     // include the autoloader and error code files (search for app_path::util first)
     require_once CENOZO_SRC_PATH.'/lib.class.php';
