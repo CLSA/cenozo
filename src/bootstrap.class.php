@@ -67,7 +67,13 @@ final class bootstrap
     ini_set( 'display_errors', '0' );
     error_reporting( E_ALL | E_STRICT );
     $this->read_settings();
+    
     ini_set( 'session.save_path', TEMPORARY_FILES_PATH );
+    ini_set( 'session.gc_maxlifetime', $this->settings['general']['activity_timeout'] * 60 );
+    ini_set( 'session.gc_probability', 1 );
+    ini_set( 'session.gc_divisor', 100 );
+    ini_set( 'session.cookie_secure', false );
+    ini_set( 'session.use_only_cookies', true );
     session_start();
 
     // include the autoloader and error code files (search for app_path::util first)

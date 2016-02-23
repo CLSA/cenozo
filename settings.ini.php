@@ -25,8 +25,8 @@ $settings['general']['development_mode'] = false;
 // how long before a search result is considered out of date
 $settings['general']['search_timeout'] = '10 MINUTE';
 
-// how much inactivity before activity logs are considered closed (in mysql interval format)
-$settings['general']['activity_timeout'] = '30 MINUTE';
+// how much inactivity before activity logs are considered closed (in minutes)
+$settings['general']['activity_timeout'] = '60';
 
 // the default password given to all new users
 $settings['general']['default_password'] = 'password';

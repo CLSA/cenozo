@@ -39,7 +39,7 @@ class activity extends record
       "\n".'JOIN access USING( user_id, role_id, site_id )'.
       "\n".'SET end_datetime = datetime'.
       "\n".'WHERE end_datetime IS NULL'.
-      "\n".'  AND datetime + INTERVAL %s < UTC_TIMESTAMP()',
+      "\n".'  AND datetime + INTERVAL %s MINUTE < UTC_TIMESTAMP()',
       $setting_manager->get_setting( 'general', 'activity_timeout' ) ) );
 
     // close all open activity by this user NOT for the current site/role
