@@ -130,28 +130,32 @@ define( function() {
         if( angular.isDefined( this.userModel ) ) this.userModel.heading = 'User Control List';
 
         var self = this;
+
+        // private function used in the block below
+        function setAccess( enable ) {
+          self.parentModel.enableEdit( enable ? -1 < module.actions.indexOf( 'edit' ) : false );
+          if( angular.isDefined( self.participantModel ) ) self.participantModel.enableChoose( enable );
+          if( angular.isDefined( self.userModel ) ) self.userModel.enableChoose( enable );
+        };
+
         var defaultEditEnabled = this.parentModel.editEnabled;
         this.onView = function() {
           return this.$$onView().then( function() {
-            // if the collection is locked then don't allow users/participants to be changed
-            if( angular.isDefined( self.participantModel ) )
-              self.participantModel.enableChoose( !self.record.locked );
-            if( angular.isDefined( self.userModel ) )
-              self.userModel.enableChoose( !self.record.locked );
-
             // only allow users belonging to this collection to edit it when it is locked
-            if( self.record.locked ) {
+            if( !self.record.locked ) {
+              setAccess( true );
+            } else {
               CnHttpFactory.instance( {
                 path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id,
                 onError: function error( response ) {
                   if( 404 == response.status ) {
                     // 404 when searching for current user in collection means we should turn off editing
                     console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
-                    self.parentModel.enableEdit( false );
+                    setAccess( false );
                   } else CnModalMessageFactory.httpError( response );
                 }
-              } ).get();
-            } else { self.parentModel.enableEdit( true ); }
+              } ).get().then( function() { setAccess( true ); } );
+            }
           } );
         };
 
