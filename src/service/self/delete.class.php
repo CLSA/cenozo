@@ -42,7 +42,7 @@ class delete extends \cenozo\service\service
    */
   protected function execute()
   {
-    session_destroy();
+    lib::create( 'business\session' )->logout();
     $this->status->set_code( 200 );
   }
 }

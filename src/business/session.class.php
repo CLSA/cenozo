@@ -78,55 +78,7 @@ class session extends \cenozo\singleton
     if( false === $request_headers )
       throw lib::create( 'exception\runtime', 'Unable to decode request headers', __METHOD__ );
 
-    // see if the user is already logged in
-    if( array_key_exists( 'access.id', $_SESSION ) )
-    {
-      $db_access = lib::create( 'database\access', $_SESSION['access.id'] );
-      if( is_null( $db_access ) )
-      {
-        // logout user now
-        session_destroy();
-      }
-      else
-      {
-        $this->set_access( $db_access );
-
-        if( !$this->db_user->active )
-        {
-          throw lib::create( 'exception\notice',
-            'Your account has been deactivated. '.
-            'Please contact your account administrator to regain access to the system.', __METHOD__ );
-        }
-
-        // close any lapsed activity
-        $activity_class_name::close_lapsed();
-
-        // create a new activity if there isn't already one open
-        $activity_mod = lib::create( 'database\modifier' );
-        $activity_mod->where( 'user_id', '=', $this->db_user->id );
-        $activity_mod->where( 'application_id', '=', $this->db_application->id );
-        $activity_mod->where( 'site_id', '=', $this->db_site->id );
-        $activity_mod->where( 'role_id', '=', $this->db_role->id );
-        $activity_mod->where( 'end_datetime', '=', NULL );
-        if( 0 == $this->db_user->get_activity_count( $activity_mod ) )
-        {
-          $db_activity = lib::create( 'database\activity' );
-          $db_activity->user_id = $this->db_user->id;
-          $db_activity->application_id = $this->db_application->id;
-          $db_activity->site_id = $this->db_site->id;
-          $db_activity->role_id = $this->db_role->id;
-          $db_activity->start_datetime = $util_class_name::get_datetime_object();
-          $db_activity->save();
-        }
-
-        // update the access with the current time
-        $this->mark_access_time();
-
-        // initialize the voip manager (this only has an effect if voip is enabled)
-        lib::create( 'business\voip_manager' )->initialize();
-      }
-    }
-
+    $this->login();
     $this->state = 'initialized';
   }
 
@@ -231,23 +183,152 @@ class session extends \cenozo\singleton
   public function get_setting() { return $this->db_setting; }
 
   /**
-   * Set the session's user
+   * Log a user into the application
    * 
-   * Given a username this will set the active user.  This should only be used by the login
-   * proceedure.  If the user is already set this 
+   * Will return whether the user has access to the site/role pair
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $username Should only be provided when processing the login box/service
+   * @param database\site $db_site Should only be provided when changing the current site
+   * @param database\role $db_role Should only be provided when changing the current role
+   * @access public
+   */
+  public function login( $username = NULL, $db_site = NULL, $db_role = NULL )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $access_class_name = lib::get_class_name( 'database\access' );
+    $activity_class_name = lib::get_class_name( 'database\activity' );
+    $user_class_name = lib::get_class_name( 'database\user' );
+    $site_class_name = lib::get_class_name( 'database\site' );
+    $role_class_name = lib::get_class_name( 'database\role' );
+
+    $success = false;
+
+    // only perform if not shut down and user record is set
+    if( !$this->is_shutdown() )
+    {
+      if( !is_null( $username ) && !is_string( $username ) )
+        throw lib::create( 'exception\argument', 'username', $username, __METHOD__ );
+      if( !is_null( $db_site ) && !is_a( $db_site, $site_class_name ) )
+        throw lib::create( 'exception\argument', 'db_site', $db_site, __METHOD__ );
+      if( !is_null( $db_role ) && !is_a( $db_role, $role_class_name ) )
+        throw lib::create( 'exception\argument', 'db_role', $db_role, __METHOD__ );
+
+      // try loading the access record
+      $db_access = NULL;
+      if( array_key_exists( 'access.id', $_SESSION ) )
+      {
+        try { $db_access = lib::create( 'database\access', $_SESSION['access.id'] ); }
+        catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
+      }
+
+      // if the session has an access.id but the remote address doesn't match the session's address or the
+      // access doesn't exist then immediately logout
+      if( array_key_exists( 'access.id', $_SESSION ) &&
+          ( is_null( $db_access ) || $_SESSION['address'] != $_SERVER['REMOTE_ADDR'] ) )
+      {
+        $this->logout();
+      }
+      else
+      {
+        if( !is_null( $db_access ) ) $this->db_user = $db_access->get_user();
+
+        // resolve the user and access
+        if( !is_null( $username ) )
+        {
+          if( is_null( $this->db_user ) )
+          {
+            $this->db_user = $user_class_name::get_unique_record( 'name', $username );
+          }
+          else
+          {
+            if( $username != $this->db_user->name )
+              throw lib::create( 'exception\runtime',
+                'Tried to login with different user while already logged in.',
+                __METHOD__ );
+          }
+        }
+
+        if( !is_null( $this->db_user ) && $this->db_user->active )
+        {
+          if( !is_null( $db_site ) && !is_null( $db_role ) )
+          {
+            $db_access = $access_class_name::get_unique_record(
+              array( 'user_id', 'role_id', 'site_id' ),
+              array( $this->db_user->id, $db_role->id, $db_site->id ) );
+          }
+          else if( is_null( $db_access ) )
+          {
+            // find the most recent access restricted to the given site/role (if any)
+            $access_mod = lib::create( 'database\modifier' );
+            $access_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
+            $access_mod->where( 'application_has_site.application_id', '=', $this->db_application->id );
+            $access_mod->order_desc( 'datetime' );
+            $access_mod->order_desc( 'microtime' );
+            $access_mod->limit( 1 );
+            if( !is_null( $db_site ) ) $access_mod->where( 'access.site_id', '=', $db_site->id );
+            if( !is_null( $db_role ) ) $access_mod->where( 'access.role_id', '=', $db_role->id );
+            $access_list = $this->db_user->get_access_object_list( $access_mod );
+            if( 0 < count( $access_list ) ) $db_access = current( $access_list );
+          }
+
+          if( !is_null( $db_access ) )
+          {
+            $this->db_access = $db_access;
+            $this->db_site = $this->db_access->get_site();
+            $this->db_setting = current( $this->db_site->get_setting_object_list() );
+            $this->db_role = $this->db_access->get_role();
+            $_SESSION['access.id'] = $db_access->id;
+            $_SESSION['address'] = $_SERVER['REMOTE_ADDR'];
+
+            $activity_class_name::close_lapsed( $this->db_user, $this->db_site, $this->db_role );
+
+            // create a new activity if there isn't already one open
+            $activity_mod = lib::create( 'database\modifier' );
+            $activity_mod->where( 'user_id', '=', $this->db_user->id );
+            $activity_mod->where( 'application_id', '=', $this->db_application->id );
+            $activity_mod->where( 'site_id', '=', $this->db_site->id );
+            $activity_mod->where( 'role_id', '=', $this->db_role->id );
+            $activity_mod->where( 'end_datetime', '=', NULL );
+            if( 0 == $this->db_user->get_activity_count( $activity_mod ) )
+            {
+              $db_activity = lib::create( 'database\activity' );
+              $db_activity->user_id = $this->db_user->id;
+              $db_activity->application_id = $this->db_application->id;
+              $db_activity->site_id = $this->db_site->id;
+              $db_activity->role_id = $this->db_role->id;
+              $db_activity->start_datetime = $util_class_name::get_datetime_object();
+              $db_activity->save();
+            }
+
+            // update the access with the current time
+            $this->mark_access_time();
+
+            $success = true;
+          }
+        }
+      }
+    }
+
+    return $success;
+  }
+
+  /**
+   * Logs a user out of the application
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $username
    * @access public
    */
-  public function set_user( $username )
+  public function logout()
   {
-    if( !is_null( $this->db_user ) )
-      throw lib::create( 'exception\runtime',
-        'Tried to set session\'s user after it has already been set.',
-        __METHOD__ );
-
-    $user_class_name = lib::get_class_name( 'database\user' );
-    $this->db_user = $user_class_name::get_unique_record( 'name', $username );
+    $activity_class_name = lib::get_class_name( 'database\activity' );
+    $activity_class_name::close_lapsed( $this->db_user );
+    $this->db_access = NULL;
+    $this->db_user = NULL;
+    $this->db_site = NULL;
+    $this->db_setting = NULL;
+    $this->db_role = NULL;
+    session_destroy();
   }
 
   /**
@@ -262,93 +343,6 @@ class session extends \cenozo\singleton
     $setting_manager = lib::create( 'business\setting_manager' );
     if( !is_null( $this->db_user ) )
       $_SESSION['no_password'] = $setting_manager->get_setting( 'general', 'default_password' ) == $password;
-  }
-
-  /**
-   * Change the user's active site and role
-   * 
-   * Will return whether the user has access to the site/role pair
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\site $db_site
-   * @param database\role $db_role
-   * @access public
-   */
-  public function set_site_and_role( $db_site = NULL, $db_role = NULL )
-  {
-    // only perform if not shut down and user record is set
-    if( $this->is_shutdown() || is_null( $this->db_user ) ) return false;
-
-    if( !is_null( $db_site ) && !is_a( $db_site, lib::get_class_name( 'database\site' ) ) )
-      throw lib::create( 'exception\argument', 'db_site', $db_site, __METHOD__ );
-    if( !is_null( $db_role ) && !is_a( $db_role, lib::get_class_name( 'database\role' ) ) )
-      throw lib::create( 'exception\argument', 'db_role', $db_role, __METHOD__ );
-
-    $has_access = false;
-    $access_class_name = lib::get_class_name( 'database\access' );
-
-    // automatically determine site or role if either is not provided
-    $db_access = NULL;
-    if( is_null( $db_site ) || is_null( $db_role ) )
-    {
-      // if the access is already set, use it
-      if( array_key_exists( 'access.id', $_SESSION ) )
-      {
-        // try loading the access record
-        try { $db_access = lib::create( 'database\access', $_SESSION['access.id'] ); }
-        catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
-      }
-
-      if( is_null( $db_access ) )
-      {
-        // find the most recent access restricted to the given site/role (if any)
-        $access_mod = lib::create( 'database\modifier' );
-        $access_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-        $access_mod->where( 'application_has_site.application_id', '=', $this->db_application->id );
-        $access_mod->order_desc( 'datetime' );
-        $access_mod->order_desc( 'microtime' );
-        $access_mod->limit( 1 );
-        if( !is_null( $db_site ) ) $access_mod->where( 'access.site_id', '=', $db_site->id );
-        if( !is_null( $db_role ) ) $access_mod->where( 'access.role_id', '=', $db_role->id );
-        $access_list = $this->db_user->get_access_object_list( $access_mod );
-        if( 0 < count( $access_list ) ) $db_access = current( $access_list );
-      }
-    }
-    else
-    {
-      $db_access = $access_class_name::get_unique_record(
-        array( 'user_id', 'role_id', 'site_id' ),
-        array( $this->db_user->id, $db_role->id, $db_site->id ) );
-    }
-
-    if( !is_null( $db_access ) )
-    {
-      $_SESSION['access.id'] = $db_access->id;
-      $this->set_access( $db_access );
-      $has_access = true;
-    }
-
-    return $has_access;
-  }
-
-  public function set_access( $db_access )
-  {
-    // only perform if not shut down
-    if( $this->is_shutdown() || is_null( $db_access ) )
-    {
-      $this->db_access = NULL;
-      $this->db_user = NULL;
-      $this->db_site = NULL;
-      $this->db_setting = NULL;
-      $this->db_role = NULL;
-    }
-    else
-    {
-      $this->db_access = $db_access;
-      $this->db_user = $this->db_access->get_user();
-      $this->db_site = $this->db_access->get_site();
-      $this->db_setting = current( $this->db_site->get_setting_object_list() );
-      $this->db_role = $this->db_access->get_role();
-    }
   }
 
   /**
@@ -472,6 +466,7 @@ class session extends \cenozo\singleton
    * @access private
    */
    private $db_access = NULL;
+
   /**
    * The record of the current application.
    * @var database\application

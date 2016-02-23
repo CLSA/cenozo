@@ -59,9 +59,8 @@ class post extends \cenozo\service\service
         {
           if( $ldap_manager->validate_user( $auth[0], $auth[1] ) )
           {
-            $session->set_user( $auth[0] );
-            $session->set_no_password( $auth[1] );
-            $result = $session->set_site_and_role();
+            $result = $session->login( $auth[0] );
+            if( $result ) $session->set_no_password( $auth[1] );
           }
         }
       }

@@ -30,9 +30,8 @@ class activity extends record
    * @access public
    * @static
    */
-  public static function close_lapsed()
+  public static function close_lapsed( $db_user, $db_site = NULL, $db_role = NULL )
   {
-    $session = lib::create( 'business\session' );
     $setting_manager = lib::create( 'business\setting_manager' );
 
     static::db()->execute( sprintf(
@@ -46,10 +45,10 @@ class activity extends record
     // close all open activity by this user NOT for the current site/role
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '=', NULL );
-    $modifier->where( 'user_id', '=', $session->get_user()->id );
+    $modifier->where( 'user_id', '=', $db_user->id );
     $modifier->where_bracket( true );
-    $modifier->where( 'site_id', '!=', $session->get_site()->id );
-    $modifier->or_where( 'role_id', '!=', $session->get_role()->id );
+    if( !is_null( $db_site ) ) $modifier->where( 'site_id', '!=', $db_site->id );
+    if( !is_null( $db_role ) ) $modifier->or_where( 'role_id', '!=', $db_role->id );
     $modifier->where_bracket( false );
 
     static::db()->execute( sprintf(

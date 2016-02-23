@@ -178,9 +178,13 @@ class ui extends \cenozo\base_object
       else if( 'GET' == $service['method'] )
       {
         $module_list[$subject]['actions'][] = $service['resource'] ? 'view' : 'list';
-        // add the module to the list menu if we can both view and list it
-        if( in_array( 'list', $module_list[$subject]['actions'] ) &&
-            in_array( 'view', $module_list[$subject]['actions'] ) ) $module_list[$subject]['list_menu'] = true;
+        // add the module to the list menu if:
+        // 1) it is the activity module and we can list it or
+        // 2) we can both view and list it
+        if( ( 'activity' == $subject &&
+              in_array( 'list', $module_list[$subject]['actions'] ) ) ||
+            ( in_array( 'list', $module_list[$subject]['actions'] ) &&
+              in_array( 'view', $module_list[$subject]['actions'] ) ) ) $module_list[$subject]['list_menu'] = true;
       }
       else if( 'PATCH' == $service['method'] )
       {

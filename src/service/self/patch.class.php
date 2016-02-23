@@ -95,22 +95,6 @@ class patch extends \cenozo\service\service
           }
         }
       }
-      else if( 1 == count( $user_array ) && array_key_exists( 'break', $user_array ) )
-      { // going on break, close the current activity
-        $activity_mod = lib::create( 'database\modifier' );
-        $activity_mod->where( 'user_id', '=', $db_user->id );
-        $activity_mod->where( 'application_id', '=', $session->get_application()->id );
-        $activity_mod->where( 'site_id', '=', $session->get_site()->id );
-        $activity_mod->where( 'role_id', '=', $session->get_role()->id );
-        $activity_mod->where( 'end_datetime', '=', NULL );
-        $activity_list = $db_user->get_activity_object_list( $activity_mod );
-        foreach( $activity_list as $db_activity )
-        {
-          $db_activity = current( $activity_list );
-          $db_activity->end_datetime = $util_class_name::get_datetime_object();
-          $db_activity->save();
-        }
-      }
       else
       { // modifying current user's record
         $modified = false;
@@ -173,7 +157,7 @@ class patch extends \cenozo\service\service
             $role_class_name::get_unique_record( array_keys( $role_array ), array_values( $role_array ) );
         }
 
-        $success = $session->set_site_and_role( $db_requested_site, $db_requested_role );
+        $success = $session->login( NULL, $db_requested_site, $db_requested_role );
         $session->mark_access_time();
         $this->status->set_code( $success ? 204 : 403 );
       }
