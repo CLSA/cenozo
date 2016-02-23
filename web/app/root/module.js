@@ -31,6 +31,7 @@ define( function() {
           self.user = CnSession.user;
           self.role = CnSession.role;
           self.site = CnSession.site;
+          self.sessionList = CnSession.sessionList;
 
           self.messageList = [];
           CnSession.messageList.forEach( function( item ) {

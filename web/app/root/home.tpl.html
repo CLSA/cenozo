@@ -37,6 +37,27 @@
       {{ model.site.activeUsers }} of which {{ 1 == model.application.activeUsers ? "is" : "are" }}
       logged into your site.
     </div>
+    <div class="container-fluid">
+      Your list of active sessions include:
+      <table class="table table-condensed table-hover">
+        <thead class="bg-info">
+          <tr>
+            <td>Address</td>
+            <td>Site</td>
+            <td>Role</td>
+            <td>Last Access</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="session in model.sessionList">
+            <td>{{ session.address }}</td>
+            <td>{{ session.site }}</td>
+            <td>{{ session.role }}</td>
+            <td>{{ session.datetime | cnDatetime:'datetimesecond' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <div class="vertical-spacer"></div>
     <h3 class="text-primary">System Messages</h3>
     <div class="container-fluid" ng-repeat="message in model.messageList">

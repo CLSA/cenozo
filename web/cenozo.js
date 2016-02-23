@@ -347,7 +347,7 @@ angular.extend( cenozo, {
 
     if( 'root' == name ) {
       // add the root states
-      stateProvider.state( name, { // resolves application/
+      stateProvider.state( name, { // resolves "application/"
         url: '',
         template: '<cn-home></cn-home>',
         resolve: resolve
@@ -1778,6 +1778,9 @@ cenozo.factory( 'CnSession', [
         self.siteList.forEach( function( site ) {
           site.getIdentifier = function() { return 'name=' + this.name };
         } );
+
+        // process session records
+        self.sessionList = response.data.session_list;
 
         // if the user's password isn't set then open the password dialog
         if( response.data.no_password ) {
