@@ -87,6 +87,51 @@ class util
   }
 
   /**
+   * Execute a command with a time limit
+   * 
+   * @see http://snippet.espend.de/php/execute-command-timeout-limit-78.html
+   * @param string $command The shell command you wish to execute
+   * @param integer $timeout
+   * @return associative array Several details of the command including "output" and "exitcode"
+   * @throws exception\runtime
+   */
+  public static function exec_timeout( $command, $timeout = 10 )
+  {
+    // redirect the error output so we get it as output
+    $command .= ' 2>&1';
+
+    $descriptorspec = array( array( 'pipe', 'r' ), array( 'pipe', 'w' ), array( 'pipe', 'w' ) );
+    $pipes = array();
+   
+    $timeout += time();
+    $process = proc_open( $command, $descriptorspec, $pipes );
+    if( !is_resource( $process ) )
+      throw lib::create( 'exception\runtime', sprintf( 'proc_open failed on: "%s"', $command ), __METHOD__ );
+   
+    $output = '';
+    do
+    {
+      $timeleft = $timeout - time();
+      $read = array( $pipes[1] );
+      $write = array();
+      $exeptions= array();
+      stream_select( $read, $write, $exeptions, $timeleft );
+   
+      if( !empty( $read ) ) $output .= fread( $pipes[1], 8192 );
+    } while( !feof( $pipes[1] ) && $timeleft > 0 );
+   
+    if( $timeleft <= 0 )
+    {
+      proc_terminate( $process );
+      throw lib::create( 'exception\runtime', sprintf( 'command timeout on: "%s"', $command ), __METHOD__ );
+    }
+
+    $result = proc_get_status( $process );
+    $result['output'] = $output;
+    return $result;
+  }
+
+  /**
    * Test whether a variable's string value matches its int value
    * 
    * This function converts the variable to an int then into string and tests whether this is the

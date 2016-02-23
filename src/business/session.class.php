@@ -241,7 +241,7 @@ class session extends \cenozo\singleton
    */
   public function set_user( $username )
   {
-    if( is_null( !$this->db_user ) )
+    if( !is_null( $this->db_user ) )
       throw lib::create( 'exception\runtime',
         'Tried to set session\'s user after it has already been set.',
         __METHOD__ );
@@ -260,7 +260,8 @@ class session extends \cenozo\singleton
   public function set_no_password( $password )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
-    $_SESSION['no_password'] = $setting_manager->get_setting( 'general', 'default_password' ) == $password;
+    if( !is_null( $this->db_user ) )
+      $_SESSION['no_password'] = $setting_manager->get_setting( 'general', 'default_password' ) == $password;
   }
 
   /**

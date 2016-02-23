@@ -134,6 +134,10 @@
                 <span ng-if="'failed' == state" class="help-block text-right has-feedback has-error">
                   The credentials you provided are either invalid or do not exist, please try again.
                 </span>
+                <span ng-if="'error' == state" class="help-block text-right has-feedback has-error">
+                  There was a problem connecting to the authentication server.<br>
+                  Please contact support and indicate that you are unable to log in.
+                </span>
               </div>
               <div class="form-footer text-right rounded-bottom bg-info">
                 <button type="submit" class="btn btn-primary" ng-disabled="'processing' == state">Login</button>

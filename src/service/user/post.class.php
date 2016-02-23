@@ -27,7 +27,7 @@ class post extends \cenozo\service\post
     {
       $db_user = $this->get_leaf_record();
 
-      $post_object = $this->get_object_as_object();
+      $post_object = $this->get_file_as_object();
       if( property_exists( $post_object, 'site_id' ) && property_exists( $post_object, 'role_id' ) )
       {
         // add the initial access record

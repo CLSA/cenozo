@@ -1808,7 +1808,12 @@ cenozo.factory( 'CnSession', [
               } ).show();
             } else { CnModalMessageFactory.httpError( response ); }
           }
-        } ).patch();
+        } ).patch().then( function() {
+          CnModalMessageFactory.instance( {
+            title: 'Password Changed',
+            message: 'Your password has been successfully changed.'
+          } ).show();
+        } );
       };
 
       this.setSiteRole = function( siteId, roleId ) {
