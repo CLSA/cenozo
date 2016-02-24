@@ -102,6 +102,10 @@ define( function() {
     }
   } );
 
+  module.addExtraOperation( 'view', 'Reset Password', function( $state, model ) {
+    model.viewModel.resetPassword();
+  } );
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnUserAdd', [
     'CnUserModelFactory',
@@ -167,14 +171,35 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnHttpFactory',
+    function( CnBaseViewFactory, CnModalConfirmFactory, CnModalMessageFactory, CnHttpFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
+        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
         if( angular.isDefined( this.languageModel ) )
           this.languageModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
+
+        // custom operation
+        this.resetPassword = function() {
+          CnModalConfirmFactory.instance( {
+            title: 'Reset Password',
+            message: 'Are you sure you wish to reset the password for user "' + self.record.name + '"'
+          } ).show().then( function( response ) {
+            if( response ) {
+              CnHttpFactory.instance( {
+                path: 'user/' + self.record.getIdentifier(),
+                data: { password: true }
+              } ).patch().then( function() {
+                CnModalMessageFactory.instance( {
+                  title: 'Password Reset',
+                  message: 'The password for user "' + self.record.name + '" has been successfully reset.'
+                } ).show();
+              } );
+            }
+          } );
+        };
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
