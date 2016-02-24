@@ -90,30 +90,10 @@ CREATE PROCEDURE clsa_pre_update()
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @beartooth_bl, ".away_time" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @beartooth_bl, ".user_time" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
       END IF;
 
       IF @beartooth_f1 IS NOT NULL THEN
         SET @sql = CONCAT( "TRUNCATE ", @beartooth_f1, ".activity" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @beartooth_f1, ".away_time" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @beartooth_f1, ".user_time" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
@@ -331,7 +311,7 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       IF @beartooth_f1 IS NOT NULL THEN
-        SELECT "Processing access table for beartooth F1 sites" AS "";
+        SELECT "Processing access table for Beartooth F1 sites" AS "";
 
         SET @sql = CONCAT(
           "CREATE TABLE IF NOT EXISTS ", @beartooth_f1, ".access ( ",
@@ -433,7 +413,7 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       IF @cedar_f1 IS NOT NULL THEN
-        SELECT "Processing access table for cedar F1 sites" AS "";
+        SELECT "Processing access table for Cedar F1 sites" AS "";
 
         SET @sql = CONCAT(
           "CREATE TABLE IF NOT EXISTS ", @cedar_f1, ".access ( ",
@@ -484,7 +464,7 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       IF @mastodon IS NOT NULL THEN
-        SELECT "Processing access table for mastodon F1 sites" AS "";
+        SELECT "Processing access table for Mastodon F1 sites" AS "";
 
         SET @sql = CONCAT(
           "CREATE TABLE IF NOT EXISTS ", @mastodon, ".access ( ",
@@ -586,7 +566,7 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       IF @sabretooth_mc IS NOT NULL THEN
-        SELECT "Processing access table for sabretooth MC sites" AS "";
+        SELECT "Processing access table for Sabretooth MC sites" AS "";
 
         SET @sql = CONCAT(
           "CREATE TABLE IF NOT EXISTS ", @sabretooth_mc, ".access ( ",
@@ -637,7 +617,7 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       IF @sabretooth_f1 IS NOT NULL THEN
-        SELECT "Processing access table for sabretooth F1 sites" AS "";
+        SELECT "Processing access table for Sabretooth F1 sites" AS "";
 
         SET @sql = CONCAT(
           "CREATE TABLE IF NOT EXISTS ", @sabretooth_f1, ".access ( ",
@@ -791,7 +771,7 @@ CREATE PROCEDURE clsa_pre_update()
           )
         );
         IF @test > 0 THEN
-          SELECT "Processing region_site table for sabretooth MC and F1 sites" AS "";
+          SELECT "Processing region_site table for Sabretooth MC and F1 sites" AS "";
           UPDATE region_site
           JOIN site AS site2 ON site_id = site2.id
           JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @st_bl_service_id
@@ -831,21 +811,35 @@ CREATE PROCEDURE clsa_pre_update()
 
       -- -------------------------------------------------------------------------------------------
       IF @bt_bl_service_id IS NOT NULL AND @bt_f1_service_id IS NOT NULL THEN
-        SELECT "Removing beartooth F1 quotas" AS "";
+        SELECT "Processing onyx_instance table for Beartooth F1 sites" AS "";
+        SET @sql = CONCAT(
+          "UPDATE ", @beartooth_f1, ".onyx_instance ",
+          "JOIN site AS site2 ON onyx_instance.site_id = site2.id ",
+          "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @bt_bl_service_id ",
+          "SET onyx_instance.site_id = site1.id ",
+          "WHERE site2.service_id = @bt_f1_service_id " );
+        PREPARE statement FROM @sql;
+        EXECUTE statement;
+        DEALLOCATE PREPARE statement;
+      END IF;
+
+      -- -------------------------------------------------------------------------------------------
+      IF @bt_bl_service_id IS NOT NULL AND @bt_f1_service_id IS NOT NULL THEN
+        SELECT "Removing Beartooth F1 quotas" AS "";
         DELETE FROM quota WHERE site_id IN (
           SELECT id FROM site WHERE service_id = @bt_f1_service_id
         );
       END IF;
 
       IF @st_bl_service_id IS NOT NULL AND @st_mc_service_id IS NOT NULL THEN
-        SELECT "Removing sabretooth MC quotas" AS "";
+        SELECT "Removing Sabretooth MC quotas" AS "";
         DELETE FROM quota WHERE site_id IN (
           SELECT id FROM site WHERE service_id = @st_mc_service_id AND name != "Simon Fraser"
         );
       END IF;
 
       IF @st_bl_service_id IS NOT NULL AND @st_f1_service_id IS NOT NULL THEN
-        SELECT "Removing sabretooth F1 quotas" AS "";
+        SELECT "Removing Sabretooth F1 quotas" AS "";
         DELETE FROM quota WHERE site_id IN (
           SELECT id FROM site WHERE service_id = @st_f1_service_id
         );
@@ -853,7 +847,7 @@ CREATE PROCEDURE clsa_pre_update()
 
       -- -------------------------------------------------------------------------------------------
       IF @bt_bl_service_id IS NOT NULL AND @bt_f1_service_id IS NOT NULL THEN
-        SELECT "Processing service_has_participant table for beartooth F1 sites" AS "";
+        SELECT "Processing service_has_participant table for Beartooth F1 sites" AS "";
         UPDATE service_has_participant
         JOIN site AS site2 ON preferred_site_id = site2.id
         JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @bt_bl_service_id
@@ -862,7 +856,7 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       IF @st_bl_service_id IS NOT NULL AND @st_mc_service_id IS NOT NULL THEN
-        SELECT "Processing service_has_participant table for sabretooth MC sites" AS "";
+        SELECT "Processing service_has_participant table for Sabretooth MC sites" AS "";
         UPDATE service_has_participant
         JOIN site AS site2 ON preferred_site_id = site2.id
         JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @st_bl_service_id
@@ -871,7 +865,7 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       IF @st_bl_service_id IS NOT NULL AND @st_f1_service_id IS NOT NULL THEN
-        SELECT "Processing service_has_participant table for sabretooth F1 sites" AS "";
+        SELECT "Processing service_has_participant table for Sabretooth F1 sites" AS "";
         UPDATE service_has_participant
         JOIN site AS site2 ON preferred_site_id = site2.id
         JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @st_bl_service_id
@@ -881,7 +875,7 @@ CREATE PROCEDURE clsa_pre_update()
 
       -- for simon fraser which is in MC
       IF @st_bl_service_id IS NOT NULL AND @st_f1_service_id IS NOT NULL THEN
-        SELECT "Processing service_has_participant table for sabretooth F1 sites" AS "";
+        SELECT "Processing service_has_participant table for Sabretooth F1 sites" AS "";
         UPDATE service_has_participant
         JOIN site AS site2 ON preferred_site_id = site2.id
         JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @st_mc_service_id
@@ -890,15 +884,80 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       -- -------------------------------------------------------------------------------------------
-      -- Now we convert sites in Beartooth databases
+      -- Now we convert sites in non-baseline Beartooth databases
       -- -------------------------------------------------------------------------------------------
 
-      -- TODO
+      -- -------------------------------------------------------------------------------------------
+      SELECT "Converting assignment sites for Beartooth F1" AS "";
+      SET @sql = CONCAT(
+        "UPDATE ", @beartooth_f1, ".assignment ",
+        "JOIN site AS site2 ON assignment.site_id = site2.id ",
+        "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @bt_bl_service_id ",
+        "SET assignment.site_id = site1.id ",
+        "WHERE site2.service_id = @bt_f1_service_id " );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      -- -------------------------------------------------------------------------------------------
+      SELECT "Converting queue_has_participant sites for Beartooth F1" AS "";
+      SET @sql = CONCAT(
+        "UPDATE ", @beartooth_f1, ".queue_has_participant ",
+        "JOIN site AS site2 ON queue_has_participant.site_id = site2.id ",
+        "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @bt_bl_service_id ",
+        "SET queue_has_participant.site_id = site1.id ",
+        "WHERE site2.service_id = @bt_f1_service_id " );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      -- -------------------------------------------------------------------------------------------
+      SELECT "Converting queue_state sites for Beartooth F1" AS "";
+      SET @sql = CONCAT(
+        "UPDATE ", @beartooth_f1, ".queue_state ",
+        "JOIN site AS site2 ON queue_state.site_id = site2.id ",
+        "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @bt_bl_service_id ",
+        "SET queue_state.site_id = site1.id ",
+        "WHERE site2.service_id = @bt_f1_service_id " );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      -- -------------------------------------------------------------------------------------------
+      SELECT "Converting setting_values sites for Beartooth F1" AS "";
+      SET @sql = CONCAT(
+        "DELETE FROM ", @beartooth_f1, ".setting_value ",
+        "WHERE site_id IN ( SELECT id FROM site WHERE service_id = @bt_bl_service_id )" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      SET @sql = CONCAT(
+        "UPDATE ", @beartooth_f1, ".setting_value ",
+        "JOIN site AS site2 ON site_id = site2.id ",
+        "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @bt_bl_service_id ",
+        "SET site_id = site1.id ",
+        "WHERE site2.service_id = @bt_f1_service_id " );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      -- -------------------------------------------------------------------------------------------
+      SELECT "Converting system_messages sites for Beartooth F1" AS "";
+      SET @sql = CONCAT(
+        "UPDATE ", @beartooth_f1, ".system_message ",
+        "JOIN site AS site2 ON site_id = site2.id ",
+        "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = @bt_bl_service_id ",
+        "SET site_id = site1.id ",
+        "WHERE site2.service_id = @bt_f1_service_id " );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
       -- Now we convert sites in non-baseline Sabretooth databases
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting assignment sites for MC" AS "";
+      SELECT "Converting assignment sites for Sabretooth MC" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_mc, ".assignment ",
         "JOIN site AS site2 ON assignment.site_id = site2.id ",
@@ -910,7 +969,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting shift sites for MC" AS "";
+      SELECT "Converting shift sites for Sabretooth MC" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_mc, ".shift ",
         "JOIN site AS site2 ON shift.site_id = site2.id ",
@@ -922,7 +981,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting shift_template sites for MC" AS "";
+      SELECT "Converting shift_template sites for Sabretooth MC" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_mc, ".shift_template ",
         "JOIN site AS site2 ON shift_template.site_id = site2.id ",
@@ -934,7 +993,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting queue_has_participant sites for MC" AS "";
+      SELECT "Converting queue_has_participant sites for Sabretooth MC" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_mc, ".queue_has_participant ",
         "JOIN site AS site2 ON queue_has_participant.site_id = site2.id ",
@@ -946,7 +1005,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting queue_state sites for MC" AS "";
+      SELECT "Converting queue_state sites for Sabretooth MC" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_mc, ".queue_state ",
         "JOIN site AS site2 ON queue_state.site_id = site2.id ",
@@ -958,7 +1017,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Replacing MC sites in setting_values" AS "";
+      SELECT "Converting setting_values sites for Sabretooth MC" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_mc, ".setting_value ",
         "JOIN site AS site2 ON site_id = site2.id ",
@@ -970,7 +1029,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Replacing MC sites in system_messages" AS "";
+      SELECT "Converting system_messages sites for Sabretooth MC" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_mc, ".system_message ",
         "JOIN site AS site2 ON site_id = site2.id ",
@@ -982,7 +1041,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting assignment sites for F1" AS "";
+      SELECT "Converting assignment sites for Sabretooth F1" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_f1, ".assignment ",
         "JOIN site AS site2 ON assignment.site_id = site2.id ",
@@ -1005,7 +1064,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting shift sites for F1" AS "";
+      SELECT "Converting shift sites for Sabretooth F1" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_f1, ".shift ",
         "JOIN site AS site2 ON shift.site_id = site2.id ",
@@ -1028,7 +1087,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting shift_template sites for F1" AS "";
+      SELECT "Converting shift_template sites for Sabretooth F1" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_f1, ".shift_template ",
         "JOIN site AS site2 ON shift_template.site_id = site2.id ",
@@ -1051,7 +1110,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting queue_has_participant sites for F1" AS "";
+      SELECT "Converting queue_has_participant sites for Sabretooth F1" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_f1, ".queue_has_participant ",
         "JOIN site AS site2 ON queue_has_participant.site_id = site2.id ",
@@ -1074,7 +1133,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Converting queue_state sites for F1" AS "";
+      SELECT "Converting queue_state sites for Sabretooth F1" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_f1, ".queue_state ",
         "JOIN site AS site2 ON queue_state.site_id = site2.id ",
@@ -1097,7 +1156,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Replacing F1 sites in setting_values" AS "";
+      SELECT "Converting setting_values sites for Sabretooth F1" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_f1, ".setting_value ",
         "JOIN site AS site2 ON site_id = site2.id ",
@@ -1120,7 +1179,7 @@ CREATE PROCEDURE clsa_pre_update()
       DEALLOCATE PREPARE statement;
 
       -- -------------------------------------------------------------------------------------------
-      SELECT "Replacing F1 sites in system_messages" AS "";
+      SELECT "Converting system_messages sites for Sabretooth F1" AS "";
       SET @sql = CONCAT(
         "UPDATE ", @sabretooth_f1, ".system_message ",
         "JOIN site AS site2 ON site_id = site2.id ",
@@ -1146,7 +1205,7 @@ CREATE PROCEDURE clsa_pre_update()
       -- Finally, we delete the old sites
       -- -------------------------------------------------------------------------------------------
       IF @bt_bl_service_id IS NOT NULL AND @bt_f1_service_id IS NOT NULL THEN
-        SELECT "Removing beartooth F1 sites" AS "";
+        SELECT "Removing Beartooth F1 sites" AS "";
         SET @sql = CONCAT( "DELETE FROM site WHERE service_id = @bt_f1_service_id" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -1154,7 +1213,7 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       IF @st_bl_service_id IS NOT NULL AND @st_mc_service_id IS NOT NULL THEN
-        SELECT "Removing sabretooth MC sites" AS "";
+        SELECT "Removing Sabretooth MC sites" AS "";
         SET @sql = CONCAT( "DELETE FROM site WHERE service_id = @st_mc_service_id AND name != 'Simon Fraser'" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -1162,7 +1221,7 @@ CREATE PROCEDURE clsa_pre_update()
       END IF;
 
       IF @st_bl_service_id IS NOT NULL AND @st_f1_service_id IS NOT NULL THEN
-        SELECT "Removing sabretooth F1 sites" AS "";
+        SELECT "Removing Sabretooth F1 sites" AS "";
         SET @sql = CONCAT( "DELETE FROM site WHERE service_id = @st_f1_service_id" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
