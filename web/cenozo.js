@@ -520,7 +520,11 @@ cenozo.service( 'CnBaseHeader', [
               document.getElementById( 'view' ).innerHTML = '';
               CnHttpFactory.instance( {
                 path: 'self/0'
-              } ).delete().then( function() { $window.location.reload(); } );
+              } ).delete().then( function() {
+                // blank content
+                document.getElementById( 'view' ).innerHTML = '';
+                $window.location.assign( cenozoApp.baseUrl );
+              } );
             }
           },
           password: {
