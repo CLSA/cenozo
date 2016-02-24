@@ -1802,7 +1802,7 @@ cenozo.factory( 'CnSession', [
           path: 'self/0',
           data: { user: { password: { current: currentPass, requested: requestedPass } } },
           onError: function( response ) {
-            if( 401 == response.status ) {
+            if( 400 == response.status && 'invalid password' == response.data ) {
               CnModalMessageFactory.instance( {
                 title: 'Unable To Change Password',
                 message: 'Sorry, the current password you provided is incorrect, please try again. ' +
@@ -2771,7 +2771,7 @@ cenozo.factory( 'CnBaseViewFactory', [
             } )
           ] ).then( function() {
             var promiseList = [];
-            
+
             if( angular.isDefined( parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
               // add the parent subject and identifier to the service
               var path = parentModel.getServiceCollectionPath();
@@ -3551,38 +3551,45 @@ cenozo.factory( 'CnHttpFactory', [
           ),
           transformResponse: appendTransform(
             $http.defaults.transformResponse,
-            function( response, getHeader, status ) {
+            function( data, getHeader, status ) {
               var site = angular.fromJson( getHeader( 'Site' ) );
               var user = angular.fromJson( getHeader( 'User' ) );
               var role = angular.fromJson( getHeader( 'Role' ) );
 
-              // assert login
-              if( ( null != login.site && site != login.site ) ||
-                  ( null != login.user && user != login.user ) ||
-                  ( null != login.role && role != login.role ) ) {
-                var err = new Error;
-                err.name = 'Login Mismatch',
-                err.message =
-                  'The server reports that you are no longer logged in as:\n' +
-                  '\n' +
-                  '        site: ' + login.site + '\n' +
-                  '        user: ' + login.user + '\n' +
-                  '        role: ' + login.role + '\n' +
-                  '\n' +
-                  'The application will now be reloaded after which you will be logged in as:\n' +
-                  '\n' +
-                  '        site: ' + site + '\n' +
-                  '        user: ' + user + '\n' +
-                  '        role: ' + role + '\n' +
-                  '\n' +
-                  'This should only happen as a result of accessing the application from a different ' +
-                  'browser window.  If this message persists then please contact support as someone ' +
-                  'else may be logged into your account.';
-                throw err;
+              if( null == user ) {
+                // our session has expired, reloading the page will bring us back to the login screen
+                document.getElementById( 'view' ).innerHTML = '';
+                $window.location.reload()
+              } else {
+                // assert login
+                if( ( null != login.site && site != login.site ) ||
+                    ( null != login.user && user != login.user ) ||
+                    ( null != login.role && role != login.role ) ) {
+                  var err = new Error;
+                  err.name = 'Login Mismatch',
+                  err.message =
+                    'The server reports that you are no longer logged in as:\n' +
+                    '\n' +
+                    '        site: ' + login.site + '\n' +
+                    '        user: ' + login.user + '\n' +
+                    '        role: ' + login.role + '\n' +
+                    '\n' +
+                    'The application will now be reloaded after which you will be logged in as:\n' +
+                    '\n' +
+                    '        site: ' + site + '\n' +
+                    '        user: ' + user + '\n' +
+                    '        role: ' + role + '\n' +
+                    '\n' +
+                    'This should only happen as a result of accessing the application from a different ' +
+                    'browser window.  If this message persists then please contact support as someone ' +
+                    'else may be logged into your account.';
+                  throw err;
+                }
+
+                $rootScope.$broadcast( 'httpResponse', self.guid, data );
               }
 
-              $rootScope.$broadcast( 'httpResponse', self.guid, response );
-              return response;
+              return data;
             }
           )
         };
@@ -3597,7 +3604,7 @@ cenozo.factory( 'CnHttpFactory', [
           if( response instanceof Error ) {
             // blank content
             document.getElementById( 'view' ).innerHTML = '';
-            
+
             if( 'Login Mismatch' == response.name ) {
               if( hasLoginMismatch ) return; // do nothing if we've already been here
               hasLoginMismatch = true;

@@ -80,7 +80,8 @@ class patch extends \cenozo\service\service
           // validate the user's current password
           if( !$util_class_name::validate_user( $db_user->name, $password->current ) )
           {
-            $this->status->set_code( 401 );
+            $this->set_data( 'invalid password' );
+            $this->status->set_code( 400 );
           }
           else
           {

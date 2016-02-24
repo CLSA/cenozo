@@ -268,6 +268,8 @@ class session extends \cenozo\singleton
     $site_class_name = lib::get_class_name( 'database\site' );
     $role_class_name = lib::get_class_name( 'database\role' );
 
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     $success = false;
 
     // only perform if not shut down and user record is set
@@ -286,6 +288,22 @@ class session extends \cenozo\singleton
       {
         try { $db_access = lib::create( 'database\access', $_SESSION['access.id'] ); }
         catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
+
+        // don't use the access if it has lapsed
+        if( !is_null( $db_access ) )
+        {
+          $timeout = $setting_manager->get_setting( 'general', 'activity_timeout' );
+          $expire_time = $util_class_name::get_datetime_object();
+          $expire_time->sub( new \DateInterval( sprintf( 'PT%dM', $timeout ) ) );
+
+          // if the access has expired then don't use it
+          if( $expire_time > $db_access->datetime )
+          {
+            // we'll need the user to close the activity, so set it before making db_access NULL
+            $this->db_user = $db_access->get_user();
+            $db_access = NULL;
+          }
+        }
       }
 
       // if the session has an access.id but the remote address doesn't match the session's address or the

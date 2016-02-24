@@ -29,7 +29,7 @@ abstract class site_restricted_module extends module
       $session = lib::create( 'business\session' );
       $db_role = $session->get_role();
 
-      if( $db_role->all_sites )
+      if( !is_null( $db_role ) && $db_role->all_sites )
       {
         $restricted_site_id = $this->get_argument( 'restricted_site_id', false );
         if( $restricted_site_id )

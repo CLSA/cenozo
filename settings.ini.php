@@ -26,7 +26,7 @@ $settings['general']['development_mode'] = false;
 $settings['general']['search_timeout'] = '10 MINUTE';
 
 // how much inactivity before activity logs are considered closed (in minutes)
-$settings['general']['activity_timeout'] = '60';
+$settings['general']['activity_timeout'] = 60;
 
 // the default password given to all new users
 $settings['general']['default_password'] = 'password';

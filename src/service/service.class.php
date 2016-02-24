@@ -175,7 +175,13 @@ abstract class service extends \cenozo\base_object
     $service_class_name = lib::get_class_name( 'database\service' );
     $session = lib::create( 'business\session' );
 
-    if( $this->validate_access )
+    // only the login/logout services can be processed while not logged in
+    if( is_null( $session->get_user() ) &&
+        !( 'self' == $this->get_subject( 0 ) && in_array( $this->method, array( 'DELETE', 'POST' ) ) ) )
+    {
+      $this->status->set_code( 401 );
+    }
+    else if( $this->validate_access )
     {
       // check access for each collection/resource pair
       $parent_subject = NULL;
