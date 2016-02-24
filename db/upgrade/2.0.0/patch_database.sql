@@ -11,6 +11,7 @@ SOURCE application_has_cohort.sql
 SOURCE application_has_role.sql
 SOURCE activity.sql
 SOURCE user_has_application.sql
+SOURCE user_has_language.sql
 SOURCE role.sql
 SOURCE site.sql
 SOURCE application_has_site.sql
