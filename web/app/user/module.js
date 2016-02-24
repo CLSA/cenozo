@@ -190,7 +190,17 @@ define( function() {
             if( response ) {
               CnHttpFactory.instance( {
                 path: 'user/' + self.record.getIdentifier(),
-                data: { password: true }
+                data: { password: true },
+                onError: function( response ) {
+                  if( 403 == response.status ) {
+                    CnModalMessageFactory.instance( {
+                      title: 'Unable To Change Password',
+                      message: 'Sorry, you do not have access to resetting the password for user "' +
+                               self.record.name+ '".',
+                      error: true
+                    } ).show();
+                  } else { CnModalMessageFactory.httpError( response ); }
+                }
               } ).patch().then( function() {
                 CnModalMessageFactory.instance( {
                   title: 'Password Reset',
