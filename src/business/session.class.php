@@ -73,11 +73,6 @@ class session extends \cenozo\singleton
         'setting in application\'s settings.local.ini.php file',
         __METHOD__ );
 
-    // check for a basic authorization header
-    $request_headers = apache_request_headers();
-    if( false === $request_headers )
-      throw lib::create( 'exception\runtime', 'Unable to decode request headers', __METHOD__ );
-
     $this->login();
     $this->state = 'initialized';
   }
@@ -317,7 +312,7 @@ class session extends \cenozo\singleton
       {
         if( !is_null( $db_access ) ) $this->db_user = $db_access->get_user();
 
-        // resolve the user and access
+        // resolve the user
         if( !is_null( $username ) )
         {
           if( is_null( $this->db_user ) )
@@ -414,6 +409,47 @@ class session extends \cenozo\singleton
     $this->db_setting = NULL;
     $this->db_role = NULL;
     session_destroy();
+  }
+
+  /**
+   * Check request headers for authorization
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string &$username Will be set to the auth header's username, if successful
+   * @param string &$password Will be set tot he auth header's password, if successful
+   * @return boolean
+   * @access public
+   */
+  public function check_authorization_header( &$username, &$password )
+  {
+    $ldap_manager = lib::create( 'business\ldap_manager' );
+
+    $success = false;
+
+    // check for a basic authorization header
+    $headers = apache_request_headers();
+    if( false === $headers )
+      throw lib::create( 'exception\runtime', 'Unable to decode request headers', __METHOD__ );
+
+    if( array_key_exists( 'Authorization', $headers ) )
+    {
+      $parts = explode( ' ', $headers['Authorization'] );
+      if( 'Basic' == $parts[0] )
+      {
+        $auth = explode( ':', base64_decode( $parts[1] ) );
+        if( 2 == count( $auth ) )
+        {
+          if( $ldap_manager->validate_user( $auth[0], $auth[1] ) )
+          {
+            $username = $auth[0];
+            $password = $auth[1];
+            $success = true;
+          }
+        }
+      }
+    }
+
+    return $success;
   }
 
   /**

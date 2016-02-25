@@ -48,22 +48,12 @@ class post extends \cenozo\service\service
     $result = false;
 
     // check user credentials
-    $headers = apache_request_headers();
-    if( array_key_exists( 'Authorization', $headers ) )
+    $user = NULL;
+    $pass = NULL;
+    if( $session->check_authorization_header( $user, $pass ) )
     {
-      $parts = explode( ' ', $headers['Authorization'] );
-      if( 'Basic' == $parts[0] )
-      {
-        $auth = explode( ':', base64_decode( $parts[1] ) );
-        if( 2 == count( $auth ) )
-        {
-          if( $ldap_manager->validate_user( $auth[0], $auth[1] ) )
-          {
-            $result = $session->login( $auth[0] );
-            if( $result ) $session->set_no_password( $auth[1] );
-          }
-        }
-      }
+      $result = $session->login( $user );
+      if( $result ) $session->set_no_password( $pass );
     }
 
     $this->status->set_code( $result ? 201 : 202 );
