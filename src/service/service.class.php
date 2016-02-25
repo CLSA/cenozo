@@ -31,7 +31,7 @@ abstract class service extends \cenozo\base_object
    */
   public function __construct( $method, $path, $args = NULL, $file = NULL )
   {
-    $code = $this->process_path( $path ) ? 200 : 400;
+    $code = $this->process_path( $path );
     if( 400 != $code && !self::is_method( $method ) ) $code = 405;
     $this->status = lib::create( 'service\status', $code );
     $this->path = $path;
@@ -205,12 +205,6 @@ abstract class service extends \cenozo\base_object
           $this->status->set_code( 404 );
           break;
         }
-        else if( is_null( $this->module_list[$index] ) )
-        {
-          throw lib::create( 'exception\runtime',
-            sprintf( 'Service module for "%s" is not found', $subject ),
-            __METHOD__ );
-        }
         else if( 'HEAD' != $this->method )
         {
           if( !$session->is_service_allowed( $db_service ) ) $this->status->set_code( 403 );
@@ -272,7 +266,7 @@ abstract class service extends \cenozo\base_object
    * This method will return false if there was a problem processing the path
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $path
-   * @return boolean
+   * @return http status code
    * @access protected
    */
   protected function process_path( $path )
@@ -286,7 +280,7 @@ abstract class service extends \cenozo\base_object
       $module_index = 0;
       foreach( explode( '/', $path ) as $index => $part )
       {
-        if( 0 == strlen( $part ) ) return false;
+        if( 0 == strlen( $part ) ) return 400;
 
         if( 0 == $index % 2 )
         {
@@ -295,10 +289,9 @@ abstract class service extends \cenozo\base_object
           {
             $this->module_list[] = lib::create( sprintf( 'service\%s\module', $part ), $module_index, $this );
           }
-          // ignore runtime exceptions and instead just return a null module
           catch( \cenozo\exception\runtime $e )
           {
-            $this->module_list[] = NULL;
+            return 404;
           }
           $module_index++;
         }
@@ -306,7 +299,7 @@ abstract class service extends \cenozo\base_object
       }
     }
 
-    return true;
+    return 200;
   }
 
   /**
