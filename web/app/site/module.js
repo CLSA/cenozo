@@ -29,7 +29,7 @@ define( function() {
         type: 'number'
       },
       last_access_datetime: {
-        title: 'Last Site',
+        title: 'Last Access',
         type: 'datetime'
       }
     },
