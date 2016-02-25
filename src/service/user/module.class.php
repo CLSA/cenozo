@@ -17,6 +17,26 @@ class module extends \cenozo\service\site_restricted_module
   /**
    * Extend parent method
    */
+  public function validate()
+  {
+    parent::validate();
+
+    $record = $this->get_resource();
+
+    if( $record && $record->id )
+    {
+      $access_mod = lib::create( 'database\access' );
+
+      // make sure there is at least one access record, and restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) ) $access_mod->where( 'site_id', '=', $db_restrict_site->id );
+      if( 0 == $record->get_access_count( $db_restrict_site ) ) $this->get_status()->set_code( 403 );
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
