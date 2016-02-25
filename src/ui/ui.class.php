@@ -218,14 +218,16 @@ class ui extends \cenozo\base_object
       $module_list['participant']['actions'][] = 'notes/{identifier}';
     }
     if( array_key_exists( 'site', $module_list ) )
-      $module_list['site']['children'] = array( 'access' );
+    {
+      $module_list['site']['children'] = array( 'access', 'activity' );
+    }
     if( array_key_exists( 'source', $module_list ) )
       $module_list['source']['children'] = array( 'participant' );
     if( array_key_exists( 'state', $module_list ) )
       $module_list['state']['children'] = array( 'role', 'participant' );
     if( array_key_exists( 'user', $module_list ) )
     {
-      $module_list['user']['children'] = array( 'access' );
+      $module_list['user']['children'] = array( 'access', 'activity' );
       $module_list['user']['choosing'] = array( 'language' );
     }
 
@@ -264,8 +266,6 @@ class ui extends \cenozo\base_object
     $grouping_list = $session->get_application()->get_cohort_groupings();
 
     $list = array();
-    if( array_key_exists( 'activity', $module_list ) && $module_list['activity']['list_menu'] )
-      $list['Activities'] = 'activity';
     if( array_key_exists( 'activity', $module_list ) && $module_list['activity']['list_menu'] )
       $list['Activities'] = 'activity';
     if( array_key_exists( 'alternate', $module_list ) && $module_list['alternate']['list_menu'] )
