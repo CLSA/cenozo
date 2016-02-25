@@ -105,11 +105,23 @@ class ldap_manager extends \cenozo\singleton
                           $this->server,
                           $this->username,
                           $this->password );
-      $result = $util_class_name::exec_timeout( $command );
 
-      // ignore errors caused by the user already existing
-      if( 0 != $result['exitcode'] && false === strpos( $result['output'], 'LDAP_ENTRY_ALREADY_EXISTS' ) )
-        throw lib::create( 'exception\ldap', $result['output'], $result['exitcode'] );
+      try
+      {
+        $result = $util_class_name::exec_timeout( $command );
+      }
+      catch( \cenozo\exception\runtime $e )
+      {
+        // convert the timeout to an ldap error
+        throw lib::create( 'exception\ldap',
+          'The LDAP server failed to respond within the allowed time limit.', 3 );
+      }
+
+      if( 0 != $result['exitcode'] )
+      {
+        $code = false === strpos( $result['output'], 'LDAP_ENTRY_ALREADY_EXISTS' ) ? 68 : $result['exitcode'];
+        throw lib::create( 'exception\ldap', $result['output'], $code );
+      }
     }
     else
     {
@@ -164,11 +176,23 @@ class ldap_manager extends \cenozo\singleton
                           $this->server,
                           $this->username,
                           $this->password );
-      $result = $util_class_name::exec_timeout( $command );
 
-      // ignore errors caused by the user not existing
-      if( 0 != $result['exitcode'] && false === strpos( $result['output'], 'Unable to find user' ) )
-        throw lib::create( 'exception\ldap', $result['output'], $result['exitcode'] );
+      try
+      {
+        $result = $util_class_name::exec_timeout( $command );
+      }
+      catch( \cenozo\exception\runtime $e )
+      {
+        // convert the timeout to an ldap error
+        throw lib::create( 'exception\ldap',
+          'The LDAP server failed to respond within the allowed time limit.', 3 );
+      }
+
+      if( 0 != $result['exitcode'] )
+      {
+        $code = false === strpos( $result['output'], 'Unable to find user' ) ? 32 : $result['exitcode'];
+        throw lib::create( 'exception\ldap', $result['output'], $code );
+      }
     }
     else
     {
@@ -205,9 +229,19 @@ class ldap_manager extends \cenozo\singleton
                           $this->server,
                           $username,
                           $password );
-      $result = $util_class_name::exec_timeout( $command );
 
-      // ignore errors caused by the user not existing
+      try
+      {
+        $result = $util_class_name::exec_timeout( $command );
+      }
+      catch( \cenozo\exception\runtime $e )
+      {
+        // convert the timeout to an ldap error
+        throw lib::create( 'exception\ldap',
+          'The LDAP server failed to respond within the allowed time limit.', 3 );
+      }
+
+      // ignore errors caused by invalid credentials
       if( 0 != $result['exitcode'] && false === strpos( $result['output'], 'LDAP_INVALID_CREDENTIALS' ) )
         throw lib::create( 'exception\ldap', $result['output'], $result['exitcode'] );
 
@@ -270,9 +304,18 @@ class ldap_manager extends \cenozo\singleton
                           $this->server,
                           $this->username,
                           $this->password );
-      $result = $util_class_name::exec_timeout( $command );
 
-      // ignore errors caused by the user not existing
+      try
+      {
+        $result = $util_class_name::exec_timeout( $command );
+      }
+      catch( \cenozo\exception\runtime $e )
+      {
+        // convert the timeout to an ldap error
+        throw lib::create( 'exception\ldap',
+          'The LDAP server failed to respond within the allowed time limit.', 3 );
+      }
+
       if( 0 != $result['exitcode'] )
         throw lib::create( 'exception\ldap', $result['output'], $result['exitcode'] );
     }
