@@ -37,12 +37,6 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::prepare_read( $select, $modifier );
 
-    $db_application = lib::create( 'business\session' )->get_application();
-
-    // only include sites which belong to this application
-    $modifier->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-    $modifier->where( 'application_has_site.application_id', '=', $db_application->id );
-
     // restrict by site
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) )
