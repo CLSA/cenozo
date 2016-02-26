@@ -43,6 +43,22 @@ class module extends \cenozo\service\site_restricted_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
+    // don't include special users
+    $join_sel = lib::create( 'database\select' );
+    $join_sel->from( 'access' );
+    $join_sel->add_column( 'user_id' );
+
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->join( 'role', 'access.role_id', 'role.id' );
+    $join_mod->where( 'role.special', '=', true );
+    $join_mod->group( 'user_id' );
+
+    $modifier->left_join(
+      sprintf( '( %s %s ) AS user_join_special_access', $join_sel->get_sql(), $join_mod->get_sql() ),
+      'user.id',
+      'user_join_special_access.user_id' );
+    $modifier->where( 'user_join_special_access.user_id', '!=', NULL );
+
     // restrict by site
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) )
