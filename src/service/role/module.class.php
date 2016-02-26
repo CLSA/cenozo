@@ -23,6 +23,9 @@ class module extends \cenozo\service\site_restricted_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
+    // do not include special roles
+    $modifier->where( 'role.special', '=', false );
+
     // only include roles which belong to this application
     $modifier->join( 'application_has_role', 'role.id', 'application_has_role.role_id' );
     $modifier->where( 'application_has_role.application_id', '=', $db_application->id );
