@@ -1686,7 +1686,6 @@ cenozo.factory( 'CnSession', [
       this.role = {};
       this.setting = {};
       this.siteList = [];
-      this.siteAccessList = [];
       this.messageList = [];
       this.breadcrumbTrail = [];
 
@@ -1759,23 +1758,6 @@ cenozo.factory( 'CnSession', [
 
         // sanitize the timezone
         if( !moment.tz.zone( self.user.timezone ) ) self.user.timezone = 'UTC';
-
-        // process access records
-        response.data.access.forEach( function( access ) {
-          // get the site, or add it if it's missing, then add the role to the site's role list
-          var site = self.siteAccessList.findByProperty( 'id', access.site_id );
-          if( null == site ) {
-            site = {
-              id: access.site_id,
-              name: access.site_name,
-              timezone: access.timezone,
-              roleList: [],
-              getIdentifier: function() { return 'name=' + this.name }
-            };
-            self.siteAccessList.push( site );
-          }
-          site.roleList.push( { id: access.role_id, name: access.role_name } );
-        } );
 
         // process site records
         self.siteList = response.data.site_list;
@@ -4375,8 +4357,8 @@ cenozo.service( 'CnModalSiteFactory', [
  * TODO: document
  */
 cenozo.service( 'CnModalSiteRoleFactory', [
-  '$modal', 'CnSession',
-  function( $modal, CnSession ) {
+  '$modal', 'CnSession', 'CnHttpFactory',
+  function( $modal, CnSession, CnHttpFactory ) {
     var object = function() {
       this.show = function() {
         return $modal.open( {
@@ -4400,10 +4382,31 @@ cenozo.service( 'CnModalSiteRoleFactory', [
             };
             $scope.cancel = function() { $modalInstance.close( false ); };
 
-            $scope.siteList = CnSession.siteAccessList;
+            $scope.siteList = [];
             $scope.siteId = CnSession.site.id;
-            $scope.refreshRoleList();
             $scope.roleId = CnSession.role.id;
+
+            // get access records
+            CnHttpFactory.instance( {
+              path: 'self/0/access'
+            } ).get().then( function( response ) {
+              console.log( response.data );
+              response.data.forEach( function( access ) {
+                // get the site, or add it if it's missing, then add the role to the site's role list
+                var site = $scope.siteList.findByProperty( 'id', access.site_id );
+                if( null == site ) {
+                  site = {
+                    id: access.site_id,
+                    name: access.site_name,
+                    timezone: access.timezone,
+                    roleList: []
+                  };
+                  $scope.siteList.push( site );
+                }
+                site.roleList.push( { id: access.role_id, name: access.role_name } );
+              } );
+              $scope.refreshRoleList();
+            } );
           }
         } ).result;
       };

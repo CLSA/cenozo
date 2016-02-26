@@ -207,8 +207,8 @@ abstract class service extends \cenozo\base_object
           $this->status->set_code( 404 );
           break;
         }
-        else if( 'HEAD' != $this->method )
-        {
+        else if( 'HEAD' != $this->method && 'self' != $this->get_subject( 0 ) )
+        { // only validate non-HEAD methods when the root subject isn't "self"
           if( !$session->is_service_allowed( $db_service ) ) $this->status->set_code( 403 );
           else $this->module_list[$index]->validate();
         }

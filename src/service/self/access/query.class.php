@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace cenozo\service\access;
+namespace cenozo\service\self\access;
 use cenozo\lib, cenozo\log;
 
 /**
@@ -14,6 +14,14 @@ use cenozo\lib, cenozo\log;
  */
 class query extends \cenozo\service\query
 {
+  /**
+   * Override parent method since self is a meta-resource
+   */
+  protected function create_resource( $index )
+  {
+    return 0 == $index ? lib::create( 'business\session' )->get_user() : parent::create_resource( $index );
+  }
+
   /**
    * Processes arguments, preparing them for the service.
    * 
@@ -31,14 +39,13 @@ class query extends \cenozo\service\query
     $this->select->add_column( 'role_id' );
     $this->select->add_table_column( 'role', 'name', 'role_name' );
 
-    // restrict to the current user's access to the current application
-    $this->modifier->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
+    $this->modifier->join( 'site', 'access.site_id', 'site.id' );
     $this->modifier->join( 'role', 'access.role_id', 'role.id' );
-    $this->modifier->where(
-      'access.user_id', '=', lib::create( 'business\session' )->get_user()->id );
-    $this->modifier->where(
-      'application_has_site.application_id', '=', lib::create( 'business\session' )->get_application()->id );
+    $this->modifier->where( 'access.user_id', '=', lib::create( 'business\session' )->get_user()->id );
     $this->modifier->order( 'site.name' );
     $this->modifier->order( 'role.name' );
+
+    // remove the where created by the access module restricting by site, we want all access to be returned
+    $this->modifier->remove_where( 'access.site_id' );
   }
 }
