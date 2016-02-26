@@ -25,7 +25,7 @@ abstract class has_note extends record
   {
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $note_class_name = lib::get_class_name( 'database\\'.$table_name.'_note' );
+    $note_class_name = lib::get_class_name( 'database\note' );
 
     if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_key_name, '=', $this->id );
@@ -43,7 +43,7 @@ abstract class has_note extends record
   {
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $note_class_name = lib::get_class_name( 'database\\'.$table_name.'_note' );
+    $note_class_name = lib::get_class_name( 'database\note' );
 
     if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_key_name, '=', $this->id );
@@ -63,7 +63,7 @@ abstract class has_note extends record
   {
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $note_class_name = lib::get_class_name( 'database\\'.$table_name.'_note' );
+    $note_class_name = lib::get_class_name( 'database\note' );
 
     if ( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( $subject_key_name, '=', $this->id );
@@ -84,7 +84,7 @@ abstract class has_note extends record
     $util_class_name = lib::get_class_name( 'util' );
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
-    $db_note = lib::create( 'database\\'.$table_name.'_note' );
+    $db_note = lib::create( 'database\note' );
     $db_note->user_id = $db_user->id;
     $db_note->$subject_key_name = $this->id;
     $db_note->datetime = $util_class_name::get_datetime_object();
@@ -116,10 +116,9 @@ abstract class has_note extends record
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
 
     $sql = sprintf(
-      'INSERT INTO %s_note( create_timestamp, %s, user_id, datetime, note ) '.
+      'INSERT INTO note( create_timestamp, %s, user_id, datetime, note ) '.
       "\n".'SELECT NULL, id, %s, %s, %s '.
       "\n".'FROM %s %s',
-      $table_name,
       $subject_key_name,
       static::db()->format_string( $db_user->id ),
       static::db()->format_datetime( $util_class_name::get_datetime_object() ),
@@ -127,18 +126,5 @@ abstract class has_note extends record
       $table_name,
       $modifier->get_sql() );
     static::db()->execute( $sql );
-  }
-
-  /**
-   * Gets a note record (new or existing) for this record type.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param integer $id
-   * @return note record
-   * @static
-   * @access public
-   */
-  public static function get_note( $id = NULL )
-  {
-    return lib::create( 'database\\'.static::get_table_name().'_note', $id );
   }
 }

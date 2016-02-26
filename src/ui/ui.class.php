@@ -203,7 +203,10 @@ class ui extends \cenozo\base_object
       $module_list['application']['choosing'] = array( 'site', 'script' );
     }
     if( array_key_exists( 'alternate', $module_list ) )
+    {
       $module_list['alternate']['children'] = array( 'address', 'phone' );
+      $module_list['alternate']['actions'][] = 'notes/{identifier}';
+    }
     if( array_key_exists( 'collection', $module_list ) )
       $module_list['collection']['choosing'] = array( 'participant', 'user' );
     if( array_key_exists( 'consent_type', $module_list ) )
