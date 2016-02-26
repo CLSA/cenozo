@@ -110,7 +110,7 @@ class address extends has_rank
   public function source_postcode()
   {
     $postcode_class_name = lib::get_class_name( 'database\postcode' );
-    if( !is_null( $this->postcode ) )
+    if( !is_null( $this->postcode ) && !$this->international )
     {
       $db_postcode = $postcode_class_name::get_match( $this->postcode );
       if( !is_null( $db_postcode ) )
