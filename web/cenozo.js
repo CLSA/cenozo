@@ -485,9 +485,9 @@ cenozo.animation( '.fade-transition', function() {
  */
 cenozo.service( 'CnBaseHeader', [
   '$state', '$interval', '$window', 'CnSession', 'CnHttpFactory',
-  'CnModalAccountFactory', 'CnModalPasswordFactory', 'CnModalSiteRoleFactory', 'CnModalTimezoneFactory',
+  'CnModalAccountFactory', 'CnModalPasswordFactory', 'CnModalTimezoneFactory',
   function( $state, $interval, $window, CnSession, CnHttpFactory,
-            CnModalAccountFactory, CnModalPasswordFactory, CnModalSiteRoleFactory, CnModalTimezoneFactory ) {
+            CnModalAccountFactory, CnModalPasswordFactory, CnModalTimezoneFactory ) {
     return {
       construct: function( scope ) {
         // update the time once the session has finished loading
@@ -541,20 +541,7 @@ cenozo.service( 'CnBaseHeader', [
           siteRole: {
             title: 'Site/Role',
             help: 'Change which site and role you are logged in as',
-            execute: function() {
-              CnModalSiteRoleFactory.instance().show().then( function( response ) {
-                if( angular.isObject( response ) &&
-                    ( response.siteId != CnSession.site.id || response.roleId != CnSession.role.id ) ) {
-                  // show a waiting screen while we're changing the site/role
-                  $state.go( 'wait' );
-                  CnSession.setSiteRole( response.siteId, response.roleId ).then( function() {
-                    // blank content
-                    document.getElementById( 'view' ).innerHTML = '';
-                    $window.location.assign( cenozoApp.baseUrl );
-                  } );
-                }
-              } );
-            }
+            execute: function() { CnSession.showSiteRoleModal(); }
           },
           timezone: {
             title: 'Timezone',
@@ -1669,10 +1656,10 @@ cenozo.filter( 'cnYesNo', function() {
  * TODO: document
  */
 cenozo.factory( 'CnSession', [
-  '$state', '$timeout', '$filter', 'CnHttpFactory',
-  'CnModalMessageFactory', 'CnModalPasswordFactory', 'CnModalAccountFactory',
-  function( $state, $timeout, $filter, CnHttpFactory,
-            CnModalMessageFactory, CnModalPasswordFactory, CnModalAccountFactory ) {
+  '$state', '$timeout', '$filter', '$window', 'CnHttpFactory',
+  'CnModalMessageFactory', 'CnModalPasswordFactory', 'CnModalAccountFactory', 'CnModalSiteRoleFactory',
+  function( $state, $timeout, $filter, $window, CnHttpFactory,
+            CnModalMessageFactory, CnModalPasswordFactory, CnModalAccountFactory, CnModalSiteRoleFactory ) {
     return new ( function() {
       var self = this;
       this.pageTitle = '';
@@ -1805,11 +1792,25 @@ cenozo.factory( 'CnSession', [
         } );
       };
 
-      this.setSiteRole = function( siteId, roleId ) {
-        return CnHttpFactory.instance( {
-          path: 'self/0',
-          data: { site: { id: siteId }, role: { id: roleId } }
-        } ).patch();
+      this.showSiteRoleModal = function() {
+        CnModalSiteRoleFactory.instance( {
+          siteId: this.site.id,
+          roleId: this.role.id
+        } ).show().then( function( response ) {
+          if( angular.isObject( response ) &&
+              ( response.siteId != self.site.id || response.roleId != self.role.id ) ) {
+            // show a waiting screen while we're changing the site/role
+            $state.go( 'wait' );
+            CnHttpFactory.instance( {
+              path: 'self/0',
+              data: { site: { id: response.siteId }, role: { id: response.roleId } }
+            } ).patch().then( function() {
+              // blank content
+              document.getElementById( 'view' ).innerHTML = '';
+              $window.location.assign( cenozoApp.baseUrl );
+            } );
+          }
+        } );
       };
 
       this.setSiteSettings = function() {
@@ -1904,6 +1905,7 @@ cenozo.factory( 'CnSession', [
         }
         return formatted;
       };
+
     } );
   }
 ] );
@@ -4357,9 +4359,12 @@ cenozo.service( 'CnModalSiteFactory', [
  * TODO: document
  */
 cenozo.service( 'CnModalSiteRoleFactory', [
-  '$modal', 'CnSession', 'CnHttpFactory',
-  function( $modal, CnSession, CnHttpFactory ) {
-    var object = function() {
+  '$modal', 'CnHttpFactory',
+  function( $modal, CnHttpFactory ) {
+    var object = function( params ) {
+      var self = this;
+      angular.extend( this, params );
+
       this.show = function() {
         return $modal.open( {
           backdrop: 'static',
@@ -4383,14 +4388,12 @@ cenozo.service( 'CnModalSiteRoleFactory', [
             $scope.cancel = function() { $modalInstance.close( false ); };
 
             $scope.siteList = [];
-            $scope.siteId = CnSession.site.id;
-            $scope.roleId = CnSession.role.id;
+            $scope.loading = true;
 
             // get access records
             CnHttpFactory.instance( {
               path: 'self/0/access'
             } ).get().then( function( response ) {
-              console.log( response.data );
               response.data.forEach( function( access ) {
                 // get the site, or add it if it's missing, then add the role to the site's role list
                 var site = $scope.siteList.findByProperty( 'id', access.site_id );
@@ -4405,14 +4408,19 @@ cenozo.service( 'CnModalSiteRoleFactory', [
                 }
                 site.roleList.push( { id: access.role_id, name: access.role_name } );
               } );
+
+              // set the site, refresh the role list then set the role (must be in this order)
+              $scope.siteId = self.siteId ? self.siteId : $scope.siteList[0].id;
               $scope.refreshRoleList();
+              if( self.roleId ) $scope.roleId = self.roleId;
+              $scope.loading = false;
             } );
           }
         } ).result;
       };
     };
 
-    return { instance: function() { return new object(); } };
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 ] );
 
