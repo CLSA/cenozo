@@ -31,14 +31,16 @@ abstract class service extends \cenozo\base_object
    */
   public function __construct( $method, $path, $args = NULL, $file = NULL )
   {
-    $code = $this->process_path( $path );
-    if( 400 != $code && !self::is_method( $method ) ) $code = 405;
-    $this->status = lib::create( 'service\status', $code );
     $this->path = $path;
     $this->method = strtoupper( $method );
     $this->arguments = $args;
     if( !is_array( $this->arguments ) ) $this->arguments = array();
     $this->file = $file;
+
+    // now process the path
+    $code = $this->process_path( $path );
+    if( 400 != $code && !self::is_method( $method ) ) $code = 405;
+    $this->status = lib::create( 'service\status', $code );
   }
 
   /**
@@ -271,16 +273,30 @@ abstract class service extends \cenozo\base_object
    */
   protected function process_path( $path )
   {
+    $code = 200;
+
+    $session = lib::create( 'business\session' );
+
     $this->collection_name_list = array();
     $this->resource_value_list = array();
     $this->module_list = array();
 
-    if( 0 < strlen( $path ) )
+    // only the login/logout services can be processed while not logged in
+    if( is_null( $session->get_user() ) &&
+        !( 'self/0' == $path && in_array( $this->method, array( 'DELETE', 'POST' ) ) ) )
+    {
+      $code = 401;
+    }
+    else if( 0 < strlen( $path ) )
     {
       $module_index = 0;
       foreach( explode( '/', $path ) as $index => $part )
       {
-        if( 0 == strlen( $part ) ) return 400;
+        if( 0 == strlen( $part ) )
+        {
+          $code = 400;
+          break;
+        }
 
         if( 0 == $index % 2 )
         {
@@ -291,7 +307,8 @@ abstract class service extends \cenozo\base_object
           }
           catch( \cenozo\exception\runtime $e )
           {
-            return 404;
+            $code = 404;
+            break;
           }
           $module_index++;
         }
@@ -299,7 +316,14 @@ abstract class service extends \cenozo\base_object
       }
     }
 
-    return 200;
+    if( 300 <= $code )
+    {
+      $this->collection_name_list = array();
+      $this->resource_value_list = array();
+      $this->module_list = array();
+    }
+
+    return $code;
   }
 
   /**
