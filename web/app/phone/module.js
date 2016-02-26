@@ -126,7 +126,17 @@ define( function() {
   cenozo.providers.factory( 'CnPhoneAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseAddFactory.construct( this, parentModel );
+
+        // extend onNew
+        this.onNew = function( record ) {
+          return this.$$onNew( record ).then( function() {
+            return self.parentModel.updateAssociatedAddressList();
+          } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -142,8 +152,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneViewFactory', [
-    'CnBaseViewFactory', 'CnHttpFactory', '$q',
-    function( CnBaseViewFactory, CnHttpFactory, $q ) {
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
@@ -153,23 +163,7 @@ define( function() {
         // extend onView
         this.onView = function() {
           return this.$$onView().then( function() {
-            var parent = self.parentModel.getParentIdentifier();
-            return CnHttpFactory.instance( {
-              path: angular.isDefined( parent.subject )
-                  ? [ parent.subject, parent.identifier, 'address' ].join( '/' )
-                  : self.parentModel.getServiceCollectionPath().replace( 'phone', 'address' ),
-              data: {
-                select: { column: [ 'id', 'summary' ] },
-                modifier: { order: 'rank' }
-              }
-            } ).query().then( function success( response ) {
-              self.parentModel.metadata.columnList.address_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.parentModel.metadata.columnList.address_id.enumList.push( {
-                  value: item.id, name: item.summary
-                } );
-              } );
-            } );
+            return self.parentModel.updateAssociatedAddressList();
           } );
         };
       };
@@ -179,13 +173,35 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneModelFactory', [
-    'CnBaseModelFactory', 'CnPhoneListFactory', 'CnPhoneAddFactory', 'CnPhoneViewFactory',
-    function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory ) {
+    'CnBaseModelFactory', 'CnPhoneListFactory', 'CnPhoneAddFactory', 'CnPhoneViewFactory', 'CnHttpFactory',
+    function( CnBaseModelFactory, CnPhoneListFactory, CnPhoneAddFactory, CnPhoneViewFactory, CnHttpFactory ) {
       var object = function( root ) {
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnPhoneAddFactory.instance( this );
         this.listModel = CnPhoneListFactory.instance( this );
         this.viewModel = CnPhoneViewFactory.instance( this, root );
+
+        // special function to update the associated address list
+        var self = this;
+        this.updateAssociatedAddressList = function() {
+          var parent = self.getParentIdentifier();
+          return CnHttpFactory.instance( {
+            path: angular.isDefined( parent.subject )
+                ? [ parent.subject, parent.identifier, 'address' ].join( '/' )
+                : self.getServiceCollectionPath().replace( 'phone', 'address' ),
+            data: {
+              select: { column: [ 'id', 'summary' ] },
+              modifier: { order: 'rank' }
+            }
+          } ).query().then( function success( response ) {
+            self.metadata.columnList.address_id.enumList = [];
+            response.data.forEach( function( item ) {
+              self.metadata.columnList.address_id.enumList.push( {
+                value: item.id, name: item.summary
+              } );
+            } );
+          } );
+        };
       };
 
       return {
