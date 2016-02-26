@@ -25,12 +25,12 @@ class module extends \cenozo\service\site_restricted_module
 
     if( $record && $record->id )
     {
-      $access_mod = lib::create( 'database\access' );
+      $access_mod = lib::create( 'database\modifier' );
 
       // make sure there is at least one access record, and restrict by site
       $db_restrict_site = $this->get_restricted_site();
       if( !is_null( $db_restrict_site ) ) $access_mod->where( 'site_id', '=', $db_restrict_site->id );
-      if( 0 == $record->get_access_count( $db_restrict_site ) ) $this->get_status()->set_code( 403 );
+      if( 0 == $record->get_access_count( $access_mod ) ) $this->get_status()->set_code( 403 );
     }
   }
 
