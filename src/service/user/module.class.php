@@ -57,7 +57,7 @@ class module extends \cenozo\service\site_restricted_module
       sprintf( '( %s %s ) AS user_join_special_access', $join_sel->get_sql(), $join_mod->get_sql() ),
       'user.id',
       'user_join_special_access.user_id' );
-    $modifier->where( 'user_join_special_access.user_id', '!=', NULL );
+    $modifier->where( 'user_join_special_access.user_id', '=', NULL );
 
     // restrict by site
     $db_restrict_site = $this->get_restricted_site();
