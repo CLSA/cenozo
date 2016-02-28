@@ -97,7 +97,6 @@ class get extends \cenozo\service\service
     $access_mod->order( 'role.name' );
 
     $pseudo_record = array(
-      'voip_enabled' => $setting_manager->get_setting( 'voip', 'enabled' ),
       'application' => $db_application->get_column_values( $application_sel ),
       'role' => $db_role->get_column_values( $role_sel ),
       'site' => $db_site->get_column_values( $site_sel ),
@@ -130,6 +129,9 @@ class get extends \cenozo\service\service
     $activity_mod->where( 'application_has_site.application_id', '=', $db_application->id );
     $pseudo_record['application']['active_users'] = $activity_class_name::count( $activity_mod );
     $pseudo_record['application']['development_mode'] = lib::in_development_mode();
+    $pseudo_record['application']['login_failure_limit'] =
+      $setting_manager->get_setting( 'general', 'login_failure_limit' );
+    $pseudo_record['application']['voip_enabled'] = $setting_manager->get_setting( 'voip', 'enabled' );
 
     // include the number of active users for the site
     $activity_mod = lib::create( 'database\modifier' );

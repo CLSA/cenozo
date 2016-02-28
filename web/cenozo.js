@@ -2619,6 +2619,7 @@ cenozo.factory( 'CnBaseViewFactory', [
               } else {
                 this.formattedRecord[property] =
                   CnSession.formatValue( this.record[property], input.type, true );
+              console.log( this.formattedRecord );
               }
             }
           } else {

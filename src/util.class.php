@@ -248,24 +248,42 @@ class util
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $username
    * @param string $password
+   * @param boolean $count_failure Whether or not to increment the user's login failures on an invalid password
    * @return boolean
    * @access public
    * @static
    */
-  public static function validate_user( $username, $password )
+  public static function validate_user( $username, $password, $count_failure = false )
   {
-    $valid = false;
+    $user_class_name = lib::get_class_name( 'database\user' );
+    $setting_manager = lib::create( 'business\setting_manager' );
     $ldap_manager = lib::create( 'business\ldap_manager' );
+
+    $valid = false;
+
     if( $ldap_manager->get_enabled() )
     { // ldap enabled, check the user/pass using the ldap manager
       $valid = $ldap_manager->validate_user( $username, $password );
     }
     else
     { // ldap not enabled, check the user/pass in the db
-      $user_class_name = lib::get_class_name( 'database\user' );
       $db_user = $user_class_name::get_unique_record( 'name', $username );
       if( !is_null( $db_user ) )
         $valid = self::encrypt( $password ) === self::encrypt( $db_user->password );
+    }
+
+    // if invalid then check if user exists and increment their login failure count
+    // also, deactivate them if they go over the login failure limit
+    if( !$valid && $count_failure )
+    {
+      $db_user = $user_class_name::get_unique_record( 'name', $username );
+      if( !is_null( $db_user ) )
+      {
+        $db_user->login_failures++;
+        if( $setting_manager->get_setting( 'general', 'login_failure_limit' ) <= $db_user->login_failures )
+          $db_user->active = false;
+        $db_user->save();
+      }
     }
 
     return $valid;

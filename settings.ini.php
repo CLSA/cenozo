@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.0.1';
-$settings['general']['cenozo_build'] = 'b9fea2e';
+$settings['general']['cenozo_build'] = 'b68dd08';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -30,6 +30,9 @@ $settings['general']['activity_timeout'] = 60;
 
 // the default password given to all new users
 $settings['general']['default_password'] = 'password';
+
+// the maximum number of login failures before deactivating a user
+$settings['general']['login_failure_limit'] = 7;
 
 // cenozo's sub-directory urls
 $settings['url']['ROOT'] = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) );

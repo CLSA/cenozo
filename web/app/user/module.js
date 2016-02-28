@@ -53,7 +53,15 @@ define( function() {
   module.addInputGroup( null, {
     active: {
       title: 'Active',
-      type: 'boolean'
+      type: 'boolean',
+      help: 'Inactive users will not be able to log in.  When activating a user their login failures count ' +
+            'will automatically be reset back to 0.'
+    },
+    login_failures: {
+      title: 'Login Failures',
+      type: 'string',
+      constant: true,
+      help: 'Every time an invalid password is used to log in as this user this counter will go up.'
     },
     name: {
       title: 'Username',
@@ -226,6 +234,21 @@ define( function() {
         if( angular.isDefined( this.languageModel ) )
           this.languageModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
 
+        // extend the onPatch function
+        this.onPatch = function( data ) {
+          return this.$$onPatch( data ).then( function() {
+            // update the login failures when active is set to true
+            if( true === data.active ) {
+              CnHttpFactory.instance( {
+                path: self.parentModel.getServiceResourcePath(),
+                data: { select: { column: [ 'login_failures' ] } }
+              } ).get().then( function( response ) {
+                self.record.login_failures = response.data.login_failures;
+              } );
+            }
+          } );
+        };
+
         // custom operation
         this.resetPassword = function() {
           CnModalConfirmFactory.instance( {
@@ -263,15 +286,20 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserModelFactory', [
     'CnBaseModelFactory', 'CnUserListFactory', 'CnUserAddFactory', 'CnUserViewFactory',
-    'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnUserListFactory, CnUserAddFactory, CnUserViewFactory,
-              CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnUserAddFactory.instance( this );
         this.listModel = CnUserListFactory.instance( this );
         this.viewModel = CnUserViewFactory.instance( this, root );
+
+        // add additional details to some of the help text
+        module.inputGroupList[null].login_failures.help +=
+          ' Once it reaches ' + CnSession.application.loginFailureLimit +
+          ' the user will automatically be deactivated.  Reactivating the user will reset the counter to 0.';
 
         // extend getMetadata
         this.getMetadata = function() {

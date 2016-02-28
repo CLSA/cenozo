@@ -49,8 +49,10 @@
                      tooltip="{{ input.help }}">
                 {{ input.title }}
               </label>
-              <div ng-class="model.viewModel.record[input.key] == model.viewModel.backupRecord[input.key] ?
-                             'col-sm-9' : 'col-sm-8'">
+              <div ng-class=" model.editEnabled &&
+                             !input.constant &&
+                             model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] ?
+                             'col-sm-8' : 'col-sm-9'">
                 <div class="input-group"
                      ng-switch="input.type|cnViewType"
                      ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
@@ -322,6 +324,7 @@
                 </span>
               </div>
               <div ng-if="model.editEnabled &&
+                          !input.constant &&
                           model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
                    class="col-sm-1 col-slim">
                 <button class="btn btn-warning" type="button" ng-click="undo( input.key )">Undo</button>

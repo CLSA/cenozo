@@ -77,8 +77,8 @@ class patch extends \cenozo\service\service
           if( is_null( $password->current ) )
             $password->current = $setting_manager->get_setting( 'general', 'default_password' );
 
-          // validate the user's current password
-          if( !$util_class_name::validate_user( $db_user->name, $password->current ) )
+          // validate the user's current password (don't increment failure count)
+          if( !$util_class_name::validate_user( $db_user->name, $password->current, false ) )
           {
             $this->set_data( 'invalid password' );
             $this->status->set_code( 400 );

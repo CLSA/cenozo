@@ -59,19 +59,28 @@ class patch extends \cenozo\service\patch
   {
     parent::execute();
 
+    $db_user = $this->get_leaf_record();
+
     // process the preferred site, if it exists
     if( $this->update_password )
     {
       $session = lib::create( 'business\session' );
       $setting_manager = lib::create( 'business\setting_manager' );
       $ldap_manager = lib::create( 'business\ldap_manager' );
-      $db_user = $this->get_leaf_record();
 
       $default_password = $setting_manager->get_setting( 'general', 'default_password' );
       $ldap_manager->set_user_password( $db_user->name, $default_password );
 
       // just incase the user is resetting their own password
       if( $session->get_user()->id == $db_user->id ) $session->set_no_password( $default_password );
+    }
+
+    $patch_array = parent::get_file_as_array();
+    if( array_key_exists( 'active', $patch_array ) && $patch_array['active'] )
+    {
+      // when activating a user reset their login failures to 0
+      $db_user->login_failures = 0;
+      $db_user->save();
     }
   }
 

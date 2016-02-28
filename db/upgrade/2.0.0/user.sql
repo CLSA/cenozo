@@ -53,6 +53,20 @@ CREATE PROCEDURE patch_user()
       WHERE user_has_language.language_id IS NULL;
     END IF;
 
+    SELECT "Adding login_failures column to user table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "user"
+      AND COLUMN_NAME = "login_failures" );
+    IF @test = 0 THEN
+      -- add column
+      ALTER TABLE user
+      ADD COLUMN login_failures INT NOT NULL DEFAULT 0;
+    END IF;
+
   END //
 DELIMITER ;
 

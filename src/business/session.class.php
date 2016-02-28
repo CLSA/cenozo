@@ -328,62 +328,69 @@ class session extends \cenozo\singleton
           }
         }
 
-        if( !is_null( $this->db_user ) && $this->db_user->active )
+        if( !is_null( $this->db_user ) )
         {
-          if( !is_null( $db_site ) && !is_null( $db_role ) )
+          if( !$this->db_user->active )
           {
-            $db_access = $access_class_name::get_unique_record(
-              array( 'user_id', 'role_id', 'site_id' ),
-              array( $this->db_user->id, $db_role->id, $db_site->id ) );
+            $this->logout();
           }
-          else if( is_null( $db_access ) )
+          else
           {
-            // find the most recent access restricted to the given site/role (if any)
-            $access_mod = lib::create( 'database\modifier' );
-            $access_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-            $access_mod->where( 'application_has_site.application_id', '=', $this->db_application->id );
-            $access_mod->order_desc( 'datetime' );
-            $access_mod->order_desc( 'microtime' );
-            $access_mod->limit( 1 );
-            if( !is_null( $db_site ) ) $access_mod->where( 'access.site_id', '=', $db_site->id );
-            if( !is_null( $db_role ) ) $access_mod->where( 'access.role_id', '=', $db_role->id );
-            $access_list = $this->db_user->get_access_object_list( $access_mod );
-            if( 0 < count( $access_list ) ) $db_access = current( $access_list );
-          }
-
-          if( !is_null( $db_access ) )
-          {
-            $this->db_access = $db_access;
-            $this->db_site = $this->db_access->get_site();
-            $this->db_setting = current( $this->db_site->get_setting_object_list() );
-            $this->db_role = $this->db_access->get_role();
-            $_SESSION['access.id'] = $db_access->id;
-            $_SESSION['address'] = $_SERVER['REMOTE_ADDR'];
-
-            $activity_class_name::close_lapsed( $this->db_user, $this->db_site, $this->db_role );
-
-            // create a new activity if there isn't already one open
-            $activity_mod = lib::create( 'database\modifier' );
-            $activity_mod->where( 'user_id', '=', $this->db_user->id );
-            $activity_mod->where( 'application_id', '=', $this->db_application->id );
-            $activity_mod->where( 'site_id', '=', $this->db_site->id );
-            $activity_mod->where( 'role_id', '=', $this->db_role->id );
-            $activity_mod->where( 'end_datetime', '=', NULL );
-            if( 0 == $this->db_user->get_activity_count( $activity_mod ) )
+            if( !is_null( $db_site ) && !is_null( $db_role ) )
             {
-              $db_activity = lib::create( 'database\activity' );
-              $db_activity->user_id = $this->db_user->id;
-              $db_activity->application_id = $this->db_application->id;
-              $db_activity->site_id = $this->db_site->id;
-              $db_activity->role_id = $this->db_role->id;
-              $db_activity->start_datetime = $util_class_name::get_datetime_object();
-              $db_activity->save();
+              $db_access = $access_class_name::get_unique_record(
+                array( 'user_id', 'role_id', 'site_id' ),
+                array( $this->db_user->id, $db_role->id, $db_site->id ) );
+            }
+            else if( is_null( $db_access ) )
+            {
+              // find the most recent access restricted to the given site/role (if any)
+              $access_mod = lib::create( 'database\modifier' );
+              $access_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
+              $access_mod->where( 'application_has_site.application_id', '=', $this->db_application->id );
+              $access_mod->order_desc( 'datetime' );
+              $access_mod->order_desc( 'microtime' );
+              $access_mod->limit( 1 );
+              if( !is_null( $db_site ) ) $access_mod->where( 'access.site_id', '=', $db_site->id );
+              if( !is_null( $db_role ) ) $access_mod->where( 'access.role_id', '=', $db_role->id );
+              $access_list = $this->db_user->get_access_object_list( $access_mod );
+              if( 0 < count( $access_list ) ) $db_access = current( $access_list );
             }
 
-            // update the access with the current time
-            $this->mark_access_time();
+            if( !is_null( $db_access ) )
+            {
+              $this->db_access = $db_access;
+              $this->db_site = $this->db_access->get_site();
+              $this->db_setting = current( $this->db_site->get_setting_object_list() );
+              $this->db_role = $this->db_access->get_role();
+              $_SESSION['access.id'] = $db_access->id;
+              $_SESSION['address'] = $_SERVER['REMOTE_ADDR'];
 
-            $success = true;
+              $activity_class_name::close_lapsed( $this->db_user, $this->db_site, $this->db_role );
+
+              // create a new activity if there isn't already one open
+              $activity_mod = lib::create( 'database\modifier' );
+              $activity_mod->where( 'user_id', '=', $this->db_user->id );
+              $activity_mod->where( 'application_id', '=', $this->db_application->id );
+              $activity_mod->where( 'site_id', '=', $this->db_site->id );
+              $activity_mod->where( 'role_id', '=', $this->db_role->id );
+              $activity_mod->where( 'end_datetime', '=', NULL );
+              if( 0 == $this->db_user->get_activity_count( $activity_mod ) )
+              {
+                $db_activity = lib::create( 'database\activity' );
+                $db_activity->user_id = $this->db_user->id;
+                $db_activity->application_id = $this->db_application->id;
+                $db_activity->site_id = $this->db_site->id;
+                $db_activity->role_id = $this->db_role->id;
+                $db_activity->start_datetime = $util_class_name::get_datetime_object();
+                $db_activity->save();
+              }
+
+              // update the access with the current time
+              $this->mark_access_time();
+
+              $success = true;
+            }
           }
         }
       }
@@ -422,7 +429,7 @@ class session extends \cenozo\singleton
    */
   public function check_authorization_header( &$username, &$password )
   {
-    $ldap_manager = lib::create( 'business\ldap_manager' );
+    $util_class_name = lib::get_class_name( 'util' );
 
     $success = false;
 
@@ -439,7 +446,7 @@ class session extends \cenozo\singleton
         $auth = explode( ':', base64_decode( $parts[1] ) );
         if( 2 == count( $auth ) )
         {
-          if( $ldap_manager->validate_user( $auth[0], $auth[1] ) )
+          if( $util_class_name::validate_user( $auth[0], $auth[1], true ) )
           {
             $username = $auth[0];
             $password = $auth[1];
