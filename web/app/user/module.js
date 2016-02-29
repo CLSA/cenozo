@@ -68,7 +68,7 @@ define( function() {
       type: 'string',
       format: 'alpha_num',
       help: 'May only contain numbers, letters and underscores. Can only be defined when creating a new user.',
-      noedit: true
+      constant: 'view'
     },
     first_name: {
       title: 'First Name',
@@ -100,13 +100,13 @@ define( function() {
       title: 'Initial Site',
       type: 'enum',
       help: 'Which site to assign the user to',
-      noview: true
+      constant: 'view'
     },
     role_id: {
       title: 'Initial Role',
       type: 'enum',
       help: 'Which role to assign the user to',
-      noview: true
+      constant: 'view'
     }
   } );
 

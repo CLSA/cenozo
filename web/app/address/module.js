@@ -59,7 +59,7 @@ define( function() {
       title: 'International',
       type: 'boolean',
       help: 'Cannot be changed once the address has been created.',
-      noedit: true
+      constant: 'view'
     },
     address1: {
       title: 'Address Line 1',
@@ -76,6 +76,7 @@ define( function() {
     region_id: {
       title: 'Region',
       type: 'enum',
+      exclude: 'add',
       constant: true,
       help: 'Cannot be changed once the address has been created.'
     },
@@ -88,11 +89,13 @@ define( function() {
       title: 'Timezone Offset',
       type: 'string',
       format: 'float',
+      exclude: 'add',
       help: 'The number of hours difference between the address\' timezone and UTC.'
     },
     daylight_savings: {
       title: 'Daylight Savings',
       type: 'boolean',
+      exclude: 'add',
       help: 'Whether the address observes daylight savings.'
     },
     note: {

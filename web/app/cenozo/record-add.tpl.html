@@ -5,7 +5,9 @@
              name="innerForm">
       <div class="form-group"
            ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
-        <label for="{{ input.key }}" class="col-sm-3 control-label" tooltip="{{ input.help }}">{{ input.title }}</label>
+        <label for="{{ input.key }}"
+               class="col-sm-3 control-label"
+               tooltip="{{ input.help }}">{{ input.title }}</label>
         <div class="col-sm-9">
           <div class="input-group"
                ng-switch="input.type|cnViewType"
@@ -18,7 +20,7 @@
               class="form-control"
               type="text"
               autocomplete="off"
-              ng-readonly="input.constant"
+              ng-readonly="true === input.constant || 'add' == input.constant"
               ng-required="model.metadata.columnList[input.key].required"></input>
             <input ng-switch-when="typeahead"
               ng-attr-id="{{ input.key }}"
@@ -70,7 +72,8 @@
               ng-model="record[input.key]"
               ng-change="check( input.key )"
               class="form-control"
-              ng-disabled="input.constant || !input.enumList || 1 >= input.enumList.length"
+              ng-disabled="true === input.constant || 'add' == input.constant ||
+                           !input.enumList || 1 >= input.enumList.length"
               ng-required="model.metadata.columnList[input.key].required"></select>
             <textarea ng-switch-when="text"
               cn-elastic
@@ -79,7 +82,7 @@
               ng-model="record[input.key]"
               cn-change="check( input.key )"
               class="form-control"
-              ng-readonly="input.constant"
+              ng-readonly="true === input.constant || 'add' == input.constant"
               ng-required="model.metadata.columnList[input.key].required"></textarea>
             <div ng-switch-when="days" class="row">
               <div class="col-sm-1" style="width: 14.28%">

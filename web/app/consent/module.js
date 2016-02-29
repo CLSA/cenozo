@@ -44,17 +44,17 @@ define( function() {
     consent_type_id: {
       title: 'Consent Type',
       type: 'enum',
-      noedit: true
+      constant: 'view'
     },
     accept: {
       title: 'Accept',
       type: 'boolean',
-      noedit: true
+      constant: 'view'
     },
     written: {
       title: 'Written',
       type: 'boolean',
-      noedit: true
+      constant: 'view'
     },
     date: {
       title: 'Date',

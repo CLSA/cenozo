@@ -39,18 +39,19 @@
           </h4>
         </div>
         <div id="inputGroup{{ $index }}" ng-class="{'collapse':group.collapsed}">
-          <ng-form ng-repeat="input in group.inputList" name="innerForm">
+          <ng-form ng-repeat="input in group.inputList"
+                   ng-if="'view' != input.exclude && 'hidden' != input.type"
+                   name="innerForm">
             <div class="form-group"
                  ng-class="{'first-form-group':'null'!=group.title && $first}"
-                 ng-if="'hidden' != input.type"
                  ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
               <label for="{{ input.key }}"
                      class="col-sm-3 control-label"
                      tooltip="{{ input.help }}">
                 {{ input.title }}
               </label>
-              <div ng-class=" model.editEnabled &&
-                             !input.constant &&
+              <div ng-class="model.editEnabled &&
+                             true !== input.constant && 'view' != input.constant &&
                              model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] ?
                              'col-sm-8' : 'col-sm-9'">
                 <div class="input-group"
@@ -64,7 +65,7 @@
                     class="form-control"
                     type="text"
                     autocomplete="off"
-                    ng-readonly="!model.editEnabled || input.constant || input.noedit"
+                    ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
                     maxlength="{{ model.metadata.columnList[input.key].max_length }}"
                     ng-required="model.metadata.columnList[input.key].required"></input>
                   <input ng-switch-when="typeahead"
@@ -105,8 +106,9 @@
                     ng-model="model.viewModel.formattedRecord[input.key]"
                     class="form-control"
                     type="text"
-                    ng-click="model.editEnabled && !input.constant && !input.noedit && selectDatetime( input )"
-                    ng-readonly="!model.editEnabled || input.constant || input.noedit"
+                    ng-click="model.editEnabled && true !== input.constant && 'view' != constant &&
+                              selectDatetime( input )"
+                    ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
                     onkeydown="return false"></input>
                   <select ng-switch-when="select"
                     ng-attr-id="{{ input.key }}"
@@ -116,9 +118,8 @@
                     ng-model="model.viewModel.record[input.key]"
                     ng-change="patch( input.key )"
                     class="form-control"
-                    ng-disabled="!model.editEnabled ||
-                                 input.constant ||
-                                 input.noedit ||
+                    ng-disabled="true === input.constant || 'view' == input.constant ||
+                                 !model.editEnabled ||
                                  !input.enumList ||
                                  1 >= input.enumList.length"
                     ng-required="model.metadata.columnList[input.key].required"></select>
@@ -129,7 +130,7 @@
                     ng-model="model.viewModel.record[input.key]"
                     cn-change="patch( input.key )"
                     class="form-control"
-                    ng-readonly="!model.editEnabled || input.constant || input.noedit"
+                    ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
                     ng-required="model.metadata.columnList[input.key].required"></textarea>
                   <div ng-switch-when="days" class="row">
                     <div class="col-sm-1" style="width: 14.28%">
@@ -324,7 +325,7 @@
                 </span>
               </div>
               <div ng-if="model.editEnabled &&
-                          !input.constant &&
+                          true !== input.constant && 'view' != input.constant &&
                           model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
                    class="col-sm-1 col-slim">
                 <button class="btn btn-warning" type="button" ng-click="undo( input.key )">Undo</button>

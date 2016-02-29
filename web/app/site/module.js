@@ -72,6 +72,7 @@ define( function() {
     region_id: {
       title: 'Region',
       type: 'enum',
+      exclude: 'add',
       constant: true,
       help: 'Cannot be changed once the site has been created.'
     },

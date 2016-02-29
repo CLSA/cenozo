@@ -160,6 +160,40 @@ angular.extend( cenozoApp, {
             if( this.framework ) modules.push( cenozoApp.getFileUrl( this.subject.snake, 'module.extend.js' ) );
             return modules;
           },
+          /**
+           * Inputs are added in the following form:
+           * key: {
+           *   column: the input's column name if different from key
+           *   title: the user-friendly title of the input
+           *   type: one of the following
+           *     boolean: yes/no
+           *     date: date (with no time)
+           *     datetime: date and time (with no seconds)
+           *     datetimesecond: date, time and seconds
+           *     enum: set list of values (dropdown)
+           *     hidden: download view data but does not show in the interface (for when it is used elsewhere)
+           *     lookup-typeahead: list of typeahead values which are downloaded dynamically
+           *     months: 12 checkboxes, one for every month
+           *     number: a numerical value
+           *     rank: a ranked value (1st, 2nd, 3rd, etc)
+           *     string: any string
+           *     text: any long string
+           *     typeahead: like lookup-typeahead but values are not loaded (must be provided as an array)
+           *   constant: one of the following:
+           *     true: makes the input immutable when adding or viewing
+           *     'add': makes the input immutable when adding but not viewing
+           *     'view': makes the input immutable when viewing but not adding
+           *   exclude: one of the following:
+           *     'add': excludes an input (and its data in the record) when adding
+           *     'view': excludes an input (and its data in the record) when viewing
+           *   help: help text that pops up when mousing over an input
+           *   typeahead: { (for lookup-typeahead types only)
+           *     table: the table to lookup values from
+           *     select: what is shown when selected (may be a CONCAT statement)
+           *     where: an array of all columns in the table which can be matched
+           *   }
+           * }
+           */
           addInput: function( group, key, input ) {
             // make sure the key is unique throughout all groups
             for( var g in this.inputGroupList ) {
@@ -2619,7 +2653,6 @@ cenozo.factory( 'CnBaseViewFactory', [
               } else {
                 this.formattedRecord[property] =
                   CnSession.formatValue( this.record[property], input.type, true );
-              console.log( this.formattedRecord );
               }
             }
           } else {
@@ -2794,8 +2827,8 @@ cenozo.factory( 'CnBaseViewFactory', [
             // convert blank enums into empty strings (for ng-options)
             for( var group in parentModel.module.inputGroupList ) {
               for( var column in parentModel.module.inputGroupList[group] ) {
-                var inputObject = parentModel.module.inputGroupList[group][column];
-                if( 'enum' == inputObject.type && null === self.record[column] ) {
+                var input = parentModel.module.inputGroupList[group][column];
+                if( 'view' != input.exclude && 'enum' == input.type && null === self.record[column] ) {
                   var metadata = parentModel.metadata.columnList[column];
                   if( angular.isDefined( metadata ) && !metadata.required ) {
                     self.record[column] = '';
@@ -2970,8 +3003,14 @@ cenozo.factory( 'CnBaseModelFactory', [
             list = self.columnList;
           } else {
             // we need to get a list of all inputs from the module's input groups
-            for( var group in self.module.inputGroupList )
-              angular.extend( list, self.module.inputGroupList[group] );
+            for( var group in self.module.inputGroupList ) {
+              for( var column in self.module.inputGroupList[group] ) {
+                var input = self.module.inputGroupList[group][column];
+                if( 'view' != input.exclude ) {
+                  list[column] = input;
+                }
+              }
+            }
           }
 
           // add identifier data if it is missing
@@ -2986,9 +3025,8 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
 
           for( var key in list ) {
-            // skip "noview" columns when the type is view
+            // skip excluded columns
             if( 'separator' == list[key].type ) continue;
-            if( 'view' == type && true === list[key].noview ) continue;
 
             var parentTable = self.module.subject.snake;
 
@@ -3239,8 +3277,8 @@ cenozo.factory( 'CnBaseModelFactory', [
             for( var group in self.module.inputGroupList ) {
               for( var key in self.module.inputGroupList[group] ) {
                 var input = self.module.inputGroupList[group][key];
-                // don't include removed items, those which belong to the state subject or "noadd"s
-                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && !input.noadd ) {
+                // don't include removed items, those which belong to the state subject or excluded
+                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && 'add' != input.exclude ) {
                   data.push( input );
                 }
               }
@@ -3249,8 +3287,8 @@ cenozo.factory( 'CnBaseModelFactory', [
             for( var group in self.module.inputGroupList ) {
               for( var key in self.module.inputGroupList[group] ) {
                 var input = self.module.inputGroupList[group][key];
-                // don't include removed items, those which belong to the state subject or "noviews"s
-                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && !input.noview ) {
+                // don't include removed items, those which belong to the state subject or excluded
+                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && 'view' != input.exclude ) {
                   var groupObj = data.findByProperty( 'title', group );
                   if( null === groupObj ) {
                     // we haven't added this group yet, so add it now
