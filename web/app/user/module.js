@@ -100,13 +100,13 @@ define( function() {
       title: 'Initial Site',
       type: 'enum',
       help: 'Which site to assign the user to',
-      constant: 'view'
+      exclude: 'view'
     },
     role_id: {
       title: 'Initial Role',
       type: 'enum',
       help: 'Which role to assign the user to',
-      constant: 'view'
+      exclude: 'view'
     }
   } );
 
