@@ -174,7 +174,6 @@ angular.extend( cenozoApp, {
            *     hidden: download view data but does not show in the interface (for when it is used elsewhere)
            *     lookup-typeahead: list of typeahead values which are downloaded dynamically
            *     months: 12 checkboxes, one for every month
-           *     number: a numerical value
            *     rank: a ranked value (1st, 2nd, 3rd, etc)
            *     string: any string
            *     text: any long string
