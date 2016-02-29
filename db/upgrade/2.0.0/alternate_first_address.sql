@@ -14,7 +14,6 @@ CREATE PROCEDURE patch_alternate_first_address()
 
       DROP VIEW IF EXISTS alternate_first_address;
 
-      DROP TABLE IF EXISTS alternate_first_address;
       CREATE TABLE IF NOT EXISTS alternate_first_address (
         alternate_id INT UNSIGNED NOT NULL,
         address_id INT UNSIGNED NULL,

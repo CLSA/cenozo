@@ -11,7 +11,6 @@ DROP PROCEDURE IF EXISTS patch_script;
       WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = "script" );
     IF @test = 0 THEN
-      DROP TABLE IF EXISTS script;
 
       CREATE TABLE IF NOT EXISTS script (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,

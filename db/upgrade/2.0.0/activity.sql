@@ -1,6 +1,5 @@
 SELECT "Redefining activity table" AS "";
 
-DROP TABLE IF EXISTS activity;
 CREATE TABLE IF NOT EXISTS activity (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id INT UNSIGNED NOT NULL,

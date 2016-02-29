@@ -11,7 +11,7 @@ CREATE PROCEDURE patch_application_has_site()
       WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = "application_has_site" );
     IF @test = 0 THEN
-      DROP TABLE IF EXISTS application_has_site;
+
       CREATE TABLE IF NOT EXISTS application_has_site (
         application_id INT UNSIGNED NOT NULL,
         site_id INT UNSIGNED NOT NULL,

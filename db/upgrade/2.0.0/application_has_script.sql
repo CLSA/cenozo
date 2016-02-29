@@ -11,7 +11,6 @@ DROP PROCEDURE IF EXISTS patch_application_has_script;
       WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = "application_has_script" );
     IF @test = 0 THEN
-      DROP TABLE IF EXISTS application_has_script;
 
       CREATE TABLE IF NOT EXISTS application_has_script (
         application_id INT UNSIGNED NOT NULL,
