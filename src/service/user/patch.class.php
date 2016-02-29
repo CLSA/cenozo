@@ -37,18 +37,21 @@ class patch extends \cenozo\service\patch
   {
     parent::validate();
 
-    $db_user = $this->get_leaf_record();
-
-    // don't allow roles to reset passwords of users with roles in a higher tier
-    $access_sel = lib::create( 'database\select' );
-    $access_sel->add_column( 'MAX( role.tier )', 'max_tier', false );
-    $access_mod = lib::create( 'database\modifier' );
-    $access_mod->join( 'role', 'access.role_id', 'role.id' );
-    $access_mod->where( 'access.user_id', '=', $db_user->id );
-    $access = current( $db_user->get_access_list( $access_sel, $access_mod ) );
-    if( !$access || $access['max_tier'] > lib::create( 'business\session' )->get_role()->tier )
+    if( 300 > $this->status->get_code() )
     {
-      $this->status->set_code( 403 );
+      $db_user = $this->get_leaf_record();
+
+      // don't allow roles to reset passwords of users with roles in a higher tier
+      $access_sel = lib::create( 'database\select' );
+      $access_sel->add_column( 'MAX( role.tier )', 'max_tier', false );
+      $access_mod = lib::create( 'database\modifier' );
+      $access_mod->join( 'role', 'access.role_id', 'role.id' );
+      $access_mod->where( 'access.user_id', '=', $db_user->id );
+      $access = current( $db_user->get_access_list( $access_sel, $access_mod ) );
+      if( !$access || $access['max_tier'] > lib::create( 'business\session' )->get_role()->tier )
+      {
+        $this->status->set_code( 403 );
+      }
     }
   }
 

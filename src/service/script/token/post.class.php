@@ -18,10 +18,13 @@ class post extends \cenozo\service\post
   {
     parent::validate();
 
-    // must have a participant_id in the provided data
-    $data = $this->get_file_as_array();
-    if( 1 !== count( $data ) || !in_array( key( $data ), array( 'uid', 'participant_id' ) ) )
-      $this->status->set_code( 400 );
+    if( 300 > $this->status->get_code() )
+    {
+      // must have a participant_id in the provided data
+      $data = $this->get_file_as_array();
+      if( 1 !== count( $data ) || !in_array( key( $data ), array( 'uid', 'participant_id' ) ) )
+        $this->status->set_code( 400 );
+    }
   }
 
   /**

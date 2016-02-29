@@ -18,13 +18,16 @@ class post extends \cenozo\service\post
   {
     parent::validate();
 
-    // We must check for duplicate names here, otherwise an exception will be thrown when
-    // creating the associated events in the setup() method
-    $script_class_name = lib::get_class_name( 'database\script' );
-    if( !is_null( $script_class_name::get_unique_record( 'name', $this->get_file_as_array()['name'] ) ) )
+    if( 300 > $this->status->get_code() )
     {
-      $this->set_data( array( 'name' ) );
-      $this->status->set_code( 409 );
+      // We must check for duplicate names here, otherwise an exception will be thrown when
+      // creating the associated events in the setup() method
+      $script_class_name = lib::get_class_name( 'database\script' );
+      if( !is_null( $script_class_name::get_unique_record( 'name', $this->get_file_as_array()['name'] ) ) )
+      {
+        $this->set_data( array( 'name' ) );
+        $this->status->set_code( 409 );
+      }
     }
   }
 
