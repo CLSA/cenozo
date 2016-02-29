@@ -36,17 +36,33 @@ class post extends write
       $record = $this->get_leaf_record();
       $parent_record = $this->get_parent_record();
 
-      if( !is_null( $parent_record ) )
-      { // add the parent relationship
-        $parent_column = sprintf( '%s_id', $parent_record::get_table_name() );
-        if( $record->column_exists( $parent_column ) ) $record->$parent_column = $parent_record->id;
-      }
+      if( !is_null( $record ) )
+      {
+        if( !is_null( $parent_record ) )
+        { // add the parent relationship
+          $parent_column = sprintf( '%s_id', $parent_record::get_table_name() );
+          if( $record->column_exists( $parent_column ) ) $record->$parent_column = $parent_record->id;
+        }
 
-      // add record column data
-      $post_object = $this->get_file_as_object();
-      foreach( $record->get_column_names() as $column_name )
-        if( 'id' != $column_name && property_exists( $post_object, $column_name ) )
-          $record->$column_name = $post_object->$column_name;
+        // add record column data
+        $post_object = $this->get_file_as_object();
+        foreach( $record->get_column_names() as $column_name )
+          if( 'id' != $column_name && property_exists( $post_object, $column_name ) )
+            $record->$column_name = $post_object->$column_name;
+      }
+    }
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function validate()
+  {
+    parent::validate();
+
+    if( 300 > $this->status->get_code() )
+    {
+      if( is_null( $this->get_leaf_record() ) ) $this->status->set_code( 400 );
     }
   }
 
