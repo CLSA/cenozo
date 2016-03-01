@@ -2515,7 +2515,7 @@ cenozo.factory( 'CnBaseListFactory', [
 
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
           httpObj.onError = function( response ) { self.onListError( response ); }
-          var currentPage = this.paginationModel.currentPage;
+          var currentPage = replace ? 1 : this.paginationModel.currentPage;
           return CnHttpFactory.instance( httpObj ).query().then( function( response ) {
             // the query call will reset the page to 1, so it is saved before the call and set back now
             self.paginationModel.currentPage = currentPage;
