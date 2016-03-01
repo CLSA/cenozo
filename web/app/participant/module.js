@@ -109,7 +109,9 @@ define( function() {
     },
     age_group_id: {
       title: 'Age Group',
-      type: 'enum'
+      type: 'enum',
+      help: 'The age group that the participant belonged to when first recruited into the study. ' +
+            'Note that this won\'t necessarily reflect the participant\'s current age.'
     },
     state_id: {
       title: 'Condition',

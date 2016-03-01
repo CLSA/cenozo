@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE age_group.sql
 SOURCE collection.sql
 SOURCE state.sql
 SOURCE person_first_address.sql
