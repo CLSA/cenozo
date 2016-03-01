@@ -219,6 +219,9 @@ class ui extends \cenozo\base_object
       $module_list['participant']['choosing'] = array( 'collection' );
       $module_list['participant']['actions'][] = 'history/{identifier}';
       $module_list['participant']['actions'][] = 'notes/{identifier}';
+      // remove the add action as this services is used for utility purposes only
+      if( false !== ( $key = array_search( 'add', $module_list['participant']['actions'] ) ) )
+        array_splice( $module_list['participant']['actions'], $key, 1 );
     }
     if( array_key_exists( 'site', $module_list ) )
     {

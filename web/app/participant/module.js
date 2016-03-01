@@ -2,6 +2,7 @@ define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'participant', true ); } catch( err ) { console.warn( err ); return; }
+
   angular.extend( module, {
     identifier: { column: 'uid' },
     name: {
@@ -402,21 +403,6 @@ define( function() {
     }
 
   };
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnParticipantAdd', [
-    'CnParticipantModelFactory',
-    function( CnParticipantModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnParticipantModelFactory.root;
-        }
-      };
-    }
-  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantHistory', [
