@@ -73,6 +73,8 @@ class session extends \cenozo\singleton
         'setting in application\'s settings.local.ini.php file',
         __METHOD__ );
 
+    define( 'APP_TITLE', $this->db_application->title );
+
     $this->login();
     $this->state = 'initialized';
   }
