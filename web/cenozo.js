@@ -2263,7 +2263,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           allDaySlot: false,
           firstDay: 0,
           scrollTime: '07:00:00',
-          timezone: CnSession.user.timezone,
+          timezone: 'UTC',
           timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
           smallTimeFormat: CnSession.user.use12hourClock ? 'h(:mm)t' : 'HH(:mm)',
           header: {
