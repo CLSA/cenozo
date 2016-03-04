@@ -178,7 +178,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          this.metadata.loadingCount++;
           return this.$$getMetadata().then( function() {
             return $q.all( [
 
@@ -216,7 +215,7 @@ define( function() {
                   name: CnSession.application.title
                 } ]
               };
-            } ).finally( function finish() { self.metadata.loadingCount--; } );
+            } );
           } );
         };
       };

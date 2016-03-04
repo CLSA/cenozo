@@ -191,7 +191,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          this.metadata.loadingCount++;
           return $q.all( [
 
             this.$$getMetadata(),
@@ -219,7 +218,7 @@ define( function() {
               } );
             } )
 
-          ] ).finally( function finished() { self.metadata.loadingCount--; } );
+          ] );
         };
       };
 
