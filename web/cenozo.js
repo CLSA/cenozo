@@ -2187,6 +2187,12 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           // change the parent model's listing state
           this.parentModel.listingState = 'calendar';
 
+          // make sure we get a minimum of 7 days at a time
+          if( null != minDate && null != maxDate && 1 >= maxDate.diff( minDate, 'days' ) ) {
+            minDate.day( 0 );
+            maxDate.day( 6 );
+          }
+
           var query = false;
           var loadMinDate = this.getLoadMinDate( replace, minDate );
           var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
