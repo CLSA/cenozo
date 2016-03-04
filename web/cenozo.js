@@ -2300,6 +2300,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           },
           eventAfterAllRender: function( view ) {
             // track the current view
+            object.currentDate = this.calendar.getDate();
             object.currentView = view.name;
           },
           dayClick: function( date ) {
