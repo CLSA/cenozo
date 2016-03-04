@@ -141,9 +141,11 @@
               <button class="btn btn-default"
                       type="button"
                       ng-repeat="op in model.module.extraOperationList.list"
+                      id="{{ op.id }}"
                       ng-disabled="op.disabled"
                       ng-class="op.classes"
-                      ng-click="op.operation( $state, model )">{{ op.name }}</button>
+                      toolip="op.help"
+                      ng-click="op.operation( $state, model )">{{ op.title }}</button>
             </div>
           </td>
         </tr>
@@ -164,9 +166,11 @@
       <button class="btn btn-default"
               type="button"
               ng-repeat="op in model.module.extraOperationList.list"
+              id="{{ op.id }}"
               ng-disabled="op.disabled"
               ng-class="op.classes"
-              ng-click="op.operation( $state, model )">{{ op.name }}</button>
+              tooltip="{{ op.help }}"
+              ng-click="op.operation( $state, model )">{{ op.title }}</button>
     </div>
   </div>
 </div>

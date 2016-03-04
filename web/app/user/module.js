@@ -110,8 +110,9 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', 'Reset Password', function( $state, model ) {
-    model.viewModel.resetPassword();
+  module.addExtraOperation( 'view', {
+    title: 'Reset Password',
+    operation: function( $state, model ) { model.viewModel.resetPassword(); }
   } );
 
   /* ######################################################################################################## */

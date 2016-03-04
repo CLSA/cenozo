@@ -84,11 +84,17 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', 'Notes', function( $state, model ) {
-    $state.go( 'alternate.notes', { identifier: model.viewModel.record.getIdentifier() } );
+  module.addExtraOperation( 'view', {
+    title: 'Notes',
+    operation: function( $state, model ) {
+      $state.go( 'alternate.notes', { identifier: model.viewModel.record.getIdentifier() } )
+    }
   } );
 
-  module.addExtraOperation( 'view', 'Alternate List', function( $state ) { $state.go( 'alternate.list' ); } );
+  module.addExtraOperation( 'view', {
+    title: 'Alternate List',
+    operation: function( $state ) { $state.go( 'alternate.list' ); }
+  } );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAlternateAdd', [

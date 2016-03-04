@@ -209,9 +209,11 @@
       <button class="btn btn-default"
               type="button"
               ng-repeat="op in model.module.extraOperationList.add"
+              id="{{ op.id }}"
               ng-disabled="op.disabled"
               ng-class="op.classes"
-              ng-click="op.operation( $state, model )">{{ op.name }}</button>
+              tooltip="{{ op.help }}"
+              ng-click="op.operation( $state, model )">{{ op.title }}</button>
     </div>
     <button type="button" class="btn btn-default" ng-click="back()">Cancel</button>
     <button type="button" class="btn btn-primary" ng-click="submit()" ng-disabled="isAdding">

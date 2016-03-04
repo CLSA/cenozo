@@ -165,12 +165,18 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', 'Notes', function( $state, model ) {
-    $state.go( 'participant.notes', { identifier: model.viewModel.record.getIdentifier() } );
+  module.addExtraOperation( 'view', {
+    title: 'Notes',
+    operation: function( $state, model ) {
+      $state.go( 'participant.notes', { identifier: model.viewModel.record.getIdentifier() } );
+    }
   } );
 
-  module.addExtraOperation( 'view', 'History', function( $state, model ) {
-    $state.go( 'participant.history', { identifier: model.viewModel.record.getIdentifier() } );
+  module.addExtraOperation( 'view', {
+    title: 'History',
+    operation: function( $state, model ) {
+      $state.go( 'participant.history', { identifier: model.viewModel.record.getIdentifier() } );
+    }
   } );
 
   /**

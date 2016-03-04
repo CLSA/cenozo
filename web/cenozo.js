@@ -223,18 +223,22 @@ angular.extend( cenozoApp, {
           },
 
           /**
-           * Add buttons in the footer of record-based directives which will execute the
-           * "operation" function.  This function will be passed two arguments: $state and model
+           * Add buttons in the footer of record-based directives.
+           * 
+           * @var type: one of "add", "calendar", "list or "view"
+           * @var object: an object containing the following properties:
+           *              id: The id to give the operation's html button
+           *              title: The button's title
+           *              disabled: Whether the button should be disabled
+           *              classes: A space-separated list of css classes to apply to the button
+           *              help: Help text to show in a tooltip popup dialog
+           *              operation: A function to be executed when the button is clicked.
+           *                This function will be passed two arguments: $state and model
            */
-          addExtraOperation: function( type, name, operation, classes ) {
+          addExtraOperation: function( type, object ) {
             if( 0 > ['add','calendar','list','view'].indexOf( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
-
-            this.extraOperationList[type].push( {
-              name: name,
-              operation: operation,
-              classes: classes
-            } );
+            this.extraOperationList[type].push( object );
           }
         } );
       }
