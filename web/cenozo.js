@@ -3142,10 +3142,17 @@ cenozo.factory( 'CnBaseModelFactory', [
          * TODO: document
          */
         cenozo.addExtendableFunction( self, 'transitionToLastState', function() {
-          var parent = self.getParentIdentifier();
-          return angular.isDefined( parent.subject ) ?
-            $state.go( parent.subject + '.view', { identifier: parent.identifier } ) :
-            $state.go( '^.' + self.listingState );
+          var stateName = $state.last.name;
+          var params = $state.lastParams;
+          if( 0 == stateName.length ) {
+            var parent = self.getParentIdentifier();
+            stateName = angular.isDefined( parent.subject )
+                      ? parent.subject + '.view'
+                      : '^.' + self.listingState;
+            params = angular.isDefined( parent.subject ) ? { identifier: parent.identifier } : undefined;
+          }
+
+          return $state.go( stateName, params );
         } );
 
         /**
@@ -4603,6 +4610,10 @@ cenozo.run( [
       CnSession.pageTitle = ': ' + CnSession.pageTitle;
       if( angular.isDefined( toParams ) && angular.isDefined( toParams.identifier ) )
         CnSession.pageTitle += ' / ' + String( toParams.identifier ).split( '=' ).pop();
+
+      // store the last state and params in the state object
+      $state.last = fromState;
+      $state.lastParams = fromParams;
 
       console.info( 'Completed state change to %s',
         toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
