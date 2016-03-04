@@ -141,6 +141,7 @@ class ui extends \cenozo\base_object
   protected function get_module_list( $modifier = NULL )
   {
     $service_class_name = lib::get_class_name( 'database\service' );
+    $db_role = lib::create( 'business\session' )->get_role();
 
     $select = lib::create( 'database\select' );
     $select->add_column( 'subject' );
@@ -150,7 +151,7 @@ class ui extends \cenozo\base_object
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where( 'service.id', '=', 'role_has_service.service_id', false );
-    $join_mod->where( 'role_has_service.role_id', '=', lib::create( 'business\session' )->get_role()->id );
+    $join_mod->where( 'role_has_service.role_id', '=', $db_role->id );
     $modifier->join_modifier( 'role_has_service', $join_mod, 'left' );
     $modifier->where_bracket( true );
     $modifier->where( 'service.restricted', '=', false );
@@ -233,8 +234,15 @@ class ui extends \cenozo\base_object
       $module_list['state']['children'] = array( 'role', 'participant' );
     if( array_key_exists( 'user', $module_list ) )
     {
-      $module_list['user']['children'] = array( 'access', 'activity' );
-      $module_list['user']['choosing'] = array( 'language' );
+      if( 1 == $db_role->tier )
+      {
+        unset( $module_list['user'] );
+      }
+      else
+      {
+        $module_list['user']['children'] = array( 'access', 'activity' );
+        $module_list['user']['choosing'] = array( 'language' );
+      }
     }
 
     return $module_list;
