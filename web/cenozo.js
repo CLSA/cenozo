@@ -588,19 +588,15 @@ cenozo.service( 'CnBaseHeader', [
                 timezone: CnSession.user.timezone,
                 use12hourClock: CnSession.user.use12hourClock
               } ).show().then( function( response ) {
-                if( response ) {
-                  if( response.timezone != CnSession.user.timezone ||
-                      response.use12hourClock != CnSession.user.use12hourClock ) {
-                    CnSession.user.timezone = response.timezone;
-                    CnSession.user.use12hourClock = response.use12hourClock;
-                    CnSession.setTimezone( response.timezone, response.use12hourClock ).then( function() {
-                      if( response.timezone != CnSession.user.timezone ) {
-                        $window.location.reload();
-                      } else if( response.use12hourClock != CnSession.user.use12hourClock ) {
-                        CnSession.updateTime();
-                      }
-                    } );
-                  }
+                if( response && (
+                      response.timezone != CnSession.user.timezone ||
+                      response.use12hourClock != CnSession.user.use12hourClock ) ) {
+                  CnSession.user.timezone = response.timezone;
+                  CnSession.user.use12hourClock = response.use12hourClock;
+                  CnSession.setTimezone( response.timezone, response.use12hourClock ).then( function() {
+                    $state.reload( true );
+                    CnSession.updateTime();
+                  } );
                 }
               } );
             }
