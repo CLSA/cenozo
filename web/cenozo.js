@@ -1686,6 +1686,37 @@ cenozo.filter( 'cnYesNo', function() {
 /* ######################################################################################################## */
 
 /**
+ * Exception handler that will redirect the user to a 400 page
+ */
+cenozo.factory( '$exceptionHandler', [
+  '$window',
+  function( $window ) {
+    return function( exception, cause ) {
+      // report the exception to the console and replace the view's inner html with a notification of the error
+      console.error( '%s', exception );
+      if( angular.isDefined( cause ) ) console.warning( '%s', cause );
+      document.getElementById( 'view' ).innerHTML =
+        '<div class="inner-view-frame">\n' +
+          '<div class="container-fluid bg-white">\n' +
+            '<h3 class="text-primary">User Interface Error</h3>\n' +
+            '<div class="container-fluid">\n' +
+              '<blockquote>\n' +
+                'Sorry, the client has experienced a user-interface error.\n' +
+                'Please <a onclick="window.location.reload(true)">reload</a> the page or\n' +
+                '<a onclick="window.history.back()">go back</a> to the previous page.\n' +
+                '<h4 class="text-warning">Error: ' + exception.message + '</h4>\n' +
+              '</blockquote>\n' +
+            '</div>\n' +
+          '</div>\n' +
+        '</div>\n' +
+        '<div class="gradient-footer"></div>\n';
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * TODO: document
  */
 cenozo.factory( 'CnSession', [
