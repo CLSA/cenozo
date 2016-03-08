@@ -36,6 +36,7 @@ class post extends write
       $record = $this->get_leaf_record();
       $parent_record = $this->get_parent_record();
 
+      log::debug( $record );
       if( !is_null( $record ) )
       {
         if( !is_null( $parent_record ) )
@@ -62,7 +63,9 @@ class post extends write
 
     if( 300 > $this->status->get_code() )
     {
-      if( is_null( $this->get_leaf_record() ) ) $this->status->set_code( 400 );
+      $relationship_class_name = lib::get_class_name( 'database\relationship' );
+      if( $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() &&
+          is_null( $this->get_leaf_record() ) ) $this->status->set_code( 400 );
     }
   }
 
