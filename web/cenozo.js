@@ -2296,7 +2296,18 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           CnModalMessageFactory.httpError( response );
         } );
 
+        // need to convert the calling start/end time to the user's timezone
+        var callingStartTime =
+          moment( new Date(
+            moment().format( 'YYYY-MM-DD' ) + 'T' + CnSession.setting.callingStartTime + 'Z'
+          ) ).tz( CnSession.user.timezone ).format( "HH:mm" );
+        var callingEndTime =
+          moment( new Date(
+            moment().format( 'YYYY-MM-DD' ) + 'T' + CnSession.setting.callingEndTime + 'Z'
+          ) ).tz( CnSession.user.timezone ).format( "HH:mm" );
+
         // fullcalendar's settings object, used by the cn-record-calendar directive
+        console.log( callingStartTime );
         object.settings = {
           defaultDate: object.currentDate,
           defaultView: object.currentView,
@@ -2312,8 +2323,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             right: 'month,agendaWeek,agendaDay'
           },
           businessHours: {
-            start: CnSession.setting.callingStartTime,
-            end: CnSession.setting.callingEndTime,
+            start: callingStartTime,
+            end: callingEndTime,
             dow: [1, 2, 3, 4, 5]
           },
           events: function( start, end, timezone, callback ) {
