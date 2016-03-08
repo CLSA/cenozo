@@ -56,7 +56,7 @@ define( function() {
       title: 'International',
       type: 'boolean',
       help: 'Cannot be changed once the phone number has been created.',
-      constnat: 'view'
+      constant: 'view'
     },
     rank: {
       title: 'Rank',
