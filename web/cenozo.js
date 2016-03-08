@@ -120,8 +120,11 @@ angular.extend( cenozoApp, {
     for( var name in this.moduleList ) {
       // TODO: make note an auxiliary module so we don't have to do this custom code
       if( "note" == name ) {
-        // notes are handled by the participant module
+        // notes are handled by the alternate and participant modules
         try {
+          var alternateModule = cenozoApp.module( 'alternate' );
+          alternateModule.allowNoteDelete = 0 <= this.moduleList.note.actions.indexOf( 'delete' );
+          alternateModule.allowNoteEdit = 0 <= this.moduleList.note.actions.indexOf( 'edit' );
           var participantModule = cenozoApp.module( 'participant' );
           participantModule.allowNoteDelete = 0 <= this.moduleList.note.actions.indexOf( 'delete' );
           participantModule.allowNoteEdit = 0 <= this.moduleList.note.actions.indexOf( 'edit' );
