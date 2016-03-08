@@ -524,9 +524,9 @@ cenozo.animation( '.fade-transition', function() {
  * Controller for the header/menu system
  */
 cenozo.service( 'CnBaseHeader', [
-  '$state', '$interval', '$window', 'CnSession', 'CnHttpFactory',
+  '$interval', '$window', 'CnSession', 'CnHttpFactory',
   'CnModalAccountFactory', 'CnModalPasswordFactory', 'CnModalTimezoneFactory',
-  function( $state, $interval, $window, CnSession, CnHttpFactory,
+  function( $interval, $window, CnSession, CnHttpFactory,
             CnModalAccountFactory, CnModalPasswordFactory, CnModalTimezoneFactory ) {
     return {
       construct: function( scope ) {
@@ -597,7 +597,7 @@ cenozo.service( 'CnBaseHeader', [
                   CnSession.user.timezone = response.timezone;
                   CnSession.user.use12hourClock = response.use12hourClock;
                   CnSession.setTimezone( response.timezone, response.use12hourClock ).then( function() {
-                    $state.reload( true );
+                    $window.location.reload()
                     CnSession.updateTime();
                   } );
                 }
@@ -1524,7 +1524,7 @@ cenozo.filter( 'cnDatetime', [
             input = moment().format( 'YYYY-MM-DD' ) + 'T' + input + 'Z';
           input = moment( new Date( input ) );
         }
-        if( 'datetime' == format || 'datetimesecond' == format ) input.tz( CnSession.user.timezone );
+        if( 'date' != format ) input.tz( CnSession.user.timezone );
         output = input.format( CnSession.getDatetimeFormat( format, false ) );
       }
       return output;
@@ -1964,7 +1964,7 @@ cenozo.factory( 'CnSession', [
               value = moment( new Date( value ) );
             }
           }
-          if( 'datetime' == type || 'datetimesecond' == type ) value.tz( this.user.timezone );
+          if( 'date' != type ) value.tz( this.user.timezone );
           formatted = value.format( this.getDatetimeFormat( type, longForm ) );
         } else if( 'rank' == type ) {
           var number = parseInt( value );
@@ -3914,7 +3914,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
         select: function( when ) {
           if( 'now' == when ) {
             this.date = moment().tz( CnSession.user.timezone );
-            if( 'datetimesecond' != this.pickerType && 'timeseond' != this.pickerType ) this.date.second( 0 );
+            if( 'datetimesecond' != this.pickerType && 'timesecond' != this.pickerType ) this.date.second( 0 );
             this.updateSlidersFromDate( this.date );
           } else if( 'today' == when ) {
             this.date = moment().tz( CnSession.user.timezone );
@@ -3937,10 +3937,9 @@ cenozo.service( 'CnModalDatetimeFactory', [
         },
         updateDisplayTime: function() {
           var seconds = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType;
-          var timezone = 'time' != this.pickerType;
           this.displayTime = null === this.date
                            ? '(empty)'
-                           : this.date.format( CnSession.getTimeFormat( seconds, timezone ) );
+                           : this.date.format( CnSession.getTimeFormat( seconds, CnSession.user.timezone ) );
         },
         update: function() {
           if( 'time' != this.pickerType ) {
@@ -4051,9 +4050,10 @@ cenozo.service( 'CnModalDatetimeFactory', [
               $scope.ok = function() {
                 var response = null;
                 if( null !== $scope.local.date ) {
-                  response = 'time' == self.pickerType || 'timesecond' == self.pickerType
-                           ? $scope.local.date.format( 'time' == self.pickerType ? 'HH:mm' : 'HH:mm:ss' )
-                           : $scope.local.date.tz( 'utc' ).format();
+                  var format = 'time' == self.pickerType ? 'HH:mm'
+                             : 'timesecond' == self.pickerType ? 'HH:mm:ss'
+                             : undefined;
+                  response = $scope.local.date.tz( 'utc' ).format( format );
                 }
                 $modalInstance.close( response );
               };
@@ -4091,8 +4091,9 @@ cenozo.service( 'CnModalDatetimeFactory', [
       }
       if( angular.isUndefined( this.maxDate ) || null === this.maxDate ) this.maxDate = null;
       else if( 'now' !== this.maxDate ) {
-        if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.maxDate ) )
+        if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.maxDate ) ) {
           this.maxDate = moment().format( 'YYYY-MM-DD' ) + 'T' + this.maxDate + 'Z';
+        }
         this.maxDate = moment( new Date( this.maxDate ) ).tz( CnSession.user.timezone );
       }
 
@@ -4112,10 +4113,16 @@ cenozo.service( 'CnModalDatetimeFactory', [
           this.date = moment( new Date( this.date ) );
         }
 
-        if( 'datetime' == this.pickerType || 'datetimesecond' == this.pickerType )
-          this.date.tz( CnSession.user.timezone );
+        if( 'date' != this.pickerType ) this.date.tz( CnSession.user.timezone );
         this.viewingDate = moment( this.date );
       }
+
+      // for the time picker we might have to adjust the min/max dates
+      if( 'time' == this.pickerType ) {
+        if( 'moment' == cenozo.getType( this.minDate ) ) this.minDate.date( this.date.date() );
+        if( 'moment' == cenozo.getType( this.maxDate ) ) this.maxDate.date( this.date.date() );
+      }
+
       this.modeTitle = '';
       this.displayTime = '';
       this.updateSlidersFromDate( this.viewingDate );
@@ -4386,7 +4393,8 @@ cenozo.service( 'CnModalRestrictFactory', [
                     // set non-nullable options disabled/enabled status
                     var optionList = document.querySelector( 'select[name="test' + index + '"]' ).
                                      getElementsByClassName( 'not-nullable' );
-                    optionList.map( function( item ) { item.disabled = null === response } );
+                    if( angular.isArray( optionList ) )
+                      optionList.map( function( item ) { item.disabled = null === response } );
 
                     // update the empty list
                     self.updateEmpty( index );
