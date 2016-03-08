@@ -42,7 +42,7 @@ class voip_manager extends \cenozo\singleton
    */
   public function initialize()
   {
-    if( !$this->enabled ) return;
+    if( !$this->enabled || !is_null( $this->manager ) ) return;
 
     try
     {
@@ -53,7 +53,7 @@ class voip_manager extends \cenozo\singleton
           'Unable to connect to the Asterisk server.', __METHOD__ );
 
       // get the current SIP info
-      $peer = lib::create( 'business\session' )->get_user()->name;
+      $peer = 10000000 + lib::create( 'business\session' )->get_user()->id;
       $s8_event = $this->manager->getSipPeer( $peer );
 
       if( !is_null( $s8_event ) &&
@@ -82,7 +82,7 @@ class voip_manager extends \cenozo\singleton
    */
   public function shutdown()
   {
-    if( $this->manager ) $this->manager->logoff();
+    if( $this->enabled && $this->manager ) $this->manager->logoff();
   }
 
   /**
@@ -94,6 +94,9 @@ class voip_manager extends \cenozo\singleton
    */
   public function rebuild_call_list()
   {
+    if( !$this->enabled ) return;
+    $this->initialize();
+
     $this->call_list = array();
     $events = $this->manager->getStatus();
 
@@ -117,6 +120,8 @@ class voip_manager extends \cenozo\singleton
   public function get_call( $db_user = NULL )
   {
     if( !$this->enabled ) return NULL;
+    $this->initialize();
+
     if( is_null( $this->call_list ) ) $this->rebuild_call_list();
 
     $peer = is_null( $db_user )
@@ -143,6 +148,7 @@ class voip_manager extends \cenozo\singleton
   public function call( $phone )
   {
     if( !$this->enabled ) return NULL;
+    $this->initialize();
 
     // validate the input
     if( !is_object( $phone ) )
@@ -195,6 +201,9 @@ class voip_manager extends \cenozo\singleton
    */
   public function spy( $voip_call )
   {
+    if( !$this->enabled ) return;
+    $this->initialize();
+
     $peer = lib::create( 'business\session' )->get_user()->name;
     $channel = 'SIP/'.$peer;
     // play sound in local channel
@@ -219,24 +228,6 @@ class voip_manager extends \cenozo\singleton
   }
 
   /**
-   * Flushes a user's details using a sip prune command.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\user $db_user Which user to flush.
-   * @access public
-   */
-  public function sip_prune( $db_user )
-  {
-    if( !$this->enabled || is_null( $db_user ) ) return;
-
-    // there is no way to send a sip prune command to asterisk using AMI so we need to use the CLI
-    $output = array();
-    $return_value = 0;
-    exec( 'asterisk -rx "sip prune realtime peer '.$db_user->name.'"', $output, $return_value );
-    if( 0 != $return_value ) log::err( $output[0] );
-  }
-
-  /**
    * Determines whether a SIP connection is detected with the client
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -245,7 +236,9 @@ class voip_manager extends \cenozo\singleton
    */
   public function get_sip_enabled()
   {
-    return $this->enabled && is_array( $this->sip_info ) && 0 < count( $this->sip_info );
+    if( !$this->enabled ) return false;
+    $this->initialize();
+    return $this->sip_info;//is_array( $this->sip_info ) && 0 < count( $this->sip_info );
   }
 
   /**

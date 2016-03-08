@@ -80,7 +80,7 @@
                             ng-click="operationList[op].execute()"
                             tooltip="{{ operationList[op].help }}">{{ operationList[op].title }}</button>
                   </div>
-                  </div>
+                </div>
               </div>
               <div class="container-fluid row">
                 <ul class="navigation-group col-xs-4">

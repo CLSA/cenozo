@@ -128,7 +128,7 @@ class ui extends \cenozo\base_object
       'access', 'activity', 'address', 'alternate', 'application', 'cohort', 'collection',
       'consent', 'consent_type', 'event', 'event_type', 'jurisdiction', 'language', 'participant',
       'phone', 'quota', 'region', 'region_site', 'role', 'script', 'search_result', 'site', 'source', 'state',
-      'system_message', 'user' );
+      'system_message', 'user', 'webphone' );
   }
 
   /**
@@ -333,6 +333,7 @@ class ui extends \cenozo\base_object
    */
   protected function get_utility_items()
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
     $db_role = lib::create( 'business\session' )->get_role();
 
     $list = array();
@@ -340,6 +341,8 @@ class ui extends \cenozo\base_object
     if( 2 <= $db_role->tier )
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
     $list['Participant Search'] = array( 'subject' => 'search_result', 'action' => 'list' );
+    if( $setting_manager->get_setting( 'voip', 'enabled' ) )
+      $list['Webphone'] = array( 'subject' => 'webphone', 'action' => 'home' );
 
     return $list;
   }

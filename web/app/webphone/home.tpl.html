@@ -1,0 +1,75 @@
+<div class="utility-view rounded">
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>
+      <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
+         ng-click="model.updateInformation()"
+         ng-disabled="model.updating"
+         tooltip="Click to refresh data"
+         tooltip-placement="left"></i>
+      Webphone Status <span ng-if="model.updating">(updating)</span>
+    </h4>
+  </div>
+  <div class="form-horizontal">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-6">
+          <h4 class="text-center">Server</h4>
+          <div class="form-body well allow-select">
+            <div class="row">
+              <label class="col-sm-6 control-label">Server VoIP Status</label>
+              <div class="col-sm-6 form-text" ng-class="model.voip.enabled ? 'text-success' : 'text-danger'">
+                {{ model.voip.enabled ? 'Online' : 'Offline' }}
+              </div>
+            </div>
+            <div class="row">
+              <label class="col-sm-6 control-label">Webphone Status</label>
+              <div class="col-sm-6 form-text"
+                   ng-class="{ 'text-success': model.voip.info && 'OK' == model.voip.info.status.substr( 0, 2 ) }">
+                {{ model.voip.info ? model.voip.info.status : 'Offline' }}
+              </div>
+            </div>
+            <div class="row">
+              <label class="col-sm-6 control-label">Webphone Type</label>
+              <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.info }">
+                {{ model.voip.info ? model.voip.info.type : 'N/A' }}
+              </div>
+            </div>
+            <div class="row">
+              <label class="col-sm-6 control-label">Webphone Agent</label>
+              <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.info }">
+                {{ model.voip.info ? model.voip.info.agent : 'N/A' }}
+              </div>
+            </div>
+            <div class="row">
+              <label class="col-sm-6 control-label">Webphone IP</label>
+              <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.info }">
+                {{ model.voip.info ? model.voip.info.ip : 'N/A' }}
+              </div>
+            </div>
+            <div class="row">
+              <label class="col-sm-6 control-label">Webphone Port</label>
+              <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.info }">
+                {{ model.voip.info ? model.voip.info.port : 'N/A' }}
+              </div>
+            </div>
+            <div class="row">
+              <label class="col-sm-6 control-label">Call Status</label>
+              <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.call }">
+                {{ model.voip.call ? model.voip.call : 'No Connection' }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <h4 class="text-center">Client</h4>
+          <div class="form-body well text-center" tooltip="{{ javaHelp }}" tooltip-placement="bottom">
+            <iframe style="width:370px;" width="370" height="215" ng-src="{{ model.webphoneUrl }}">
+              Your browser does not support the Java-based webphone, please use another browser
+              if you wish to use the webphone.
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

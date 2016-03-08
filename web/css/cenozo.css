@@ -6,6 +6,7 @@ td.tiny { width: 1px; white-space: nowrap; }
 option[disabled="disabled"] { color: #ccc; }
 blockquote { font-size: 100%; }
 a { text-decoration: none !important; }
+iframe { padding: 0px; margin: 0px; border: 0px; }
 .collapsed-footer { padding: 8px; }
 .panel { border-radius: 6px; }
 .btn { font-weight: bold; }

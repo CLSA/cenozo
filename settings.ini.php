@@ -95,7 +95,4 @@ $settings['voip']['url'] = 'http://localhost:8088/mxml';
 $settings['voip']['username'] = '';
 $settings['voip']['password'] = '';
 $settings['voip']['prefix'] = '';
-$settings['voip']['xor_key'] = '';
-// the directory to write recorded calls
-// (must be an absolute path that the asterisk server's user has access to)
-$settings['path']['VOIP_MONITOR'] = '/var/local/monitor';
+$settings['voip']['monitor'] = '/var/local/recordings/sabretooth_f1-patrick';

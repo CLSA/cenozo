@@ -91,7 +91,7 @@ class session extends \cenozo\singleton
     // only shutdown after initialization
     if( 'initialized' != $this->state ) return;
 
-    // shut down the voip manager (this only has an effect if voip is enabled)
+    // shut down the voip manager (this only has an effect if voip was initialized)
     lib::create( 'business\voip_manager' )->shutdown();
 
     session_write_close();
@@ -132,34 +132,6 @@ class session extends \cenozo\singleton
     }
 
     return $this->survey_database;
-  }
-
-  /**
-   * Determines whether the user is allowed to make calls.  This depends on whether a SIP
-   * is detected and whether or not operators are allowed to make calls without using VoIP
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function get_allow_call()
-  {
-    $allow = false;
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $voip_manager = lib::create( 'business\voip_manager' );
-    if( !$setting_manager->get_setting( 'voip', 'enabled' ) )
-    { // if voip is not enabled then allow calls
-      $allow = true;
-    }
-    else if( $voip_manager->get_sip_enabled() )
-    { // voip is enabled, so make sure sip is also enabled
-      $allow = true;
-    }
-    else
-    { // check to see if we can call without a SIP connection
-      $allow = $this->get_setting()->survey_without_sip;
-    }
-
-    return $allow;
   }
 
   /**
