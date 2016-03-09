@@ -36,7 +36,6 @@ class post extends write
       $record = $this->get_leaf_record();
       $parent_record = $this->get_parent_record();
 
-      log::debug( $record );
       if( !is_null( $record ) )
       {
         if( !is_null( $parent_record ) )
