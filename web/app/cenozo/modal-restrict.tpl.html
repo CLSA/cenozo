@@ -236,7 +236,8 @@
                    placeholder="{{ null === restrict.value ?
                                    '(empty)' :
                                    'restriction ' + (
-                                     'time' == local.type || 'timesecond' == local.type ?
+                                     'time' == local.type || 'timesecond' == local.type ||
+                                     'time_notz' == local.type || 'timesecond_notz' == local.type ?
                                      'time' : 'date &amp; time'
                                    ) }}" />
           </div>

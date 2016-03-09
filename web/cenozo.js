@@ -356,9 +356,23 @@ angular.extend( cenozo, {
     return type;
   },
 
-  // determines whether a type is one of the datetime types
-  isDatetimeType: function( type ) {
-    return 0 <= ['datetimesecond','datetime','date','timesecond','time'].indexOf( type );
+  // determines whether a type is one of the datetime types (date or time)
+  // subtype can be one of "date", "time", "second" or "timezone"
+  isDatetimeType: function( type, subtype ) {
+    var typeList = [];
+    if( 'date' == subtype ) {
+      typeList = [ 'datetimesecond', 'datetime', 'date' ];
+    } else if( 'time' == subtype ) {
+      typeList = [ 'timesecond', 'timesecond_notz', 'time', 'time_notz' ];
+    } else if( 'second' == subtype ) {
+      typeList = [ 'datetimesecond', 'timesecond', 'timesecond_notz' ];
+    } else if( 'timezone' == subtype ) {
+      typeList = [ 'datetimesecond', 'datetime', 'timesecond', 'time' ];
+    } else {
+      typeList = [ 'datetimesecond', 'datetime', 'date', 'timesecond', 'timesecond_notz', 'time', 'time_notz' ];
+    }
+
+    return 0 <= typeList.indexOf( type );
   },
 
   // parse an enum list returned as column metadata
@@ -1019,8 +1033,18 @@ cenozo.directive( 'cnRecordCalendar', [
           }
 
           // use the full calendar lib to create the calendar
-          scope.model.calendarModel.settings.defaultDate = scope.model.calendarModel.currentDate;
-          scope.model.calendarModel.settings.defaultView = scope.model.calendarModel.currentView;
+          angular.extend( scope.model.calendarModel.settings, {
+            timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
+            smallTimeFormat: CnSession.user.use12hourClock ? 'h(:mm)t' : 'HH(:mm)',
+            businessHours: {
+              start: CnSession.setting.callingStartTime,
+              end: CnSession.setting.callingEndTime,
+              dow: [1, 2, 3, 4, 5]
+            },
+            defaultDate: scope.model.calendarModel.currentDate,
+            defaultView: scope.model.calendarModel.currentView
+          } );
+
           var el = element.find( 'div.calendar' );
           el.fullCalendar( scope.model.calendarModel.settings );
 
@@ -1524,7 +1548,7 @@ cenozo.filter( 'cnDatetime', [
             input = moment().format( 'YYYY-MM-DD' ) + 'T' + input + 'Z';
           input = moment( new Date( input ) );
         }
-        if( 'date' != format ) input.tz( CnSession.user.timezone );
+        if( 'date' != format && cenozo.isDatetimeType( format, 'timezone' ) ) input.tz( CnSession.user.timezone );
         output = input.format( CnSession.getDatetimeFormat( format, false ) );
       }
       return output;
@@ -1752,227 +1776,232 @@ cenozo.factory( 'CnSession', [
         }
       }
 
-      this.updateWorkingGUID = function( guid, start ) {
-        if( start ) {
-          if( !angular.isDefined( this.workingGUIDList[guid] ) ) this.workingGUIDList[guid] = 0;
-          this.workingGUIDList[guid]++;
-        } else if( angular.isDefined( this.workingGUIDList[guid] ) ) {
-          this.workingGUIDList[guid]--;
-          if( 0 == this.workingGUIDList[guid] ) delete this.workingGUIDList[guid];
-        }
-
-        if( 0 < Object.keys( this.workingGUIDList ).length ) {
-          if( null === workingPromise ) workingPromise = $timeout( watchWorkingCount, 1000 );
-        } else {
-          this.working = false;
-          // reset the transitionWhileWorking property after a short wait so that any pending
-          // transitions can be ignored before the property is reset
-          $timeout( function() { self.transitionWhileWorking = false; }, 200 );
-          if( null !== workingPromise ) {
-            $timeout.cancel( workingPromise );
-            workingPromise = null;
+      angular.extend( this, {
+        updateWorkingGUID: function( guid, start ) {
+          if( start ) {
+            if( !angular.isDefined( this.workingGUIDList[guid] ) ) this.workingGUIDList[guid] = 0;
+            this.workingGUIDList[guid]++;
+          } else if( angular.isDefined( this.workingGUIDList[guid] ) ) {
+            this.workingGUIDList[guid]--;
+            if( 0 == this.workingGUIDList[guid] ) delete this.workingGUIDList[guid];
           }
-        }
-      }
 
-      // wrapping all state transitions with option to cancel
-      this.workingTransition = function( transitionFn ) {
-        var transition = !this.transitionWhileWorking;
-        this.transitionWhileWorking = false;
-        return transition ? transitionFn() : null;
-      }
+          if( 0 < Object.keys( this.workingGUIDList ).length ) {
+            if( null === workingPromise ) workingPromise = $timeout( watchWorkingCount, 1000 );
+          } else {
+            this.working = false;
+            // reset the transitionWhileWorking property after a short wait so that any pending
+            // transitions can be ignored before the property is reset
+            $timeout( function() { self.transitionWhileWorking = false; }, 200 );
+            if( null !== workingPromise ) {
+              $timeout.cancel( workingPromise );
+              workingPromise = null;
+            }
+          }
+        },
 
-      // defines the breadcrumbtrail based on an array of crumbs
-      this.setBreadcrumbTrail = function( crumbs ) {
-        this.breadcrumbTrail.length = 0;
-        this.breadcrumbTrail.push( { title: 'Home', go: function() { return $state.go( 'root.home' ); } } );
-        if( angular.isArray( crumbs ) )
-          crumbs.forEach( function( item ) { this.breadcrumbTrail.push( item ); }, this );
-      };
+        // wrapping all state transitions with option to cancel
+        workingTransition: function( transitionFn ) {
+          var transition = !this.transitionWhileWorking;
+          this.transitionWhileWorking = false;
+          return transition ? transitionFn() : null;
+        },
 
-      // get the application, user, site and role details
-      this.promise = CnHttpFactory.instance( {
-        path: 'self/0',
-        redirectOnError: true
-      } ).get().then( function( response ) {
-        for( var property in response.data.application )
-          self.application[property.snakeToCamel()] = response.data.application[property];
-        for( var property in response.data.user )
-          self.user[property.snakeToCamel()] = response.data.user[property];
-        for( var property in response.data.site )
-          self.site[property.snakeToCamel()] = response.data.site[property];
-        for( var property in response.data.setting )
-          self.setting[property.snakeToCamel()] = response.data.setting[property];
-        for( var property in response.data.role )
-          self.role[property.snakeToCamel()] = response.data.role[property];
-        self.messageList = angular.copy( response.data.system_message_list );
+        // defines the breadcrumbtrail based on an array of crumbs
+        setBreadcrumbTrail: function( crumbs ) {
+          this.breadcrumbTrail.length = 0;
+          this.breadcrumbTrail.push( { title: 'Home', go: function() { return $state.go( 'root.home' ); } } );
+          if( angular.isArray( crumbs ) )
+            crumbs.forEach( function( item ) { this.breadcrumbTrail.push( item ); }, this );
+        },
 
-        // initialize the http factory so that all future requests match the same credentials
-        CnHttpFactory.initialize( self.site.name, self.user.name, self.role.name );
+        // get the application, user, site and role details
+        updateData: function() {
+          this.promise = CnHttpFactory.instance( {
+            path: 'self/0',
+            redirectOnError: true
+          } ).get().then( function( response ) {
+            for( var property in response.data.application )
+              self.application[property.snakeToCamel()] = response.data.application[property];
+            for( var property in response.data.user )
+              self.user[property.snakeToCamel()] = response.data.user[property];
+            for( var property in response.data.site )
+              self.site[property.snakeToCamel()] = response.data.site[property];
+            for( var property in response.data.setting )
+              self.setting[property.snakeToCamel()] = response.data.setting[property];
+            for( var property in response.data.role )
+              self.role[property.snakeToCamel()] = response.data.role[property];
+            self.messageList = angular.copy( response.data.system_message_list );
 
-        // sanitize the timezone
-        if( !moment.tz.zone( self.user.timezone ) ) self.user.timezone = 'UTC';
+            // initialize the http factory so that all future requests match the same credentials
+            CnHttpFactory.initialize( self.site.name, self.user.name, self.role.name );
 
-        // process site records
-        self.siteList = response.data.site_list;
-        self.siteList.forEach( function( site ) {
-          site.getIdentifier = function() { return 'name=' + this.name };
-        } );
+            // sanitize the timezone
+            if( !moment.tz.zone( self.user.timezone ) ) self.user.timezone = 'UTC';
 
-        // process session records
-        self.sessionList = response.data.session_list;
+            // process site records
+            self.siteList = response.data.site_list;
+            self.siteList.forEach( function( site ) {
+              site.getIdentifier = function() { return 'name=' + this.name };
+            } );
 
-        // if the user's password isn't set then open the password dialog
-        if( response.data.no_password ) {
-          CnModalPasswordFactory.instance( { confirm: false } ).show().then( function( response ) {
-            self.setPassword( null, response.requestedPass );
+            // process session records
+            self.sessionList = response.data.session_list;
+
+            // if the user's password isn't set then open the password dialog
+            if( response.data.no_password ) {
+              CnModalPasswordFactory.instance( { confirm: false } ).show().then( function( response ) {
+                self.setPassword( null, response.requestedPass );
+              } );
+            }
+
+            // if the user's email isn't set then open the password dialog
+            if( !self.user.email ) {
+              CnModalAccountFactory.instance( { user: self.user } ).show().then( function( response ) {
+                if( response ) self.setUserDetails();
+              } );
+            }
           } );
-        }
+        },
 
-        // if the user's email isn't set then open the password dialog
-        if( !self.user.email ) {
-          CnModalAccountFactory.instance( { user: self.user } ).show().then( function( response ) {
-            if( response ) self.setUserDetails();
+        setPassword: function( currentPass, requestedPass ) {
+          return CnHttpFactory.instance( {
+            path: 'self/0',
+            data: { user: { password: { current: currentPass, requested: requestedPass } } },
+            onError: function( response ) {
+              if( 400 == response.status && 'invalid password' == response.data ) {
+                CnModalMessageFactory.instance( {
+                  title: 'Unable To Change Password',
+                  message: 'Sorry, the current password you provided is incorrect, please try again. ' +
+                           'If you have forgotten your current password an administrator can reset it.',
+                  error: true
+                } ).show();
+              } else { CnModalMessageFactory.httpError( response ); }
+            }
+          } ).patch().then( function() {
+            CnModalMessageFactory.instance( {
+              title: 'Password Changed',
+              message: 'Your password has been successfully changed.'
+            } ).show();
           } );
+        },
+
+        showSiteRoleModal: function() {
+          CnModalSiteRoleFactory.instance( {
+            siteId: this.site.id,
+            roleId: this.role.id
+          } ).show().then( function( response ) {
+            if( angular.isObject( response ) &&
+                ( response.siteId != self.site.id || response.roleId != self.role.id ) ) {
+              // show a waiting screen while we're changing the site/role
+              $state.go( 'wait' );
+              CnHttpFactory.instance( {
+                path: 'self/0',
+                data: { site: { id: response.siteId }, role: { id: response.roleId } }
+              } ).patch().then( function() {
+                // blank content
+                document.getElementById( 'view' ).innerHTML = '';
+                $window.location.assign( cenozoApp.baseUrl );
+              } );
+            }
+          } );
+        },
+
+        setSiteSettings: function() {
+          return CnHttpFactory.instance( {
+            path: 'setting/site_id=' + this.site.id,
+            data: {
+              survey_without_sip: self.setting.surveyWithoutSip,
+              calling_start_time: self.setting.callingStartTime,
+              calling_end_time: self.setting.callingEndTime,
+              short_appointment: self.setting.shortAppointment,
+              long_appointment: self.setting.longAppointment,
+              pre_call_window: self.setting.preCallWindow,
+              post_call_window: self.setting.postCallWindow
+            }
+          } ).patch();
+        },
+
+        setUserDetails: function() {
+          return CnHttpFactory.instance( {
+            path: 'self/0',
+            data: {
+              user: {
+                first_name: self.user.firstName,
+                last_name: self.user.lastName,
+                email: self.user.email
+              }
+            }
+          } ).patch();
+        },
+
+        getTimeFormat: function( seconds, timezone ) {
+          if( angular.isUndefined( seconds ) ) seconds = false;
+          if( angular.isUndefined( timezone ) ) timezone = false;
+          return ( self.user.use12hourClock ? 'h' : 'H' ) +
+                 ':mm' +
+                 ( seconds ? ':ss' : '' ) +
+                 ( self.user.use12hourClock ? 'a' : '' ) +
+                 ( timezone ? ' z' : '' );
+        },
+
+        getDatetimeFormat: function( format, longForm ) {
+          if( angular.isUndefined( longForm ) ) longForm = false;
+          var resolvedFormat = format;
+          if( cenozo.isDatetimeType( format, 'date' ) ) {
+            resolvedFormat = ( longForm ? 'dddd, MMMM Do' : 'MMM D' ) + ', YYYY';
+            if( 'date' != format )
+              resolvedFormat += ' @ ' + this.getTimeFormat( cenozo.isDatetimeType( format, 'second' ), longForm );
+          } else if( cenozo.isDatetimeType( format, 'time' ) ) {
+            resolvedFormat = this.getTimeFormat( cenozo.isDatetimeType( format, 'second' ), false );
+          }
+          return resolvedFormat;
+        },
+
+        updateTime: function() {
+          var now = moment();
+          now.tz( self.user.timezone );
+          self.time = now.format( self.getTimeFormat( false, true ) );
+        },
+
+        setTimezone: function( timezone, use12hourClock ) {
+          return CnHttpFactory.instance( {
+            path: 'self/0',
+            data: { user: { timezone: timezone, use_12hour_clock: use12hourClock  } }
+          } ).patch();
+        },
+
+        formatValue: function( value, type, longForm ) {
+          if( angular.isUndefined( longForm ) ) longForm = false;
+          var formatted = value;
+          if( null === value ) {
+            formatted = '(empty)';
+          } else if( 'string' == type && '' === value ) {
+            formatted = '(empty string)';
+          } else if( 'boolean' == type ) {
+            formatted = $filter( 'cnYesNo' )( value );
+          } else if( cenozo.isDatetimeType( type ) ) {
+            if( 'moment' != cenozo.getType( value ) ) {
+              if( angular.isUndefined( value ) ) value = moment();
+              else {
+                if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( value ) ) {
+                  // no Z at the end since we are converting a time
+                  value = moment().format( 'YYYY-MM-DD' ) + 'T' + value + 'Z';
+                }
+                value = moment( new Date( value ) );
+              }
+            }
+            if( cenozo.isDatetimeType( type, 'timezone' ) ) value.tz( this.user.timezone );
+            formatted = value.format( this.getDatetimeFormat( type, longForm ) );
+          } else if( 'rank' == type ) {
+            var number = parseInt( value );
+            if( 0 < number ) formatted = $filter( 'cnOrdinal' )( number );
+          }
+          return formatted;
         }
       } );
 
-      this.setPassword = function( currentPass, requestedPass ) {
-        return CnHttpFactory.instance( {
-          path: 'self/0',
-          data: { user: { password: { current: currentPass, requested: requestedPass } } },
-          onError: function( response ) {
-            if( 400 == response.status && 'invalid password' == response.data ) {
-              CnModalMessageFactory.instance( {
-                title: 'Unable To Change Password',
-                message: 'Sorry, the current password you provided is incorrect, please try again. ' +
-                         'If you have forgotten your current password an administrator can reset it.',
-                error: true
-              } ).show();
-            } else { CnModalMessageFactory.httpError( response ); }
-          }
-        } ).patch().then( function() {
-          CnModalMessageFactory.instance( {
-            title: 'Password Changed',
-            message: 'Your password has been successfully changed.'
-          } ).show();
-        } );
-      };
-
-      this.showSiteRoleModal = function() {
-        CnModalSiteRoleFactory.instance( {
-          siteId: this.site.id,
-          roleId: this.role.id
-        } ).show().then( function( response ) {
-          if( angular.isObject( response ) &&
-              ( response.siteId != self.site.id || response.roleId != self.role.id ) ) {
-            // show a waiting screen while we're changing the site/role
-            $state.go( 'wait' );
-            CnHttpFactory.instance( {
-              path: 'self/0',
-              data: { site: { id: response.siteId }, role: { id: response.roleId } }
-            } ).patch().then( function() {
-              // blank content
-              document.getElementById( 'view' ).innerHTML = '';
-              $window.location.assign( cenozoApp.baseUrl );
-            } );
-          }
-        } );
-      };
-
-      this.setSiteSettings = function() {
-        return CnHttpFactory.instance( {
-          path: 'setting/site_id=' + this.site.id,
-          data: {
-            survey_without_sip: self.setting.surveyWithoutSip,
-            calling_start_time: self.setting.callingStartTime,
-            calling_end_time: self.setting.callingEndTime,
-            short_appointment: self.setting.shortAppointment,
-            long_appointment: self.setting.longAppointment,
-            pre_call_window: self.setting.preCallWindow,
-            post_call_window: self.setting.postCallWindow
-          }
-        } ).patch();
-      };
-
-      this.setUserDetails = function() {
-        return CnHttpFactory.instance( {
-          path: 'self/0',
-          data: {
-            user: {
-              first_name: self.user.firstName,
-              last_name: self.user.lastName,
-              email: self.user.email
-            }
-          }
-        } ).patch();
-      };
-
-      this.getTimeFormat = function( seconds, timezone ) {
-        if( angular.isUndefined( seconds ) ) seconds = false;
-        if( angular.isUndefined( timezone ) ) timezone = false;
-        return ( self.user.use12hourClock ? 'h' : 'H' ) +
-               ':mm' +
-               ( seconds ? ':ss' : '' ) +
-               ( self.user.use12hourClock ? 'a' : '' ) +
-               ( timezone ? ' z' : '' );
-      };
-
-      this.getDatetimeFormat = function( format, longForm ) {
-        if( angular.isUndefined( longForm ) ) longForm = false;
-        var resolvedFormat = format;
-        if( 'datetimesecond' == format || 'datetime' == format || 'date' == format ) {
-          resolvedFormat = ( longForm ? 'dddd, MMMM Do' : 'MMM D' ) + ', YYYY';
-          if( 'date' != format )
-            resolvedFormat += ' @ ' + this.getTimeFormat( 'datetimesecond' == format, longForm );
-        } else if( 'timesecond' == format || 'time' == format ) {
-          resolvedFormat = this.getTimeFormat( 'timesecond' == format, false );
-        }
-        return resolvedFormat;
-      };
-
-      this.updateTime = function() {
-        var now = moment();
-        now.tz( self.user.timezone );
-        self.time = now.format( self.getTimeFormat( false, true ) );
-      };
-
-      this.setTimezone = function( timezone, use12hourClock ) {
-        return CnHttpFactory.instance( {
-          path: 'self/0',
-          data: { user: { timezone: timezone, use_12hour_clock: use12hourClock  } }
-        } ).patch();
-      };
-
-      this.formatValue = function( value, type, longForm ) {
-        if( angular.isUndefined( longForm ) ) longForm = false;
-        var formatted = value;
-        if( null === value ) {
-          formatted = '(empty)';
-        } else if( 'string' == type && '' === value ) {
-          formatted = '(empty string)';
-        } else if( 'boolean' == type ) {
-          formatted = $filter( 'cnYesNo' )( value );
-        } else if( cenozo.isDatetimeType( type ) ) {
-          if( 'moment' != cenozo.getType( value ) ) {
-            if( angular.isUndefined( value ) ) value = moment();
-            else {
-              if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( value ) ) {
-                // no Z at the end since we are converting a time
-                value = moment().format( 'YYYY-MM-DD' ) + 'T' + value + 'Z';
-              }
-              value = moment( new Date( value ) );
-            }
-          }
-          if( 'date' != type ) value.tz( this.user.timezone );
-          formatted = value.format( this.getDatetimeFormat( type, longForm ) );
-        } else if( 'rank' == type ) {
-          var number = parseInt( value );
-          if( 0 < number ) formatted = $filter( 'cnOrdinal' )( number );
-        }
-        return formatted;
-      };
-
+      this.updateData();
     } );
   }
 ] );
@@ -2296,18 +2325,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           CnModalMessageFactory.httpError( response );
         } );
 
-        // need to convert the calling start/end time to the user's timezone
-        var callingStartTime =
-          moment( new Date(
-            moment().format( 'YYYY-MM-DD' ) + 'T' + CnSession.setting.callingStartTime + 'Z'
-          ) ).tz( CnSession.user.timezone ).format( "HH:mm" );
-        var callingEndTime =
-          moment( new Date(
-            moment().format( 'YYYY-MM-DD' ) + 'T' + CnSession.setting.callingEndTime + 'Z'
-          ) ).tz( CnSession.user.timezone ).format( "HH:mm" );
-
         // fullcalendar's settings object, used by the cn-record-calendar directive
-        console.log( callingStartTime );
         object.settings = {
           defaultDate: object.currentDate,
           defaultView: object.currentView,
@@ -2315,17 +2333,10 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           firstDay: 0,
           scrollTime: '07:00:00',
           timezone: 'UTC',
-          timeFormat: CnSession.user.use12hourClock ? 'h:mmt' : 'H:mm',
-          smallTimeFormat: CnSession.user.use12hourClock ? 'h(:mm)t' : 'HH(:mm)',
           header: {
             left: 'title',
             center: 'today prevYear,prev,next,nextYear',
             right: 'month,agendaWeek,agendaDay'
-          },
-          businessHours: {
-            start: callingStartTime,
-            end: callingEndTime,
-            dow: [1, 2, 3, 4, 5]
           },
           events: function( start, end, timezone, callback ) {
             // track the current date
@@ -3729,8 +3740,6 @@ cenozo.factory( 'CnHttpFactory', [
 
     return {
       initialize: function( site, user, role ) {
-        if( null != login.site || null != login.user || null != login.role )
-          throw new Error( 'Tried to initialize CnHttpFactory after it has already been initialized.' );
         login.site = site;
         login.user = user;
         login.role = role;
@@ -3851,7 +3860,8 @@ cenozo.service( 'CnModalDatetimeFactory', [
       angular.extend( this, {
         getMinDate: function() {
           return 'now' === this.minDate
-               ? moment().tz( CnSession.user.timezone )
+               ? cenozo.isDatetypeType( this.pickerType, 'timezone' ) ?
+                   moment().tz( CnSession.user.timezone ) : moment()
                : ( null === this.minDate ? null : angular.copy( this.minDate ) );
         },
         isBeforeMinDate: function( date, granularity ) {
@@ -3861,7 +3871,8 @@ cenozo.service( 'CnModalDatetimeFactory', [
         },
         getMaxDate: function() {
           return 'now' === this.maxDate
-               ? moment().tz( CnSession.user.timezone )
+               ? cenozo.isDatetypeType( this.pickerType, 'timezone' ) ?
+                   moment().tz( CnSession.user.timezone ) : moment()
                : ( null === this.maxDate ? null : angular.copy( this.maxDate ) );
         },
         isAfterMaxDate: function( date, granularity ) {
@@ -3890,7 +3901,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
         updateSlidersFromDate: function( date ) {
           this.hourSliderValue = date.format( 'H' );
           this.minuteSliderValue = date.format( 'm' );
-          this.secondSliderValue = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType
+          this.secondSliderValue = cenozo.isDatetimeType( this.pickerType, 'time' )
                                  ? date.format( 's' )
                                  : 0;
         },
@@ -3898,8 +3909,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
           // only change the time if the current day is within the min/max boundaries
           if( !this.isBeforeMinDate( this.date, 'day' ) && !this.isAfterMaxDate( this.date, 'day' ) ) {
             this.date.hour( this.hourSliderValue ).minute( this.minuteSliderValue ).second(
-              'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType ?
-                this.secondSliderValue : 0 );
+              cenozo.isDatetimeType( this.pickerType, 'time' ) ? this.secondSliderValue : 0 );
             this.date = this.resolveDate( this.date );
           }
           this.updateSlidersFromDate( this.date );
@@ -3924,18 +3934,24 @@ cenozo.service( 'CnModalDatetimeFactory', [
         },
         select: function( when ) {
           if( 'now' == when ) {
-            this.date = moment().tz( CnSession.user.timezone );
-            if( 'datetimesecond' != this.pickerType && 'timesecond' != this.pickerType ) this.date.second( 0 );
+            this.date = cenozo.isDatetypeType( this.pickerType, 'timezone' )
+                      ? moment().tz( CnSession.user.timezone )
+                      : moment();
+            if( !cenozo.isDatetimeType( this.pickerType, 'time' ) ) this.date.second( 0 );
             this.updateSlidersFromDate( this.date );
           } else if( 'today' == when ) {
-            this.date = moment().tz( CnSession.user.timezone );
+            this.date = cenozo.isDatetimeType( this.pickerType, 'timezone' )
+                      ? moment().tz( CnSession.user.timezone )
+                      : moment();
             this.updateDateFromSliders();
           } else {
             if( null === when ) {
               this.date = null;
             } else {
               if( null === this.date ) {
-                this.date = moment().tz( CnSession.user.timezone );
+                this.date = cenozo.isDatetimeType( this.pickerType, 'timezone' )
+                          ? moment().tz( CnSession.user.timezone )
+                          : moment();
                 this.updateDateFromSliders();
               }
               this.date.year( when.year() ).month( when.month() ).date( when.date() );
@@ -3947,13 +3963,16 @@ cenozo.service( 'CnModalDatetimeFactory', [
           this.prevMode(); // will call update()
         },
         updateDisplayTime: function() {
-          var seconds = 'datetimesecond' == this.pickerType || 'timesecond' == this.pickerType;
-          this.displayTime = null === this.date
-                           ? '(empty)'
-                           : this.date.format( CnSession.getTimeFormat( seconds, CnSession.user.timezone ) );
+          this.displayTime = null === this.date ? '(empty)' :
+            this.date.format(
+              CnSession.getTimeFormat(
+                cenozo.isDatetimeType( this.pickerType, 'second' ),
+                cenozo.isDatetimeType( this.pickerType, 'timezone' )
+              )
+            );
         },
         update: function() {
-          if( 'time' != this.pickerType ) {
+          if( 'time' != this.pickerType && 'time_notz' != this.pickerType ) {
             if( 'day' == this.mode ) {
               this.modeTitle = this.viewingDate.format( 'MMMM YYYY' );
               var cellList = [];
@@ -4061,10 +4080,13 @@ cenozo.service( 'CnModalDatetimeFactory', [
               $scope.ok = function() {
                 var response = null;
                 if( null !== $scope.local.date ) {
-                  var format = 'time' == self.pickerType ? 'HH:mm'
-                             : 'timesecond' == self.pickerType ? 'HH:mm:ss'
-                             : undefined;
-                  response = $scope.local.date.tz( 'utc' ).format( format );
+                  var format =
+                    'time' == self.pickerType || 'time_notz' == self.pickerType ? 'HH:mm' :
+                    'timesecond' == self.pickerType || 'timesecond_notz' == self.pickerType ? 'HH:mm:ss' :
+                    undefined;
+                  response = cenozo.isDatetimeType( self.pickerType, 'timezone' )
+                           ? $scope.local.date.tz( 'utc' ).format( format )
+                           : $scope.local.date.format( format );
                 }
                 $modalInstance.close( response );
               };
@@ -4098,14 +4120,16 @@ cenozo.service( 'CnModalDatetimeFactory', [
       else if( 'now' !== this.minDate ) {
         if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.minDate ) )
           this.minDate = moment().format( 'YYYY-MM-DD' ) + 'T' + this.minDate + 'Z';
-        this.minDate = moment( new Date( this.minDate ) ).tz( CnSession.user.timezone );
+        this.minDate = moment( new Date( this.minDate ) );
+        if( cenozo.isDatetimeType( this.pickerType, 'timezone' ) ) this.minDate.tz( CnSession.user.timezone );
       }
       if( angular.isUndefined( this.maxDate ) || null === this.maxDate ) this.maxDate = null;
       else if( 'now' !== this.maxDate ) {
         if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.maxDate ) ) {
           this.maxDate = moment().format( 'YYYY-MM-DD' ) + 'T' + this.maxDate + 'Z';
         }
-        this.maxDate = moment( new Date( this.maxDate ) ).tz( CnSession.user.timezone );
+        this.maxDate = moment( new Date( this.maxDate ) );
+        if( cenozo.isDatetimeType( this.pickerType, 'timezone' ) ) this.maxDate.tz( CnSession.user.timezone );
       }
 
       // treat invalid dates as null dates
@@ -4113,10 +4137,16 @@ cenozo.service( 'CnModalDatetimeFactory', [
 
       // process the input (starting) date
       if( null === this.date ) {
-        this.viewingDate = this.resolveDate( moment().tz( CnSession.user.timezone ) );
+        this.viewingDate = this.resolveDate(
+          cenozo.isDatetimeType( this.pickerType, 'timezone' ) ?
+            moment().tz( CnSession.user.timezone ) : moment()
+        );
       } else {
         if( angular.isUndefined( this.date ) ) {
-          this.date = this.resolveDate( moment().tz( CnSession.user.timezone ) );
+          this.date = this.resolveDate(
+            cenozo.isDatetimeType( this.pickerType, 'timezone' ) ?
+              moment().tz( CnSession.user.timezone ) : moment()
+          );
         } else {
           if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.date ) ) {
             this.date = moment().format( 'YYYY-MM-DD' ) + 'T' + this.date + 'Z';
@@ -4124,12 +4154,12 @@ cenozo.service( 'CnModalDatetimeFactory', [
           this.date = moment( new Date( this.date ) );
         }
 
-        if( 'date' != this.pickerType ) this.date.tz( CnSession.user.timezone );
+        if( cenozo.isDatetimeType( this.pickerType, 'timezone' ) ) this.date.tz( CnSession.user.timezone );
         this.viewingDate = moment( this.date );
       }
 
       // for the time picker we might have to adjust the min/max dates
-      if( 'time' == this.pickerType ) {
+      if( cenozo.isDatetimeType( this.pickerType, 'time' ) ) {
         if( 'moment' == cenozo.getType( this.minDate ) ) this.minDate.date( this.date.date() );
         if( 'moment' == cenozo.getType( this.maxDate ) ) this.maxDate.date( this.date.date() );
       }
@@ -4305,7 +4335,7 @@ cenozo.service( 'CnModalRestrictFactory', [
         if( 'string' == this.type ) value = '';
         else if( cenozo.isDatetimeType( this.type ) ) {
           var date = moment().tz( 'utc' );
-          if( 'datetime' == this.type || 'time' == this.type ) date.second( 0 );
+          if( !isDatetimeType( this.type, 'second' ) ) date.second( 0 );
           value = date.format();
         }
         return value;

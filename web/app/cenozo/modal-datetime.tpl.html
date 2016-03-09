@@ -52,11 +52,7 @@
       </div>
       <div ng-if="'datetime' == local.pickerType || 'datetimesecond' == local.pickerType"
            class="vertical-spacer"></div>
-      <div ng-if="'timesecond' == local.pickerType ||
-                  'time' == local.pickerType ||
-                  'datetime' == local.pickerType ||
-                  'datetimesecond' == local.pickerType"
-           class="container-fluid timepicker">
+      <div ng-if="'date' != local.pickerType" class="container-fluid timepicker">
         <div class="row timepicker-row">
           <div class="col-xs-2"><strong>Time:</strong></div>
           <div class="col-xs-10">{{ local.displayTime }}</div>
@@ -92,7 +88,10 @@
               class="btn btn-info"
               ng-click="local.select('now')"
               ng-disabled="nowDisabled">Now</button>
-      <button ng-if="'time' != local.pickerType && 'timesecond' != local.pickerType"
+      <button ng-if="'timesecond' != local.pickerType &&
+                     'timesecond_notz' != local.pickerType &&
+                     'time' != local.pickerType &&
+                     'time_notz' != local.pickerType"
               type="button"
               class="btn btn-info"
               ng-click="local.select('today')"
