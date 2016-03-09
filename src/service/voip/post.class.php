@@ -44,11 +44,10 @@ class post extends \cenozo\service\service
     $voip_manager = lib::create( 'business\voip_manager' );
     $session = lib::create( 'business\session' );
 
-    $result = false;
-
     $object = $this->get_file_as_object();
-    $voip_manager->call( lib::create( 'database\phone', $object->phone_id ) );
+    $voip_call = $voip_manager->call( lib::create( 'database\phone', $object->phone_id ) );
 
-    $this->status->set_code( $result ? 201 : 202 );
+    $this->set_data( $voip_call );
+    $this->status->set_code( !is_null( $voip_call ) ? 201 : 202 );
   }
 }
