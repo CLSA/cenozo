@@ -2348,7 +2348,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               callback(
                 object.cache.reduce( function( eventList, e ) {
                   if( moment( e.start ).isBefore( end, 'day' ) &&
-                      moment( e.end ).isAfter( start, 'day' ) ) eventList.push( e );
+                      !moment( e.end ).isBefore( start, 'day' ) ) eventList.push( e );
                   return eventList;
                 }, [] )
               );
