@@ -3860,7 +3860,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       angular.extend( this, {
         getMinDate: function() {
           return 'now' === this.minDate
-               ? cenozo.isDatetypeType( this.pickerType, 'timezone' ) ?
+               ? cenozo.isDatetimeType( this.pickerType, 'timezone' ) ?
                    moment().tz( CnSession.user.timezone ) : moment()
                : ( null === this.minDate ? null : angular.copy( this.minDate ) );
         },
@@ -3871,7 +3871,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
         },
         getMaxDate: function() {
           return 'now' === this.maxDate
-               ? cenozo.isDatetypeType( this.pickerType, 'timezone' ) ?
+               ? cenozo.isDatetimeType( this.pickerType, 'timezone' ) ?
                    moment().tz( CnSession.user.timezone ) : moment()
                : ( null === this.maxDate ? null : angular.copy( this.maxDate ) );
         },
@@ -3934,7 +3934,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
         },
         select: function( when ) {
           if( 'now' == when ) {
-            this.date = cenozo.isDatetypeType( this.pickerType, 'timezone' )
+            this.date = cenozo.isDatetimeType( this.pickerType, 'timezone' )
                       ? moment().tz( CnSession.user.timezone )
                       : moment();
             if( !cenozo.isDatetimeType( this.pickerType, 'time' ) ) this.date.second( 0 );
