@@ -173,7 +173,12 @@ final class log extends singleton
    * @static
    * @access public
    */
-  public static function debug( $message ) { self::self()->send( $message, PEAR_LOG_DEBUG ); }
+  public static function debug( $message )
+  {
+    // if there is more than one argument then treat them all as an array
+    $message = 1 < func_num_args() ? func_get_args() : $message;
+    self::self()->send( $message, PEAR_LOG_DEBUG );
+  }
 
   /**
    * Logging method
