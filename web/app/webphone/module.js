@@ -13,21 +13,22 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnWebphoneHome', [
-    'CnWebphoneHomeFactory', '$interval',
-    function( CnWebphoneHomeFactory, $interval ) {
+  cenozo.providers.directive( 'cnWebphoneStatus', [
+    'CnWebphoneStatusFactory', 'CnSession', '$interval',
+    function( CnWebphoneStatusFactory, CnSession, $interval ) {
       return {
-        templateUrl: module.getFileUrl( 'home.tpl.html' ),
+        templateUrl: module.getFileUrl( 'status.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
-          $scope.model = CnWebphoneHomeFactory.instance();
-          //          $scope.model.onLoad(); // breadcrumbs are handled by the service
+          $scope.model = CnWebphoneStatusFactory.instance();
+          CnSession.setBreadcrumbTrail( [ { title: 'Webphone' } ] );
 
           $scope.javaHelp =
-            'If the client box is blank then Java isn\'t set up properly on your computer.  You must ensure ' +
-            'that Java is installed and that "' + window.location.origin + '" is in your java\'s exception ' +
-            'site list. The exception list can be found by opening your Java Control Panel and clicking on ' +
-            'the Security tab.';
+            'If you see a "Java Application Blocked" message or the box above doesn\'t display the webphone ' +
+            'interface then you must grant access to this website in your Java Control Panel. ' +
+            'From your computer launch the "Configure Java" program, click on the "Security" tab then add ' +
+            '"' + window.location.origin + '" to the Exception Site List.  Then reload your web browser ' +
+            'and allow the webphone to be run on your computer (it is not a security risk).';
 
           var promise = $interval( $scope.model.updateInformation, 10000 );
           $scope.$on( '$destroy', function() { $interval.cancel( promise ); } );
@@ -37,41 +38,21 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  /*
-  cenozo.providers.factory( 'CnWebphoneModelFactory', [
-    '$state', 'CnBaseModelFactory', 'CnWebphoneListFactory', 'CnWebphoneViewFactory',
-    function( $state, CnBaseModelFactory, CnWebphoneListFactory, CnWebphoneViewFactory ) {
-      var object = function( root ) {
-        var self = this;
-//        CnBaseModelFactory.construct( this, module );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-  */
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnWebphoneHomeFactory', [
-    'CnSession', 'CnHttpFactory', '$http',
-    function( CnSession, CnHttpFactory, $http ) {
+  cenozo.providers.factory( 'CnWebphoneStatusFactory', [
+    'CnSession', '$http',
+    function( CnSession, $http ) {
       var object = function( root ) {
         var self = this;
         this.updating = false;
-        this.voip = { enabled: false };
+        this.voip = CnSession.voip;
         this.webphone = '(disabled)';
         this.webphoneUrl = CnSession.application.webphoneUrl;
 
         this.updateInformation = function() {
           if( !self.updating ) {
             self.updating = true;
-            CnHttpFactory.instance( {
-              path: 'voip/0'
-            } ).get().then( function( response ) {
-              self.voip = response.data;
+            CnSession.updateVoip().then( function() {
+              self.voip = CnSession.voip;
               if( self.voip.enabled && '(disabled)' == self.webphone ) {
                 // loading webphone from server which isn't part of the API, so use $http
                 $http.get( CnSession.application.webphoneUrl ).then( function( response ) {

@@ -53,7 +53,7 @@ class voip_manager extends \cenozo\singleton
           'Unable to connect to the Asterisk server.', __METHOD__ );
 
       // get the current SIP info
-      $peer = 10000000 + lib::create( 'business\session' )->get_user()->id;
+      $peer = static::get_peer();
       $s8_event = $this->manager->getSipPeer( $peer );
 
       if( !is_null( $s8_event ) &&
@@ -124,9 +124,7 @@ class voip_manager extends \cenozo\singleton
 
     if( is_null( $this->call_list ) ) $this->rebuild_call_list();
 
-    $peer = is_null( $db_user )
-          ? lib::create( 'business\session' )->get_user()->name
-          : $db_user->name;
+    $peer = static::get_peer( $db_user );
 
     // build the call list
     $calls = array();
@@ -179,9 +177,9 @@ class voip_manager extends \cenozo\singleton
         'Unable to connect call since you already appear to be in a call.', __METHOD__ );
 
     // originate call (careful, the online API has the arguments in the wrong order)
-    $peer = lib::create( 'business\session' )->get_user()->name;
+    $peer = static::get_peer();
     $channel = 'SIP/'.$peer;
-    $context = 'users';
+    $context = 'from-internal';
     $extension = $this->prefix.$digits;
     $priority = 1;
     if( !$this->manager->originate( $channel, $context, $extension, $priority ) )
@@ -204,19 +202,19 @@ class voip_manager extends \cenozo\singleton
     if( !$this->enabled ) return;
     $this->initialize();
 
-    $peer = lib::create( 'business\session' )->get_user()->name;
+    $peer = static::get_peer();
     $channel = 'SIP/'.$peer;
     // play sound in local channel
     if( !$this->manager->originate(
-      $channel,             // channel
-      'default',            // context
-      'chanspy',            // extension
-      1,                    // priority
-      false,                // application
-      false,                // data
-      30000,                // timeout
-      false,                // callerID
-      'ActionID=Spy,'.      // variables
+      $channel,        // channel
+      'cenozo',        // context
+      'chanspy',       // extension
+      1,               // priority
+      false,           // application
+      false,           // data
+      30000,           // timeout
+      false,           // callerID
+      'ActionID=Spy,'. // variables
       'ToChannel='.$voip_call->get_channel() ) )
     {
       throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
@@ -238,7 +236,7 @@ class voip_manager extends \cenozo\singleton
   {
     if( !$this->enabled ) return false;
     $this->initialize();
-    return $this->sip_info;//is_array( $this->sip_info ) && 0 < count( $this->sip_info );
+    return $this->sip_info;
   }
 
   /**
@@ -258,6 +256,15 @@ class voip_manager extends \cenozo\singleton
    * @access public
    */
   public function get_prefix() { return $this->prefix; }
+
+  /**
+   * TODO: document
+   */
+  public static function get_peer( $db_user = NULL )
+  {
+    return 10000000 + ( is_null( $db_user ) ?
+      lib::create( 'business\session' )->get_user()->id : $db_user->id );
+  }
 
   /**
    * The asterisk manager object

@@ -342,7 +342,7 @@ class ui extends \cenozo\base_object
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
     $list['Participant Search'] = array( 'subject' => 'search_result', 'action' => 'list' );
     if( $setting_manager->get_setting( 'voip', 'enabled' ) )
-      $list['Webphone'] = array( 'subject' => 'webphone', 'action' => 'home' );
+      $list['Webphone'] = array( 'subject' => 'webphone', 'action' => 'status' );
 
     return $list;
   }

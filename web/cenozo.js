@@ -1861,6 +1861,18 @@ cenozo.factory( 'CnSession', [
                 if( response ) self.setUserDetails();
               } );
             }
+
+            // if voip is enabled the load the voip data
+            if( self.application.voipEnabled ) self.updateVoip();
+          } );
+        },
+
+        // get the application, user, site and role details
+        updateVoip: function() {
+          return CnHttpFactory.instance( {
+            path: 'voip/0'
+          } ).get().then( function( response ) {
+            self.voip = response.data;
           } );
         },
 
