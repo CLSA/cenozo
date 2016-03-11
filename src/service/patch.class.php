@@ -25,9 +25,9 @@ class patch extends write
   /**
    * Extends parent method
    */
-  protected function execute()
+  protected function prepare()
   {
-    parent::execute();
+    parent::prepare();
 
     $leaf_record = $this->get_leaf_record();
     if( !is_null( $leaf_record ) )
@@ -44,9 +44,19 @@ class patch extends write
           throw $e;
         }
       }
+    }
+  }
 
-      $this->status->set_code( 204 );
+  /**
+   * Extends parent method
+   */
+  protected function execute()
+  {
+    parent::execute();
 
+    $leaf_record = $this->get_leaf_record();
+    if( !is_null( $leaf_record ) )
+    {
       try
       {
         $leaf_record->save();
