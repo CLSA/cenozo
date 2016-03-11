@@ -4347,7 +4347,7 @@ cenozo.service( 'CnModalRestrictFactory', [
         if( 'string' == this.type ) value = '';
         else if( cenozo.isDatetimeType( this.type ) ) {
           var date = moment().tz( 'utc' );
-          if( !isDatetimeType( this.type, 'second' ) ) date.second( 0 );
+          if( !cenozo.isDatetimeType( this.type, 'second' ) ) date.second( 0 );
           value = date.format();
         }
         return value;
