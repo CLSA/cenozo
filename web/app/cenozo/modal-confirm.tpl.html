@@ -2,7 +2,9 @@
   <div class="modal-header bg-primary">
     <h4 class="modal-title">{{ title }}</h4>
   </div>
-  <div class="modal-body allow-select">{{ message }}</div>
+  <div class="modal-body allow-select">
+    <span style="white-space: pre-wrap;">{{ message }}</span>
+  </div>
   <div class="modal-footer bg-info">
     <button type="button" class="btn btn-default" ng-click="no()">&#x2718 No</button>
     <button type="submit" class="btn btn-primary">&#x2714 Yes</button>

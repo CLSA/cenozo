@@ -1863,6 +1863,7 @@ cenozo.factory( 'CnSession', [
             }
 
             // if voip is enabled the load the voip data
+            self.voip = { enabled: false, info: false };
             if( self.application.voipEnabled ) self.updateVoip();
           } );
         },
