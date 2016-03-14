@@ -225,7 +225,8 @@ class ldap_manager extends \cenozo\singleton
     if( 'samba' == $this->type )
     {
       // try any command to test user/pass, if valid the return var will be 0
-      $command = sprintf( 'samba-tool group list --URL="ldap://%s" --username="%s" --password="%s"',
+      $command = sprintf( 'samba-tool gpo list "%s" --URL="ldap://%s" --username="%s" --password="%s"',
+                          $username,
                           $this->server,
                           $username,
                           $password );
