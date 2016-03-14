@@ -44,7 +44,7 @@
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ); local.describeRestriction( $index )"
                     class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
@@ -85,7 +85,7 @@
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ); local.describeRestriction( $index )"
                     class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
@@ -121,7 +121,7 @@
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ); local.describeRestriction( $index )"
                     class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
@@ -159,7 +159,7 @@
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ); local.describeRestriction( $index )"
                     class="form-control">
               <option value="&lt;=&gt;">is</option>
               <option value="&lt;&gt;">is not</option>
@@ -200,7 +200,7 @@
             <select id="{{ 'test' + $index }}"
                     name="{{ 'test' + $index }}"
                     ng-model="restrict.test"
-                    ng-change="local.updateEmpty( $index ) && local.describeRestriction( $index )"
+                    ng-change="local.updateEmpty( $index ); local.describeRestriction( $index )"
                     class="form-control">
               <option value="&lt;=&gt;">
                 {{ local.emptyList[$index].isEmpty ? "is" : ( "date" == local.type ? "on" : "at" ) }}

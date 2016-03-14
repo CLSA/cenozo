@@ -26,29 +26,35 @@
         <tr>
           <td ng-repeat="column in dataArray">
             <div class="btn-group" tooltip="{{ column.help }}">
-              <button class="btn btn-narrow btn-info"
-                      ng-click="model.listModel.orderBy( column.key )">{{ column.title }}
+              <button class="btn btn-narrow btn-info dropdown-toggle"
+                      data-toggle="dropdown"
+                      type="button">
+                {{ column.title }}
                 <i ng-if="null !== model.listModel.order && model.listModel.order.column == column.key"
                    class="glyphicon"
                    ng-class="model.listModel.order.reverse ?
                              'glyphicon-circle-arrow-up' : 'glyphicon-circle-arrow-down'"></i>
               </button>
-              <button class="btn btn-narrow"
-                      ng-class="0 < model.listModel.columnRestrictLists[column.key].length ? 'btn-success' : 'btn-info'"
-                      ng-click="setRestrictList( column.key )"
-                      tooltip="{{ 0 < model.listModel.columnRestrictLists[column.key].length ?
-                        'Click to modify existing restriction applied to the ' + column.title + ' column' :
-                        'Click to restrict this list based on the ' + column.title + ' column' }}"
-                      tooltip-placement="bottom"
-                      tooltip-popup-delay="1000">
-                <i class="glyphicon glyphicon-filter"></i>
-              </button>
+              <ul class="dropdown-menu" ng-class="{'dropdown-menu-right': $last}" role="menu">
+                <li><a href="#" ng-click="model.listModel.orderBy( column.key )">
+                    Sort {{ model.listModel.order.reverse ? 'Ascending' : 'Descending' }}
+                </a></li>
+                <li>
+                  <a href="#"
+                     ng-click="setRestrictList( column.key )"
+                     tooltip="{{ 0 < model.listModel.columnRestrictLists[column.key].length ?
+                       'Click to modify existing restriction applied to the ' + column.title + ' column' :
+                       'Click to restrict this list based on the ' + column.title + ' column' }}"
+                     tooltip-placement="bottom"
+                     tooltip-popup-delay="1000">Restrict Values</a>
+                 </li>
+              </ul>
             </div>
             <div class="text-center text-info full-width"
                  ng-if="0 < model.listModel.columnRestrictLists[column.key].length">
               <p class="restrict-description"
                  ng-if="0 < model.listModel.columnRestrictLists[column.key].length"
-                 tooltip="To remove the restriction click the filter icon, then the remove button"
+                 ng-click="setRestrictList( column.key )"
                  tooltip-placement="bottom"
                  tooltip-popup-delay="1000">
                 <span ng-repeat="restrict in model.listModel.columnRestrictLists[column.key]">
