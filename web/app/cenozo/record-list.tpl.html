@@ -37,7 +37,9 @@
               </button>
               <ul class="dropdown-menu" ng-class="{'dropdown-menu-right': $last}" role="menu">
                 <li><a href="#" ng-click="model.listModel.orderBy( column.key )">
-                    Sort {{ null !== model.listModel.order && model.listModel.order.column == column.key ?
+                    Sort {{ null !== model.listModel.order &&
+                            model.listModel.order.column == column.key &&
+                            !model.listModel.order.reverse ?
                             'Descending' : 'Ascending' }}
                 </a></li>
                 <li>
