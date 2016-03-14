@@ -53,7 +53,7 @@
               </div>
             </div>
             <div class="row">
-              <label class="col-sm-6 control-label">Call Status</label>
+              <label class="col-sm-6 control-label">Active Call Information</label>
               <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.call }">
                 {{ model.voip.call ? model.voip.call : 'No Connection' }}
               </div>
@@ -63,10 +63,19 @@
         <div class="col-sm-6">
           <h4 class="text-center">Client</h4>
           <div class="form-body well text-center" tooltip="{{ javaHelp }}" tooltip-placement="bottom">
-            <iframe style="width:370px;" width="370" height="215" ng-src="{{ model.webphoneUrl }}">
+            <iframe style="width:370px;" width="238" height="255" ng-src="{{ model.webphoneUrl }}">
               Your browser does not support the Java-based webphone, please use another browser
               if you wish to use the webphone.
             </iframe>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="form-body well allow-select text-danger">
+            In order to stay connected to the webphone you must leave this browser tab window open.
+            Do not navigate away from this page or you will be disconnected from any active calls
+            and you will not be able to make new calls using the webphone.
           </div>
         </div>
       </div>

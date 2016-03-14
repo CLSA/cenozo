@@ -41,9 +41,10 @@ class get extends \cenozo\service\service
   public function execute()
   {
     $voip_manager = lib::create( 'business\voip_manager' );
+    $voip_call = $voip_manager->get_call( lib::create( 'business\session' )->get_user() );
     $this->set_data( array(
       'enabled' => $voip_manager->get_enabled(),
       'info' => $voip_manager->get_sip_enabled(),
-      'call' => $voip_manager->get_call( lib::create( 'business\session' )->get_user() ) ) );
+      'call' => !is_null( $voip_call ) ? $voip_call->get_channel() : null ) );
   }
 }

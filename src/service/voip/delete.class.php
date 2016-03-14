@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace cenozo\service\self;
+namespace cenozo\service\voip;
 use cenozo\lib, cenozo\log;
 
 /**
@@ -42,7 +42,9 @@ class delete extends \cenozo\service\service
    */
   protected function execute()
   {
-    lib::create( 'business\session' )->logout();
-    $this->status->set_code( 200 );
+    $voip_manager = lib::create( 'business\voip_manager' );
+    $voip_call = $voip_manager->get_call();
+    if( !is_null( $voip_call ) ) $voip_call->hang_up();
+    $this->status->set_code( !is_null( $voip_call ) ? 200 : 404 );
   }
 }

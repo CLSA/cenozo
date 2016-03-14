@@ -42,12 +42,9 @@ class post extends \cenozo\service\service
   protected function execute()
   {
     $voip_manager = lib::create( 'business\voip_manager' );
-    $session = lib::create( 'business\session' );
-
     $object = $this->get_file_as_object();
     $voip_call = $voip_manager->call( lib::create( 'database\phone', $object->phone_id ) );
-
-    $this->set_data( $voip_call );
+    if( !is_null( $voip_call ) ) $this->set_data( $voip_call->get_channel() );
     $this->status->set_code( !is_null( $voip_call ) ? 201 : 202 );
   }
 }
