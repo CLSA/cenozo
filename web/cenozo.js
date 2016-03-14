@@ -1152,6 +1152,11 @@ cenozo.directive( 'cnRecordList', [
             } );
           };
 
+          scope.removeRestrictList = function( key ) {
+            var column = scope.dataArray.findByProperty( 'key', key );
+            scope.model.listModel.setRestrictList( key, [] );
+          };
+
           // get the total number of columns in the table
           scope.numColumns = scope.dataArray.length;
         }

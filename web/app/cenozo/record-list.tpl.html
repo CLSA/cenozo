@@ -37,7 +37,8 @@
               </button>
               <ul class="dropdown-menu" ng-class="{'dropdown-menu-right': $last}" role="menu">
                 <li><a href="#" ng-click="model.listModel.orderBy( column.key )">
-                    Sort {{ model.listModel.order.reverse ? 'Ascending' : 'Descending' }}
+                    Sort {{ null !== model.listModel.order && model.listModel.order.column == column.key ?
+                            'Descending' : 'Ascending' }}
                 </a></li>
                 <li>
                   <a href="#"
@@ -46,14 +47,24 @@
                        'Click to modify existing restriction applied to the ' + column.title + ' column' :
                        'Click to restrict this list based on the ' + column.title + ' column' }}"
                      tooltip-placement="bottom"
-                     tooltip-popup-delay="1000">Restrict Values</a>
+                     tooltip-popup-delay="1000">
+                    {{ 0 < model.listModel.columnRestrictLists[column.key].length ?
+                       'Edit Restriction' : 'Restrict Values' }}
+                  </a>
                  </li>
+                <li ng-if="0 < model.listModel.columnRestrictLists[column.key].length">
+                  <a href="#"
+                     ng-click="removeRestrictList( column.key )"
+                     tooltip="
+                       {{ 'Click to remove the existing restriction applied to the ' + column.title + ' column' }}"
+                     tooltip-placement="bottom"
+                     tooltip-popup-delay="1000">Remove Restriction</a>
+                </li>
               </ul>
             </div>
             <div class="text-center text-info full-width"
                  ng-if="0 < model.listModel.columnRestrictLists[column.key].length">
               <p class="restrict-description"
-                 ng-if="0 < model.listModel.columnRestrictLists[column.key].length"
                  ng-click="setRestrictList( column.key )"
                  tooltip-placement="bottom"
                  tooltip-popup-delay="1000">
