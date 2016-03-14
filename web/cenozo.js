@@ -2375,7 +2375,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             // mark which date has been chosen in the add model
             // Note: it is up to the add model's module to implement what to do with this variable
             object.parentModel.addModel.calendarDate =
-              moment().date( date.date() ).tz( CnSession.user.timezone ).hour( 12 ).minute( 0 ).second( 0 );
+              moment( date ).tz( CnSession.user.timezone ).hour( 12 ).minute( 0 ).second( 0 );
             return object.parentModel.transitionToAddState();
           },
           eventClick: function( record ) {
@@ -3979,6 +3979,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
             this.date.format(
               CnSession.getTimeFormat(
                 cenozo.isDatetimeType( this.pickerType, 'second' ),
+                !cenozo.isDatetimeType( this.pickerType, 'time' ) &&
                 cenozo.isDatetimeType( this.pickerType, 'timezone' )
               )
             );
@@ -4159,6 +4160,9 @@ cenozo.service( 'CnModalDatetimeFactory', [
             cenozo.isDatetimeType( this.pickerType, 'timezone' ) ?
               moment().tz( CnSession.user.timezone ) : moment()
           );
+
+          // round to the next hour
+          this.date.minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
         } else {
           if( /^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test( this.date ) ) {
             this.date = moment().format( 'YYYY-MM-DD' ) + 'T' + this.date + 'Z';
