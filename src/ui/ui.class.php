@@ -127,8 +127,8 @@ class ui extends \cenozo\base_object
     return array(
       'access', 'activity', 'address', 'alternate', 'application', 'cohort', 'collection',
       'consent', 'consent_type', 'event', 'event_type', 'jurisdiction', 'language', 'participant',
-      'phone', 'quota', 'region', 'region_site', 'role', 'script', 'search_result', 'site', 'source', 'state',
-      'system_message', 'user', 'webphone' );
+      'phone', 'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'script',
+      'search_result', 'site', 'source', 'state', 'system_message', 'user', 'webphone' );
   }
 
   /**
@@ -209,11 +209,17 @@ class ui extends \cenozo\base_object
       $module_list['alternate']['actions'][] = 'notes/{identifier}';
     }
     if( array_key_exists( 'collection', $module_list ) )
+    {
       $module_list['collection']['choosing'] = array( 'participant', 'user' );
+    }
     if( array_key_exists( 'consent_type', $module_list ) )
+    {
       $module_list['consent_type']['children'] = array( 'participant' );
+    }
     if( array_key_exists( 'event_type', $module_list ) )
+    {
       $module_list['event_type']['children'] = array( 'participant' );
+    }
     if( array_key_exists( 'participant', $module_list ) )
     {
       $module_list['participant']['children'] = array( 'address', 'phone', 'consent', 'alternate', 'event' );
@@ -224,14 +230,22 @@ class ui extends \cenozo\base_object
       if( false !== ( $key = array_search( 'add', $module_list['participant']['actions'] ) ) )
         array_splice( $module_list['participant']['actions'], $key, 1 );
     }
+    if( array_key_exists( 'recording', $module_list ) )
+    {
+      $module_list['recording']['children'] = array( 'recording_file' );
+    }
     if( array_key_exists( 'site', $module_list ) )
     {
       $module_list['site']['children'] = array( 'access', 'activity' );
     }
     if( array_key_exists( 'source', $module_list ) )
+    {
       $module_list['source']['children'] = array( 'participant' );
+    }
     if( array_key_exists( 'state', $module_list ) )
+    {
       $module_list['state']['children'] = array( 'role', 'participant' );
+    }
     if( array_key_exists( 'user', $module_list ) )
     {
       if( 1 == $db_role->tier )
@@ -301,6 +315,9 @@ class ui extends \cenozo\base_object
       $list['Participants'] = 'participant';
     if( array_key_exists( 'quota', $module_list ) && $module_list['quota']['list_menu'] )
       $list['Quotas'] = 'quota';
+    if( 3 <= $db_role->tier &&
+        array_key_exists( 'recording', $module_list ) && $module_list['recording']['list_menu'] )
+      $list['Recordings'] = 'recording';
     if( in_array( 'region', $grouping_list ) &&
         array_key_exists( 'region_site', $module_list ) && $module_list['region_site']['list_menu'] )
       $list['Region Sites'] = 'region_site';
