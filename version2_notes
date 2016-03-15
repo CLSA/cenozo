@@ -18,25 +18,25 @@ Create the recordings in F1:
   ( 8, "REY II", true, 60 );
 
   INSERT INTO recording_file( recording_id, language_id, filename )
-  SELECT recording.id, language.id, "english_sentence_mono_fixed.v1"
+  SELECT recording.id, language.id, "custom/english_sentence_mono_fixed.v1"
   FROM recording, patrick_cenozo.language
   WHERE recording.rank = 1
   AND language.code = "en";
 
   INSERT INTO recording_file( recording_id, language_id, filename )
-  SELECT recording.id, language.id, "french_sentence_mono_fixed.v1"
+  SELECT recording.id, language.id, "custom/french_sentence_mono_fixed.v1"
   FROM recording, patrick_cenozo.language
   WHERE recording.rank = 1
   AND language.code = "fr";
 
   INSERT INTO recording_file( recording_id, language_id, filename )
-  SELECT recording.id, language.id, "english_wordlist_mono_fixed.v1"
+  SELECT recording.id, language.id, "custom/english_wordlist_mono_fixed.v1"
   FROM recording, patrick_cenozo.language
   WHERE recording.rank = 2
   AND language.code = "en";
 
   INSERT INTO recording_file( recording_id, language_id, filename )
-  SELECT recording.id, language.id, "french_wordlist_mono_fixed.v1"
+  SELECT recording.id, language.id, "custom/french_wordlist_mono_fixed.v1"
   FROM recording, patrick_cenozo.language
   WHERE recording.rank = 2
   AND language.code = "fr";

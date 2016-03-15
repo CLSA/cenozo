@@ -108,7 +108,7 @@ class voip_call extends \cenozo\base_object
    *               sounds (those that are not included with asterisk) make sure to specify the
    *               custom directory, ie: custom/dtmf0
    * @param int $volume The volume to play the sound at.  This is an integer which ranges from -4
-                to 4, where 0 is the "regular" volume.
+   *            to 4, where 0 is the "regular" volume.
    * @param boolean $bridge Whether to play the sound so that both sides of the connection can hear
    *                it.  If this is false then only the caller will hear the sound.
    * @access public
@@ -124,15 +124,15 @@ class voip_call extends \cenozo\base_object
 
     // play sound in local channel
     if( !$this->manager->originate(
-      'Local/playback@default',  // channel
-      'default',                 // context
-      'playbackspy',             // extension
-      1,                         // priority
-      false,                     // application
-      false,                     // data
-      30000,                     // timeout
-      false,                     // callerID
-      'ActionID=PlayBack,'.      // variables
+      'Local/playback@cenozo',  // channel
+      'cenozo',                 // context
+      'playbackspy',            // extension
+      1,                        // priority
+      false,                    // application
+      false,                    // data
+      30000,                    // timeout
+      false,                    // callerID
+      'ActionID=PlayBack,'.     // variables
       'Sound='.$sound.','.
       'Volume='.$volume.','.
       'ToChannel='.$this->get_channel() ) )
@@ -148,15 +148,15 @@ class voip_call extends \cenozo\base_object
 
       // play sound in bridged channel
       if( !$this->manager->originate(
-        'Local/playback@default',  // channel
-        'default',                 // context
-        'playbackspy',             // extension
-        1,                         // priority
-        false,                     // application
-        false,                     // data
-        30000,                     // timeout
-        false,                     // callerID
-        'ActionID=PlayBack,'.      // variables
+        'Local/playback@cenozo',  // channel
+        'cenozo',                 // context
+        'playbackspy',            // extension
+        1,                        // priority
+        false,                    // application
+        false,                    // data
+        30000,                    // timeout
+        false,                    // callerID
+        'ActionID=PlayBack,'.     // variables
         'Sound='.$sound.','.
         'Volume='.$volume.','.
         'ToChannel='.$this->get_bridge() ) )

@@ -13,6 +13,7 @@ iframe { padding: 0px; margin: 0px; border: 0px; }
 .btn-narrow { padding-left: 6px; padding-right: 6px; }
 .btn-muted { background-color: #eaeaea; }
 .btn-menu { line-height: 1; }
+.nav-tabs { font-weight: bold; border: 0px; }
 .full-page { width: 100vw !important; height: 100vh !important; }
 .full-width { width: 100% !important; }
 .pagination { margin: 0; }

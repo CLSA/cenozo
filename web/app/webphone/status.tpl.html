@@ -11,10 +11,21 @@
   </div>
   <div class="form-horizontal">
     <div class="container-fluid">
+      <h4><span class="text-danger">Please Note</span></h4>
+      <blockquote class="text-danger">
+        In order to stay connected to the webphone you must leave this browser tab window open.
+        Do not navigate away from this page or you will be disconnected from any active calls
+        and you will not be able to make new calls using the webphone.
+      </blockquote>
+    </div>
+    <div class="container-fluid">
       <div class="row">
         <div class="col-sm-6">
-          <h4 class="text-center">Server</h4>
-          <div class="form-body well allow-select">
+          <ul class="nav nav-tabs">
+            <li ng-class="{'active':'server'==tab}"><a ng-click="tab='server'">Server</a></li>
+            <li ng-class="{'active':'recordings'==tab}"><a ng-click="tab='recordings'">Recordings</a></li>
+          </ul>
+          <div ng-if="'server'==tab" class="form-body well allow-select" style="border-top-left-radius: 0px;">
             <div class="row">
               <label class="col-sm-6 control-label">Server VoIP Status</label>
               <div class="col-sm-6 form-text" ng-class="model.voip.enabled ? 'text-success' : 'text-danger'">
@@ -59,23 +70,78 @@
               </div>
             </div>
           </div>
+          <div ng-if="'recordings'==tab" class="form-body well allow-select" style="border-top-left-radius: 0px;">
+            <div class="row">
+              <div class="col-sm-12 form-text">
+                <select ng-model="model.activeRecording"
+                        ng-options="item as item.name for item in model.recordingList"
+                        ng-change="model.selectRecording()"
+                        ng-disabled="'monitoring' == model.voipOperation"
+                        class="form-control">
+                </select>
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <label class="col-sm-6 control-label">Play Sound File</label>
+              <div class="col-sm-6">
+                <select ng-model="model.activeRecordingFile"
+                        ng-options="item as item.name for item in model.activeRecording.fileList"
+                        ng-change="model.selectRecordingFile()"
+                        ng-disabled="'monitoring' == model.voipOperation ||
+                                     0 == model.activeRecording.fileList.length"
+                        class="form-control"></select>
+              </div>
+            </div>
+            <div class="row">
+              <label class="col-sm-6 control-label">Record Participant</label>
+              <div class="col-sm-6 form-text">{{ model.activeRecording.record }}</div>
+            </div>
+            <div class="row">
+              <label class="col-sm-6 control-label">Timer</label>
+              <div class="col-sm-6 form-text">
+                {{ model.activeRecording.timer ? model.activeRecording.timer : '(none)' }}
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col-sm-5">
+                <button type="button"
+                        class="btn btn-primary full-width"
+                        ng-click="model.startRecording()"
+                        ng-disabled="'monitoring' == model.voipOperation || null == model.activeRecording">
+                  <span ng-if="model.activeRecording.record">
+                    Record <i class="glyphicon glyphicon-record"></i>
+                  </span>
+                  <span ng-if="!model.activeRecording.record">
+                    Play <i class="glyphicon glyphicon-play"></i>
+                  </span>
+                </button>
+              </div>
+              <div class="col-sm-2">
+                <input type="text"
+                       class="form-control full-width"
+                       value="{{ model.activeRecording.timer }}"
+                       readonly />
+              </div>
+              <div class="col-sm-5">
+                <button type="button"
+                        class="btn btn-danger full-width"
+                        ng-click="model.stopRecording()"
+                        ng-disabled="'monitoring' != model.voipOperation">
+                  Stop <i class="glyphicon glyphicon-stop"></i>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="col-sm-6">
           <h4 class="text-center">Client</h4>
           <div class="form-body well text-center" tooltip="{{ javaHelp }}" tooltip-placement="bottom">
-            <iframe style="width:370px;" width="238" height="255" ng-src="{{ model.webphoneUrl }}">
+            <iframe width="258" height="275" ng-src="{{ model.webphoneUrl }}">
               Your browser does not support the Java-based webphone, please use another browser
               if you wish to use the webphone.
             </iframe>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="form-body well allow-select text-danger">
-            In order to stay connected to the webphone you must leave this browser tab window open.
-            Do not navigate away from this page or you will be disconnected from any active calls
-            and you will not be able to make new calls using the webphone.
           </div>
         </div>
       </div>
