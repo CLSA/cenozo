@@ -27,6 +27,12 @@
           </ul>
           <div ng-if="'server'==tab" class="form-body well allow-select" style="border-top-left-radius: 0px;">
             <div class="row">
+              <label class="col-sm-6 control-label">Last Update</label>
+              <div class="col-sm-6 form-text">
+                {{ model.lastUpdate | cnDatetime:'datetimesecond' }}
+              </div>
+            </div>
+            <div class="row">
               <label class="col-sm-6 control-label">Server VoIP Status</label>
               <div class="col-sm-6 form-text" ng-class="model.voip.enabled ? 'text-success' : 'text-danger'">
                 {{ model.voip.enabled ? 'Online' : 'Offline' }}

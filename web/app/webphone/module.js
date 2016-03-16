@@ -14,8 +14,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnWebphoneStatus', [
-    'CnWebphoneStatusFactory', 'CnSession', '$interval',
-    function( CnWebphoneStatusFactory, CnSession, $interval ) {
+    'CnWebphoneStatusFactory', 'CnSession',
+    function( CnWebphoneStatusFactory, CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'status.tpl.html' ),
         restrict: 'E',
@@ -30,9 +30,6 @@ define( function() {
             'From your computer launch the "Configure Java" program, click on the "Security" tab then add ' +
             '"' + window.location.origin + '" to the Exception Site List.  Then reload your web browser ' +
             'and allow the webphone to be run on your computer (it is not a security risk).';
-
-          var promise = $interval( $scope.model.updateInformation, 10000 );
-          $scope.$on( '$destroy', function() { $interval.cancel( promise ); } );
         }
       };
     }
@@ -40,11 +37,12 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnWebphoneStatusFactory', [
-    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$http', '$interval',
-    function( CnSession, CnHttpFactory, CnModalMessageFactory, $http, $interval ) {
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$http', '$interval', '$timeout',
+    function( CnSession, CnHttpFactory, CnModalMessageFactory, $http, $interval, $timeout ) {
       var object = function( root ) {
         var self = this;
         this.updating = false;
+        this.lastUpdate = null;
         this.voip = CnSession.voip;
         this.webphone = '(disabled)';
         this.webphoneUrl = CnSession.application.webphoneUrl;
@@ -68,12 +66,15 @@ define( function() {
                   self.webphone = response.data;
                 } );
               }
+              self.lastUpdate = moment().tz( CnSession.user.timezone );
               self.updating = false;
             } );
           }
         };
 
+        // update the information now and again in 10 seconds (to give the webphone applet time to load)
         this.updateInformation();
+        $timeout( self.updateInformation, 10000 );
 
         this.startRecording = function() {
           this.voipOperation = null == this.activeRecordingFile ? 'monitoring' : 'playing';
