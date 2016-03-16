@@ -114,7 +114,7 @@
                 <label class="col-sm-6 control-label">Playback Volume</label>
                 <div class="col-sm-6">
                   <select ng-model="model.playbackVolume"
-                          ng-options="volume for volume in ['-4','-3','-2','-1','0','+1','+2','+3','+4']"
+                          ng-options="volume for volume in ['+4','+3','+2','+1','0','-1','-2','-3','-4']"
                           ng-disabled="'monitoring' == model.voipOperation ||
                                        0 == model.activeRecording.fileList.length"
                           class="form-control"></select>
