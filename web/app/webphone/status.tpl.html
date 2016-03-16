@@ -14,7 +14,7 @@
       <h4><span class="text-danger">Please Note</span></h4>
       <blockquote class="text-danger">
         In order to stay connected to the webphone you must leave this browser tab window open.
-        Do not navigate away from this page or you will be disconnected from any active calls
+        Do not reload or navigate away from this page or you will be disconnected from any active calls
         and you will not be able to make new calls using the webphone.
       </blockquote>
     </div>
@@ -73,6 +73,13 @@
               <label class="col-sm-6 control-label">Active Call Information</label>
               <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.call }">
                 {{ model.voip.call ? model.voip.call : 'No Connection' }}
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col-sm-12 text-info">
+                If the server information appears to be out of date you can refresh it by clicking the
+                reload button on the right side of the Webphone Status header.
               </div>
             </div>
           </div>
