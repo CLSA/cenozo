@@ -52,7 +52,8 @@ class opal_manager extends \cenozo\factory
     // prepare cURL request
     $headers = array(
       sprintf( 'Authorization: X-Opal-Auth %s',
-               base64_encode( sprintf( '%s:%s', $this->username, $this->password ) ) ) );
+               base64_encode( sprintf( '%s:%s', $this->username, $this->password ) ) ),
+      'Accept: application/json' );
 
     $url = sprintf(
       'https://%s:%d/ws/datasource/%s/table/%s/valueSet/%s/variable/%s/value',
@@ -104,13 +105,16 @@ class opal_manager extends \cenozo\factory
    */
   public function get_values( $datasource, $table, $db_participant )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     if( is_null( $db_participant ) )
       throw lib::create( 'exception\argument', 'db_participant', $db_participant, __METHOD__ );
 
     // prepare cURL request
     $headers = array(
       sprintf( 'Authorization: X-Opal-Auth %s',
-               base64_encode( sprintf( '%s:%s', $this->username, $this->password ) ) ) );
+               base64_encode( sprintf( '%s:%s', $this->username, $this->password ) ) ),
+      'Accept: application/json' );
 
     $url = sprintf(
       'https://%s:%d/ws/datasource/%s/table/%s/valueSet/%s',
@@ -128,7 +132,7 @@ class opal_manager extends \cenozo\factory
     curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, false );
     curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 
-    $data = curl_exec( $curl );
+    $result = curl_exec( $curl );
     $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
 
     if( 404 == $code )
@@ -168,7 +172,7 @@ class opal_manager extends \cenozo\factory
     {
       $values[$variable] = is_object( $object->valueSets[0]->values[$index] ) &&
                            property_exists( $object->valueSets[0]->values[$index], 'value' )
-                         ? $object->valuesSets[0]->values[$index]->value
+                         ? $object->valueSets[0]->values[$index]->value
                          : NULL;
     }
 

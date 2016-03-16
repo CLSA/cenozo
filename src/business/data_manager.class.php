@@ -140,7 +140,13 @@ class data_manager extends \cenozo\singleton
         'informant' == $subject ||
         'proxy' == $subject )
     {
-      // TODO: implement
+      if( 'count()' == $parts[1] )
+      {
+        // participant.<alternate|informant|proxy>.count() or <alternate|informant|proxy>.count()
+        $alternate_mod = lib::create( 'database\modifier' );
+        $alternate_mod->where( $subject, '=', true );
+        $value = $db_participant->get_alternate_count( $alternate_mod );
+      }
     }
     else if( 'address' == $subject ||
         'primary_address' == $subject ||
@@ -236,15 +242,23 @@ class data_manager extends \cenozo\singleton
              'last_consent' == $subject ||
              'last_written_consent' == $subject )
     {
-      if( 'count()' == $parts[1] )
+      $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
+      if( 2 >= count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+      $db_consent_type = $consent_type_class_name::get_unique_record( 'name', $parts[1] );
+      if( is_null( $db_consent_type ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+      $consent_mod = lib::create( 'database\modifier' );
+      $consent_mod->where( 'consent_type_id', '=', $db_consent_type->id );
+
+      if( 'count()' == $parts[2] )
       {
         if( 'consent' == $subject )
-        { // participant.consent.count() or consent.count()
+        { // participant.consent.<type>.count() or consent.<type>.count()
           $value = $db_participant->get_consent_count();
         }
         else if( 'written_consent' == $subject )
-        { // participant.written_consent.count() or written_consent.count()
-          $consent_mod = lib::create( 'database\modifier' );
+        { // participant.written_consent.<type>count() or written_consent.count()
           $consent_mod->where( 'written', '=', true );
           $value = $db_participant->get_consent_count( $consent_mod );
         }
@@ -255,40 +269,36 @@ class data_manager extends \cenozo\singleton
         $db_consent = NULL;
         if( 'consent' == $subject )
         {
-          // participant.consent.<n>.<column> or consent.<n>.<column>
-          if( 3 != count( $parts ) )
-            throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+          // participant.consent.<type>.<n>.<column> or consent.<type>.<n>.<column>
+          if( 4 != count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
           // get the rank and make sure it's a number
-          $rank = $parts[1];
+          $rank = $parts[2];
           if( !$util_class_name::string_matches_int( $rank ) )
             throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-          $column = $parts[2];
+          $column = $parts[3];
 
-          $modifier = lib::create( 'database\modifier' );
-          $modifier->order( 'date' );
-          $modifier->limit( 1 );
-          $modifier->offset( $rank - 1 );
-          $consent_list = $db_participant->get_consent_object_list( $modifier );
+          $consent_mod->order( 'date' );
+          $consent_mod->limit( 1 );
+          $consent_mod->offset( $rank - 1 );
+          $consent_list = $db_participant->get_consent_object_list( $consent_mod );
           if( 1 == count( $consent_list ) ) $db_consent = current( $consent_list );
         }
         else if( 'last_consent' == $subject )
         {
-          // participant.last_consent.<column> or last_consent.<column>
-          if( 2 != count( $parts ) )
-            throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+          // participant.last_consent.<type>.<column> or last_consent.<type>.<column>
+          if( 3 != count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
-          $column = $parts[1];
-          $db_consent = $db_participant->get_last_consent();
+          $column = $parts[2];
+          $db_consent = $db_participant->get_last_consent( $db_consent_type );
         }
         else if( 'last_written_consent' == $subject )
         {
-          // participant.last_written_consent.<column> or last_written_consent.<column>
-          if( 2 != count( $parts ) )
-            throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+          // participant.last_written_consent.<type>.<column> or last_written_consent.<type>.<column>
+          if( 3 != count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
-          $column = $parts[1];
-          $db_consent = $db_participant->get_last_written_consent();
+          $column = $parts[2];
+          $db_consent = $db_participant->get_last_written_consent( $db_consent_type );
         }
         else throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
@@ -361,6 +371,38 @@ class data_manager extends \cenozo\singleton
         $value = !( is_null( $db_hin ) || is_null( $db_hin->code ) ) ? 1 : 0;
       }
       else throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+    }
+    else if( 'limesurvey' == $subject )
+    {
+      $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+      $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+
+      // participant.limesurvey.<sid>.<question_title>
+      $parts = static::parse_key( $key, true );
+
+      if( 3 != count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+      $sid = $parts[1];
+      $q_title = $parts[2];
+
+      // get this participant's survey for the given sid
+      $old_survey_sid = $survey_class_name::get_sid();
+      $survey_class_name::set_sid( $sid );
+      $old_tokens_sid = $tokens_class_name::get_sid();
+      $tokens_class_name::set_sid( $sid );
+
+      $survey_mod = lib::create( 'database\modifier' );
+      $tokens_class_name::where_token( $survey_mod, $db_participant, false );
+      $survey_mod->order_desc( 'datestamp' );
+      $survey_list = $survey_class_name::select_objects( $survey_mod );
+      if( 0 < count( $survey_list ) )
+      {
+        $db_survey = current( $survey_list );
+        $value = $db_survey->get_response( $q_title );
+      }
+
+      $survey_class_name::set_sid( $old_survey_sid );
+      $tokens_class_name::set_sid( $old_tokens_sid );
     }
     else if( 'opal' == $subject )
     {
