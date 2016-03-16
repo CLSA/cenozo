@@ -40,8 +40,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnWebphoneStatusFactory', [
-    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$http',
-    function( CnSession, CnHttpFactory, CnModalMessageFactory, $http ) {
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$http', '$interval',
+    function( CnSession, CnHttpFactory, CnModalMessageFactory, $http, $interval ) {
       var object = function( root ) {
         var self = this;
         this.updating = false;
@@ -52,7 +52,10 @@ define( function() {
         this.activeRecording = null;
         this.activeRecordingFile = null;
         this.lastLanguageId = null;
+        this.playbackVolume = '0';
         this.voipOperation = null;
+        this.timerValue = null;
+        this.timerPromise = null;
 
         this.updateInformation = function() {
           if( !self.updating ) {
@@ -76,7 +79,8 @@ define( function() {
           this.voipOperation = null == this.activeRecordingFile ? 'monitoring' : 'playing';
           var data = {
             operation: null == this.activeRecordingFile ? 'start_monitoring' : 'play_sound',
-            recording_id: this.activeRecording.id
+            recording_id: this.activeRecording.id,
+            volume: parseInt( this.playbackVolume )
           };
           if( this.activeRecording.record ) {
             data.recording_id = this.activeRecording.id;
@@ -99,7 +103,33 @@ define( function() {
                 } ).show();
               } else CnModalMessageFactory.httpError( response );
             }
-          } ).patch();
+          } ).patch().then( function() {
+            // start the timer
+            if( null != self.timerValue && null == self.timerPromise ) {
+              self.timerPromise = $interval( function() {
+                self.timerValue--;
+
+                if( null == self.activeRecording.timer ) {
+                  self.timerValue = null;
+                  self.stopRecording();
+                } else if( 0 >= self.timerValue ) {
+                  self.timerValue = 0;
+                  CnHttpFactory.instance( {
+                    path: 'voip/0',
+                    data: {
+                      operation: 'play_sound',
+                      filename: 'beep',
+                      volume: parseInt( this.playbackVolume )
+                    },
+                    onError: function() {} // ignore all errors
+                  } ).patch().then( function() {
+                    self.stopRecording();
+                  } );
+                }
+
+              }, 1000 );
+            }
+          } );
         };
 
         this.selectRecording = function() {
@@ -109,10 +139,16 @@ define( function() {
             // try and find the matching language
             var newRecording = this.activeRecording.fileList.findByProperty(
               'language_id', this.lastLanguageId );
-            console.log( this.activeRecording.fileList );
             if( null == newRecording ) newRecording = this.activeRecording.fileList[0];
 
             this.activeRecordingFile = newRecording;
+          }
+
+          // stop the timer
+          this.timerValue = this.activeRecording.timer;
+          if( null != this.timerPromise ) {
+            $interval.cancel( this.timerPromise );
+            this.timerPromise = null;
           }
         };
 
@@ -126,13 +162,18 @@ define( function() {
             path: 'voip/0',
             data: { operation: 'stop_monitoring' },
             onError: function( response ) {
+              // ignore all errors
               self.voipOperation = null;
-              // ignore 404's, it just means there is no active call
-              if( 404 != response.status ) CnModalMessageFactory.httpError( response );
             }
           } ).patch().then( function() {
             self.voipOperation = null;
           } );
+
+          // stop the timer
+          if( null != this.timerPromise ) {
+            $interval.cancel( this.timerPromise );
+            this.timerPromise = null;
+          }
         };
 
         // get the recording and recording-file lists

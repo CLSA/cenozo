@@ -98,7 +98,10 @@ class patch extends \cenozo\service\service
         {
           $filename = $data['filename'];
         }
-        $voip_call->play_sound( $filename );
+
+        // volume isn't required
+        $volume = array_key_exists( 'volume', $data ) ? intval( $data['volume'] ) : 0;
+        $voip_call->play_sound( $filename, $volume );
       }
       else if( 'start_monitoring' == $data['operation'] )
       {
