@@ -243,10 +243,8 @@ class ldap_manager extends \cenozo\singleton
       }
 
       // ignore errors caused by invalid credentials
-      if( 0 != $result['exitcode'] && false === strpos( $result['output'], 'LDAP_INVALID_CREDENTIALS' ) )
-        throw lib::create( 'exception\ldap', $result['output'], $result['exitcode'] );
-
-      $valid = 0 == $result['exitcode'];
+      $valid = sprintf( 'GPOs for user %s', $username ) ==
+               substr( $result['output'], 0, strpos( $result['output'], "\n" ) );
     }
     else
     {
