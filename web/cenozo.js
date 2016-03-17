@@ -218,7 +218,7 @@ angular.extend( cenozoApp, {
           addInputGroup: function( title, inputList ) {
             for( var key in inputList ) this.addInput( title, key, inputList[key] );
           },
-          getInput( key ) {
+          getInput: function( key ) {
             for( var group in this.inputGroupList )
               if( angular.isDefined( this.inputGroupList[group][key] ) )
                 return this.inputGroupList[group][key];
