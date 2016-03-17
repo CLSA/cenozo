@@ -492,15 +492,15 @@ angular.extend( cenozo, {
   },
 
   // Used to set up the routing for a module
-  updateFormElement: function( item, clean ) {
+  updateFormElement: function( element, clean ) {
     if( angular.isUndefined( clean ) ) clean = false;
     var invalid = false;
-    for( var error in item.$error ) {
-      invalid = true === item.$error[error];
+    for( var error in element.$error ) {
+      invalid = true === element.$error[error];
       if( invalid ) break;
     }
-    if( clean ) item.$dirty = invalid;
-    item.$invalid = invalid;
+    if( clean ) element.$dirty = invalid;
+    element.$invalid = invalid;
   },
 
   // searches a scope's child scopes for a particular directive
@@ -510,6 +510,36 @@ angular.extend( cenozo, {
       childScope = childScope.$$nextSibling;
     if( directiveName != childScope.directive ) childScope = null;
     return childScope;
+  },
+
+  // executes a function on all child scopes for a given scope
+  // the function will be passed the child scope as an argument
+  forAllChildDirectiveScopes: function( scope, fn ) {
+    var childScope = scope.$$childHead;
+    while( null !== childScope ) {
+      fn( childScope );
+      childScope = childScope.$$nextSibling;
+    }
+  },
+
+  // gets the scope of any element found using a query selector
+  getScopeByQuerySelector: function( selector ) {
+    return angular.element( angular.element( document.querySelector( selector ) ) ).scope();
+  },
+
+  // gets an array of scopes of any elements found using a query selector
+  forEachFormElement: function( formName, fn ) {
+    var elementList = document.querySelectorAll( "[name=" + formName + "] [name=name]" );
+    // note, we can't use array functions in the results of querySelectorAll()
+    for( var i = 0; i < elementList.length; i++ ) {
+      fn( cenozo.getFormElement( elementList[i].id ) );
+    }
+  },
+
+  // gets a dynamic form's element (it assumes that each input is embedded into an innerForm)
+  getFormElement: function( property ) {
+    var scope = cenozo.getScopeByQuerySelector( '#' + property );
+    return scope ? scope.$parent.innerForm.name : null;
   }
 } );
 
@@ -879,25 +909,17 @@ cenozo.directive( 'cnRecordAdd', [
 
         $scope.check = function( property ) {
           // test the format
-          var item = angular.element(
-            angular.element( document.querySelector( '#' + property ) ) ).
-              scope().$parent.innerForm.name;
-          if( item ) {
-            item.$error.format = !$scope.model.testFormat( property, $scope.record[property] );
-            cenozo.updateFormElement( item, true );
+          var element = cenozo.getFormElement( property );
+          if( element ) {
+            element.$error.format = !$scope.model.testFormat( property, $scope.record[property] );
+            cenozo.updateFormElement( element, true );
           }
         };
 
         $scope.submit = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
-            var scope = angular.element(
-              angular.element( document.querySelector( 'form' ) ) ).scope().$$childHead;
-            while( null !== scope ) {
-              var item = scope.$$childHead.$$nextSibling.$parent.innerForm.name;
-              item.$dirty = true;
-              scope = scope.$$nextSibling;
-            }
+            cenozo.forEachFormElement( 'form', function( element ) { element.$dirty = true; } );
           } else {
             $scope.isAdding = true;
             $scope.model.addModel.onAdd( $scope.record ).then( function( response ) {
@@ -1262,11 +1284,11 @@ cenozo.directive( 'cnRecordView', [
           if( $scope.model.editEnabled ) {
             // test the format
             if( !$scope.model.testFormat( property, $scope.model.viewModel.record[property] ) ) {
-              var item = angular.element(
-                angular.element( document.querySelector( '#' + property ) ) ).
-                  scope().$parent.innerForm.name;
-              item.$error.format = true;
-              cenozo.updateFormElement( item, true );
+              var element = cenozo.getFormElement( property );
+              if( element ) {
+                element.$error.format = true;
+                cenozo.updateFormElement( element, true );
+              }
             } else {
               // validation passed, proceed with patch
               var data = {};
@@ -1276,25 +1298,13 @@ cenozo.directive( 'cnRecordView', [
                 if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
                   $scope.model.reloadState( $scope.model.viewModel.record );
                 } else {
-                  var scope = angular.element(
-                    angular.element( document.querySelector( '#' + property ) ) ).scope();
-                  // if a conflict or format has been resolved then clear it throughout the form
-                  if( scope ) {
-                    var currentItem = scope.$parent.innerForm.name;
-                    if( currentItem.$error.conflict ) {
-                      var sibling = scope.$parent.$parent.$$childHead;
-                      while( null !== sibling ) {
-                        var siblingItem = sibling.$$childHead.$$nextSibling.$parent.innerForm.name;
-                        if( siblingItem.$error.conflict ) {
-                          siblingItem.$error.conflict = false;
-                          cenozo.updateFormElement( siblingItem, true );
-                        }
-                        sibling = sibling.$$nextSibling;
-                      }
-                    }
-                    if( currentItem.$error.format ) {
-                      currentItem.$error.format = false;
-                      cenozo.updateFormElement( currentItem, true );
+                  var currentElement = cenozo.getFormElement( property );
+                  if( currentElement ) {
+                    if( currentElement.$error.conflict ) {
+                      cenozo.forEachFormElement( 'form', function( element ) {
+                        element.$error.conflict = false;
+                        cenozo.updateFormElement( element, true );
+                      } );
                     }
                   }
 
@@ -2070,10 +2080,8 @@ cenozo.factory( 'CnBaseAddFactory', [
           if( 409 == response.status ) {
             // report which inputs are included in the conflict
             response.data.forEach( function( item ) {
-              var elementScope = angular.element( angular.element(
-                document.querySelector( '#' + item ) ) ).scope();
-              if( angular.isDefined( elementScope ) ) {
-                var element = elementScope.$parent.innerForm.name;
+              var element = cenozo.getFormElement( item );
+              if( element ) {
                 element.$error.conflict = true;
                 cenozo.updateFormElement( element, true );
               }
@@ -2825,11 +2833,11 @@ cenozo.factory( 'CnBaseViewFactory', [
           if( 409 == response.status ) {
             // report which inputs are included in the conflict
             response.data.forEach( function( item ) {
-              var element = angular.element(
-                angular.element( document.querySelector( '#' + item ) )
-              ).scope().$parent.innerForm.name;
-              element.$error.conflict = true;
-              cenozo.updateFormElement( element, true );
+              var element = cenozo.getFormElement( item );
+              if( element ) {
+                element.$error.conflict = true;
+                cenozo.updateFormElement( element, true );
+              }
             } );
           } else {
             // make sure to put the data back
