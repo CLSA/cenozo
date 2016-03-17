@@ -109,8 +109,7 @@
                       ng-disabled="0 <= isDeleting.indexOf( record.id )"
                       tooltip="Delete {{ model.module.name.singular }}"
                       tooltip-placement="left"
-                      cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }}
-                                         item in the {{ model.module.name.singular }} list?"
+                      cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }} item in the {{ model.module.name.singular }} list?"
                       cn-really-click="deleteRecord( record )"
                       ng-click="$event.stopPropagation()">
                 <i class="glyphicon glyphicon-remove"></i>
