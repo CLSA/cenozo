@@ -157,44 +157,18 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * Saves the record to the database.
-   * 
-   * If this is a new record then a new row will be inserted, if not then the row with the
-   * corresponding id will be updated.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
-   * @access public
+   * TODO: document
    */
-  public function save()
+  private function get_set_list( $new )
   {
-    // warn if we are in read-only mode
-    if( $this->read_only )
-    {
-      log::warning( 'Tried to save read-only record.' );
-      return;
-    }
-
     $util_class_name = lib::get_class_name( 'util' );
-
-    // do not save anything if there are no active values
-    if( 0 == count( $this->active_column_values ) ) return;
-
     $table_name = static::get_table_name();
-    $primary_key_value = $this->passive_column_values[static::$primary_key_name];
 
     // building the SET list since it is identical for inserts and updates
-    $sets = '';
-    $first = true;
+    $set_list = [];
 
-    if( $this->write_timestamps )
-    {
-      // add the create_timestamp column if this is a new record
-      if( is_null( $primary_key_value ) )
-      {
-        $sets .= 'create_timestamp = NULL';
-        $first = false;
-      }
-    }
+    // add the create_timestamp column if this is a new record
+    if( $this->write_timestamps && $new ) $set_list['create_timestamp'] = static::db()->format_string( NULL );
 
     // now add the rest of the columns
     foreach( $this->active_column_values as $column => $value )
@@ -216,19 +190,49 @@ abstract class record extends \cenozo\base_object
         else if( 'time' == $type ) $value = static::db()->format_time( $value );
         else $value = static::db()->format_string( $value );
 
-        $sets .= sprintf( '%s %s = %s', $first ? '' : ',', $column, $value );
-
-        $first = false;
+        $set_list[$column] = $value;
       }
     }
+
+    return $set_list;
+  }
+
+  /**
+   * Saves the record to the database.
+   * 
+   * If this is a new record then a new row will be inserted, if not then the row with the
+   * corresponding id will be updated.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\runtime
+   * @access public
+   */
+  public function save()
+  {
+    // warn if we are in read-only mode
+    if( $this->read_only )
+    {
+      log::warning( 'Tried to save read-only record.' );
+      return;
+    }
+
+    // do not save anything if there are no active values
+    if( 0 == count( $this->active_column_values ) ) return;
+
+    $table_name = static::get_table_name();
+    $primary_key_value = $this->passive_column_values[static::$primary_key_name];
+
+    // build the "sets" sql
+    $set_list = $this->get_set_list( is_null( $primary_key_value ) );
+    array_walk( $set_list, function( &$value, $column ) { $value = sprintf( '  %s = %s', $column, $value ); } );
+    $sets = implode( ",\n", $set_list );
 
     if( 0 < strlen( $sets ) )
     {
       // either insert or update the row based on whether the primary key is set
       $sql = sprintf(
         is_null( $primary_key_value ) ?
-        'INSERT INTO %s SET %s' :
-        'UPDATE %s SET %s WHERE %s = %d',
+        'INSERT INTO %s SET'."\n".'%s' :
+        'UPDATE %s SET'."\n".'%s'."\n".'WHERE %s = %d',
         $table_name,
         $sets,
         static::$primary_key_name,
@@ -245,6 +249,36 @@ abstract class record extends \cenozo\base_object
         $this->passive_column_values[$column] = $value;
       $this->active_column_values = array();
     }
+  }
+
+  /**
+   * TODO: document
+   */
+  public function save_list( $select, $modifier )
+  {
+    $table_name = static::get_table_name();
+
+    // add the select's aliases to the list of columns to insert
+    $columns = $select->get_alias_list();
+
+    // now add the record's columns to the list of columns to insert, removing any from the previous step
+    $set_list = $this->get_set_list( true );
+    foreach( array_intersect( array_keys( $set_list ), $columns ) as $column ) unset( $set_list[$column] );
+    $columns = array_merge( $columns, array_keys( $set_list ) );
+
+    // add the table prefix to each column
+    foreach( $columns as $index => $column ) $columns[$index] = sprintf( '%s.%s', $table_name, $column );
+
+    // and add the values from the set list to the select object as constants
+    foreach( $set_list as $column => $value ) $select->add_constant( $value, $column, NULL, false );
+
+    $sql = sprintf( 'INSERT INTO %s ('."\n".'  %s'."\n".')'."\n".'%s %s',
+                    $table_name,
+                    implode( ",\n  ", $columns ),
+                    $select->get_sql(),
+                    $modifier->get_sql() );
+
+    static::db()->execute( $sql );
   }
 
   /**
