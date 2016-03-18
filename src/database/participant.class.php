@@ -265,55 +265,6 @@ class participant extends record
   }
 
   /**
-   NOTE: DISABLED UNTIL NEEDED.  sHOULD BE RE-WRITTEN.
-   * Sets the preferred site of multiple participants for a particular application.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier
-   * @param database\application $db_application
-   * @param database\site|int $site
-   * @access public
-   *
-  public static function multi_set_preferred_site( $modifier, $db_application, $site = NULL )
-  {
-    // get the requested site's id
-    $site_id = is_a( $site, lib::get_class_name( 'database\site' ) ) ? $site->id : $site;
-
-    // make sure all participants' cohorts belongs to the application
-    $total = static::db()->get_one( sprintf(
-      'SELECT COUNT(*) '.
-      'FROM participant %s',
-      $modifier->get_where() ) );
-    $with_cohort = static::db()->get_one( sprintf(
-      'SELECT COUNT(*) '.
-      'FROM participant '.
-      'JOIN application_has_cohort ON application_has_cohort.cohort_id = participant.cohort_id %s '.
-      'AND application_has_cohort.application_id = %s',
-      $modifier->get_where(),
-      static::db()->format_string( $db_application->id ) ) );
-    if( $total != $with_cohort )
-      throw lib::create( 'exception\runtime', sprintf(
-        'Tried to set preferred %s site for %d participants, '.
-        'but only %d have access to the %s cohort',
-        $db_application->name,
-        $total,
-        $with_cohort,
-        $this->get_cohort()->name ),
-        __METHOD__ );
-
-    // we want to add the row (if none exists) or just update the preferred_site_id column
-    // if a row already exists
-    static::db()->execute( sprintf(
-      'INSERT INTO application_has_participant( '.
-        'create_timestamp, application_id, participant_id, preferred_site_id ) '.
-      'SELECT NULL, %s, id, %s '.
-      'FROM participant %s '.
-      'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
-      static::db()->format_string( $db_application->id ),
-      static::db()->format_string( $site_id ),
-      $modifier->get_sql() ) );
-  } */
-
-  /**
    * Get the default site that the participant belongs to for a given application.
    * This depends on the type of grouping that the participant's cohort uses for each application
    * (region or jurisdition)
@@ -458,22 +409,56 @@ class participant extends record
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw lib::create( 'exception\argument', 'columns', $columns, __METHOD__ );
 
+    $success = true;
+    $preferred_site_id = false;
     $sql = 'UPDATE participant ';
     $first = true;
     foreach( $columns as $column => $value )
     {
-      if( !static::column_exists( $column ) )
-        throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
+      // the preferred_site_id needs to be handled differently than others
+      if( 'preferred_site_id' == $column )
+      {
+        $preferred_site_id = $value;
+      }
+      else
+      {
+        if( !static::column_exists( $column ) )
+          throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
 
-      $sql .= sprintf( '%s %s = %s',
-                       $first ? 'SET' : ',',
-                       $column,
-                       static::db()->format_string( $value ) );
-      $first = false;
+        $sql .= sprintf( '%s %s = %s',
+                         $first ? 'SET' : ',',
+                         $column,
+                         static::db()->format_string( $value ) );
+        $first = false;
+      }
     }
 
-    $sql .= ' '.$modifier->get_sql();
-    return static::db()->execute( $sql );
+    // set the preferred site, if necessary
+    if( false !== $preferred_site_id )
+    {
+      $db_application = lib::create( 'business\session' )->get_application();
+      $preferred_site_mod = lib::create( 'database\modifier' );
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );
+      $join_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+      $preferred_site_mod->join_modifier( 'application_has_participant', $join_mod );
+
+      $sql = sprintf( 'UPDATE participant %s'."\n".
+                      'SET preferred_site_id = %s %s',
+                      $preferred_site_mod->get_sql(),
+                      static::db()->format_string( $preferred_site_id ),
+                      $modifier->get_sql() );
+
+      $success = static::db()->execute( $sql );
+    }
+
+    if( $success && !$first )
+    {
+      $sql .= ' '.$modifier->get_sql();
+      $success = static::db()->execute( $sql );
+    }
+
+    return $success;
   }
 
   /**

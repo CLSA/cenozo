@@ -13,8 +13,8 @@
       </p>
       <p class="text-info">
         Once you have confirmed the list of participant identifiers you may apply changes to all participants
-        in the list by using one of the dialogues below which will appear below the participant selection
-        dialog.
+        in the dialog box below.  Each tab allows you to make differenty types of changes to all selected
+        participant.
       </p>
       <hr />
       <div class="panel panel-default">
@@ -46,118 +46,303 @@
                   ng-click="model.confirm()">Confirm List</button>
         </div> 
       </div>
-      <div class="panel panel-default" ng-if="model.confirmedCount">
-        <div class="panel-heading">
-          <span class="allow-select">
-            <strong>Change details</strong>
-          </span>
-        </div>
-        <div class="panel-body">
-          <div class="form-group">
-            <form name="detailForm" novalidate>
-              <div class="col-sm-12 vertical-spacer text-info"
-                   ng-if="!model.hasActiveInputs">
-                Select which detail to edit from the list below.
+      <div ng-if="model.confirmedCount">
+        <ul class="nav nav-tabs">
+          <li ng-class="{'active':'participant'==tab}"><a ng-click="tab='participant'">Participant</a></li>
+          <li ng-class="{'active':'site'==tab}"><a ng-click="tab='consent'">Consent</a></li>
+          <li ng-class="{'active':'event'==tab}"><a ng-click="tab='event'">Event</a></li>
+          <li ng-class="{'active':'note'==tab}"><a ng-click="tab='note'">Note</a></li>
+        </ul>
+        <div ng-if="'participant'==tab" class="panel panel-default" style="border-top-left-radius: 0px;">
+          <div class="panel-body">
+            <form name="detailForm" class="form-horizontal" novalidate>
+              <div class="col-sm-12 vertical-spacer text-info">
+                Select which details to edit for all selected participants:
+                <hr ng-if="model.hasActiveInputs"/>
               </div>
               <ng-form ng-if="input.active"
-                       ng-repeat="input in model.inputList"
+                       ng-repeat="input in model.participantInputList"
                        name="innerForm">
-                <label for="{{ input.column }}" class="col-sm-3 control-label">{{ input.title }}</label>
-                <div class="col-sm-8">
-                  <div class="input-group"
-                       ng-switch="input.type"
-                       ng-class="{ 'has-feedback has-error': innerForm.name.$dirty &&
-                                                             innerForm.name.$invalid }">
-                    <input
-                      ng-switch-when="string"
-                      ng-attr-id="{{ input.column }}"
-                      name="name"
-                      class="form-control"
-                      ng-model="input.value"
-                      autocomplete="off"
-                      maxlength="{{ input.max_length }}"
-                      ng-required="input.required"></input>
-                    <select ng-switch-when="boolean"
-                       ng-attr-id="{{ input.column }}"
-                       name="name"
-                       class="form-control"
-                       ng-model="input.value">
-                      <option value="1">Yes</option>
-                      <option value="0">No</option>
-                    </select>
-                    <select
-                      ng-switch-when="enum"
-                      ng-attr-id="{{ input.column }}"
-                      name="name"
-                      ng-options="item.value as item.name for item in input.enumList"
-                      ng-model="input.value"
-                      class="form-control"></select>
-                    <input ng-switch-when="date"
-                      ng-attr-id="{{ input.column }}"
-                      name="name"
-                      ng-model="input.formattedValue"
-                      class="form-control"
-                      type="text"
-                      ng-click="model.selectDatetime( input )"
-                      onkeydown="return false"></input>
-                    <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
-                      <span class="help-block" ng-if="innerForm.name.$error.required">
-                        Cannot be blank
+                <div class="form-group">
+                  <label for="{{ input.column }}" class="col-sm-3 control-label">{{ input.title }}</label>
+                  <div class="col-sm-8">
+                    <div class="input-group"
+                         ng-switch="input.type"
+                         ng-class="{ 'has-feedback has-error': innerForm.name.$dirty &&
+                                                               innerForm.name.$invalid }">
+                      <input ng-switch-when="string"
+                             ng-attr-id="{{ input.column }}"
+                             name="name"
+                             class="form-control"
+                             ng-model="input.value"
+                             autocomplete="off"
+                             maxlength="{{ input.max_length }}"
+                             ng-required="input.required"></input>
+                      <select ng-switch-when="boolean"
+                              ng-attr-id="{{ input.column }}"
+                              name="name"
+                              class="form-control"
+                              ng-model="input.value"
+                              ng-required="input.required">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                      </select>
+                      <select ng-switch-when="enum"
+                              ng-attr-id="{{ input.column }}"
+                              name="name"
+                              ng-options="item.value as item.name for item in input.enumList"
+                              ng-model="input.value"
+                              class="form-control"
+                              ng-required="input.required"></select>
+                      <input ng-switch-when="date"
+                             ng-attr-id="{{ input.column }}"
+                             name="name"
+                             ng-model="input.value"
+                             type="hidden"
+                             ng-required="input.required"></input>
+                      <input ng-switch-when="date"
+                             ng-model="input.formattedValue"
+                             class="form-control"
+                             type="text"
+                             ng-click="model.selectDatetime( input )"
+                             onkeydown="return false"></input>
+                      <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+                        <span class="help-block" ng-if="innerForm.name.$error.required">
+                          Cannot be blank
+                        </span>
+                        <span class="help-block" ng-if="innerForm.name.$error.format">
+                          Invalid format
+                        </span>
                       </span>
-                      <span class="help-block" ng-if="innerForm.name.$error.format">
-                        Invalid format
-                      </span>
-                    </span>
+                    </div>
+                  </div>
+                  <div class="col-sm-1 col-slim" style="line-height:30px;">
+                    <button type="button"
+                            class="btn btn-xs btn-danger"
+                            ng-click="model.deactivateInput( input.column )"
+                            tooltip="Remove column">
+                      <i class="glyphicon glyphicon-remove"></i>
+                    </button>
                   </div>
                 </div>
-                <div class="col-sm-1 col-slim" style="line-height:30px;">
-                  <button type="button"
-                          class="btn btn-xs btn-danger"
-                          ng-click="model.deactivateInput( input.column )"
-                          tooltip="Remove column">
-                    <i class="glyphicon glyphicon-remove"></i>
-                  </button>
+              </ng-form>
+            </form>
+            <div class="form-group">
+              <div class="col-sm-12"><hr /></div>
+              <div class="col-sm-12">
+                <select ng-model="model.activeInput"
+                        ng-disabled="null == model.participantInputList"
+                        ng-change="model.activateInput( model.activeInput )"
+                        ng-options="item.column as item.title for item in
+                          model.participantInputList|cnByObjectProperty:'active':false"
+                        class="form-control"></select>
+              </div>
+            </div>
+          </div>
+          <div class="form-footer text-right rounded-bottom bg-info">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-disabled="!model.confirmedCount || !model.hasActiveInputs"
+                    ng-click="model.applyMultiedit( 'participant' )">Change Details</button>
+          </div> 
+        </div>
+        <div ng-if="'consent'==tab" class="panel panel-default">
+          <div class="panel-body">
+            <form name="consentForm" class="form-horizontal" novalidate>
+              <div class="col-sm-12 vertical-spacer text-info">
+                Select the consent details to be added to all participants:
+                <hr />
+              </div>
+              <ng-form ng-repeat="input in model.consentInputList" name="innerForm">
+                <div class="form-group">
+                  <label for="{{ input.column }}" class="col-sm-3 control-label">{{ input.title }}</label>
+                  <div class="col-sm-9">
+                    <div class="input-group"
+                         ng-switch="input.type"
+                         ng-class="{ 'has-feedback has-error': innerForm.name.$dirty &&
+                                                               innerForm.name.$invalid }">
+                      <input ng-switch-when="string"
+                             ng-attr-id="{{ input.column }}"
+                             name="name"
+                             class="form-control"
+                             ng-model="input.value"
+                             autocomplete="off"
+                             maxlength="{{ input.max_length }}"
+                             ng-required="input.required"></input>
+                      <select ng-switch-when="boolean"
+                              ng-attr-id="{{ input.column }}"
+                              name="name"
+                              class="form-control"
+                              ng-model="input.value"
+                              ng-required="input.required">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                      </select>
+                      <select ng-switch-when="enum"
+                              ng-attr-id="{{ input.column }}"
+                              name="name"
+                              ng-options="item.value as item.name for item in input.enumList"
+                              ng-model="input.value"
+                              class="form-control"
+                              ng-required="input.required"></select>
+                      <input ng-switch-when="date"
+                             ng-attr-id="{{ input.column }}"
+                             name="name"
+                             ng-model="input.value"
+                             type="hidden"
+                             ng-required="input.required"></input>
+                      <input ng-switch-when="date"
+                             ng-model="input.formattedValue"
+                             class="form-control"
+                             type="text"
+                             ng-click="model.selectDatetime( input )"
+                             onkeydown="return false"></input>
+                      <textarea ng-switch-when="text"
+                                ng-attr-id="{{ input.column }}"
+                                name="name"
+                                ng-model="input.value"
+                                class="form-control"
+                                cn-elastic
+                                ng-required="input.required"></textarea>
+                      <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+                        <span class="help-block" ng-if="innerForm.name.$error.required">
+                          Cannot be blank
+                        </span>
+                        <span class="help-block" ng-if="innerForm.name.$error.format">
+                          Invalid format
+                        </span>
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </ng-form>
             </form>
           </div>
-          <div class="form-group">
-            <div class="col-sm-12"><hr /></div>
-            <div class="col-sm-12">
-              <select ng-model="model.activeInput"
-                      ng-disabled="!model.inputListIsBuilt"
-                      ng-change="model.activateInput( model.activeInput )"
-                      ng-options="item.column as item.title for item in
-                        model.inputList|cnByObjectProperty:'active':false"
-                      class="form-control"></select>
-            </div>
+          <div class="form-footer text-right rounded-bottom bg-info">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-disabled="!model.confirmedCount"
+                    ng-click="model.applyMultiedit( 'consent' )">Add Consents</button>
+          </div> 
+        </div>
+        <div ng-if="'event'==tab" class="panel panel-default">
+          <div class="panel-body">
+            <form name="eventForm" class="form-horizontal" novalidate>
+              <div class="col-sm-12 vertical-spacer text-info">
+                Select the event details to be added to all participants:
+                <hr />
+              </div>
+              <ng-form ng-repeat="input in model.eventInputList" name="innerForm">
+                <div class="form-group">
+                  <label for="{{ input.column }}" class="col-sm-3 control-label">{{ input.title }}</label>
+                  <div class="col-sm-9">
+                    <div class="input-group"
+                         ng-switch="input.type"
+                         ng-class="{ 'has-feedback has-error': innerForm.name.$dirty &&
+                                                               innerForm.name.$invalid }">
+                      <input ng-switch-when="string"
+                             ng-attr-id="{{ input.column }}"
+                             name="name"
+                             class="form-control"
+                             ng-model="input.value"
+                             autocomplete="off"
+                             maxlength="{{ input.max_length }}"
+                             ng-required="input.required"></input>
+                      <select ng-switch-when="boolean"
+                              ng-attr-id="{{ input.column }}"
+                              name="name"
+                              class="form-control"
+                              ng-model="input.value"
+                              ng-required="input.required">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                      </select>
+                      <select ng-switch-when="enum"
+                              ng-attr-id="{{ input.column }}"
+                              name="name"
+                              ng-options="item.value as item.name for item in input.enumList"
+                              ng-model="input.value"
+                              class="form-control"
+                              ng-required="input.required"></select>
+                      <input ng-switch-when="datetimesecond"
+                             ng-attr-id="{{ input.column }}"
+                             name="name"
+                             ng-model="input.value"
+                             type="hidden"
+                             ng-required="input.required"></input>
+                      <input ng-switch-when="datetimesecond"
+                             ng-model="input.formattedValue"
+                             class="form-control"
+                             type="text"
+                             ng-click="model.selectDatetime( input )"
+                             onkeydown="return false"></input>
+                      <textarea ng-switch-when="text"
+                                ng-attr-id="{{ input.column }}"
+                                name="name"
+                                ng-model="input.value"
+                                class="form-control"
+                                cn-elastic
+                                ng-required="input.required"></textarea>
+                      <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+                        <span class="help-block" ng-if="innerForm.name.$error.required">
+                          Cannot be blank
+                        </span>
+                        <span class="help-block" ng-if="innerForm.name.$error.format">
+                          Invalid format
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </ng-form>
+            </form>
           </div>
+          <div class="form-footer text-right rounded-bottom bg-info">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-disabled="!model.confirmedCount"
+                    ng-click="model.applyMultiedit( 'event' )">Add Events</button>
+          </div> 
         </div>
-        <div class="form-footer text-right rounded-bottom bg-info">
-          <button type="button"
-                  class="btn btn-primary"
-                  ng-disabled="!model.confirmedCount || !model.inputListIsBuilt || !model.hasActiveInputs"
-                  ng-click="model.changeDetails()">Change Details</button>
-        </div> 
-      </div>
-      <div class="panel panel-default" ng-if="model.confirmedCount">
-        <div class="panel-heading">
-          <span class="allow-select">
-            <strong>Add note</strong>
-          </span>
-        </div>
-        <div class="panel-body">
-          stuff goes here
-        </div>
-      </div>
-      <div class="panel panel-default" ng-if="model.confirmedCount">
-        <div class="panel-heading">
-          <span class="allow-select">
-            <strong>Add event</strong>
-          </span>
-        </div>
-        <div class="panel-body">
-          stuff goes here
+        <div ng-if="'note'==tab" class="panel panel-default">
+          <div class="panel-body">
+            <form name="detailForm" class="form-horizontal" novalidate>
+              <div class="col-sm-12 vertical-spacer text-info">
+                Select the note details to be added to all participants:
+                <hr />
+              </div>
+              <div class="form-group">
+                <label for="sticky" class="col-sm-3 control-label">Sticky</label>
+                <div class="col-sm-9">
+                  <div class="input-group">
+                    <select name="sticky"
+                            class="form-control"
+                            ng-model="model.note.sticky">
+                      <option value="1">Yes</option>
+                      <option value="0">No</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="sticky" class="col-sm-3 control-label">Note</label>
+                <div class="col-sm-9">
+                  <div class="input-group">
+                    <textarea name="note"
+                              ng-model="model.note.note"
+                              class="form-control"
+                              cn-elastic></textarea>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="form-footer text-right rounded-bottom bg-info">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-disabled="!model.confirmedCount || 0 == model.note.note.length"
+                    ng-click="model.applyMultiedit( 'note' )">Add Notes</button>
+          </div> 
         </div>
       </div>
     </div>

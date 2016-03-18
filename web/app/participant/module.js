@@ -1,4 +1,6 @@
-define( function() {
+define( [ 'consent', 'event' ].reduce( function( list, name ) {
+  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
+}, [] ), function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'participant', true ); } catch( err ) { console.warn( err ); return; }
@@ -486,6 +488,7 @@ define( function() {
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnParticipantMultieditFactory.instance();
+          $scope.tab = 'participant';
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Participant',
@@ -748,9 +751,11 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantMultieditFactory', [
     'CnSession', 'CnHttpFactory',
-    'CnModalDatetimeFactory', 'CnModalMessageFactory', 'CnParticipantModelFactory',
+    'CnModalDatetimeFactory', 'CnModalMessageFactory',
+    'CnConsentModelFactory', 'CnEventModelFactory', 'CnParticipantModelFactory',
     function( CnSession, CnHttpFactory,
-              CnModalDatetimeFactory, CnModalMessageFactory, CnParticipantModelFactory ) {
+              CnModalDatetimeFactory, CnModalMessageFactory,
+              CnConsentModelFactory, CnEventModelFactory, CnParticipantModelFactory ) {
       var object = function() {
         var self = this;
         this.module = module;
@@ -759,21 +764,20 @@ define( function() {
         this.uidList = '';
         this.activeInput = '';
         this.hasActiveInputs = false;
-        this.inputListIsBuilt = false;
-        this.inputList = [
-          'active', 'honorific', 'first_name', 'other_name', 'last_name', 'sex', 'date_of_birth',
-          'age_group_id', 'state_id', 'language_id', 'out_of_area', 'email', 'mass_email'
-        ];
+        this.participantInputList = null;
+        this.consentInputList = null;
+        this.eventInputList = null;
+        this.note = { sticky: 0, note: '' };
 
-        function buildInputList() {
-          var metadata = CnParticipantModelFactory.root.metadata.columnList;
-          self.inputList.forEach( function( column, index, array ) {
+        // given a module and metadata this function will build an input list
+        function processInputList( list, module, metadata ) {
+          list.forEach( function( column, index, array ) {
             // find this column's input details in the module's input group list
             var input = null
-            for( var group in self.module.inputGroupList ) {
-              for( var groupListColumn in self.module.inputGroupList[group] ) {
+            for( var group in module.inputGroupList ) {
+              for( var groupListColumn in module.inputGroupList[group] ) {
                 if( column == groupListColumn ) {
-                  input = self.module.inputGroupList[group][groupListColumn];
+                  input = module.inputGroupList[group][groupListColumn];
                   break;
                 }
               }
@@ -795,7 +799,10 @@ define( function() {
             };
 
             // Inputs with enum types need to do a bit of extra work with the enumList and default value
-            if( 'enum' == array[index].type ) {
+            if( 'boolean' == array[index].type ) {
+              // set not as the default value
+              if( null == array[index].value ) array[index].value = 0;
+            } else if( 'enum' == array[index].type ) {
               if( !array[index].required ) {
                 // enums which are not required should have an empty value
                 array[index].enumList.unshift( {
@@ -811,21 +818,45 @@ define( function() {
             }
           } );
 
-          // add the placeholder to the column list
-          self.inputList.unshift( {
-            column: '',
-            title: 'Select which column to edit',
-            active: false
-          } );
+          return list;
         };
 
-        this.model = CnParticipantModelFactory.root;
-        if( !this.inputListIsBuilt ) {
-          if( angular.isDefined( CnParticipantModelFactory.root.metadata.columnList ) &&
-              0 < Object.keys( CnParticipantModelFactory.root.metadata.columnList ).length ) buildInputList();
-          else CnParticipantModelFactory.root.metadata.getPromise().then( function() { buildInputList(); } );
-          this.inputListIsBuilt = true;
-        }
+        // populate the input list once the participant's metadata has been loaded
+        CnParticipantModelFactory.root.metadata.getPromise().then( function() {
+          self.participantInputList = processInputList( [
+              'active', 'honorific', 'first_name', 'other_name', 'last_name', 'sex', 'date_of_birth',
+              'age_group_id', 'state_id', 'language_id', 'preferred_site_id', 'out_of_area', 'email',
+              'mass_email'
+            ],
+            self.module,
+            CnParticipantModelFactory.root.metadata.columnList
+          );
+
+          // add the placeholder to the column list
+          self.participantInputList.unshift( {
+            active: false,
+            column: '',
+            title: 'Select which column to edit'
+          } );
+        } );
+
+        // populate the input list once the consent's metadata has been loaded
+        CnConsentModelFactory.root.metadata.getPromise().then( function() {
+          self.consentInputList = processInputList(
+            [ 'consent_type_id', 'accept', 'written', 'date', 'note' ],
+            cenozoApp.module( 'consent' ),
+            CnConsentModelFactory.root.metadata.columnList
+          );
+        } );
+
+        // populate the input list once the event's metadata has been loaded
+        CnEventModelFactory.root.metadata.getPromise().then( function() {
+          self.eventInputList = processInputList(
+            [ 'event_type_id', 'datetime' ],
+            cenozoApp.module( 'event' ),
+            CnEventModelFactory.root.metadata.columnList
+          );
+        } );
 
         this.uidListChanged = function() {
           this.confirmedCount = null;
@@ -883,50 +914,85 @@ define( function() {
 
         this.activateInput = function( column ) {
           if( column ) {
-            this.inputList.findByProperty( 'column', column ).active = true;
+            this.participantInputList.findByProperty( 'column', column ).active = true;
             this.hasActiveInputs = true;
             if( column == this.activeInput ) this.activeInput = '';
           }
         };
 
         this.deactivateInput = function( column ) {
-          this.inputList.findByProperty( 'column', column ).active = false;
-          this.hasActiveInputs = 0 < this.inputList.filter( function( input ) { return input.active; } ).length;
+          this.participantInputList.findByProperty( 'column', column ).active = false;
+          this.hasActiveInputs = 0 < this.participantInputList
+            .filter( function( input ) { return input.active; }).length;
         };
 
-        this.changeDetails = function() {
-          // test the formats of all active columns
+        this.applyMultiedit = function( type ) {
+          // test the formats of all columns
           var error = false;
-          this.inputList.filter( function( input ) { return input.active; } ).forEach( function( input ) {
-            var item = angular.element(
-              angular.element( document.querySelector( '#' + input.column ) ) ).
-                scope().$parent.innerForm.name;
-            if( item ) {
-              var valid = self.model.testFormat( input.column, input.value );
-              item.$error.format = !valid;
-              cenozo.updateFormElement( item, true );
-              error = error || item.$invalid;
-            }
-          } );
+          var uidArray = this.uidList.split( ' ' );
+          if( 'consent' == type ) {
+            var inputList = this.consentInputList;
+            var model = CnConsentModelFactory.root;
+            var messageModal = CnModalMessageFactory.instance( {
+              title: 'Consent Records Added',
+              message: 'The consent record has been successfully added to ' + uidArray.length + ' participants.'
+            } );
+          } else if( 'event' == type ) {
+            var inputList = this.eventInputList;
+            var model = CnEventModelFactory.root;
+            var messageModal = CnModalMessageFactory.instance( {
+              title: 'Event Records Added',
+              message: 'The event record has been successfully added to ' + uidArray.length + ' participants.'
+            } );
+          } else if( 'note' == type ) {
+            var inputList = this.noteInputList;
+            var model = null;
+            var messageModal = CnModalMessageFactory.instance( {
+              title: 'Note Records Added',
+              message: 'The note record has been successfully added to ' + uidArray.length + ' participants.'
+            } );
+          } else if( 'participant' == type ) {
+            var inputList = this.participantInputList.filter( function( input ) { return input.active; } );
+            var model = CnParticipantModelFactory.root;
+            var messageModal = CnModalMessageFactory.instance( {
+              title: 'Participant Details Updated',
+              message: 'The listed details have been successfully updated on ' + uidArray.length +
+                       ' participant records.'
+            } );
+          } else throw new Error( 'Called addRecords() with invalid type "' + type + '".' );
 
-          if( !error ) {
-            var uidArray = this.uidList.split( ' ' );
-            var inputList = {};
-            this.inputList.filter( function( input ) { return input.active; } )
-                          .forEach( function( input ) { inputList[input.column] = input.value; } );
-            CnHttpFactory.instance( {
-              path: 'participant',
-              data: { uid_list: uidArray, input_list: inputList }
-            } ).post().then( function( response ) {
-              CnModalMessageFactory.instance( {
-                title: 'Operation Complete',
-                message: 'The operation has been successfully completed on ' + uidArray.length +
-                         ' participant records, affecting ' + response.data + ' of them.'
-              } ).show();
+          if( inputList ) {
+            inputList.forEach( function( input ) {
+              var element = cenozo.getFormElement( input.column );
+              if( element ) {
+                var valid = model.testFormat( input.column, input.value );
+                element.$error.format = !valid;
+                cenozo.updateFormElement( element, true );
+                error = error || element.$invalid;
+              }
             } );
           }
-        };
 
+          if( !error ) {
+            var data = { uid_list: uidArray };
+            if( 'note' == type ) {
+              data.note = this.note;
+            } else if( 'participant' == type ) {
+              data.input_list = {};
+              inputList.forEach( function( input ) { data.input_list[input.column] = input.value; } );
+            } else {
+              data[type] = inputList.reduce( function( record, input ) {
+                record[input.column] = input.value;
+                return record;
+              }, {} );
+            }
+
+            CnHttpFactory.instance( {
+              path: 'participant',
+              data: data
+            } ).post().then( function() { messageModal.show(); } );
+          }
+        };
       };
 
       return { instance: function() { return new object( false ); } };
