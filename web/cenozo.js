@@ -3932,7 +3932,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
         updateSlidersFromDate: function( date ) {
           this.hourSliderValue = date.format( 'H' );
           this.minuteSliderValue = date.format( 'm' );
-          this.secondSliderValue = cenozo.isDatetimeType( this.pickerType, 'time' )
+          this.secondSliderValue = cenozo.isDatetimeType( this.pickerType, 'second' )
                                  ? date.format( 's' )
                                  : 0;
         },
@@ -3940,7 +3940,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
           // only change the time if the current day is within the min/max boundaries
           if( !this.isBeforeMinDate( this.date, 'day' ) && !this.isAfterMaxDate( this.date, 'day' ) ) {
             this.date.hour( this.hourSliderValue ).minute( this.minuteSliderValue ).second(
-              cenozo.isDatetimeType( this.pickerType, 'time' ) ? this.secondSliderValue : 0 );
+              cenozo.isDatetimeType( this.pickerType, 'second' ) ? this.secondSliderValue : 0 );
             this.date = this.resolveDate( this.date );
           }
           this.updateSlidersFromDate( this.date );
@@ -3968,7 +3968,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
             this.date = cenozo.isDatetimeType( this.pickerType, 'timezone' )
                       ? moment().tz( CnSession.user.timezone )
                       : moment();
-            if( !cenozo.isDatetimeType( this.pickerType, 'time' ) ) this.date.second( 0 );
+            if( !cenozo.isDatetimeType( this.pickerType, 'second' ) ) this.date.second( 0 );
             this.updateSlidersFromDate( this.date );
           } else if( 'today' == when ) {
             this.date = cenozo.isDatetimeType( this.pickerType, 'timezone' )
