@@ -31,6 +31,9 @@ class patch extends \cenozo\service\patch
     return $patch_array;
   }
 
+  /**
+   * Override parent method
+   */
   protected function validate()
   {
     parent::validate();
