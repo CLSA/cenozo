@@ -1736,7 +1736,7 @@ cenozo.factory( '$exceptionHandler', [
     return function( exception, cause ) {
       // report the exception to the console and replace the view's inner html with a notification of the error
       console.error( '%s', exception );
-      if( angular.isDefined( cause ) ) console.warning( '%s', cause );
+      if( angular.isDefined( cause ) ) console.warn( '%s', cause );
       document.getElementById( 'view' ).innerHTML =
         '<div class="inner-view-frame">\n' +
           '<div class="container-fluid bg-white">\n' +
