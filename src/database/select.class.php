@@ -428,6 +428,17 @@ class select extends \cenozo\base_object
   }
 
   /**
+   * TODO: document
+   */
+  public function get_alias_list()
+  {
+    $alias_list = [];
+    foreach( $this->column_list as $table => $column_details )
+      $alias_list = array_merge( $alias_list, array_keys( $column_details ) );
+    return $alias_list;
+  }
+
+  /**
    * Returns the select statement based on this object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
