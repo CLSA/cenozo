@@ -132,11 +132,14 @@
                   </div>
                 </div>
                 <span ng-if="'failed' == state" class="help-block text-right has-feedback has-error">
-                  The credentials you provided are either invalid or do not exist, please try again.
+                  The credentials you provided are either invalid, do not exist or you do not have access to this
+                  application, please try again.<br>
+                  If this message persists then contact an administrator.
                 </span>
                 <span ng-if="'error' == state" class="help-block text-right has-feedback has-error">
-                  There was a problem connecting to the authentication server.<br>
-                  Please contact support and indicate that you are unable to log in.
+                  There was a problem connecting to the authentication server, please try again.<br>
+                  If this message persists then contact support and indicate that the authentication server
+                  is not responding.
                 </span>
               </div>
               <div class="form-footer text-right rounded-bottom bg-info">
