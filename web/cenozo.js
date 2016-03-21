@@ -1939,7 +1939,7 @@ cenozo.factory( 'CnSession', [
           return CnHttpFactory.instance( {
             path: 'setting/site_id=' + this.site.id,
             data: {
-              survey_without_sip: self.setting.surveyWithoutSip,
+              call_without_webphone: self.setting.callWithoutWebphone,
               calling_start_time: self.setting.callingStartTime,
               calling_end_time: self.setting.callingEndTime,
               short_appointment: self.setting.shortAppointment,
