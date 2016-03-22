@@ -2391,10 +2391,9 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             object.parentModel.addModel.calendarDate =
               moment( date ).tz( CnSession.user.timezone ).hour( 12 ).minute( 0 ).second( 0 );
 
-            // full-calendar has a bug where it picks one day behind the actual day, so fix we adjust for it here
-            if( 'month' == view.type ) {
-              object.parentModel.addModel.calendarDate.add( 1, 'days' );
-            }
+            // full-calendar has a bug where it picks one day behind the actual day, so we adjust for it here
+            if( 'month' == view.type ) object.parentModel.addModel.calendarDate.add( 1, 'days' );
+
             return object.parentModel.transitionToAddState();
           },
           eventClick: function( record ) {
