@@ -65,6 +65,20 @@
               type="text"
               ng-click="selectDatetime( input )"
               onkeydown="return false"></input>
+            <input ng-switch-when="color"
+              ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="record[input.key]"
+              cn-change="check( input.key )"
+              class="form-control"
+              type="text"
+              colorpicker="hex"
+              colorpicker-size="200"
+              colorpicker-close-on-select
+              autocomplete="off"
+              ng-readonly="true === input.constant || 'add' == input.constant"
+              ng-required="model.metadata.columnList[input.key].required"
+              onkeydown="return false"></input>
             <select ng-switch-when="select"
               ng-attr-id="{{ input.key }}"
               name="name"

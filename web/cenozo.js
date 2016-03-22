@@ -10,7 +10,7 @@ try {
   console.warn( 'Trying to load cenozo.js more than once.' );
   return;
 } catch( err ) {
-  var cenozo = angular.module( 'cenozo', ['ngAnimate','ngSanitize'] );
+  var cenozo = angular.module( 'cenozo', ['ngAnimate','ngSanitize','colorpicker.module'] );
 }
 
 // determine cenozo's base url

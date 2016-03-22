@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.css">
+  <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/css/colorpicker.css">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css?build=<?php print CENOZO_BUILD; ?>">
   <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css?_">
 
@@ -21,6 +22,7 @@
   <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
   <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js"></script>
 
   <script src="<?php print CENOZO_URL; ?>/cenozo.js?build=<?php print CENOZO_BUILD; ?>" id="cenozo"></script>
   <script src="<?php print ROOT_URL; ?>/app.js?build=<?php print APP_BUILD; ?>" id="app"></script>

@@ -110,6 +110,21 @@
                               selectDatetime( input )"
                     ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
                     onkeydown="return false"></input>
+                  <input ng-switch-when="color"
+                    ng-attr-id="{{ input.key }}"
+                    name="name"
+                    ng-model="model.viewModel.record[input.key]"
+                    cn-change="patch( input.key )"
+                    class="form-control"
+                    type="text"
+                    colorpicker="hex"
+                    colorpicker-size="200"
+                    colorpicker-close-on-select
+                    autocomplete="off"
+                    ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
+                    maxlength="{{ model.metadata.columnList[input.key].max_length }}"
+                    ng-required="model.metadata.columnList[input.key].required"
+                    onkeydown="return false"></input>
                   <select ng-switch-when="select"
                     ng-attr-id="{{ input.key }}"
                     name="name"

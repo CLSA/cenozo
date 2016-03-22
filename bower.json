@@ -17,6 +17,7 @@
     "angular-animate": "1.2.x",
     "angular-sanitize": "1.2.x",
     "angular-slider": "0.2.x",
+    "angular-bootstrap-colorpicker": "latest",
     "fullcalendar": "latest"
   }
 }
