@@ -76,6 +76,16 @@ define( function() {
       type: 'boolean',
       help: 'Whether the application has a queue which should be updated when changes are made to the database.'
     },
+    primary_color: {
+      title: 'Primary Colour',
+      type: 'color',
+      help: 'The primary colour to use for the application\'s user interface.'
+    },
+    secondary_color: {
+      title: 'Secondary Colour',
+      type: 'color',
+      help: 'The secondary colour to use for the application\'s user interface.'
+    },
     country: {
       title: 'Country',
       type: 'string'

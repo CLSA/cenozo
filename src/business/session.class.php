@@ -75,6 +75,17 @@ class session extends \cenozo\singleton
 
     define( 'APP_TITLE', $this->db_application->title );
 
+    // update the theme if we need to
+    if( $this->db_application->theme_expired )
+    {
+      $theme_manager = lib::create( 'business\theme_manager' );
+      if( $theme_manager->generate_theme_css() )
+      {
+        $this->db_application->theme_expired = false;
+        $this->db_application->save();
+      }
+    }
+
     $this->login();
     $this->state = 'initialized';
   }

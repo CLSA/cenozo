@@ -15,6 +15,21 @@ use cenozo\lib, cenozo\log;
 class application extends record
 {
   /**
+   * Override parent save method to mark the theme as changed when the colors change
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function save()
+  {
+    // if the colors are being changed then expire the theme
+    if( $this->has_column_changed( 'primary_color' ) || $this->has_column_changed( 'secondary_color' ) )
+      $this->theme_expired = true;
+
+    parent::save();
+  }
+
+  /**
    * Determine whether the current application has access to the participant
    * TODO: document
    */

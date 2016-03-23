@@ -5,7 +5,8 @@
   <title><?php echo APP_TITLE; ?></title>
   <link rel="shortcut icon" href="img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
-  <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css">
+  <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css?build=<?php print CENOZO_BUILD; ?>">
+  <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css?_">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.js"></script>
