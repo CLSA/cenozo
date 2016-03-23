@@ -120,7 +120,7 @@ define( function() {
                     data: {
                       operation: 'play_sound',
                       filename: 'beep',
-                      volume: parseInt( this.playbackVolume )
+                      volume: parseInt( self.playbackVolume )
                     },
                     onError: function() {} // ignore all errors
                   } ).patch().then( function() {
