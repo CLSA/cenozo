@@ -34,7 +34,7 @@ CREATE PROCEDURE patch_application()
       ADD COLUMN timezone VARCHAR(45) NOT NULL DEFAULT 'Canada/Eastern',
       ADD COLUMN update_queue TINYINT(1) NOT NULL DEFAULT 0,
       ADD COLUMN primary_color CHAR(7) NOT NULL DEFAULT '#3f3f7d',
-      ADD COLUMN secondary_color CHAR(7) NOT NULL DEFAULT '#359a92',
+      ADD COLUMN secondary_color CHAR(7) NOT NULL DEFAULT '#9ba8b7',
       ADD COLUMN theme_expired TINYINT(1) NOT NULL DEFAULT 1;
       
       UPDATE application SET
