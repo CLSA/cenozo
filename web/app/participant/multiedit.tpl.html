@@ -49,7 +49,7 @@
       <div ng-if="model.confirmedCount">
         <ul class="nav nav-tabs">
           <li ng-class="{'active':'participant'==tab}"><a ng-click="tab='participant'">Participant</a></li>
-          <li ng-class="{'active':'site'==tab}"><a ng-click="tab='consent'">Consent</a></li>
+          <li ng-class="{'active':'consent'==tab}"><a ng-click="tab='consent'">Consent</a></li>
           <li ng-class="{'active':'event'==tab}"><a ng-click="tab='event'">Event</a></li>
           <li ng-class="{'active':'note'==tab}"><a ng-click="tab='note'">Note</a></li>
         </ul>
@@ -348,6 +348,6 @@
     </div>
   </div>
   <div class="form-footer text-right rounded-bottom bg-info">
-    <button type="button" class="btn btn-primary" ng-click="listParticipants()">View Participant List</button>
-  </div> 
+    <a href="#" ui-sref="participant.list" class="btn btn-default">View Participant List</a>
+  </div>
 </div>
