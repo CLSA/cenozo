@@ -81,6 +81,12 @@ input[type=number]::-webkit-outer-spin-button {
 }
 input[type=number] { -moz-appearance: textfield; }
 
+/* format color-style inputs */
+input.color-input {
+  cursor: pointer;
+  text-indent: -9999px; /* hides text */
+}
+
 /* used by the ng-view so that animated transitions work correctly */
 .fade-transition {
   position: absolute;
