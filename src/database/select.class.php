@@ -452,9 +452,26 @@ class select extends \cenozo\base_object
   public function apply_aliases_to_modifier( $modifier )
   {
     foreach( $this->column_list as $table => $column_details )
+    {
+      // resolve the table name
+      if( 0 == strlen( $table ) ) $table = is_null( $this->table_alias ) ? $this->table_name : $this->table_alias;
+
       foreach( $column_details as $alias => $item )
+      {
         if( $alias != $item['column'] )
-          $modifier->replace_column( $alias, $item['column'] );
+        {
+          $column = $item['column'];
+          if( $item['table_prefix'] )
+          {
+            // add the table prefix
+            if( 0 == strlen( $table ) )
+              $table = is_null( $this->table_alias ) ? $this->table_name : $this->table_alias;
+            $column = $table.'.'.$column;
+          }
+          $modifier->replace_column( $alias, $column );
+        }
+      }
+    }
   }
 
   /**
@@ -471,15 +488,12 @@ class select extends \cenozo\base_object
 
     $db = lib::create( 'business\session' )->get_database();
 
-    // figure out which table to select from
-    $main_table = is_null( $this->table_alias ) ? $this->table_name : $this->table_alias;
-
     // figure out the columns
     $columns = array();
     foreach( $this->column_list as $table => $column_details )
     {
       // table prefix
-      if( 0 == strlen( $table ) ) $table = $main_table;
+      if( 0 == strlen( $table ) ) $table = is_null( $this->table_alias ) ? $this->table_name : $this->table_alias;
       $table_prefix = $table.'.';
 
       // now add the alias or table.column to the list of columns
