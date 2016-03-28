@@ -650,6 +650,98 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Replaces a column in all where, group, having and order statements
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column Which column to replace
+   * @param string $replace What to replace the column with
+   * @access public
+   */
+  public function replace_column( $column, $replace )
+  {
+    $this->replace_where( $column, $replace );
+    $this->replace_group( $column, $replace );
+    $this->replace_having( $column, $replace );
+    $this->replace_order( $column, $replace );
+  }
+
+  /**
+   * Replaces a where column with something else (useful for aliases)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column Which column to replace
+   * @param string $replace What to replace the column with
+   * @access public
+   */
+  public function replace_where( $column, $replace )
+  {
+    foreach( $this->where_list as $index => $where )
+      if( array_key_exists( 'column', $where ) && $column == $where['column'] )
+        $this->where_list[$index]['column'] = $replace;
+  }
+
+  /**
+   * Replaces a where column with something else (useful for aliases)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column Which column to replace
+   * @param string $replace What to replace the column with
+   * @access public
+   */
+  public function replace_group( $column, $replace )
+  {
+    if( array_key_exists( $column, $this->group_list ) )
+    {
+      // we must preserve the order of the associative array
+      $this->group_list = array_combine(
+        array_map(
+          function( $key ) { return $column == $key ? $replace : $key; },
+          array_keys( $this->group_list )
+        ),
+        array_values( $this->group_list )
+      );
+    }
+  }
+
+  /**
+   * Replaces a where column with something else (useful for aliases)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column Which column to replace
+   * @param string $replace What to replace the column with
+   * @access public
+   */
+  public function replace_having( $column, $replace )
+  {
+    foreach( $this->having_list as $index => $having )
+      if( array_key_exists( 'column', $having ) && $column == $having['column'] )
+        $this->having_list[$index]['column'] = $replace;
+  }
+
+  /**
+   * Replaces a where column with something else (useful for aliases)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column Which column to replace
+   * @param string $replace What to replace the column with
+   * @access public
+   */
+  public function replace_order( $column, $replace )
+  {
+    if( array_key_exists( $column, $this->order_list ) )
+    {
+      // we must preserve the order of the associative array
+      $this->order_list = array_combine(
+        array_map(
+          function( $key ) { return $column == $key ? $replace : $key; },
+          array_keys( $this->order_list )
+        ),
+        array_values( $this->order_list )
+      );
+    }
+  }
+
+  /**
    * Removes all join statements to a particular table (or alias)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -665,55 +757,52 @@ class modifier extends \cenozo\base_object
    * Removes all where statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column Which column to remove all where statements from the modifier
+   * @param string $remove Which column to remove all where statements from the modifier
    * @access public
    */
-  public function remove_where( $column )
+  public function remove_where( $remove )
   {
-    foreach( $this->where_list as $index => $where )
-      if( array_key_exists( 'column', $where ) && $column == $where['column'] )
-        unset( $this->where_list[$index] );
+    $this->where_list = array_filter( $this->where_list, function( $where ) {
+      return $remove != $where['column'];
+    } );
   }
 
   /**
    * Removes all group statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column Which column to remove all where statements from the modifier
+   * @param string $remove Which column to remove all where statements from the modifier
    * @access public
    */
-  public function remove_group( $column )
+  public function remove_group( $remove )
   {
-    foreach( $this->group_list as $index => $group )
-      if( $column == $group )
-        unset( $this->group_list[$index] );
+    $this->group_list = array_filter( $this->group_list, function( $group ) { return $remove != $group; } );
   }
 
   /**
    * Removes all having statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column Which column to remove all where statements from the modifier
+   * @param string $remove Which column to remove all where statements from the modifier
    * @access public
    */
-  public function remove_having( $column )
+  public function remove_having( $remove )
   {
-    foreach( $this->having_list as $index => $having )
-      if( array_key_exists( 'column', $having ) && $column == $having['column'] )
-         unset( $this->having_list[$index] );
+    $this->having_list = array_filter( $this->having_list, function( $having ) {
+      return $remove != $having['column'];
+    } );
   }
 
   /**
    * Removes all order statements affecting a particular column
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column Which column to remove all where statements from the modifier
+   * @param string $remove Which column to remove all where statements from the modifier
    * @access public
    */
-  public function remove_order( $column )
+  public function remove_order( $remove )
   {
-    if( array_key_exists( $column, $this->order_list ) )
-      unset( $this->order_list[$column] );
+    $this->order_list = array_filter( $this->order_list, function( $order ) { return $remove != $order; } );
   }
 
   /**

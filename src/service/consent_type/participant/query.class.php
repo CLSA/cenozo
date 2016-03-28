@@ -36,6 +36,7 @@ class query extends \cenozo\service\query
     $modifier = clone $this->modifier;
     $modifier->join( 'consent', 'participant.id', 'consent.participant_id' );
     $modifier->where( 'consent.consent_type_id', '=', $db_consent_type->id );
+    $this->select->apply_aliases_to_modifier( $modifier );
 
     return $participant_class_name::count( $modifier, true ); // distinct
   }
@@ -53,6 +54,7 @@ class query extends \cenozo\service\query
     $modifier = clone $this->modifier;
     $modifier->join( 'consent', 'participant.id', 'consent.participant_id' );
     $modifier->where( 'consent.consent_type_id', '=', $db_consent_type->id );
+    $this->select->apply_aliases_to_modifier( $modifier );
 
     return $participant_class_name::select( $select, $modifier );
   }

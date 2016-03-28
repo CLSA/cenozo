@@ -428,7 +428,11 @@ class select extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns a list of all aliases in the select
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
    */
   public function get_alias_list()
   {
@@ -436,6 +440,21 @@ class select extends \cenozo\base_object
     foreach( $this->column_list as $table => $column_details )
       $alias_list = array_merge( $alias_list, array_keys( $column_details ) );
     return $alias_list;
+  }
+
+  /**
+   * Replaces all of this select's aliases in a modifier with the column name instead.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier
+   * @access public
+   */
+  public function apply_aliases_to_modifier( $modifier )
+  {
+    foreach( $this->column_list as $table => $column_details )
+      foreach( $column_details as $alias => $item )
+        if( $alias != $item['column'] )
+          $modifier->replace_column( $alias, $item['column'] );
   }
 
   /**

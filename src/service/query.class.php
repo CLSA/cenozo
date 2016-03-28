@@ -101,6 +101,9 @@ class query extends read
     $parent_record_method = sprintf( 'get_%s_count', $this->get_leaf_subject() );
     $modifier = clone $this->modifier;
 
+    // find aliases in the select and translate them in the modifier
+    $this->select->apply_aliases_to_modifier( $modifier );
+
     return is_null( $parent_record ) || $this->get_argument( 'choosing', false ) ?
            $record_class_name::count( $modifier ) :
            $parent_record->$parent_record_method( $modifier );
@@ -115,6 +118,9 @@ class query extends read
     $record_class_name = $this->get_leaf_record_class_name();
     $parent_record_method = sprintf( 'get_%s_list', $this->get_leaf_subject() );
     $modifier = clone $this->modifier;
+
+    // find aliases in the select and translate them in the modifier
+    $this->select->apply_aliases_to_modifier( $modifier );
 
     $list = is_null( $parent_record ) || $this->get_argument( 'choosing', false )
           ? $record_class_name::select( $this->select, $modifier )
