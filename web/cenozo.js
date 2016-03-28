@@ -1779,6 +1779,7 @@ cenozo.factory( 'CnSession', [
       this.role = {};
       this.setting = {};
       this.siteList = [];
+      this.sessionList = [];
       this.messageList = [];
       this.breadcrumbTrail = [];
 
@@ -1881,6 +1882,8 @@ cenozo.factory( 'CnSession', [
             self.voip = { enabled: false, info: false };
             if( self.application.voipEnabled ) self.updateVoip();
           } );
+
+          return this.promise;
         },
 
         // get the application, user, site and role details
