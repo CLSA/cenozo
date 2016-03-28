@@ -695,7 +695,7 @@ class modifier extends \cenozo\base_object
       // we must preserve the order of the associative array
       $this->group_list = array_combine(
         array_map(
-          function( $key ) { return $column == $key ? $replace : $key; },
+          function( $key ) use( $column, $replace ) { return $column == $key ? $replace : $key; },
           array_keys( $this->group_list )
         ),
         array_values( $this->group_list )
@@ -733,7 +733,7 @@ class modifier extends \cenozo\base_object
       // we must preserve the order of the associative array
       $this->order_list = array_combine(
         array_map(
-          function( $key ) { return $column == $key ? $replace : $key; },
+          function( $key ) use( $column, $replace ) { return $column == $key ? $replace : $key; },
           array_keys( $this->order_list )
         ),
         array_values( $this->order_list )
@@ -762,7 +762,7 @@ class modifier extends \cenozo\base_object
    */
   public function remove_where( $remove )
   {
-    $this->where_list = array_filter( $this->where_list, function( $where ) {
+    $this->where_list = array_filter( $this->where_list, function( $where ) use( $remove ) {
       return $remove != $where['column'];
     } );
   }
@@ -776,7 +776,9 @@ class modifier extends \cenozo\base_object
    */
   public function remove_group( $remove )
   {
-    $this->group_list = array_filter( $this->group_list, function( $group ) { return $remove != $group; } );
+    $this->group_list = array_filter( $this->group_list, function( $group ) use( $remove ) {
+      return $remove != $group;
+    } );
   }
 
   /**
@@ -788,7 +790,7 @@ class modifier extends \cenozo\base_object
    */
   public function remove_having( $remove )
   {
-    $this->having_list = array_filter( $this->having_list, function( $having ) {
+    $this->having_list = array_filter( $this->having_list, function( $having ) use( $remove ) {
       return $remove != $having['column'];
     } );
   }
@@ -802,7 +804,9 @@ class modifier extends \cenozo\base_object
    */
   public function remove_order( $remove )
   {
-    $this->order_list = array_filter( $this->order_list, function( $order ) { return $remove != $order; } );
+    $this->order_list = array_filter( $this->order_list, function( $order ) use( $remove ) {
+      return $remove != $order;
+    } );
   }
 
   /**
