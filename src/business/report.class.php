@@ -93,10 +93,9 @@ class report extends \cenozo\base_object
                 $sub_value = $datetime_obj->format( 'Y-m-d '.$time_format );
 
                 // and add the timezone to the header
-                $col = count( $row_data );
-                $header = $csv_array[0][$col];
+                $header = $this->get_cell_value( $col.'1' );
                 $suffix = sprintf( ' (%s)', $tz );
-                if( false === strpos( $header, $suffix ) ) $csv_array[0][$col] = $header.$suffix;
+                if( false === strpos( $header, $suffix ) ) $this->set_cell( $col.'1', $header.$suffix );
               }
               else if( is_bool( $sub_value ) ) $sub_value = $sub_value ? 'yes' : 'no';
 
@@ -174,6 +173,19 @@ class report extends \cenozo\base_object
     {
       return $this->current_format[ $format_type ];
     }
+  }
+
+  /**
+   * Get a cell's value
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $coordinate A cell in "A1" format
+   * @return string
+   * @access public
+   */
+  public function get_cell_value( $coordinate )
+  {
+    return $this->php_excel->getActiveSheet()->getCell( $coordinate )->getValue();
   }
 
   /**
@@ -282,24 +294,20 @@ class report extends \cenozo\base_object
    * Renders the report in the given format.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $format One of xlsx, xls, html, pdf or csv
+   * @param string $mime_type The mime type identifying which file type to create
    * @return string
    * @access public
    */
-  public function get_file( $format )
+  public function get_file( $mime_type )
   {
     // create the desired file writer type
-    if( 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == $format )
+    if( 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == $mime_type )
     {
       $writer = new \PHPExcel_Writer_Excel2007( $this->php_excel );
     }
-    else if( 'application/vnd.oasis.opendocument.spreadsheet' == $format )
+    else // if( 'application/vnd.oasis.opendocument.spreadsheet' == $mime_type )
     {
       $writer = new \PHPExcel_Writer_OpenDocument( $this->php_excel );
-    }
-    else // csv
-    {
-      $writer = new \PHPExcel_Writer_CSV( $this->php_excel );
     }
 
     ob_start();

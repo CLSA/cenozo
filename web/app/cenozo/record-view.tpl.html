@@ -8,7 +8,7 @@
       <div class="pull-right">
         <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
            ng-if="isComplete"
-           ng-click="refresh()"
+           ng-click="refresh(); $event.stopPropagation()"
            tooltip="Click to refresh data"
            tooltip-placement="left"></i>
         <i class="glyphicon glyph-hover btn-primary btn-header"

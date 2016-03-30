@@ -315,15 +315,8 @@ final class bootstrap
       foreach( $service->get_headers() as $name => $header )
         header( sprintf( '%s: %s', $name, $util_class_name::json_encode( $header ) ) );
 
-      $data = $service->get_data();
-      if( 'HEAD' != $this->method && !is_null( $data ) )
-      {
-        $json_output = is_string( $data ) ? $data : $util_class_name::json_encode( $data );
-
-        header( 'Content-Type: application/json' );
-        header( 'Content-Length: '.strlen( $json_output ) );
-        print $json_output;
-      }
+      // the encoded data may be an emptry string
+      print $service->get_data();
 
       // close the services writelog, if needed
       $service->close_writelog();

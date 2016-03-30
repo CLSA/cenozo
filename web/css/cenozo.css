@@ -284,6 +284,10 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
   padding: 6px;
   margin: -6px;
 }
+.glyph-disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 
 .record-list, .record-view, .utility-view { box-shadow: 0px 2px 2px #a0a0a0; }
 

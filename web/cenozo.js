@@ -1092,8 +1092,8 @@ cenozo.directive( 'cnRecordCalendar', [
  * @attr removeColumns: An array of columns (by key) to remove from the list
  */
 cenozo.directive( 'cnRecordList', [
-  '$state', 'CnSession', 'CnModalRestrictFactory',
-  function( $state, CnSession, CnModalRestrictFactory ) {
+  '$state', 'CnSession', 'CnModalRestrictFactory', 'CnHttpFactory',
+  function( $state, CnSession, CnModalRestrictFactory, CnHttpFactory ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'record-list.tpl.html' ),
       restrict: 'E',
@@ -1102,8 +1102,9 @@ cenozo.directive( 'cnRecordList', [
         removeColumns: '@',
         initCollapsed: '@'
       },
-      controller: function( $scope ) {
+      controller: function( $scope, $element ) {
         $scope.directive = 'cnRecordList';
+        $scope.reportTypeListOpen = false;
         $scope.model.listModel.onList( true ).then( function() {
           $scope.model.setupBreadcrumbTrail();
         } );
@@ -1114,6 +1115,17 @@ cenozo.directive( 'cnRecordList', [
               $scope.model.listModel.paginationModel.currentPage = 1;
             } );
           }
+        };
+
+        $scope.toggleReportTypeDropdown = function() {
+          $element.find( '.report-dropdown' ).find( '.dropdown-menu' ).toggle();
+        };
+
+        $scope.getReport = function( format ) {
+          $scope.model.listModel.onReport( format ).then( function() {
+            saveAs( $scope.model.listModel.reportBlob, $scope.model.listModel.reportFilename );
+          } );
+          $scope.toggleReportTypeDropdown();
         };
 
         $scope.addRecord = function() {
@@ -1233,6 +1245,12 @@ cenozo.directive( 'cnRecordView', [
             $scope.isComplete = false;
             $scope.model.viewModel.onView().finally( function() { $scope.isComplete = true } );
           }
+        };
+
+        $scope.getReport = function( format ) {
+          $scope.model.viewModel.onReport( format ).then( function() {
+            saveAs( $scope.model.viewModel.reportBlob, $scope.model.viewModel.reportFilename );
+          } );
         };
 
         $scope.hasParent = function() { return angular.isDefined( $scope.model.module.identifier.parent ); }
@@ -2422,6 +2440,9 @@ cenozo.factory( 'CnBaseListFactory', [
         object.order = object.parentModel.module.defaultOrder;
         object.total = 0;
         object.cache = [];
+        object.isReportLoading = false;
+        object.reportBlob = null;
+        object.reportFilename = null;
         object.paginationModel = CnPaginationFactory.instance();
         object.isLoading = false;
         object.chooseMode = false;
@@ -2635,6 +2656,48 @@ cenozo.factory( 'CnBaseListFactory', [
         } );
 
         /**
+         * Loads a report from the server.
+         * 
+         * @return promise
+         */
+        cenozo.addExtendableFunction( object, 'onReport', function( format ) {
+          var self = this;
+
+          this.isReportLoading = true;
+          if( angular.isUndefined( format ) ) format = 'csv';
+          var data = this.parentModel.getServiceData( 'report', this.columnRestrictLists );
+          if( angular.isUndefined( data.modifier ) ) data.modifier = {};
+
+          // set up the offset and sorting
+          if( null !== this.order ) {
+            // add the table prefix to the column if there isn't already a prefix
+            var column = this.order.column;
+            data.modifier.order = {};
+            data.modifier.order[column] = this.order.reverse;
+          }
+
+          var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
+          httpObj.onError = function( response ) { self.onReportError( response ); }
+          httpObj.format = format;
+          return CnHttpFactory.instance( httpObj ).query().then( function( response ) {
+            self.reportBlob = new Blob(
+              [response.data],
+              { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
+            );
+            self.reportFilename = response.headers( 'Content-Disposition' ).replace( /".*file=(.*)"/, '$1' );
+          } ).finally( function() { self.isReportLoading = false; } );
+        } );
+
+        /**
+         * Handles errors when getting a report.
+         * 
+         * @param object response: The response of a failed http call
+         */
+        cenozo.addExtendableFunction( object, 'onReportError', function( response ) {
+          CnModalMessageFactory.httpError( response );
+        } );
+
+        /**
          * Add a function to be executed after onSelect is complete
          * 
          * @param function
@@ -2691,6 +2754,9 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.record = {};
         object.formattedRecord = {};
         object.backupRecord = {};
+        object.isReportLoading = false;
+        object.reportBlob = null;
+        object.reportFilename = null;
         object.deferred = $q.defer();
 
         // for all dependencies require its files, inject and set up the model
@@ -2847,6 +2913,41 @@ cenozo.factory( 'CnBaseViewFactory', [
             object.record[property] = object.backupRecord[property];
             CnModalMessageFactory.httpError( response );
           }
+        } );
+
+        /**
+         * Loads a report from the server.
+         * 
+         * @return promise
+         */
+        cenozo.addExtendableFunction( object, 'onReport', function( format ) {
+          var self = this;
+          this.isReportLoading = true;
+
+          if( angular.isUndefined( format ) ) format = 'csv';
+          // the "report" service data type is for lists only, use view instead
+          var data = this.parentModel.getServiceData( 'view', this.columnRestrictLists );
+          if( angular.isUndefined( data.modifier ) ) data.modifier = {};
+
+          var httpObj = { path: this.parentModel.getServiceResourcePath(), data: data };
+          httpObj.onError = function( response ) { self.onReportError( response ); }
+          httpObj.format = format;
+          return CnHttpFactory.instance( httpObj ).get().then( function( response ) {
+            self.reportBlob = new Blob(
+              [response.data],
+              { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
+            );
+            self.reportFilename = response.headers( 'Content-Disposition' ).replace( /".*file=(.*)"/, '$1' );
+          } ).finally( function() { self.isReportLoading = false; } );
+        } );
+
+        /**
+         * Handles errors when getting a report.
+         * 
+         * @param object response: The response of a failed http call
+         */
+        cenozo.addExtendableFunction( object, 'onReportError', function( response ) {
+          CnModalMessageFactory.httpError( response );
         } );
 
         /**
@@ -3081,8 +3182,10 @@ cenozo.factory( 'CnBaseModelFactory', [
          * TODO: document
          */
         cenozo.addExtendableFunction( self, 'getServiceData', function( type, columnRestrictLists ) {
-          if( angular.isUndefined( type ) || 0 > ['calendar','list','view'].indexOf( type ) )
-            throw new Error( 'getServiceData expects an argument which is either "calendar", "list" or "view".' );
+          if( angular.isUndefined( type ) || 0 > ['calendar','list','report','view'].indexOf( type ) )
+            throw new Error(
+              'getServiceData expects an argument which is either "calendar", "list", "report" or "view".'
+            );
 
           if( angular.isUndefined( columnRestrictLists ) ) columnRestrictLists = {};
 
@@ -3094,7 +3197,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           var list = {};
           if( 'calendar' == type ) {
             // the calendar doesn't need anything added to list
-          } else if( 'list' == type ) {
+          } else if( 'list' == type || 'report' == type ) {
             list = self.columnList;
           } else {
             // we need to get a list of all inputs from the module's input groups
@@ -3182,7 +3285,8 @@ cenozo.factory( 'CnBaseModelFactory', [
               selectList.push( select );
             }
 
-            if( 'list' == type && 'hidden' != list[key].type && angular.isArray( columnRestrictLists[key] ) ) {
+            if( ( 'list' == type || 'report' == type ) &&
+                'hidden' != list[key].type && angular.isArray( columnRestrictLists[key] ) ) {
               columnRestrictLists[key].forEach( function( item ) {
                 var test = item.test;
                 var value = item.value;
@@ -3212,7 +3316,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
 
           var data = {};
-          if( 'calendar' == type ) data.modifier = { limit: 1000000 }; // make sure to get all records
+          if( 'calendar' == type || 'report' == type ) data.modifier = { limit: 1000000 }; // get all records
           if( 0 < selectList.length ) data.select = { column: selectList };
           if( 0 < joinList.length || 0 < whereList.length ) {
             if( angular.isUndefined( data.modifier ) ) data.modifier = {};
@@ -3663,6 +3767,7 @@ cenozo.factory( 'CnHttpFactory', [
       this.redirected = false;
       this.onError = CnModalMessageFactory.httpError;
       this.guid = cenozo.generateGUID();
+      this.format = 'json';
       angular.extend( this, params );
 
       var self = this;
@@ -3726,6 +3831,19 @@ cenozo.factory( 'CnHttpFactory', [
         if( null !== self.data ) {
           if( 'POST' == method || 'PATCH' == method ) object.data = self.data;
           else object.params = self.data;
+        }
+
+        if( 'xlsx' == self.format ) {
+          object.responseType = 'arraybuffer';
+          object.headers = {
+            Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'
+          };
+        } else if( 'ods' == self.format ) {
+          object.responseType = 'arraybuffer';
+          object.headers = { Accept: 'application/vnd.oasis.opendocument.spreadsheet;charset=utf-8' };
+        } else if( 'csv' == self.format ) {
+          object.responseType = 'arraybuffer';
+          object.headers = { Accept: 'text/csv;charset=utf-8' };
         }
 
         var promise = $http( object )
@@ -4678,9 +4796,9 @@ cenozo.factory( 'CnPaginationFactory',
  */
 cenozo.config( [
   '$controllerProvider', '$compileProvider', '$filterProvider', '$locationProvider',
-  '$provide', '$tooltipProvider', '$urlRouterProvider',
+  '$provide', '$tooltipProvider', '$urlRouterProvider', '$httpProvider',
   function( $controllerProvider, $compileProvider, $filterProvider, $locationProvider,
-            $provide, $tooltipProvider, $urlRouterProvider ) {
+            $provide, $tooltipProvider, $urlRouterProvider, $httpProvider ) {
     // create an object containing all providers
     cenozo.providers.controller = $controllerProvider.register;
     cenozo.providers.directive = $compileProvider.directive;
@@ -4703,6 +4821,8 @@ cenozo.config( [
 
     // turn on html5 mode
     $locationProvider.html5Mode( true );
+
+    $httpProvider.defaults.headers.common.Accept = 'application/json;charset=utf-8';
   }
 ] );
 

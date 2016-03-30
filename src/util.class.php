@@ -591,7 +591,18 @@ class util
         else
         {
           if( !in_array( $key, array( 'update_timestamp', 'create_timestamp' ) ) )
+          {
+            // convert timezones
+            if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
+            {
+              $datetime_obj = static::get_datetime_object( $value );
+              $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+              $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
+            }
+            else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';
+
             $csv_array[] = array( $key, $value );
+          }
         }
       }
     }
@@ -599,18 +610,7 @@ class util
     $encoded_data = '';
     foreach( $csv_array as $row )
     {
-      $row = array_map( function( $value ) {
-        // convert timezones
-        if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
-        {
-          $datetime_obj = static::get_datetime_object( $value );
-          $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
-          $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
-        }
-        else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';
-
-        return str_replace( '"', '""', $value );
-      }, $row );
+      $row = array_map( function( $value ) { return str_replace( '"', '""', $value ); }, $row );
       $encoded_data .= implode( ',', $row )."\n";
     }
 

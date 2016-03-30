@@ -38,11 +38,7 @@ class get extends \cenozo\service\get
 
     // add withdraw option to the data
     if( $this->include_withdraw_option )
-    {
-      $data = $this->get_data();
-      $data['withdraw_option'] = $this->get_leaf_record()->get_withdraw_option();
-      $this->set_data( $data );
-    }
+      $this->data['withdraw_option'] = $this->get_leaf_record()->get_withdraw_option();
   }
 
   /**
