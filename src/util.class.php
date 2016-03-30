@@ -610,7 +610,7 @@ class util
     $encoded_data = '';
     foreach( $csv_array as $row )
     {
-      $row = array_map( function( $value ) { return str_replace( '"', '""', $value ); }, $row );
+      $row = array_map( function( $value ) { return sprintf( '"%s"', str_replace( '"', '""', $value ) ); }, $row );
       $encoded_data .= implode( ',', $row )."\n";
     }
 
