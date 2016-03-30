@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.0.1';
-$settings['general']['cenozo_build'] = '2d46b29';
+$settings['general']['cenozo_build'] = '0f7536d';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -33,6 +33,12 @@ $settings['general']['default_password'] = 'password';
 
 // the maximum number of login failures before deactivating a user
 $settings['general']['login_failure_limit'] = 7;
+
+// the maximum number of rows allowed in a list-report
+$settings['general']['max_big_report'] = 10000;
+
+// the maximum number of rows allowed in a non-csv list-report
+$settings['general']['max_small_report'] = 1000;
 
 // cenozo's sub-directory urls
 $settings['url']['ROOT'] = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) );

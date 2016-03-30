@@ -131,6 +131,10 @@ class get extends \cenozo\service\service
     $pseudo_record['application']['development_mode'] = lib::in_development_mode();
     $pseudo_record['application']['login_failure_limit'] =
       $setting_manager->get_setting( 'general', 'login_failure_limit' );
+    $pseudo_record['application']['max_big_report'] =
+      $setting_manager->get_setting( 'general', 'max_big_report' );
+    $pseudo_record['application']['max_small_report'] =
+      $setting_manager->get_setting( 'general', 'max_small_report' );
     $pseudo_record['application']['voip_enabled'] = $setting_manager->get_setting( 'voip', 'enabled' );
     $pseudo_record['application']['webphone_url'] = '/webphone/?id='.( 10000000 + $db_user->id );
 

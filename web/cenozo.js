@@ -2432,8 +2432,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseListFactory', [
-  'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory',
-  function( CnPaginationFactory, CnHttpFactory, CnModalMessageFactory ) {
+  'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory',
+  function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
@@ -2441,6 +2441,8 @@ cenozo.factory( 'CnBaseListFactory', [
         object.total = 0;
         object.cache = [];
         object.isReportLoading = false;
+        object.isReportAllowed = false;
+        object.isReportBig = false;
         object.reportBlob = null;
         object.reportFilename = null;
         object.paginationModel = CnPaginationFactory.instance();
@@ -2642,6 +2644,8 @@ cenozo.factory( 'CnBaseListFactory', [
             } );
             self.cache = self.cache.concat( response.data );
             self.total = response.headers( 'Total' );
+            self.isReportAllowed = CnSession.application.maxBigReport >= self.total;
+            self.isReportBig = CnSession.application.maxSmallReport < self.total;
             object.afterListFunctions.forEach( function( fn ) { fn(); } );
           } ).finally( function() { self.isLoading = false; } );
         } );

@@ -13,19 +13,25 @@
            tooltip-placement="left"></i>
         <span class="dropdown report-dropdown">
           <i class="glyphicon glyphicon-file glyph-hover btn-header"
-             ng-class="model.listModel.cache.length && !model.listModel.isReportLoading ?
+             ng-class="model.listModel.isReportAllowed && !model.listModel.isReportLoading ?
                'btn-primary' : 'glyph-disabled'"
              ng-if="!model.listModel.isLoading && !model.listModel.chooseMode"
              id="reportTypeList"
              ng-click="toggleReportTypeDropdown(); $event.stopPropagation()"
              data-toggle="dropdown"
-             tooltip="Click to download list as a report"
+             tooltip="{{ model.listModel.isReportAllowed
+               ? 'Click to download list as a report'
+               : 'The list is either empty or too large to download as a report' }}"
              tooltip-placement="left"></i>
-          <ul ng-if="model.listModel.cache.length && !model.listModel.isReportLoading"
+          <ul ng-if="model.listModel.isReportAllowed && !model.listModel.isReportLoading"
               class="dropdown-menu dropdown-menu-right"
               aria-labelledby="reportTypeList">
-            <li><a ng-click="getReport( 'xlsx' ); $event.stopPropagation()">Excel</a></li>
-            <li><a ng-click="getReport( 'ods' ); $event.stopPropagation()">LibreOffice</a></li>
+            <li ng-if="!model.listModel.isReportBig">
+              <a ng-click="getReport( 'xlsx' ); $event.stopPropagation()">Excel</a>
+            </li>
+            <li ng-if="!model.listModel.isReportBig">
+              <a ng-click="getReport( 'ods' ); $event.stopPropagation()">LibreOffice</a>
+            </li>
             <li><a ng-click="getReport( 'csv' ); $event.stopPropagation()">CSV</a></li>
           </ul>
         </span>
