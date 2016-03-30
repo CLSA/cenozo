@@ -386,6 +386,8 @@ class ui extends \cenozo\base_object
    */
   protected function get_report_items()
   {
+    return array();
+    /*
     return array(
       'Call History'       => 'call_history',
       'Consent Required'   => 'consent_required',
@@ -397,5 +399,6 @@ class ui extends \cenozo\base_object
       'Productivity'       => 'productivity',
       'Sample'             => 'sample',
       'Timing'             => 'timing' );
+    */
   }
 }
