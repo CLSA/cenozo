@@ -9,8 +9,9 @@
 namespace cenozo\business;
 use cenozo\lib, cenozo\log;
 
-include 'PHPExcel/PHPExcel.php';
-include 'PHPExcel/PHPExcel/Writer/Excel2007.php';
+include PHPEXCEL_PATH.'/Classes/PHPExcel.php';
+include PHPEXCEL_PATH.'/Classes/PHPExcel/Writer/Excel2007.php';
+include PHPEXCEL_PATH.'/Classes/PHPExcel/Writer/OpenDocument.php';
 
 /**
  * Creates a report.
@@ -36,6 +37,96 @@ class report extends \cenozo\base_object
       $this->php_excel = new \PHPExcel();
     }
     $this->php_excel->getActiveSheet()->getPageSetup()->setHorizontalCentered( true );
+  }
+
+  /**
+   * Loads database data into the report
+   */
+  public function load_data( $data )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $session = lib::create( 'business\session' );
+    $db_user = $session->get_user();
+    $now = $util_class_name::get_datetime_object();
+    $now->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+    $tz = $now->format( 'T' );
+    $time_format = $db_user->use_12hour_clock ? 'h:i:s a' : 'H:i:s';
+
+    if( is_string( $data ) )
+    {
+      $this->set_cell( 'A1', $data );
+    }
+    else if( is_array( $data ) )
+    {
+      $row = 1;
+      foreach( $data as $key => $value )
+      {
+        $col = 'A';
+        if( is_array( $value ) )
+        {
+          // put in the header row
+          if( 1 == $row )
+          {
+            $this->set_bold( true );
+            foreach( $value as $sub_key => $sub_value )
+            {
+              if( !in_array( $sub_key, array( 'update_timestamp', 'create_timestamp' ) ) )
+              {
+                $this->set_cell( $col.$row, $sub_key );
+                $col++;
+              }
+            }
+            $this->set_bold( false );
+            $col = 'A';
+            $row++;
+          }
+
+          foreach( $value as $sub_key => $sub_value )
+          {
+            if( !in_array( $sub_key, array( 'update_timestamp', 'create_timestamp' ) ) )
+            {
+              // convert timezones
+              if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
+              {
+                $datetime_obj = $util_class_name::get_datetime_object( $sub_value );
+                $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+                $sub_value = $datetime_obj->format( 'Y-m-d '.$time_format );
+
+                // and add the timezone to the header
+                $col = count( $row_data );
+                $header = $csv_array[0][$col];
+                $suffix = sprintf( ' (%s)', $tz );
+                if( false === strpos( $header, $suffix ) ) $csv_array[0][$col] = $header.$suffix;
+              }
+              else if( is_bool( $sub_value ) ) $sub_value = $sub_value ? 'yes' : 'no';
+
+              $this->set_cell( $col.$row, $sub_value );
+              $col++;
+            }
+          }
+        }
+        else
+        {
+          if( !in_array( $key, array( 'update_timestamp', 'create_timestamp' ) ) )
+          {
+            // convert timezones
+            if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
+            {
+              $datetime_obj = $util_class_name::get_datetime_object( $value );
+              $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+              $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
+            }
+            else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';
+
+            $this->set_bold( true );
+            $this->set_cell( $col.$row, $key );
+            $this->set_bold( false );
+            $this->set_cell( ($col+1).$row, $value );
+          }
+        }
+        $row++;
+      }
+    }
   }
 
   /**
@@ -198,21 +289,13 @@ class report extends \cenozo\base_object
   public function get_file( $format )
   {
     // create the desired file writer type
-    if( 'xlsx' == $format )
+    if( 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == $format )
     {
       $writer = new \PHPExcel_Writer_Excel2007( $this->php_excel );
     }
-    else if( 'xls' == $format )
+    else if( 'application/vnd.oasis.opendocument.spreadsheet' == $format )
     {
-      $writer = new \PHPExcel_Writer_Excel5( $this->php_excel );
-    }
-    else if( 'html' == $format )
-    {
-      $writer = new \PHPExcel_Writer_HTML( $this->php_excel );
-    }
-    else if( 'pdf' == $format )
-    {
-      $writer = new \PHPExcel_Writer_PDF( $this->php_excel );
+      $writer = new \PHPExcel_Writer_OpenDocument( $this->php_excel );
     }
     else // csv
     {

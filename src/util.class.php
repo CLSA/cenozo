@@ -532,6 +532,94 @@ class util
   /**
    * TODO: document
    */
+  public static function get_data_as_csv( $data )
+  {
+    $session = lib::create( 'business\session' );
+    $db_user = $session->get_user();
+    $now = static::get_datetime_object();
+    $now->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+    $tz = $now->format( 'T' );
+    $time_format = $db_user->use_12hour_clock ? 'h:i:s a' : 'H:i:s';
+
+    $csv_array = array();
+
+    if( is_string( $data ) )
+    {
+      $csv_array[0] = array( $data );
+    }
+    else if( is_array( $data ) )
+    {
+      foreach( $data as $key => $value )
+      {
+        if( is_array( $value ) )
+        {
+          // put in the header row
+          if( 0 == count( $csv_array ) )
+          {
+            $row_data = array();
+            foreach( $value as $sub_key => $sub_value )
+              if( !in_array( $sub_key, array( 'update_timestamp', 'create_timestamp' ) ) )
+                $row_data[] = $sub_key;
+            $csv_array[] = $row_data;
+          }
+
+          $row_data = array();
+          foreach( $value as $sub_key => $sub_value )
+          {
+            if( !in_array( $sub_key, array( 'update_timestamp', 'create_timestamp' ) ) )
+            {
+              // convert timezones
+              if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
+              {
+                $datetime_obj = static::get_datetime_object( $sub_value );
+                $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+                $sub_value = $datetime_obj->format( 'Y-m-d '.$time_format );
+
+                // and add the timezone to the header
+                $col = count( $row_data );
+                $header = $csv_array[0][$col];
+                $suffix = sprintf( ' (%s)', $tz );
+                if( false === strpos( $header, $suffix ) ) $csv_array[0][$col] = $header.$suffix;
+              }
+              else if( is_bool( $sub_value ) ) $sub_value = $sub_value ? 'yes' : 'no';
+
+              $row_data[] = $sub_value;
+            }
+          }
+          $csv_array[] = $row_data;
+        }
+        else
+        {
+          if( !in_array( $key, array( 'update_timestamp', 'create_timestamp' ) ) )
+            $csv_array[] = array( $key, $value );
+        }
+      }
+    }
+
+    $encoded_data = '';
+    foreach( $csv_array as $row )
+    {
+      $row = array_map( function( $value ) {
+        // convert timezones
+        if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
+        {
+          $datetime_obj = static::get_datetime_object( $value );
+          $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+          $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
+        }
+        else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';
+
+        return str_replace( '"', '""', $value );
+      }, $row );
+      $encoded_data .= implode( ',', $row )."\n";
+    }
+
+    return $encoded_data;
+  }
+
+  /**
+   * TODO: document
+   */
   public static function get_theme_color( $type = 'primary', $percent = 1.0 )
   {
     $percent = strval( $percent );

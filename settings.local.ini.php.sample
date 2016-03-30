@@ -24,8 +24,14 @@ if( array_key_exists( 'HTTP_HOST', $_SERVER ) )
                                             $_SERVER["HTTP_HOST"] );
 
 // the url of limesurvey and database information found in application/config/config.php
-$SETTINGS['path']['LIMESURVEY'] = '/path/to/limesurvey';
+$settings['path']['LIMESURVEY'] = '/path/to/limesurvey';
 $settings['url']['LIMESURVEY'] = '../limesurvey';
+
+// the url of PHPExcel
+$settings['path']['PHPEXCEL'] = '/path/to/PHPExcel';
+
+// the location of the Shift8 Asterisk library
+$settings['path']['SHIFT8'] = '/path/to/shift8';
 
 // database settings (username and password are set in the application's settings)
 $settings['db']['server'] = 'localhost';

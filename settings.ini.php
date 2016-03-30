@@ -60,8 +60,11 @@ $settings['path']['REPORT_CACHE'] = $settings['path']['TEMP'].'/report';
 $settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
 
 // the url of limesurvey and database information found in application/config/config.php
-$SETTINGS['path']['LIMESURVEY'] = '/var/www/limesurvey';
-$SETTINGS['url']['LIMESURVEY'] = '../limesurvey';
+$settings['path']['LIMESURVEY'] = '/var/www/limesurvey';
+$settings['url']['LIMESURVEY'] = '../limesurvey';
+
+// the url of PHPExcel
+$settings['path']['PHPEXCEL'] = '/usr/local/lib/PHPExcel';
 
 // the location of the Shift8 Asterisk library
 $settings['path']['SHIFT8'] = '/usr/local/lib/shift8';
