@@ -624,12 +624,6 @@ abstract class record extends \cenozo\base_object
       if( !$sub_action )
       {
         // calling: get_<record>()
-        // make sure this table has the correct foreign key
-        if( !static::column_exists( $subject.'_id' ) )
-          throw lib::create( 'exception\runtime',
-            sprintf( 'Call to undefined function: %s::%s() (foreign key not found)',
-                     get_called_class(),
-                     $name ), __METHOD__ );
         return $this->get_record( $subject );
       }
       else

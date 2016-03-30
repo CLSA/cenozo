@@ -23,11 +23,9 @@ class consent extends record
    */
   public function save()
   {
-    $db_consent_type = lib::create( 'database\consent_type', $this->consent_type_id );
-    if( $this->accept && 'participation' == $db_consent_type->name )
+    if( $this->accept && 'participation' == $this->get_consent_type()->name )
     {
-      $db_participant = lib::create( 'database\participant', $this->participant_id );
-      if( !is_null( $db_participant->withdraw_letter ) )
+      if( !is_null( $this->get_participant()->withdraw_letter ) )
       {
         throw lib::create( 'exception\notice',
           'The participant has completed the withdraw script, '.

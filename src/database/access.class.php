@@ -25,8 +25,7 @@ class access extends record
   {
     if( is_null( $this->id ) )
     {
-      $db_access_role = lib::create( 'database\role', $this->role_id );
-      if( $db_access_role->tier > lib::create( 'business\session' )->get_role()->tier )
+      if( $this->get_role()->tier > lib::create( 'business\session' )->get_role()->tier )
         throw lib::create( 'exception\permission', 'Access creation', __METHOD__ );
     }
 
