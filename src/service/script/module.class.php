@@ -76,6 +76,17 @@ class module extends \cenozo\service\module
       }
     }
 
+    if( $select->has_column( 'access' ) )
+    {
+      // add whether the current application has access to this script
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'script.id', '=', 'application_has_script.script_id', false );
+      $join_mod->where( 'application_has_script.application_id', '=',
+        lib::create( 'business\session' )->get_application()->id );
+      $modifier->join_modifier( 'application_has_script', $join_mod, 'left' );
+      $select->add_column( 'application_has_script.application_id IS NOT NULL', 'access', false );
+    }
+
     if( $select->has_column( 'url' ) )
       $select->add_column( sprintf( 'CONCAT( "%s/index.php?sid=", script.sid )', LIMESURVEY_URL ), 'url', false );
   }

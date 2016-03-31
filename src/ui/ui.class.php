@@ -234,6 +234,10 @@ class ui extends \cenozo\base_object
     {
       $module_list['recording']['children'] = array( 'recording_file' );
     }
+    if( array_key_exists( 'script', $module_list ) )
+    {
+      $module_list['script']['choosing'] = array( 'application' );
+    }
     if( array_key_exists( 'site', $module_list ) )
     {
       $module_list['site']['children'] = array( 'access', 'activity' );

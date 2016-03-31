@@ -21,6 +21,10 @@ define( function() {
       repeated: {
         title: 'Repeated',
         type: 'boolean'
+      },
+      access: {
+        title: 'In Application',
+        type: 'boolean'
       }
     },
     defaultOrder: {
