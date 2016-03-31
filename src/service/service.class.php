@@ -693,14 +693,6 @@ abstract class service extends \cenozo\base_object
    */
   public function get_data()
   {
-    $util_class_name = lib::get_class_name( 'util' );
-    $session = lib::create( 'business\session' );
-    $db_user = $session->get_user();
-    $now = $util_class_name::get_datetime_object();
-    $now->setTimezone( new \DateTimeZone( $db_user->timezone ) );
-    $tz = $now->format( 'T' );
-    $time_format = $db_user->use_12hour_clock ? 'h:i:s a' : 'H:i:s';
-
     if( is_null( $this->encoded_data ) )
     {
       // determine the encoding from the accept header

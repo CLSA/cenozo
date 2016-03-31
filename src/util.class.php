@@ -537,9 +537,9 @@ class util
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
     $now = static::get_datetime_object();
-    $now->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+    if( !is_null( $db_user ) ) $now->setTimezone( new \DateTimeZone( $db_user->timezone ) );
     $tz = $now->format( 'T' );
-    $time_format = $db_user->use_12hour_clock ? 'h:i:s a' : 'H:i:s';
+    $time_format = is_null( $db_user ) || !$db_user->use_12hour_clock ? 'H:i:s' : 'h:i:s a';
 
     $csv_array = array();
 
