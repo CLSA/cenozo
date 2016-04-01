@@ -40,7 +40,7 @@ BEGIN
     SELECT COUNT(*) FROM jurisdiction
     JOIN application_has_site ON jurisdiction.site_id = application_has_site.site_id
     WHERE jurisdiction.postcode = NEW.postcode
-    AND application_id = (
+    AND application_id IN (
       SELECT application_id
       FROM application_has_site
       WHERE application_has_site.site_id = NEW.site_id
@@ -72,7 +72,7 @@ BEGIN
     SELECT COUNT(*) FROM jurisdiction
     JOIN application_has_site ON jurisdiction.site_id = application_has_site.site_id
     WHERE jurisdiction.postcode = NEW.postcode
-    AND application_id = (
+    AND application_id IN (
       SELECT application_id
       FROM application_has_site
       WHERE application_has_site.site_id = NEW.site_id

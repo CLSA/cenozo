@@ -40,7 +40,7 @@ BEGIN
     JOIN application_has_site ON region_site.site_id = application_has_site.site_id
     WHERE region_site.region_id = NEW.region_id
     AND region_site.language_id = NEW.language_id
-    AND application_id = (
+    AND application_id IN (
       SELECT application_id
       FROM application_has_site
       WHERE application_has_site.site_id = NEW.site_id
@@ -73,7 +73,7 @@ BEGIN
     JOIN application_has_site ON region_site.site_id = application_has_site.site_id
     WHERE region_site.region_id = NEW.region_id
     AND region_site.language_id = NEW.language_id
-    AND application_id = (
+    AND application_id IN (
       SELECT application_id
       FROM application_has_site
       WHERE application_has_site.site_id = NEW.site_id
