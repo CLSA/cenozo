@@ -1134,15 +1134,21 @@ cenozo.directive( 'cnRecordList', [
 
         $scope.chooseRecord = function( record ) {
           if( $scope.model.chooseEnabled ) {
-            if( $scope.model.listModel.chooseMode ) { $scope.model.listModel.onChoose( record ); }
-          };
-        }
+            if( $scope.model.listModel.chooseMode ) record.chosen = record.chosen ? 0 : 1;
+          }
+        };
 
         $scope.selectRecord = function( record ) {
           if( $scope.model.viewEnabled ) {
             $scope.model.listModel.onSelect( record );
-          };
-        }
+          }
+        };
+
+        $scope.applyChosenRecords = function() {
+          if( $scope.model.chooseEnabled ) {
+            if( $scope.model.listModel.chooseMode ) $scope.model.listModel.onApplyChosen();
+          }
+        };
       },
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -2519,32 +2525,30 @@ cenozo.factory( 'CnBaseListFactory', [
          * @param object record: The record to choose
          * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onChoose', function( record ) {
+        cenozo.addExtendableFunction( object, 'onApplyChosen', function() {
           var self = this;
           if( !this.parentModel.chooseEnabled )
-            throw new Error( 'Calling onChoose() but chooseEnabled is false.' );
+            throw new Error( 'Calling onApplyChosen() but chooseEnabled is false.' );
 
-          // note: don't use the record's getIdentifier since choosing requires the ID only
-          var httpObj = record.chosen
-                      ? { path: this.parentModel.getServiceResourcePath( record.id ) }
-                      : { path: this.parentModel.getServiceCollectionPath(), data: record.id };
-          httpObj.onError = function( response ) { self.onChooseError( response ); }
-          var promise = record.chosen
-                      ? CnHttpFactory.instance( httpObj ).delete()
-                      : CnHttpFactory.instance( httpObj ).post();
-
-          return promise.then( function() {
-            record.chosen = record.chosen ? 0 : 1;
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceCollectionPath(),
+            data: this.cache.reduce( function( list, record ) {
+              if( record.chosen ) list.push( record.id );
+              return list;
+            }, [] ),
+            onError: function( response ) { self.onApplyChosenError( response ); }
+          } ).post().then( function() {
+            self.toggleChooseMode();
             object.afterChooseFunctions.forEach( function( fn ) { fn(); } );
           } )
         } );
 
         /**
-         * Handles erros when choosing records.
+         * Handles erros when applying chosen records.
          * 
          * @param object response: The response of a failed http call
          */
-        cenozo.addExtendableFunction( object, 'onChooseError', function( response ) {
+        cenozo.addExtendableFunction( object, 'onApplyChosenError', function( response ) {
           CnModalMessageFactory.httpError( response );
         } );
 

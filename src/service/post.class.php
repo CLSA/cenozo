@@ -90,7 +90,9 @@ class post extends write
         }
         else
         {
-          $method = sprintf( 'add_%s', $leaf_subject );
+          $method = is_array( $post_object )
+                  ? sprintf( 'replace_%s', $leaf_subject )
+                  : sprintf( 'add_%s', $leaf_subject );
           $this->get_parent_record()->$method( $post_object );
           $this->status->set_code( 201 );
         }

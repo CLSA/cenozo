@@ -181,14 +181,20 @@
                 <i class="glyphicon glyphicon-plus"></i> Add
               </button>
             </div>
-            <button class="btn btn-default pull-right"
-                    ng-if="model.chooseEnabled"
-                    ng-class="model.listModel.chooseMode ? 'btn-success' : 'btn-default'"
-                    ng-click="model.listModel.toggleChooseMode()">
-              <i class="glyphicon glyphicon-edit"
-                 ng-class="model.listModel.chooseMode ? 'glyphicon-check' : 'glyphicon-edit'"></i>
-              {{ model.listModel.chooseMode ? 'Done' : 'Choose' }}
-            </button>
+            <div class="btn-group pull-right" ng-if="model.chooseEnabled">
+              <button class="btn btn-default"
+                      ng-if="model.chooseEnabled"
+                      ng-click="model.listModel.toggleChooseMode()">
+                <i class="glyphicon glyphicon-edit"
+                   ng-class="{'glyphicon-edit':!model.listModel.chooseMode}"></i>
+                {{ model.listModel.chooseMode ? 'Cancel' : 'Choose' }}
+              </button>
+              <button class="btn btn-success"
+                      ng-if="model.listModel.chooseMode"
+                      ng-click="applyChosenRecords()">
+                <i class="glyphicon glyphicon-check"></i> Apply
+              </button>
+            </div>
           </td>
         </tr>
       </tfoot>
