@@ -13,7 +13,9 @@ INSERT IGNORE INTO consent_type( name, description ) VALUES
 ( "draw blood", "Consent to draw blood." ),
 ( "take urine", "Consent to take urine." ),
 ( "use proxy", "Consent to use a proxy decision maker to make desisions on behalf of the participant." ),
-( "use informant", "Consent to use an information provider to provide information on behalf of the participant." );
+( "use informant", "Consent to use an information provider to provide information on behalf of the participant." ),
+( "HIN access", "Consent to grant CLSA access to the participant's health insurance number." ),
+( "HIN future access", "Consent to grant CLSA future access to the participant's health insurance number." );
 
 SELECT "Adding new triggers to consent_type table" AS "";
 

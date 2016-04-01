@@ -24,6 +24,7 @@ SOURCE address.sql
 SOURCE event_address.sql
 SOURCE consent_type.sql
 SOURCE consent.sql
+SOURCE hin.sql
 SOURCE event.sql
 SOURCE phone.sql
 SOURCE person_note.sql

@@ -23,6 +23,8 @@ DROP PROCEDURE IF EXISTS patch_consent;
       ON UPDATE NO ACTION;
     END IF;
 
+    SELECT "Adding consent_type_id column to consent table" AS "";
+
     SET @test = (
       SELECT COUNT(*)
       FROM information_schema.COLUMNS
@@ -31,7 +33,8 @@ DROP PROCEDURE IF EXISTS patch_consent;
       AND COLUMN_NAME = "consent_type_id" );
     IF @test = 0 THEN
       ALTER TABLE consent
-      ADD column consent_type_id INT UNSIGNED NOT NULL;
+      ADD column consent_type_id INT UNSIGNED NOT NULL
+      AFTER participant_id;
 
       UPDATE consent, consent_type
       SET consent_type_id = consent_type.id
@@ -44,6 +47,28 @@ DROP PROCEDURE IF EXISTS patch_consent;
       REFERENCES consent_type (id)
       ON DELETE CASCADE
       ON UPDATE NO ACTION;
+    END IF;
+
+    SELECT "Transferring hin consent information to consent table" AS "";
+    SET @test = (
+      SELECT COUNT(*)
+      FROM consent
+      JOIN consent_type ON consent.consent_type_id = consent_type.id
+      WHERE consent_type.name LIKE "HIN %" );
+    IF @test = 0 THEN
+      INSERT INTO consent( participant_id, consent_type_id, accept, written, date, note )
+      SELECT participant_id, consent_type.id, access, false, DATE( hin.update_timestamp ),
+             "Transferred from old HIN information."
+      FROM hin, consent_type
+      WHERE hin.access IS NOT NULL
+      AND consent_type.name = "HIN access";
+
+      INSERT INTO consent( participant_id, consent_type_id, accept, written, date, note )
+      SELECT participant_id, consent_type.id, future_access, false, DATE( hin.update_timestamp ),
+             "Transferred from old HIN information."
+      FROM hin, consent_type
+      WHERE hin.future_access IS NOT NULL
+      AND consent_type.name = "HIN future access";
     END IF;
 
   END //
