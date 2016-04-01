@@ -12,6 +12,7 @@ define( function() {
         restrict: 'E',
         controller: function( $scope ) {
           $scope.session = CnSession;
+          $scope.cenozoUrl = cenozo.baseUrl;
           CnSession.updateData().then( function() { CnSession.setBreadcrumbTrail(); } );
         }
       };
