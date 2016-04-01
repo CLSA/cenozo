@@ -599,17 +599,7 @@ cenozo.service( 'CnBaseHeader', [
           logout: {
             title: 'Logout',
             help: 'Logout of the application',
-            execute: function() {
-              // blank content
-              document.getElementById( 'view' ).innerHTML = '';
-              CnHttpFactory.instance( {
-                path: 'self/0'
-              } ).delete().then( function() {
-                // blank content
-                document.getElementById( 'view' ).innerHTML = '';
-                $window.location.assign( cenozoApp.baseUrl );
-              } );
-            }
+            execute: function() { CnSession.logout(); }
           },
           password: {
             title: 'Password',
@@ -1913,6 +1903,18 @@ cenozo.factory( 'CnSession', [
             path: 'voip/0'
           } ).get().then( function( response ) {
             self.voip = response.data;
+          } );
+        },
+
+        logout: function() {
+          // blank content
+          document.getElementById( 'view' ).innerHTML = '';
+          CnHttpFactory.instance( {
+            path: 'self/0'
+          } ).delete().then( function() {
+            // blank content
+            document.getElementById( 'view' ).innerHTML = '';
+            $window.location.assign( cenozoApp.baseUrl );
           } );
         },
 
