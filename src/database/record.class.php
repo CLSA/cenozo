@@ -560,15 +560,18 @@ abstract class record extends \cenozo\base_object
    * @method null add_<record>() Given an array of ids, this method adds associations between the
    *              current and foreign <record> by adding rows into the joining "has" table.
    * @method null remove_<record>() Given an id, this method removes the association between the
-                  current and foreign <record> by removing the corresponding row from the joining
-                  "has" table.
+   *              current and foreign <record> by removing the corresponding row from the joining
+   *              "has" table.
+   * @method null replace_<record>() Given an array of ids, this method replaces all associations
+   *              between the current and foreign <record> with the given array in the joining
+   *              "has" table.
    */
   public function __call( $name, $args )
   {
     $return_value = NULL;
 
     // set up regular expressions
-    $start = '/^add_|remove_|get_/';
+    $start = '/^add_|remove_|replace_|get_/';
     $end = '/(_list|_object_list|_count)$/';
 
     // see if the start of the function name is a match
@@ -597,7 +600,7 @@ abstract class record extends \cenozo\base_object
       // make sure the first argument is an integer or non-empty array of ids
       if( 1 != count( $args ) ||
           is_object( $args[0] ) ||
-          ( is_array( $args[0] ) && 0 < count( $args[0] ) ) )
+          ( is_array( $args[0] ) && 0 == count( $args[0] ) ) )
         throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $ids = $args[0];
@@ -609,11 +612,22 @@ abstract class record extends \cenozo\base_object
       // make sure the first argument is an integer or non-empty array of ids
       if( 1 != count( $args ) ||
           is_object( $args[0] ) ||
-          ( is_array( $args[0] ) && 0 < count( $args[0] ) ) )
+          ( is_array( $args[0] ) && 0 == count( $args[0] ) ) )
         throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
 
       $id = $args[0];
       $this->remove_record( $subject, $id );
+      return;
+    }
+    else if( 'replace' == $action )
+    { // calling: replace_<record>( $ids )
+      // make sure the first argument is an integer or an array of ids
+      if( 1 != count( $args ) ||
+          is_object( $args[0] ) )
+        throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
+
+      $id = $args[0];
+      $this->replace_records( $subject, $id );
       return;
     }
     else if( 'get' == $action )
@@ -834,8 +848,7 @@ abstract class record extends \cenozo\base_object
    * This method is used to add child records for many-to-many relationships.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param int|array(int) $ids A single or array of primary key values for the record(s) being
-   *                       added.
+   * @param int|array(int) $ids A single or array of primary key values for the record(s) being added.
    * @access protected
    */
   protected function add_records( $record_type, $ids )
@@ -906,7 +919,8 @@ abstract class record extends \cenozo\base_object
    * This method is used to remove child records from one-to-many or many-to-many relationships.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param int $id The primary key value for the record being removed.
+   * @param int $id The primary key value for the record being removed. If NULL then all records
+   *            will be removed.
    * @access protected
    */
   protected function remove_record( $record_type, $id )
@@ -949,8 +963,22 @@ abstract class record extends \cenozo\base_object
     }
     else if( $relationship_class_name::ONE_TO_MANY == $relationship )
     {
-      $record = lib::create( 'database\\'.$record_type, $id );
-      $record->delete();
+      if( is_null( $id ) )
+      {
+        $modifier = lib::create( 'database\modifier' );
+        $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
+        $modifier->where( $column_name, '=', $primary_key_value );
+
+        static::db()->execute(
+          sprintf( 'DELETE FROM %s %s',
+                   $record_type,
+                   $modifier->get_sql() ) );
+      }
+      else
+      {
+        $record = lib::create( 'database\\'.$record_type, $id );
+        $record->delete();
+      }
     }
     else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
@@ -959,8 +987,12 @@ abstract class record extends \cenozo\base_object
       $modifier = lib::create( 'database\modifier' );
       $column_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
       $modifier->where( $column_name, '=', $primary_key_value );
-      $column_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
-      $modifier->where( $column_name, '=', $id );
+
+      if( !is_null( $id ) )
+      {
+        $column_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
+        $modifier->where( $column_name, '=', $id );
+      }
 
       static::db()->execute(
         sprintf( 'DELETE FROM %s %s',
@@ -975,6 +1007,30 @@ abstract class record extends \cenozo\base_object
                  $table_name,
                  $record_type ) );
     }
+  }
+
+  /**
+   * Given an array of ids, this method replaces all associations between the current and foreign record
+   * with the given ids into the joining "has" table.
+   * This method is used to replace child records for many-to-many relationships.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @param int|array(int) $ids A single or array of primary key values for the record(s) being added.
+   * @access protected
+   */
+  protected function replace_records( $record_type, $ids )
+  {
+    // warn if we are in read-only mode
+    if( $this->read_only )
+    {
+      log::warning(
+        'Tried to replace '.$record_type.' records to read-only record.' );
+      return;
+    }
+
+    $this->remove_record( $record_type, NULL );
+    if( !is_array( $ids ) || ( is_array( $ids ) && 0 < count( $ids ) ) )
+      $this->add_records( $record_type, $ids );
   }
 
   /**
