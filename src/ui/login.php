@@ -74,6 +74,10 @@
     <div class="inner-view-frame">
       <div class="container-fluid bg-white" style="padding-top: 1em; padding-bottom:4em;">
         <div class="container">
+          <img src="img/branding.png"
+               class="img-responsive vertical-spacer"
+               onerror="this.style.display='none'"
+               alt="" />
           <div class="record-view rounded" ng-controller="LoginCtrl">
             <form ng-submit="login()" novalidate name="loginForm" class="form-horizontal">
               <div class="container-fluid bg-primary rounded-top"><h4>
