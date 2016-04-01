@@ -351,21 +351,7 @@ class data_manager extends \cenozo\singleton
 
       // note: values from this table are restricted
       $column = $parts[1];
-      if( 'access' == $column )
-      {
-        // participant.hin.access (-1,0,1) or hin.access (-1,0,1)
-        $value = is_null( $db_hin ) || is_null( $db_hin->access )
-               ? -1
-               : ( $db_hin->access ? 1 : 0 );
-      }
-      else if( 'future_access' == $column )
-      {
-        // participant.hin.future_access (-1,0,1) or hin.future_access (-1,0,1)
-        $value = is_null( $db_hin ) || is_null( $db_hin->future_access )
-               ? -1
-               : ( $db_hin->future_access ? 1 : 0 );
-      }
-      else if( 'code_exists' == $column )
+      if( 'code_exists' == $column )
       {
         // participant.hin.code_exists (true/false) or hin.code_exists (true/false)
         $value = !( is_null( $db_hin ) || is_null( $db_hin->code ) ) ? 1 : 0;
