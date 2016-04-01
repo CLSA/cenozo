@@ -1883,15 +1883,18 @@ cenozo.factory( 'CnSession', [
             self.sessionList = response.data.session_list;
 
             // if the user's password isn't set then open the password dialog
-            if( response.data.no_password ) {
+            if( response.data.no_password && !CnModalPasswordFactory.isOpen() ) {
               CnModalPasswordFactory.instance( { confirm: false } ).show().then( function( response ) {
                 self.setPassword( null, response.requestedPass );
               } );
             }
 
             // if the user's email isn't set then open the password dialog
-            if( !self.user.email ) {
-              CnModalAccountFactory.instance( { user: self.user } ).show().then( function( response ) {
+            if( !self.user.email && !CnModalAccountFactory.isOpen() ) {
+              CnModalAccountFactory.instance( {
+                allowCancel: false,
+                user: self.user
+              } ).show().then( function( response ) {
                 if( response ) self.setUserDetails();
               } );
             }
@@ -3912,22 +3915,38 @@ cenozo.factory( 'CnHttpFactory', [
 cenozo.service( 'CnModalAccountFactory', [
   '$modal',
   function( $modal ) {
+    // track if the modal is already open
+    var isOpen = false;
+
     var object = function( params ) {
       var self = this;
+      this.allowCancel = true;
+      angular.extend( this, params );
+      console.log( this.user );
 
-      if( angular.isUndefined( params.user ) )
+      if( angular.isUndefined( this.user ) )
         throw new Error( 'Tried to create CnModalAccountFactory instance without a user.' );
 
       this.show = function() {
+        isOpen = true;
         return $modal.open( {
           backdrop: 'static',
-          keyboard: true,
+          keyboard: this.allowCancel,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-account.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
-            $scope.user = params.user;
-            $scope.ok = function() { $modalInstance.close( true ); };
-            $scope.cancel = function() { $modalInstance.close( false ); };
+            $scope.allowCancel = self.allowCancel;
+            $scope.user = self.user;
+            $scope.ok = function() {
+              $modalInstance.close( true );
+              isOpen = false;
+            };
+            $scope.cancel = function() {
+              if( self.allowCancel ) {
+                $modalInstance.close( false );
+                isOpen = false;
+              }
+            };
             $scope.testEmailFormat = function() {
               $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]+$/.test( $scope.user.email );
               cenozo.updateFormElement( $scope.form.email, true );
@@ -3937,7 +3956,10 @@ cenozo.service( 'CnModalAccountFactory', [
       };
     };
 
-    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+    return {
+      instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); },
+      isOpen: function() { return isOpen; }
+    };
   }
 ] );
 
@@ -4418,6 +4440,9 @@ cenozo.service( 'CnModalMessageFactory', [
 cenozo.service( 'CnModalPasswordFactory', [
   '$modal',
   function( $modal ) {
+    // track if the modal is already open
+    var isOpen = false;
+
     var object = function( params ) {
       var self = this;
       this.confirm = true;
@@ -4425,6 +4450,7 @@ cenozo.service( 'CnModalPasswordFactory', [
       angular.extend( this, params );
 
       this.show = function() {
+        isOpen = true;
         return $modal.open( {
           backdrop: 'static',
           keyboard: this.confirm,
@@ -4438,8 +4464,14 @@ cenozo.service( 'CnModalPasswordFactory', [
                 currentPass: $scope.currentPass,
                 requestedPass: $scope.newPass1
               } );
+              isOpen = false;
             };
-            $scope.cancel = function() { if( this.confirm ) $modalInstance.close( false ); };
+            $scope.cancel = function() {
+              if( this.confirm ) {
+                $modalInstance.close( false );
+                isOpen = false;
+              }
+            };
             $scope.checkPasswordMatch = function() {
               var match = true;
               var item1 = $scope.form.newPass1;
@@ -4465,7 +4497,10 @@ cenozo.service( 'CnModalPasswordFactory', [
       };
     };
 
-    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+    return {
+      instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); },
+      isOpen: function() { return isOpen; }
+    };
   }
 ] );
 
