@@ -1,30 +1,42 @@
 <div class="inner-view-frame">
   <div class="container-fluid bg-white allow-select">
-    <h3 class="text-primary">Welcome to {{ session.application.title }} version {{ session.application.version }}</h3>
-    <div class="container-fluid">
-      You are currently logged on as
-      <strong>{{ session.user.firstName }} {{ session.user.lastName }}</strong>
-      under the role of
-      <strong>{{ session.role.name }}</strong>
-      at the
-      <strong>{{ session.site.name }}</strong>
-      site.<br>
-      <span class="text-warning">
-        Use of any account other than your own is prohibited.
-        If this is not you please <a style="cursor:pointer" ng-click="session.logout()">click here</a> to log in.
-      </span>
-    </div>
-    <div class="vertical-spacer"></div>
-    <div ng-if="session.user.lastActivity" class="container-fluid">
-      You were last logged in from
-      <strong>{{ session.user.lastActivity.start_datetime | cnDatetime:'datetimesecond' }}</strong>
-      until
-      <strong>{{ session.user.lastActivity.end_datetime | cnDatetime:'datetimesecond' }}</strong>
-      under the role of 
-      <strong>{{ session.user.lastActivity.role_name }}</strong>
-      at the
-      <strong>{{ session.user.lastActivity.site_name }}</strong>
-      site.
+    <div class="row">
+      <div class="col-sm-8">
+        <h3 class="text-primary">
+          Welcome to {{ session.application.title }} version {{ session.application.version }}
+        </h3>
+        <div class="container-fluid">
+          You are currently logged on as
+          <strong>{{ session.user.firstName }} {{ session.user.lastName }}</strong>
+          under the role of
+          <strong>{{ session.role.name }}</strong>
+          at the
+          <strong>{{ session.site.name }}</strong>
+          site.<br>
+          <span class="text-warning">
+            Use of any account other than your own is prohibited.
+            If this is not you please <a style="cursor:pointer" ng-click="session.logout()">click here</a>
+            to log in.
+          </span>
+        </div>
+        <div class="vertical-spacer"></div>
+        <div ng-if="session.user.lastActivity" class="container-fluid">
+          You were last logged in from
+          <strong>{{ session.user.lastActivity.start_datetime | cnDatetime:'datetimesecond' }}</strong>
+          until
+          <strong>{{ session.user.lastActivity.end_datetime | cnDatetime:'datetimesecond' }}</strong>
+          under the role of 
+          <strong>{{ session.user.lastActivity.role_name }}</strong>
+          at the
+          <strong>{{ session.user.lastActivity.site_name }}</strong>
+          site.
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <h3>
+          <img src="img/branding.small.png" class="img-responsive" onerror="this.style.display='none'" alt="" />
+        </h3>
+      </div>
     </div>
     <div class="vertical-spacer"></div>
     <h3 class="text-primary">System Status</h3>
