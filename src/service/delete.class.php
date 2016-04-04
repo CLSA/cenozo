@@ -50,11 +50,6 @@ class delete extends write
         {
           $leaf_record->delete();
         }
-        catch( \cenozo\exception\notice $e )
-        {
-          $this->set_data( $e->get_notice() );
-          $this->status->set_code( 406 );
-        }
         catch( \cenozo\exception\database $e )
         {
           if( $e->is_constrained() )

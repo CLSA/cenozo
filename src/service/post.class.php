@@ -111,11 +111,6 @@ class post extends write
           $this->status->set_code( 201 );
           $this->status->set_location( sprintf( '%s/%d', $leaf_subject, $record->$primary_key_name ) );
         }
-        catch( \cenozo\exception\notice $e )
-        {
-          $this->set_data( $e->get_notice() );
-          $this->status->set_code( 406 );
-        }
         catch( \cenozo\exception\database $e )
         {
           if( $e->is_duplicate_entry() )

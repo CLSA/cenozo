@@ -39,11 +39,6 @@ class delete extends \cenozo\service\delete
       if( !is_null( $this->db_started_event_type ) ) $this->db_started_event_type->delete();
       if( !is_null( $this->db_finished_event_type ) ) $this->db_finished_event_type->delete();
     }
-    catch( \cenozo\exception\notice $e )
-    {
-      $this->set_data( $e->get_notice() );
-      $this->status->set_code( 406 );
-    }
     catch( \cenozo\exception\database $e )
     {
       if( $e->is_constrained() )
