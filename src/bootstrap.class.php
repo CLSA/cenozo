@@ -286,7 +286,7 @@ final class bootstrap
       if( !is_null( $service ) )
       {
         $service->set_data( $e->get_code().'' );
-        $service->set_location( NULL );
+        $service->get_status()->set_location( NULL );
       }
 
       // log all but notice exceptions
