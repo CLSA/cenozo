@@ -43,10 +43,13 @@ class module extends \cenozo\service\site_restricted_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
-    // only include sites which belong to this application
+    // only include users with access to this application
     $join_sel = lib::create( 'database\select' );
     $join_sel->from( 'access' );
     $join_sel->add_column( 'user_id' );
+
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->group( 'user_id' );
 
     $modifier->join(
       sprintf( '( %s %s ) AS user_join_site_access', $join_sel->get_sql(), $join_mod->get_sql() ),
