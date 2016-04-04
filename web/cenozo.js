@@ -3625,8 +3625,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               columnList[column].required = '1' == columnList[column].required;
               if( 'enum' == columnList[column].data_type ) { // parse out the enum values
                 columnList[column].enumList = [];
-                var enumList = cenozo.parseEnumList( columnList[column] );
-                enumList.forEach( function( item ) {
+                cenozo.parseEnumList( columnList[column] ).forEach( function( item ) {
                   columnList[column].enumList.push( { value: item, name: item } );
                 } );
               }
