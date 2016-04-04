@@ -48,11 +48,6 @@ class module extends \cenozo\service\site_restricted_module
     $join_sel->from( 'access' );
     $join_sel->add_column( 'user_id' );
 
-    $join_mod = lib::create( 'database\modifier' );
-    $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-    $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
-    $join_mod->group( 'user_id' );
-
     $modifier->join(
       sprintf( '( %s %s ) AS user_join_site_access', $join_sel->get_sql(), $join_mod->get_sql() ),
       'user.id',
@@ -84,8 +79,6 @@ class module extends \cenozo\service\site_restricted_module
       $join_sel->add_column( 'user_id' );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-      $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
       $join_mod->where( 'access.site_id', '=', $db_restrict_site->id );
 
       $modifier->join(

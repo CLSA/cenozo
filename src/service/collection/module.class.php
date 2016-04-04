@@ -112,8 +112,6 @@ class module extends \cenozo\service\site_restricted_module
       // restrict to users who have access to this application
       $sub_mod = lib::create( 'database\modifier' );
       $join_mod->join( 'access', 'user_has_collection.user_id', 'access.user_id' );
-      $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-      $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS collection_join_user', $join_sel->get_sql(), $join_mod->get_sql() ),

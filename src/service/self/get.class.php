@@ -87,12 +87,9 @@ class get extends \cenozo\service\service
 
     // restrict to the current user's access to the current application
     $access_mod = lib::create( 'database\modifier' );
-    $access_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-    $access_mod->join( 'site', 'application_has_site.site_id', 'site.id' );
+    $access_mod->join( 'site', 'access.site_id', 'site.id' );
     $access_mod->join( 'role', 'access.role_id', 'role.id' );
     $access_mod->where( 'access.user_id', '=', $db_user->id );
-    $access_mod->where(
-      'application_has_site.application_id', '=', $db_application->id );
     $access_mod->order( 'site.name' );
     $access_mod->order( 'role.name' );
 
@@ -124,9 +121,8 @@ class get extends \cenozo\service\service
 
     // include the number of active users for the application and whether it is in development mode
     $activity_mod = lib::create( 'database\modifier' );
-    $activity_mod->join( 'application_has_site', 'activity.site_id', 'application_has_site.site_id' );
     $activity_mod->where( 'end_datetime', '=', NULL );
-    $activity_mod->where( 'application_has_site.application_id', '=', $db_application->id );
+    $activity_mod->where( 'application_id', '=', $db_application->id );
     $pseudo_record['application']['active_users'] = $activity_class_name::count( $activity_mod );
     $pseudo_record['application']['development_mode'] = lib::in_development_mode();
     $pseudo_record['application']['login_failure_limit'] =

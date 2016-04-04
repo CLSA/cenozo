@@ -50,10 +50,6 @@ class module extends \cenozo\service\site_restricted_module
         'role.id',
         'role_join_access.role_id' );
 
-      // restrict to sites/users belonging to this application
-      $join_mod->join( 'application_has_site', 'access.site_id', 'application_has_site.site_id' );
-      $join_mod->where( 'application_has_site.application_id', '=', $db_application->id );
-
       // restrict by site
       $db_restrict_site = $this->get_restricted_site();
       if( !is_null( $db_restrict_site ) ) $join_mod->where( 'site.id', '=', $db_restrict_site->id );
