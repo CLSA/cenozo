@@ -84,6 +84,66 @@ define( function() {
     }
   } );
 
+  module.addInputGroup( 'Phone (must be provided)', {
+    phone_international: {
+      title: 'International',
+      type: 'boolean',
+      help: 'Cannot be changed once the phone number has been created.',
+      exclude: 'view'
+    },
+    phone_type: {
+      title: 'Type',
+      type: 'enum',
+      exclude: 'view'
+    },
+    phone_number: {
+      title: 'Number',
+      type: 'string',
+      help: 'Must be in 000-000-0000 format.',
+      exclude: 'view'
+    },
+    phone_note: {
+      title: 'Note',
+      type: 'text',
+      exclude: 'view'
+    }
+  } );
+
+  module.addInputGroup( 'Address (optional)', {
+    address_international: {
+      title: 'International',
+      type: 'boolean',
+      help: 'Cannot be changed once the address has been created.',
+      exclude: 'view'
+    },
+    address_address1: {
+      title: 'Address Line 1',
+      type: 'string',
+      exclude: 'view'
+    },
+    address_address2: {
+      title: 'Address Line 2',
+      type: 'string',
+      exclude: 'view'
+    },
+    address_city: {
+      title: 'City',
+      type: 'string',
+      exclude: 'view'
+    },
+    address_postcode: {
+      title: 'Postcode',
+      type: 'string',
+      help: 'Non-international postal codes must be in "A1A1A1" format, zip codes in "01234" format.',
+      exclude: 'view'
+    },
+    address_note: {
+      title: 'Note',
+      type: 'text',
+      exclude: 'view'
+    }
+  } );
+
   module.addExtraOperation( 'view', {
     title: 'Notes',
     operation: function( $state, model ) {
@@ -225,13 +285,80 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateModelFactory', [
-    '$state', 'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
-    function( $state, CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory ) {
+    'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
+    'CnHttpFactory', '$q',
+    function( CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory,
+              CnHttpFactory, $q ) {
       var object = function( root ) {
+        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnAlternateAddFactory.instance( this );
         this.listModel = CnAlternateListFactory.instance( this );
         this.viewModel = CnAlternateViewFactory.instance( this, root );
+
+        // extend getMetadata
+        this.getMetadata = function() {
+          return $q.all( [
+            this.$$getMetadata(),
+
+            CnHttpFactory.instance( {
+              path: 'phone'
+            } ).head().then( function( response ) {
+              var columnList = angular.fromJson( response.headers( 'Columns' ) );
+
+              // international column
+              columnList.international.required = '1' == columnList.international.required;
+              angular.extend( self.metadata.columnList.phone_international, columnList.international );
+
+              // type column
+              columnList.type.required = '1' == columnList.type.required;
+              columnList.type.enumList = [];
+              cenozo.parseEnumList( columnList.type ).forEach( function( item ) {
+                columnList.type.enumList.push( { value: item, name: item } );
+              } );
+              angular.extend( self.metadata.columnList.phone_type, columnList.type );
+
+              // number column
+              columnList.number.required = '1' == columnList.number.required;
+              angular.extend( self.metadata.columnList.phone_number, columnList.number );
+
+              // note column
+              columnList.note.required = '1' == columnList.note.required;
+              angular.extend( self.metadata.columnList.phone_note, columnList.note );
+            } ),
+
+            CnHttpFactory.instance( {
+              path: 'address'
+            } ).head().then( function( response ) {
+              var columnList = angular.fromJson( response.headers( 'Columns' ) );
+
+              // international column
+              columnList.international.required = false;
+              columnList.international.default = null;
+              angular.extend( self.metadata.columnList.address_international, columnList.international );
+
+              // address1 column
+              columnList.address1.required = false;
+              angular.extend( self.metadata.columnList.address_address1, columnList.address1 );
+
+              // address2 column
+              columnList.address2.required = false;
+              angular.extend( self.metadata.columnList.address_address2, columnList.address2 );
+
+              // city column
+              columnList.city.required = false;
+              angular.extend( self.metadata.columnList.address_city, columnList.city );
+
+              // postcode column
+              columnList.postcode.required = false;
+              angular.extend( self.metadata.columnList.address_postcode, columnList.postcode );
+
+              // note column
+              columnList.note.required = false;
+              angular.extend( self.metadata.columnList.address_note, columnList.note );
+            } )
+          ] );
+        };
       };
 
       return {
