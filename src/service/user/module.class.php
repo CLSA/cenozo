@@ -25,12 +25,12 @@ class module extends \cenozo\service\site_restricted_module
 
     if( $record && $record->id )
     {
+      // don't include special users
       $access_mod = lib::create( 'database\modifier' );
-
-      // make sure there is at least one access record, and restrict by site
-      $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) ) $access_mod->where( 'site_id', '=', $db_restrict_site->id );
-      if( 0 == $record->get_access_count( $access_mod ) ) $this->get_status()->set_code( 403 );
+      $access_mod->join( 'role', 'access.role_id', 'role.id' );
+      $access_mod->where( 'role.special', '=', true );
+      if( $record->get_access_count( $access_mod ) )
+        $this->get_status()->set_code( 403 );
     }
   }
 
@@ -42,19 +42,6 @@ class module extends \cenozo\service\site_restricted_module
     parent::prepare_read( $select, $modifier );
 
     $db_application = lib::create( 'business\session' )->get_application();
-
-    // only include users with access to this application
-    $join_sel = lib::create( 'database\select' );
-    $join_sel->from( 'access' );
-    $join_sel->add_column( 'user_id' );
-
-    $join_mod = lib::create( 'database\modifier' );
-    $join_mod->group( 'user_id' );
-
-    $modifier->join(
-      sprintf( '( %s %s ) AS user_join_site_access', $join_sel->get_sql(), $join_mod->get_sql() ),
-      'user.id',
-      'user_join_site_access.user_id' );
 
     // don't include special users
     $join_sel = lib::create( 'database\select' );
@@ -72,22 +59,40 @@ class module extends \cenozo\service\site_restricted_module
       'user_join_special_access.user_id' );
     $modifier->where( 'user_join_special_access.user_id', '=', NULL );
 
-    // restrict by site
-    $db_restrict_site = $this->get_restricted_site();
-    if( !is_null( $db_restrict_site ) )
+    // we want to allow direct access to users even if they don't have access to this application/site,
+    // so only restrict by application and site if we're getting a list of users, otherwise allow access
+    if( is_null( $this->get_resource() ) )
     {
+      // only include users with access to this application
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'access' );
-      $join_sel->set_distinct( true );
       $join_sel->add_column( 'user_id' );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'access.site_id', '=', $db_restrict_site->id );
+      $join_mod->group( 'user_id' );
 
       $modifier->join(
-        sprintf( '( %s %s ) AS user_join_application ', $join_sel->get_sql(), $join_mod->get_sql() ),
+        sprintf( '( %s %s ) AS user_join_site_access', $join_sel->get_sql(), $join_mod->get_sql() ),
         'user.id',
-        'user_join_application.user_id' );
+        'user_join_site_access.user_id' );
+
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) )
+      {
+        $join_sel = lib::create( 'database\select' );
+        $join_sel->from( 'access' );
+        $join_sel->set_distinct( true );
+        $join_sel->add_column( 'user_id' );
+
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'access.site_id', '=', $db_restrict_site->id );
+
+        $modifier->join(
+          sprintf( '( %s %s ) AS user_join_application ', $join_sel->get_sql(), $join_mod->get_sql() ),
+          'user.id',
+          'user_join_application.user_id' );
+      }
     }
 
     // add the total number of related records

@@ -1131,7 +1131,7 @@ cenozo.directive( 'cnRecordList', [
             if( 0 > $scope.isDeleting.indexOf( record.id ) ) $scope.isDeleting.push( record.id );
             var index = $scope.isDeleting.indexOf( record.id );
             $scope.model.listModel.onDelete( record ).finally(
-              function( response ) { if( 0 <= index ) $scope.isDeleting.splice( index, 1 ); }
+              function() { if( 0 <= index ) $scope.isDeleting.splice( index, 1 ); }
             );
           }
         };

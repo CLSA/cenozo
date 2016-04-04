@@ -162,8 +162,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserAddFactory', [
-    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory',
-    function( CnBaseAddFactory, CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory ) {
+    'CnBaseAddFactory', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', '$state',
+    function( CnBaseAddFactory, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory, $state ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -181,29 +181,17 @@ define( function() {
             console.info( 'The "409 (Conflict)" error found above is normal and can be ignored.' );
             CnHttpFactory.instance( {
               path: 'user/name=' + newRecord.name,
-              data: { select: { column: [ 'first_name', 'last_name' ] } }
+              data: { select: { column: [ 'name', 'first_name', 'last_name' ] } }
             } ).get().then( function( response ) {
+              var user = response.data;
               CnModalConfirmFactory.instance( {
                 title: 'User Already Exists',
                 message: 'The username you are trying to create already exists and belongs to ' +
-                  response.data.first_name + ' ' + response.data.last_name + '. ' +
-                  'Would you like to grant them access to the requested site and role?'
+                  user.first_name + ' ' + user.last_name + '. ' +
+                  'Would you like to view the user\'s details so that you can grant them access ' +
+                  'to the requested site and role?'
               } ).show().then( function( response ) {
-                if( response ) {
-                  CnHttpFactory.instance( {
-                    path: 'user/name=' + newRecord.name + '/access',
-                    data: { site_id: newRecord.site_id, role_id: newRecord.role_id },
-                    onError: function( response ) {
-                      if( 409 == response.status ) {
-                        // access already exists, consider our work done successfully
-                        console.info( 'The "409 (Conflict)" error found above is normal and can be ignored.' );
-                        return CnSession.workingTransition( self.parentModel.transitionToLastState );
-                      } else { CnModalMessageFactory.httpError( response ); }
-                    }
-                  } ).post().then( function() {
-                    return CnSession.workingTransition( self.parentModel.transitionToLastState );
-                  } );
-                }
+                if( response ) $state.go( 'user.view', { identifier: 'name=' + user.name } );
               } );
             } );
           } else { CnModalMessageFactory.httpError( response ); }
