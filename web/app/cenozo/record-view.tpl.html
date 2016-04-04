@@ -43,8 +43,8 @@
                    ng-if="'view' != input.exclude && 'hidden' != input.type"
                    name="innerForm">
             <div class="form-group"
-                 ng-class="{'first-form-group':'null'!=group.title && $first}"
-                 ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
+                 ng-class="{'first-form-group':'null'!=group.title && $first,
+                            'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
               <label for="{{ input.key }}"
                      class="col-sm-3 control-label"
                      tooltip="{{ input.help }}">

@@ -870,28 +870,30 @@ cenozo.directive( 'cnRecordAdd', [
         $scope.model.addModel.onNew( $scope.record ).then( function() {
           $scope.model.setupBreadcrumbTrail();
 
-          $scope.dataArray.forEach( function( item ) {
-            var meta = $scope.model.metadata.columnList[item.key];
-            if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
-              var enumList = angular.copy( meta.enumList );
+          $scope.dataArray.forEach( function( group ) {
+            group.inputList.forEach( function( item ) {
+              var meta = $scope.model.metadata.columnList[item.key];
+              if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
+                var enumList = angular.copy( meta.enumList );
 
-              // add additional rank
-              var newRank = enumList.length + 1;
-              if( 'rank' == item.key ) enumList.push( {
-                value: newRank,
-                name: $filter( 'cnOrdinal' )( newRank )
-              } );
-
-              if( !meta.required || 1 < enumList.length ) {
-                enumList.unshift( {
-                  value: undefined,
-                  name: meta.required ? '(Select ' + item.title + ')' : '(empty)'
+                // add additional rank
+                var newRank = enumList.length + 1;
+                if( 'rank' == item.key ) enumList.push( {
+                  value: newRank,
+                  name: $filter( 'cnOrdinal' )( newRank )
                 } );
-              }
 
-              if( 1 == enumList.length ) $scope.record[item.key] = enumList[0].value;
-              item.enumList = enumList;
-            }
+                if( !meta.required || 1 < enumList.length ) {
+                  enumList.unshift( {
+                    value: undefined,
+                    name: meta.required ? '(Select ' + item.title + ')' : '(empty)'
+                  } );
+                }
+
+                if( 1 == enumList.length ) $scope.record[item.key] = enumList[0].value;
+                item.enumList = enumList;
+              }
+            } );
           } );
         } ).finally( function() { $scope.isComplete = true; } );
 
@@ -967,14 +969,16 @@ cenozo.directive( 'cnRecordAdd', [
           // get the data array and add enum lists for boolean types
           var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
           scope.dataArray = scope.model.getDataArray( removeInputs, 'add' );
-          scope.dataArray.forEach( function( item ) {
-            if( 'boolean' == item.type ) {
-              item.enumList = [
-                { value: undefined, name: '(Select Yes or No)' },
-                { value: true, name: 'Yes' },
-                { value: false, name: 'No' }
-              ];
-            }
+          scope.dataArray.forEach( function( group ) {
+            group.inputList.forEach( function( item ) {
+              if( 'boolean' == item.type ) {
+                item.enumList = [
+                  { value: undefined, name: '(Select Yes or No)' },
+                  { value: true, name: 'Yes' },
+                  { value: false, name: 'No' }
+                ];
+              }
+            } );
           } );
         }
       }
@@ -3492,22 +3496,12 @@ cenozo.factory( 'CnBaseModelFactory', [
                 data.push( self.columnList[key] );
               }
             }
-          } else if( 'add' == type ) {
+          } else { // add or view
             for( var group in self.module.inputGroupList ) {
               for( var key in self.module.inputGroupList[group] ) {
                 var input = self.module.inputGroupList[group][key];
                 // don't include removed items, those which belong to the state subject or excluded
-                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && 'add' != input.exclude ) {
-                  data.push( input );
-                }
-              }
-            }
-          } else { // view
-            for( var group in self.module.inputGroupList ) {
-              for( var key in self.module.inputGroupList[group] ) {
-                var input = self.module.inputGroupList[group][key];
-                // don't include removed items, those which belong to the state subject or excluded
-                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && 'view' != input.exclude ) {
+                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && type != input.exclude ) {
                   var groupObj = data.findByProperty( 'title', group );
                   if( null === groupObj ) {
                     // we haven't added this group yet, so add it now
@@ -3927,7 +3921,6 @@ cenozo.service( 'CnModalAccountFactory', [
       var self = this;
       this.allowCancel = true;
       angular.extend( this, params );
-      console.log( this.user );
 
       if( angular.isUndefined( this.user ) )
         throw new Error( 'Tried to create CnModalAccountFactory instance without a user.' );
