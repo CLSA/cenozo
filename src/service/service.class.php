@@ -93,6 +93,7 @@ abstract class service extends \cenozo\base_object
     }
     catch( \cenozo\exception\notice $e )
     {
+      $this->status->set_location( NULL );
       $this->set_data( $e->get_notice() );
       $this->status->set_code( 406 );
     }
@@ -695,6 +696,8 @@ abstract class service extends \cenozo\base_object
   {
     if( is_null( $this->encoded_data ) )
     {
+      $util_class_name = lib::get_class_name( 'util' );
+
       // determine the encoding from the accept header
       $headers = apache_request_headers();
       if( false === $headers )
@@ -755,7 +758,11 @@ abstract class service extends \cenozo\base_object
    * @param mixed $data
    * @access public
    */
-  public function set_data( $data ) { $this->data = $data; }
+  public function set_data( $data )
+  {
+    $this->data = $data;
+    $this->encoded_data = NULL;
+  }
 
   /**
    * Gets whether to check if the user has access to the service

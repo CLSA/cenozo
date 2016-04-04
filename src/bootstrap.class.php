@@ -283,7 +283,11 @@ final class bootstrap
 
       // The service's data may already be set to something which would have been returned had an error
       // not been encountered.  For this reason we should overwrite with the exception's error code
-      if( !is_null( $service ) ) $service->set_data( $e->get_code().'' );
+      if( !is_null( $service ) )
+      {
+        $service->set_data( $e->get_code().'' );
+        $service->set_location( NULL );
+      }
 
       // log all but notice exceptions
       if( 'notice' != $e->get_type() )
