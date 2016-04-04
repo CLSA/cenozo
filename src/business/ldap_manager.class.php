@@ -315,7 +315,7 @@ class ldap_manager extends \cenozo\singleton
           'The LDAP server failed to respond within the allowed time limit.', 3 );
       }
 
-      if( 0 != $result['exitcode'] )
+      if( 0 != $result['exitcode'] && 'Changed password OK' != substr( $result['output'], 0, 19 ) )
         throw lib::create( 'exception\ldap', $result['output'], $result['exitcode'] );
     }
     else
