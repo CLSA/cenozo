@@ -63,31 +63,5 @@ class module extends \cenozo\service\module
         'application_join_site.application_id' );
       $select->add_column( 'IFNULL( site_count, 0 )', 'site_count', false );
     }
-
-    // add the total number of users
-    if( $select->has_column( 'user_count' ) )
-    {
-      $inner_join_sel = lib::create( 'database\select' );
-      $inner_join_sel->from( 'access' );
-      $inner_join_sel->add_column( 'application_id' );
-      $inner_join_sel->add_column( 'COUNT( DISTINCT user_id )', 'user_count', false );
-
-      $outer_join_sel = lib::create( 'database\select' );
-      $outer_join_sel->from( 'application' );
-      $outer_join_sel->add_column( 'id', 'application_id' );
-      $outer_join_sel->add_column( 'IF( application_id IS NOT NULL, user_count, 0 )', 'user_count', false );
-
-      $outer_join_mod = lib::create( 'database\modifier' );
-      $outer_join_mod->left_join(
-        sprintf( '( %s %s ) AS inner_join', $inner_join_sel->get_sql(), $inner_join_mod->get_sql() ),
-        'application.id',
-        'inner_join.application_id' );
-
-      $modifier->left_join(
-        sprintf( '( %s %s ) AS outer_join', $outer_join_sel->get_sql(), $outer_join_mod->get_sql() ),
-        'application.id',
-        'outer_join.application_id' );
-      $select->add_column( 'IFNULL( user_count, 0 )', 'user_count', false );
-    }
   }
 }

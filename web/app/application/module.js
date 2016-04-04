@@ -28,10 +28,6 @@ define( function() {
       site_count: {
         title: 'Sites',
         type: 'number'
-      },
-      user_count: {
-        title: 'Users',
-        type: 'number'
       }
     },
     defaultOrder: {
@@ -102,11 +98,6 @@ define( function() {
     },
     site_count: {
       title: 'Sites',
-      type: 'string',
-      constant: true
-    },
-    user_count: {
-      title: 'Users',
       type: 'string',
       constant: true
     }
