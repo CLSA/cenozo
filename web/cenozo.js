@@ -1026,7 +1026,7 @@ cenozo.directive( 'cnRecordCalendar', [
         var find = $state.current.name.substr( 0, $state.current.name.indexOf( '.' ) ) + '.list';
         $state.get().some( function( state ) {
           if( find == state.name ) {
-            $scope.viewList = function() { $state.go( '^.list' ); };
+            $scope.viewList = function() { $scope.model.transitionToParentListState(); };
             return true; // stop processing
           }
         } );
@@ -1264,17 +1264,21 @@ cenozo.directive( 'cnRecordView', [
 
         $scope.viewParent = function( subject ) {
           if( !$scope.hasParent() )
-            throw new Error( 'Calling viewParent() but "' + $scope.model.subject + '" module has no parent.' );
+            throw new Error( 'Calling viewParent() but "' + $scope.model.module.subject.camel +
+                             '" module has no parent.' );
 
           var parent = $scope.model.module.identifier.parent.findByProperty( 'subject', subject );
           if( null === parent )
-            throw new Error( 'Calling viewParent() but "' + $scope.model.subject + '" record has no parent.' );
+            throw new Error( 'Calling viewParent() but "' + $scope.model.module.subject.camel +
+                             '" record has no parent.' );
 
           $scope.model.transitionToParentViewState(
             parent.subject, parent.getIdentifier( $scope.model.viewModel.record ) );
         };
 
-        $scope.back = function() { $scope.model.transitionToLastState(); };
+        $scope.back = function() {
+          $scope.model.transitionToParentListState( $scope.model.module.subject.camel );
+        };
 
         $scope.delete = function() {
           $scope.isDeleting = true;
@@ -3401,6 +3405,14 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
+         * TODO: document
+         */
+        cenozo.addExtendableFunction( self, 'transitionToParentListState', function( subject ) {
+          if( angular.isUndefined( subject ) ) subject = '^';
+          return $state.go( subject + '.list' );
+        } );
+
+        /**
          * Creates the breadcrumb trail using module and a specific type (add, list or view)
          */
         cenozo.addExtendableFunction( self, 'setupBreadcrumbTrail', function() {
@@ -3420,7 +3432,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( angular.isDefined( parent.subject ) ) {
             trail = trail.concat( [ {
               title: parent.subject.replace( '_', ' ' ).ucWords(),
-              go: function() { return $state.go( parent.subject + '.list' ); }
+              go: function() { return self.transitionToParentListState( parent.subject ); }
             }, {
               title: self.getBreadcrumbParentTitle(),
               go: function() { return $state.go( parent.subject + '.view', { identifier: parent.identifier } ); }
@@ -3437,7 +3449,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           } else if( 'calendar' == type ) {
             trail = trail.concat( [ {
               title: self.module.name.singular.ucWords(),
-              go: function() { return $state.go( self.module.subject.snake + '.list' ); }
+              go: function() { return self.transitionToParentListState( self.module.subject.snake ); }
             }, {
               title: self.getBreadcrumbTitle()
             } ] );
