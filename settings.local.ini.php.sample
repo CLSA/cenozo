@@ -57,8 +57,3 @@ $settings['voip']['url'] = 'localhost';
 $settings['voip']['username'] = '';
 $settings['voip']['password'] = '';
 $settings['voip']['prefix'] = '';
-
-// the base directory to write monitored calls
-// (must be an absolute path that the asterisk server's user has access to)
-$settings['path']['VOIP_MONITOR'] = '';
-$settings['url']['VOIP_MONITOR'] = 'monitor';
