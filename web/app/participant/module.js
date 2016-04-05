@@ -766,6 +766,9 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         this.hasActiveInputs = false;
         this.participantInputList = null;
         this.consentInputList = null;
+        this.collectionList = null;
+        this.collectionOperation = 'add';
+        this.collectionId = undefined;
         this.eventInputList = null;
         this.note = { sticky: 0, note: '' };
 
@@ -821,7 +824,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           return list;
         };
 
-        // populate the input list once the participant's metadata has been loaded
+        // populate the participant input list once the participant's metadata has been loaded
         CnParticipantModelFactory.root.metadata.getPromise().then( function() {
           self.participantInputList = processInputList( [
               'active', 'honorific', 'first_name', 'other_name', 'last_name', 'sex', 'date_of_birth',
@@ -840,7 +843,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           } );
         } );
 
-        // populate the input list once the consent's metadata has been loaded
+        // populate the consent input list once the consent's metadata has been loaded
         CnConsentModelFactory.root.metadata.getPromise().then( function() {
           self.consentInputList = processInputList(
             [ 'consent_type_id', 'accept', 'written', 'date', 'note' ],
@@ -849,7 +852,24 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           );
         } );
 
-        // populate the input list once the event's metadata has been loaded
+        // populate the collection input list right away
+        CnHttpFactory.instance( {
+          path: 'collection',
+          data: {
+            select: { column: [ 'id', 'name' ] },
+            modifier: {
+              where: [
+                { column: 'collection.active', operator: '=', value: true },
+                { column: 'collection.locked', operator: '=', value: false }
+              ]
+            }
+          }
+        } ).query().then( function( response ) {
+          self.collectionList = response.data;
+          self.collectionList.unshift( { id: undefined, name: '(Select Collection)' } );
+        } );
+
+        // populate the event input list once the event's metadata has been loaded
         CnEventModelFactory.root.metadata.getPromise().then( function() {
           self.eventInputList = processInputList(
             [ 'event_type_id', 'datetime' ],
@@ -937,6 +957,19 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               title: 'Consent Records Added',
               message: 'The consent record has been successfully added to ' + uidArray.length + ' participants.'
             } );
+          } else if( 'collection' == type ) {
+            // handle the collection id specially
+            var element = cenozo.getScopeByQuerySelector( '#collectionId' ).innerForm.name;
+            element.$error.format = false;
+            cenozo.updateFormElement( element, true );
+            error = error || element.$invalid;
+            var messageModal = CnModalMessageFactory.instance( {
+              title: 'Collection Updated',
+              message: 'The participant list has been ' +
+                       ( 'add' == this.collectionOperation ? 'added to ' : 'removed from ' ) +
+                       'the "' + this.collectionList.findByProperty( 'id', this.collectionId ).name + '" ' +
+                       'collection'
+            } );
           } else if( 'event' == type ) {
             var inputList = this.eventInputList;
             var model = CnEventModelFactory.root;
@@ -975,7 +1008,9 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
           if( !error ) {
             var data = { uid_list: uidArray };
-            if( 'note' == type ) {
+            if( 'collection' == type ) {
+              data.collection = { id: this.collectionId, operation: this.collectionOperation };
+            } else if( 'note' == type ) {
               data.note = this.note;
             } else if( 'participant' == type ) {
               data.input_list = {};
@@ -989,7 +1024,8 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
             CnHttpFactory.instance( {
               path: 'participant',
-              data: data
+              data: data,
+              onError: CnModalMessageFactory.httpError
             } ).post().then( function() { messageModal.show(); } );
           }
         };

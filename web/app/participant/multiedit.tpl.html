@@ -50,6 +50,7 @@
         <ul class="nav nav-tabs">
           <li ng-class="{'active':'participant'==tab}"><a ng-click="tab='participant'">Participant</a></li>
           <li ng-class="{'active':'consent'==tab}"><a ng-click="tab='consent'">Consent</a></li>
+          <li ng-class="{'active':'collection'==tab}"><a ng-click="tab='collection'">Collection</a></li>
           <li ng-class="{'active':'event'==tab}"><a ng-click="tab='event'">Event</a></li>
           <li ng-class="{'active':'note'==tab}"><a ng-click="tab='note'">Note</a></li>
         </ul>
@@ -223,6 +224,62 @@
                     class="btn btn-primary"
                     ng-disabled="!model.confirmedCount"
                     ng-click="model.applyMultiedit( 'consent' )">Add Consents</button>
+          </div> 
+        </div>
+        <div ng-if="'collection'==tab" class="panel panel-default">
+          <div class="panel-body">
+            <form name="collectionForm" class="form-horizontal" novalidate>
+              <div class="col-sm-12 vertical-spacer text-info">
+                Select whether to add or remove participants and to/from which collection:
+                <hr />
+              </div>
+              <ng-form name="innerForm">
+                <div class="form-group">
+                  <label for="collectionOperation" class="col-sm-3 control-label">Operation</label>
+                  <div class="col-sm-9">
+                    <div class="input-group">
+                      <select id="collectionOperation"
+                              name="name"
+                              class="form-control"
+                              ng-model="model.collectionOperation">
+                        <option value="add">Add To Collection</option>
+                        <option value="remove">Remove From Collection</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </ng-form>
+              <ng-form name="innerForm">
+                <div class="form-group">
+                  <label for="collectionId" class="col-sm-3 control-label">Collection</label>
+                  <div class="col-sm-9">
+                    <div class="input-group"
+                         ng-class="{ 'has-feedback has-error': innerForm.name.$dirty &&
+                                                               innerForm.name.$invalid }">
+                      <select id="collectionId"
+                              name="name"
+                              ng-options="item.id as item.name for item in model.collectionList"
+                              ng-model="model.collectionId"
+                              class="form-control"
+                              required></select>
+                      <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+                        <span class="help-block" ng-if="innerForm.name.$error.required">
+                          Cannot be blank
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </ng-form>
+            </form>
+          </div>
+          <div class="form-footer text-right rounded-bottom bg-info">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-disabled="!model.confirmedCount"
+                    ng-click="model.applyMultiedit( 'collection' )">
+              {{ 'add' == model.collectionOperation ? 'Add To Collection' : 'Remove From Collection' }}
+            </button>
           </div> 
         </div>
         <div ng-if="'event'==tab" class="panel panel-default">

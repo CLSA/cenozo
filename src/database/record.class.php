@@ -615,8 +615,8 @@ abstract class record extends \cenozo\base_object
           ( is_array( $args[0] ) && 0 == count( $args[0] ) ) )
         throw lib::create( 'exception\argument', 'args', $args, __METHOD__ );
 
-      $id = $args[0];
-      $this->remove_record( $subject, $id );
+      $ids = $args[0];
+      $this->remove_records( $subject, $ids );
       return;
     }
     else if( 'replace' == $action )
@@ -919,11 +919,11 @@ abstract class record extends \cenozo\base_object
    * This method is used to remove child records from one-to-many or many-to-many relationships.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param int $id The primary key value for the record being removed. If NULL then all records
-   *            will be removed.
+   * @param int|array(int) $ids A single or array of primary key values for the record(s) being added.
+   *                       If NULL then all records will be removed.
    * @access protected
    */
-  protected function remove_record( $record_type, $id )
+  protected function remove_records( $record_type, $ids )
   {
     // warn if we are in read-only mode
     if( $this->read_only )
@@ -942,6 +942,9 @@ abstract class record extends \cenozo\base_object
     }
 
     $table_name = static::get_table_name();
+
+    // if ids is not an array then create a single-element array with it
+    if( !is_array( $ids ) ) $ids = array( $ids );
 
     // this method varies depending on the relationship type
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
@@ -963,22 +966,15 @@ abstract class record extends \cenozo\base_object
     }
     else if( $relationship_class_name::ONE_TO_MANY == $relationship )
     {
-      if( is_null( $id ) )
-      {
-        $modifier = lib::create( 'database\modifier' );
-        $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
-        $modifier->where( $column_name, '=', $primary_key_value );
+      $modifier = lib::create( 'database\modifier' );
+      $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
+      $modifier->where( $column_name, '=', $primary_key_value );
+      if( !is_null( $ids ) ) $modifier->where( 'id', 'IN', $ids );
 
-        static::db()->execute(
-          sprintf( 'DELETE FROM %s %s',
-                   $record_type,
-                   $modifier->get_sql() ) );
-      }
-      else
-      {
-        $record = lib::create( 'database\\'.$record_type, $id );
-        $record->delete();
-      }
+      static::db()->execute(
+        sprintf( 'DELETE FROM %s %s',
+                 $record_type,
+                 $modifier->get_sql() ) );
     }
     else if( $relationship_class_name::MANY_TO_MANY == $relationship )
     {
@@ -988,10 +984,10 @@ abstract class record extends \cenozo\base_object
       $column_name = sprintf( '%s.%s_id', $joining_table_name, $table_name );
       $modifier->where( $column_name, '=', $primary_key_value );
 
-      if( !is_null( $id ) )
+      if( !is_null( $ids ) )
       {
         $column_name = sprintf( '%s.%s_id', $joining_table_name, $record_type );
-        $modifier->where( $column_name, '=', $id );
+        $modifier->where( $column_name, 'IN', $ids );
       }
 
       static::db()->execute(
@@ -1028,7 +1024,7 @@ abstract class record extends \cenozo\base_object
       return;
     }
 
-    $this->remove_record( $record_type, NULL );
+    $this->remove_records( $record_type, NULL );
     if( !is_array( $ids ) || ( is_array( $ids ) && 0 < count( $ids ) ) )
       $this->add_records( $record_type, $ids );
   }
