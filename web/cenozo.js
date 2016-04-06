@@ -1805,7 +1805,8 @@ cenozo.factory( 'CnSession', [
       this.sessionList = [];
       this.messageList = [];
       this.breadcrumbTrail = [];
-      this.showAlertHeader = false;
+      this.alertHeader = undefined;
+      this.onAlertHeader = function() {};
 
       // handle watching of http requests that take a long time to return
       var workingPromise = null;
