@@ -31,16 +31,16 @@ iframe { padding: 0px; margin: 0px; border: 0px; }
 .alert-header {
   position: absolute;
   top: 0px;
-  height: 4px;
+  height: 5px;
   width: 100%;
-  background-image: linear-gradient(
-    to right,
-    rgba(242, 100, 100, 0),
-    rgba(242, 100, 100, 1),
-    rgba(242, 100, 100, 1),
-    rgba(242, 100, 100, 1),
-    rgba(242, 100, 100, 0)
-  );
+  opacity: 0;
+  background-image: linear-gradient( to right, transparent, red, yellow, red, transparent);
+  animation: pulse-alert-header 3s infinite;
+}
+@keyframes pulse-alert-header {
+  0%   { opacity: 0; }
+  50%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 .rounded, .rounded-top, .rounded-bottom, .rounded-left, .rounded-right { border-radius: 6px !important; }
 .rounded-top { border-bottom-left-radius: 0px !important; border-bottom-right-radius: 0px !important; }

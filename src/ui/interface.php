@@ -86,7 +86,7 @@
                   </div>
                 </div>
               </div>
-              <div class="container-fluid row" ng-class="{'bg-danger':session.showAlertHeader}">
+              <div class="container-fluid row">
                 <ul class="navigation-group col-xs-4">
                   <li class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Lists</h4>
