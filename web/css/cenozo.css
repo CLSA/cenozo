@@ -28,6 +28,20 @@ iframe { padding: 0px; margin: 0px; border: 0px; }
 .spacer { margin: 0.5em; content: " " }
 .vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
 .horizontal-spacer { margin-left: 0.5em; margin-right: 0.5em; }
+.alert-header {
+  position: absolute;
+  top: 0px;
+  height: 4px;
+  width: 100%;
+  background-image: linear-gradient(
+    to right,
+    rgba(242, 100, 100, 0),
+    rgba(242, 100, 100, 1),
+    rgba(242, 100, 100, 1),
+    rgba(242, 100, 100, 1),
+    rgba(242, 100, 100, 0)
+  );
+}
 .rounded, .rounded-top, .rounded-bottom, .rounded-left, .rounded-right { border-radius: 6px !important; }
 .rounded-top { border-bottom-left-radius: 0px !important; border-bottom-right-radius: 0px !important; }
 .rounded-bottom { border-top-left-radius: 0px !important; border-top-right-radius: 0px !important; }

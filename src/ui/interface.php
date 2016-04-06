@@ -71,6 +71,7 @@
   <div ng-controller="HeaderCtrl">
     <nav class="navigation-header navbar navbar-default noselect">
       <div class="container-fluid bg-primary no-line-height" ng-class="{'working': session.working}">
+        <div class="alert-header" ng-if="session.showAlertHeader"></div>
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
           <a class="navbar-brand" data-toggle="dropdown"><?php echo APP_TITLE; ?></a>
@@ -85,7 +86,7 @@
                   </div>
                 </div>
               </div>
-              <div class="container-fluid row">
+              <div class="container-fluid row" ng-class="{'bg-danger':session.showAlertHeader}">
                 <ul class="navigation-group col-xs-4">
                   <li class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Lists</h4>
