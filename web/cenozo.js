@@ -4885,6 +4885,9 @@ cenozo.config( [
 cenozo.run( [
   '$state', '$rootScope', 'CnSession',
   function( $state, $rootScope, CnSession ) {
+    // track whether we're transitioning a state due to an error (to avoid infinite loops)
+    var stateErrorTransition = false;
+
     $rootScope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
       console.info(
         'Changing state from %s to %s',
@@ -4916,12 +4919,20 @@ cenozo.run( [
       console.info( 'Completed state change to %s',
         toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
       );
+
+      if( stateErrorTransition ) stateErrorTransition = false;
     } );
     $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
-      CnSession.workingTransition( function() { $state.go( 'error.state' ) } );
+      if( !stateErrorTransition ) {
+        stateErrorTransition = true;
+        CnSession.workingTransition( function() { $state.go( 'error.state' ) } );
+      }
     } );
     $rootScope.$on( '$stateChangeError', function( event, toState, toParams, fromState, fromParams, error ) {
-      CnSession.workingTransition( function() { $state.go( 'error.404' ) } );
+      if( !stateErrorTransition ) {
+        stateErrorTransition = true;
+        CnSession.workingTransition( function() { $state.go( 'error.404' ) } );
+      }
     } );
     $rootScope.$on( 'httpRequest', function( event, guid, request ) {
       CnSession.updateWorkingGUID( guid, true );
