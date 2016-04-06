@@ -24,7 +24,6 @@ moment.tz.setDefault( 'UTC' );
 angular.extend( Array.prototype, {
   findIndexByProperty: function( property, value ) {
     var indexList = this.reduce( function( array, item, index ) {
-      console.log( property, value, item, index );
       if( angular.isDefined( item[property] ) && value == item[property] ) array.push( index );
       return array;
     }, [] );
