@@ -290,7 +290,6 @@ slider div.handle:after, [slider] div.handle:after { width: 0px; height: 0px; }
 
 .background {
   background-image: url('../img/background.gif');
-  background-size: 60px;
   background-repeat: repeat;
 }
 
