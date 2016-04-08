@@ -1277,7 +1277,7 @@ cenozo.directive( 'cnRecordView', [
         };
 
         $scope.back = function() {
-          $scope.model.transitionToParentListState( $scope.model.module.subject.camel );
+          $scope.model.transitionToParentListState( $scope.model.module.subject.snake );
         };
 
         $scope.delete = function() {

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS system_message (
   role_id INT UNSIGNED NULL,
   title VARCHAR(255) NULL,
   note TEXT NULL,
-  expiry DATETIME NULL,
+  expiry DATE NULL,
   PRIMARY KEY (id),
   INDEX fk_site_id (site_id ASC),
   INDEX fk_role_id (role_id ASC),

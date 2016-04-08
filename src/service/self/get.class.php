@@ -143,7 +143,6 @@ class get extends \cenozo\service\service
     // include the appropriate system messages
     $system_message_sel = lib::create( 'database\select' );
     $system_message_sel->add_column( 'title' );
-    $system_message_sel->add_column( 'expiry' );
     $system_message_sel->add_column( 'note' );
     $system_message_mod = lib::create( 'database\modifier' );
     $application_id = $db_application->id;
@@ -155,6 +154,11 @@ class get extends \cenozo\service\service
     $role_id = $db_role->id;
     $column = sprintf( 'IFNULL( system_message.role_id, %d )', $role_id );
     $system_message_mod->where( $column, '=', $role_id );
+    $system_message_mod->where( 'expiry', '>=',
+      sprintf( 'DATE( CONVERT_TZ( UTC_TIMESTAMP(), "UTC", %s ) )',
+               $system_message_class_name::db()->format_string( $db_user->timezone ) ),
+      false
+    );
     $system_message_mod->order_desc( 'id' );
     $pseudo_record['system_message_list'] =
       $system_message_class_name::select( $system_message_sel, $system_message_mod );

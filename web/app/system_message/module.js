@@ -30,7 +30,7 @@ define( function() {
       },
       expiry: {
         title: 'Expiry',
-        type: 'datetime'
+        type: 'date'
       }
     },
     defaultOrder: {
