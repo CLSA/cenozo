@@ -93,10 +93,10 @@ class participant extends record
 
     $select = lib::create( 'database\select' );
     $select->from( 'participant_last_consent' );
-    $select->add_column( 'event_id' );
+    $select->add_column( 'consent_id' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'participant_id', '=', $this->id );
-    $modifier->where( 'event_type_id', '=', $db_consent_type->id );
+    $modifier->where( 'consent_type_id', '=', $db_consent_type->id );
 
     $consent_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;

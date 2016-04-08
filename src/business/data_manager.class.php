@@ -258,7 +258,7 @@ class data_manager extends \cenozo\singleton
           $value = $db_participant->get_consent_count();
         }
         else if( 'written_consent' == $subject )
-        { // participant.written_consent.<type>count() or written_consent.count()
+        { // participant.written_consent.<type>.count() or written_consent.count()
           $consent_mod->where( 'written', '=', true );
           $value = $db_participant->get_consent_count( $consent_mod );
         }
