@@ -83,7 +83,6 @@ class query extends read
     if( !is_null( $leaf_subject ) )
     {
       $record_class_name = $this->get_leaf_record_class_name();
-      $this->headers['Columns'] = $record_class_name::db()->get_column_details( $leaf_subject );
       $this->headers['Limit'] = $this->modifier->get_limit();
       $this->headers['Offset'] = $this->modifier->get_offset();
       $this->headers['Total'] = $this->get_record_count();
