@@ -962,9 +962,20 @@ cenozo.directive( 'cnRecordAdd', [
           scope.isAdding = false;
           scope.formattedRecord = {};
 
-          scope.heading = attrs.heading;
-          if( angular.isUndefined( scope.heading ) )
-            scope.heading = 'Create ' + scope.model.module.name.singular.ucWords();
+          if( angular.isDefined( attrs.heading ) ) {
+            scope.heading = attrs.heading;
+          } else {
+            scope.heading = angular.isDefined( scope.model.heading )
+                          ? scope.model.heading
+                          : 'Create ' + scope.model.module.name.singular.ucWords();
+          }
+
+          // watch the model's heading in case it changes
+          scope.$watch( 'model.heading', function( heading ) {
+            scope.heading = angular.isDefined( heading )
+                          ? heading
+                          : 'Create ' + scope.model.module.name.singular.ucWords();
+          } );
 
           // get the data array and add enum lists for boolean types
           var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
@@ -1042,11 +1053,18 @@ cenozo.directive( 'cnRecordCalendar', [
 
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
-          } else if( angular.isDefined( scope.model.heading ) ) {
-            scope.heading = scope.model.heading;
           } else {
-            scope.heading = scope.model.module.name.singular.ucWords() + ' Calendar'
+            scope.heading = angular.isDefined( scope.model.heading )
+                          ? scope.model.heading
+                          : scope.model.module.name.singular.ucWords() + ' Calendar';
           }
+
+          // watch the model's heading in case it changes
+          scope.$watch( 'model.heading', function( heading ) {
+            scope.heading = angular.isDefined( heading )
+                          ? heading
+                          : scope.model.module.name.singular.ucWords() + ' Calendar';
+          } );
 
           // use the full calendar lib to create the calendar
           angular.extend( scope.model.calendarModel.settings, {
@@ -1161,13 +1179,21 @@ cenozo.directive( 'cnRecordList', [
           scope.$state = $state;
           scope.collapsed = scope.initCollapsed;
           scope.isDeleting = [];
+
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
-          } else if( angular.isDefined( scope.model.heading ) ) {
-            scope.heading = scope.model.heading;
           } else {
-            scope.heading = scope.model.module.name.singular.ucWords() + ' List'
+            scope.heading = angular.isDefined( scope.model.heading )
+                          ? scope.model.heading
+                          : scope.model.module.name.singular.ucWords() + ' List';
           }
+
+          // watch the model's heading in case it changes
+          scope.$watch( 'model.heading', function( heading ) {
+            scope.heading = angular.isDefined( heading )
+                          ? heading
+                          : scope.model.module.name.singular.ucWords() + ' List';
+          } );
 
           // add site to removeColumns if role doesn't allow for all sites
           var removeColumns = angular.isDefined( scope.removeColumns ) ? scope.removeColumns.split( ' ' ) : []
@@ -1393,12 +1419,36 @@ cenozo.directive( 'cnRecordView', [
           scope.$state = $state;
           scope.collapsed = scope.initCollapsed;
           scope.isDeleting = false;
-          scope.heading = attrs.heading;
-          scope.viewTitle = attrs.viewTitle;
-          if( angular.isUndefined( scope.heading ) )
-            scope.heading = scope.model.module.name.singular.ucWords() + ' Details';
-          if( angular.isUndefined( scope.viewTitle ) )
-            scope.viewTitle = 'View ' + scope.model.module.name.singular.ucWords() + ' List';
+
+          if( angular.isDefined( attrs.heading ) ) {
+            scope.heading = attrs.heading;
+          } else {
+            scope.heading = angular.isDefined( scope.model.heading )
+                          ? scope.model.heading
+                          : scope.model.module.name.singular.ucWords() + ' Details';
+          }
+
+          // watch the model's heading in case it changes
+          scope.$watch( 'model.heading', function( heading ) {
+            scope.heading = angular.isDefined( heading )
+                          ? heading
+                          : scope.model.module.name.singular.ucWords() + ' Details';
+          } );
+
+          if( angular.isDefined( attrs.viewTitle ) ) {
+            scope.viewTitle = attrs.viewTitle;
+          } else {
+            scope.viewTitle = angular.isDefined( scope.model.viewTitle )
+                            ? scope.model.viewTitle
+                            : 'View ' + scope.model.module.name.singular.ucWords() + ' List';
+          }
+
+          // watch the model's viewTitle in case it changes
+          scope.$watch( 'model.viewTitle', function( viewTitle ) {
+            scope.viewTitle = angular.isDefined( viewTitle )
+                            ? viewTitle
+                            : 'View ' + scope.model.module.name.singular.ucWords() + ' List';
+          } );
 
           // when leaving turn off any activated toggle modes
           scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {

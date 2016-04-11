@@ -220,8 +220,11 @@ define( function() {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
-        if( angular.isDefined( this.languageModel ) )
-          this.languageModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
+
+        this.deferred.promise.then( function() {
+          if( angular.isDefined( self.languageModel ) )
+            self.languageModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
+        } );
 
         // extend the onPatch function
         this.onPatch = function( data ) {

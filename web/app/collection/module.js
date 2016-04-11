@@ -126,10 +126,12 @@ define( function() {
     'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
       var object = function( parentModel, root ) {
-        CnBaseViewFactory.construct( this, parentModel, root );
-        if( angular.isDefined( this.userModel ) ) this.userModel.heading = 'User Control List';
-
         var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        this.deferred.promise.then( function() {
+          if( angular.isDefined( self.userModel ) ) self.userModel.heading = 'User Control List';
+        } );
 
         // private function used in the block below
         function setAccess( enable ) {
@@ -141,6 +143,7 @@ define( function() {
         var defaultEditEnabled = this.parentModel.editEnabled;
         this.onView = function() {
           return this.$$onView().then( function() {
+
             // only allow users belonging to this collection to edit it when it is locked
             if( !self.record.locked ) {
               setAccess( true );
