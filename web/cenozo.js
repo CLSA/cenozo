@@ -631,8 +631,8 @@ cenozo.service( 'CnBaseHeader', [
                   CnSession.user.timezone = response.timezone;
                   CnSession.user.use12hourClock = response.use12hourClock;
                   CnSession.setTimezone( response.timezone, response.use12hourClock ).then( function() {
-                    $window.location.reload()
-                    CnSession.updateTime();
+                    document.getElementById( 'view' ).innerHTML = '';
+                    $window.location.reload();
                   } );
                 }
               } );
@@ -3813,7 +3813,7 @@ cenozo.factory( 'CnHttpFactory', [
               if( null == user ) {
                 // our session has expired, reloading the page will bring us back to the login screen
                 document.getElementById( 'view' ).innerHTML = '';
-                $window.location.reload()
+                $window.location.reload();
               } else {
                 // assert login
                 if( ( null != login.site && site != login.site ) ||
