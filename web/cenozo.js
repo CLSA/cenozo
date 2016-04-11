@@ -2404,7 +2404,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           header: {
             left: 'title',
             center: 'today prevYear,prev,next,nextYear',
-            right: 'month,agendaWeek,agendaDay'
+            right: 'agendaDay,agendaWeek,month'
           },
           events: function( start, end, timezone, callback ) {
             // track the current date
