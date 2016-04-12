@@ -223,7 +223,7 @@ define( function() {
 
         this.deferred.promise.then( function() {
           if( angular.isDefined( self.languageModel ) )
-            self.languageModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
+            self.languageModel.listModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
         } );
 
         // extend the onPatch function

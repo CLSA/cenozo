@@ -965,13 +965,13 @@ cenozo.directive( 'cnRecordAdd', [
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
           } else {
-            scope.heading = angular.isDefined( scope.model.heading )
-                          ? scope.model.heading
+            scope.heading = angular.isDefined( scope.model.addModel.heading )
+                          ? scope.model.addModel.heading
                           : 'Create ' + scope.model.module.name.singular.ucWords();
           }
 
           // watch the model's heading in case it changes
-          scope.$watch( 'model.heading', function( heading ) {
+          scope.$watch( 'model.addModel.heading', function( heading ) {
             scope.heading = angular.isDefined( heading )
                           ? heading
                           : 'Create ' + scope.model.module.name.singular.ucWords();
@@ -1054,13 +1054,13 @@ cenozo.directive( 'cnRecordCalendar', [
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
           } else {
-            scope.heading = angular.isDefined( scope.model.heading )
-                          ? scope.model.heading
+            scope.heading = angular.isDefined( scope.model.calendarModel.heading )
+                          ? scope.model.calendarModel.heading
                           : scope.model.module.name.singular.ucWords() + ' Calendar';
           }
 
           // watch the model's heading in case it changes
-          scope.$watch( 'model.heading', function( heading ) {
+          scope.$watch( 'model.calendarModel.heading', function( heading ) {
             scope.heading = angular.isDefined( heading )
                           ? heading
                           : scope.model.module.name.singular.ucWords() + ' Calendar';
@@ -1183,13 +1183,13 @@ cenozo.directive( 'cnRecordList', [
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
           } else {
-            scope.heading = angular.isDefined( scope.model.heading )
-                          ? scope.model.heading
+            scope.heading = angular.isDefined( scope.model.listModel.heading )
+                          ? scope.model.listModel.heading
                           : scope.model.module.name.singular.ucWords() + ' List';
           }
 
           // watch the model's heading in case it changes
-          scope.$watch( 'model.heading', function( heading ) {
+          scope.$watch( 'model.listModel.heading', function( heading ) {
             scope.heading = angular.isDefined( heading )
                           ? heading
                           : scope.model.module.name.singular.ucWords() + ' List';
@@ -1423,13 +1423,13 @@ cenozo.directive( 'cnRecordView', [
           if( angular.isDefined( attrs.heading ) ) {
             scope.heading = attrs.heading;
           } else {
-            scope.heading = angular.isDefined( scope.model.heading )
-                          ? scope.model.heading
+            scope.heading = angular.isDefined( scope.model.viewModel.heading )
+                          ? scope.model.viewModel.heading
                           : scope.model.module.name.singular.ucWords() + ' Details';
           }
 
           // watch the model's heading in case it changes
-          scope.$watch( 'model.heading', function( heading ) {
+          scope.$watch( 'model.viewModel.heading', function( heading ) {
             scope.heading = angular.isDefined( heading )
                           ? heading
                           : scope.model.module.name.singular.ucWords() + ' Details';

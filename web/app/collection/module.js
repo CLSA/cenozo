@@ -130,7 +130,7 @@ define( function() {
         CnBaseViewFactory.construct( this, parentModel, root );
 
         this.deferred.promise.then( function() {
-          if( angular.isDefined( self.userModel ) ) self.userModel.heading = 'User Control List';
+          if( angular.isDefined( self.userModel ) ) self.userModel.listModel.heading = 'User Control List';
         } );
 
         // private function used in the block below
