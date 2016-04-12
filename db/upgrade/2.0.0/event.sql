@@ -3,6 +3,30 @@ DROP PROCEDURE IF EXISTS patch_event;
   CREATE PROCEDURE patch_event()
   BEGIN
 
+    SELECT "Adding new user_id column to event table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "event"
+      AND COLUMN_NAME = "user_id" );
+    IF @test = 0 THEN
+      ALTER TABLE event
+      ADD COLUMN user_id INT UNSIGNED NULL
+      AFTER event_type_id;
+
+      ALTER TABLE event
+      ADD INDEX fk_user_id (user_id ASC);
+
+      ALTER TABLE event
+      ADD CONSTRAINT fk_event_user_id
+      FOREIGN KEY (user_id)
+      REFERENCES user (id)
+      ON DELETE NO ACTION
+      ON UPDATE NO ACTION;
+    END IF;
+
     SELECT "Modifiying constraint delete rules in event table" AS "";
 
     SET @test = (

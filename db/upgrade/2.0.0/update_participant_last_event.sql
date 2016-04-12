@@ -1,4 +1,4 @@
-SELECT "Creating new update_participant_last_events procedure" AS "";
+SELECT "Creating new update_participant_last_event procedure" AS "";
 
 DROP procedure IF EXISTS update_participant_last_event;
 

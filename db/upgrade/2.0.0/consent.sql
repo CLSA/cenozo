@@ -71,6 +71,31 @@ DROP PROCEDURE IF EXISTS patch_consent;
       AND consent_type.name = "HIN future access";
     END IF;
 
+    SELECT "Adding new participant-consent_type-date unique key to consent table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.STATISTICS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "consent"
+      AND INDEX_NAME = "uq_participant_id_consent_type_id_date" );
+    IF @test = 0 THEN
+      -- remove duplicate records
+      CREATE TEMPORARY TABLE uq_consent
+      SELECT * FROM consent GROUP BY participant_id, consent_type_id, date;
+      ALTER TABLE uq_consent ADD INDEX dk_id( id );
+      DELETE FROM consent WHERE id IN (
+        SELECT * FROM (
+          SELECT consent.id FROM consent
+          LEFT JOIN uq_consent USING( id )
+          WHERE uq_consent.id IS NULL
+        ) AS t
+      );
+
+      ALTER TABLE consent
+      ADD UNIQUE KEY uq_participant_id_consent_type_id_date( participant_id, consent_type_id, date );
+    END IF;
+
   END //
 DELIMITER ;
 
