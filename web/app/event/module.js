@@ -43,7 +43,34 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( 'Event Address', {
+  module.addInputGroup( 'Site/User', {
+    site: {
+      column: 'site.name',
+      title: 'Site',
+      type: 'string',
+      constant: true
+    },
+    user_name: {
+      column: 'user.name',
+      title: 'Username',
+      type: 'string',
+      constant: true
+    },
+    user_first_name: {
+      column: 'user.first_name',
+      title: 'First Name',
+      type: 'string',
+      constant: true
+    },
+    user_last_name: {
+      column: 'user.last_name',
+      title: 'Last Name',
+      type: 'string',
+      constant: true
+    }
+  } );
+
+  module.addInputGroup( 'Address', {
     international: {
       column: 'event_address.international',
       title: 'International',

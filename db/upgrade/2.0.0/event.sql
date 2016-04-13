@@ -27,6 +27,30 @@ DROP PROCEDURE IF EXISTS patch_event;
       ON UPDATE NO ACTION;
     END IF;
 
+    SELECT "Adding new site_id column to event table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "event"
+      AND COLUMN_NAME = "site_id" );
+    IF @test = 0 THEN
+      ALTER TABLE event
+      ADD COLUMN site_id INT UNSIGNED NULL
+      AFTER event_type_id;
+
+      ALTER TABLE event
+      ADD INDEX fk_site_id (site_id ASC);
+
+      ALTER TABLE event
+      ADD CONSTRAINT fk_event_site_id
+      FOREIGN KEY (site_id)
+      REFERENCES site (id)
+      ON DELETE NO ACTION
+      ON UPDATE NO ACTION;
+    END IF;
+
     SELECT "Modifiying constraint delete rules in event table" AS "";
 
     SET @test = (
