@@ -763,7 +763,7 @@ class modifier extends \cenozo\base_object
   public function remove_where( $remove )
   {
     $this->where_list = array_filter( $this->where_list, function( $where ) use( $remove ) {
-      return $remove != $where['column'];
+      return !array_key_exists( 'column', $where ) || $remove != $where['column'];
     } );
   }
 
@@ -791,7 +791,7 @@ class modifier extends \cenozo\base_object
   public function remove_having( $remove )
   {
     $this->having_list = array_filter( $this->having_list, function( $having ) use( $remove ) {
-      return $remove != $having['column'];
+      return !array_key_exists( 'column', $having ) || $remove != $having['column'];
     } );
   }
 
