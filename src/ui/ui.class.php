@@ -70,7 +70,7 @@ class ui extends \cenozo\base_object
       // remove list items the role doesn't have access to
       foreach( $list_items as $title => $subject )
         if( !array_key_exists( $subject, $module_list ) ||
-            !in_array( 'list', $module_list[$subject]['actions'] ) )
+            !array_key_exists( 'list', $module_list[$subject]['actions'] ) )
           unset( $list_items[$subject] );
 
       // prepare which utilities to show in the list
@@ -78,10 +78,14 @@ class ui extends \cenozo\base_object
       foreach( $utility_items as $title => $module )
       {
         if( !array_key_exists( $module['subject'], $module_list ) )
-          $module_list[$module['subject']] =
-            array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
-        if( !in_array( $module['action'], $module_list[$module['subject']]['actions'] ) )
-          $module_list[$module['subject']]['actions'][] = $module['action'];
+          $module_list[$module['subject']] = array(
+            'actions' => array(),
+            'children' => array(),
+            'choosing' => array(),
+            'list_menu' => false );
+        if( !array_key_exists( $module['action'], $module_list[$module['subject']]['actions'] ) )
+          $module_list[$module['subject']]['actions'][$module['action']] =
+            array_key_exists( 'query', $module ) ? $module['query'] : '';
       }
       ksort( $utility_items );
 
@@ -90,8 +94,11 @@ class ui extends \cenozo\base_object
       foreach( $auxiliary_items as $module )
       {
         if( !array_key_exists( $module, $module_list ) )
-          $module_list[$module] =
-            array( 'actions' => array(), 'children' => array(), 'choosing' => array() );
+          $module_list[$module] = array(
+            'actions' => array(),
+            'children' => array(),
+            'choosing' => array(),
+            'list_menu' => false );
       }
 
       // prepare which reports to show in the list
@@ -105,6 +112,9 @@ class ui extends \cenozo\base_object
       $list_item_string = $util_class_name::json_encode( $list_items );
       $utility_item_string = $util_class_name::json_encode( $utility_items );
       $report_item_string = $util_class_name::json_encode( $report_items );
+
+      // empty actions will show as [] in json strings, convert to empty objects {}
+      $module_string = str_replace( '"actions":[]', '"actions":{}', $module_string );
 
       // build the interface
       ob_start();
@@ -174,26 +184,29 @@ class ui extends \cenozo\base_object
       // add delete, view, list, edit and add actions
       if( 'DELETE' == $service['method'] )
       {
-        $module_list[$subject]['actions'][] = 'delete';
+        $module_list[$subject]['actions']['delete'] = '/{identifier}';
       }
       else if( 'GET' == $service['method'] )
       {
-        $module_list[$subject]['actions'][] = $service['resource'] ? 'view' : 'list';
+        if( $service['resource'] ) $module_list[$subject]['actions']['view'] = '/{identifier}';
+        else $module_list[$subject]['actions']['list'] = '';
+
         // add the module to the list menu if:
         // 1) it is the activity module and we can list it or
         // 2) we can both view and list it
         if( ( 'activity' == $subject &&
-              in_array( 'list', $module_list[$subject]['actions'] ) ) ||
-            ( in_array( 'list', $module_list[$subject]['actions'] ) &&
-              in_array( 'view', $module_list[$subject]['actions'] ) ) ) $module_list[$subject]['list_menu'] = true;
+              array_key_exists( 'list', $module_list[$subject]['actions'] ) ) ||
+            ( array_key_exists( 'list', $module_list[$subject]['actions'] ) &&
+              array_key_exists( 'view', $module_list[$subject]['actions'] ) ) )
+          $module_list[$subject]['list_menu'] = true;
       }
       else if( 'PATCH' == $service['method'] )
       {
-        $module_list[$subject]['actions'][] = 'edit';
+        $module_list[$subject]['actions']['edit'] = '/{identifier}';
       }
       else if( 'POST' == $service['method'] )
       {
-        $module_list[$subject]['actions'][] = 'add';
+        $module_list[$subject]['actions']['add'] = '';
       }
     }
 
@@ -206,7 +219,7 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'alternate', $module_list ) )
     {
       $module_list['alternate']['children'] = array( 'address', 'phone' );
-      $module_list['alternate']['actions'][] = 'notes/{identifier}';
+      $module_list['alternate']['actions']['notes'] = '/{identifier}';
     }
     if( array_key_exists( 'collection', $module_list ) )
     {
@@ -224,11 +237,11 @@ class ui extends \cenozo\base_object
     {
       $module_list['participant']['children'] = array( 'address', 'phone', 'consent', 'alternate', 'event' );
       $module_list['participant']['choosing'] = array( 'collection' );
-      $module_list['participant']['actions'][] = 'history/{identifier}';
-      $module_list['participant']['actions'][] = 'notes/{identifier}';
+      $module_list['participant']['actions']['history'] = '/{identifier}';
+      $module_list['participant']['actions']['notes'] = '/{identifier}';
       // remove the add action as this services is used for utility purposes only
-      if( false !== ( $key = array_search( 'add', $module_list['participant']['actions'] ) ) )
-        array_splice( $module_list['participant']['actions'], $key, 1 );
+      if( array_key_exists( 'add', $module_list['participant']['actions'] ) )
+        unset( $module_list['participant']['actions']['add'] );
     }
     if( array_key_exists( 'recording', $module_list ) )
     {
@@ -361,9 +374,15 @@ class ui extends \cenozo\base_object
 
     if( 2 <= $db_role->tier )
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
-    $list['Participant Search'] = array( 'subject' => 'search_result', 'action' => 'list' );
+    $list['Participant Search'] = array(
+      'subject' => 'search_result',
+      'action' => 'list',
+      'query' => '?{q}' );
     if( $setting_manager->get_setting( 'voip', 'enabled' ) )
-      $list['Webphone'] = array( 'subject' => 'webphone', 'action' => 'status', 'target' => 'webphone' );
+      $list['Webphone'] = array(
+        'subject' => 'webphone',
+        'action' => 'status',
+        'target' => 'webphone' );
 
     return $list;
   }

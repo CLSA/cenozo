@@ -109,11 +109,11 @@
                   <li ng-repeat="(title,module) in utilities">
                     <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
-                       target="{{ module.target ? module.target : '_self' }}"
+                       cn-target="module.target"
                        ui-sref-active="btn-warning"
                        ui-sref="{{
                          module.subject + '.' + module.action +
-                         ( module.identifier ? '({identifier:\'' + module.identifier + '\'})' : '' )
+                         ( module.values ? '(' + module.values + ')' : '' )
                        }}">{{ title }}</a>
                   </li>
                 </ul>

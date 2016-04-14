@@ -135,7 +135,7 @@ define( function() {
 
         // private function used in the block below
         function setAccess( enable ) {
-          self.parentModel.enableEdit( enable ? -1 < module.actions.indexOf( 'edit' ) : false );
+          self.parentModel.enableEdit( enable ? angular.isDefined( module.actions.edit ) : false );
           if( angular.isDefined( self.participantModel ) ) self.participantModel.enableChoose( enable );
           if( angular.isDefined( self.userModel ) ) self.userModel.enableChoose( enable );
         };

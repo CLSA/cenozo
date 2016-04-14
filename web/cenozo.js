@@ -123,11 +123,11 @@ angular.extend( cenozoApp, {
         // notes are handled by the alternate and participant modules
         try {
           var alternateModule = cenozoApp.module( 'alternate' );
-          alternateModule.allowNoteDelete = 0 <= this.moduleList.note.actions.indexOf( 'delete' );
-          alternateModule.allowNoteEdit = 0 <= this.moduleList.note.actions.indexOf( 'edit' );
+          alternateModule.allowNoteDelete = angular.isDefined( this.moduleList.note.actions.delete );
+          alternateModule.allowNoteEdit = angular.isDefined( this.moduleList.note.actions.edit );
           var participantModule = cenozoApp.module( 'participant' );
-          participantModule.allowNoteDelete = 0 <= this.moduleList.note.actions.indexOf( 'delete' );
-          participantModule.allowNoteEdit = 0 <= this.moduleList.note.actions.indexOf( 'edit' );
+          participantModule.allowNoteDelete = angular.isDefined( this.moduleList.note.actions.delete );
+          participantModule.allowNoteEdit = angular.isDefined( this.moduleList.note.actions.edit );
         } catch( err ) {} // do nothing if an exception was thrown
         delete this.moduleList.note;
       } else {
@@ -434,15 +434,10 @@ angular.extend( cenozo, {
       } );
 
       // add action states
-      module.actions.forEach( function( action ) {
+      for( var action in module.actions ) {
         if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
-          // if we have a / in the action then remove it
-          var url = '/' + action;
-          if( 'calendar' == action ) url += '/{identifier}';
-          else if ( 'view' == action ) url += '/{identifier}';
-          else if( 'search_result' == name && 'list' == action ) url += '?{q}';
-          var slash = action.indexOf( '/' );
-          if( 0 <= slash ) action = action.substring( 0, slash );
+          // the action's path is the action and the action's value which contains any variable parameters
+          var url = '/' + action + module.actions[action];
           var directive = 'cn-' + module.subject.snake.replace( '_', '-' ) + '-' + action;
           stateProvider.state( name + '.' + action, {
             url: url,
@@ -465,12 +460,12 @@ angular.extend( cenozo, {
             }
           } );
         }
-      } );
+      }
 
       // add child add states (if they exist)
       module.children.forEach( function( child ) {
         var childModule = cenozoApp.module( child.subject.snake );
-        if( -1 < childModule.actions.indexOf( 'add' ) ) {
+        if( angular.isDefined( childModule.actions.add ) ) {
           var directive = 'cn-' + child.subject.snake.replace( '_', '-' ) + '-add';
           stateProvider.state( name + '.add_' + child.subject.snake, {
             url: '/view/{parentIdentifier}/' + child.subject.snake,
@@ -1468,6 +1463,23 @@ cenozo.directive( 'cnRecordView', [
     };
   }
 ] );
+
+/* ######################################################################################################## */
+
+/**
+ * Optional target attribute added to element
+ */
+cenozo.directive( 'cnTarget',
+  function() {
+    return {
+      restrict: 'A',
+      scope: { cnTarget: '=' },
+      link: function( scope, element, attrs ) {
+        if( angular.isDefined( scope.cnTarget ) ) element[0].target = scope.cnTarget;
+      }
+    }
+  }
+);
 
 /* ######################################################################################################## */
 
@@ -3501,7 +3513,9 @@ cenozo.factory( 'CnBaseModelFactory', [
           } else if( 'calendar' == type ) {
             trail = trail.concat( [ {
               title: self.module.name.singular.ucWords(),
-              go: function() { return self.transitionToParentListState( self.module.subject.snake ); }
+              go: angular.isDefined( self.module.actions.list )
+                ? function() { return self.transitionToParentListState( self.module.subject.snake ); }
+                : undefined
             }, {
               title: self.getBreadcrumbTitle()
             } ] );
@@ -3790,11 +3804,11 @@ cenozo.factory( 'CnBaseModelFactory', [
             return this.promise;
           }
         };
-        self.addEnabled = 0 <= self.module.actions.indexOf( 'add' );
+        self.addEnabled = angular.isDefined( self.module.actions.add );
         self.chooseEnabled = false;
-        self.deleteEnabled = 0 <= self.module.actions.indexOf( 'delete' );
-        self.editEnabled = 0 <= self.module.actions.indexOf( 'edit' );
-        self.viewEnabled = 0 <= self.module.actions.indexOf( 'view' );
+        self.deleteEnabled = angular.isDefined( self.module.actions.delete );
+        self.editEnabled = angular.isDefined( self.module.actions.edit );
+        self.viewEnabled = angular.isDefined( self.module.actions.view );
         self.listingState = 'list';
 
         // process input and column lists one at a time

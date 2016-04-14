@@ -84,7 +84,7 @@ define( function() {
   } );
 
   var settingModule = module;
-  if( 0 <= settingModule.actions.indexOf( 'view' ) ) {
+  if( angular.isDefined( settingModule.actions.view ) ) {
     module.addExtraOperation( 'view', {
       title: 'Settings',
       operation: function( $state, model ) {
