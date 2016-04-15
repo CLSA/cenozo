@@ -31,7 +31,7 @@ iframe { padding: 0px; margin: 0px; border: 0px; }
 .alert-header {
   position: absolute;
   top: 0px;
-  height: 5px;
+  height: 10px;
   width: 100%;
   opacity: 0;
   background-image: linear-gradient( to right, transparent, red, yellow, red, transparent);
