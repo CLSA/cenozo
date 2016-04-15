@@ -119,7 +119,7 @@ class ldap_manager extends \cenozo\singleton
 
       if( 0 != $result['exitcode'] )
       {
-        $code = false === strpos( $result['output'], 'LDAP_ENTRY_ALREADY_EXISTS' ) ? 68 : $result['exitcode'];
+        $code = false !== strpos( $result['output'], 'LDAP_ENTRY_ALREADY_EXISTS' ) ? 68 : $result['exitcode'];
         throw lib::create( 'exception\ldap', $result['output'], $code );
       }
     }
@@ -190,7 +190,7 @@ class ldap_manager extends \cenozo\singleton
 
       if( 0 != $result['exitcode'] )
       {
-        $code = false === strpos( $result['output'], 'Unable to find user' ) ? 32 : $result['exitcode'];
+        $code = false !== strpos( $result['output'], 'Unable to find user' ) ? 32 : $result['exitcode'];
         throw lib::create( 'exception\ldap', $result['output'], $code );
       }
     }
