@@ -36,6 +36,9 @@ CREATE PROCEDURE patch_application_has_site()
       INSERT INTO application_has_site( application_id, site_id )
       SELECT application.id, site.id
       FROM application, site
+      WHERE application.type = "mastodon"
+      UNION SELECT application.id, site.id
+      FROM application, site
       WHERE application.type = "beartooth"
       AND site.name LIKE "% DCS"
       UNION SELECT application.id, site.id

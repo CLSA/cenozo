@@ -138,16 +138,6 @@ CREATE PROCEDURE clsa_pre_update()
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @mastodon, ".away_time" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @mastodon, ".user_time" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
       END IF;
 
       IF @sabretooth_bl IS NOT NULL THEN
@@ -281,18 +271,18 @@ CREATE PROCEDURE clsa_pre_update()
             "CONSTRAINT fk_access_user_id ",
               "FOREIGN KEY (user_id) ",
               "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_role_id ",
               "FOREIGN KEY (role_id) ",
               "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_site_id ",
               "FOREIGN KEY (site_id) ",
               "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION) ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE) ",
           "ENGINE = InnoDB" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -332,18 +322,18 @@ CREATE PROCEDURE clsa_pre_update()
             "CONSTRAINT fk_access_user_id ",
               "FOREIGN KEY (user_id) ",
               "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_role_id ",
               "FOREIGN KEY (role_id) ",
               "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_site_id ",
               "FOREIGN KEY (site_id) ",
               "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION) ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE) ",
           "ENGINE = InnoDB" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -383,18 +373,18 @@ CREATE PROCEDURE clsa_pre_update()
             "CONSTRAINT fk_access_user_id ",
               "FOREIGN KEY (user_id) ",
               "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_role_id ",
               "FOREIGN KEY (role_id) ",
               "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_site_id ",
               "FOREIGN KEY (site_id) ",
               "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION) ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE) ",
           "ENGINE = InnoDB" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -434,18 +424,18 @@ CREATE PROCEDURE clsa_pre_update()
             "CONSTRAINT fk_access_user_id ",
               "FOREIGN KEY (user_id) ",
               "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_role_id ",
               "FOREIGN KEY (role_id) ",
               "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_site_id ",
               "FOREIGN KEY (site_id) ",
               "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION) ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE) ",
           "ENGINE = InnoDB" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -485,18 +475,18 @@ CREATE PROCEDURE clsa_pre_update()
             "CONSTRAINT fk_access_user_id ",
               "FOREIGN KEY (user_id) ",
               "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_role_id ",
               "FOREIGN KEY (role_id) ",
               "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_site_id ",
               "FOREIGN KEY (site_id) ",
               "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION) ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE) ",
           "ENGINE = InnoDB" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -536,18 +526,18 @@ CREATE PROCEDURE clsa_pre_update()
             "CONSTRAINT fk_access_user_id ",
               "FOREIGN KEY (user_id) ",
               "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_role_id ",
               "FOREIGN KEY (role_id) ",
               "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_site_id ",
               "FOREIGN KEY (site_id) ",
               "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION) ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE) ",
           "ENGINE = InnoDB" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -587,18 +577,18 @@ CREATE PROCEDURE clsa_pre_update()
             "CONSTRAINT fk_access_user_id ",
               "FOREIGN KEY (user_id) ",
               "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_role_id ",
               "FOREIGN KEY (role_id) ",
               "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_site_id ",
               "FOREIGN KEY (site_id) ",
               "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION) ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE) ",
           "ENGINE = InnoDB" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -638,18 +628,18 @@ CREATE PROCEDURE clsa_pre_update()
             "CONSTRAINT fk_access_user_id ",
               "FOREIGN KEY (user_id) ",
               "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_role_id ",
               "FOREIGN KEY (role_id) ",
               "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_site_id ",
               "FOREIGN KEY (site_id) ",
               "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION) ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE) ",
           "ENGINE = InnoDB" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
@@ -690,18 +680,18 @@ CREATE PROCEDURE clsa_pre_update()
             "CONSTRAINT fk_access_user_id ",
               "FOREIGN KEY (user_id) ",
               "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_role_id ",
               "FOREIGN KEY (role_id) ",
               "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION, ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE, ",
             "CONSTRAINT fk_access_site_id ",
               "FOREIGN KEY (site_id) ",
               "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE NO ACTION ",
-              "ON UPDATE NO ACTION) ",
+              "ON DELETE CASCADE ",
+              "ON UPDATE CASCADE) ",
           "ENGINE = InnoDB" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
