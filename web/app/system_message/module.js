@@ -179,13 +179,22 @@ define( function() {
         // extend getMetadata
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
+            self.metadata.columnList.application_id.required = 3 > CnSession.role.tier;
+            self.metadata.columnList.site_id.required = !CnSession.role.allSites;
             return $q.all( [
 
               CnHttpFactory.instance( {
                 path: 'site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name' }
+                  modifier: {
+                    where: !CnSession.role.allSites ? [ {
+                      column: 'id',
+                      operator: '=',
+                      value: CnSession.site.id
+                    } ]  : [],
+                    order: 'name'
+                  }
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.site_id.enumList = [];
@@ -209,12 +218,10 @@ define( function() {
 
             ] ).then( function() {
               // create metadata for application_id (this application only)
-              self.metadata.columnList.application_id = {
-                enumList: [ {
-                  value: CnSession.application.id,
-                  name: CnSession.application.title
-                } ]
-              };
+              self.metadata.columnList.application_id.enumList = [ {
+                value: CnSession.application.id,
+                name: CnSession.application.title
+              } ];
             } );
           } );
         };

@@ -45,6 +45,13 @@ class module extends \cenozo\service\site_restricted_module
           'You are not allowed to create or edit system messages which span across all applications.' );
         $this->get_status()->set_code( 406 );
       }
+      // make sure that only all-site roles can create/edit cross-site messages
+      else if( !$db_role->all_sites && is_null( $db_system_message->site_id ) )
+      {
+        $this->set_data(
+          'You are not allowed to create or edit system messages which span across all sites.' );
+        $this->get_status()->set_code( 406 );
+      }
     }
   }
 

@@ -863,31 +863,33 @@ cenozo.directive( 'cnRecordAdd', [
         $scope.record = {};
         $scope.isComplete = false;
         $scope.model.addModel.onNew( $scope.record ).then( function() {
-          $scope.model.setupBreadcrumbTrail();
+          $scope.model.metadata.getPromise().then( function() {
+            $scope.model.setupBreadcrumbTrail();
 
-          $scope.dataArray.forEach( function( group ) {
-            group.inputList.forEach( function( item ) {
-              var meta = $scope.model.metadata.columnList[item.key];
-              if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
-                var enumList = angular.copy( meta.enumList );
+            $scope.dataArray.forEach( function( group ) {
+              group.inputList.forEach( function( item ) {
+                var meta = $scope.model.metadata.columnList[item.key];
+                if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
+                  var enumList = angular.copy( meta.enumList );
 
-                // add additional rank
-                var newRank = enumList.length + 1;
-                if( 'rank' == item.key ) enumList.push( {
-                  value: newRank,
-                  name: $filter( 'cnOrdinal' )( newRank )
-                } );
-
-                if( !meta.required || 1 < enumList.length ) {
-                  enumList.unshift( {
-                    value: undefined,
-                    name: meta.required ? '(Select ' + item.title + ')' : '(empty)'
+                  // add additional rank
+                  var newRank = enumList.length + 1;
+                  if( 'rank' == item.key ) enumList.push( {
+                    value: newRank,
+                    name: $filter( 'cnOrdinal' )( newRank )
                   } );
-                }
 
-                if( 1 == enumList.length ) $scope.record[item.key] = enumList[0].value;
-                item.enumList = enumList;
-              }
+                  if( !meta.required || 1 < enumList.length ) {
+                    enumList.unshift( {
+                      value: undefined,
+                      name: meta.required ? '(Select ' + item.title + ')' : '(empty)'
+                    } );
+                  }
+
+                  if( 1 == enumList.length ) $scope.record[item.key] = enumList[0].value;
+                  item.enumList = enumList;
+                }
+              } );
             } );
           } );
         } ).finally( function() { $scope.isComplete = true; } );
