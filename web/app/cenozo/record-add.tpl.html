@@ -7,7 +7,9 @@
            style="margin-bottom:2px; cursor:pointer;">
         <h4>{{ group.title }}</h4>
       </div>
-      <ng-form ng-repeat="input in group.inputList" name="innerForm">
+      <ng-form ng-repeat="input in group.inputList"
+               ng-if="true != input.exclude && 'add' != input.exclude && 'hidden' != input.type"
+               name="innerForm">
         <div class="form-group"
              ng-class="{'first-form-group':'null'!=group.title && $first,
                         'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">

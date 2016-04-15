@@ -40,7 +40,7 @@
         </div>
         <div id="inputGroup{{ $index }}" ng-class="{'collapse':group.collapsed}">
           <ng-form ng-repeat="input in group.inputList"
-                   ng-if="'view' != input.exclude && 'hidden' != input.type"
+                   ng-if="true != input.exclude && 'view' != input.exclude && 'hidden' != input.type"
                    name="innerForm">
             <div class="form-group"
                  ng-class="{'first-form-group':'null'!=group.title && $first,

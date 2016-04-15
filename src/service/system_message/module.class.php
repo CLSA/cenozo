@@ -85,4 +85,19 @@ class module extends \cenozo\service\site_restricted_module
 
     $modifier->where( 'IFNULL( role.tier, 1 )', '<=', $db_role->tier );
   }
+
+  /**
+   * Extend parent method
+   */
+  public function pre_write( $record )
+  {
+    $session = lib::create( 'business\session' );
+    $db_role = $session->get_role();
+
+    // force application_id if needed
+    if( 3 > $db_role->tier ) $record->application_id = $session->get_application()->id;
+
+    // force site_id if needed
+    if( !$db_role->all_sites ) $record->site_id = $session->get_site()->id;
+  }
 }

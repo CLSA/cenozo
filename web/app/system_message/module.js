@@ -176,25 +176,24 @@ define( function() {
         this.listModel = CnSystemMessageListFactory.instance( this );
         this.viewModel = CnSystemMessageViewFactory.instance( this, root );
 
+        // make site_id constant if the user does not have all-site access
+        if( !CnSession.role.allSites ) {
+          module.inputGroupList[null].application_id.exclude = 'add';
+          module.inputGroupList[null].application_id.constant = 'view';
+          module.inputGroupList[null].site_id.exclude = 'add';
+          module.inputGroupList[null].site_id.constant= 'view';
+        }
+
         // extend getMetadata
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
-            self.metadata.columnList.application_id.required = 3 > CnSession.role.tier;
-            self.metadata.columnList.site_id.required = !CnSession.role.allSites;
             return $q.all( [
 
               CnHttpFactory.instance( {
                 path: 'site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: {
-                    where: !CnSession.role.allSites ? [ {
-                      column: 'id',
-                      operator: '=',
-                      value: CnSession.site.id
-                    } ]  : [],
-                    order: 'name'
-                  }
+                  modifier: { order: 'name' }
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.site_id.enumList = [];
