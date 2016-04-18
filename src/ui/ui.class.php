@@ -135,10 +135,10 @@ class ui extends \cenozo\base_object
   protected function get_framework_module_list()
   {
     return array(
-      'access', 'activity', 'address', 'alternate', 'application', 'cohort', 'collection',
-      'consent', 'consent_type', 'event', 'event_type', 'jurisdiction', 'language', 'participant',
-      'phone', 'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'script',
-      'search_result', 'site', 'source', 'state', 'system_message', 'user', 'webphone' );
+      'access', 'activity', 'address', 'alternate', 'application', 'cohort', 'collection', 'consent',
+      'consent_type', 'event', 'event_type', 'hin', 'jurisdiction', 'language', 'participant', 'phone',
+      'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'script', 'search_result',
+      'site', 'source', 'state', 'system_message', 'user', 'webphone' );
   }
 
   /**
@@ -235,7 +235,8 @@ class ui extends \cenozo\base_object
     }
     if( array_key_exists( 'participant', $module_list ) )
     {
-      $module_list['participant']['children'] = array( 'address', 'phone', 'consent', 'alternate', 'event' );
+      $module_list['participant']['children'] =
+        array( 'address', 'phone', 'consent', 'hin', 'alternate', 'event' );
       $module_list['participant']['choosing'] = array( 'collection' );
       $module_list['participant']['actions']['history'] = '/{identifier}';
       $module_list['participant']['actions']['notes'] = '/{identifier}';
