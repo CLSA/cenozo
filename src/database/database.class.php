@@ -887,7 +887,7 @@ class database extends \cenozo\base_object
               $table_words = preg_split( '/[ ()]/', trim( $table_string ), 2 );
               if( array_key_exists( $table_words[0], $this->tables ) )
                 $output .= $this->tables[$table_words[0]]['database'].'.';
-              $output .= ltrim( $table_string );
+              $output .= ltrim( $table_string, ' ' );
             }
           }
         }
