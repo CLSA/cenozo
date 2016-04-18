@@ -2461,6 +2461,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         object.settings = {
           defaultDate: object.currentDate,
           defaultView: object.currentView,
+          defaultTimedEventDuration: '01:00:00',
           allDaySlot: false,
           firstDay: 0,
           scrollTime: '07:00:00',
