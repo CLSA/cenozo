@@ -4970,7 +4970,7 @@ cenozo.run( [
         CnSession.pageTitle = toState.name.split( '.' ).filter( function( item ) {
           return 'root' != item;
         } ).map( function( item ) {
-          return item.replace( /\b./g, function( match ) { return match.toUpperCase(); } );
+          return item.replace( /_/, ' ' ).replace( /\b./g, function( match ) { return match.toUpperCase(); } );
         } ).join( ' / ' );
       }
 
