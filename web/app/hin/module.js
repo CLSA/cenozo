@@ -109,7 +109,18 @@ define( function() {
   cenozo.providers.factory( 'CnHinListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseListFactory.construct( this, parentModel );
+
+        // extend onList
+        this.onList = function( replace ) {
+          return self.$$onList( replace ).then( function() {
+            // force not allowing report of this module
+            self.isReportAllowed = false;
+          } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );

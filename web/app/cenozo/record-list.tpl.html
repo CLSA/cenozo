@@ -21,7 +21,7 @@
              data-toggle="dropdown"
              tooltip="{{ model.listModel.isReportAllowed
                ? 'Click to download list as a report'
-               : 'The list is either empty or too large to download as a report' }}"
+               : 'The list is either empty, too large or reporting is disabled' }}"
              tooltip-placement="left"></i>
           <ul ng-if="model.listModel.isReportAllowed && !model.listModel.isReportLoading"
               class="dropdown-menu dropdown-menu-right"
