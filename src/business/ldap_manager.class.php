@@ -243,8 +243,7 @@ class ldap_manager extends \cenozo\singleton
       }
 
       // ignore errors caused by invalid credentials
-      $valid = sprintf( 'GPOs for user %s', $username ) ==
-               substr( $result['output'], 0, strpos( $result['output'], "\n" ) );
+      $valid = false !== strpos( $result['output'], sprintf( 'GPOs for user %s', $username ) );
     }
     else
     {
