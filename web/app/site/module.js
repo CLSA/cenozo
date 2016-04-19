@@ -83,15 +83,17 @@ define( function() {
     },
   } );
 
-  var settingModule = module;
-  if( angular.isDefined( settingModule.actions.view ) ) {
-    module.addExtraOperation( 'view', {
-      title: 'Settings',
-      operation: function( $state, model ) {
-        $state.go( 'setting.view', { identifier: 'site_id=' + model.viewModel.record.id } );
-      }
-    } );
-  }
+  try {
+    var settingModule = cenozoApp.module( 'setting' );
+    if( angular.isDefined( settingModule.actions.view ) ) {
+      module.addExtraOperation( 'view', {
+        title: 'Settings',
+        operation: function( $state, model ) {
+          $state.go( 'setting.view', { identifier: 'site_id=' + model.viewModel.record.id } );
+        }
+      } );
+    }
+  } catch( err ) {}
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnSiteAdd', [
