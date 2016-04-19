@@ -587,8 +587,6 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   cenozo.providers.factory( 'CnParticipantViewFactory', [
     'CnBaseViewFactory', '$state',
     function( CnBaseViewFactory, $state ) {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );

@@ -215,8 +215,6 @@ define( function() {
   cenozo.providers.factory( 'CnUserViewFactory', [
     'CnBaseViewFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnHttpFactory',
     function( CnBaseViewFactory, CnModalConfirmFactory, CnModalMessageFactory, CnHttpFactory ) {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
