@@ -110,7 +110,6 @@ class module extends \cenozo\service\site_restricted_module
       $join_mod->group( 'collection_id' );
 
       // restrict to users who have access to this application
-      $sub_mod = lib::create( 'database\modifier' );
       $join_mod->join( 'access', 'user_has_collection.user_id', 'access.user_id' );
 
       $modifier->left_join(
