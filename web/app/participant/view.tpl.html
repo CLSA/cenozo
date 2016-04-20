@@ -11,6 +11,12 @@
                   model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
 <div class="vertical-spacer" ng-repeat="child in model.module.choosing">
-  <cn-record-list ng-if="model.viewModel[child.subject.camel+'Model']"
+  <cn-record-list ng-if="'collection' != child.subject.snake &&
+                         model.viewModel[child.subject.camel+'Model']"
                   model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
+</div>
+<div class="vertical-spacer">
+  <cn-record-list ng-if="model.viewModel.collectionModel"
+                  model="model.viewModel.collectionModel"
+                  remove-columns="active user_count"></cn-record-list>
 </div>
