@@ -1,6 +1,13 @@
 <cn-record-view model="model"></cn-record-view>
+<div class="vertical-spacer">
+  <cn-record-list ng-if="model.viewModel.applicationModel"
+                  model="model.viewModel.applicationModel"
+                  remove-columns="version release_based update_queue participant_count site_count">
+  </cn-record-list>
+</div>
 <div class="vertical-spacer" ng-repeat="child in model.module.children">
-  <cn-record-list ng-if="model.viewModel[child.subject.camel+'Model']"
+  <cn-record-list ng-if="'application' != child.subject.snake &&
+                         model.viewModel[child.subject.camel+'Model']"
                   model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
 <div class="vertical-spacer" ng-repeat="child in model.module.choosing">

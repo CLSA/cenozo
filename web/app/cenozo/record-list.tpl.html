@@ -40,7 +40,7 @@
            tooltip="Click to expand {{ model.module.name.singular }} list"
            tooltip-placement="left"></i>
       </div>
-      {{ heading }}
+      {{ model.listModel.heading }}
     </h4>
   </div>
   <div class="collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}List">

@@ -959,19 +959,9 @@ cenozo.directive( 'cnRecordAdd', [
           scope.isAdding = false;
           scope.formattedRecord = {};
 
-          if( angular.isDefined( attrs.heading ) ) {
-            scope.heading = attrs.heading;
-          } else {
-            scope.heading = angular.isDefined( scope.model.addModel.heading )
-                          ? scope.model.addModel.heading
-                          : 'Create ' + scope.model.module.name.singular.ucWords();
-          }
-
           // watch the model's heading in case it changes
           scope.$watch( 'model.addModel.heading', function( heading ) {
-            scope.heading = angular.isDefined( heading )
-                          ? heading
-                          : 'Create ' + scope.model.module.name.singular.ucWords();
+            scope.heading = heading ? heading : 'Create ' + scope.model.module.name.singular.ucWords();
           } );
 
           // get the data array and add enum lists for boolean types
@@ -1048,19 +1038,9 @@ cenozo.directive( 'cnRecordCalendar', [
           scope.$state = $state;
           scope.allowChangeSite = CnSession.role.allSites && !scope.preventSiteChange;
 
-          if( angular.isDefined( attrs.heading ) ) {
-            scope.heading = attrs.heading;
-          } else {
-            scope.heading = angular.isDefined( scope.model.calendarModel.heading )
-                          ? scope.model.calendarModel.heading
-                          : scope.model.module.name.singular.ucWords() + ' Calendar';
-          }
-
           // watch the model's heading in case it changes
           scope.$watch( 'model.calendarModel.heading', function( heading ) {
-            scope.heading = angular.isDefined( heading )
-                          ? heading
-                          : scope.model.module.name.singular.ucWords() + ' Calendar';
+            scope.heading = heading ? heading : scope.model.module.name.singular.ucWords() + ' Calendar';
           } );
 
           // use the full calendar lib to create the calendar
@@ -1177,19 +1157,9 @@ cenozo.directive( 'cnRecordList', [
           scope.collapsed = scope.initCollapsed;
           scope.isDeleting = [];
 
-          if( angular.isDefined( attrs.heading ) ) {
-            scope.heading = attrs.heading;
-          } else {
-            scope.heading = angular.isDefined( scope.model.listModel.heading )
-                          ? scope.model.listModel.heading
-                          : scope.model.module.name.singular.ucWords() + ' List';
-          }
-
           // watch the model's heading in case it changes
           scope.$watch( 'model.listModel.heading', function( heading ) {
-            scope.heading = angular.isDefined( heading )
-                          ? heading
-                          : scope.model.module.name.singular.ucWords() + ' List';
+            scope.heading = heading ? heading : scope.model.module.name.singular.ucWords() + ' List';
           } );
 
           // add site to removeColumns if role doesn't allow for all sites
@@ -1417,19 +1387,9 @@ cenozo.directive( 'cnRecordView', [
           scope.collapsed = scope.initCollapsed;
           scope.isDeleting = false;
 
-          if( angular.isDefined( attrs.heading ) ) {
-            scope.heading = attrs.heading;
-          } else {
-            scope.heading = angular.isDefined( scope.model.viewModel.heading )
-                          ? scope.model.viewModel.heading
-                          : scope.model.module.name.singular.ucWords() + ' Details';
-          }
-
           // watch the model's heading in case it changes
           scope.$watch( 'model.viewModel.heading', function( heading ) {
-            scope.heading = angular.isDefined( heading )
-                          ? heading
-                          : scope.model.module.name.singular.ucWords() + ' Details';
+            scope.heading = heading ? heading : scope.model.module.name.singular.ucWords() + ' Details';
           } );
 
           if( angular.isDefined( attrs.viewTitle ) ) {
@@ -2151,6 +2111,7 @@ cenozo.factory( 'CnBaseAddFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
+        object.heading = 'Create ' + parentModel.module.name.singular.ucWords();
 
         /**
          * Add a function to be executed after onAdd is complete
@@ -2275,6 +2236,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
+        object.heading = parentModel.module.name.singular.ucWords() + ' Calendar';
         object.currentDate = moment();
         object.currentView = 'agendaWeek';
         object.isLoading = false;
@@ -2523,6 +2485,7 @@ cenozo.factory( 'CnBaseListFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
+        object.heading = parentModel.module.name.singular.ucWords() + ' List';
         object.order = object.parentModel.module.defaultOrder;
         object.total = 0;
         object.cache = [];
@@ -2839,6 +2802,7 @@ cenozo.factory( 'CnBaseViewFactory', [
       construct: function( object, parentModel, addDependencies ) {
         if( angular.isUndefined( addDependencies ) ) addDependencies = false;
         object.parentModel = parentModel;
+        object.heading = parentModel.module.name.singular.ucWords() + ' Details';
         object.record = {};
         object.formattedRecord = {};
         object.backupRecord = {};

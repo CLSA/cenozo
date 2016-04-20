@@ -16,7 +16,9 @@
            tooltip="Click to expand {{ model.module.name.singular }} details"
            tooltip-placement="left"></i>
       </div>
-      {{ heading }}{{ model.editEnabled ? '' : ' (read only)' }} <span ng-if="!isComplete">(Loading&hellip;)</span>
+      {{ model.viewModel.heading }}
+      <span ng-if="!model.editEnabled">(read only)</span>
+      <span ng-if="!isComplete">(Loading&hellip;)</span>
     </h4>
   </div>
   <form name="form" class="form-horizontal" novalidate>

@@ -18,8 +18,8 @@
       </div>
       <a class="btn-primary"
          ng-if="allowChangeSite"
-         ng-click="clickHeading(); $event.stopPropagation()">{{ heading }}</a>
-      <span ng-if="!allowChangeSite">{{ heading }}</span>
+         ng-click="clickHeading(); $event.stopPropagation()">{{ model.calendarModel.heading }}</a>
+      <span ng-if="!allowChangeSite">{{ model.calendarModel.heading }}</span>
       {{ model.editEnabled ? '' : '(read only)' }}
       <span ng-if="model.calendarModel.isLoading">(Loading&hellip;)</span>
     </h4>
