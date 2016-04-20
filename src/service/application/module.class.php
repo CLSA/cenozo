@@ -63,5 +63,23 @@ class module extends \cenozo\service\module
         'application_join_site.application_id' );
       $select->add_column( 'IFNULL( site_count, 0 )', 'site_count', false );
     }
+
+    // include participant release details
+    if( 'participant' == $this->get_parent_subject() )
+    {
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'application.id', '=', 'participant_site.application_id', false );
+      $join_mod->where( 'participant_site.participant_id', '=', $this->get_parent_resource()->id );
+      $modifier->join_modifier( 'participant_site', $join_mod );
+
+      $select->add_table_column( 'participant_site', 'default_site_id' );
+      $select->add_table_column( 'application_has_participant', 'preferred_site_id' );
+      $select->add_table_column( 'application_has_participant', 'datetime' );
+
+      if( $select->has_table_columns( 'default_site' ) )
+        $modifier->left_join( 'site', 'default_site_id', 'default_site.id', 'default_site' );
+      if( $select->has_table_columns( 'preferred_site' ) )
+        $modifier->left_join( 'site', 'preferred_site_id', 'preferred_site.id', 'preferred_site' );
+    }
   }
 }

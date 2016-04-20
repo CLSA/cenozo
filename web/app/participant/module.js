@@ -601,6 +601,23 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               data.modifier.where.push( { column: 'collection.active', operator: '=', value: true } );
               return data;
             };
+
+            if( angular.isDefined( self.applicationModel ) ) {
+              self.applicationModel.enableView( false );
+              self.applicationModel.addColumn(
+                'default_site',
+                { title: 'Default Site', column: 'default_site.name' }
+              );
+              self.applicationModel.addColumn(
+                'preferred_site',
+                { title: 'Preferred Site', column: 'preferred_site.name' }
+              );
+              self.applicationModel.addColumn(
+                'datetime',
+                { title: 'Release Date & Time', column: 'datetime', type: 'datetime' }
+              );
+              self.applicationModel.listModel.heading = 'Release List';
+            }
           } );
         }
       };
