@@ -787,8 +787,8 @@ abstract class record extends \cenozo\base_object
 
         if( !$modifier->has_join( $table_name ) )
         {
-          $modifier->cross_join( $joining_table_name, $foreign_key_name, $joining_foreign_key_name );
-          $modifier->cross_join( $table_name, $joining_primary_key_name, $full_primary_key_name );
+          $modifier->cross_join( $table_name, $joining_primary_key_name, $full_primary_key_name, NULL, true );
+          $modifier->cross_join( $joining_table_name, $foreign_key_name, $joining_foreign_key_name, NULL, true );
         }
         $modifier->where( $full_primary_key_name, '=', $primary_key_value );
       }
