@@ -21,15 +21,45 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::validate();
 
+    $collection_class_name = lib::get_class_name( 'database\collection' );
+    $db_user = lib::create( 'business\session' )->get_user();
+
     // don't allow modifying a locked collection
     $db_collection = NULL;
     if( 'DELETE' == $this->get_method() || 'PATCH' == $this->get_method() )
       $db_collection = $this->get_resource();
     else if( 'POST' == $this->get_method() && ( !$this->is_leaf_module() || $this->get_parent_subject() ) )
     {
+      // make sure the collection isn't locked
       $db_collection = $this->get_resource();
       if( is_null( $db_collection ) )
-        $db_collection = lib::create( 'database\collection', $this->get_file_as_raw() );
+      {
+        // we're replacing the list of collections, make sure we're not adding or removing any locked
+        // collections that the user doesn't have access to
+        $select = lib::create( 'database\select' );
+        $select->add_column( 'id' );
+        $existing_list = array();
+        foreach( $this->get_parent_resource()->get_collection_list( $select ) as $row )
+          $existing_list[] = $row['id'];
+        $replacement_list = $this->get_file_as_object();
+        $xor_list = array_merge(
+          array_diff( $existing_list, $replacement_list ),
+          array_diff( $replacement_list, $existing_list ) );
+        if( 0 < count( $xor_list ) )
+        {
+          // determine if the user doesn't have access to any locked collections in the list
+          $collection_mod = lib::create( 'database\modifier' );
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'collection.id', '=', 'user_has_collection.collection_id', false );
+          $join_mod->where( 'user_id', '=', $db_user->id );
+          $collection_mod->join_modifier( 'user_has_collection', $join_mod, 'left' );
+          $collection_mod->where( 'collection.id', 'IN', $xor_list );
+          $collection_mod->where( 'collection.locked', '=', true );
+          $collection_mod->where( 'user_id', '=', NULL );
+          if( 0 < $collection_class_name::count( $collection_mod ) )
+            $this->get_status()->set_code( 403 );
+        }
+      }
     }
 
     if( !is_null( $db_collection ) )
@@ -38,7 +68,7 @@ class module extends \cenozo\service\site_restricted_module
       {
         // see if user has collection, if not then 403
         $user_mod = lib::create( 'database\modifier' );
-        $user_mod->where( 'user.id', '=', lib::create( 'business\session' )->get_user()->id );
+        $user_mod->where( 'user.id', '=', $db_user->id );
         if( 0 == $db_collection->get_user_count( $user_mod ) ) $this->get_status()->set_code( 403 );
       }
     }
