@@ -944,7 +944,7 @@ abstract class record extends \cenozo\base_object
     $table_name = static::get_table_name();
 
     // if ids is not an array then create a single-element array with it
-    if( !is_array( $ids ) ) $ids = array( $ids );
+    if( !is_null( $ids ) && !is_array( $ids ) ) $ids = array( $ids );
 
     // this method varies depending on the relationship type
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
