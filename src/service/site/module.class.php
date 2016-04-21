@@ -41,9 +41,12 @@ class module extends \cenozo\service\site_restricted_module
 
     if( false === $this->get_argument( 'choosing', false ) )
     {
-      // only include sites which belong to this application
-      $modifier->join( 'application_has_site', 'site.id', 'application_has_site.site_id' );
-      $modifier->where( 'application_has_site.application_id', '=', $db_application->id );
+      if( 'application' != $this->get_parent_subject() )
+      {
+        // only include sites which belong to this application
+        $modifier->join( 'application_has_site', 'site.id', 'application_has_site.site_id' );
+        $modifier->where( 'application_has_site.application_id', '=', $db_application->id );
+      }
     }
 
     // add the total number of related records
