@@ -83,9 +83,8 @@ class ui extends \cenozo\base_object
             'children' => array(),
             'choosing' => array(),
             'list_menu' => false );
-        if( !array_key_exists( $module['action'], $module_list[$module['subject']]['actions'] ) )
-          $module_list[$module['subject']]['actions'][$module['action']] =
-            array_key_exists( 'query', $module ) ? $module['query'] : '';
+        $module_list[$module['subject']]['actions'][$module['action']] =
+          array_key_exists( 'query', $module ) ? $module['query'] : '';
       }
       ksort( $utility_items );
 

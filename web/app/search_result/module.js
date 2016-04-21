@@ -16,15 +16,20 @@ define( function() {
       hits: {
         title: 'Hits',
         type: 'number',
-        width: '15%',
+        width: '10%',
       },
       uid: {
         column: 'participant.uid',
         title: 'UID',
-        width: '15%',
+        width: '10%',
+      },
+      full_name: {
+        column: 'participant.full_name',
+        title: 'Participant Name',
+        width: '20%',
       },
       value: {
-        title: 'Value',
+        title: 'Search Matches',
         type: 'string',
         filter: 'cnNewlines'
       },

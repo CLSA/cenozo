@@ -75,5 +75,18 @@ class module extends \cenozo\service\site_restricted_module
       $sub_mod->where( 'participant_site.site_id', '=', $db_restrict_site->id );
       $modifier->join_modifier( 'participant_site', $sub_mod );
     }
+
+    // add the full name
+    if( $select->has_table_column( 'participant', 'full_name' ) )
+    {
+      $select->add_table_column(
+        'participant',
+        'CONCAT( honorific, " ", '.
+                'first_name, '.
+                'IF( other_name IS NULL, " ", CONCAT( " (", other_name, ") " ) ), '.
+                'last_name )',
+        'full_name',
+        false );
+    }
   }
 }
