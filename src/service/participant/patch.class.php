@@ -56,12 +56,17 @@ class patch extends \cenozo\service\patch
     parent::execute();
 
     // process the preferred site, if it exists
-    if( $this->update_preferred_site )
-    {
-      $this->get_leaf_record()->set_preferred_site(
-        lib::create( 'business\session' )->get_application(),
-        $this->preferred_site_id );
-    }
+    if( $this->update_preferred_site ) $this->set_preferred_site();
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function set_preferred_site()
+  {
+    $this->get_leaf_record()->set_preferred_site(
+      lib::create( 'business\session' )->get_application(),
+      $this->preferred_site_id );
   }
 
   /**
