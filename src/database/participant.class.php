@@ -241,17 +241,20 @@ class participant extends record
         __METHOD__ );
 
     // make sure the application has access to the site
-    $site_mod = lib::create( 'database\modifier' );
-    $site_mod->where( 'site_id', '=', $site_id );
-    if( 0 == $db_application->get_site_count( $site_mod ) )
-      throw lib::create( 'exception\runtime',
-        sprintf(
-          'Tried to set preferred %s site for participant %s, '.
-          'but application does not have access to the %s site',
-          $db_application->name,
-          $this->uid,
-          lib::create( 'database\site', $site_id )->name ),
-        __METHOD__ );
+    if( $site_id )
+    {
+      $site_mod = lib::create( 'database\modifier' );
+      $site_mod->where( 'site_id', '=', $site_id );
+      if( 0 == $db_application->get_site_count( $site_mod ) )
+        throw lib::create( 'exception\runtime',
+          sprintf(
+            'Tried to set preferred %s site for participant %s, '.
+            'but application does not have access to the %s site',
+            $db_application->name,
+            $this->uid,
+            lib::create( 'database\site', $site_id )->name ),
+          __METHOD__ );
+    }
 
     // we want to add the row (if none exists) or just update the preferred_site_id column
     // if a row already exists
