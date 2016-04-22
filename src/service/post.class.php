@@ -88,14 +88,12 @@ class post extends write
           $this->status->set_code( 400 );
           throw lib::create( 'exception\argument', 'post_object', $post_object, __METHOD__ );
         }
-        else
-        {
-          $method = is_array( $post_object )
-                  ? sprintf( 'replace_%s', $leaf_subject )
-                  : sprintf( 'add_%s', $leaf_subject );
-          $this->get_parent_record()->$method( $post_object );
-          $this->status->set_code( 201 );
-        }
+
+        $method = is_array( $post_object )
+                ? sprintf( 'replace_%s', $leaf_subject )
+                : sprintf( 'add_%s', $leaf_subject );
+        $this->get_parent_record()->$method( $post_object );
+        $this->status->set_code( 201 );
       }
       else
       {
