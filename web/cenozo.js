@@ -232,7 +232,12 @@ angular.extend( cenozoApp, {
            * @var object: an object containing the following properties:
            *              id: The id to give the operation's html button
            *              title: The button's title
-           *              disabled: Whether the button should be disabled
+           *              isIncluded: A function to determine if the operation shound be shown
+           *                The function must return a boolean (default function returns true)
+           *                This function will be passed two arguments: $state and model
+           *              isDisabled: A function to determine if the operation is disabled
+           *                The function must return a boolean (default function returns false)
+           *                This function will be passed two arguments: $state and model
            *              classes: A space-separated list of css classes to apply to the button
            *              help: Help text to show in a tooltip popup dialog
            *              operation: A function to be executed when the button is clicked.
@@ -241,6 +246,8 @@ angular.extend( cenozoApp, {
           addExtraOperation: function( type, object ) {
             if( 0 > ['add','calendar','list','view'].indexOf( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
+            if( angular.isUndefined( object.isIncluded ) ) object.isIncluded = function() { return true; }
+            if( angular.isUndefined( object.isDisabled ) ) object.isDisabled = function() { return false; }
             this.extraOperationList[type].push( object );
           }
         } );

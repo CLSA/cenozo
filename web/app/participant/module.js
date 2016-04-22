@@ -181,6 +181,18 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     }
   } );
 
+  module.addExtraOperation( 'list', {
+    title: 'Search',
+    isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
+    operation: function( $state, model ) { $state.go( 'search_result.list' ); }
+  } );
+
+  module.addExtraOperation( 'list', {
+    title: 'Multiedit',
+    isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
+    operation: function( $state, model ) { $state.go( 'participant.multiedit' ); }
+  } );
+
   /**
    * The historyCategoryList object stores the following information
    *   category:
@@ -802,37 +814,39 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               if( null != input ) break;
             }
 
-            // convert the column name into an object
-            array[index] = {
-              column: column,
-              title: input.title,
-              type: input.type,
-              min: input.min,
-              max: input.max,
-              active: false,
-              value: metadata[column].default,
-              required: metadata[column].required,
-              max_length: metadata[column].max_length,
-              enumList: angular.copy( metadata[column].enumList )
-            };
+            if( null != input ) {
+              // convert the column name into an object
+              array[index] = {
+                column: column,
+                title: input.title,
+                type: input.type,
+                min: input.min,
+                max: input.max,
+                active: false,
+                value: metadata[column].default,
+                required: metadata[column].required,
+                max_length: metadata[column].max_length,
+                enumList: angular.copy( metadata[column].enumList )
+              };
 
-            // Inputs with enum types need to do a bit of extra work with the enumList and default value
-            if( 'boolean' == array[index].type ) {
-              // set not as the default value
-              if( null == array[index].value ) array[index].value = 0;
-            } else if( 'enum' == array[index].type ) {
-              if( !array[index].required ) {
-                // enums which are not required should have an empty value
-                array[index].enumList.unshift( {
-                  value: '',
-                  name: '(empty)'
-                } );
+              // Inputs with enum types need to do a bit of extra work with the enumList and default value
+              if( 'boolean' == array[index].type ) {
+                // set not as the default value
+                if( null == array[index].value ) array[index].value = 0;
+              } else if( 'enum' == array[index].type ) {
+                if( !array[index].required ) {
+                  // enums which are not required should have an empty value
+                  array[index].enumList.unshift( {
+                    value: '',
+                    name: '(empty)'
+                  } );
+                }
+
+                // always select the first value, whatever it is
+                array[index].value = array[index].enumList[0].value;
+              } else if( 'date' == array[index].type ) {
+                array[index].formattedValue = '(empty)';
               }
-
-              // always select the first value, whatever it is
-              array[index].value = array[index].enumList[0].value;
-            } else if( 'date' == array[index].type ) {
-              array[index].formattedValue = '(empty)';
             }
           } );
 
