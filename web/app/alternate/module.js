@@ -222,7 +222,7 @@ define( function() {
             $scope.model.onView().then( function() {
               CnSession.setBreadcrumbTrail(
                 [ {
-                  title: 'Alternate',
+                  title: 'Alternates',
                   go: function() { $state.go( 'alternate.list' ); } 
                 }, {
                   title: $scope.uid,

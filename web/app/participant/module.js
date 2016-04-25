@@ -459,7 +459,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             $scope.model.onView().then( function() {
               CnSession.setBreadcrumbTrail(
                 [ {
-                  title: 'Participant',
+                  title: 'Participants',
                   go: function() { $state.go( 'participant.list' ); }
                 }, {
                   title: $scope.uid,
@@ -503,7 +503,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           $scope.tab = 'participant';
           CnSession.setBreadcrumbTrail(
             [ {
-              title: 'Participant',
+              title: 'Participants',
               go: function() { $state.go( 'participant.list' ); }
             }, {
               title: 'Multi-Edit'
@@ -554,7 +554,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             $scope.model.onView().then( function() {
               CnSession.setBreadcrumbTrail(
                 [ {
-                  title: 'Participant',
+                  title: 'Participants',
                   go: function() { $state.go( 'participant.list' ); }
                 }, {
                   title: $scope.uid,

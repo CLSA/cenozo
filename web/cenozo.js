@@ -3499,7 +3499,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             } ] );
           } else if( 'view' == type ) {
             trail = trail.concat( [ {
-              title: self.module.name.singular.ucWords(),
+              title: self.module.name.plural.ucWords(),
               go: angular.isDefined( parent.subject ) ? undefined : function() { self.transitionToLastState(); }
             }, {
               title: self.getBreadcrumbTitle()
