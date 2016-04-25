@@ -159,4 +159,67 @@ class application extends record
     return is_null( $this->release_event_type_id ) ?
       NULL : lib::create( 'database\event_type', $this->release_event_type_id );
   }
+
+  /**
+   * Set the preferred site for this application for a batch of participants
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier A modifier identifying which participants to release
+   * @param database\site $db_site May be null
+   * @access public
+   */
+  public function set_preferred_site( $participant_mod, $db_site = NULL )
+  {
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to change preferred site of participant with no primary key.' );
+      return NULL;
+    }
+
+    if( !is_a( $participant_mod, lib::get_class_name( 'database\modifier' ) ) )
+      throw lib::create( 'exception\argument', 'participant_mod', $participant_mod, __METHOD__ );
+
+    // make sure the application has access to the site
+    if( !is_null( $db_site ) )
+    {
+      $site_mod = lib::create( 'database\modifier' );
+      $site_mod->where( 'site_id', '=', $db_site->id );
+      if( 0 == $this->get_site_count( $site_mod ) )
+        throw lib::create( 'exception\runtime',
+          sprintf(
+            'Tried to set preferred %s site for a batch of participants, '.
+            'but application does not have access to the %s site',
+            $this->name,
+            $db_site->name,
+          __METHOD__ ) );
+    }
+
+    $participant_sel = lib::create( 'database\select' );
+    $participant_sel->from( 'participant' );
+    $participant_sel->add_table_column( 'application', 'id', 'application_id' );
+    $participant_sel->add_column( 'id', 'participant_id' );
+    $participant_sel->add_constant( NULL, 'create_timestamp' );
+    $participant_sel->add_constant( is_null( $db_site ) ? NULL : $db_site->id, 'preferred_site_id' );
+
+    $participant_mod->join(
+      'application_has_cohort', 'participant.cohort_id', 'application_has_cohort.cohort_id' );
+    $participant_mod->join( 'application', 'application_has_cohort.application_id', 'application.id' );
+    $participant_mod->where( 'application.id', '=', $this->id );
+    $sub_mod = lib::create( 'database\modifier' );
+    $sub_mod->where( 'participant.id', '=', 'app_has_participant.participant_id', false );
+    $sub_mod->where( 'app_has_participant.application_id', '=', 'application.id', false );
+    $participant_mod->join_modifier( 'application_has_participant', $sub_mod, 'left', 'app_has_participant' );
+    $participant_mod->where( 'app_has_participant.datetime', '=', NULL );
+
+    // we want to add the row (if none exists) or just update the preferred_site_id column
+    // if a row already exists
+    $sql = sprintf(
+      'INSERT INTO application_has_participant( '.
+        "application_id, participant_id, create_timestamp, preferred_site_id )\n".
+      "%s%s\n".
+      'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
+      $participant_sel->get_sql(),
+      $participant_mod->get_sql() );
+
+    static::db()->execute( $sql );
+  }
 }
