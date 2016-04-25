@@ -493,8 +493,8 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantMultiedit', [
-    'CnParticipantMultieditFactory', 'CnSession', '$state',
-    function( CnParticipantMultieditFactory, CnSession, $state ) {
+    'CnParticipantMultieditFactory', 'CnSession', '$state', '$timeout',
+    function( CnParticipantMultieditFactory, CnSession, $state, $timeout ) {
       return {
         templateUrl: module.getFileUrl( 'multiedit.tpl.html' ),
         restrict: 'E',
@@ -509,6 +509,12 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               title: 'Multi-Edit'
             } ]
           );
+
+          // trigger the elastic directive when confirming the participant selection
+          $scope.confirm = function() {
+            $scope.model.confirm()
+            $timeout( function() { angular.element( '#uidListString' ).trigger( 'change' ) }, 100 );
+          };
         }
       };
     }
