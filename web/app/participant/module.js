@@ -788,7 +788,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         this.module = module;
         this.confirmInProgress = false;
         this.confirmedCount = null;
-        this.uidList = '';
+        this.uidListString = '';
         this.activeInput = '';
         this.hasActiveInputs = false;
         this.participantInputList = null;
@@ -907,7 +907,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           );
         } );
 
-        this.uidListChanged = function() {
+        this.uidListStringChanged = function() {
           this.confirmedCount = null;
         };
 
@@ -917,7 +917,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
           // clean up the uid list
           var fixedList =
-            this.uidList.toUpperCase() // convert to uppercase
+            this.uidListString.toUpperCase() // convert to uppercase
                         .replace( /[\s,;|\/]/g, ' ' ) // replace whitespace and separation chars with a space
                         .replace( /[^a-zA-Z0-9 ]/g, '' ) // remove anything that isn't a letter, number of space
                         .split( ' ' ) // delimite string by spaces and create array from result
@@ -931,7 +931,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
           // now confirm UID list with server
           if( 0 == fixedList.length ) {
-            self.uidList = '';
+            self.uidListString = '';
             self.confirmInProgress = false;
           } else {
             CnHttpFactory.instance( {
@@ -939,7 +939,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               data: { uid_list: fixedList }
             } ).post().then( function( response ) {
               self.confirmedCount = response.data.length;
-              self.uidList = response.data.join( ' ' );
+              self.uidListString = response.data.join( ' ' );
               self.confirmInProgress = false;
             } );
           }
@@ -978,13 +978,13 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         this.applyMultiedit = function( type ) {
           // test the formats of all columns
           var error = false;
-          var uidArray = this.uidList.split( ' ' );
+          var uidList = this.uidListString.split( ' ' );
           if( 'consent' == type ) {
             var inputList = this.consentInputList;
             var model = CnConsentModelFactory.root;
             var messageModal = CnModalMessageFactory.instance( {
               title: 'Consent Records Added',
-              message: 'The consent record has been successfully added to ' + uidArray.length + ' participants.'
+              message: 'The consent record has been successfully added to ' + uidList.length + ' participants.'
             } );
           } else if( 'collection' == type ) {
             // handle the collection id specially
@@ -1004,21 +1004,21 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             var model = CnEventModelFactory.root;
             var messageModal = CnModalMessageFactory.instance( {
               title: 'Event Records Added',
-              message: 'The event record has been successfully added to ' + uidArray.length + ' participants.'
+              message: 'The event record has been successfully added to ' + uidList.length + ' participants.'
             } );
           } else if( 'note' == type ) {
             var inputList = this.noteInputList;
             var model = null;
             var messageModal = CnModalMessageFactory.instance( {
               title: 'Note Records Added',
-              message: 'The note record has been successfully added to ' + uidArray.length + ' participants.'
+              message: 'The note record has been successfully added to ' + uidList.length + ' participants.'
             } );
           } else if( 'participant' == type ) {
             var inputList = this.participantInputList.filter( function( input ) { return input.active; } );
             var model = CnParticipantModelFactory.root;
             var messageModal = CnModalMessageFactory.instance( {
               title: 'Participant Details Updated',
-              message: 'The listed details have been successfully updated on ' + uidArray.length +
+              message: 'The listed details have been successfully updated on ' + uidList.length +
                        ' participant records.'
             } );
           } else throw new Error( 'Called addRecords() with invalid type "' + type + '".' );
@@ -1036,7 +1036,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           }
 
           if( !error ) {
-            var data = { uid_list: uidArray };
+            var data = { uid_list: uidList };
             if( 'collection' == type ) {
               data.collection = { id: this.collectionId, operation: this.collectionOperation };
             } else if( 'note' == type ) {
