@@ -33,7 +33,8 @@
               type="button"
               ng-repeat="op in model.module.extraOperationList.calendar"
               id="{{ op.id }}"
-              ng-disabled="op.disabled"
+              ng-if="op.isIncluded( $state, model )"
+              ng-disabled="op.isDisabled( $state, model )"
               ng-class="op.classes"
               tooltip="{{ op.help }}"
               ng-click="op.operation( $state, model )">{{ op.title }}</button>
