@@ -21,16 +21,18 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::validate();
 
-    $record = $this->get_resource();
-
-    if( $record && $record->id )
+    if( 300 > $this->get_status()->get_code() )
     {
-      // don't include special users
-      $access_mod = lib::create( 'database\modifier' );
-      $access_mod->join( 'role', 'access.role_id', 'role.id' );
-      $access_mod->where( 'role.special', '=', true );
-      if( $record->get_access_count( $access_mod ) )
-        $this->get_status()->set_code( 403 );
+      $record = $this->get_resource();
+
+      if( $record && $record->id )
+      {
+        // don't include special users
+        $access_mod = lib::create( 'database\modifier' );
+        $access_mod->join( 'role', 'access.role_id', 'role.id' );
+        $access_mod->where( 'role.special', '=', true );
+        if( $record->get_access_count( $access_mod ) ) $this->get_status()->set_code( 403 );
+      }
     }
   }
 

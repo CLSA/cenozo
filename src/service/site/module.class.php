@@ -21,12 +21,15 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::validate();
 
-    // restrict by site
-    $db_restrict_site = $this->get_restricted_site();
-    if( !is_null( $db_restrict_site ) )
+    if( 300 > $this->get_status()->get_code() )
     {
-      $db_site = $this->get_resource();
-      if( $db_site && $db_site->id != $db_restrict_site->id ) $this->get_status()->set_code( 403 );
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) )
+      {
+        $db_site = $this->get_resource();
+        if( $db_site && $db_site->id != $db_restrict_site->id ) $this->get_status()->set_code( 403 );
+      }
     }
   }
 

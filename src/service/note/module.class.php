@@ -19,33 +19,40 @@ class module extends \cenozo\service\site_restricted_module
    */
   public function validate()
   {
-    $valid = parent::validate();
+    parent::validate();
 
-    // make sure to only respond if the parent is a participant or alternate
-    if( !in_array( $this->get_parent_subject(), array( 'alternate', 'participant' ) ) )
-      $this->get_status()->set_code( 404 );
-
-    // make sure the application has access to the participant or alternate
-    $db_application = lib::create( 'business\session' )->get_application();
-    $record = $this->get_resource();
-    if( !is_null( $record ) )
+    if( 300 > $this->get_status()->get_code() )
     {
-      $db_participant = is_null( $record->participant_id )
-                      ? $record->get_alternate()->get_participant()
-                      : $record->get_participant();
-      if( $db_application->release_based )
-      {
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'participant_id', '=', $db_participant->id );
-        if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
-      }
+      // make sure to only respond if the parent is a participant or alternate
+      if( !in_array( $this->get_parent_subject(), array( 'alternate', 'participant' ) ) )
+        $this->get_status()->set_code( 404 );
 
-      // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) )
+      // make sure the application has access to the participant or alternate
+      $db_application = lib::create( 'business\session' )->get_application();
+      $record = $this->get_resource();
+      if( !is_null( $record ) )
       {
-        if( !is_null( $db_participant ) && $db_participant->get_effective_site()->id != $db_restrict_site->id )
-          $this->get_status()->set_code( 403 );
+        $db_participant = is_null( $record->participant_id )
+                        ? $record->get_alternate()->get_participant()
+                        : $record->get_participant();
+        if( $db_application->release_based )
+        {
+          $modifier = lib::create( 'database\modifier' );
+          $modifier->where( 'participant_id', '=', $db_participant->id );
+          if( 0 == $db_application->get_participant_count( $modifier ) )
+          {
+            $this->get_status()->set_code( 404 );
+            return;
+          }
+        }
+
+        // restrict by site
+        $db_restrict_site = $this->get_restricted_site();
+        if( !is_null( $db_restrict_site ) )
+        {
+          if( !is_null( $db_participant ) && $db_participant->get_effective_site()->id != $db_restrict_site->id )
+            $this->get_status()->set_code( 403 );
+        }
       }
     }
   }

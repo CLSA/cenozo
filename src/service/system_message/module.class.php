@@ -21,36 +21,42 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::validate();
 
-    $service_class_name = lib::get_class_name( 'service\service' );
-
-    // restrict by site
-    $db_restrict_site = $this->get_restricted_site();
-    if( !is_null( $db_restrict_site ) )
+    if( 300 > $this->get_status()->get_code() )
     {
-      $record = $this->get_resource();
-      if( $record && !is_null( $record->site_id ) && $record->site_id != $db_restrict_site->id )
-        $this->get_status()->set_code( 403 );
-    }
+      $service_class_name = lib::get_class_name( 'service\service' );
 
-    $method = $this->get_method();
-    if( $service_class_name::is_write_method( $method ) )
-    {
-      $db_role = lib::create( 'business\session' )->get_role();
-      $db_system_message = $this->get_resource();
-
-      // make sure that only tier 3 roles can create/edit cross-application messages
-      if( 3 > $db_role->tier && is_null( $db_system_message->application_id ) )
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) )
       {
-        $this->set_data(
-          'You are not allowed to create or edit system messages which span across all applications.' );
-        $this->get_status()->set_code( 406 );
+        $record = $this->get_resource();
+        if( $record && !is_null( $record->site_id ) && $record->site_id != $db_restrict_site->id )
+        {
+          $this->get_status()->set_code( 403 );
+          return;
+        }
       }
-      // make sure that only all-site roles can create/edit cross-site messages
-      else if( !$db_role->all_sites && is_null( $db_system_message->site_id ) )
+
+      $method = $this->get_method();
+      if( $service_class_name::is_write_method( $method ) )
       {
-        $this->set_data(
-          'You are not allowed to create or edit system messages which span across all sites.' );
-        $this->get_status()->set_code( 406 );
+        $db_role = lib::create( 'business\session' )->get_role();
+        $db_system_message = $this->get_resource();
+
+        // make sure that only tier 3 roles can create/edit cross-application messages
+        if( 3 > $db_role->tier && is_null( $db_system_message->application_id ) )
+        {
+          $this->set_data(
+            'You are not allowed to create or edit system messages which span across all applications.' );
+          $this->get_status()->set_code( 406 );
+        }
+        // make sure that only all-site roles can create/edit cross-site messages
+        else if( !$db_role->all_sites && is_null( $db_system_message->site_id ) )
+        {
+          $this->set_data(
+            'You are not allowed to create or edit system messages which span across all sites.' );
+          $this->get_status()->set_code( 406 );
+        }
       }
     }
   }

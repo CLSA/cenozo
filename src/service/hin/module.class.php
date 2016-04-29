@@ -21,37 +21,44 @@ class module extends \cenozo\service\module
   {
     parent::validate();
 
-    $service_class_name = lib::get_class_name( 'service\service' );
-    $db_application = lib::create( 'business\session' )->get_application();
-    $db_hin = $this->get_resource();
-    $method = $this->get_method();
-
-    // make sure the application has access to the participant
-    if( $db_application->release_based && !is_null( $db_hin ) )
+    if( 300 > $this->get_status()->get_code() )
     {
-      $participant_id = $db_hin->participant_id;
-      if( is_null( $participant_id ) ) $participant_id = $db_hin->get_alternate()->participant_id;
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'participant_id', '=', $participant_id );
-      if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
-    }
+      $service_class_name = lib::get_class_name( 'service\service' );
+      $db_application = lib::create( 'business\session' )->get_application();
+      $db_hin = $this->get_resource();
+      $method = $this->get_method();
 
-    if( $service_class_name::is_write_method( $method ) )
-    {
-      $db_role = lib::create( 'business\session' )->get_role();
-
-      // make sure that only tier 3 roles can delete/edit
-      if( ( 'DELETE' == $method || 'PATCH' == $method ) && 3 > $db_role->tier )
+      // make sure the application has access to the participant
+      if( $db_application->release_based && !is_null( $db_hin ) )
       {
-        $this->get_status()->set_code( 403 );
+        $participant_id = $db_hin->participant_id;
+        if( is_null( $participant_id ) ) $participant_id = $db_hin->get_alternate()->participant_id;
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'participant_id', '=', $participant_id );
+        if( 0 == $db_application->get_participant_count( $modifier ) )
+        {
+          $this->get_status()->set_code( 404 );
+          return;
+        }
       }
-      // if the region is provided then make sure the code is valid
-      else if( 'DELETE' != $method && false === $db_hin->is_valid() )
+
+      if( $service_class_name::is_write_method( $method ) )
       {
-        $this->set_data( sprintf(
-          'The code you have provided is not a valid %s HIN.  Please double check the code and try again.',
-          $db_hin->get_region()->name ) );
-        $this->get_status()->set_code( 406 );
+        $db_role = lib::create( 'business\session' )->get_role();
+
+        // make sure that only tier 3 roles can delete/edit
+        if( ( 'DELETE' == $method || 'PATCH' == $method ) && 3 > $db_role->tier )
+        {
+          $this->get_status()->set_code( 403 );
+        }
+        // if the region is provided then make sure the code is valid
+        else if( 'DELETE' != $method && false === $db_hin->is_valid() )
+        {
+          $this->set_data( sprintf(
+            'The code you have provided is not a valid %s HIN.  Please double check the code and try again.',
+            $db_hin->get_region()->name ) );
+          $this->get_status()->set_code( 406 );
+        }
       }
     }
   }

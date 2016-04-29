@@ -21,16 +21,19 @@ class module extends \cenozo\service\module
   {
     parent::validate();
 
-    // make sure the application has access to the participant
-    $db_application = lib::create( 'business\session' )->get_application();
-    $db_phone = $this->get_resource();
-    if( $db_application->release_based && !is_null( $db_phone ) )
+    if( 300 > $this->get_status()->get_code() )
     {
-      $participant_id = $db_phone->participant_id;
-      if( is_null( $participant_id ) ) $participant_id = $db_phone->get_alternate()->participant_id;
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'participant_id', '=', $participant_id );
-      if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
+      // make sure the application has access to the participant
+      $db_application = lib::create( 'business\session' )->get_application();
+      $db_phone = $this->get_resource();
+      if( $db_application->release_based && !is_null( $db_phone ) )
+      {
+        $participant_id = $db_phone->participant_id;
+        if( is_null( $participant_id ) ) $participant_id = $db_phone->get_alternate()->participant_id;
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'participant_id', '=', $participant_id );
+        if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
+      }
     }
   }
 

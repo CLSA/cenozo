@@ -21,7 +21,10 @@ class module extends \cenozo\service\module
   {
     $valid = parent::validate();
 
-    // make sure to only respond if the parent is a script
-    if( 'script' != $this->get_parent_subject() ) $this->get_status()->set_code( 404 );
+    if( 300 > $this->get_status()->get_code() )
+    {
+      // make sure to only respond if the parent is a script
+      if( 'script' != $this->get_parent_subject() ) $this->get_status()->set_code( 404 );
+    }
   }
 }
