@@ -42,7 +42,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     address_id: {
       title: 'Associated Address',
       type: 'enum',

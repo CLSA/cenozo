@@ -51,7 +51,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   } );
 
   // define inputs
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     active: {
       title: 'Active',
       type: 'boolean',
@@ -654,10 +654,13 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
         // before constructing the model change some input types depending on the role's tier
         if( 3 > CnSession.role.tier ) {
-          module.inputGroupList['Defining Details'].sex.constant = true;
-          module.inputGroupList['Defining Details'].age_group_id.constant = true;
-          if( 2 > CnSession.role.tier ) 
-            module.inputGroupList[null].active.constant = true;
+          var definingInputGroup = module.inputGroupList.findByProperty( 'title', 'Defining Details' );
+          if( definingInputGroup ) {
+            definingInputGroup.inputList.sex.constant = true;
+            definingInputGroup.inputList.age_group_id.constant = true;
+          }
+          if( 2 > CnSession.role.tier )
+            module.inputGroupList.findByProperty( 'title', '' ).inputList.active.constant = true;
         }
 
         CnBaseModelFactory.construct( this, module );
@@ -666,73 +669,71 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return $q.all( [
-
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
-              path: 'age_group',
-              data: {
-                select: { column: [ 'id', 'lower', 'upper' ] },
-                modifier: { order: { lower: false } }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.age_group_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.age_group_id.enumList.push( {
-                  value: item.id,
-                  name: item.lower + ' to ' + item.upper
-                } );
-              } );
-            } ),
-
-            CnHttpFactory.instance( {
-              path: 'language',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: {
-                  where: { column: 'active', operator: '=', value: true },
-                  order: 'name'
+          return this.$$getMetadata().then( function() {
+            return $q.all( [
+              CnHttpFactory.instance( {
+                path: 'age_group',
+                data: {
+                  select: { column: [ 'id', 'lower', 'upper' ] },
+                  modifier: { order: { lower: false } }
                 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.language_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } ),
-
-            CnHttpFactory.instance( {
-              path: 'site',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name' }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.preferred_site_id = { enumList: [] };
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } ),
-
-            CnHttpFactory.instance( {
-              path: 'state',
-              data: {
-                select: { column: [ 'id', 'name', 'access' ] },
-                modifier: { order: 'rank' }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.state_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.state_id.enumList.push( {
-                  value: item.id,
-                  name: item.name,
-                  disabled: !item.access
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.age_group_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.age_group_id.enumList.push( {
+                    value: item.id,
+                    name: item.lower + ' to ' + item.upper
+                  } );
                 } );
-              } );
-            } )
+              } ),
 
-          ] );
+              CnHttpFactory.instance( {
+                path: 'language',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: {
+                    where: { column: 'active', operator: '=', value: true },
+                    order: 'name'
+                  }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.language_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
+                } );
+              } ),
+
+              CnHttpFactory.instance( {
+                path: 'site',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.preferred_site_id = { enumList: [] };
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
+                } );
+              } ),
+
+              CnHttpFactory.instance( {
+                path: 'state',
+                data: {
+                  select: { column: [ 'id', 'name', 'access' ] },
+                  modifier: { order: 'rank' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.state_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.state_id.enumList.push( {
+                    value: item.id,
+                    name: item.name,
+                    disabled: !item.access
+                  } );
+                } );
+              } )
+            ] );
+          } );
         };
       };
 
@@ -810,15 +811,14 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           list.forEach( function( column, index, array ) {
             // find this column's input details in the module's input group list
             var input = null
-            for( var group in module.inputGroupList ) {
-              for( var groupListColumn in module.inputGroupList[group] ) {
+            module.inputGroupList.some( function( group ) {
+              for( var groupListColumn in group.inputList ) {
                 if( column == groupListColumn ) {
-                  input = module.inputGroupList[group][groupListColumn];
-                  break;
+                  input = group.inputList[groupListColumn];
+                  return true; // stop looping over inputGroupList
                 }
               }
-              if( null != input ) break;
-            }
+            } );
 
             if( null != input ) {
               // convert the column name into an object

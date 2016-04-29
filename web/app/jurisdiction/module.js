@@ -31,7 +31,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     site_id: {
       title: 'Site',
       type: 'enum'

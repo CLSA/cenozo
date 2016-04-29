@@ -31,7 +31,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     event_type_id: {
       title: 'Event Type',
       type: 'enum'

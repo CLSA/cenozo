@@ -40,7 +40,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     consent_type_id: {
       title: 'Consent Type',
       type: 'enum',

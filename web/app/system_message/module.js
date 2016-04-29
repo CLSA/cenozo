@@ -39,7 +39,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     application_id: {
       column: 'system_message.application_id',
       title: 'Application',
@@ -176,10 +176,13 @@ define( function() {
 
         // make site_id constant if the user does not have all-site access
         if( !CnSession.role.allSites ) {
-          module.inputGroupList[null].application_id.exclude = 'add';
-          module.inputGroupList[null].application_id.constant = 'view';
-          module.inputGroupList[null].site_id.exclude = 'add';
-          module.inputGroupList[null].site_id.constant= 'view';
+          var mainInputGroup = module.inputGroupList.findByProperty( 'title', '' );
+          if( mainInputGroup ) {
+            mainInputGroup.inputList.application_id.exclude = 'add';
+            mainInputGroup.inputList.application_id.constant = 'view';
+            mainInputGroup.inputList.site_id.exclude = 'add';
+            mainInputGroup.inputList.site_id.constant= 'view';
+          }
         }
 
         // extend getMetadata

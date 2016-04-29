@@ -42,7 +42,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     participant_id: {
       column: 'alternate.participant_id',
       title: 'Participant',

@@ -30,7 +30,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     language_id: {
       title: 'Language',
       type: 'enum'

@@ -34,7 +34,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     code: {
       title: 'Code',
       type: 'string'

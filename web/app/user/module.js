@@ -50,7 +50,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     active: {
       title: 'Active',
       type: 'boolean',
@@ -287,7 +287,7 @@ define( function() {
         this.viewModel = CnUserViewFactory.instance( this, root );
 
         // add additional details to some of the help text
-        module.inputGroupList[null].login_failures.help +=
+        module.inputGroupList.findByProperty( 'title', '' ).inputList.login_failures.help +=
           ' Once it reaches ' + CnSession.application.loginFailureLimit +
           ' the user will automatically be deactivated.  Reactivating the user will reset the counter to 0.';
 

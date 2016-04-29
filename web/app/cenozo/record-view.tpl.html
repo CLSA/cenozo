@@ -24,7 +24,7 @@
   <form name="form" class="form-horizontal" novalidate>
     <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
       <div ng-repeat="group in dataArray">
-        <div ng-if="'null' !== group.title"
+        <div ng-if="0 < group.title.length"
              class="container-fluid bg-info"
              data-toggle="collapse"
              data-target="#inputGroup{{ $index }}"
@@ -40,12 +40,12 @@
             {{ group.title }}
           </h4>
         </div>
-        <div id="inputGroup{{ $index }}" ng-class="{'collapse':group.collapsed}">
+        <div id="inputGroup{{ $index }}" class="collapse" ng-class="{'in':!group.initCollapsed}">
           <ng-form ng-repeat="input in group.inputList"
                    ng-if="true != input.exclude && 'view' != input.exclude && 'hidden' != input.type"
                    name="innerForm">
             <div class="form-group"
-                 ng-class="{'first-form-group':'null'!=group.title && $first,
+                 ng-class="{'first-form-group':group.title.length && $first,
                             'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
               <label for="{{ input.key }}"
                      class="col-sm-3 control-label"

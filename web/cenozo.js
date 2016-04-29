@@ -148,7 +148,7 @@ angular.extend( cenozoApp, {
             if( angular.isDefined( file ) ) url += file + '?build=' + build;
             return url;
           },
-          inputGroupList: {},
+          inputGroupList: [],
           columnList: {},
           extraOperationList: {
             add: [],
@@ -196,33 +196,47 @@ angular.extend( cenozoApp, {
            *   }
            * }
            */
-          addInput: function( group, key, input ) {
+          addInput: function( groupTitle, key, input ) {
             // make sure the key is unique throughout all groups
-            for( var g in this.inputGroupList ) {
-              if( g != group && angular.isDefined( this.inputGroupList[g][key] ) ) {
-                console.error(
-                  "Cannot add input '" + key + "' to group '" + group +
-                  "' as it already exists in the existing group '" + g + "'." );
-                return;
+            if( this.inputGroupList.some( function( group ) {
+              if( angular.isDefined( group.inputList[key] ) ) return true;
+            } ) ) {
+              console.error(
+                'Cannot add input "' + key + '" to group "' + groupTitle +
+                '" as it already exists in the existing group "' + g.title + '".' );
+            } else {
+              // add the key to the input
+              input.key = key;
+
+              // create the group if it doesn't exist
+              var group = this.inputGroupList.findByProperty( 'title', groupTitle );
+              if( !group ) {
+                group = {
+                  title: groupTitle,
+                  expanded: false,
+                  inputList: {}
+                };
+                this.inputGroupList.push( group );
               }
+              group.inputList[key] = input;
             }
-
-            // add the key to the input
-            input.key = key;
-
-            // create the group if it doesn't exist
-            if( angular.isUndefined( this.inputGroupList[group] ) )
-              this.inputGroupList[group] = {};
-            this.inputGroupList[group][key] = input;
           },
-          addInputGroup: function( title, inputList ) {
+          addInputGroup: function( title, inputList, expanded ) {
+            if( 0 == title.length ) expanded = true;
+            else if( angular.isUndefined( expanded ) ) expanded = false;
             for( var key in inputList ) this.addInput( title, key, inputList[key] );
+            this.inputGroupList.findByProperty( 'title', title ).collapsed = !expanded;
           },
           getInput: function( key ) {
-            for( var group in this.inputGroupList )
-              if( angular.isDefined( this.inputGroupList[group][key] ) )
-                return this.inputGroupList[group][key];
-            return null;
+            var input = null;
+            this.inputGroupList.some( function( group ) {
+              if( angular.isDefined( group.inputList[key] ) ) {
+                input = group.inputList[key];
+                return true;
+              }
+            } );
+
+            return input;
           },
 
           /**
@@ -1226,8 +1240,8 @@ cenozo.directive( 'cnRecordView', [
           // build enum lists
           for( var key in $scope.model.metadata.columnList ) {
             // find the input in the dataArray groups
-            $scope.dataArray.forEach( function( item ) {
-              var input = item.inputList.findByProperty( 'key', key );
+            $scope.dataArray.forEach( function( group ) {
+              var input = group.inputList[key];
               if( null != input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
                 input.enumList = 'boolean' === input.type
                                ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
@@ -3080,9 +3094,9 @@ cenozo.factory( 'CnBaseViewFactory', [
             }
 
             // convert blank enums into empty strings (for ng-options)
-            for( var group in parentModel.module.inputGroupList ) {
-              for( var column in parentModel.module.inputGroupList[group] ) {
-                var input = parentModel.module.inputGroupList[group][column];
+            parentModel.module.inputGroupList.forEach( function( group ) {
+              for( var column in group.inputList ) {
+                var input = group.inputList[column];
                 if( 'view' != input.exclude && 'enum' == input.type && null === self.record[column] ) {
                   var metadata = parentModel.metadata.columnList[column];
                   if( angular.isDefined( metadata ) && !metadata.required ) {
@@ -3091,7 +3105,7 @@ cenozo.factory( 'CnBaseViewFactory', [
                   }
                 }
               }
-            }
+            } );
 
             // update all properties in the formatted record
             self.updateFormattedRecord();
@@ -3260,14 +3274,12 @@ cenozo.factory( 'CnBaseModelFactory', [
             list = self.columnList;
           } else {
             // we need to get a list of all inputs from the module's input groups
-            for( var group in self.module.inputGroupList ) {
-              for( var column in self.module.inputGroupList[group] ) {
-                var input = self.module.inputGroupList[group][column];
-                if( 'view' != input.exclude ) {
-                  list[column] = input;
-                }
+            self.module.inputGroupList.forEach( function( group ) {
+              for( var column in group.inputList ) {
+                var input = group.inputList[column];
+                if( 'view' != input.exclude ) list[column] = input;
               }
-            }
+            } );
           }
 
           // add identifier data if it is missing
@@ -3549,25 +3561,22 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
           } else { // add or view
-            for( var group in self.module.inputGroupList ) {
-              for( var key in self.module.inputGroupList[group] ) {
-                var input = self.module.inputGroupList[group][key];
-                // don't include removed items, those which belong to the state subject or excluded
-                if( 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && type != input.exclude ) {
-                  var groupObj = data.findByProperty( 'title', group );
-                  if( null === groupObj ) {
-                    // we haven't added this group yet, so add it now
-                    var index = data.push( {
-                      title: group,
-                      collapsed: 'null' != group, // always initialize sub-groups collapsed
-                      inputList: []
-                    } );
-                    groupObj = data[index-1];
-                  };
-                  groupObj.inputList.push( input );
-                }
+            data = angular.copy( self.module.inputGroupList );
+
+            // set the initCollapsed property for all groups
+            data.forEach( function( group ) { group.initCollapsed = group.collapsed; } );
+
+            // don't include removed items, those which belong to the state subject or excluded
+            data = data.filter( function( group ) {
+              for( var key in group.inputList ) {
+                if( 0 <= removeList.indexOf( key ) ||
+                    stateSubject+'_id' == key ||
+                    type == group.inputList[key].exclude ) delete group.inputList[key];
               }
-            }
+
+              // remove any groups with no inputs left
+              return 0 < Object.keys( group.inputList ).length;
+            } );
           }
 
           return data;

@@ -50,7 +50,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     user_id: {
       title: 'User',
       type: 'lookup-typeahead',

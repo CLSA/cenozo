@@ -32,7 +32,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     rank: {
       title: 'Rank',
       type: 'rank'
