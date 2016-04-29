@@ -1241,15 +1241,18 @@ cenozo.directive( 'cnRecordView', [
           for( var key in $scope.model.metadata.columnList ) {
             // find the input in the dataArray groups
             $scope.dataArray.forEach( function( group ) {
-              var input = group.inputList[key];
-              if( null != input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
-                input.enumList = 'boolean' === input.type
-                               ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
-                               : angular.copy( $scope.model.metadata.columnList[key].enumList );
-                // add the empty option if input is not required
-                if( angular.isArray( input.enumList ) && !$scope.model.metadata.columnList[key].required )
-                  input.enumList.unshift( { value: '', name: '(empty)' } );
-              }
+              group.inputArray.filter( function( input ) {
+                return input.key == key;
+              } ).forEach( function( input ) {
+                if( null != input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
+                  input.enumList = 'boolean' === input.type
+                                 ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
+                                 : angular.copy( $scope.model.metadata.columnList[key].enumList );
+                  // add the empty option if input is not required
+                  if( angular.isArray( input.enumList ) && !$scope.model.metadata.columnList[key].required )
+                    input.enumList.unshift( { value: '', name: '(empty)' } );
+                }
+              } );
             } );
           }
         } ).finally( function() { $scope.isComplete = true; } );
@@ -3561,22 +3564,22 @@ cenozo.factory( 'CnBaseModelFactory', [
               }
             }
           } else { // add or view
-            data = angular.copy( self.module.inputGroupList );
+            data = self.module.inputGroupList.reduce( function( data, group ) {
+              var inputArray = Object.keys( group.inputList ).map( function( key ) {
+                return group.inputList[key];
+              } ).filter( function( input ) {
+                return 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && type != input.exclude;
+              } )
 
-            // set the initCollapsed property for all groups
-            data.forEach( function( group ) { group.initCollapsed = group.collapsed; } );
+              if( 0 < inputArray.length ) data.push( {
+                title: group.title,
+                collapsed: group.collapsed,
+                initCollapsed: group.collapsed,
+                inputArray: inputArray
+              } );
 
-            // don't include removed items, those which belong to the state subject or excluded
-            data = data.filter( function( group ) {
-              for( var key in group.inputList ) {
-                if( 0 <= removeList.indexOf( key ) ||
-                    stateSubject+'_id' == key ||
-                    type == group.inputList[key].exclude ) delete group.inputList[key];
-              }
-
-              // remove any groups with no inputs left
-              return 0 < Object.keys( group.inputList ).length;
-            } );
+              return data;
+            }, [] );
           }
 
           return data;

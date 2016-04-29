@@ -41,7 +41,7 @@
           </h4>
         </div>
         <div id="inputGroup{{ $index }}" class="collapse" ng-class="{'in':!group.initCollapsed}">
-          <ng-form ng-repeat="input in group.inputList"
+          <ng-form ng-repeat="input in group.inputArray"
                    ng-if="true != input.exclude && 'view' != input.exclude && 'hidden' != input.type"
                    name="innerForm">
             <div class="form-group"
