@@ -2,7 +2,7 @@
 <form name="form" class="form-horizontal" novalidate>
   <div class="form-body">
     <div ng-repeat="group in dataArray">
-      <div ng-if="'null' !== group.title"
+      <div ng-if="0 < group.title.length"
            class="container-fluid bg-info"
            style="margin-bottom:2px; cursor:pointer;">
         <h4>{{ group.title }}</h4>
@@ -11,7 +11,7 @@
                ng-if="true != input.exclude && 'add' != input.exclude && 'hidden' != input.type"
                name="innerForm">
         <div class="form-group"
-             ng-class="{'first-form-group':'null'!=group.title && $first,
+             ng-class="{'first-form-group':group.title.length && $first,
                         'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
           <label for="{{ input.key }}"
                  class="col-sm-3 control-label"

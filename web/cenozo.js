@@ -888,7 +888,7 @@ cenozo.directive( 'cnRecordAdd', [
             $scope.model.setupBreadcrumbTrail();
 
             $scope.dataArray.forEach( function( group ) {
-              group.inputList.forEach( function( item ) {
+              group.inputArray.forEach( function( item ) {
                 var meta = $scope.model.metadata.columnList[item.key];
                 if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
                   var enumList = angular.copy( meta.enumList );
@@ -989,7 +989,7 @@ cenozo.directive( 'cnRecordAdd', [
           var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
           scope.dataArray = scope.model.getDataArray( removeInputs, 'add' );
           scope.dataArray.forEach( function( group ) {
-            group.inputList.forEach( function( item ) {
+            group.inputArray.forEach( function( item ) {
               if( 'boolean' == item.type ) {
                 item.enumList = [
                   { value: undefined, name: '(Select Yes or No)' },
