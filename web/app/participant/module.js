@@ -76,7 +76,12 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       title: 'Cohort',
       type: 'string',
       constant: true
-    }
+    },
+    note: {
+      column: 'participant.note',
+      title: 'Special Notes',
+      type: 'text'
+    },
   } );
 
   module.addInputGroup( 'Naming Details', {
