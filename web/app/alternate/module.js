@@ -281,7 +281,9 @@ define( function() {
 
               // international column
               columnList.international.required = '1' == columnList.international.required;
-//              angular.extend( self.metadata.columnList.phone_international, columnList.international );
+              if( angular.isUndefined( self.metadata.columnList.phone_international ) )
+                self.metadata.columnList.phone_international = {};
+              angular.extend( self.metadata.columnList.phone_international, columnList.international );
 
               // type column
               columnList.type.required = '1' == columnList.type.required;
@@ -289,15 +291,21 @@ define( function() {
               cenozo.parseEnumList( columnList.type ).forEach( function( item ) {
                 columnList.type.enumList.push( { value: item, name: item } );
               } );
-//              angular.extend( self.metadata.columnList.phone_type, columnList.type );
+              if( angular.isUndefined( self.metadata.columnList.phone_type ) )
+                self.metadata.columnList.phone_type = {};
+              angular.extend( self.metadata.columnList.phone_type, columnList.type );
 
               // number column
               columnList.number.required = '1' == columnList.number.required;
-//              angular.extend( self.metadata.columnList.phone_number, columnList.number );
+              if( angular.isUndefined( self.metadata.columnList.phone_number ) )
+                self.metadata.columnList.phone_number = {};
+              angular.extend( self.metadata.columnList.phone_number, columnList.number );
 
               // note column
               columnList.note.required = '1' == columnList.note.required;
-//              angular.extend( self.metadata.columnList.phone_note, columnList.note );
+              if( angular.isUndefined( self.metadata.columnList.phone_note ) )
+                self.metadata.columnList.phone_note = {};
+              angular.extend( self.metadata.columnList.phone_note, columnList.note );
             } ),
 
             CnHttpFactory.instance( {
@@ -308,27 +316,39 @@ define( function() {
               // international column
               columnList.international.required = false;
               columnList.international.default = null;
-//              angular.extend( self.metadata.columnList.address_international, columnList.international );
+              if( angular.isUndefined( self.metadata.columnList.address_international ) )
+                self.metadata.columnList.address_international = {};
+              angular.extend( self.metadata.columnList.address_international, columnList.international );
 
               // address1 column
               columnList.address1.required = false;
-//              angular.extend( self.metadata.columnList.address_address1, columnList.address1 );
+              if( angular.isUndefined( self.metadata.columnList.address_address1 ) )
+                self.metadata.columnList.address_address1 = {};
+              angular.extend( self.metadata.columnList.address_address1, columnList.address1 );
 
               // address2 column
               columnList.address2.required = false;
-//              angular.extend( self.metadata.columnList.address_address2, columnList.address2 );
+              if( angular.isUndefined( self.metadata.columnList.address_address2 ) )
+                self.metadata.columnList.address_address2 = {};
+              angular.extend( self.metadata.columnList.address_address2, columnList.address2 );
 
               // city column
               columnList.city.required = false;
-//              angular.extend( self.metadata.columnList.address_city, columnList.city );
+              if( angular.isUndefined( self.metadata.columnList.address_city ) )
+                self.metadata.columnList.address_city = {};
+              angular.extend( self.metadata.columnList.address_city, columnList.city );
 
               // postcode column
               columnList.postcode.required = false;
-//              angular.extend( self.metadata.columnList.address_postcode, columnList.postcode );
+              if( angular.isUndefined( self.metadata.columnList.address_postcode ) )
+                self.metadata.columnList.address_postcode = {};
+              angular.extend( self.metadata.columnList.address_postcode, columnList.postcode );
 
               // note column
               columnList.note.required = false;
-//              angular.extend( self.metadata.columnList.address_note, columnList.note );
+              if( angular.isUndefined( self.metadata.columnList.address_note ) )
+                self.metadata.columnList.address_note = {};
+              angular.extend( self.metadata.columnList.address_note, columnList.note );
             } )
           ] );
         };
