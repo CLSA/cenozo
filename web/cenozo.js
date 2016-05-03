@@ -3826,6 +3826,166 @@ cenozo.factory( 'CnBaseModelFactory', [
 /**
  * TODO: document
  */
+cenozo.factory( 'CnBaseNoteFactory', [
+  'CnSession', 'CnHttpFactory', '$state',
+  function CnHttpFactory( CnSession, CnHttpFactory, $state ) {
+    return {
+      construct: function( object, module ) {
+        // Note: methods are added to Object here, members below
+        angular.extend( object, {
+          module: module,
+          uid: String( $state.params.identifier ).split( '=' ).pop(),
+          search: '',
+          newNote: '',
+          noteListCache: [],
+          noteList: [],
+          allowDelete: module.allowNoteDelete,
+          allowEdit: module.allowNoteEdit,
+
+          viewHistory: function() {
+            $state.go( module.subject.snake + '.history', { identifier: $state.params.identifier } ); 
+          },
+
+          viewRecord: function() {
+            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } ); 
+          },
+
+          updateSearch: function( search ) {
+            object.search = search;
+            object.noteList = object.noteListCache.filter( function( note ) {
+              if( 0 == search.length ) {
+                return true;
+              } else {
+                // convert search into modifier format
+                return !object.search.split( ' ' ).some( function( word ) {
+                  return 0 < word.length && !note.note.toLowerCase().includes( word.toLowerCase() );
+                } );
+              }
+            } );
+          },
+
+          addNote: function() {
+            var note = {
+              user_id: CnSession.user.id,
+              datetime: moment().format(),
+              note: object.newNote
+            };
+
+            CnHttpFactory.instance( {
+              path: module.subject.snake + '/' + $state.params.identifier + '/note',
+              data: note 
+            } ).post().then( function( response ) {
+              note.id = response.data;
+              note.sticky = false;
+              note.noteBackup = note.note;
+              note.userFirst = CnSession.user.firstName;
+              note.userLast = CnSession.user.lastName;
+              return note;
+            } ).then( function( note ) {
+              object.noteListCache.push( note );
+              object.updateSearch( object.search );
+            } );
+
+            object.newNote = '';
+          },
+
+          deleteNote: function( id ) {
+            var index = object.noteListCache.findIndexByProperty( 'id', id );
+            if( null !== index ) {
+              CnHttpFactory.instance( {
+                path: module.subject.snake + '/' + $state.params.identifier +
+                      '/note/' + object.noteListCache[index].id
+              } ).delete().then( function() {
+                object.noteListCache.splice( index, 1 );
+                object.updateSearch( object.search );
+              } );
+            }
+          },
+
+          noteChanged: function( id ) {
+            var note = object.noteList.findByProperty( 'id', id );
+            if( note ) {
+              CnHttpFactory.instance( {
+                path: module.subject.snake + '/' + $state.params.identifier + '/note/' + note.id,
+                data: { note: note.note }
+              } ).patch();
+            }
+          },
+
+          stickyChanged: function( id ) {
+            var note = object.noteList.findByProperty( 'id', id );
+            if( note ) {
+              note.sticky = !note.sticky;
+              CnHttpFactory.instance( {
+                path: module.subject.snake + '/' + $state.params.identifier + '/note/' + note.id,
+                data: { sticky: note.sticky }
+              } ).patch();
+            }
+          },
+
+          undo: function( id ) {
+            var note = object.noteList.findByProperty( 'id', id );
+            if( note && note.note != note.noteBackup ) {
+              note.note = note.noteBackup;
+              CnHttpFactory.instance( {
+                path: module.subject.snake + '/' + $state.params.identifier + '/note/' + note.id,
+                data: { note: note.note }
+              } ).patch();
+            }
+          },
+
+          onView: function() {
+            object.isLoading = true;
+            return CnHttpFactory.instance( {
+              path: module.subject.snake + '/' + $state.params.identifier + '/note',
+              data: {
+                modifier: {
+                  join: {
+                    table: 'user',
+                    onleft: 'note.user_id',
+                    onright: 'user.id'
+                  },
+                  order: { 'datetime': true }
+                },
+                select: {
+                  column: [ 'sticky', 'datetime', 'note', {
+                    table: 'user',
+                    column: 'first_name',
+                    alias: 'user_first'
+                  } , {
+                    table: 'user',
+                    column: 'last_name',
+                    alias: 'user_last'
+                  } ]
+                }
+              },
+              redirectOnError: true
+            } ).query().then( function( response ) {
+              object.noteListCache = [];
+              response.data.forEach( function( item ) {
+                object.noteListCache.push( {
+                  id: item.id,
+                  datetime: '0000-00-00' == item.datetime.substring( 0, 10 ) ? null : item.datetime,
+                  sticky: item.sticky,
+                  userFirst: item.user_first,
+                  userLast: item.user_last,
+                  note: item.note,
+                  noteBackup: item.note
+                } );
+              } );
+              object.updateSearch( object.search );
+            } ).finally( function() { object.isLoading = false; } );
+          }
+        } );
+      }
+    };
+  }
+] );
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.factory( 'CnHttpFactory', [
   'CnModalMessageFactory', '$http', '$state', '$rootScope', '$timeout', '$window',
   function CnHttpFactory( CnModalMessageFactory, $http, $state, $rootScope, $timeout, $window ) {

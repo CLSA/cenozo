@@ -188,19 +188,13 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAlternateNotes', [
-    'CnAlternateNotesFactory', 'CnSession', '$state', '$timeout',
-    function( CnAlternateNotesFactory, CnSession, $state, $timeout) {
+    'CnAlternateNotesFactory', '$timeout',
+    function( CnAlternateNotesFactory, $timeout) {
       return {
-        templateUrl: module.getFileUrl( 'notes.tpl.html' ),
+        templateUrl: cenozo.getFileUrl( 'cenozo', 'notes.tpl.html' ),
         restrict: 'E', 
         controller: function( $scope ) {
-          $scope.isLoading = false;
           $scope.model = CnAlternateNotesFactory.instance();
-          $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
-
-          // note actions are stored in the alternate module in cenozo.js
-          $scope.allowDelete = $scope.model.module.allowNoteDelete;
-          $scope.allowEdit = $scope.model.module.allowNoteEdit;
 
           // trigger the elastic directive when adding a note or undoing
           $scope.addNote = function() {
@@ -213,31 +207,12 @@ define( function() {
             $timeout( function() { angular.element( '#note' + id ).trigger( 'change' ) }, 100 );
           };
 
-          $scope.viewAlternate = function() {
-            $state.go( 'alternate.view', { identifier: $state.params.identifier } ); 
-          };
-
-          $scope.refresh = function() {
-            $scope.isLoading = true;
-            $scope.model.onView().then( function() {
-              CnSession.setBreadcrumbTrail(
-                [ {
-                  title: 'Alternates',
-                  go: function() { $state.go( 'alternate.list' ); } 
-                }, {
-                  title: $scope.uid,
-                  go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); } 
-                }, {
-                  title: 'Notes'
-                } ]
-              );
-            } ).finally( function finish() { $scope.isLoading = false; } );
-          };
-          $scope.refresh();
+          $scope.refresh = function() { $scope.model.onView(); };
+          $scope.model.onView();
         }
-      };
-    }
-  ] );
+      };   
+    }    
+  ] ); 
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAlternateView', [
@@ -306,7 +281,7 @@ define( function() {
 
               // international column
               columnList.international.required = '1' == columnList.international.required;
-              angular.extend( self.metadata.columnList.phone_international, columnList.international );
+//              angular.extend( self.metadata.columnList.phone_international, columnList.international );
 
               // type column
               columnList.type.required = '1' == columnList.type.required;
@@ -314,15 +289,15 @@ define( function() {
               cenozo.parseEnumList( columnList.type ).forEach( function( item ) {
                 columnList.type.enumList.push( { value: item, name: item } );
               } );
-              angular.extend( self.metadata.columnList.phone_type, columnList.type );
+//              angular.extend( self.metadata.columnList.phone_type, columnList.type );
 
               // number column
               columnList.number.required = '1' == columnList.number.required;
-              angular.extend( self.metadata.columnList.phone_number, columnList.number );
+//              angular.extend( self.metadata.columnList.phone_number, columnList.number );
 
               // note column
               columnList.note.required = '1' == columnList.note.required;
-              angular.extend( self.metadata.columnList.phone_note, columnList.note );
+//              angular.extend( self.metadata.columnList.phone_note, columnList.note );
             } ),
 
             CnHttpFactory.instance( {
@@ -333,27 +308,27 @@ define( function() {
               // international column
               columnList.international.required = false;
               columnList.international.default = null;
-              angular.extend( self.metadata.columnList.address_international, columnList.international );
+//              angular.extend( self.metadata.columnList.address_international, columnList.international );
 
               // address1 column
               columnList.address1.required = false;
-              angular.extend( self.metadata.columnList.address_address1, columnList.address1 );
+//              angular.extend( self.metadata.columnList.address_address1, columnList.address1 );
 
               // address2 column
               columnList.address2.required = false;
-              angular.extend( self.metadata.columnList.address_address2, columnList.address2 );
+//              angular.extend( self.metadata.columnList.address_address2, columnList.address2 );
 
               // city column
               columnList.city.required = false;
-              angular.extend( self.metadata.columnList.address_city, columnList.city );
+//              angular.extend( self.metadata.columnList.address_city, columnList.city );
 
               // postcode column
               columnList.postcode.required = false;
-              angular.extend( self.metadata.columnList.address_postcode, columnList.postcode );
+//              angular.extend( self.metadata.columnList.address_postcode, columnList.postcode );
 
               // note column
               columnList.note.required = false;
-              angular.extend( self.metadata.columnList.address_note, columnList.note );
+//              angular.extend( self.metadata.columnList.address_note, columnList.note );
             } )
           ] );
         };
@@ -368,121 +343,25 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateNotesFactory', [
-    'CnSession', 'CnHttpFactory', '$state',
-    function( CnSession, CnHttpFactory, $state ) {
+    'CnBaseNoteFactory', 'CnSession', 'CnHttpFactory', '$state',
+    function( CnBaseNoteFactory, CnSession, CnHttpFactory, $state ) {
       var object = function() {
         var self = this;
-        this.module = module;
-        this.newNote = '';
+        CnBaseNoteFactory.construct( this, module );
 
-        this.addNote = function() {
-          var note = {
-            user_id: CnSession.user.id,
-            datetime: moment().format(),
-            note: self.newNote
-          };
-
-          CnHttpFactory.instance( {
-            path: 'alternate/' + $state.params.identifier + '/note',
-            data: note 
-          } ).post().then( function( response ) {
-            note.id = response.data;
-            note.sticky = false;
-            note.noteBackup = note.note;
-            note.userFirst = CnSession.user.firstName;
-            note.userLast = CnSession.user.lastName;
-            return note;
-          } ).then( function( note ) {
-            self.noteList.push( note );
-          } );
-
-          this.newNote = '';
-        };
-
-        this.deleteNote = function( id ) {
-          var index = this.noteList.findIndexByProperty( 'id', id );
-          if( null !== index ) {
-            CnHttpFactory.instance( {
-              path: 'alternate/' + $state.params.identifier + '/note/' + this.noteList[index].id
-            } ).delete().then( function() {
-              self.noteList.splice( index, 1 ); 
-            } );
-          }
-        };
-
-        this.noteChanged = function( id ) {
-          var note = this.noteList.findByProperty( 'id', id );
-          if( note ) {
-            CnHttpFactory.instance( {
-              path: 'alternate/' + $state.params.identifier + '/note/' + note.id,
-              data: { note: note.note }
-            } );
-          }
-        };
-
-        this.stickyChanged = function( id ) {
-          var note = this.noteList.findByProperty( 'id', id );
-          if( note ) {
-            note.sticky = !note.sticky;
-            CnHttpFactory.instance( {
-              path: 'alternate/' + $state.params.identifier + '/note/' + note.id,
-              data: { sticky: note.sticky }
-            } );
-          }
-        };
-
-        this.undo = function( id ) {
-          var note = this.noteList.findByProperty( 'id', id );
-          if( note && note.note != note.noteBackup ) {
-            note.note = note.noteBackup;
-            CnHttpFactory.instance( {
-              path: 'alternate/' + $state.params.identifier + '/note/' + note.id,
-              data: { note: note.note }
-            } );
-          }
-        };
-
-        this.onView = function() {
-          this.noteList = [];
-
-          return CnHttpFactory.instance( {
-            path: 'alternate/' + $state.params.identifier + '/note',
-            data: {
-              modifier: {
-                join: {
-                  table: 'user',
-                  onleft: 'note.user_id',
-                  onright: 'user.id'
-                },
-                order: { 'datetime': true }
-              },
-              select: {
-                column: [ 'sticky', 'datetime', 'note', {
-                  table: 'user',
-                  column: 'first_name',
-                  alias: 'user_first'
-                } , {
-                  table: 'user',
-                  column: 'last_name',
-                  alias: 'user_last'
-                } ]
-              }
-            },
-            redirectOnError: true
-          } ).query().then( function( response ) {
-            response.data.forEach( function( item ) {
-              self.noteList.push( {
-                id: item.id,
-                datetime: '0000-00-00' == item.datetime.substring( 0, 10 ) ? null : item.datetime,
-                sticky: item.sticky,
-                userFirst: item.user_first,
-                userLast: item.user_last,
-                note: item.note,
-                noteBackup: item.note
-              } );
-            } );
-          } );
-        };
+        this.onView().then( function() {
+          CnSession.setBreadcrumbTrail(
+            [ {
+              title: 'Alternates',
+              go: function() { $state.go( 'alternate.list' ); }
+            }, {
+              title: self.uid,
+              go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
+            }, {
+              title: 'Notes'
+            } ]
+          );
+        } );
       };
 
       return { instance: function() { return new object( false ); } };

@@ -2,20 +2,20 @@
   <div class="container-fluid bg-primary rounded-top">
     <h4>
       <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
-         ng-if="!isLoading"
+         ng-if="!model.isLoading"
          ng-click="refresh( true )"
          tooltip="Click to refresh data"
          tooltip-placement="left"></i>
-      Participant Notes
-      <span ng-if="isLoading">(Loading&hellip;)</span>
+      {{ model.module.name.singular.ucWords() }} Notes
+      <span ng-if="model.isLoading">(Loading&hellip;)</span>
     </h4>
   </div>
   <div class="container-fluid">
-    <cn-loading ng-if="isLoading"></cn-loading>
-    <div class="spacer" ng-if="!isLoading">
+    <cn-loading ng-if="model.isLoading"></cn-loading>
+    <div class="spacer" ng-if="!model.isLoading">
       <p class="text-info" style="margin-top: 1em;">
-        Participant notes are listed from most recent to least recent, with "sticky" notes
-        always showing at the top.
+        {{ model.module.name.singular.ucWords() }} notes are listed from most recent to least recent,
+        with "sticky" notes always showing at the top.
       </p>
       <hr />
       <div class="panel panel-info">
@@ -44,7 +44,7 @@
         </div>
       </div>
       <p ng-if="0 == model.noteList.length" class="text-info">
-        <span ng-if="!search.length">There are no notes for this participant.</span>
+        <span ng-if="!search.length">There are no notes for this {{ model.module.name.singular }}.</span>
         <span ng-if="0 < search.length">There are no notes which have all of the words in your search.</span>
       </p>
       <div class="panel panel-default" ng-repeat="note in model.noteList | orderBy:['-sticky','-datetime']">
@@ -52,13 +52,13 @@
           <span class="allow-select">{{ note.userFirst }} {{ note.userLast }}</span>
           <span class="pull-right">
             <span class="allow-select">{{ note.datetime | cnDatetime:'datetimesecond' }}</span>
-            <button ng-if="allowEdit"
+            <button ng-if="model.allowEdit"
                     class="btn btn-xs btn-default"
                     ng-class="{'btn-warning':note.sticky}"
                     ng-click="model.stickyChanged( note.id )">
               <i class="glyphicon glyphicon-pushpin"></i>
             </button>
-            <button ng-if="allowDelete"
+            <button ng-if="model.allowDelete"
                     class="btn btn-xs btn-danger"
                     cn-really-message="Are you sure you want to delete the note by {{ note.userFirst }} {{ note.userLast }}?"
                     cn-really-click="model.deleteNote( note.id )">
@@ -71,7 +71,7 @@
                     ng-model="note.note"
                     cn-change="model.noteChanged( note.id )"
                     class="form-control note"
-                    ng-disabled="!allowEdit"
+                    ng-disabled="!model.allowEdit"
                     cn-elastic></textarea>
           <button ng-if="note.note != note.noteBackup"
                   class="btn btn-warning bottom-right"
@@ -81,7 +81,16 @@
     </div>
   </div>
   <div class="form-footer text-right rounded-bottom bg-info">
-    <button type="button" class="btn btn-default pull-left" ng-click="viewHistory()">History</button>
-    <button type="button" class="btn btn-primary" ng-click="viewParticipant()">View Participant</button>
+    <button type="button"
+            class="btn btn-default pull-left"
+            ng-if="model.viewHistory"
+            ng-click="model.viewHistory()">
+      History
+    </button>
+    <button type="button"
+            class="btn btn-primary"
+            ng-click="model.viewRecord()">
+      View {{ model.module.name.singular.ucWords() }}
+    </button>
   </div> 
 </div>
