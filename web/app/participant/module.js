@@ -42,6 +42,12 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       site: {
         column: 'site.name',
         title: 'Site'
+      },
+      note: {
+        column: 'participant.note',
+        title: 'Notes',
+        type: 'text',
+        limit: 20
       }
     },
     defaultOrder: {

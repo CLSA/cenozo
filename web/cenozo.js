@@ -1762,6 +1762,18 @@ cenozo.filter( 'cnRestrictType', function() {
 /**
  * TODO: document
  */
+cenozo.filter( 'cnStub', function() {
+  return function( input, limit ) {
+    if( null == input ) return '(empty)';
+    else return limit < String( input ).length ? input.substr( 0, limit-1 ).trim() + '...' : input;
+  };
+} );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.filter( 'cnUCWords', function() {
   return function( input ) {
     if( 'string' == cenozo.getType( input ) )
@@ -2096,6 +2108,8 @@ cenozo.factory( 'CnSession', [
             formatted = '(empty)';
           } else if( 'string' == type && '' === value ) {
             formatted = '(empty string)';
+          } else if( 'text' == type && '' === value ) {
+            formatted = '(empty text)';
           } else if( 'boolean' == type ) {
             formatted = $filter( 'cnYesNo' )( value );
           } else if( cenozo.isDatetimeType( type ) ) {
@@ -3747,6 +3761,8 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( cenozo.isDatetimeType( type ) ) column.filter = 'cnDatetime:' + type;
           else if( 'rank' == type ) column.filter = 'cnOrdinal';
           else if( 'boolean' == type ) column.filter = 'cnYesNo';
+          else if( 'text' == type )
+            column.filter = 'cnStub:' + ( angular.isDefined( column.limit ) ? column.limit : 10 );
 
           if( angular.isUndefined( index ) ) {
             // no index: add to existing Object
@@ -4583,6 +4599,7 @@ cenozo.service( 'CnModalRestrictFactory', [
       this.column = null;
       this.type = 'string';
       angular.extend( this, params );
+      if( 'text' == this.type ) this.type = 'string';
       if( !angular.isArray( this.emptyList ) ) this.emptyList = [];
       if( !angular.isArray( this.restrictList ) ) this.restrictList = [];
 
@@ -4616,7 +4633,7 @@ cenozo.service( 'CnModalRestrictFactory', [
       };
 
       this.describeRestriction = function( index ) {
-        var quotes = 'string' == this.type &&
+        var quotes = ( 'string' == this.type ) &&
                      null !== this.restrictList[index].value &&
                      0 < this.restrictList[index].value.length;
         this.restrictList[index].description =
