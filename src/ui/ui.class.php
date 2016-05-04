@@ -134,8 +134,8 @@ class ui extends \cenozo\base_object
   protected function get_framework_module_list()
   {
     return array(
-      'access', 'activity', 'address', 'alternate', 'application', 'cohort', 'collection', 'consent',
-      'consent_type', 'event', 'event_type', 'hin', 'jurisdiction', 'language', 'participant', 'phone',
+      'access', 'activity', 'address', 'alternate', 'application', 'availability_type', 'cohort', 'collection',
+      'consent', 'consent_type', 'event', 'event_type', 'hin', 'jurisdiction', 'language', 'participant', 'phone',
       'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'script', 'search_result',
       'site', 'source', 'state', 'system_message', 'user', 'webphone' );
   }
@@ -317,6 +317,8 @@ class ui extends \cenozo\base_object
       $list['Alternates'] = 'alternate';
     if( array_key_exists( 'application', $module_list ) && $module_list['application']['list_menu'] )
       $list['Applications'] = 'application';
+    if( array_key_exists( 'availability_type', $module_list ) && $module_list['availability_type']['list_menu'] )
+      $list['Availability Types'] = 'availability_type';
     if( array_key_exists( 'collection', $module_list ) && $module_list['collection']['list_menu'] )
       $list['Collections'] = 'collection';
     if( array_key_exists( 'consent_type', $module_list ) && $module_list['consent_type']['list_menu'] )

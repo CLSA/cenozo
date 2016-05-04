@@ -102,5 +102,8 @@ class module extends \cenozo\service\site_restricted_module
 
     if( $select->has_table_columns( 'language' ) )
       $modifier->join( 'language', 'participant.language_id', 'language.id' );
+
+    if( $select->has_table_columns( 'availability_type' ) )
+      $modifier->left_join( 'availability_type', 'participant.availability_type_id', 'availability_type.id' );
   }
 }

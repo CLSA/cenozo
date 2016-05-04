@@ -159,6 +159,10 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       type: 'enum',
       help: 'If set then the participant will be assigned to this site instead of the default site.'
     },
+    availability_type_id: {
+      title: 'Availability Preference',
+      type: 'enum'
+    },
     out_of_area: {
       title: 'Out of Area',
       type: 'boolean',
@@ -670,6 +674,21 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               } ),
 
               CnHttpFactory.instance( {
+                path: 'availability_type',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.availability_type_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.availability_type_id.enumList.push( {
+                    value: item.id, name: item.name
+                  } );
+                } );
+              } ),
+
+              CnHttpFactory.instance( {
                 path: 'language',
                 data: {
                   select: { column: [ 'id', 'name' ] },
@@ -844,9 +863,8 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         // populate the participant input list once the participant's metadata has been loaded
         CnParticipantModelFactory.root.metadata.getPromise().then( function() {
           self.participantInputList = processInputList( [
-              'active', 'honorific', 'first_name', 'other_name', 'last_name', 'sex', 'date_of_birth',
-              'age_group_id', 'state_id', 'language_id', 'preferred_site_id', 'out_of_area', 'email',
-              'mass_email'
+              'active', 'honorific', 'sex', 'state_id', 'language_id', 'availability_type_id',
+              'preferred_site_id', 'out_of_area', 'email', 'mass_email', 'note'
             ],
             self.module,
             CnParticipantModelFactory.root.metadata.columnList
