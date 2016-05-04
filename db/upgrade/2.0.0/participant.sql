@@ -72,6 +72,18 @@ CREATE PROCEDURE patch_participant()
       DROP COLUMN person_id;
     END IF;
 
+    SELECT "Dropping use_informant column from participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "use_informant" );
+    IF @test = 1 THEN
+      ALTER TABLE participant DROP COLUMN use_informant;
+    END IF;
+
     SELECT "Adding note column to participant table" AS "";
 
     SET @test = (
