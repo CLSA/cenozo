@@ -1806,6 +1806,7 @@ cenozo.filter( 'cnViewType', function() {
  */
 cenozo.filter( 'cnYesNo', function() {
   return function( input ) {
+    if( null === input ) return '(empty)';
     if( "boolean" != cenozo.getType( input ) ) input = 0 != input;
     return input ? 'yes' : 'no';
   };
