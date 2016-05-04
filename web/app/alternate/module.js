@@ -231,9 +231,41 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+    'CnBaseAddFactory', 'CnHttpFactory', '$q',
+    function( CnBaseAddFactory, CnHttpFactory, $q ) {
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseAddFactory.construct( this, parentModel );
+
+        // extend onNew
+        this.onNew = function( record ) {
+          var promiseList = [ this.$$onNew( record ) ];
+
+          // if we have a participant parent then set participant_id
+          var parent = parentModel.getParentIdentifier();
+          var hasParent = angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier );
+          parentModel.module.getInput( 'participant_id' ).exclude = hasParent ? 'add' : undefined;
+          
+          if( hasParent ) {
+            promiseList.push(
+              CnHttpFactory.instance( {
+                path: 'participant/' + parent.identifier,
+                data: {
+                  select: {
+                    column: [ 'id', {
+                      column: 'CONCAT( first_name, " ", last_name, " (", uid, ")" )',
+                      alias: 'value',
+                      table_prefix: false
+                    } ]
+                  }
+                }
+              } ).get().then( function( response ) { record.participant_id = response.data.id; } )
+            );
+          }
+
+          return $q.all( promiseList );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
