@@ -428,7 +428,12 @@ angular.extend( cenozo, {
         resolve: resolve
       } );
       stateProvider.state( name + '.home', { url: cenozoApp.baseUrl + '/' } );
-      stateProvider.state( 'wait', { templateUrl: cenozo.getFileUrl( 'root', 'wait.tpl.html' ) } );
+    } else if( 'self' == name ) {
+      // add the wait state
+      stateProvider.state( name, {
+        template: '<div ui-view class="fade-transition"></div>',
+      } );
+      stateProvider.state( name + '.wait', { templateUrl: cenozo.getFileUrl( 'root', 'wait.tpl.html' ) } );
     } else if( 'error' == name ) {
       // add the error states
       stateProvider.state( name, {
@@ -584,9 +589,9 @@ cenozo.animation( '.fade-transition', function() {
  * Controller for the header/menu system
  */
 cenozo.service( 'CnBaseHeader', [
-  '$interval', '$window', 'CnSession', 'CnHttpFactory',
+  '$state', '$interval', '$window', 'CnSession', 'CnHttpFactory',
   'CnModalAccountFactory', 'CnModalPasswordFactory', 'CnModalTimezoneFactory',
-  function( $interval, $window, CnSession, CnHttpFactory,
+  function( $state, $interval, $window, CnSession, CnHttpFactory,
             CnModalAccountFactory, CnModalPasswordFactory, CnModalTimezoneFactory ) {
     return {
       construct: function( scope ) {
@@ -647,8 +652,7 @@ cenozo.service( 'CnBaseHeader', [
                   CnSession.user.timezone = response.timezone;
                   CnSession.user.use12hourClock = response.use12hourClock;
                   CnSession.setTimezone( response.timezone, response.use12hourClock ).then( function() {
-                    document.getElementById( 'view' ).innerHTML = '';
-                    $window.location.reload();
+                    $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
                   } );
                 }
               } );
@@ -2024,14 +2028,14 @@ cenozo.factory( 'CnSession', [
             if( angular.isObject( response ) &&
                 ( response.siteId != self.site.id || response.roleId != self.role.id ) ) {
               // show a waiting screen while we're changing the site/role
-              $state.go( 'wait' );
-              CnHttpFactory.instance( {
-                path: 'self/0',
-                data: { site: { id: response.siteId }, role: { id: response.roleId } }
-              } ).patch().then( function() {
-                // blank content
-                document.getElementById( 'view' ).innerHTML = '';
-                $window.location.assign( cenozoApp.baseUrl );
+              $state.go( 'self.wait' ).then( function() {
+                CnHttpFactory.instance( {
+                  path: 'self/0',
+                  data: { site: { id: response.siteId }, role: { id: response.roleId } }
+                } ).patch().then( function() {
+                  // blank content
+                  $window.location.assign( cenozoApp.baseUrl );
+                } );
               } );
             }
           } );

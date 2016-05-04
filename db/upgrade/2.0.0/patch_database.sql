@@ -29,6 +29,7 @@ SOURCE event.sql
 SOURCE phone.sql
 SOURCE person_note.sql
 SOURCE alternate.sql
+SOURCE availability_type.sql
 SOURCE participant.sql
 SOURCE person.sql
 SOURCE quota.sql

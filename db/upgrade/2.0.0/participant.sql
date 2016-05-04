@@ -84,6 +84,47 @@ CREATE PROCEDURE patch_participant()
       ALTER TABLE participant ADD COLUMN note TEXT NULL DEFAULT NULL;
     END IF;
 
+    SELECT "Adding availability_type_id column to participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "availability_type_id" );
+    IF @test = 0 THEN
+      ALTER TABLE participant ADD COLUMN availability_type_id INT UNSIGNED NULL DEFAULT NULL
+      AFTER language_id;
+
+      ALTER TABLE participant
+      ADD INDEX fk_availability_type_id (availability_type_id ASC),
+      ADD CONSTRAINT fk_participant_availability_type_id
+        FOREIGN KEY (availability_type_id)
+        REFERENCES availability_type (id)
+        ON DELETE SET NULL
+        ON UPDATE NO ACTION;
+
+      -- now mine saturday-only availabilities from the old availability table
+      CREATE TEMPORARY TABLE saturday
+      SELECT participant_id FROM (
+        SELECT participant_id, monday, tuesday, wednesday, thursday, friday, saturday
+        FROM availability
+        GROUP BY participant_id
+        HAVING COUNT(*) = 1
+      ) AS t
+      WHERE monday = false
+        AND tuesday = false
+        AND wednesday = false
+        AND thursday = false
+        AND friday = false
+        AND saturday = true;
+      ALTER TABLE saturday ADD INDEX p ( participant_id );
+
+      UPDATE participant
+      JOIN saturday ON participant.id = saturday.participant_id
+      SET availability_type_id = ( SELECT id FROM availability_type WHERE name = "saturdays" );
+    END IF;
+
   END //
 DELIMITER ;
 
