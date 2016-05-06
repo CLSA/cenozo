@@ -26,3 +26,11 @@ DROP PROCEDURE IF EXISTS patch_role;
 SELECT "Changing tier of helpline role to 1" AS "";
 
 UPDATE role SET tier = 1 WHERE name = "helpline";
+
+SELECT "Adding new operator+ role" AS "";
+
+INSERT IGNORE INTO role
+SET name = "operator+",
+    tier = 1,
+    all_sites = false,
+    special = false;
