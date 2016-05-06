@@ -118,7 +118,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     },
     date_of_birth: {
       title: 'Date of Birth',
-      type: 'date',
+      type: 'dob',
       max: 'now'
     },
     age_group_id: {

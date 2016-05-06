@@ -382,7 +382,7 @@ angular.extend( cenozo, {
   isDatetimeType: function( type, subtype ) {
     var typeList = [];
     if( 'date' == subtype ) {
-      typeList = [ 'datetimesecond', 'datetime', 'date' ];
+      typeList = [ 'datetimesecond', 'datetime', 'date', 'dob' ];
     } else if( 'time' == subtype ) {
       typeList = [ 'timesecond', 'timesecond_notz', 'time', 'time_notz' ];
     } else if( 'second' == subtype ) {
@@ -390,7 +390,10 @@ angular.extend( cenozo, {
     } else if( 'timezone' == subtype ) {
       typeList = [ 'datetimesecond', 'datetime', 'timesecond', 'time' ];
     } else {
-      typeList = [ 'datetimesecond', 'datetime', 'date', 'timesecond', 'timesecond_notz', 'time', 'time_notz' ];
+      typeList = [
+        'datetimesecond', 'datetime', 'date', 'dob',
+        'timesecond', 'timesecond_notz', 'time', 'time_notz'
+      ];
     }
 
     return 0 <= typeList.indexOf( type );
@@ -2083,7 +2086,9 @@ cenozo.factory( 'CnSession', [
         getDatetimeFormat: function( format, longForm ) {
           if( angular.isUndefined( longForm ) ) longForm = false;
           var resolvedFormat = format;
-          if( cenozo.isDatetimeType( format, 'date' ) ) {
+          if( 'dob' == format ) {
+            resolvedFormat = 'MMM D, YYYY';
+          } else if( cenozo.isDatetimeType( format, 'date' ) ) {
             resolvedFormat = ( longForm ? 'dddd, MMMM Do' : 'MMM D' ) + ', YYYY';
             if( 'date' != format )
               resolvedFormat += ' @ ' + this.getTimeFormat( cenozo.isDatetimeType( format, 'second' ), longForm );
@@ -2130,6 +2135,11 @@ cenozo.factory( 'CnSession', [
             }
             if( cenozo.isDatetimeType( type, 'timezone' ) ) value.tz( this.user.timezone );
             formatted = value.format( this.getDatetimeFormat( type, longForm ) );
+            // add the current age for dobs
+            if( 'dob' == type ) {
+              var age = moment().diff( value, 'years' );
+              formatted += ' (' + age + ' year' + ( 1 == age ? '' : 's' ) + ' old)';
+            }
           } else if( 'rank' == type ) {
             var number = parseInt( value );
             if( 0 < number ) formatted = $filter( 'cnOrdinal' )( number );
