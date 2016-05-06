@@ -60,10 +60,27 @@
       '$scope', '$state',
       function( $scope, $state ) {
         $scope.isCurrentState = function isCurrentState( state ) { return $state.is( state ); };
-        $scope.operations = <?php print $operation_item_string; ?>;
         $scope.lists = <?php print $list_item_string; ?>;
         $scope.utilities = <?php print $utility_item_string; ?>;
         $scope.reports = <?php print $report_item_string; ?>;
+
+        var subMenuCount = ( $scope.lists?1:0 ) + ( $scope.utilities?1:0 ) + ( $scope.reports?1:0 );
+        $scope.subMenuWidth = 12 / subMenuCount;
+        $scope.showSubMenuHeaders = 1 < subMenuCount;
+
+        $scope.getListItemClass = function( first, last ) {
+          var className = 'no-rounding';
+          if( $scope.showSubMenuHeaders ) {
+            if( last ) className = 'rounded-bottom';
+          } else {
+            if( first ) {
+              className = last ? 'rounded' : 'rounded-top';
+            } else if( last ) {
+              className = 'rounded-bottom';
+            }
+          }
+          return className;
+        }
       }
     ] );
   </script>
@@ -83,32 +100,32 @@
             <li ng-controller="MenuCtrl">
               <div class="container-fluid operation-list">
                 <div class="btn-group btn-group-justified">
-                  <div class="btn-group" ng-repeat="op in operations">
+                  <div class="btn-group" ng-repeat="operation in operationList">
                     <button class="btn btn-info"
-                            ng-click="operationList[op].execute()"
-                            tooltip="{{ operationList[op].help }}">{{ operationList[op].title }}</button>
+                            ng-click="operation.execute()"
+                            tooltip="{{ operation.help }}">{{ operation.title }}</button>
                   </div>
                 </div>
               </div>
               <div class="container-fluid row">
-                <ul class="navigation-group col-xs-4">
-                  <li class="container-fluid bg-primary rounded-top">
+                <ul ng-if="lists" class="navigation-group col-sm-{{ subMenuWidth }}">
+                  <li ng-if="showSubMenuHeaders" class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Lists</h4>
                   </li>
                   <li ng-repeat="(title,module) in lists">
                     <a class="btn btn-default btn-default btn-menu full-width"
-                       ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
+                       ng-class="getListItemClass( $first, $last )"
                        ui-sref-active="btn-warning"
                        ui-sref="{{ module }}.list">{{ title }}</a>
                   </li>
                 </ul>
-                <ul class="navigation-group col-xs-4">
-                  <li class="container-fluid bg-primary rounded-top">
+                <ul ng-if="utilities" class="navigation-group col-sm-{{ subMenuWidth }}">
+                  <li ng-if="showSubMenuHeaders" class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Utilities</h4>
                   </li>
                   <li ng-repeat="(title,module) in utilities">
                     <a class="btn btn-default btn-default btn-menu full-width"
-                       ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
+                       ng-class="getListItemClass( $first, $last )"
                        cn-target="module.target"
                        ui-sref-active="btn-warning"
                        ui-sref="{{
@@ -117,13 +134,13 @@
                        }}">{{ title }}</a>
                   </li>
                 </ul>
-                <ul class="navigation-group col-xs-4">
-                  <li class="container-fluid bg-primary rounded-top">
+                <ul ng-if="reports" class="navigation-group col-sm-{{ subMenuWidth }}">
+                  <li ng-if="showSubMenuHeaders" class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Reports</h4>
                   </li>
                   <li ng-repeat="(title,module) in reports">
                     <a class="btn btn-default btn-default btn-menu full-width"
-                       ng-class="{ 'no-rounding': !$last, 'rounded-bottom': $last }"
+                       ng-class="getListItemClass( $first, $last )"
                        ui-sref-active="btn-warning"
                        ui-sref="{{ module }}.view">{{ title }}</a>
                   </li>
@@ -152,10 +169,11 @@
             </ul>
           </ul>
           <ul class="nav navbar-nav navbar-right" ng-if="!isLoading">
-            <li class="navbar-item navbar-link siterole" ng-click="operationList.siteRole.execute()">
+            <li class="navbar-item navbar-link siterole" ng-click="session.showSiteRoleModal()">
               {{ session.role.name | cnUCWords }} @ {{ session.site.name }}
             </li>
-            <li class="navbar-item navbar-link clock" ng-click="operationList.timezone.execute()">
+            <li class="navbar-item navbar-link clock"
+                ng-click="operationList.findByProperty( 'title', 'Timezone' ).execute()">
               <i class="glyphicon glyphicon-time"></i> {{ session.time }}
             </li>
           </ul>

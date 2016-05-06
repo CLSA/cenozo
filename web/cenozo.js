@@ -610,58 +610,48 @@ cenozo.service( 'CnBaseHeader', [
         scope.session = CnSession;
 
         // a list of all possible operations that the menu controller has to choose from
-        scope.operationList = {
-          account: {
-            title: 'Account',
-            help: 'Edit your account details',
-            execute: function() {
-              CnModalAccountFactory.instance( { user: CnSession.user } ).show().then( function( response ) {
-                if( response ) CnSession.setUserDetails();
-              } );
-            }
-          },
-          logout: {
-            title: 'Logout',
-            help: 'Logout of the application',
-            execute: function() { CnSession.logout(); }
-          },
-          password: {
-            title: 'Password',
-            help: 'Change your password',
-            execute: function() {
-              CnModalPasswordFactory.instance().show().then( function( response ) {
-                if( angular.isObject( response ) ) {
-                  CnSession.setPassword( response.currentPass, response.requestedPass );
-                }
-              } );
-            }
-          },
-          siteRole: {
-            title: 'Site/Role',
-            help: 'Change which site and role you are logged in as',
-            execute: function() { CnSession.showSiteRoleModal(); }
-          },
-          timezone: {
-            title: 'Timezone',
-            help: 'Change which timezone to display',
-            execute: function() {
-              CnModalTimezoneFactory.instance( {
-                timezone: CnSession.user.timezone,
-                use12hourClock: CnSession.user.use12hourClock
-              } ).show().then( function( response ) {
-                if( response && (
-                      response.timezone != CnSession.user.timezone ||
-                      response.use12hourClock != CnSession.user.use12hourClock ) ) {
-                  CnSession.user.timezone = response.timezone;
-                  CnSession.user.use12hourClock = response.use12hourClock;
-                  CnSession.setTimezone( response.timezone, response.use12hourClock ).then( function() {
-                    $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
-                  } );
-                }
-              } );
-            }
+        scope.operationList = [ {
+          title: 'Account',
+          help: 'Edit your account details',
+          execute: function() {
+            CnModalAccountFactory.instance( { user: CnSession.user } ).show().then( function( response ) {
+              if( response ) CnSession.setUserDetails();
+            } );
           }
-        };
+        }, {
+          title: 'Timezone',
+          help: 'Change which timezone to display',
+          execute: function() {
+            CnModalTimezoneFactory.instance( {
+              timezone: CnSession.user.timezone,
+              use12hourClock: CnSession.user.use12hourClock
+            } ).show().then( function( response ) {
+              if( response && (
+                    response.timezone != CnSession.user.timezone ||
+                    response.use12hourClock != CnSession.user.use12hourClock ) ) {
+                CnSession.user.timezone = response.timezone;
+                CnSession.user.use12hourClock = response.use12hourClock;
+                CnSession.setTimezone( response.timezone, response.use12hourClock ).then( function() {
+                  $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
+                } );
+              }
+            } );
+          }
+        }, {
+          title: 'Password',
+          help: 'Change your password',
+          execute: function() {
+            CnModalPasswordFactory.instance().show().then( function( response ) {
+              if( angular.isObject( response ) ) {
+                CnSession.setPassword( response.currentPass, response.requestedPass );
+              }
+            } );
+          }
+        }, {
+          title: 'Logout',
+          help: 'Logout of the application',
+          execute: function() { CnSession.logout(); }
+        } ];
       }
     }
   }
@@ -4679,7 +4669,7 @@ cenozo.service( 'CnModalMessageFactory', [
         }
         if( response.data && 406 != type ) message += '\n    Error Code: ' + response.data;
         var modal = new object( { title: title, message: message, error: true } );
-        modal.show();
+        return modal.show();
       }
     };
   }

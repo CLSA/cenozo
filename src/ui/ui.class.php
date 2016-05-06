@@ -60,33 +60,38 @@ class ui extends \cenozo\base_object
       $module_list = $this->get_module_list();
       ksort( $module_list );
 
-      // prepare which operations to show above the lists (not sorted)
-      $operation_items = $this->get_operation_items();
-
       // prepare which modules to show in the list
       $list_items = $this->get_list_items( $module_list );
-      ksort( $list_items );
+      if( 0 == count( $list_items ) ) $list_items = NULL;
+      else
+      {
+        ksort( $list_items );
 
-      // remove list items the role doesn't have access to
-      foreach( $list_items as $title => $subject )
-        if( !array_key_exists( $subject, $module_list ) ||
-            !array_key_exists( 'list', $module_list[$subject]['actions'] ) )
-          unset( $list_items[$subject] );
+        // remove list items the role doesn't have access to
+        foreach( $list_items as $title => $subject )
+          if( !array_key_exists( $subject, $module_list ) ||
+              !array_key_exists( 'list', $module_list[$subject]['actions'] ) )
+            unset( $list_items[$subject] );
+      }
 
       // prepare which utilities to show in the list
       $utility_items = $this->get_utility_items();
-      foreach( $utility_items as $title => $module )
+      if( 0 == count( $utility_items ) ) $utility_items = NULL;
+      else
       {
-        if( !array_key_exists( $module['subject'], $module_list ) )
-          $module_list[$module['subject']] = array(
-            'actions' => array(),
-            'children' => array(),
-            'choosing' => array(),
-            'list_menu' => false );
-        $module_list[$module['subject']]['actions'][$module['action']] =
-          array_key_exists( 'query', $module ) ? $module['query'] : '';
+        foreach( $utility_items as $title => $module )
+        {
+          if( !array_key_exists( $module['subject'], $module_list ) )
+            $module_list[$module['subject']] = array(
+              'actions' => array(),
+              'children' => array(),
+              'choosing' => array(),
+              'list_menu' => false );
+          $module_list[$module['subject']]['actions'][$module['action']] =
+            array_key_exists( 'query', $module ) ? $module['query'] : '';
+        }
+        ksort( $utility_items );
       }
-      ksort( $utility_items );
 
       // add auxiliary modules
       $auxiliary_items = $this->get_auxiliary_items();
@@ -102,12 +107,12 @@ class ui extends \cenozo\base_object
 
       // prepare which reports to show in the list
       $report_items = $this->get_report_items();
-      ksort( $report_items );
+      if( 0 == count( $report_items ) ) $report_items = NULL;
+      else ksort( $report_items );
 
       // create the json strings for the interface
       $framework_module_string = $util_class_name::json_encode( $framework_module_list );
       $module_string = $util_class_name::json_encode( $module_list );
-      $operation_item_string = $util_class_name::json_encode( $operation_items );
       $list_item_string = $util_class_name::json_encode( $list_items );
       $utility_item_string = $util_class_name::json_encode( $utility_items );
       $report_item_string = $util_class_name::json_encode( $report_items );
@@ -277,22 +282,6 @@ class ui extends \cenozo\base_object
     }
 
     return $module_list;
-  }
-
-  /**
-   * Returns an array of all role-based operations
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access protected
-   */
-  protected function get_operation_items()
-  {
-    $operation_items = array( 'timezone', 'account', 'password', 'logout' );
-    if( 1 < lib::create( 'business\session' )->get_user()->get_access_count() )
-      array_unshift( $operation_items, 'siteRole' );
-
-    return $operation_items;
   }
 
   /**
