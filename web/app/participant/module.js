@@ -185,14 +185,18 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   module.addExtraOperation( 'view', {
     title: 'Notes',
     operation: function( $state, model ) {
-      $state.go( 'participant.notes', { identifier: model.viewModel.record.getIdentifier() } );
+      model.viewModel.onViewPromise.then( function() {
+        $state.go( 'participant.notes', { identifier: model.viewModel.record.getIdentifier() } );
+      } );
     }
   } );
 
   module.addExtraOperation( 'view', {
     title: 'History',
     operation: function( $state, model ) {
-      $state.go( 'participant.history', { identifier: model.viewModel.record.getIdentifier() } );
+      model.viewModel.onViewPromise.then( function() {
+        $state.go( 'participant.history', { identifier: model.viewModel.record.getIdentifier() } );
+      } );
     }
   } );
 
@@ -594,6 +598,13 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
+        this.onViewPromise = null;
+
+        // track the promise returned by the onView function
+        this.onView = function() {
+          this.onViewPromise = this.$$onView();
+          return this.onViewPromise;
+        };
 
         if( root ) {
           // override the collection model's getServiceData function (list active collections only)

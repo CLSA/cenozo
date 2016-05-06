@@ -147,7 +147,9 @@ define( function() {
   module.addExtraOperation( 'view', {
     title: 'Notes',
     operation: function( $state, model ) {
-      $state.go( 'alternate.notes', { identifier: model.viewModel.record.getIdentifier() } )
+      model.viewModel.onViewPromise.then( function() {
+        $state.go( 'alternate.notes', { identifier: model.viewModel.record.getIdentifier() } )
+      } );
     }
   } );
 
@@ -283,7 +285,16 @@ define( function() {
   cenozo.providers.factory( 'CnAlternateViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+      var object = function( parentModel, root ) {
+        CnBaseViewFactory.construct( this, parentModel, root );
+        this.onViewPromise = null;
+
+        // track the promise returned by the onView function
+        this.onView = function() {
+          this.onViewPromise = this.$$onView();
+          return this.onViewPromise;
+        };
+      }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );

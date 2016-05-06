@@ -3538,7 +3538,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             }, {
               title: self.getBreadcrumbTitle()
             } ] );
-          } else throw new Error( 'Tried to setup breadcrumb trail for invalid type "' + type + '".' );
+          } else console.warn( 'Tried to setup breadcrumb trail for invalid type "' + type + '".' );
 
           // truncate the full trail if it is too long
           var length = trail.reduce( function( total, crumb ) {
