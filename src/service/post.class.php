@@ -46,9 +46,10 @@ class post extends write
 
         // add record column data
         $post_object = $this->get_file_as_object();
-        foreach( $record->get_column_names() as $column_name )
-          if( 'id' != $column_name && property_exists( $post_object, $column_name ) )
-            $record->$column_name = $post_object->$column_name;
+        if( is_object( $post_object ) )
+          foreach( $record->get_column_names() as $column_name )
+            if( 'id' != $column_name && property_exists( $post_object, $column_name ) )
+              $record->$column_name = $post_object->$column_name;
       }
     }
   }
