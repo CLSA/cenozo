@@ -867,8 +867,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$filter', '$state', 'CnSession', 'CnModalDatetimeFactory',
-  function( $filter, $state, CnSession, CnModalDatetimeFactory ) {
+  '$filter', '$state', 'CnSession', 'CnModalDatetimeFactory', 'CnHttpFactory',
+  function( $filter, $state, CnSession, CnModalDatetimeFactory, CnHttpFactory ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'record-add.tpl.html' ),
       restrict: 'E',
@@ -885,14 +885,15 @@ cenozo.directive( 'cnRecordAdd', [
             $scope.model.setupBreadcrumbTrail();
 
             $scope.dataArray.forEach( function( group ) {
-              group.inputArray.forEach( function( item ) {
-                var meta = $scope.model.metadata.columnList[item.key];
+              group.inputArray.forEach( function( input ) {
+                var meta = $scope.model.metadata.columnList[input.key];
                 if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
+                  // process the input's enum-list
                   var enumList = angular.copy( meta.enumList );
 
                   // add additional rank
                   var newRank = enumList.length + 1;
-                  if( 'rank' == item.key ) enumList.push( {
+                  if( 'rank' == input.key ) enumList.push( {
                     value: newRank,
                     name: $filter( 'cnOrdinal' )( newRank )
                   } );
@@ -900,12 +901,32 @@ cenozo.directive( 'cnRecordAdd', [
                   if( !meta.required || 1 < enumList.length ) {
                     enumList.unshift( {
                       value: undefined,
-                      name: meta.required ? '(Select ' + item.title + ')' : '(empty)'
+                      name: meta.required ? '(Select ' + input.title + ')' : '(empty)'
                     } );
                   }
 
-                  if( 1 == enumList.length ) $scope.record[item.key] = enumList[0].value;
-                  item.enumList = enumList;
+                  if( 1 == enumList.length ) $scope.record[input.key] = enumList[0].value;
+                  input.enumList = enumList;
+                } else if( 'lookup-typeahead' == input.type ) {
+                  // apply parent values to lookup-typeaheads
+                  var parent = $scope.model.getParentIdentifier();
+                  if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) ) {
+                    CnHttpFactory.instance( {
+                      path: input.typeahead.table + '/' + parent.identifier,
+                      data: {
+                        select: {
+                          column: [ 'id', {
+                            column: input.typeahead.select,
+                            alias: 'value',
+                            table_prefix: false
+                          } ]
+                        }
+                      }
+                    } ).get().then( function( response ) {
+                      $scope.record[input.key] = response.data.id;
+                      $scope.formattedRecord[input.key] = response.data.value;
+                    } );
+                  }
                 }
               } );
             } );
