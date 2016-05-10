@@ -314,86 +314,86 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return $q.all( [
-            this.$$getMetadata(),
+          return this.$$getMetadata().then( function() {
+            return $q.all( [
+              CnHttpFactory.instance( {
+                path: 'phone'
+              } ).head().then( function( response ) {
+                var columnList = angular.fromJson( response.headers( 'Columns' ) );
 
-            CnHttpFactory.instance( {
-              path: 'phone'
-            } ).head().then( function( response ) {
-              var columnList = angular.fromJson( response.headers( 'Columns' ) );
+                // international column
+                columnList.international.required = '1' == columnList.international.required;
+                if( angular.isUndefined( self.metadata.columnList.phone_international ) )
+                  self.metadata.columnList.phone_international = {};
+                angular.extend( self.metadata.columnList.phone_international, columnList.international );
 
-              // international column
-              columnList.international.required = '1' == columnList.international.required;
-              if( angular.isUndefined( self.metadata.columnList.phone_international ) )
-                self.metadata.columnList.phone_international = {};
-              angular.extend( self.metadata.columnList.phone_international, columnList.international );
+                // type column
+                columnList.type.required = '1' == columnList.type.required;
+                columnList.type.enumList = [];
+                cenozo.parseEnumList( columnList.type ).forEach( function( item ) {
+                  columnList.type.enumList.push( { value: item, name: item } );
+                } );
+                if( angular.isUndefined( self.metadata.columnList.phone_type ) )
+                  self.metadata.columnList.phone_type = {};
+                angular.extend( self.metadata.columnList.phone_type, columnList.type );
 
-              // type column
-              columnList.type.required = '1' == columnList.type.required;
-              columnList.type.enumList = [];
-              cenozo.parseEnumList( columnList.type ).forEach( function( item ) {
-                columnList.type.enumList.push( { value: item, name: item } );
-              } );
-              if( angular.isUndefined( self.metadata.columnList.phone_type ) )
-                self.metadata.columnList.phone_type = {};
-              angular.extend( self.metadata.columnList.phone_type, columnList.type );
+                // number column
+                columnList.number.required = '1' == columnList.number.required;
+                if( angular.isUndefined( self.metadata.columnList.phone_number ) )
+                  self.metadata.columnList.phone_number = {};
+                angular.extend( self.metadata.columnList.phone_number, columnList.number );
 
-              // number column
-              columnList.number.required = '1' == columnList.number.required;
-              if( angular.isUndefined( self.metadata.columnList.phone_number ) )
-                self.metadata.columnList.phone_number = {};
-              angular.extend( self.metadata.columnList.phone_number, columnList.number );
+                // note column
+                columnList.note.required = '1' == columnList.note.required;
+                if( angular.isUndefined( self.metadata.columnList.phone_note ) )
+                  self.metadata.columnList.phone_note = {};
+                angular.extend( self.metadata.columnList.phone_note, columnList.note );
+              } ),
 
-              // note column
-              columnList.note.required = '1' == columnList.note.required;
-              if( angular.isUndefined( self.metadata.columnList.phone_note ) )
-                self.metadata.columnList.phone_note = {};
-              angular.extend( self.metadata.columnList.phone_note, columnList.note );
-            } ),
+              CnHttpFactory.instance( {
+                path: 'address'
+              } ).head().then( function( response ) {
+                var columnList = angular.fromJson( response.headers( 'Columns' ) );
 
-            CnHttpFactory.instance( {
-              path: 'address'
-            } ).head().then( function( response ) {
-              var columnList = angular.fromJson( response.headers( 'Columns' ) );
+                // international column
+                columnList.international.required = false;
+                columnList.international.default = null;
+                if( angular.isUndefined( self.metadata.columnList.address_international ) )
+                  self.metadata.columnList.address_international = {};
+                angular.extend( self.metadata.columnList.address_international, columnList.international );
 
-              // international column
-              columnList.international.required = false;
-              columnList.international.default = null;
-              if( angular.isUndefined( self.metadata.columnList.address_international ) )
-                self.metadata.columnList.address_international = {};
-              angular.extend( self.metadata.columnList.address_international, columnList.international );
+                // address1 column
+                columnList.address1.required = false;
+                if( angular.isUndefined( self.metadata.columnList.address_address1 ) )
+                  self.metadata.columnList.address_address1 = {};
+                angular.extend( self.metadata.columnList.address_address1, columnList.address1 );
 
-              // address1 column
-              columnList.address1.required = false;
-              if( angular.isUndefined( self.metadata.columnList.address_address1 ) )
-                self.metadata.columnList.address_address1 = {};
-              angular.extend( self.metadata.columnList.address_address1, columnList.address1 );
+                // address2 column
+                columnList.address2.required = false;
+                if( angular.isUndefined( self.metadata.columnList.address_address2 ) )
+                  self.metadata.columnList.address_address2 = {};
+                angular.extend( self.metadata.columnList.address_address2, columnList.address2 );
 
-              // address2 column
-              columnList.address2.required = false;
-              if( angular.isUndefined( self.metadata.columnList.address_address2 ) )
-                self.metadata.columnList.address_address2 = {};
-              angular.extend( self.metadata.columnList.address_address2, columnList.address2 );
+                // city column
+                columnList.city.required = false;
+                if( angular.isUndefined( self.metadata.columnList.address_city ) )
+                  self.metadata.columnList.address_city = {};
+                angular.extend( self.metadata.columnList.address_city, columnList.city );
 
-              // city column
-              columnList.city.required = false;
-              if( angular.isUndefined( self.metadata.columnList.address_city ) )
-                self.metadata.columnList.address_city = {};
-              angular.extend( self.metadata.columnList.address_city, columnList.city );
+                // postcode column
+                columnList.postcode.required = false;
+                if( angular.isUndefined( self.metadata.columnList.address_postcode ) )
+                  self.metadata.columnList.address_postcode = {};
+                angular.extend( self.metadata.columnList.address_postcode, columnList.postcode );
 
-              // postcode column
-              columnList.postcode.required = false;
-              if( angular.isUndefined( self.metadata.columnList.address_postcode ) )
-                self.metadata.columnList.address_postcode = {};
-              angular.extend( self.metadata.columnList.address_postcode, columnList.postcode );
-
-              // note column
-              columnList.note.required = false;
-              if( angular.isUndefined( self.metadata.columnList.address_note ) )
-                self.metadata.columnList.address_note = {};
-              angular.extend( self.metadata.columnList.address_note, columnList.note );
-            } )
-          ] );
+                // note column
+                columnList.note.required = false;
+                if( angular.isUndefined( self.metadata.columnList.address_note ) )
+                  self.metadata.columnList.address_note = {};
+                angular.extend( self.metadata.columnList.address_note, columnList.note );
+              } )
+            ] );
+          } );
         };
       };
 

@@ -293,45 +293,43 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return $q.all( [
+          return this.$$getMetadata().then( function() {
+            return $q.all( [
+              CnHttpFactory.instance( {
+                path: 'role',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: { name: false } },
+                  granting: true // only return roles which we can grant access to
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.role_id = {
+                  required: true,
+                  enumList: []
+                };
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
+                } );
+              } ),
 
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
-              path: 'role',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: { name: false } },
-                granting: true // only return roles which we can grant access to
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.role_id = {
-                required: true,
-                enumList: []
-              };
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } ),
-
-            CnHttpFactory.instance( {
-              path: 'site',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: { name: false } },
-                granting: true // only return sites which we can grant access to
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.site_id = {
-                required: true,
-                enumList: []
-              };
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } )
-
-          ] );
+              CnHttpFactory.instance( {
+                path: 'site',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: { name: false } },
+                  granting: true // only return sites which we can grant access to
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.site_id = {
+                  required: true,
+                  enumList: []
+                };
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
+                } );
+              } )
+            ] );
+          } );
         };
       };
 

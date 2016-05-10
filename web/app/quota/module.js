@@ -145,60 +145,58 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return $q.all( [
-
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
-              path: 'age_group',
-              data: {
-                select: { column: [ 'id', 'lower', 'upper' ] },
-                modifier: { order: { lower: false } }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.age_group_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.age_group_id.enumList.push( {
-                  value: item.id,
-                  name: item.lower + ' to ' + item.upper
-                } );
-              } );
-            } ),
-
-            CnHttpFactory.instance( {
-              path: 'region',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: {
-                  where: {
-                    column: 'country',
-                    operator: '=',
-                    value: CnSession.application.country
-                  },
-                  order: 'name'
+          return this.$$getMetadata().then( function() {
+            return $q.all( [
+              CnHttpFactory.instance( {
+                path: 'age_group',
+                data: {
+                  select: { column: [ 'id', 'lower', 'upper' ] },
+                  modifier: { order: { lower: false } }
                 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.region_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.region_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } ),
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.age_group_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.age_group_id.enumList.push( {
+                    value: item.id,
+                    name: item.lower + ' to ' + item.upper
+                  } );
+                } );
+              } ),
 
-            CnHttpFactory.instance( {
-              path: 'application/' + CnSession.application.id + '/site',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name' }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.site_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } )
+              CnHttpFactory.instance( {
+                path: 'region',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: {
+                    where: {
+                      column: 'country',
+                      operator: '=',
+                      value: CnSession.application.country
+                    },
+                    order: 'name'
+                  }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.region_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.region_id.enumList.push( { value: item.id, name: item.name } );
+                } );
+              } ),
 
-          ] );
+              CnHttpFactory.instance( {
+                path: 'application/' + CnSession.application.id + '/site',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.site_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
+                } );
+              } )
+            ] );
+          } );
         };
       };
 

@@ -197,9 +197,9 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnEventModelFactory', [
     'CnBaseModelFactory', 'CnEventListFactory', 'CnEventAddFactory', 'CnEventViewFactory',
-    'CnHttpFactory', '$q',
+    'CnHttpFactory',
     function( CnBaseModelFactory, CnEventListFactory, CnEventAddFactory, CnEventViewFactory,
-              CnHttpFactory, $q ) {
+              CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -217,11 +217,8 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return $q.all( [
-
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
+          return this.$$getMetadata().then( function() {
+            return CnHttpFactory.instance( {
               path: 'event_type',
               data: {
                 select: { column: [ 'id', 'name' ] },
@@ -232,9 +229,8 @@ define( function() {
               response.data.forEach( function( item ) {
                 self.metadata.columnList.event_type_id.enumList.push( { value: item.id, name: item.name } );
               } );
-            } )
-
-          ] );
+            } );
+          } );
         };
       };
 

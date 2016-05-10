@@ -142,9 +142,9 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentModelFactory', [
     'CnBaseModelFactory', 'CnConsentListFactory', 'CnConsentAddFactory', 'CnConsentViewFactory',
-    'CnHttpFactory', '$q',
+    'CnHttpFactory',
     function( CnBaseModelFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory,
-              CnHttpFactory, $q ) {
+              CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -162,11 +162,8 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return $q.all( [
-
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
+          return this.$$getMetadata().then( function() {
+            return CnHttpFactory.instance( {
               path: 'consent_type',
               data: {
                 select: { column: [ 'id', 'name' ] },
@@ -177,9 +174,8 @@ define( function() {
               response.data.forEach( function( item ) {
                 self.metadata.columnList.consent_type_id.enumList.push( { value: item.id, name: item.name } );
               } );
-            } )
-
-          ] );
+            } );
+          } );
         };
       };
 

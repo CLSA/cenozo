@@ -118,10 +118,10 @@ define( function() {
   cenozo.providers.factory( 'CnRecordingFileModelFactory', [
     'CnBaseModelFactory',
     'CnRecordingFileListFactory', 'CnRecordingFileAddFactory', 'CnRecordingFileViewFactory',
-    'CnHttpFactory', '$q',
+    'CnHttpFactory',
     function( CnBaseModelFactory,
               CnRecordingFileListFactory, CnRecordingFileAddFactory, CnRecordingFileViewFactory,
-              CnHttpFactory, $q ) {
+              CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -131,11 +131,8 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return $q.all( [
-
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
+          return this.$$getMetadata().then( function() {
+            return CnHttpFactory.instance( {
               path: 'language',
               data: {
                 select: { column: [ 'id', 'name' ] },
@@ -149,9 +146,8 @@ define( function() {
               response.data.forEach( function( item ) {
                 self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
               } );
-            } )
-
-          ] );
+            } );
+          } );
         };
       };
 

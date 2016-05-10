@@ -127,9 +127,9 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnScriptModelFactory', [
     'CnBaseModelFactory', 'CnScriptAddFactory', 'CnScriptListFactory', 'CnScriptViewFactory',
-    'CnHttpFactory', '$q',
+    'CnHttpFactory',
     function( CnBaseModelFactory, CnScriptAddFactory, CnScriptListFactory, CnScriptViewFactory,
-              CnHttpFactory, $q ) {
+              CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -139,10 +139,8 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return $q.all( [
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
+          return this.$$getMetadata().then( function() {
+            return CnHttpFactory.instance( {
               path: 'survey',
               data: {
                 select: { column: [ 'sid', 'title' ] },
@@ -153,9 +151,8 @@ define( function() {
               response.data.forEach( function( item ) {
                 self.metadata.columnList.sid.enumList.push( { value: item.sid, name: item.title } );
               } );
-            } )
-
-          ] );
+            } );
+          } );
         };
       };
 

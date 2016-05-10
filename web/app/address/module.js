@@ -183,9 +183,9 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressModelFactory', [
     'CnBaseModelFactory', 'CnAddressListFactory', 'CnAddressAddFactory', 'CnAddressViewFactory',
-    'CnHttpFactory', '$q',
+    'CnHttpFactory',
     function( CnBaseModelFactory, CnAddressListFactory, CnAddressAddFactory, CnAddressViewFactory,
-              CnHttpFactory, $q ) {
+              CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -195,11 +195,8 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return $q.all( [
-
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
+          return this.$$getMetadata().then( function() {
+            return CnHttpFactory.instance( {
               path: 'region',
               data: {
                 select: {
@@ -220,9 +217,8 @@ define( function() {
                   name: item.name
                 } );
               } );
-            } )
-
-          ] );
+            } );
+          } );
         };
       };
 
