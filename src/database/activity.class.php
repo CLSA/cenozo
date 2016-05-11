@@ -26,14 +26,15 @@ class activity extends record
   /**
    * Closes any record whose user has had no activity for longer than the activity timeout
    * 
+   * If a user is provided then this method will also close the user's activity (whether timed
+   * out or not).  An access record may be provided which will be excluded from being closed.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\user $db_user If changing site/role then the user must be provided here
-   * @param database\site $db_site If changing site/role then the site must be provided here
-   * @param database\role $db_role If changing site/role then the role must be provided here
+   * @param database\user $db_user Which user to close all activity
+   * @param database\access $db_access Which access to keep open when closing all user activity
    * @access public
    * @static
    */
-  public static function close_lapsed( $db_user = NULL, $db_site = NULL, $db_role = NULL )
+  public static function close_lapsed( $db_user = NULL, $db_access = NULL )
   {
     $db_application = lib::create( 'business\session' )->get_application();
 
@@ -55,8 +56,14 @@ class activity extends record
       $modifier->where( 'end_datetime', '=', NULL );
       $modifier->where( 'application_id', '=', $db_application->id );
       $modifier->where( 'user_id', '=', $db_user->id );
-      if( !is_null( $db_site ) ) $modifier->where( 'site_id', '!=', $db_site->id );
-      if( !is_null( $db_role ) ) $modifier->where( 'role_id', '!=', $db_role->id );
+
+      if( !is_null( $db_access ) )
+      {
+        $modifier->where_bracket( true );
+        $modifier->where( 'site_id', '!=', $db_access->site_id );
+        $modifier->or_where( 'role_id', '!=', $db_access->role_id );
+        $modifier->where_bracket( false );
+      }
 
       static::db()->execute( sprintf(
         'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',

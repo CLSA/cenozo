@@ -369,7 +369,7 @@ class session extends \cenozo\singleton
               $_SESSION['access.id'] = $db_access->id;
               $_SESSION['address'] = $_SERVER['REMOTE_ADDR'];
 
-              $activity_class_name::close_lapsed( $this->db_user, $this->db_site, $this->db_role );
+              $activity_class_name::close_lapsed( $this->db_user, $this->db_access );
 
               // create a new activity if there isn't already one open
               $activity_mod = lib::create( 'database\modifier' );
