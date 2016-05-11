@@ -69,7 +69,6 @@ final class bootstrap
     $this->read_settings();
     
     ini_set( 'session.save_path', TEMPORARY_FILES_PATH );
-    ini_set( 'session.gc_maxlifetime', $this->settings['general']['activity_timeout'] * 60 );
     ini_set( 'session.gc_probability', 1 );
     ini_set( 'session.gc_divisor', 100 );
     ini_set( 'session.cookie_secure', false );

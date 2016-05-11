@@ -46,4 +46,14 @@ class access extends record
 
     parent::delete();
   }
+
+  // TODO: document
+  public function has_expired()
+  {
+    $activity_class_name = lib::get_class_name( 'database\activity' );
+    $modifier = $activity_class_name::get_expired_modifier();
+    $modifier->where( 'id', '=', $this->id );
+
+    return 0 < static::count( $modifier );
+  }
 }

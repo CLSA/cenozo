@@ -298,19 +298,11 @@ class session extends \cenozo\singleton
         catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
 
         // don't use the access if it has lapsed
-        if( !is_null( $db_access ) )
+        if( !is_null( $db_access ) && $db_access->has_expired() )
         {
-          $timeout = $setting_manager->get_setting( 'general', 'activity_timeout' );
-          $expire_time = $util_class_name::get_datetime_object();
-          $expire_time->sub( new \DateInterval( sprintf( 'PT%dM', $timeout ) ) );
-
-          // if the access has expired then don't use it
-          if( $expire_time > $db_access->datetime )
-          {
-            // we'll need the user to close the activity, so set it before making db_access NULL
-            $this->db_user = $db_access->get_user();
-            $db_access = NULL;
-          }
+          // we'll need the user to close the activity, so set it before making db_access NULL
+          $this->db_user = $db_access->get_user();
+          $db_access = NULL;
         }
       }
 
