@@ -270,11 +270,7 @@ class ui extends \cenozo\base_object
     }
     if( array_key_exists( 'user', $module_list ) )
     {
-      if( 1 == $db_role->tier )
-      {
-        unset( $module_list['user'] );
-      }
-      else
+      if( 1 < $db_role->tier )
       {
         $module_list['user']['children'] = array( 'access', 'activity' );
         $module_list['user']['choosing'] = array( 'language' );
@@ -369,6 +365,9 @@ class ui extends \cenozo\base_object
       'subject' => 'search_result',
       'action' => 'list',
       'query' => '?{q}' );
+    $list['User Overview'] = array(
+      'subject' => 'user',
+      'action' => 'overview' );
     if( $setting_manager->get_setting( 'voip', 'enabled' ) )
       $list['Webphone'] = array(
         'subject' => 'webphone',

@@ -130,5 +130,29 @@ class module extends \cenozo\service\site_restricted_module
       if( $select->has_column( 'last_access_datetime' ) )
         $select->add_column( 'user_join_access.last_access_datetime', 'last_access_datetime', false );
     }
+
+    // add active access (site/role) details if requested
+    if( $select->has_table_columns( 'activity' ) ||
+        $select->has_table_columns( 'access' ) ||
+        $select->has_table_columns( 'site' ) ||
+        $select->has_table_columns( 'role' ) )
+    {
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'user.id', '=', 'activity.user_id', false );
+      $join_mod->where( 'activity.end_datetime', '=', NULL );
+      $join_mod->where( 'activity.application_id', '=', $db_application->id );
+      $modifier->join_modifier( 'activity', $join_mod, 'left' );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'activity.user_id', '=', 'access.user_id', false );
+      $join_mod->where( 'activity.site_id', '=', 'access.site_id', false );
+      $join_mod->where( 'activity.role_id', '=', 'access.role_id', false );
+      $modifier->join_modifier( 'access', $join_mod, 'left' );
+
+      if( $select->has_table_columns( 'site' ) )
+        $modifier->left_join( 'site', 'activity.site_id', 'site.id' );
+      if( $select->has_table_columns( 'role' ) )
+        $modifier->left_join( 'role', 'activity.role_id', 'role.id' );
+    }
   }
 }

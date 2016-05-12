@@ -146,6 +146,22 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnUserOverview', [
+    'CnUserOverviewFactory',
+    function( CnUserOverviewFactory ) {
+      return {
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
+        restrict: 'E',
+        scope: { model: '=?' },
+        controller: function( $scope ) {
+          $scope.model = CnUserOverviewFactory.instance();
+          $scope.model.listModel.heading = "Active User List";
+        }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnUserView', [
     'CnUserModelFactory',
     function( CnUserModelFactory ) {
@@ -337,6 +353,66 @@ define( function() {
         root: new object( true ),
         instance: function() { return new object( false ); }
       };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnUserOverviewFactory', [
+    'CnBaseModelFactory', 'CnUserListFactory', 'CnUserAddFactory', 'CnUserViewFactory',
+    'CnSession', 'CnHttpFactory', '$q',
+    function( CnBaseModelFactory, CnUserListFactory, CnUserAddFactory, CnUserViewFactory,
+              CnSession, CnHttpFactory, $q ) {
+      var overviewModule = angular.copy( module );
+      delete overviewModule.columnList.active;
+      delete overviewModule.columnList.role_count;
+      delete overviewModule.columnList.site_count;
+      delete overviewModule.columnList.last_access_datetime;
+      angular.extend( overviewModule.columnList, {
+        site: {
+          column: 'site.name',
+          title: 'Site',
+        },
+        role: {
+          column: 'role.name',
+          title: 'Role',
+        },
+        start_datetime: {
+          column: 'activity.start_datetime',
+          title: 'Start',
+          type: 'datetime'
+        },
+        last_datetime: {
+          column: 'access.datetime',
+          title: 'Last',
+          type: 'time'
+        }
+      } );
+
+      var object = function() {
+        var self = this;
+
+        CnBaseModelFactory.construct( this, overviewModule );
+        angular.extend( this, {
+          listModel: CnUserListFactory.instance( this ),
+          setupBreadcrumbTrail: function() {
+            CnSession.setBreadcrumbTrail( [ { title: 'User Overview' } ] );
+          },
+          getServiceData: function( type, columnRestrictLists ) {
+            var data = this.$$getServiceData( type, columnRestrictLists );
+            if( angular.isUndefined( data.modifier.where ) ) data.modifier.where = [];
+            data.modifier.where.push( {
+              column: 'activity.id',
+              operator: '!=',
+              value: null
+            } );
+            return data;
+          }
+        } );
+        this.enableAdd( false );
+        this.enableDelete( false );
+      };
+
+      return { instance: function() { return new object( false ); } };
     }
   ] );
 
