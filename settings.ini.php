@@ -32,7 +32,7 @@ $settings['general']['activity_timeout'] = '60 MINUTE';
 $settings['general']['default_password'] = 'password';
 
 // the maximum number of login failures before deactivating a user
-$settings['general']['login_failure_limit'] = 7;
+$settings['general']['login_failure_limit'] = 15;
 
 // the maximum number of rows allowed in a list-report
 $settings['general']['max_big_report'] = 10000;
