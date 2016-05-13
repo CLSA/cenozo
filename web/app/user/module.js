@@ -391,8 +391,12 @@ define( function() {
         }
       } );
 
-      // don't show the site column for roles which do not have access to all sites
+      // remove some columns based on the voip and role details
       CnSession.promise.then( function() {
+        if( !CnSession.application.voipEnabled ) {
+          delete overviewModule.columnList.webphone;
+          delete overviewModule.columnList.in_call;
+        }
         if( !CnSession.role.allSites ) delete overviewModule.columnList.site;
       } );
 
