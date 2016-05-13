@@ -96,6 +96,7 @@ define( function() {
       type: 'boolean',
       help: 'Whether to display times using the 12-hour clock (am/pm)'
     },
+    in_call: { type: 'hidden' }, // used to determine listen-to-call inclusion and disabling
     site_id: {
       title: 'Initial Site',
       type: 'enum',
@@ -113,6 +114,23 @@ define( function() {
   module.addExtraOperation( 'view', {
     title: 'Reset Password',
     operation: function( $state, model ) { model.viewModel.resetPassword(); }
+  } );
+
+  module.addExtraOperation( 'view', {
+    title: 'Listen to Call',
+    classes: 'btn-warning',
+    isIncluded: function( $state, model ) { return model.viewModel.listenToCallIncluded; },
+    isDisabled: function( $state, model ) { return model.viewModel.listenToCallDisabled; },
+    operation: function( $state, model ) {
+      var self = this;
+
+      // if the title is "Listen" then start listening in
+      if( 'Listen to Call' == this.title ) {
+        model.viewModel.listenToCall().then( function() { self.title = 'Stop Listening'; } );
+      } else { // 'Stop Listening' == this.title
+        model.viewModel.stopListenToCall().finally( function() { self.title = 'Listen to Call'; } );
+      }
+    }
   } );
 
   /* ######################################################################################################## */
@@ -229,11 +247,43 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserViewFactory', [
-    'CnBaseViewFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnHttpFactory',
-    function( CnBaseViewFactory, CnModalConfirmFactory, CnModalMessageFactory, CnHttpFactory ) {
+    'CnBaseViewFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnSession', 'CnHttpFactory',
+    function( CnBaseViewFactory, CnModalConfirmFactory, CnModalMessageFactory, CnSession, CnHttpFactory ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
+        this.listenToCallIncluded = false;
+        this.listenToCallDisabled = true;
+
+        // functions to handle listening to calls (voip spy)
+        this.listenToCall = function() {
+          return CnHttpFactory.instance( {
+            path: 'voip/' + self.record.id,
+            data: { operation: 'spy' }
+          } ).patch();
+        };
+
+        this.stopListenToCall = function() {
+          return CnHttpFactory.instance( {
+            path: 'voip/0',
+            onError: function( response ) {
+              if( 404 == response.status ) {
+                // ignore 404 errors, it just means there was no phone call found to hang up
+              } else { CnModalMessageFactory.httpError( response ); }
+            }
+          } ).delete();
+        };
+
+        this.afterView( function() {
+          CnSession.promise.then( function() {
+            self.listenToCallIncluded = 1 < CnSession.role.tier && CnSession.voip.enabled && self.record.in_call;
+            self.listenToCallDisabled =
+              !CnSession.voip.info ||
+              !CnSession.voip.info.status ||
+              'OK' != CnSession.voip.info.status.substr( 0, 2 ) ||
+              !self.record.in_call;
+          } );
+        } );
 
         this.deferred.promise.then( function() {
           if( angular.isDefined( self.languageModel ) )

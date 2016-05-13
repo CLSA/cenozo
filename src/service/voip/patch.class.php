@@ -33,7 +33,10 @@ class patch extends \cenozo\service\service
    */
   protected function create_resource( $index )
   {
-    return array();
+    $id = $this->get_resource_value( $index );
+    $voip_call = lib::create( 'business\voip_manager' )->get_call( $id ? $id : NULL );
+    log::debug( $id );
+    return lib::create( 'business\voip_manager' )->get_call( $id ? $id : NULL );
   }
 
   /**
@@ -68,6 +71,10 @@ class patch extends \cenozo\service\service
     {
       // no other arguments required
     }
+    else if( 'spy' == $operation )
+    {
+      // no other arguments required
+    }
     else $error_code = 412;
     
     if( !is_null( $error_code ) ) $this->get_status()->set_code( $error_code );
@@ -78,7 +85,7 @@ class patch extends \cenozo\service\service
    */
   protected function execute()
   {
-    $voip_call = lib::create( 'business\voip_manager' )->get_call();
+    $voip_call = $this->get_leaf_record();
     $object = $this->get_file_as_object();
 
     if( !is_null( $voip_call ) )
@@ -118,6 +125,10 @@ class patch extends \cenozo\service\service
       else if( 'stop_monitoring' == $data['operation'] )
       {
         $voip_call->stop_monitoring();
+      }
+      else if( 'spy' )
+      {
+        lib::create( 'business\voip_manager' )->spy( $voip_call );
       }
     }
 
