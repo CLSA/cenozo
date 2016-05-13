@@ -51,22 +51,6 @@ class voip_manager extends \cenozo\singleton
       if( !$this->manager->login() )
         throw lib::create( 'exception\runtime',
           'Unable to connect to the Asterisk server.', __METHOD__ );
-
-      // get the current SIP info
-      $peer = static::get_peer();
-      $s8_event = $this->manager->getSipPeer( $peer );
-
-      if( !is_null( $s8_event ) &&
-          $peer == $s8_event->get( 'objectname' ) &&
-          'OK' == substr( $s8_event->get( 'status' ), 0, 2 ) )
-      {
-        $this->sip_info = array(
-          'status' => $s8_event->get( 'status' ),
-          'type' => $s8_event->get( 'channeltype' ),
-          'agent' => $s8_event->get( 'sip_useragent' ),
-          'ip' => $s8_event->get( 'address_ip' ),
-          'port' => $s8_event->get( 'address_port' ) );
-      }
     }
     catch( \Shift8_Exception $e )
     {
@@ -83,6 +67,72 @@ class voip_manager extends \cenozo\singleton
   public function shutdown()
   {
     if( $this->enabled && $this->manager ) $this->manager->logoff();
+  }
+
+  /**
+   * Returns sip info for the given user (or current user if null)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\user or integer $user
+   * @return array
+   * @access public
+   */
+  public function get_sip_info( $user = NULL )
+  {
+    if( !$this->enabled ) return;
+    $this->initialize();
+
+    // get the current SIP info
+    $peer = static::get_peer_from_user( $user );
+    $s8_event = $this->manager->getSipPeer( $peer );
+
+    $sip_info = NULL;
+    if( !is_null( $s8_event ) )
+    {
+      $peer = $s8_event->get( 'objectname' );
+      $sip_info = array(
+        'peer' => $peer,
+        'user' => static::get_user_from_peer( $peer ),
+        'status' => $s8_event->get( 'status' ),
+        'type' => $s8_event->get( 'channeltype' ),
+        'agent' => $s8_event->get( 'sip_useragent' ),
+        'ip' => $s8_event->get( 'address_ip' ),
+        'port' => $s8_event->get( 'address_port' )
+      );
+    }
+
+    return $sip_info;
+  }
+
+  /**
+   * Returns sip info for all users
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array( array )
+   * @access public
+   */
+  public function get_sip_info_list()
+  {
+    if( !$this->enabled ) return;
+    $this->initialize();
+
+    // get the current SIP info
+    $s8_event_list = $this->manager->getSipPeers();
+
+    $sip_info_list = array();
+    foreach( $s8_event_list as $s8_event )
+    {
+      $peer = $s8_event->get( 'objectname' );
+      array_push( $sip_info_list, array(
+        'peer' => $peer,
+        'user' => static::get_user_from_peer( $peer ),
+        'status' => $s8_event->get( 'status' ),
+        'type' => $s8_event->get( 'channeltype' ),
+        'agent' => $s8_event->get( 'sip_useragent' ),
+        'ip' => $s8_event->get( 'address_ip' ),
+        'port' => $s8_event->get( 'address_port' )
+      ) );
+    }
+
+    return $sip_info_list;
   }
 
   /**
@@ -109,22 +159,32 @@ class voip_manager extends \cenozo\singleton
   }
 
   /**
+   * TODO: document
+   */
+  public function get_call_list()
+  {
+    return array_filter( $this->call_list, function( $voip_call ) {
+      return 'SIP' == substr( $voip_call->get_channel(), 0, 3 );
+    } );
+  }
+
+  /**
    * Gets a user's active call.  If the user isn't currently on a call then null is returned.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\user $db_user Which user's call to retrieve.  If this parameter is null then
-   *        the current user's call is returned.
+   * @param database\user or integer $user Which user's call to retrieve.
+   *        If this parameter is null then the current user's call is returned.
    * @return voip_call
    * @access public
    */
-  public function get_call( $db_user = NULL )
+  public function get_call( $user = NULL )
   {
     if( !$this->enabled ) return NULL;
     $this->initialize();
 
     if( is_null( $this->call_list ) ) $this->rebuild_call_list();
 
-    $peer = static::get_peer( $db_user );
+    $peer = static::get_peer_from_user( $user );
 
     // build the call list
     $calls = array();
@@ -177,7 +237,7 @@ class voip_manager extends \cenozo\singleton
         'Unable to connect call since you already appear to be in a call.', __METHOD__ );
 
     // originate call (careful, the online API has the arguments in the wrong order)
-    $peer = static::get_peer();
+    $peer = static::get_peer_from_user();
     $channel = 'SIP/'.$peer;
     $context = 'from-internal';
     $extension = $this->prefix.$digits;
@@ -202,7 +262,7 @@ class voip_manager extends \cenozo\singleton
     if( !$this->enabled ) return;
     $this->initialize();
 
-    $peer = static::get_peer();
+    $peer = static::get_peer_from_user();
     $channel = 'SIP/'.$peer;
     // play sound in local channel
     if( !$this->manager->originate(
@@ -226,20 +286,6 @@ class voip_manager extends \cenozo\singleton
   }
 
   /**
-   * Determines whether a SIP connection is detected with the client
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return boolean
-   * @access public
-   */
-  public function get_sip_enabled()
-  {
-    if( !$this->enabled ) return false;
-    $this->initialize();
-    return $this->sip_info;
-  }
-
-  /**
    * Whether VOIP is enabled.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -260,10 +306,22 @@ class voip_manager extends \cenozo\singleton
   /**
    * TODO: document
    */
-  public static function get_peer( $db_user = NULL )
+  public static function get_peer_from_user( $user = NULL )
   {
-    return 10000000 + ( is_null( $db_user ) ?
-      lib::create( 'business\session' )->get_user()->id : $db_user->id );
+    if( is_null( $user ) ) $user = lib::create( 'business\session' )->get_user();
+
+    // convert to a database ID if an object is provided
+    if( !is_null( $user ) && is_a( $user, lib::get_class_name( 'database\user' ) ) ) $user = $user->id;
+    return 10000000 + $user;
+  }
+
+  /**
+   * TODO: document
+   */
+  public static function get_user_from_peer( $peer )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    return $util_class_name::string_matches_int( $peer ) ? $peer - 10000000 : NULL;
   }
 
   /**
@@ -272,13 +330,6 @@ class voip_manager extends \cenozo\singleton
    * @access private
    */
   private $manager = NULL;
-
-  /**
-   * The current SIP information (empty array if there is no connection found)
-   * @var array
-   * @access private
-   */
-  private $sip_info = NULL;
 
   /**
    * An array of all currently active calls.

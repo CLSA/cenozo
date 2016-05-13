@@ -207,6 +207,18 @@ class voip_call extends \cenozo\base_object
   public function get_peer() { return $this->peer; }
 
   /**
+   * Get the call's user
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return integer
+   * @access public
+   */
+  public function get_user()
+  {
+    $voip_manager_class_name = lib::get_class_name( 'business\voip_manager' );
+    return $voip_manager_class_name::get_user_from_peer( $this->peer );
+  }
+
+  /**
    * Get the call's channel
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string

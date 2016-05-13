@@ -153,6 +153,42 @@ class module extends \cenozo\service\site_restricted_module
         $modifier->left_join( 'site', 'activity.site_id', 'site.id' );
       if( $select->has_table_columns( 'role' ) )
         $modifier->left_join( 'role', 'activity.role_id', 'role.id' );
+
+      // make sure to restrict to the activity's site
+      if( is_null( $this->get_resource() ) )
+      {
+        $db_restrict_site = $this->get_restricted_site();
+        if( !is_null( $db_restrict_site ) )
+          $modifier->where(
+            sprintf( 'IFNULL( activity.site_id, %d )', $db_restrict_site->id ), '=', $db_restrict_site->id );
+      }
+
+    }
+
+    // add the webphone column from voip information
+    if( $select->has_column( 'in_call' ) || $select->has_column( 'webphone' ) )
+    {
+      $voip_manager = lib::create( 'business\voip_manager' );
+      if( $select->has_column( 'in_call' ) )
+      {
+        $voip_manager->rebuild_call_list();
+        $user_list = array_reduce( $voip_manager->get_call_list(), function( $list, $voip_call ) {
+          if( 'Up' == $voip_call->get_state() ) array_push( $list, $voip_call->get_user() );
+          return $list;
+        }, array() );
+        sort( $user_list );
+        $select->add_column( sprintf( 'user.id IN ( %s )', implode( ',', $user_list ) ), 'in_call', false );
+      }
+
+      if( $select->has_column( 'webphone' ) )
+      {
+        $user_list = array_reduce( $voip_manager->get_sip_info_list(), function( $list, $sip_info ) {
+          if( 'OK' == substr( $sip_info['status'], 0, 2 ) ) array_push( $list, $sip_info['user'] );
+          return $list;
+        }, array() );
+        sort( $user_list );
+        $select->add_column( sprintf( 'user.id IN ( %s )', implode( ',', $user_list ) ), 'webphone', false );
+      }
     }
   }
 }

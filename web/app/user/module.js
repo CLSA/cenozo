@@ -376,16 +376,24 @@ define( function() {
           column: 'role.name',
           title: 'Role',
         },
-        start_datetime: {
-          column: 'activity.start_datetime',
-          title: 'Start',
-          type: 'datetime'
+        webphone: {
+          title: 'Webphone',
+          type: 'boolean'
+        },
+        in_call: {
+          title: 'In Call',
+          type: 'boolean'
         },
         last_datetime: {
           column: 'access.datetime',
-          title: 'Last',
+          title: 'Last Activity',
           type: 'time'
         }
+      } );
+
+      // don't show the site column for roles which do not have access to all sites
+      CnSession.promise.then( function() {
+        if( !CnSession.role.allSites ) delete overviewModule.columnList.site;
       } );
 
       var object = function() {
