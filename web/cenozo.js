@@ -27,16 +27,22 @@ angular.extend( Array.prototype, {
       if( angular.isDefined( item[property] ) && value == item[property] ) array.push( index );
       return array;
     }, [] );
-    if( 1 < indexList.length ) console.warn(
-      'More than one item found while searching array for object with property "' + property +
-      '", only returning the first.' );
+    if( 1 < indexList.length ) {
+      console.warn(
+        'More than one item found while searching array for object with property "%s", only returning the first.',
+        property
+      );
+    }
     return 0 == indexList.length ? null : indexList[0];
   },
   findByProperty: function( property, value ) {
     var filtered = this.filter( function( item ) { return value == item[property]; } );
-    if( 1 < filtered.length ) console.warn(
-      'More than one item found while searching array for object with property "' + property +
-      '", only returning the first.' );
+    if( 1 < filtered.length ) {
+      console.warn(
+        'More than one item found while searching array for object with property "%s", only returning the first.',
+        property
+      );
+    }
     return 0 == filtered.length ? null : filtered[0];
   },
   isEqualTo: function( array ) {
@@ -202,8 +208,9 @@ angular.extend( cenozoApp, {
               if( angular.isDefined( group.inputList[key] ) ) return true;
             } ) ) {
               console.error(
-                'Cannot add input "' + key + '" to group "' + groupTitle +
-                '" as it already exists in the existing group "' + g.title + '".' );
+                'Cannot add input "%s" to group "%s" as it already exists in the existing group "%s".',
+                key, groupTitle, g.title
+              );
             } else {
               // add the key to the input
               input.key = key;
@@ -3356,7 +3363,7 @@ cenozo.factory( 'CnBaseModelFactory', [
                 columnName = columnParts[0];
               } else {
                 console.error(
-                  'Column name "' + list[key].column + '" can have a maximum of two parts: "table.column".' );
+                  'Column name "%s" can have a maximum of two parts: "table.column".', list[key].column );
                 continue; // skip to the next item in the list
               }
             }
@@ -3559,7 +3566,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             }, {
               title: self.getBreadcrumbTitle()
             } ] );
-          } else console.warn( 'Tried to setup breadcrumb trail for invalid type "' + type + '".' );
+          } else console.warn( 'Tried to setup breadcrumb trail for invalid type "%s".', type );
 
           // truncate the full trail if it is too long
           var length = trail.reduce( function( total, crumb ) {
