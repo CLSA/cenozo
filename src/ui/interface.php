@@ -4,26 +4,26 @@
   <meta charset="utf-8">
   <title><?php echo APP_TITLE; ?>{{ getPageTitle() }}</title>
   <link rel="shortcut icon" href="<?php print ROOT_URL; ?>/img/favicon.ico">
-  <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
-  <link rel="stylesheet" href="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.css">
-  <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/css/colorpicker.css">
+  <link rel="stylesheet" href="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.min.css">
+  <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/css/colorpicker.min.css">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css?build=<?php print CENOZO_BUILD; ?>">
   <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css?_">
 
-  <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.js"></script>
-  <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.js"></script>
-  <script src="<?php print LIB_URL; ?>/moment/moment.js"></script>
-  <script src="<?php print LIB_URL; ?>/moment-timezone/builds/moment-timezone-with-data-2010-2020.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular/angular.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-animate/angular-animate.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-sanitize/angular-sanitize.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.js"></script>
+  <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/moment/min/moment.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/moment-timezone/builds/moment-timezone-with-data-2010-2020.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular/angular.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-animate/angular-animate.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-sanitize/angular-sanitize.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
-  <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js"></script>
-  <script src="<?php print LIB_URL; ?>/file-saver/FileSaver.js"></script>
+  <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/file-saver/FileSaver.min.js"></script>
 
   <script src="<?php print CENOZO_URL; ?>/cenozo.js?build=<?php print CENOZO_BUILD; ?>" id="cenozo"></script>
   <script src="<?php print ROOT_URL; ?>/app.js?build=<?php print APP_BUILD; ?>" id="app"></script>
