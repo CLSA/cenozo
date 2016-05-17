@@ -917,7 +917,10 @@ cenozo.directive( 'cnRecordAdd', [
                 } else if( 'lookup-typeahead' == input.type ) {
                   // apply parent values to lookup-typeaheads
                   var parent = $scope.model.getParentIdentifier();
-                  if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) ) {
+                  if( angular.isDefined( parent.subject ) &&
+                      angular.isDefined( parent.identifier ) &&
+                      angular.isDefined( input.typeahead ) &&
+                      parent.subject == input.typeahead.table ) {
                     CnHttpFactory.instance( {
                       path: input.typeahead.table + '/' + parent.identifier,
                       data: {
