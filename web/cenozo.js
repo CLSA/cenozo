@@ -1363,7 +1363,8 @@ cenozo.directive( 'cnRecordView', [
               $scope.model.viewModel.onPatch( data ).then( function() {
                 // if the data in the identifier was patched then reload with the new url
                 if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
-                  $scope.model.reloadState( $scope.model.viewModel.record );
+                  $scope.model.setQueryParameter( 'identifier', $scope.model.viewModel.record.getIdentifier() );
+                  $scope.model.reloadState();
                 } else {
                   var currentElement = cenozo.getFormElement( property );
                   if( currentElement ) {
@@ -2575,24 +2576,30 @@ cenozo.factory( 'CnBaseListFactory', [
         // initialize the restrict lists
         object.columnRestrictLists = {};
 
-        cenozo.addExtendableFunction( object, 'orderBy', function( column, doNotList ) {
+        cenozo.addExtendableFunction( object, 'orderBy', function( column, reverse ) {
           var self = this;
 
-          if( angular.isUndefined( doNotList ) ) doNotList = false;
-          if( null === this.order || column != this.order.column ) {
-            this.order = { column: column, reverse: false };
+          // We need to determine whether to do state or model based ordering.
+          // State-based ordering is used when the state has an {order} parameter and the state's current subject
+          // (name) matches the model's queryParameterSubject value (which, by default, is the model's subject).
+          // However, queryParameterSubject may be changed in order to customise which model gets to use the
+          // state's query parameters.
+          // Model-based ordering ignores state parameters and instead stores ordering in the model (internally)
+          if( parentModel.hasQueryParameter( 'order' ) ) {
+            // do state-based sorting
+            if( column != parentModel.getQueryParameter( 'order' ) ||
+                reverse != parentModel.getQueryParameter( 'reverse' ) ) {
+              parentModel.setQueryParameter( 'order', column );
+              parentModel.setQueryParameter( 'reverse', reverse );
+              parentModel.reloadState();
+            }
           } else {
-            this.order.reverse = !this.order.reverse;
-          }
-
-          // call onList unless explicitely told not to
-          if( !doNotList ) {
-            if( this.cache.length < this.total ) {
-              this.onList( true ).then( function() {
-                self.paginationModel.currentPage = 1;
-              } );
+            // do model-based sorting
+            self.order = { column: column, reverse: reverse };
+            if( self.cache.length < self.total ) {
+              self.onList( true ).then( function() { self.paginationModel.currentPage = 1; } );
             } else {
-              this.paginationModel.currentPage = 1;
+              self.paginationModel.currentPage = 1;
             }
           }
         } );
@@ -2743,6 +2750,13 @@ cenozo.factory( 'CnBaseListFactory', [
           if( parentModel.chooseEnabled && this.chooseMode ) data.choosing = 1;
 
           // set up the offset and sorting
+          if( parentModel.hasQueryParameter( 'order' ) ) {
+            var order = parentModel.getQueryParameter( 'order' );
+            if( angular.isDefined( order ) ) this.order.column = order;
+            var reverse = parentModel.getQueryParameter( 'reverse' );
+            if( angular.isDefined( reverse ) ) this.order.reverse = reverse;
+          }
+
           if( null !== this.order ) {
             // add the table prefix to the column if there isn't already a prefix
             var column = this.order.column;
@@ -3249,6 +3263,35 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
+         * determine whether a query parameter belongs to the model
+         */
+        cenozo.addExtendableFunction( self, 'hasQueryParameter', function( name ) {
+          return 0 <= $state.current.url.indexOf( '{' + name + '}' ) &&
+                 self.getSubjectFromState() == self.queryParameterSubject;
+        } );
+
+        /**
+         * return a query parameter (will be undefined if it doesn't belong to the model)
+         */
+        cenozo.addExtendableFunction( self, 'getQueryParameter', function( name ) {
+          var parameter = undefined;
+          if( self.hasQueryParameter( name ) ) {
+            var parameter = $state.params[name];
+            // convert string booleans to true booleans
+            if( 'false' === parameter ) parameter = false;
+            else if( 'true' === parameter ) parameter = true;
+          }
+          return parameter;
+        } );
+
+        /**
+         * sets a query parameter (does nothing if it doesn't belong to the model)
+         */
+        cenozo.addExtendableFunction( self, 'setQueryParameter', function( name, value ) {
+          if( self.hasQueryParameter( name ) ) $state.params[name] = value;
+        } );
+
+        /**
          * get the parent identifier (either from the state or the module)
          * NOTE: when viewing the function will return the first parent that is set in the view record
          *       (there may be multiple)
@@ -3453,13 +3496,9 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * TODO: document
          */
-        cenozo.addExtendableFunction( self, 'reloadState', function( record ) {
-          if( angular.isUndefined( record ) ) {
-            return $state.reload();
-          } else {
-            $state.params.identifier = record.getIdentifier();
-            return $state.transitionTo( $state.current, $state.params, { reload: true } );
-          }
+        cenozo.addExtendableFunction( self, 'reloadState', function( reload ) {
+          if( angular.isUndefined( reload ) ) reload = false;
+          return $state.transitionTo( $state.current, $state.params, { reload: reload, notify: true } );
         } );
 
         /**
@@ -3848,6 +3887,8 @@ cenozo.factory( 'CnBaseModelFactory', [
         self.editEnabled = angular.isDefined( self.module.actions.edit );
         self.viewEnabled = angular.isDefined( self.module.actions.view );
         self.listingState = 'list';
+        // see the base list factory's orderBy function for how to use this variable
+        self.queryParameterSubject = self.module.subject.snake;
 
         // process input and column lists one at a time
         self.columnList = {};
