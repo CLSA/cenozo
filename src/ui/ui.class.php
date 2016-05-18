@@ -242,7 +242,8 @@ class ui extends \cenozo\base_object
       $module_list['participant']['children'] =
         array( 'address', 'phone', 'consent', 'hin', 'alternate', 'event' );
       $module_list['participant']['choosing'] = array( 'collection' );
-      $module_list['participant']['actions']['history'] = '/{identifier}';
+      $module_list['participant']['actions']['history'] =
+        '/{identifier}?{address}&{alternate}&{consent}&{event}&{note}&{phone}';
       $module_list['participant']['actions']['notes'] = '/{identifier}?{search}';
       // remove the add action as this services is used for utility purposes only
       if( array_key_exists( 'add', $module_list['participant']['actions'] ) )

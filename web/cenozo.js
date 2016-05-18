@@ -3496,9 +3496,10 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * TODO: document
          */
-        cenozo.addExtendableFunction( self, 'reloadState', function( reload ) {
+        cenozo.addExtendableFunction( self, 'reloadState', function( reload, notify ) {
           if( angular.isUndefined( reload ) ) reload = false;
-          return $state.transitionTo( $state.current, $state.params, { reload: reload, notify: true } );
+          if( angular.isUndefined( notify ) ) notify = true;
+          return $state.transitionTo( $state.current, $state.params, { reload: reload, notify: notify } );
         } );
 
         /**

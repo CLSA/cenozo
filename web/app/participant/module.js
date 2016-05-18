@@ -801,11 +801,20 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantHistoryFactory', [
-    'CnSession', 'CnHttpFactory', '$state', '$q',
-    function( CnSession, CnHttpFactory, $state, $q ) {
+    'CnParticipantModelFactory', 'CnSession', 'CnHttpFactory', '$state', '$q',
+    function( CnParticipantModelFactory, CnSession, CnHttpFactory, $state, $q ) {
       var object = function() {
         var self = this;
         this.module = module;
+        this.participantModel = CnParticipantModelFactory.root;
+
+        this.toggleCategory = function( name ) {
+          // update the query parameters with whatever the category's active state is
+          this.participantModel.setQueryParameter(
+            name.toLowerCase(), this.module.historyCategoryList[name].active
+          );
+          this.participantModel.reloadState( false, false );
+        };
 
         this.onView = function() {
           this.historyList = [];
@@ -813,6 +822,10 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           // get all history category promises, run them and then sort the resulting history list
           var promiseList = [];
           for( var name in this.module.historyCategoryList ) {
+            // sync the active parameter to the state while we're at it
+            var active = this.participantModel.getQueryParameter( name.toLowerCase() );
+            console.log( name, active );
+            this.module.historyCategoryList[name].active = angular.isDefined( active ) ? active : true;
             if( 'function' == cenozo.getType( this.module.historyCategoryList[name].promise ) ) {
               promiseList.push(
                 this.module.historyCategoryList[name].promise( this.historyList, $state, CnHttpFactory, $q )
