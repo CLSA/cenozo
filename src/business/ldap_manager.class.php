@@ -242,6 +242,10 @@ class ldap_manager extends \cenozo\singleton
           'The LDAP server failed to respond within the allowed time limit.', 3 );
       }
 
+      // handle connection refused
+      if( false !== strpos( $result['output'], 'NT_STATUS_CONNECTION_REFUSED' ) )
+        throw lib::create( 'exception\ldap', 'Unable to connect to the LDAP server.', 255 );
+
       // ignore errors caused by invalid credentials
       $valid = false !== strpos( $result['output'], sprintf( 'GPOs for user %s', $username ) );
     }
