@@ -223,7 +223,7 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'alternate', $module_list ) )
     {
       $module_list['alternate']['children'] = array( 'address', 'phone' );
-      $module_list['alternate']['actions']['notes'] = '/{identifier}';
+      $module_list['alternate']['actions']['notes'] = '/{identifier}?{search}';
     }
     if( array_key_exists( 'collection', $module_list ) )
     {
@@ -243,7 +243,7 @@ class ui extends \cenozo\base_object
         array( 'address', 'phone', 'consent', 'hin', 'alternate', 'event' );
       $module_list['participant']['choosing'] = array( 'collection' );
       $module_list['participant']['actions']['history'] = '/{identifier}';
-      $module_list['participant']['actions']['notes'] = '/{identifier}';
+      $module_list['participant']['actions']['notes'] = '/{identifier}?{search}';
       // remove the add action as this services is used for utility purposes only
       if( array_key_exists( 'add', $module_list['participant']['actions'] ) )
         unset( $module_list['participant']['actions']['add'] );

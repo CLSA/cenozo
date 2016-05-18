@@ -3912,7 +3912,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
         angular.extend( object, {
           module: module,
           uid: String( $state.params.identifier ).split( '=' ).pop(),
-          search: '',
+          search: angular.isDefined( $state.params.search ) ? $state.params.search : '',
           newNote: '',
           noteListCache: [],
           noteList: [],
@@ -3927,10 +3927,11 @@ cenozo.factory( 'CnBaseNoteFactory', [
             $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } ); 
           },
 
-          updateSearch: function( search ) {
-            object.search = search;
+          updateSearch: function() {
+            $state.params.search = object.search;
+            $state.transitionTo( $state.current, $state.params, { reload: false, notify: false } );
             object.noteList = object.noteListCache.filter( function( note ) {
-              if( 0 == search.length ) {
+              if( 0 == object.search.length ) {
                 return true;
               } else {
                 // convert search into modifier format
