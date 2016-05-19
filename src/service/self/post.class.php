@@ -42,7 +42,6 @@ class post extends \cenozo\service\service
    */
   protected function execute()
   {
-    $ldap_manager = lib::create( 'business\ldap_manager' );
     $session = lib::create( 'business\session' );
 
     $result = false;
