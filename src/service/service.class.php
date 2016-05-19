@@ -278,6 +278,8 @@ abstract class service extends \cenozo\base_object
         $this->headers['Expires'] = '0';
       }
     }
+
+    if( $this->temporary_login ) lib::create( 'business\session' )->logout();
   }
 
   /**
@@ -316,13 +318,21 @@ abstract class service extends \cenozo\base_object
     $this->resource_value_list = array();
     $this->module_list = array();
 
-    // only the login/logout services can be processed while not logged in
-    if( is_null( $session->get_user() ) &&
-        !( 'self/0' == $path && in_array( $this->method, array( 'DELETE', 'POST' ) ) ) )
+    // run the login sequence for all services except the login/logout services
+    if( !( 'self/0' == $path && in_array( $this->method, array( 'DELETE', 'POST' ) ) ) )
     {
-      $code = 401;
+      // if there is an authorization header and we aren't already logged in, then do so now and note that
+      // we are using a temporary (one-use) login
+      $user = NULL;
+      $pass = NULL;
+      if( is_null( $session->get_user() ) &&
+          $session->check_authorization_header( $user, $pass ) &&
+          $session->login( $user ) ) $this->temporary_login = true;
+
+      if( is_null( $session->get_user() ) ) $code = 401;
     }
-    else if( 0 < strlen( $path ) )
+
+    if( 300 > $code && 0 < strlen( $path ) )
     {
       $module_index = 0;
       foreach( explode( '/', $path ) as $index => $part )
@@ -953,6 +963,13 @@ abstract class service extends \cenozo\base_object
    * @access private
    */
   private $validate_access = true;
+
+  /**
+   * Whether to check if the user's access has permission to perform this service
+   * @var boolean
+   * @access private
+   */
+  private $temporary_login = false;
 
   /**
    * A list of all valid methods (as keys) and whether they are write services (as value)
