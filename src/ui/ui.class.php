@@ -193,7 +193,7 @@ class ui extends \cenozo\base_object
       else if( 'GET' == $service['method'] )
       {
         if( $service['resource'] ) $module_list[$subject]['actions']['view'] = '/{identifier}';
-        else $module_list[$subject]['actions']['list'] = '?{order}&{reverse}';
+        else $module_list[$subject]['actions']['list'] = '?{restrict}&{order}&{reverse}';
 
         // add the module to the list menu if:
         // 1) it is the activity module and we can list it or
@@ -365,7 +365,7 @@ class ui extends \cenozo\base_object
     $list['Participant Search'] = array(
       'subject' => 'search_result',
       'action' => 'list',
-      'query' => '?{q}&{order}&{reverse}' );
+      'query' => '?{q}&{restrict}&{order}&{reverse}' );
     $list['User Overview'] = array(
       'subject' => 'user',
       'action' => 'overview' );

@@ -2167,7 +2167,15 @@ cenozo.factory( 'CnSession', [
             if( 0 < number ) formatted = $filter( 'cnOrdinal' )( number );
           }
           return formatted;
+        },
+
+        describeRestriction: function( type, test, value ) {
+          var formattedValue = this.formatValue( value, type, false );
+          if( 'string' == type && null !== value && 0 < value.length )
+            formattedValue = '"' + formattedValue + '"';
+          return $filter( 'cnComparator' )( test ) + ' ' + formattedValue;
         }
+
       } );
 
       this.updateData();
@@ -2555,8 +2563,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseListFactory', [
-  'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory',
-  function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory ) {
+  'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
+  function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory, $q ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
@@ -2579,27 +2587,25 @@ cenozo.factory( 'CnBaseListFactory', [
         cenozo.addExtendableFunction( object, 'orderBy', function( column, reverse ) {
           var self = this;
 
-          // We need to determine whether to do state or model based ordering.
-          // State-based ordering is used when the state has an {order} parameter and the state's current subject
-          // (name) matches the model's queryParameterSubject value (which, by default, is the model's subject).
-          // However, queryParameterSubject may be changed in order to customise which model gets to use the
-          // state's query parameters.
-          // Model-based ordering ignores state parameters and instead stores ordering in the model (internally)
-          if( parentModel.hasQueryParameter( 'order' ) ) {
-            // do state-based sorting
-            if( column != parentModel.getQueryParameter( 'order' ) ||
-                reverse != parentModel.getQueryParameter( 'reverse' ) ) {
+          if( this.order.column != column || this.order.reverse != reverse ) {
+            // We need to determine whether to do state or model based ordering.
+            // State-based ordering is used when the state has an {order} parameter and the state's current
+            // subject (name) matches the model's queryParameterSubject value (which, by default, is the
+            // model's subject).
+            // However, queryParameterSubject may be changed in order to customise which model gets to use the
+            // state's query parameters.
+            // Model-based ordering ignores state parameters and instead stores ordering in the model (internally)
+            if( parentModel.hasQueryParameter( 'order' ) ) {
+              // do state-based sorting
               parentModel.setQueryParameter( 'order', column );
               parentModel.setQueryParameter( 'reverse', reverse );
               parentModel.reloadState();
-            }
-          } else {
-            // do model-based sorting
-            self.order = { column: column, reverse: reverse };
-            if( self.cache.length < self.total ) {
-              self.onList( true ).then( function() { self.paginationModel.currentPage = 1; } );
             } else {
-              self.paginationModel.currentPage = 1;
+              // do model-based sorting
+              var promiseList = [];
+              this.order = { column: column, reverse: reverse };
+              if( this.cache.length < this.total ) promiseList.push( this.onList( true ) );
+              $q.all( promiseList ).then( function() { self.paginationModel.currentPage = 1; } );
             }
           }
         } );
@@ -2611,16 +2617,43 @@ cenozo.factory( 'CnBaseListFactory', [
           if( !angular.isArray( newList ) )
             throw new Error( 'Tried to set restrict list for column "' + column + '" to a non-array.' );
 
-          // if the new list is different then re-describe and re-list records (and initialize, if necessary)
-          if( !angular.isArray( object.columnRestrictLists[column] ) ) object.columnRestrictLists[column] = [];
-          var list = this.columnRestrictLists[column];
-          if( !this.columnRestrictLists[column].isEqualTo( newList ) ) {
-            this.columnRestrictLists[column] = angular.copy( newList );
+          if( !angular.isArray( this.columnRestrictLists[column] ) ) this.columnRestrictLists[column] = [];
 
-            // describe the restrict list
-            this.onList( true ).then( function() {
-              self.paginationModel.currentPage = 1;
-            } );
+          if( !this.columnRestrictLists[column].isEqualTo( newList ) ) {
+            // We need to determine whether to do state or model based restricting.
+            // State-based restricting is used when the state has an {restrict} parameter and the state's current
+            // subject (name) matches the model's queryParameterSubject value (which, by default, is the model's
+            // subject).
+            // However, queryParameterSubject may be changed in order to customise which model gets to use the
+            // state's query parameters.
+            // Model-based restricting ignores state parameters and instead stores restrictions in the model
+            // (internally)
+            if( parentModel.hasQueryParameter( 'restrict' ) ) {
+              // do state-based restricting
+              var restrict = this.columnRestrictLists;
+              if( 0 == newList.length ) {
+                if( angular.isDefined( restrict[column] ) ) delete restrict[column];
+              } else {
+                restrict[column] = newList;
+              }
+
+              // now remove the descriptions from all restrictions
+              for( var name in restrict ) {
+                restrict[name].forEach( function( obj ) {
+                  if( angular.isDefined( obj.description ) ) delete obj.description;
+                } );
+              }
+
+              parentModel.setQueryParameter(
+                'restrict',
+                angular.equals( restrict, {} ) ? undefined : angular.toJson( restrict )
+              );
+              parentModel.reloadState( true );
+            } else {
+              // do model-based restricting
+              this.columnRestrictLists[column] = angular.copy( newList );
+              this.onList( true ).then( function() { self.paginationModel.currentPage = 1; } );
+            }
           }
         } );
 
@@ -2744,12 +2777,24 @@ cenozo.factory( 'CnBaseListFactory', [
           if( angular.isUndefined( replace ) ) replace = false;
           if( replace ) this.cache = [];
 
-          var data = this.parentModel.getServiceData( 'list', this.columnRestrictLists );
-          if( angular.isUndefined( data.modifier ) ) data.modifier = {};
-          data.modifier.offset = replace ? 0 : this.cache.length;
-          if( parentModel.chooseEnabled && this.chooseMode ) data.choosing = 1;
-
-          // set up the offset and sorting
+          // set up the restrict, offset and sorting
+          console.log( parentModel.module.columnList );
+          if( parentModel.hasQueryParameter( 'restrict' ) ) {
+            var restrict = parentModel.getQueryParameter( 'restrict' );
+            if( angular.isDefined( restrict ) ) {
+              this.columnRestrictLists = angular.fromJson( restrict );
+              for( var name in this.columnRestrictLists ) {
+                this.columnRestrictLists[name].forEach( function( obj ) {
+                  obj.description = CnSession.describeRestriction(
+                    angular.isDefined( parentModel.module.columnList[name] ) ?
+                      parentModel.module.columnList[name].type : 'string',
+                    obj.test,
+                    obj.value
+                  );
+                } );
+              }
+            }
+          }
           if( parentModel.hasQueryParameter( 'order' ) ) {
             var order = parentModel.getQueryParameter( 'order' );
             if( angular.isDefined( order ) ) this.order.column = order;
@@ -2757,12 +2802,16 @@ cenozo.factory( 'CnBaseListFactory', [
             if( angular.isDefined( reverse ) ) this.order.reverse = reverse;
           }
 
-          if( null !== this.order ) {
-            // add the table prefix to the column if there isn't already a prefix
-            var column = this.order.column;
-            data.modifier.order = {};
-            data.modifier.order[column] = this.order.reverse;
-          }
+          // start by getting the data from the parent model using the column restrict lists
+          var data = this.parentModel.getServiceData( 'list', this.columnRestrictLists );
+          if( angular.isUndefined( data.modifier ) ) data.modifier = {};
+          data.modifier.offset = replace ? 0 : this.cache.length;
+          if( parentModel.chooseEnabled && this.chooseMode ) data.choosing = 1;
+
+          // add the table prefix to the column if there isn't already a prefix
+          var column = this.order.column;
+          data.modifier.order = {};
+          data.modifier.order[column] = this.order.reverse;
 
           this.total = 0;
           this.isLoading = true;
@@ -2801,19 +2850,40 @@ cenozo.factory( 'CnBaseListFactory', [
          */
         cenozo.addExtendableFunction( object, 'onReport', function( format ) {
           var self = this;
-
           this.isReportLoading = true;
           if( angular.isUndefined( format ) ) format = 'csv';
+
+          // set up the restrict, offset and sorting
+          if( parentModel.hasQueryParameter( 'restrict' ) ) {
+            var restrict = parentModel.getQueryParameter( 'restrict' );
+            if( angular.isDefined( restrict ) ) {
+              this.columnRestrictLists = angular.fromJson( restrict );
+              for( var name in this.columnRestrictLists ) {
+                this.columnRestrictLists[name].forEach( function( obj ) {
+                  obj.description = CnSession.describeRestriction(
+                    parentModel.module.columnList[name].type,
+                    obj.test,
+                    obj.value
+                  );
+                } );
+              }
+            }
+          }
+          if( parentModel.hasQueryParameter( 'order' ) ) {
+            var order = parentModel.getQueryParameter( 'order' );
+            if( angular.isDefined( order ) ) this.order.column = order;
+            var reverse = parentModel.getQueryParameter( 'reverse' );
+            if( angular.isDefined( reverse ) ) this.order.reverse = reverse;
+          }
+
+          // start by getting the data from the parent model using the column restrict lists
           var data = this.parentModel.getServiceData( 'report', this.columnRestrictLists );
           if( angular.isUndefined( data.modifier ) ) data.modifier = {};
 
-          // set up the offset and sorting
-          if( null !== this.order ) {
-            // add the table prefix to the column if there isn't already a prefix
-            var column = this.order.column;
-            data.modifier.order = {};
-            data.modifier.order[column] = this.order.reverse;
-          }
+          // add the table prefix to the column if there isn't already a prefix
+          var column = this.order.column;
+          data.modifier.order = {};
+          data.modifier.order[column] = this.order.reverse;
 
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
           httpObj.onError = function( response ) { self.onReportError( response ); }
@@ -3288,7 +3358,13 @@ cenozo.factory( 'CnBaseModelFactory', [
          * sets a query parameter (does nothing if it doesn't belong to the model)
          */
         cenozo.addExtendableFunction( self, 'setQueryParameter', function( name, value ) {
-          if( self.hasQueryParameter( name ) ) $state.params[name] = value;
+          if( self.hasQueryParameter( name ) ) {
+            if( angular.isUndefined( value ) ) {
+              if( angular.isDefined( $state.params[name] ) ) delete $state.params[name];
+            } else {
+              $state.params[name] = value;
+            }
+          }
         } );
 
         /**
@@ -4872,14 +4948,11 @@ cenozo.service( 'CnModalRestrictFactory', [
       };
 
       this.describeRestriction = function( index ) {
-        var quotes = ( 'string' == this.type ) &&
-                     null !== this.restrictList[index].value &&
-                     0 < this.restrictList[index].value.length;
-        this.restrictList[index].description =
-          $filter( 'cnComparator' )( this.restrictList[index].test ) + ' ' +
-          ( quotes ? '"' : '' ) +
-          CnSession.formatValue( this.restrictList[index].value, this.type, false ) +
-          ( quotes ? '"' : '' );
+        this.restrictList[index].description = CnSession.describeRestriction(
+          this.type,
+          this.restrictList[index].test,
+          this.restrictList[index].value
+        );
       }
 
       this.toggleEmpty = function( index ) {
