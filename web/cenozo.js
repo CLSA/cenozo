@@ -2778,7 +2778,6 @@ cenozo.factory( 'CnBaseListFactory', [
           if( replace ) this.cache = [];
 
           // set up the restrict, offset and sorting
-          console.log( parentModel.module.columnList );
           if( parentModel.hasQueryParameter( 'restrict' ) ) {
             var restrict = parentModel.getQueryParameter( 'restrict' );
             if( angular.isDefined( restrict ) ) {
