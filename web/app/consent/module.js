@@ -14,7 +14,7 @@ define( function() {
       plural: 'consents',
       possessive: 'consent\'s',
       pluralPossessive: 'consents\'',
-      friendlyColumn: 'date'
+      friendlyColumn: 'datetime'
     },
     columnList: {
       consent_type: {
@@ -29,13 +29,13 @@ define( function() {
         title: 'Written',
         type: 'boolean'
       },
-      date: {
-        title: 'Date',
-        type: 'date'
+      datetime: {
+        title: 'Date & Time',
+        type: 'datetime'
       }
     },
     defaultOrder: {
-      column: 'date',
+      column: 'datetime',
       reverse: true
     }
   } );
@@ -56,9 +56,9 @@ define( function() {
       type: 'boolean',
       constant: 'view'
     },
-    date: {
-      title: 'Date',
-      type: 'date',
+    datetime: {
+      title: 'Date & Time',
+      type: 'datetime',
       max: 'now'
     },
     note: {

@@ -49,6 +49,19 @@ DROP PROCEDURE IF EXISTS patch_consent;
       ON UPDATE NO ACTION;
     END IF;
 
+    SELECT "Changing date column to datetime in consent table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "consent"
+      AND COLUMN_NAME = "date" );
+    IF @test = 1 THEN
+      ALTER TABLE consent CHANGE date datetime DATETIME NOT NULL;
+      UPDATE consent SET datetime = CONVERT_TZ( datetime + INTERVAL 12 HOUR, "Canada/Eastern", "UTC" );
+    END IF;
+
     SELECT "Transferring hin consent information to consent table" AS "";
     SET @test = (
       SELECT COUNT(*)
@@ -56,44 +69,19 @@ DROP PROCEDURE IF EXISTS patch_consent;
       JOIN consent_type ON consent.consent_type_id = consent_type.id
       WHERE consent_type.name LIKE "HIN %" );
     IF @test = 0 THEN
-      INSERT INTO consent( participant_id, consent_type_id, accept, written, date, note )
-      SELECT participant_id, consent_type.id, access, false, DATE( hin.update_timestamp ),
+      INSERT INTO consent( participant_id, consent_type_id, accept, written, datetime, note )
+      SELECT participant_id, consent_type.id, access, false, hin.update_timestamp,
              "Transferred from old HIN information."
       FROM hin, consent_type
       WHERE hin.access IS NOT NULL
       AND consent_type.name = "HIN access";
 
-      INSERT INTO consent( participant_id, consent_type_id, accept, written, date, note )
-      SELECT participant_id, consent_type.id, future_access, false, DATE( hin.update_timestamp ),
+      INSERT INTO consent( participant_id, consent_type_id, accept, written, datetime, note )
+      SELECT participant_id, consent_type.id, future_access, false, hin.update_timestamp,
              "Transferred from old HIN information."
       FROM hin, consent_type
       WHERE hin.future_access IS NOT NULL
       AND consent_type.name = "HIN future access";
-    END IF;
-
-    SELECT "Adding new participant-consent_type-date unique key to consent table" AS "";
-
-    SET @test = (
-      SELECT COUNT(*)
-      FROM information_schema.STATISTICS
-      WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = "consent"
-      AND INDEX_NAME = "uq_participant_id_consent_type_id_date" );
-    IF @test = 0 THEN
-      -- remove duplicate records
-      CREATE TEMPORARY TABLE uq_consent
-      SELECT * FROM consent GROUP BY participant_id, consent_type_id, date;
-      ALTER TABLE uq_consent ADD INDEX dk_id( id );
-      DELETE FROM consent WHERE id IN (
-        SELECT * FROM (
-          SELECT consent.id FROM consent
-          LEFT JOIN uq_consent USING( id )
-          WHERE uq_consent.id IS NULL
-        ) AS t
-      );
-
-      ALTER TABLE consent
-      ADD UNIQUE KEY uq_participant_id_consent_type_id_date( participant_id, consent_type_id, date );
     END IF;
 
   END //

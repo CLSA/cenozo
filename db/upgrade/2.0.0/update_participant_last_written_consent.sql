@@ -11,8 +11,8 @@ BEGIN
   CROSS JOIN consent_type
   LEFT JOIN consent ON participant.id = consent.participant_id
   AND consent_type.id = consent.consent_type_id
-  AND consent.date <=> (
-    SELECT MAX( date )
+  AND consent.datetime <=> (
+    SELECT MAX( datetime )
     FROM consent
     WHERE consent.written = true
     AND participant.id = consent.participant_id
