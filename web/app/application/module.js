@@ -135,15 +135,16 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnApplicationView', [
-    'CnApplicationModelFactory', 'CnSession', '$state',
-    function( CnApplicationModelFactory, CnSession, $state ) {
+    'CnApplicationModelFactory', 'CnSession',
+    function( CnApplicationModelFactory, CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnApplicationModelFactory.root;
-          $scope.showChildren = $state.params.identifier.split( '=' ).pop() == CnSession.application.name;
+          $scope.showChildren =
+            $scope.model.getQueryParameter( 'identifier' ).split( '=' ).pop() == CnSession.application.name;
         }
       };
     }
