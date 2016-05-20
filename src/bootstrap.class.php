@@ -229,6 +229,7 @@ final class bootstrap
     $util_class_name = lib::get_class_name( 'util' );
 
     $service = NULL;
+    $db = NULL;
 
     try
     {
@@ -273,11 +274,19 @@ final class bootstrap
     }
     catch( exception\base_exception $e )
     {
-      $status = !is_null( $service ) &&
-                !is_null( $service->get_status() ) &&
-                400 <= $service->get_status()->get_code()
-              ? $service->get_status()
-              : lib::create( 'service\status', 500 );
+      $status = NULL;
+      if( !is_null( $service ) &&
+          !is_null( $service->get_status() ) &&
+          400 <= $service->get_status()->get_code() )
+      {
+        $status = $service->get_status();
+      }
+      else
+      {
+        log::debug( $e->get_number() );
+        $status = lib::create( 'service\status',
+          NOTICE__CENOZO_BOOTSTRAP__LAUNCH_API__ERRNO == $e->get_number() ? 503 : 500 );
+      }
 
       // The service's data may already be set to something which would have been returned had an error
       // not been encountered.  For this reason we should overwrite with the exception's error code
@@ -306,8 +315,11 @@ final class bootstrap
     }
 
     // fail transactions on error
-    if( 400 <= $status->get_code() ) $db->fail_transaction();
-    else $db->complete_transaction();
+    if( !is_null( $db ) )
+    {
+      if( 400 <= $status->get_code() ) $db->fail_transaction();
+      else $db->complete_transaction();
+    }
 
     ob_end_clean();
     $status->send_headers();
