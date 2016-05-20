@@ -21,6 +21,10 @@ define( function() {
         column: 'participant.uid',
         title: 'Participant'
       },
+      site: {
+        column: 'site.name',
+        title: 'Site'
+      },
       first_name: {
         column: 'alternate.first_name',
         title: 'First Name'
