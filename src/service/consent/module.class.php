@@ -33,7 +33,5 @@ class module extends \cenozo\service\module
         if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
       }
     }
-
-    log::debug( $this->get_file_as_array() );
   }
 }

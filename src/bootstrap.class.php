@@ -283,7 +283,6 @@ final class bootstrap
       }
       else
       {
-        log::debug( $e->get_number() );
         $status = lib::create( 'service\status',
           NOTICE__CENOZO_BOOTSTRAP__LAUNCH_API__ERRNO == $e->get_number() ? 503 : 500 );
       }
