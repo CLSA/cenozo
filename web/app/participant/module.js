@@ -358,10 +358,10 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
                 onleft: 'consent.consent_type_id',
                 onright: 'consent_type.id'
               },
-              order: { date: true }
+              order: { datetime: true }
             },
             select: {
-              column: [ 'date', 'accept', 'written', 'note', {
+              column: [ 'datetime', 'accept', 'written', 'note', {
                 table: 'consent_type',
                 column: 'name'
               }, {
@@ -373,7 +373,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         } ).query().then( function( response ) {
           response.data.forEach( function( item ) {
             historyList.push( {
-              datetime: item.date,
+              datetime: item.datetime,
               category: 'Consent',
               title: ( item.written ? 'Written' : 'Verbal' ) + ' "' + item.name + '" ' +
                      ( item.accept ? 'accepted' : 'rejected' ),
@@ -918,7 +918,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
                 // always select the first value, whatever it is
                 array[index].value = array[index].enumList[0].value;
-              } else if( 'date' == array[index].type ) {
+              } else if( cenozo.isDatetimeType( array[index].type ) ) {
                 array[index].formattedValue = '(empty)';
               }
             }
@@ -948,7 +948,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         // populate the consent input list once the consent's metadata has been loaded
         CnConsentModelFactory.root.metadata.getPromise().then( function() {
           self.consentInputList = processInputList(
-            [ 'consent_type_id', 'accept', 'written', 'date', 'note' ],
+            [ 'consent_type_id', 'accept', 'written', 'datetime', 'note' ],
             cenozoApp.module( 'consent' ),
             CnConsentModelFactory.root.metadata.columnList
           );
