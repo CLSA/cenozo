@@ -171,13 +171,15 @@ class module extends \cenozo\service\site_restricted_module
       $voip_manager = lib::create( 'business\voip_manager' );
       if( $select->has_column( 'in_call' ) )
       {
+        $in_call_list = 0 < count( $user_list ) ? implode( ',', $user_list ) : '0';
+
         $voip_manager->rebuild_call_list();
         $user_list = array_reduce( $voip_manager->get_call_list(), function( $list, $voip_call ) {
           if( 'Up' == $voip_call->get_state() ) array_push( $list, $voip_call->get_user() );
           return $list;
         }, array() );
         sort( $user_list );
-        $select->add_column( sprintf( 'user.id IN ( %s )', implode( ',', $user_list ) ), 'in_call', false );
+        $select->add_column( sprintf( 'user.id IN ( %s )', $in_call_list ), 'in_call', false );
       }
 
       if( $select->has_column( 'webphone' ) )
