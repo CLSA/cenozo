@@ -30,7 +30,9 @@ class head extends read
     parent::execute();
 
     // get the details of the leaf record
+    $util_class_name = lib::get_class_name( 'util' );
     $record_class_name = $this->get_leaf_record_class_name();
-    $this->headers['Columns'] = $record_class_name::db()->get_column_details( $this->get_leaf_subject() );
+    $this->headers['Columns'] = $util_class_name::json_encode(
+      $record_class_name::db()->get_column_details( $this->get_leaf_subject() ) );
   }
 }

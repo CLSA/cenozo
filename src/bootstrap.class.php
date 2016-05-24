@@ -326,8 +326,7 @@ final class bootstrap
 
     if( !is_null( $service ) )
     {
-      foreach( $service->get_headers() as $name => $header )
-        header( sprintf( '%s: %s', $name, $util_class_name::json_encode( $header ) ) );
+      foreach( $service->get_headers() as $name => $header ) header( sprintf( '%s: %s', $name, $header ) );
 
       // the encoded data may be an emptry string
       print $service->get_data();
