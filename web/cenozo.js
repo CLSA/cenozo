@@ -3607,6 +3607,13 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * TODO: document
          */
+        cenozo.addExtendableFunction( self, 'transitionToListState', function( record ) {
+          return $state.go( self.module.subject.snake + '.list' );
+        } );
+
+        /**
+         * TODO: document
+         */
         cenozo.addExtendableFunction( self, 'transitionToViewState', function( record ) {
           var stateName = $state.current.name;
           var stateParams = { identifier: record.getIdentifier() };
@@ -3660,7 +3667,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( 'add' == type ) {
             trail = trail.concat( [ {
               title: self.module.name.singular.ucWords(),
-              go: function() { self.transitionToLastState(); }
+              go: angular.isDefined( parent.subject ) ? undefined : function() { self.transitionToListState(); }
             }, {
               title: 'New'
             } ] );
@@ -3680,7 +3687,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           } else if( 'view' == type ) {
             trail = trail.concat( [ {
               title: self.module.name.plural.ucWords(),
-              go: angular.isDefined( parent.subject ) ? undefined : function() { self.transitionToLastState(); }
+              go: angular.isDefined( parent.subject ) ? undefined : function() { self.transitionToListState(); }
             }, {
               title: self.getBreadcrumbTitle()
             } ] );
