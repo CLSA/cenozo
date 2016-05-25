@@ -1328,9 +1328,16 @@ cenozo.directive( 'cnRecordView', [
         $scope.delete = function() {
           $scope.isDeleting = true;
           if( $scope.model.deleteEnabled ) {
-            $scope.model.viewModel.onDelete()
-              .then( function() { CnSession.workingTransition( $scope.model.transitionToLastState ); } )
-              .finally( function() { $scope.isDeleting = false; } );
+            $scope.model.viewModel.onDelete().then( function() {
+              CnSession.workingTransition( function() {
+                if( $scope.hasParent() ) {
+                  var parent = $scope.model.getParentIdentifier();
+                  $scope.model.transitionToParentViewState( parent.subject, parent.identifier );
+                } else {
+                  $scope.model.transitionToListState();
+                }
+              } );
+            } ).finally( function() { $scope.isDeleting = false; } );
           }
         };
 
