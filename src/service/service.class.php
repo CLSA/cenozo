@@ -253,7 +253,7 @@ abstract class service extends \cenozo\base_object
       $this->headers['Content-Type'] = $this->mime_type;
       $this->headers['Content-Length'] = $data_length;
 
-      $filename = $this->get_leaf_subject().' report';
+      $filename = $this->get_leaf_subject().'_report';
       $parent_subject = $this->get_parent_subject();
       if( !is_null( $parent_subject ) ) $filename = $parent_subject.'-'.$filename;
 
@@ -262,19 +262,19 @@ abstract class service extends \cenozo\base_object
         $extension = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == $this->mime_type
                    ? 'xlsx'
                    : 'ods';
-        $this->headers['Content-Disposition'] = sprintf( 'attachment; file=%s.%s', $filename, $extension );
+        $this->headers['Content-type'] = 'application/octet-stream';
+        $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s.%s;', $filename, $extension );
         $this->headers['Content-Transfer-Encoding'] = 'binary';
-        $this->headers['Cache-Control'] = 'must-revalidate';
-        $this->headers['Cache-Control'] = 'private';
-        $this->headers['Pragma'] = 'public';
+        $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+        $this->headers['Pragma'] = 'no-cache';
         $this->headers['Expires'] = '0';
       }
       else if( 'text/csv' == $this->mime_type )
       {
-        $this->headers['Content-Disposition'] = sprintf( 'attachment; file=%s.csv', $filename );
-        $this->headers['Cache-Control'] = 'must-revalidate';
-        $this->headers['Cache-Control'] = 'private';
-        $this->headers['Pragma'] = 'public';
+        $this->headers['Content-type'] = 'text/csv';
+        $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s.csv;', $filename );
+        $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+        $this->headers['Pragma'] = 'no-cache';
         $this->headers['Expires'] = '0';
       }
     }
