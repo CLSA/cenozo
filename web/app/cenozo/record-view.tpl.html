@@ -23,7 +23,7 @@
   </div>
   <form name="form" class="form-horizontal" novalidate>
     <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
-      <div ng-repeat="group in dataArray">
+      <div ng-repeat="group in dataArray" ng-attr-name="{{ group.title }}">
         <div ng-if="0 < group.title.length"
              class="container-fluid bg-info"
              data-toggle="collapse"

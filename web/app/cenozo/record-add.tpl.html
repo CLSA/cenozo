@@ -1,7 +1,7 @@
 <div class="container-fluid bg-primary rounded-top"><h4>{{ model.addModel.heading }}</h4></div>
 <form name="form" class="form-horizontal" novalidate>
   <div class="form-body">
-    <div ng-repeat="group in dataArray">
+    <div ng-repeat="group in dataArray" ng-attr-name="{{ group.title }}">
       <div ng-if="0 < group.title.length"
            class="container-fluid bg-info"
            style="margin-bottom:2px; cursor:pointer;">

@@ -79,6 +79,8 @@ class ui extends \cenozo\base_object
       if( 0 == count( $utility_items ) ) $utility_items = NULL;
       else
       {
+        ksort( $utility_items );
+
         foreach( $utility_items as $title => $module )
         {
           if( !array_key_exists( $module['subject'], $module_list ) )
@@ -90,7 +92,6 @@ class ui extends \cenozo\base_object
           $module_list[$module['subject']]['actions'][$module['action']] =
             array_key_exists( 'query', $module ) ? $module['query'] : '';
         }
-        ksort( $utility_items );
       }
 
       // add auxiliary modules
@@ -107,8 +108,20 @@ class ui extends \cenozo\base_object
 
       // prepare which reports to show in the list
       $report_items = $this->get_report_items();
+      /*
       if( 0 == count( $report_items ) ) $report_items = NULL;
-      else ksort( $report_items );
+      else
+      {
+        ksort( $report_items );
+
+        $module_list['report'] = array(
+          'actions' => array(),
+          'children' => array(),
+          'choosing' => array(),
+          'list_menu' => false );
+        foreach( $report_items as $title => $name ) $module_list['report']['actions'][$name] = '';
+      }
+      */
 
       // create the json strings for the interface
       $framework_module_string = $util_class_name::json_encode( $framework_module_list );
@@ -141,8 +154,9 @@ class ui extends \cenozo\base_object
     return array(
       'access', 'activity', 'address', 'alternate', 'application', 'availability_type', 'cohort', 'collection',
       'consent', 'consent_type', 'event', 'event_type', 'hin', 'jurisdiction', 'language', 'participant', 'phone',
-      'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'script', 'search_result',
-      'site', 'source', 'state', 'system_message', 'user', 'webphone' );
+      'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'report', 'report_restriction',
+      'report_schedule', 'report_type', 'script', 'search_result', 'site', 'source', 'state', 'system_message',
+      'user', 'webphone' );
   }
 
   /**
@@ -253,6 +267,10 @@ class ui extends \cenozo\base_object
     {
       $module_list['recording']['children'] = array( 'recording_file' );
     }
+    if( array_key_exists( 'report_type', $module_list ) )
+    {
+      $module_list['report_type']['children'] = array( 'report', 'report_schedule', 'report_restriction' );
+    }
     if( array_key_exists( 'script', $module_list ) )
     {
       $module_list['script']['choosing'] = array( 'application' );
@@ -320,6 +338,8 @@ class ui extends \cenozo\base_object
       $list['Participants'] = 'participant';
     if( array_key_exists( 'quota', $module_list ) && $module_list['quota']['list_menu'] )
       $list['Quotas'] = 'quota';
+    if( array_key_exists( 'report_type', $module_list ) && $module_list['report_type']['list_menu'] )
+      $list['Reports'] = 'report_type';
     if( 3 <= $db_role->tier &&
         array_key_exists( 'recording', $module_list ) && $module_list['recording']['list_menu'] )
       $list['Recordings'] = 'recording';
@@ -400,19 +420,15 @@ class ui extends \cenozo\base_object
    */
   protected function get_report_items()
   {
-    return array();
-    /*
-    return array(
-      'Call History'       => 'call_history',
-      'Consent Required'   => 'consent_required',
-      'Email'              => 'email',
-      'Mailout Required'   => 'mailout_required',
-      'Participant'        => 'participant',
-      'Participant Status' => 'participant_status',
-      'Participant Tree'   => 'participant_tree',
-      'Productivity'       => 'productivity',
-      'Sample'             => 'sample',
-      'Timing'             => 'timing' );
-    */
+    $report_list = array();
+
+    $db_role = lib::create( 'business\session' )->get_role();
+
+    if( 3 <= $db_role->tier )
+    {
+      $report_list['Contact'] = 'contact';
+    }
+
+    return $report_list;
   }
 }

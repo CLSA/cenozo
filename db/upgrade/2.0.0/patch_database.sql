@@ -38,6 +38,13 @@ SOURCE system_message.sql
 SOURCE script.sql
 SOURCE application_has_script.sql
 SOURCE event_type.sql
+SOURCE report_type.sql
+SOURCE report_restriction.sql
+SOURCE report_schedule.sql
+SOURCE report_schedule_has_report_restriction.sql
+SOURCE report.sql
+SOURCE report_has_report_restriction.sql
+SOURCE role_has_report_type.sql
 SOURCE search.sql
 SOURCE search_result.sql
 

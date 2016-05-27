@@ -26,13 +26,13 @@
           <ul ng-if="model.listModel.isReportAllowed && !model.listModel.isReportLoading"
               class="dropdown-menu dropdown-menu-right"
               aria-labelledby="reportTypeList">
+            <li><a ng-click="getReport( 'csv' ); $event.stopPropagation()">CSV</a></li>
             <li ng-if="!model.listModel.isReportBig">
               <a ng-click="getReport( 'xlsx' ); $event.stopPropagation()">Excel</a>
             </li>
             <li ng-if="!model.listModel.isReportBig">
               <a ng-click="getReport( 'ods' ); $event.stopPropagation()">LibreOffice</a>
             </li>
-            <li><a ng-click="getReport( 'csv' ); $event.stopPropagation()">CSV</a></li>
           </ul>
         </span>
         <i class="glyphicon glyph-hover btn-primary btn-header"

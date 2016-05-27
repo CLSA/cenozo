@@ -44,6 +44,36 @@ class report extends \cenozo\base_object
    */
   public function load_data( $data )
   {
+    if( is_string( $data ) )
+    {
+      $this->load_data_from_string( $data );
+    }
+    else if( is_array( $data ) )
+    {
+      $this->load_data_from_array( $data );
+    }
+    else if( is_a( $data, lib::get_class_name( 'database\report' ) ) )
+    {
+      $this->load_data_from_record( $data );
+    }
+    else throw lib::create( 'exception\runtime',
+      'Tried to load report data using unrecognized input data type.',
+      __METHOD__ );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function load_data_from_string( $string )
+  {
+    $this->set_cell( 'A1', $string );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function load_data_from_array( $array )
+  {
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
@@ -52,79 +82,88 @@ class report extends \cenozo\base_object
     $tz = $now->format( 'T' );
     $time_format = is_null( $db_user ) || !$db_user->use_12hour_clock ? 'H:i:s' : 'h:i:s a';
 
-    if( is_string( $data ) )
+    $row = 1;
+    foreach( $array as $key => $value )
     {
-      $this->set_cell( 'A1', $data );
-    }
-    else if( is_array( $data ) )
-    {
-      $row = 1;
-      foreach( $data as $key => $value )
+      $col = 'A';
+      if( is_array( $value ) )
       {
-        $col = 'A';
-        if( is_array( $value ) )
+        // put in the header row
+        if( 1 == $row )
         {
-          // put in the header row
-          if( 1 == $row )
-          {
-            $this->set_bold( true );
-            foreach( $value as $sub_key => $sub_value )
-            {
-              if( !in_array( $sub_key, array( 'update_timestamp', 'create_timestamp' ) ) )
-              {
-                $this->set_cell( $col.$row, $sub_key );
-                $col++;
-              }
-            }
-            $this->set_bold( false );
-            $col = 'A';
-            $row++;
-          }
-
+          $this->set_bold( true );
           foreach( $value as $sub_key => $sub_value )
           {
             if( !in_array( $sub_key, array( 'update_timestamp', 'create_timestamp' ) ) )
             {
-              // convert timezones
-              if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
-              {
-                $datetime_obj = $util_class_name::get_datetime_object( $sub_value );
-                $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
-                $sub_value = $datetime_obj->format( 'Y-m-d '.$time_format );
-
-                // and add the timezone to the header
-                $header = $this->get_cell_value( $col.'1' );
-                $suffix = sprintf( ' (%s)', $tz );
-                if( false === strpos( $header, $suffix ) ) $this->set_cell( $col.'1', $header.$suffix );
-              }
-              else if( is_bool( $sub_value ) ) $sub_value = $sub_value ? 'yes' : 'no';
-
-              $this->set_cell( $col.$row, $sub_value );
+              $this->set_cell( $col.$row, $sub_key );
               $col++;
             }
           }
+          $this->set_bold( false );
+          $col = 'A';
+          $row++;
         }
-        else
+
+        foreach( $value as $sub_key => $sub_value )
         {
-          if( !in_array( $key, array( 'update_timestamp', 'create_timestamp' ) ) )
+          if( !in_array( $sub_key, array( 'update_timestamp', 'create_timestamp' ) ) )
           {
             // convert timezones
-            if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
+            if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
             {
-              $datetime_obj = $util_class_name::get_datetime_object( $value );
+              $datetime_obj = $util_class_name::get_datetime_object( $sub_value );
               $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
-              $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
-            }
-            else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';
+              $sub_value = $datetime_obj->format( 'Y-m-d '.$time_format );
 
-            $this->set_bold( true );
-            $this->set_cell( $col.$row, $key );
-            $this->set_bold( false );
-            $this->set_cell( ($col+1).$row, $value );
+              // and add the timezone to the header
+              $header = $this->get_cell_value( $col.'1' );
+              $suffix = sprintf( ' (%s)', $tz );
+              if( false === strpos( $header, $suffix ) ) $this->set_cell( $col.'1', $header.$suffix );
+            }
+            else if( is_bool( $sub_value ) ) $sub_value = $sub_value ? 'yes' : 'no';
+
+            $this->set_cell( $col.$row, $sub_value );
+            $col++;
           }
         }
-        $row++;
       }
+      else
+      {
+        if( !in_array( $key, array( 'update_timestamp', 'create_timestamp' ) ) )
+        {
+          // convert timezones
+          if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
+          {
+            $datetime_obj = $util_class_name::get_datetime_object( $value );
+            $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+            $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
+          }
+          else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';
+
+          $this->set_bold( true );
+          $this->set_cell( $col.$row, $key );
+          $this->set_bold( false );
+          $this->set_cell( ($col+1).$row, $value );
+        }
+      }
+      $row++;
+    }
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function load_data_from_record( $db_report )
+  {
+    $db_report_type = $db_report->get_report_type();
+    if( $db_report_type->custom )
+    {
+      // TODO: implement custom report
+    }
+    else
+    {
+      // TODO: implement standard report
     }
   }
 

@@ -138,11 +138,11 @@
                   <li ng-if="showSubMenuHeaders" class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Reports</h4>
                   </li>
-                  <li ng-repeat="(title,module) in reports">
+                  <li ng-repeat="(title,name) in reports">
                     <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="getListItemClass( $first, $last )"
                        ui-sref-active="btn-warning"
-                       ui-sref="{{ module }}.view">{{ title }}</a>
+                       ui-sref="report.{{ name }}">{{ title }}</a>
                   </li>
                 </ul>
               </div>
