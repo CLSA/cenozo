@@ -163,9 +163,12 @@ class voip_manager extends \cenozo\singleton
    */
   public function get_call_list()
   {
-    return array_filter( $this->call_list, function( $voip_call ) {
-      return 'SIP' == substr( $voip_call->get_channel(), 0, 3 );
-    } );
+    return is_array( $this->call_list ) ?
+      array_filter(
+        $this->call_list,
+        function( $voip_call ) { return 'SIP' == substr( $voip_call->get_channel(), 0, 3 ); }
+      ) :
+      array();
   }
 
   /**
