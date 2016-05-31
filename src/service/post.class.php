@@ -64,8 +64,23 @@ class post extends write
     if( 300 > $this->status->get_code() )
     {
       $relationship_class_name = lib::get_class_name( 'database\relationship' );
-      if( $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() &&
-          is_null( $this->get_leaf_record() ) ) $this->status->set_code( 400 );
+      if( $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )
+      {
+        if( is_null( $this->get_leaf_record() ) ) $this->status->set_code( 400 );
+      }
+      else // many-to-many
+      {
+        $post_object = $this->get_file_as_object();
+        if( is_object( $post_object ) )
+        {
+          if( !property_exists( $post_object, 'add' ) && !property_exists( $post_object, 'remove' ) )
+            $this->status->set_code( 400 );
+        }
+        else if( !is_int( $post_object ) && !is_array( $post_object ) )
+        {
+          $this->status->set_code( 400 );
+        }
+      }
     }
   }
 
@@ -83,17 +98,35 @@ class post extends write
     {
       if( $relationship_class_name::MANY_TO_MANY === $this->get_leaf_parent_relationship() )
       {
+        $add_list = array();
+        $remove_list = array();
+
+        $parent_record = $this->get_parent_record();
         $post_object = $this->get_file_as_object();
-        if( !is_int( $post_object ) && !is_array( $post_object ) )
+        if( is_int( $post_object ) )
         {
-          $this->status->set_code( 400 );
-          throw lib::create( 'exception\argument', 'post_object', $post_object, __METHOD__ );
+          $method = 'add_'.$leaf_subject;
+          $parent_record->$method( $post_object );
+        }
+        else if( is_object( $post_object ) )
+        {
+          if( property_exists( $post_object, 'add' ) )
+          {
+            $method = 'add_'.$leaf_subject;
+            $parent_record->$method( $post_object->add );
+          }
+          if( property_exists( $post_object, 'remove' ) )
+          {
+            $method = 'remove_'.$leaf_subject;
+            $parent_record->$method( $post_object->remove );
+          }
+        }
+        else if( is_array( $post_object ) )
+        {
+          $method = 'replace_'.$leaf_subject;
+          $parent_record->$method( $post_object );
         }
 
-        $method = is_array( $post_object )
-                ? sprintf( 'replace_%s', $leaf_subject )
-                : sprintf( 'add_%s', $leaf_subject );
-        $this->get_parent_record()->$method( $post_object );
         $this->status->set_code( 201 );
       }
       else

@@ -1182,7 +1182,12 @@ cenozo.directive( 'cnRecordList', [
 
         $scope.chooseRecord = function( record ) {
           if( $scope.model.chooseEnabled ) {
-            if( $scope.model.listModel.chooseMode ) record.chosen = record.chosen ? 0 : 1;
+            if( $scope.model.listModel.chooseMode ) {
+              // record.chosen shows in the list which record is selected
+              record.chosen = record.chosen ? 0 : 1;
+              // record.chosenNow keeps track of which records to apply if the changes are committed
+              record.chosenNow = record.chosen;
+            }
           }
         };
 
@@ -2689,17 +2694,29 @@ cenozo.factory( 'CnBaseListFactory', [
           if( !this.parentModel.chooseEnabled )
             throw new Error( 'Calling onApplyChosen() but chooseEnabled is false.' );
 
-          return CnHttpFactory.instance( {
-            path: this.parentModel.getServiceCollectionPath(),
-            data: this.cache.reduce( function( list, record ) {
-              if( record.chosen ) list.push( record.id );
-              return list;
-            }, [] ),
-            onError: function( response ) { self.onApplyChosenError( response ); }
-          } ).post().then( function() {
+          var data = {};
+          var addArray = this.cache.reduce( function( list, record ) {
+            if( 1 === record.chosenNow ) list.push( record.id );
+            return list;
+          }, [] );
+          if( 0 < addArray.length ) data.add = addArray;
+          var removeArray = this.cache.reduce( function( list, record ) {
+            if( 0 === record.chosenNow ) list.push( record.id );
+            return list;
+          }, [] );
+          if( 0 < removeArray.length ) data.remove = removeArray;
+
+          var promise = 0 == addArray.length && 0 == removeArray.length
+                      ? $q.all()
+                      : CnHttpFactory.instance( {
+                          path: this.parentModel.getServiceCollectionPath(),
+                          data: data,
+                          onError: function( response ) { self.onApplyChosenError( response ); }
+                        } ).post();
+          return promise.then( function() {
             self.toggleChooseMode();
             object.afterChooseFunctions.forEach( function( fn ) { fn(); } );
-          } )
+          } );
         } );
 
         /**

@@ -905,8 +905,8 @@ abstract class record extends \cenozo\base_object
 
     static::db()->execute(
       sprintf( $this->write_timestamps
-               ? 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
-               : 'INSERT INTO %s (%s_id, %s_id) VALUES %s',
+               ? 'REPLACE INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
+               : 'REPLACE INTO %s (%s_id, %s_id) VALUES %s',
                $joining_table_name,
                $table_name,
                $record_type,
