@@ -113,7 +113,15 @@ define( function() {
   cenozo.providers.factory( 'CnStateViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        // allow add/delete of roles and participants
+        this.deferred.promise.then( function() {
+          if( angular.isDefined( self.roleModel ) ) self.roleModel.enableChoose( parentModel.editEnabled );
+        } );
+      }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
