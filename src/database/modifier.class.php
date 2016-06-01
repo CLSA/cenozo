@@ -182,9 +182,6 @@ class modifier extends \cenozo\base_object
     if( !is_string( $column ) || 0 == strlen( $column ) )
       throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
 
-    if( is_array( $value ) && 0 == count( $value ) )
-      throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
-
     $this->where_list[] = array( 'column' => $column,
                                  'operator' => strtoupper( $operator ),
                                  'value' => $value,
@@ -932,7 +929,15 @@ class modifier extends \cenozo\base_object
               $statement .= $value;
               $first_value = false;
             }
-            $statement .= ' )';
+
+            if( $first_value )
+            {
+              // if there are no values then make an empty list
+              $statement .= sprintf( '%s %s( SELECT * FROM( SELECT 0 ) AS temp_empty_list WHERE 0 )',
+                                     $item['column'],
+                                     $item['operator'] );
+            }
+            else $statement .= ' )';
           }
           else
           {
