@@ -1,6 +1,6 @@
 <?php
 /**
- * report.class.php
+ * spreadsheet.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -14,9 +14,9 @@ include PHPEXCEL_PATH.'/Classes/PHPExcel/Writer/Excel2007.php';
 include PHPEXCEL_PATH.'/Classes/PHPExcel/Writer/OpenDocument.php';
 
 /**
- * Creates a report.
+ * Creates a spreadsheet.
  */
-class report extends \cenozo\base_object
+class spreadsheet extends \cenozo\base_object
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class report extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function __construct( $filename = NULL)
+  public function __construct( $filename = NULL )
   {
     if( !is_null( $filename ) )
     {
@@ -40,7 +40,7 @@ class report extends \cenozo\base_object
   }
 
   /**
-   * Loads database data into the report
+   * Loads database data into the spreadsheet
    */
   public function load_data( $data )
   {
@@ -57,7 +57,7 @@ class report extends \cenozo\base_object
       $this->load_data_from_record( $data );
     }
     else throw lib::create( 'exception\runtime',
-      'Tried to load report data using unrecognized input data type.',
+      'Tried to load spreadsheet data using unrecognized input data type.',
       __METHOD__ );
   }
 
@@ -278,8 +278,7 @@ class report extends \cenozo\base_object
     }
     catch( \Exception $e )
     {
-      throw lib::create( 'exception\runtime',
-        'Error while setting cell value in report.', __METHOD__, $e );
+      throw lib::create( 'exception\runtime', 'Error while setting cell value in spreadsheet.', __METHOD__, $e );
     }
 
     return $cell_obj;
@@ -300,8 +299,7 @@ class report extends \cenozo\base_object
     }
     catch( \Exception $e )
     {
-      throw lib::create( 'exception\runtime',
-        'Error while merging cells in report.', __METHOD__, $e );
+      throw lib::create( 'exception\runtime', 'Error while merging cells in spreadsheet.', __METHOD__, $e );
     }
   }
 
@@ -330,7 +328,7 @@ class report extends \cenozo\base_object
   }
 
   /**
-   * Renders the report in the given format.
+   * Renders the spreadsheet in the given format.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $mime_type The mime type identifying which file type to create
@@ -357,7 +355,7 @@ class report extends \cenozo\base_object
   }
 
   /**
-   * Sets the orientation of the report
+   * Sets the orientation of the spreadsheet
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @var string $orientation One of portrait, landscape or default
