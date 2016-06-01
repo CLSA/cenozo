@@ -58,7 +58,7 @@ define( function() {
     },
     datetime: {
       title: 'Date & Time',
-      type: 'datetime',
+      type: 'datetimesecond',
       max: 'now'
     },
     note: {
