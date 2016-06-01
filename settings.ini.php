@@ -59,10 +59,12 @@ $settings['path']['CENOZO'] = '/usr/local/lib/cenozo';
 // the location of log files
 $settings['path']['LOG_FILE'] = '/var/local/cenozo/log';
 
-// the location of the template and report caches
+// the location of generated reports
+$settings['path']['REPORT'] = '/var/local/cenozo/report';
+
+// the location of the temporary files
 $settings['path']['TEMP'] =
   '/tmp/'.$this->settings['general']['framework_name'].$this->settings['path']['APPLICATION'];
-$settings['path']['REPORT_CACHE'] = $settings['path']['TEMP'].'/report';
 $settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
 
 // the url of limesurvey and database information found in application/config/config.php
