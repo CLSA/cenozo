@@ -378,7 +378,7 @@
         <button ng-if="!hasParent()"
                 type="button"
                 class="btn btn-primary"
-                ng-click="back()">
+                ng-click="viewParent()">
           {{ viewTitle }}
         </button>
         <button ng-repeat="parent in model.module.identifier.parent"

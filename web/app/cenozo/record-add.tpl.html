@@ -239,8 +239,8 @@
               tooltip="{{ op.help }}"
               ng-click="op.operation( $state, model )">{{ op.title }}</button>
     </div>
-    <button type="button" class="btn btn-default" ng-click="back()">Cancel</button>
-    <button type="button" class="btn btn-primary" ng-click="submit()" ng-disabled="isAdding">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="save()" ng-disabled="isAdding">
       <i class="glyphicon glyphicon-cloud-upload"></i> Save
     </button>
   </div>

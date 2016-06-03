@@ -250,26 +250,28 @@ angular.extend( cenozoApp, {
            * Add buttons in the footer of record-based directives.
            * 
            * @var type: one of "add", "calendar", "list or "view"
-           * @var object: an object containing the following properties:
-           *              id: The id to give the operation's html button
-           *              title: The button's title
-           *              isIncluded: A function to determine if the operation shound be shown
-           *                The function must return a boolean (default function returns true)
-           *                This function will be passed two arguments: $state and model
-           *              isDisabled: A function to determine if the operation is disabled
-           *                The function must return a boolean (default function returns false)
-           *                This function will be passed two arguments: $state and model
-           *              classes: A space-separated list of css classes to apply to the button
-           *              help: Help text to show in a tooltip popup dialog
-           *              operation: A function to be executed when the button is clicked.
-           *                This function will be passed two arguments: $state and model
+           * @var extraObject: an object containing the following properties:
+           *        id: The id to give the operation's html button
+           *        title: The button's title
+           *        isIncluded: A function to determine if the operation shound be shown
+           *          The function must return a boolean (default function returns true)
+           *          This function will be passed two arguments: $state and model
+           *        isDisabled: A function to determine if the operation is disabled
+           *          The function must return a boolean (default function returns false)
+           *          This function will be passed two arguments: $state and model
+           *        classes: A space-separated list of css classes to apply to the button
+           *        help: Help text to show in a tooltip popup dialog
+           *        operation: A function to be executed when the button is clicked.
+           *          This function will be passed two arguments: $state and model
            */
-          addExtraOperation: function( type, object ) {
+          addExtraOperation: function( type, extraObject ) {
             if( 0 > ['add','calendar','list','view'].indexOf( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
-            if( angular.isUndefined( object.isIncluded ) ) object.isIncluded = function() { return true; }
-            if( angular.isUndefined( object.isDisabled ) ) object.isDisabled = function() { return false; }
-            this.extraOperationList[type].push( object );
+            if( angular.isUndefined( extraObject.isIncluded ) )
+              extraObject.isIncluded = function() { return true; }
+            if( angular.isUndefined( extraObject.isDisabled ) )
+              extraObject.isDisabled = function() { return false; }
+            this.extraOperationList[type].push( extraObject );
           }
         } );
       }
@@ -943,7 +945,7 @@ cenozo.directive( 'cnRecordAdd', [
           } );
         } ).finally( function() { $scope.isComplete = true; } );
 
-        $scope.back = function() { $scope.model.transitionToLastState(); };
+        $scope.cancel = function() { $scope.model.addModel.transitionOnCancel(); };
 
         $scope.check = function( property ) {
           // test the format
@@ -954,7 +956,7 @@ cenozo.directive( 'cnRecordAdd', [
           }
         };
 
-        $scope.submit = function() {
+        $scope.save = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
             cenozo.forEachFormElement( 'form', function( element ) { element.$dirty = true; } );
@@ -964,7 +966,7 @@ cenozo.directive( 'cnRecordAdd', [
               // create a new record to be created (in case another record is added)
               $scope.model.addModel.onNew( $scope.record );
               $scope.form.$setPristine();
-              return CnSession.workingTransition( $scope.model.transitionToLastState );
+              $scope.model.addModel.transitionOnSave( $scope.record );
             } ).finally( function() { $scope.isAdding = false; } );
           }
         };
@@ -1073,7 +1075,7 @@ cenozo.directive( 'cnRecordCalendar', [
         var find = $state.current.name.substr( 0, $state.current.name.indexOf( '.' ) ) + '.list';
         $state.get().some( function( state ) {
           if( find == state.name ) {
-            $scope.viewList = function() { $scope.model.transitionToParentListState(); };
+            $scope.viewList = function() { $scope.model.calendarModel.transitionOnList(); };
             return true; // stop processing
           }
         } );
@@ -1167,7 +1169,7 @@ cenozo.directive( 'cnRecordList', [
         };
 
         $scope.addRecord = function() {
-          if( $scope.model.addEnabled ) $scope.model.transitionToAddState();
+          if( $scope.model.addEnabled ) $scope.model.listModel.transitionOnAdd();
         };
 
         $scope.deleteRecord = function( record ) {
@@ -1313,35 +1315,14 @@ cenozo.directive( 'cnRecordView', [
         }
 
         $scope.viewParent = function( subject ) {
-          if( !$scope.hasParent() )
-            throw new Error( 'Calling viewParent() but "' + $scope.model.module.subject.camel +
-                             '" module has no parent.' );
-
-          var parent = $scope.model.module.identifier.parent.findByProperty( 'subject', subject );
-          if( null === parent )
-            throw new Error( 'Calling viewParent() but "' + $scope.model.module.subject.camel +
-                             '" record has no parent.' );
-
-          $scope.model.transitionToParentViewState(
-            parent.subject, parent.getIdentifier( $scope.model.viewModel.record ) );
-        };
-
-        $scope.back = function() {
-          $scope.model.transitionToParentListState( $scope.model.module.subject.snake );
+          $scope.model.viewModel.transitionOnViewParent( subject );
         };
 
         $scope.delete = function() {
           $scope.isDeleting = true;
           if( $scope.model.deleteEnabled ) {
             $scope.model.viewModel.onDelete().then( function() {
-              CnSession.workingTransition( function() {
-                if( $scope.hasParent() ) {
-                  var parent = $scope.model.getParentIdentifier();
-                  $scope.model.transitionToParentViewState( parent.subject, parent.identifier );
-                } else {
-                  $scope.model.transitionToListState();
-                }
-              } );
+              $scope.model.viewModel.transitionOnDelete();
             } ).finally( function() { $scope.isDeleting = false; } );
           }
         };
@@ -2201,8 +2182,8 @@ cenozo.factory( 'CnSession', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseAddFactory', [
-  'CnHttpFactory', 'CnModalMessageFactory', '$filter', '$q',
-  function( CnHttpFactory, CnModalMessageFactory, $filter, $q ) {
+  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$filter', '$q',
+  function( CnSession, CnHttpFactory, CnModalMessageFactory, $filter, $q ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
@@ -2228,8 +2209,11 @@ cenozo.factory( 'CnBaseAddFactory', [
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: record };
           httpObj.onError = function( response ) { self.onAddError( response ); };
           return CnHttpFactory.instance( httpObj ).post().then( function( response ) {
-            record.id = response.data;
-            object.afterAddFunctions.forEach( function( fn ) { fn( record ); } );
+            angular.extend( record, {
+              id: response.data,
+              getIdentifier: function() { return self.parentModel.getIdentifierFromRecord( record ); }
+            } );
+            self.afterAddFunctions.forEach( function( fn ) { fn( record ); } );
           } );
         } );
 
@@ -2272,24 +2256,24 @@ cenozo.factory( 'CnBaseAddFactory', [
           // load the metadata and use it to apply default values to the record
           return this.parentModel.metadata.getPromise().then( function() {
             var promiseList = [];
-            if( angular.isDefined( parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
+            if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
               // add the parent subject and identifier to the service path if we are in the view state
-              var path = parentModel.getServiceCollectionPath();
+              var path = self.parentModel.getServiceCollectionPath();
 
               promiseList.push( CnHttpFactory.instance( {
                 path: path,
                 data: { select: { column: {
-                  column: 'MAX(' + parentModel.module.subject.snake + '.rank)',
+                  column: 'MAX(' + self.parentModel.module.subject.snake + '.rank)',
                   alias: 'max',
                   table_prefix: false
                 } } },
                 redirectOnError: true
               } ).query().then( function( response ) {
                 if( 0 < response.data.length ) {
-                  parentModel.metadata.columnList.rank.enumList = [];
+                  self.parentModel.metadata.columnList.rank.enumList = [];
                   if( null !== response.data[0].max ) {
                     for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ ) {
-                      parentModel.metadata.columnList.rank.enumList.push( {
+                      self.parentModel.metadata.columnList.rank.enumList.push( {
                         value: rank,
                         name: $filter( 'cnOrdinal' )( rank )
                       } );
@@ -2300,20 +2284,37 @@ cenozo.factory( 'CnBaseAddFactory', [
             }
 
             // apply default values from the metadata
-            for( var column in parentModel.metadata.columnList ) {
-              if( null !== parentModel.metadata.columnList[column].default &&
+            for( var column in self.parentModel.metadata.columnList ) {
+              if( null !== self.parentModel.metadata.columnList[column].default &&
                   'create_timestamp' != column &&
                   'update_timestamp' != column ) {
-                record[column] = 'tinyint' == parentModel.metadata.columnList[column].data_type
-                               ? 1 == parentModel.metadata.columnList[column].default
-                               : parentModel.metadata.columnList[column].default;
+                record[column] = 'tinyint' == self.parentModel.metadata.columnList[column].data_type
+                               ? 1 == self.parentModel.metadata.columnList[column].default
+                               : self.parentModel.metadata.columnList[column].default;
               }
             }
 
             return $q.all( promiseList ).then( function() {
-              object.afterNewFunctions.forEach( function( fn ) { fn(); } );
+              self.afterNewFunctions.forEach( function( fn ) { fn(); } );
             } );
           } );
+        } );
+
+        /**
+         * The state transition to execute after saving a new record
+         * 
+         * @param object record: The record that was just saved
+         */
+        cenozo.addExtendableFunction( object, 'transitionOnSave', function( record ) {
+          var self = this;
+          CnSession.workingTransition( function() { self.parentModel.transitionToLastState( record ); } );
+        } );
+
+        /**
+         * The state transition to execute after cancelling adding a new record
+         */
+        cenozo.addExtendableFunction( object, 'transitionOnCancel', function() {
+          this.parentModel.transitionToLastState();
         } );
       }
     };
@@ -2391,7 +2392,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
           httpObj.onError = function( response ) { self.onDeleteError( response ); }
           return CnHttpFactory.instance( httpObj ).delete().then( function() {
-            object.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
+            self.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
           } );
         } );
 
@@ -2501,7 +2502,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           }
 
           return $q.all( promiseList ).then( function() {
-            object.afterCalendarFunctions.forEach( function( fn ) { fn(); } );
+            self.afterCalendarFunctions.forEach( function( fn ) { fn(); } );
           } );
         } );
 
@@ -2561,6 +2562,13 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             return object.parentModel.transitionToViewState( record );
           }
         };
+
+        /**
+         * The state transition to execute after cancelling adding a new record
+         */
+        cenozo.addExtendableFunction( object, 'transitionOnList', function() {
+          this.parentModel.transitionToParentListState();
+        } );
       }
     };
   }
@@ -2604,11 +2612,11 @@ cenozo.factory( 'CnBaseListFactory', [
             // However, queryParameterSubject may be changed in order to customise which model gets to use the
             // state's query parameters.
             // Model-based ordering ignores state parameters and instead stores ordering in the model (internally)
-            if( parentModel.hasQueryParameter( 'order' ) ) {
+            if( this.parentModel.hasQueryParameter( 'order' ) ) {
               // do state-based sorting
-              parentModel.setQueryParameter( 'order', column );
-              parentModel.setQueryParameter( 'reverse', reverse );
-              parentModel.reloadState();
+              this.parentModel.setQueryParameter( 'order', column );
+              this.parentModel.setQueryParameter( 'reverse', reverse );
+              this.parentModel.reloadState();
             } else {
               // do model-based sorting
               var promiseList = [];
@@ -2637,7 +2645,7 @@ cenozo.factory( 'CnBaseListFactory', [
             // state's query parameters.
             // Model-based restricting ignores state parameters and instead stores restrictions in the model
             // (internally)
-            if( parentModel.hasQueryParameter( 'restrict' ) ) {
+            if( this.parentModel.hasQueryParameter( 'restrict' ) ) {
               // do state-based restricting
               var restrict = this.columnRestrictLists;
               if( 0 == newList.length ) {
@@ -2653,11 +2661,11 @@ cenozo.factory( 'CnBaseListFactory', [
                 } );
               }
 
-              parentModel.setQueryParameter(
+              this.parentModel.setQueryParameter(
                 'restrict',
                 angular.equals( restrict, {} ) ? undefined : angular.toJson( restrict )
               );
-              parentModel.reloadState( true );
+              this.parentModel.reloadState( true );
             } else {
               // do model-based restricting
               this.columnRestrictLists[column] = angular.copy( newList );
@@ -2712,7 +2720,7 @@ cenozo.factory( 'CnBaseListFactory', [
                         } ).post();
           return promise.then( function() {
             self.toggleChooseMode();
-            object.afterChooseFunctions.forEach( function( fn ) { fn(); } );
+            self.afterChooseFunctions.forEach( function( fn ) { fn(); } );
           } );
         } );
 
@@ -2754,7 +2762,7 @@ cenozo.factory( 'CnBaseListFactory', [
                 return true; // stop processing
               }
             } );
-            object.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
+            self.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
           } );
         } );
 
@@ -2766,8 +2774,8 @@ cenozo.factory( 'CnBaseListFactory', [
         cenozo.addExtendableFunction( object, 'onDeleteError', function( response ) {
           if( 409 == response.status ) {
             CnModalMessageFactory.instance( {
-              title: 'Unable to delete ' + object.parentModel.module.name.singular + ' record',
-              message: 'It is not possible to delete this ' + object.parentModel.module.name.singular +
+              title: 'Unable to delete ' + this.parentModel.module.name.singular + ' record',
+              message: 'It is not possible to delete this ' + this.parentModel.module.name.singular +
                        ' record because it is being referenced by "' + response.data +
                        '" in the database.',
               error: true
@@ -2799,15 +2807,15 @@ cenozo.factory( 'CnBaseListFactory', [
           if( replace ) this.cache = [];
 
           // set up the restrict, offset and sorting
-          if( parentModel.hasQueryParameter( 'restrict' ) ) {
-            var restrict = parentModel.getQueryParameter( 'restrict' );
+          if( this.parentModel.hasQueryParameter( 'restrict' ) ) {
+            var restrict = this.parentModel.getQueryParameter( 'restrict' );
             if( angular.isDefined( restrict ) ) {
               this.columnRestrictLists = angular.fromJson( restrict );
               for( var name in this.columnRestrictLists ) {
                 this.columnRestrictLists[name].forEach( function( obj ) {
                   obj.description = CnSession.describeRestriction(
-                    angular.isDefined( parentModel.module.columnList[name] ) ?
-                      parentModel.module.columnList[name].type : 'string',
+                    angular.isDefined( self.parentModel.module.columnList[name] ) ?
+                      self.parentModel.module.columnList[name].type : 'string',
                     obj.test,
                     obj.value
                   );
@@ -2815,10 +2823,10 @@ cenozo.factory( 'CnBaseListFactory', [
               }
             }
           }
-          if( parentModel.hasQueryParameter( 'order' ) ) {
-            var order = parentModel.getQueryParameter( 'order' );
+          if( this.parentModel.hasQueryParameter( 'order' ) ) {
+            var order = this.parentModel.getQueryParameter( 'order' );
             if( angular.isDefined( order ) ) this.order.column = order;
-            var reverse = parentModel.getQueryParameter( 'reverse' );
+            var reverse = this.parentModel.getQueryParameter( 'reverse' );
             if( angular.isDefined( reverse ) ) this.order.reverse = reverse;
           }
 
@@ -2826,7 +2834,7 @@ cenozo.factory( 'CnBaseListFactory', [
           var data = this.parentModel.getServiceData( 'list', this.columnRestrictLists );
           if( angular.isUndefined( data.modifier ) ) data.modifier = {};
           data.modifier.offset = replace ? 0 : this.cache.length;
-          if( parentModel.chooseEnabled && this.chooseMode ) data.choosing = 1;
+          if( this.parentModel.chooseEnabled && this.chooseMode ) data.choosing = 1;
 
           // add the table prefix to the column if there isn't already a prefix
           var column = this.order.column;
@@ -2850,7 +2858,7 @@ cenozo.factory( 'CnBaseListFactory', [
             self.total = response.headers( 'Total' );
             self.isReportAllowed = CnSession.application.maxBigReport >= self.total;
             self.isReportBig = CnSession.application.maxSmallReport < self.total;
-            object.afterListFunctions.forEach( function( fn ) { fn(); } );
+            self.afterListFunctions.forEach( function( fn ) { fn(); } );
           } ).finally( function() { self.isLoading = false; } );
         } );
 
@@ -2874,14 +2882,14 @@ cenozo.factory( 'CnBaseListFactory', [
           if( angular.isUndefined( format ) ) format = 'csv';
 
           // set up the restrict, offset and sorting
-          if( parentModel.hasQueryParameter( 'restrict' ) ) {
-            var restrict = parentModel.getQueryParameter( 'restrict' );
+          if( this.parentModel.hasQueryParameter( 'restrict' ) ) {
+            var restrict = this.parentModel.getQueryParameter( 'restrict' );
             if( angular.isDefined( restrict ) ) {
               this.columnRestrictLists = angular.fromJson( restrict );
               for( var name in this.columnRestrictLists ) {
                 this.columnRestrictLists[name].forEach( function( obj ) {
                   obj.description = CnSession.describeRestriction(
-                    parentModel.module.columnList[name].type,
+                    self.parentModel.module.columnList[name].type,
                     obj.test,
                     obj.value
                   );
@@ -2889,10 +2897,10 @@ cenozo.factory( 'CnBaseListFactory', [
               }
             }
           }
-          if( parentModel.hasQueryParameter( 'order' ) ) {
-            var order = parentModel.getQueryParameter( 'order' );
+          if( this.parentModel.hasQueryParameter( 'order' ) ) {
+            var order = this.parentModel.getQueryParameter( 'order' );
             if( angular.isDefined( order ) ) this.order.column = order;
-            var reverse = parentModel.getQueryParameter( 'reverse' );
+            var reverse = this.parentModel.getQueryParameter( 'reverse' );
             if( angular.isDefined( reverse ) ) this.order.reverse = reverse;
           }
 
@@ -2944,7 +2952,7 @@ cenozo.factory( 'CnBaseListFactory', [
         cenozo.addExtendableFunction( object, 'onSelect', function( record ) {
           if( !this.parentModel.viewEnabled )
             throw new Error( 'Calling onSelect() but viewEnabled is false.' );
-          object.afterSelectFunctions.forEach( function( fn ) { fn(); } );
+          this.afterSelectFunctions.forEach( function( fn ) { fn(); } );
           return this.parentModel.transitionToViewState( record );
         } );
 
@@ -2953,6 +2961,12 @@ cenozo.factory( 'CnBaseListFactory', [
           return this.onList( true );
         } );
 
+        /**
+         * The state transition to execute after clicking the add button
+         */
+        cenozo.addExtendableFunction( object, 'transitionOnAdd', function() {
+          this.parentModel.transitionToAddState();
+        } );
       }
     };
   }
@@ -3030,7 +3044,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'updateFormattedRecord', function( property ) {
           if( angular.isDefined( property ) ) {
-            var input = parentModel.module.getInput( property );
+            var input = this.parentModel.module.getInput( property );
             if( null !== input ) {
               if( 'lookup-typeahead' == input.type ) {
                 // When lookup-typeaheads are first loaded move the formatted property from the record
@@ -3067,13 +3081,13 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onDelete', function() {
           var self = this;
-          if( !parentModel.deleteEnabled )
+          if( !this.parentModel.deleteEnabled )
             throw new Error( 'Calling onDelete() but deleteEnabled is false.' );
 
-          var httpObj = { path: parentModel.getServiceResourcePath() };
+          var httpObj = { path: this.parentModel.getServiceResourcePath() };
           httpObj.onError = function( response ) { self.onDeleteError( response ); }
           return CnHttpFactory.instance( httpObj ).delete().then( function() {
-            object.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
+            self.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
           } );
         } );
 
@@ -3085,8 +3099,8 @@ cenozo.factory( 'CnBaseViewFactory', [
         cenozo.addExtendableFunction( object, 'onDeleteError', function( response ) {
           if( 409 == response.status ) {
             CnModalMessageFactory.instance( {
-              title: 'Unable to delete ' + parentModel.module.name.singular + ' record',
-              message: 'It is not possible to delete this ' + parentModel.module.name.singular +
+              title: 'Unable to delete ' + this.parentModel.module.name.singular + ' record',
+              message: 'It is not possible to delete this ' + this.parentModel.module.name.singular +
                        ' record because it is being referenced by "' + response.data +
                        '" in the database.',
               error: true
@@ -3110,15 +3124,15 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onPatch', function( data ) {
           var self = this;
-          if( !parentModel.editEnabled ) throw new Error( 'Calling onPatch() but editEnabled is false.' );
+          if( !this.parentModel.editEnabled ) throw new Error( 'Calling onPatch() but editEnabled is false.' );
 
           var httpObj = {
-            path: parentModel.getServiceResourcePath(),
+            path: this.parentModel.getServiceResourcePath(),
             data: data
           };
           httpObj.onError = function( response ) { self.onPatchError( response ); }
           return CnHttpFactory.instance( httpObj ).patch().then( function() {
-            object.afterPatchFunctions.forEach( function( fn ) { fn(); } );
+            self.afterPatchFunctions.forEach( function( fn ) { fn(); } );
           } );
         } );
 
@@ -3140,7 +3154,7 @@ cenozo.factory( 'CnBaseViewFactory', [
           } else {
             // make sure to put the data back
             var property = Object.keys( response.config.data )[0];
-            object.record[property] = object.backupRecord[property];
+            this.record[property] = this.backupRecord[property];
             CnModalMessageFactory.httpError( response );
           }
         } );
@@ -3198,49 +3212,48 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onView', function() {
           var self = this;
-          if( !parentModel.viewEnabled ) throw new Error( 'Calling onView() but viewEnabled is false.' );
+          if( !this.parentModel.viewEnabled ) throw new Error( 'Calling onView() but viewEnabled is false.' );
 
           // get the record's data and metadata
           return $q.all( [
             CnHttpFactory.instance( {
-              path: parentModel.getServiceResourcePath(),
-              data: parentModel.getServiceData( 'view' ),
+              path: this.parentModel.getServiceResourcePath(),
+              data: this.parentModel.getServiceData( 'view' ),
               redirectOnError: true
             } ).get().then( function( response ) {
               // create the record
               self.record = angular.copy( response.data );
-              self.record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( this ); };
+              self.record.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
 
               // create the backup record
               self.backupRecord = angular.copy( self.record );
 
-              return parentModel.metadata.getPromise().then( function() {
-              } );
+              return self.parentModel.metadata.getPromise();
             } )
           ] ).then( function() {
             var promiseList = [];
 
-            if( angular.isDefined( parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
+            if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
               // add the parent subject and identifier to the service
-              var path = parentModel.getServiceCollectionPath();
-              var parent = parentModel.getParentIdentifier();
+              var path = self.parentModel.getServiceCollectionPath();
+              var parent = self.parentModel.getParentIdentifier();
               if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) )
                 path = [ parent.subject, parent.identifier, path ].join( '/' );
 
               promiseList.push( CnHttpFactory.instance( {
                 path: path,
                 data: { select: { column: {
-                  column: 'MAX(' + parentModel.module.subject.snake + '.rank)',
+                  column: 'MAX(' + self.parentModel.module.subject.snake + '.rank)',
                   alias: 'max',
                   table_prefix: false
                 } } },
                 redirectOnError: true
               } ).query().then( function( response ) {
                 if( 0 < response.data.length ) {
-                  parentModel.metadata.columnList.rank.enumList = [];
+                  self.parentModel.metadata.columnList.rank.enumList = [];
                   if( null !== response.data[0].max ) {
                     for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ ) {
-                      parentModel.metadata.columnList.rank.enumList.push( {
+                      self.parentModel.metadata.columnList.rank.enumList.push( {
                         value: rank,
                         name: $filter( 'cnOrdinal' )( rank )
                       } );
@@ -3251,11 +3264,11 @@ cenozo.factory( 'CnBaseViewFactory', [
             }
 
             // convert blank enums into empty strings (for ng-options)
-            parentModel.module.inputGroupList.forEach( function( group ) {
+            self.parentModel.module.inputGroupList.forEach( function( group ) {
               for( var column in group.inputList ) {
                 var input = group.inputList[column];
                 if( 'view' != input.exclude && 'enum' == input.type && null === self.record[column] ) {
-                  var metadata = parentModel.metadata.columnList[column];
+                  var metadata = self.parentModel.metadata.columnList[column];
                   if( angular.isDefined( metadata ) && !metadata.required ) {
                     self.record[column] = '';
                     self.backupRecord[column] = '';
@@ -3268,8 +3281,40 @@ cenozo.factory( 'CnBaseViewFactory', [
             self.updateFormattedRecord();
 
             return $q.all( promiseList ).then( function() {
-              object.afterViewFunctions.forEach( function( fn ) { fn(); } );
+              self.afterViewFunctions.forEach( function( fn ) { fn(); } );
             } );
+          } );
+        } );
+
+        /**
+         * The state transition to execute after clicking the view parent button (may have multiple)
+         * 
+         * @param string subject: The subject of the parent to transition to
+         */
+        cenozo.addExtendableFunction( object, 'transitionOnViewParent', function( subject ) {
+          if( !subject ) {
+            this.parentModel.transitionToParentListState( this.parentModel.module.subject.snake );
+          } else {
+            var parent = this.parentModel.module.identifier.parent.findByProperty( 'subject', subject );
+            if( null === parent ) {
+              throw new Error( 'Tried to transition to parent ' + subject + ' from view state but "' +
+                this.parentModel.module.subject.camel + '" record has no "' + subject + '" parent.' );
+            }
+            this.parentModel.transitionToParentViewState( parent.subject, parent.getIdentifier( this.record ) );
+          }
+        } );
+
+        /**
+         * The state transition to execute after clicking the delete button
+         */
+        cenozo.addExtendableFunction( object, 'transitionOnDelete', function() {
+          CnSession.workingTransition( function() {
+            if( angular.isDefined( self.parentModel.module.identifier.parent ) ) {
+              var parent = self.parentModel.getParentIdentifier();
+              self.parentModel.transitionToParentViewState( parent.subject, parent.identifier );
+            } else {
+              self.parentModel.transitionToListState();
+            }
           } );
         } );
       }
@@ -4032,14 +4077,15 @@ cenozo.factory( 'CnBaseNoteFactory', [
           },
 
           updateSearch: function() {
-            $state.params.search = object.search;
+            var self = this;
+            $state.params.search = this.search;
             $state.transitionTo( $state.current, $state.params, { reload: false, notify: false } );
-            object.noteList = object.noteListCache.filter( function( note ) {
-              if( 0 == object.search.length ) {
+            this.noteList = this.noteListCache.filter( function( note ) {
+              if( 0 == self.search.length ) {
                 return true;
               } else {
                 // convert search into modifier format
-                return !object.search.split( ' ' ).some( function( word ) {
+                return !self.search.split( ' ' ).some( function( word ) {
                   return 0 < word.length && !note.note.toLowerCase().includes( word.toLowerCase() );
                 } );
               }
@@ -4047,10 +4093,11 @@ cenozo.factory( 'CnBaseNoteFactory', [
           },
 
           addNote: function() {
+            var self = this;
             var note = {
               user_id: CnSession.user.id,
               datetime: moment().format(),
-              note: object.newNote
+              note: this.newNote
             };
 
             CnHttpFactory.instance( {
@@ -4064,28 +4111,29 @@ cenozo.factory( 'CnBaseNoteFactory', [
               note.userLast = CnSession.user.lastName;
               return note;
             } ).then( function( note ) {
-              object.noteListCache.push( note );
-              object.updateSearch( object.search );
+              self.noteListCache.push( note );
+              self.updateSearch( self.search );
             } );
 
-            object.newNote = '';
+            this.newNote = '';
           },
 
           deleteNote: function( id ) {
-            var index = object.noteListCache.findIndexByProperty( 'id', id );
+            var self = this;
+            var index = this.noteListCache.findIndexByProperty( 'id', id );
             if( null !== index ) {
               CnHttpFactory.instance( {
                 path: module.subject.snake + '/' + $state.params.identifier +
-                      '/note/' + object.noteListCache[index].id
+                      '/note/' + this.noteListCache[index].id
               } ).delete().then( function() {
-                object.noteListCache.splice( index, 1 );
-                object.updateSearch( object.search );
+                self.noteListCache.splice( index, 1 );
+                self.updateSearch( self.search );
               } );
             }
           },
 
           noteChanged: function( id ) {
-            var note = object.noteList.findByProperty( 'id', id );
+            var note = this.noteList.findByProperty( 'id', id );
             if( note ) {
               CnHttpFactory.instance( {
                 path: module.subject.snake + '/' + $state.params.identifier + '/note/' + note.id,
@@ -4095,7 +4143,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
           },
 
           stickyChanged: function( id ) {
-            var note = object.noteList.findByProperty( 'id', id );
+            var note = this.noteList.findByProperty( 'id', id );
             if( note ) {
               note.sticky = !note.sticky;
               CnHttpFactory.instance( {
@@ -4106,7 +4154,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
           },
 
           undo: function( id ) {
-            var note = object.noteList.findByProperty( 'id', id );
+            var note = this.noteList.findByProperty( 'id', id );
             if( note && note.note != note.noteBackup ) {
               note.note = note.noteBackup;
               CnHttpFactory.instance( {
@@ -4117,7 +4165,8 @@ cenozo.factory( 'CnBaseNoteFactory', [
           },
 
           onView: function() {
-            object.isLoading = true;
+            var self = this;
+            this.isLoading = true;
             return CnHttpFactory.instance( {
               path: module.subject.snake + '/' + $state.params.identifier + '/note',
               data: {
@@ -4143,9 +4192,9 @@ cenozo.factory( 'CnBaseNoteFactory', [
               },
               redirectOnError: true
             } ).query().then( function( response ) {
-              object.noteListCache = [];
+              self.noteListCache = [];
               response.data.forEach( function( item ) {
-                object.noteListCache.push( {
+                self.noteListCache.push( {
                   id: item.id,
                   datetime: '0000-00-00' == item.datetime.substring( 0, 10 ) ? null : item.datetime,
                   sticky: item.sticky,
@@ -4155,8 +4204,8 @@ cenozo.factory( 'CnBaseNoteFactory', [
                   noteBackup: item.note
                 } );
               } );
-              object.updateSearch( object.search );
-            } ).finally( function() { object.isLoading = false; } );
+              self.updateSearch( self.search );
+            } ).finally( function() { self.isLoading = false; } );
           }
         } );
       }
