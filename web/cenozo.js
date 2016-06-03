@@ -453,12 +453,13 @@ angular.extend( cenozo, {
         resolve: resolve
       } );
       stateProvider.state( name + '.state', { template: '<cn-error></cn-error>', params: { type: 'state' } } );
+      stateProvider.state( name + '.306', {
+        template: '<cn-error></cn-error>', params: { type: 306, data: null }
+      } );
       stateProvider.state( name + '.400', { template: '<cn-error></cn-error>', params: { type: 400 } } );
       stateProvider.state( name + '.403', { template: '<cn-error></cn-error>', params: { type: 403 } } );
       stateProvider.state( name + '.404', { template: '<cn-error></cn-error>', params: { type: 404 } } );
-      stateProvider.state( name + '.406', {
-        template: '<cn-error></cn-error>', params: { type: 406, data: null }
-      } );
+      stateProvider.state( name + '.406', { template: '<cn-error></cn-error>', params: { type: 406 } } );
       stateProvider.state( name + '.500', {
         template: '<cn-error></cn-error>', params: { type: 500, data: null }
       } );
@@ -4869,15 +4870,18 @@ cenozo.service( 'CnModalMessageFactory', [
         var title = 'Error';
         var message = 'Unfortunately your request cannot be processed ';
 
-        if( 403 == type ) {
+        if( 306 == type && angular.isDefined( response.data ) ) {
+          title = 'Please Note';
+          message = response.data;
+        } else if( 403 == type ) {
           title = 'Permission Denied';
           message += 'because you do not have access to the requested resource.';
         } else if( 404 == type ) {
           title = 'Not Found';
           message += 'because the needed resource could not be found.';
-        } else if( 406 == type && angular.isDefined( response.data ) ) {
-          title = 'Please Note';
-          message = response.data;
+        } else if( 406 == type ) {
+          title = 'Format Unavailable';
+          message += 'because the requested format is not available.';
         } else if( 409 == type ) {
           title = 'Conflict';
           message += 'due to a pre-existing conflict.';
@@ -4893,7 +4897,7 @@ cenozo.service( 'CnModalMessageFactory', [
           message += '\n    Resource "' + response.config.method + ':'
                    + response.config.url.replace( re, '' ) + '"';
         }
-        if( response.data && 406 != type ) message += '\n    Error Code: ' + response.data;
+        if( response.data && 306 != type && 406 != type ) message += '\n    Error Code: ' + response.data;
         var modal = new object( { title: title, message: message, error: true } );
         return modal.show();
       }

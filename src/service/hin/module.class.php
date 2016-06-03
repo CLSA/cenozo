@@ -57,7 +57,7 @@ class module extends \cenozo\service\module
           $this->set_data( sprintf(
             'The code you have provided is not a valid %s HIN.  Please double check the code and try again.',
             $db_hin->get_region()->name ) );
-          $this->get_status()->set_code( 406 );
+          $this->get_status()->set_code( 306 );
         }
       }
     }

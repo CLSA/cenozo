@@ -530,7 +530,15 @@ class util
   }
 
   /**
-   * TODO: document
+   * Converts raw data from the database into CSV format
+   * 
+   * This method will alter the data including:
+   *   convert datetime formats
+   *   converts timezones
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string (with newlines)
+   * @static
+   * @access public
    */
   public static function get_data_as_csv( $data )
   {

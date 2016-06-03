@@ -11,11 +11,7 @@ define( function() {
       pluralPossessive: 'report types\''
     },
     columnList: {
-      name: { title: 'Name' },
-      custom: {
-        title: 'Custom',
-        type: 'boolean'
-      },
+      title: { title: 'Title' },
       description: {
         title: 'Description',
         align: 'left'
@@ -30,12 +26,12 @@ define( function() {
   module.addInputGroup( '', {
     name: {
       title: 'Name',
-      type: 'string'
-    },
-    custom: {
-      title: 'Custom',
-      type: 'boolean',
+      type: 'string',
       constant: true
+    },
+    title: {
+      title: 'Title',
+      type: 'string'
     },
     description: {
       title: 'Description',

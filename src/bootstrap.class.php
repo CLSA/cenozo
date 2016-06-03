@@ -99,7 +99,10 @@ final class bootstrap
   }
 
   /**
+   * Reads the framework and application settings
    * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
    */
   public function read_settings()
   {
@@ -131,10 +134,13 @@ final class bootstrap
       }
       else if( 'COOKIE' != $key &&
                'TEMPLATE_CACHE' != $key &&
-               'REPORT_CACHE' != $key &&
                !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
       {
         die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
+      }
+      else if( 'REPORT' == $key && !is_writable( $path ) )
+      {
+        die( sprintf( 'Error, report path, %s, is not writable!', $path ) );
       }
     }
 

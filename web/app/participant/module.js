@@ -824,7 +824,6 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           for( var name in this.module.historyCategoryList ) {
             // sync the active parameter to the state while we're at it
             var active = this.participantModel.getQueryParameter( name.toLowerCase() );
-            console.log( name, active );
             this.module.historyCategoryList[name].active = angular.isDefined( active ) ? active : true;
             if( 'function' == cenozo.getType( this.module.historyCategoryList[name].promise ) ) {
               promiseList.push(

@@ -1,9 +1,11 @@
 <div class="inner-view-frame">
   <div class="container-fluid bg-white allow-select">
-    <h3 class="text-primary">Not Acceptable (406)</h3>
+    <h3 class="text-primary">Please Note (406)</h3>
     <div class="container-fluid">
       <blockquote>
-        Sorry, the server is unable to respond with the requested data format.
+        {{ model.data }}<br>
+        Please <a ng-click="reload()">reload</a> the page or
+        <a ng-click="back()">go back</a> to the previous page.
       </blockquote>
     </div>
   </div>

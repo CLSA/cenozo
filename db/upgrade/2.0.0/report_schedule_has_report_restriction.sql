@@ -1,6 +1,8 @@
-CREATE TABLE IF NOT EXISTS report_schedule_has_report_type_restriction (
+CREATE TABLE IF NOT EXISTS report_schedule_has_report_restriction (
   report_schedule_id INT UNSIGNED NOT NULL,
   report_restriction_id INT UNSIGNED NOT NULL,
+  update_timestamp TIMESTAMP NOT NULL,
+  create_timestamp TIMESTAMP NOT NULL,
   value VARCHAR(45) NOT NULL,
   PRIMARY KEY (report_schedule_id, report_restriction_id),
   INDEX fk_report_restriction_id (report_restriction_id ASC),

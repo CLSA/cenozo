@@ -23,7 +23,8 @@ class module extends \cenozo\service\site_restricted_module
 
     if( 300 > $this->get_status()->get_code() )
     {
-      if( 'POST' == $this->get_method() )
+      $method = $this->get_method();
+      if( 'POST' == $method )
       {
         // make sure that the parent is a report type
         if( 'report_type' != $this->get_parent_subject() )
@@ -42,6 +43,45 @@ class module extends \cenozo\service\site_restricted_module
           if( !array_key_exists( 'restrict_'.$report_restriction['name'], $file ) )
           {
             $this->get_status()->set_code( 400 );
+            return;
+          }
+        }
+      }
+      else if( 'PATCH' == $method )
+      {
+        // the only patch allowed is setting the stage to 'started' and progress to 1,
+        // this will generate (or re-generate) the report
+        $file = $this->get_file_as_array();
+        if( 2 != count( $file ) ||
+            !array_key_exists( 'stage', $file ) ||
+            'started' != $file['stage'] ||
+            !array_key_exists( 'progress', $file ) ||
+            1 != $file['progress'] ) $this->get_status()->set_code( 403 );
+      }
+      else
+      {
+        $session = lib::create( 'business\session' );
+        $record = $this->get_resource();
+
+        if( !is_null( $record ) )
+        {
+          $db_report_type = $record->get_report_type();
+
+          // restrict by application
+          $db_application = $session->get_application();
+          if( !is_null( $db_report_type->application_id ) &&
+              $db_report_type->application_id != $session->get_application()->id )
+          {
+            $this->get_status()->set_code( 404 );
+            return;
+          }
+
+          // restrict by role
+          $modifier = lib::create( 'database\modifier' );
+          $modifier->where( 'role_id', '=', $session->get_role()->id );
+          if( 0 == $db_report_type->get_role_count( $modifier ) )
+          {
+            $this->get_status()->set_code( 404 );
             return;
           }
         }
@@ -91,7 +131,8 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::post_write( $record );
 
-    if( 'POST' == $this->get_method() )
+    $method = $this->get_method();
+    if( 'POST' == $method )
     {
       // add the restrictions to the record
       $db_report = $this->get_resource();
@@ -107,9 +148,22 @@ class module extends \cenozo\service\site_restricted_module
           $db_report->set_restriction_value( $report_restriction['id'], $file[$column] );
       }
 
-      // now run the report
-      $report_manager = lib::create( 'business\report_manager' );
-      $report_manager->load_data( $db_report );
+      $command = sprintf(
+        'curl -v -H %s -k %s -X PATCH -d %s &',
+        sprintf( "'Authorization:Basic %s'", base64_encode( 'patrick:elephant arrows' ) ),
+        sprintf( "'https://localhost/patrick/beartooth_f1/api/report/%d'", $db_report->id ),
+        "'{\"stage\":\"started\",\"progress\":1}'" );
+
+      fclose( popen( $command, 'r' ) );
+    }
+    else if( 'PATCH' == $method )
+    {
+      // we need to complete any transactions before continuing
+      $session = lib::create( 'business\session' );
+      $session->get_database()->complete_transaction();
+
+      // get the report's executer and generate the report file
+      $this->get_resource()->get_executer()->generate();
     }
   }
 }

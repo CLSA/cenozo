@@ -35,6 +35,10 @@ define( function() {
       datetime: {
         title: 'Date & Time',
         type: 'datetimesecond'
+      },
+      stage: {
+        title: 'Status',
+        type: 'string'
       }
     },
     defaultOrder: {
@@ -45,8 +49,8 @@ define( function() {
 
   module.addInputGroup( '', {
     report_schedule: {
-      title: 'Schedule',
-      type: 'string',
+      title: 'Automatically Generated',
+      type: 'boolean',
       exclude: 'add',
       constant: true
     },
@@ -81,10 +85,22 @@ define( function() {
       title: 'Format',
       type: 'enum',
       constant: 'view'
+    },
+    stage: {
+      title: 'Status',
+      type: 'string',
+      exclude: 'add',
+      constant: true
     }
   } );
 
-  module.addInputGroup( 'Parameters', { restrict_placeholder: { type: 'hidden' } }, true );
+  module.addInputGroup( 'Parameters', { restrict_placeholder: { type: 'hidden' } }, false );
+
+  module.addExtraOperation( 'view', {
+    title: 'Download',
+    operation: function( $state, model ) { model.viewModel.downloadFile(); },
+    isDisabled: function( $state, model ) { return 'completed' != model.viewModel.record.stage; }
+  } );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportAdd', [
@@ -141,6 +157,7 @@ define( function() {
                   key: key,
                   type: type,
                   title: restriction.title,
+                  constant: 'view',
                   help: restriction.description
                 } );
               } );
@@ -182,9 +199,9 @@ define( function() {
             // change the heading to the form's title
             CnHttpFactory.instance( {
               path: 'report_type/' + $scope.model.getParentIdentifier().identifier,
-              data: { select: { column: [ 'name' ] } }
+              data: { select: { column: [ 'title' ] } }
             } ).get().then( function( response ) {
-              $scope.model.viewModel.heading = response.data.name + ' Report Details';
+              $scope.model.viewModel.heading = response.data.title + ' Details';
             } );
 
             // remove the parameters group heading
@@ -214,6 +231,7 @@ define( function() {
                   key: key,
                   type: type,
                   title: restriction.title,
+                  constant: 'view',
                   help: restriction.description
                 } );
               } );
@@ -226,9 +244,18 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnReportAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory',
-    function( CnBaseAddFactory, CnHttpFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+    'CnBaseAddFactory', 'CnHttpFactory', '$timeout',
+    function( CnBaseAddFactory, CnHttpFactory, $timeout ) {
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseAddFactory.construct( this, parentModel );
+
+        // transition to viewing the new record instead of the default functionality
+        this.transitionOnSave = function( record ) {
+          parentModel.transitionToViewState( record );
+          $timeout( function() { parentModel.viewModel.onView(); }, 1000 );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -263,6 +290,28 @@ define( function() {
             } );
           } );
         };
+        
+        // download the report's file
+        this.downloadFile = function() {
+          // TODO: change format to Accept header
+          var format = 'csv';
+          if( 'Excel' == self.record.format ) format = 'xlsx';
+          else if( 'LibreOffice' == self.record.format ) format = 'ods';
+
+          return CnHttpFactory.instance( {
+            path: 'report/' + self.record.getIdentifier(),
+            data: { 'download': true },
+            format: format
+          } ).get().then( function( response ) {
+            saveAs(
+              new Blob(
+                [response.data],
+                { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
+              ),
+              response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
+            );
+          } );
+        };
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
@@ -281,14 +330,6 @@ define( function() {
         this.listModel = CnReportListFactory.instance( this );
         this.viewModel = CnReportViewFactory.instance( this, root );
         this.restrictionList = [];
-
-        // extend getBreadcrumbTitle
-        // (metadata's promise will have already returned so we don't have to wait for it)
-        this.getBreadcrumbTitle = function() {
-          var reportType = self.metadata.columnList.report_type_id.enumList.findByProperty(
-            'value', this.viewModel.record.report_type_id );
-          return reportType ? reportType.name : 'unknown';
-        };
 
         // extend getMetadata
         this.getMetadata = function() {

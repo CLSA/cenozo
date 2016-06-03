@@ -17,6 +17,14 @@ class report extends \cenozo\database\record
   /**
    * TODO: document
    */
+  public function get_executer()
+  {
+    return lib::create( sprintf( 'business\report\%s', $this->get_report_type()->name ), $this );
+  }
+
+  /**
+   * TODO: document
+   */
   public function get_restriction_value_list()
   {
     // check the primary key value

@@ -157,14 +157,7 @@ class spreadsheet extends \cenozo\base_object
   protected function load_data_from_record( $db_report )
   {
     $db_report_type = $db_report->get_report_type();
-    if( $db_report_type->custom )
-    {
-      // TODO: implement custom report
-    }
-    else
-    {
-      // TODO: implement standard report
-    }
+    // TODO: implement report
   }
 
   /**

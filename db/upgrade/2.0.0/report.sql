@@ -9,8 +9,10 @@ CREATE TABLE IF NOT EXISTS report (
   site_id INT UNSIGNED NOT NULL,
   role_id INT UNSIGNED NOT NULL,
   datetime DATETIME NOT NULL,
-  filename VARCHAR(255) NOT NULL,
   format ENUM('CSV', 'Excel', 'LibreOffice') NOT NULL DEFAULT 'CSV',
+  stage ENUM('started', 'reading data', 'writing data', 'completed', 'failed') NOT NULL DEFAULT 'started',
+  progress FLOAT NOT NULL DEFAULT 0,
+  size INT NULL,
   PRIMARY KEY (id),
   INDEX fk_report_type_id (report_type_id ASC),
   INDEX fk_user_id (user_id ASC),
@@ -19,6 +21,8 @@ CREATE TABLE IF NOT EXISTS report (
   INDEX fk_application_id (application_id ASC),
   INDEX fk_report_schedule_id (report_schedule_id ASC),
   INDEX dk_datetime (datetime ASC),
+  INDEX dk_stage (stage ASC),
+  INDEX dk_size (size ASC),
   CONSTRAINT fk_report_report_type_id
     FOREIGN KEY (report_type_id)
     REFERENCES report_type (id)

@@ -134,7 +134,7 @@ class status extends \cenozo\base_object
     303 => 'See Other',
     304 => 'Not Modified',
     305 => 'Use Proxy',
-    306 => '(Unused)',
+    306 => 'Notice', // custom cenozo usage
     307 => 'Temporary Redirect',
     400 => 'Bad Request',
     401 => 'Unauthorized',

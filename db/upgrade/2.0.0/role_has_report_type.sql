@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS role_has_report_type (
   role_id INT UNSIGNED NOT NULL,
   report_type_id INT UNSIGNED NOT NULL,
+  update_timestamp TIMESTAMP NOT NULL,
+  create_timestamp TIMESTAMP NOT NULL,
   PRIMARY KEY (role_id, report_type_id),
   INDEX fk_report_type_id (report_type_id ASC),
   INDEX fk_role_id (role_id ASC),
@@ -15,3 +17,9 @@ CREATE TABLE IF NOT EXISTS role_has_report_type (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
+
+INSERT IGNORE INTO role_has_report_type( role_id, report_type_id )
+SELECT role.id, report_type.id
+FROM role, report_type
+WHERE role.name = "administrator"
+AND report_type.name = "Contact";

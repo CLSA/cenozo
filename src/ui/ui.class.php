@@ -270,6 +270,7 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'report_type', $module_list ) )
     {
       $module_list['report_type']['children'] = array( 'report', 'report_schedule', 'report_restriction' );
+      $module_list['report_type']['choosing'] = array( 'role' );
     }
     if( array_key_exists( 'script', $module_list ) )
     {
