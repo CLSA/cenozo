@@ -397,6 +397,76 @@ class participant extends record
   }
 
   /**
+   * Returns a list of UIDs which the application and current role has access to
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array|string $uid_list An array or string of UIDs
+   * @static
+   * @access public
+   */
+  public static function get_valid_uid_list( $uid_list )
+  {
+    $output_uid_list = array();
+
+    if( !is_array( $uid_list ) )
+    {
+      // sanitize the entries
+      $uid_list = explode( ' ', // delimite string by spaces and create array from result
+                  preg_replace( '/[^a-zA-Z0-9 ]/', '', // remove anything that isn't a letter, number of space
+                  preg_replace( '/[\s,;|\/]/', ' ', // replace whitespace and separation chars with a space
+                  strtoupper( $uid_list ) ) ) ); // convert to uppercase
+    }
+
+    // match UIDs (eg: A123456)
+    $uid_list = array_filter( $uid_list, function( $string ) {
+      return 1 == preg_match( '/^[A-Z][0-9]{6}$/', $string );
+    } );
+
+    if( 0 < count( $uid_list ) )
+    {
+      $session = lib::create( 'business\session' );
+      $db_application = $session->get_application();
+      $db_site = $session->get_site();
+      $db_role = $session->get_role();
+
+      // make list unique and sort it
+      $uid_list = array_unique( $uid_list );
+      sort( $uid_list );
+
+      // go through the list and remove invalid UIDs
+      $select = lib::create( 'database\select' );
+      $select->add_column( 'uid' );
+      $select->from( 'participant' );
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'uid', 'IN', $uid_list );
+      $modifier->order( 'uid' );
+
+      // restrict to participants in this application
+      $sub_mod = lib::create( 'database\modifier' );
+      $sub_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
+      $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+      $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
+      $modifier->join_modifier(
+        'application_has_participant', $sub_mod, $db_application->release_based ? '' : 'left' );
+
+      // restrict by site
+      if( !$db_role->all_sites )
+      {
+        $sub_mod = lib::create( 'database\modifier' );
+        $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
+        $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
+        $sub_mod->where( 'participant_site.site_id', '=', $db_site->id );
+        $modifier->join_modifier( 'participant_site', $sub_mod );
+      }
+
+      // prepare the select and modifier objects
+      foreach( static::select( $select, $modifier ) as $row ) $output_uid_list[] = $row['uid'];
+    }
+
+    return $output_uid_list;
+  }
+
+  /**
    * Edits multiple participants at once
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

@@ -1448,6 +1448,13 @@ cenozo.directive( 'cnRecordView', [
             } );
           }
         };
+
+        $scope.onGroupClick = function( group, index ) {
+          // toggle the group's collapsed state
+          group.collapsed = !group.collapsed;
+          // trigger all elastic directives
+          if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'change' )
+        };
       },
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -3381,6 +3388,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          * The state transition to execute after clicking the delete button
          */
         cenozo.addExtendableFunction( object, 'transitionOnDelete', function() {
+          var self = this;
           CnSession.workingTransition( function() {
             if( angular.isDefined( self.parentModel.module.identifier.parent ) ) {
               var parent = self.parentModel.getParentIdentifier();

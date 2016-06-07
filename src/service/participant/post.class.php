@@ -42,36 +42,7 @@ class post extends \cenozo\service\service
     $file = $this->get_file_as_array();
     if( array_key_exists( 'uid_list', $file ) )
     {
-      // go through the list and remove invalid UIDs
-      $select = lib::create( 'database\select' );
-      $select->add_column( 'uid' );
-      $select->from( 'participant' );
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'uid', 'IN', $file['uid_list'] );
-      $modifier->order( 'uid' );
-      
-      // restrict to participants in this application
-      $sub_mod = lib::create( 'database\modifier' );
-      $sub_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
-      $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
-      $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
-      $modifier->join_modifier(
-        'application_has_participant', $sub_mod, $db_application->release_based ? '' : 'left' );
-
-      // restrict by site
-      if( !$db_role->all_sites )
-      {
-        $sub_mod = lib::create( 'database\modifier' );
-        $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
-        $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
-        $sub_mod->where( 'participant_site.site_id', '=', $db_site->id );
-        $modifier->join_modifier( 'participant_site', $sub_mod );
-      }
-
-      // prepare the select and modifier objects
-      $uid_list = array();
-      foreach( $participant_class_name::select( $select, $modifier ) as $row ) $uid_list[] = $row['uid'];
-
+      $uid_list = $participant_class_name::get_valid_uid_list( $file['uid_list'] );
       $select = lib::create( 'database\select' );
       $select->from( 'participant' );
       $select->add_column( 'id', 'participant_id' );

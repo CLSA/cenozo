@@ -460,6 +460,56 @@ abstract class base_report extends \cenozo\base_object
   abstract protected function build();
   
   /**
+   * Applies the report's restrictions to the given modifier
+   * 
+   * This method is usually called in the extending class' build() method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function apply_restrictions( &$modifier )
+  {
+    // check the report's primary key value
+    if( is_null( $this->db_report->id ) )
+    {
+      log::warning( 'Tried to apply restrictions for a report without a valid report record.' );
+      return;
+    }
+    
+    $select = lib::create( 'database\select' );
+    $select->add_table_column( 'report_has_report_restriction', 'value' );
+    $select->add_column( 'restriction_type' );
+    $select->add_column( 'subject' );
+    foreach( $this->db_report->get_report_restriction_list( $select ) as $restriction )
+    {
+      if( 'table' == $restriction['restriction_type'] )
+      {
+      }
+      else if( 'uid_list' == $restriction['restriction_type'] )
+      {
+        $modifier->where( 'uid', 'IN', explode( ' ', $restriction['value'] ) );
+      }
+      else if( 'string' == $restriction['restriction_type'] )
+      {
+      }
+      else if( 'integer' == $restriction['restriction_type'] )
+      {
+      }
+      else if( 'decimal' == $restriction['restriction_type'] )
+      {
+      }
+      else if( 'date' == $restriction['restriction_type'] )
+      {
+      }
+      else if( 'datetime' == $restriction['restriction_type'] )
+      {
+      }
+      else if( 'time' == $restriction['restriction_type'] )
+      {
+      }
+    }
+  }
+
+  /**
    * Adds a table to the report.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

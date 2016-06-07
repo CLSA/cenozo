@@ -60,8 +60,8 @@ class contact extends \cenozo\business\report\base_report
     $modifier->left_join( 'region', 'address.region_id', 'region.id' );
     $modifier->where( 'consent_type.name', '=', 'participation' );
 
-    // TODO: put in code to get UIDs/Participant-list
-    $modifier->where( 'uid', 'IN', array( 'A000079','A001075','A001245','A001318','A001504' ) );
+    // set up requirements
+    $this->apply_restrictions( $modifier );
 
     $header = array();
     $content = array();

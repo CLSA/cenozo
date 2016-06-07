@@ -55,6 +55,7 @@ class report extends \cenozo\database\record
   public function set_restriction_value( $restriction, $value )
   {
     $util_class_name = lib::get_class_name( 'util' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // check the primary key value
     if( is_null( $this->id ) )
@@ -64,24 +65,37 @@ class report extends \cenozo\database\record
     }
 
     // get the restriction_type_id by determining the restriction parameter's type
-    $report_restriction_id = NULL;
+    $db_report_restriction = NULL;
     if( is_a( $restriction, lib::get_class_name( 'database\report_restriction' ) ) )
     {
-      $report_restriction_id = $restriction->id;
+      $db_report_restriction = $restriction;
     }
     else if( $util_class_name::string_matches_int( $restriction ) )
     {
-      $report_restriction_id = $restriction;
+      $db_report_restriction = lib::create( 'database\report_restriction', $restriction );
     }
     else
     {
       $db_report_restriction = $report_restriction_class_name::get_unique_record( 'name', $restriction );
-      if( !is_null( $db_report_restriction ) ) $report_restriction_id = $db_report_restriction->id;
     }
 
     // make sure we have a restriction id
-    if( is_null( $report_restriction_id ) )
+    if( is_null( $db_report_restriction ) )
       throw lib::create( 'exception\argument', 'restriction', $restriction );
+
+    // process the value, if necessary
+    if( 'uid_list' == $db_report_restriction->restriction_type )
+    {
+      $uid_list = $participant_class_name::get_valid_uid_list( $value );
+
+      if( $db_report_restriction->mandatory && 0 == count( $uid_list ) )
+        throw lib::create( 'exception\notice',
+          'The participant list you generated resulted in no participants. '.
+          'Please check your input and try again.',
+          __METHOD__ );
+
+      $value = implode( ' ', $uid_list );
+    }
 
     $sql = sprintf(
       'INSERT INTO report_has_report_restriction'."\n".
@@ -89,7 +103,7 @@ class report extends \cenozo\database\record
       '    report_restriction_id = %s,'."\n".
       '    value = %s',
       static::db()->format_string( $this->id ),
-      static::db()->format_string( $report_restriction_id ),
+      static::db()->format_string( $db_report_restriction->id ),
       static::db()->format_string( $value ) );
     static::db()->execute( $sql );
   }

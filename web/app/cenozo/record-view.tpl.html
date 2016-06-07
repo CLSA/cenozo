@@ -28,7 +28,7 @@
              class="container-fluid bg-info"
              data-toggle="collapse"
              data-target="#inputGroup{{ $index }}"
-             ng-click="group.collapsed = !group.collapsed"
+             ng-click="onGroupClick( group, $index )"
              style="margin-bottom:2px; cursor:pointer;">
           <h4>
             <div class="pull-right">

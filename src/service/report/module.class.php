@@ -38,9 +38,11 @@ class module extends \cenozo\service\site_restricted_module
         $file = $this->get_file_as_array();
         $select = lib::create( 'database\select' );
         $select->add_column( 'name' );
+        $select->add_column( 'mandatory', NULL, true, 'boolean' );
         foreach( $db_report_type->get_report_restriction_list( $select ) as $report_restriction )
         {
-          if( !array_key_exists( 'restrict_'.$report_restriction['name'], $file ) )
+          if( $report_restriction['mandatory'] &&
+              !array_key_exists( 'restrict_'.$report_restriction['name'], $file ) )
           {
             $this->get_status()->set_code( 400 );
             return;
@@ -110,7 +112,13 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::pre_write( $record );
 
-    if( 'POST' == $this->get_method() )
+    $method = $this->get_method();
+    if( 'DELETE' == $method )
+    {
+      // make note of the report's filename to delete after the record has been removed
+      $this->filename = $record->get_executer()->get_filename();
+    }
+    else if( 'POST' == $method )
     {
       $util_class_name = lib::get_class_name( 'util' );
       $session = lib::create( 'business\session' );
@@ -132,7 +140,27 @@ class module extends \cenozo\service\site_restricted_module
     parent::post_write( $record );
 
     $method = $this->get_method();
-    if( 'POST' == $method )
+    if( 'DELETE' == $method )
+    {
+      if( file_exists( $this->filename ) ) unlink( $this->filename );
+    }
+    else if( 'PATCH' == $method )
+    {
+      // execute the report if the stage has been set to started and the progress to 1
+      $file = $this->get_file_as_array();
+      if( 2 == count( $file ) &&
+          array_key_exists( 'stage', $file ) && 'started' == $file['stage'] &&
+          array_key_exists( 'progress', $file ) && 1 == $file['progress'] )
+      {
+        // we need to complete any transactions before continuing
+        $session = lib::create( 'business\session' );
+        $session->get_database()->complete_transaction();
+
+        // get the report's executer and generate the report file
+        $this->get_resource()->get_executer()->generate();
+      }
+    }
+    else if( 'POST' == $method )
     {
       // add the restrictions to the record
       $db_report = $this->get_resource();
@@ -156,21 +184,12 @@ class module extends \cenozo\service\site_restricted_module
 
       fclose( popen( $command, 'r' ) );
     }
-    else if( 'PATCH' == $method )
-    {
-      // execute the report if the stage has been set to started and the progress to 1
-      $file = $this->get_file_as_array();
-      if( 2 == count( $file ) &&
-          array_key_exists( 'stage', $file ) && 'started' == $file['stage'] &&
-          array_key_exists( 'progress', $file ) && 1 == $file['progress'] )
-      {
-        // we need to complete any transactions before continuing
-        $session = lib::create( 'business\session' );
-        $session->get_database()->complete_transaction();
-
-        // get the report's executer and generate the report file
-        $this->get_resource()->get_executer()->generate();
-      }
-    }
   }
+
+  /**
+   * Stores a report's filename so it can be deleted after the record is removed
+   * @var string $filename
+   * @access private
+   */
+  private $filename = NULL;
 }
