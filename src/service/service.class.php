@@ -728,17 +728,37 @@ abstract class service extends \cenozo\base_object
 
       if( array_key_exists( 'Accept', $headers ) )
       {
-        $this->mime_type = false;
-        $current_pos = NULL;
-
-        foreach( $mime_type_list as $mime_type )
+        // order accept arguments into three categories: no wildcards, one wildcard and two wildcards
+        $parsed_accept = array( array(), array(), array() );
+        foreach( array_map( 'trim', explode( ',', $headers['Accept'] ) ) as $type )
         {
-          $pos = strpos( $headers['Accept'], $mime_type );
-          if( false !== $pos && ( is_null( $current_pos ) || $pos < $current_pos ) )
+          // remove additional accept parameters, they are ignored
+          $parts = explode( ';', $type );
+          $media = array_shift( $parts );
+
+          // sort by the number of times a wildcard is used
+          $index = substr_count( $media, '*' );
+          if( 3 > $index ) $parsed_accept[$index][] = $media;
+        }
+
+        // now find the highest-ranking accept which matches one fo the available mime types
+        $this->mime_type = NULL;
+        foreach( $parsed_accept as $accept_list )
+        {
+          foreach( $accept_list as $accept )
           {
-            $current_pos = $pos;
-            $this->mime_type = $mime_type;
+            $e = sprintf( '#%s#', str_replace( '*', '.+', $accept ) );
+            foreach( $mime_type_list as $mime_type )
+            {
+              if( 1 === preg_match( $e, $mime_type ) )
+              {
+                $this->mime_type = $mime_type;
+                break;
+              }
+            }
+            if( !is_null( $this->mime_type ) ) break;
           }
+          if( !is_null( $this->mime_type ) ) break;
         }
       }
       else
