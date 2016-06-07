@@ -152,6 +152,60 @@
           </div>
         </div>
       </div>
+      <div ng-switch-when="size">
+        <div class="form-group">
+          <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>
+          <div class="col-sm-9">
+            <select id="{{ 'test' + $index }}"
+                    name="{{ 'test' + $index }}"
+                    ng-model="restrict.test"
+                    ng-change="local.updateEmpty( $index ); local.describeRestriction( $index )"
+                    class="form-control">
+              <option value="&lt;=&gt;">is</option>
+              <option value="&lt;&gt;">is not</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;">greater than</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&gt;=">greater or equal to</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;">less than</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="&lt;=">less or equal to</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="{{ 'value' + $index }}" class="col-sm-3 control-label">Value</label>
+          <div class="col-sm-5">
+            <input id="{{ 'value' + $index }}"
+                   name="{{ 'value' + $index }}"
+                   ng-model="restrict.value"
+                   ng-change="local.describeRestriction( $index )"
+                   class="form-control"
+                   type="number"
+                   step="0.001"
+                   placeholder="{{ null === restrict.value ? '(empty)' : 'restriction size' }}" />
+          </div>
+          <div class="col-sm-2 col-slim">
+            <select id="{{ 'unit' + $index }}"
+                    name="{{ 'unit' + $index }}"
+                    ng-model="restrict.unit"
+                    ng-change="local.updateEmpty( $index ); local.describeRestriction( $index )"
+                    class="form-control">
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="Bytes">Bytes</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="KB">KB</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="MB">MB</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="GB">GB</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="TB">TB</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="PB">PB</option>
+              <option class="not-nullable" ng-disabled="null === restrict.value" value="EB">EB</option>
+            </select>
+          </div>
+          <div class="col-sm-2">
+            <label class="btn btn-default pull-right"
+                   ng-class="{'btn-warning':local.emptyList[$index].isEmpty}"
+                   ng-model="local.emptyList[$index].isEmpty"
+                   ng-click="local.toggleEmpty( $index )"
+                   btn-checkbox>Empty</label>
+          </div>
+        </div>
+      </div>
       <div ng-switch-when="rank">
         <div class="form-group">
           <label for="{{ 'test' + $index }}" class="col-sm-3 control-label">Comparison</label>

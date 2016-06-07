@@ -76,10 +76,10 @@ abstract class base_report extends \cenozo\base_object
    */
   public function generate()
   {
-    // check the primary key value
-    if( is_null( $this->id ) )
+    // check the report's primary key value
+    if( is_null( $this->db_report->id ) )
     {
-      log::warning( 'Tried to generate report with no primary key.' );
+      log::warning( 'Tried to generate report without a valid report record.' );
       return;
     }
     
@@ -426,7 +426,7 @@ abstract class base_report extends \cenozo\base_object
       }
 
       // write the data to a file
-      $result = file_put_contents( $filename, $data, LOCK_EX );
+      $result = file_put_contents( $this->get_filename(), $data, LOCK_EX );
       if( false === $result )
       {
         $this->db_report->stage = 'failed';
@@ -483,7 +483,7 @@ abstract class base_report extends \cenozo\base_object
    * @var database\report $db_report
    * @access protected
    */
-  protected $db_report = array();
+  protected $db_report = NULL;
 
   /**
    * An associative array of all reports to put in the report.

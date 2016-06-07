@@ -940,6 +940,8 @@ cenozo.directive( 'cnRecordAdd', [
                       $scope.formattedRecord[input.key] = response.data.value;
                     } );
                   }
+                } else if( 'size' == input.type ) {
+                  $scope.formattedRecord[input.key] = [ '', 'Bytes' ];
                 }
               } );
             } );
@@ -949,6 +951,16 @@ cenozo.directive( 'cnRecordAdd', [
         $scope.cancel = function() { $scope.model.addModel.transitionOnCancel(); };
 
         $scope.check = function( property ) {
+          // convert size types and write record property from formatted record
+          var input = null;
+          $scope.dataArray.some( function( group ) {
+            input = group.inputArray.findByProperty( 'key', property );
+            if( null != input ) return true;
+          } );
+          if( null != input && 'size' == input.type )
+            $scope.record[property] =
+              $filter( 'cnSize' )( $scope.formattedRecord[property].join( ' ' ), true );
+
           // test the format
           var element = cenozo.getFormElement( property );
           if( element ) {
@@ -1257,8 +1269,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state',
-  function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state ) {
+  'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state', '$filter',
+  function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state, $filter ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'record-view.tpl.html' ),
       restrict: 'E',
@@ -1351,9 +1363,20 @@ cenozo.directive( 'cnRecordView', [
                 cenozo.updateFormElement( element, true );
               }
             } else {
+              // convert size types and write record property from formatted record
+              var input = null;
+              $scope.dataArray.some( function( group ) {
+                input = group.inputArray.findByProperty( 'key', property );
+                if( null != input ) return true;
+              } );
+              if( null != input && 'size' == input.type )
+                $scope.model.viewModel.record[property] =
+                  $filter( 'cnSize' )( $scope.model.viewModel.formattedRecord[property].join( ' ' ), true );
+
               // validation passed, proceed with patch
               var data = {};
               data[property] = $scope.model.viewModel.record[property];
+
               $scope.model.viewModel.onPatch( data ).then( function() {
                 // if the data in the identifier was patched then reload with the new url
                 if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
@@ -1785,6 +1808,49 @@ cenozo.filter( 'cnRestrictType', function() {
 /**
  * TODO: document
  */
+cenozo.filter( 'cnSize', function() {
+  return function( input, reverse ) {
+    var output = input;
+    if( angular.isUndefined( reverse ) ) reverse = false;
+    if( angular.isUndefined( input ) || null === input || '' === input ) output = 'empty';
+    else {
+      var type = cenozo.getType( input );
+      if( reverse ) {
+        if( 'string' == type ) {
+          var parts = input.split( ' ' );
+          if( 2 == parts.length ) {
+            output = parts[0];
+            var unit = parts[1];
+            if( 'KB' == unit ) output *= 1024;
+            if( 'MB' == unit ) output *= 1048576;
+            if( 'GB' == unit ) output *= 1073741824;
+            if( 'TB' == unit ) output *= 1099511627776;
+            if( 'PB' == unit ) output *= 1125899906842624;
+            if( 'EB' == unit ) output *= 1152921504606846976;
+          }
+        }
+      } else {
+        if( 'string' == type ) input = parseInt( input );
+        if( 'number' == type ) {
+          var unitList = [ 'Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB' ];
+          var unitIndex = 0;
+          while( output >= 1024 ) {
+            output /= 1024;
+            unitIndex++;
+          }
+          output = ( Math.round( output*100 ) / 100 ) + ' ' + unitList[unitIndex];
+        }
+      }
+    }
+    return output;
+  };
+} );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.filter( 'cnStub', function() {
   return function( input, limit ) {
     if( null == input ) return '(empty)';
@@ -2163,11 +2229,12 @@ cenozo.factory( 'CnSession', [
           return formatted;
         },
 
-        describeRestriction: function( type, test, value ) {
+        describeRestriction: function( type, test, value, unit ) {
           var formattedValue = this.formatValue( value, type, false );
           if( 'string' == type && null !== value && 0 < value.length )
             formattedValue = '"' + formattedValue + '"';
-          return $filter( 'cnComparator' )( test ) + ' ' + formattedValue;
+          var formattedUnit = angular.isDefined( unit ) ? ' ' + unit : '';
+          return $filter( 'cnComparator' )( test ) + ' ' + formattedValue + formattedUnit;
         }
 
       } );
@@ -2813,12 +2880,14 @@ cenozo.factory( 'CnBaseListFactory', [
             if( angular.isDefined( restrict ) ) {
               this.columnRestrictLists = angular.fromJson( restrict );
               for( var name in this.columnRestrictLists ) {
+                console.log( 'TODO: convert from number to size' );
                 this.columnRestrictLists[name].forEach( function( obj ) {
                   obj.description = CnSession.describeRestriction(
                     angular.isDefined( self.parentModel.module.columnList[name] ) ?
                       self.parentModel.module.columnList[name].type : 'string',
                     obj.test,
-                    obj.value
+                    obj.value,
+                    obj.unit
                   );
                 } );
               }
@@ -2892,7 +2961,8 @@ cenozo.factory( 'CnBaseListFactory', [
                   obj.description = CnSession.describeRestriction(
                     self.parentModel.module.columnList[name].type,
                     obj.test,
-                    obj.value
+                    obj.value,
+                    obj.unit
                   );
                 } );
               }
@@ -3056,6 +3126,8 @@ cenozo.factory( 'CnBaseViewFactory', [
                   this.formattedRecord[property] = this.record['formatted_'+property];
                   delete this.record['formatted_'+property];
                 }
+              } else if( 'size' == input.type ) {
+                this.formattedRecord[property] = $filter( 'cnSize' )( this.record[property] ).split( ' ' );
               } else {
                 this.formattedRecord[property] =
                   CnSession.formatValue( this.record[property], input.type, true );
@@ -3329,8 +3401,8 @@ cenozo.factory( 'CnBaseViewFactory', [
  * TODO: document
  */
 cenozo.factory( 'CnBaseModelFactory', [
-  '$state', 'CnSession', 'CnHttpFactory',
-  function( $state, CnSession, CnHttpFactory ) {
+  '$state', '$filter', 'CnSession', 'CnHttpFactory',
+  function( $state, $filter, CnSession, CnHttpFactory ) {
     return {
       construct: function( object, module ) {
         // Note: methods are added to Object here, members below
@@ -3599,6 +3671,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               columnRestrictLists[key].forEach( function( item ) {
                 var test = item.test;
                 var value = item.value;
+                var unit = item.unit;
 
                 // simple search
                 if( ( 'like' == test || 'not like' == test ) ) {
@@ -3607,6 +3680,9 @@ cenozo.factory( 'CnBaseModelFactory', [
                   // LIKE without % is meaningless, so add % at each end of the string
                   else if( 0 > value.indexOf( '%' ) ) value = '%' + value + '%';
                 }
+
+                // convert units
+                if( angular.isDefined( unit ) ) value = $filter( 'cnSize' )( value + ' ' + unit, true );
 
                 // determine the column name
                 var column = key;
@@ -3985,6 +4061,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           var type = column.type;
           if( cenozo.isDatetimeType( type ) ) column.filter = 'cnDatetime:' + type;
           else if( 'rank' == type ) column.filter = 'cnOrdinal';
+          else if( 'size' == type ) column.filter = 'cnSize';
           else if( 'boolean' == type ) column.filter = 'cnYesNo';
           else if( 'text' == type )
             column.filter = 'cnStub:' + ( angular.isDefined( column.limit ) ? column.limit : 10 );
@@ -4983,8 +5060,8 @@ cenozo.service( 'CnModalPasswordFactory', [
  * TODO: document
  */
 cenozo.service( 'CnModalRestrictFactory', [
-  '$modal', '$filter', 'CnModalDatetimeFactory', 'CnSession',
-  function( $modal, $filter, CnModalDatetimeFactory, CnSession ) {
+  '$modal', 'CnModalDatetimeFactory', 'CnSession',
+  function( $modal, rnModalDatetimeFactory, CnSession ) {
     var object = function( params ) {
       var self = this;
       if( angular.isUndefined( params.column ) )
@@ -4999,7 +5076,7 @@ cenozo.service( 'CnModalRestrictFactory', [
       if( !angular.isArray( this.restrictList ) ) this.restrictList = [];
 
       this.getInitialValue = function() {
-        var value = 1; // boolean, number, rank
+        var value = 1; // boolean, number, size, rank
         if( 'string' == this.type ) value = '';
         else if( cenozo.isDatetimeType( this.type ) ) {
           var date = moment().tz( 'utc' );
@@ -5011,6 +5088,7 @@ cenozo.service( 'CnModalRestrictFactory', [
 
       this.addRestriction = function() {
         var restriction = { test: '<=>', value: this.getInitialValue() };
+        if( 'size' == this.type ) restriction.unit = 'Bytes';
         if( 0 < this.restrictList.length ) restriction.logic = 'and';
         this.restrictList.push( restriction );
         this.emptyList.push( { isEmpty: false } );
@@ -5031,7 +5109,8 @@ cenozo.service( 'CnModalRestrictFactory', [
         this.restrictList[index].description = CnSession.describeRestriction(
           this.type,
           this.restrictList[index].test,
-          this.restrictList[index].value
+          this.restrictList[index].value,
+          this.restrictList[index].unit
         );
       }
 

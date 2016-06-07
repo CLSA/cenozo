@@ -70,72 +70,105 @@
                     ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
                     maxlength="{{ model.metadata.columnList[input.key].max_length }}"
                     ng-required="model.metadata.columnList[input.key].required"></input>
-                  <input ng-switch-when="typeahead"
-                    ng-attr-id="{{ input.key }}"
-                    name="name"
-                    ng-model="model.viewModel.record[input.key]"
-                    typeahead="item for item in getTypeaheadValues( input, $viewValue )"
-                    typeahead-editable="false"
-                    typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
-                    typeahead-min-length="2"
-                    cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
-                    class="form-control"
-                    ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
-                    type="text"
-                    placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
-                                 }}type the first few letters to search possible values)"
-                    autocomplete="off"
-                    ng-readonly="!model.editEnabled"></input>
-                  <input ng-switch-when="lookup-typeahead"
-                    ng-attr-id="{{ input.key }}"
-                    name="name"
-                    ng-model="model.viewModel.formattedRecord[input.key]"
-                    typeahead="item.id as item.value for item in getTypeaheadValues( input, $viewValue )"
-                    typeahead-editable="false"
-                    typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
-                    typeahead-min-length="2"
-                    cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
-                    class="form-control"
-                    ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
-                    type="text"
-                    placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
-                                 }}type the first few letters to search possible values)"
-                    autocomplete="off"
-                    ng-readonly="!model.editEnabled"></input>
-                  <input ng-switch-when="datetime"
-                    ng-attr-id="{{ input.key }}"
-                    name="name"
-                    ng-model="model.viewModel.formattedRecord[input.key]"
-                    class="form-control"
-                    type="text"
-                    ng-click="model.editEnabled && true !== input.constant && 'view' != constant &&
-                              selectDatetime( input )"
-                    ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
-                    onkeydown="return false"></input>
-                  <input ng-switch-when="color"
-                    ng-attr-id="{{ input.key }}"
-                    name="name"
-                    ng-model="model.viewModel.record[input.key]"
-                    cn-change="patch( input.key )"
-                    class="form-control color-input"
-                    ng-style="{'background-color':model.viewModel.record[input.key]}"
-                    type="text"
-                    colorpicker="hex"
-                    colorpicker-size="200"
-                    colorpicker-close-on-select
-                    autocomplete="off"
-                    spellcheck="false"
-                    ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
-                    maxlength="{{ model.metadata.columnList[input.key].max_length }}"
-                    ng-required="model.metadata.columnList[input.key].required"
-                    onkeydown="return false"></input>
-                  <select ng-switch-when="select"
-                    ng-attr-id="{{ input.key }}"
-                    name="name"
-                    ng-options="item.value as item.name for item in input.enumList"
-                    cn-options-disabled="item.disabled for item in input.enumList"
-                    ng-model="model.viewModel.record[input.key]"
-                    ng-change="patch( input.key )"
+                  <div ng-switch-when="size">
+                    <div class="col-sm-8 col-slim">
+                      <input ng-attr-id="{{ input.key }}"
+                        name="name"
+                        ng-model="model.viewModel.formattedRecord[input.key][0]"
+                        cn-change="patch( input.key )"
+                        class="form-control"
+                        type="text"
+                        autocomplete="off"
+                        ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
+                        maxlength="{{ model.metadata.columnList[input.key].max_length }}"
+                        ng-required="model.metadata.columnList[input.key].required"></input>
+                    </div>
+                    <div class="col-sm-4 col-slim">
+                      <select ng-attr-id="{{ input.key }}"
+                              name="name"
+                              ng-model="model.viewModel.formattedRecord[input.key][1]"
+                              ng-change="patch( input.key )"
+                              class="form-control"
+                              ng-disabled="!model.editEnabled ||
+                                           true === input.constant ||
+                                           'view' == input.constant"
+                              ng-required="model.metadata.columnList[input.key].required">
+                        <option ng-disabled="null === model.viewModel.record[input.key]" value="Bytes">Bytes</option>
+                        <option ng-disabled="null === model.viewModel.record[input.key]" value="KB">KB</option>
+                        <option ng-disabled="null === model.viewModel.record[input.key]" value="MB">MB</option>
+                        <option ng-disabled="null === model.viewModel.record[input.key]" value="GB">GB</option>
+                        <option ng-disabled="null === model.viewModel.record[input.key]" value="TB">TB</option>
+                        <option ng-disabled="null === model.viewModel.record[input.key]" value="PB">PB</option>
+                        <option ng-disabled="null === model.viewModel.record[input.key]" value="EB">EB</option>
+                      </select>
+                      </div>
+                    </div>
+                    <input ng-switch-when="typeahead"
+                      ng-attr-id="{{ input.key }}"
+                      name="name"
+                      ng-model="model.viewModel.record[input.key]"
+                      typeahead="item for item in getTypeaheadValues( input, $viewValue )"
+                      typeahead-editable="false"
+                      typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
+                      typeahead-min-length="2"
+                      cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
+                      class="form-control"
+                      ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
+                      type="text"
+                      placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
+                                   }}type the first few letters to search possible values)"
+                      autocomplete="off"
+                      ng-readonly="!model.editEnabled"></input>
+                    <input ng-switch-when="lookup-typeahead"
+                      ng-attr-id="{{ input.key }}"
+                      name="name"
+                      ng-model="model.viewModel.formattedRecord[input.key]"
+                      typeahead="item.id as item.value for item in getTypeaheadValues( input, $viewValue )"
+                      typeahead-editable="false"
+                      typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
+                      typeahead-min-length="2"
+                      cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
+                      class="form-control"
+                      ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
+                      type="text"
+                      placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
+                                   }}type the first few letters to search possible values)"
+                      autocomplete="off"
+                      ng-readonly="!model.editEnabled"></input>
+                    <input ng-switch-when="datetime"
+                      ng-attr-id="{{ input.key }}"
+                      name="name"
+                      ng-model="model.viewModel.formattedRecord[input.key]"
+                      class="form-control"
+                      type="text"
+                      ng-click="model.editEnabled && true !== input.constant && 'view' != constant &&
+                                selectDatetime( input )"
+                      ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
+                      onkeydown="return false"></input>
+                    <input ng-switch-when="color"
+                      ng-attr-id="{{ input.key }}"
+                      name="name"
+                      ng-model="model.viewModel.record[input.key]"
+                      cn-change="patch( input.key )"
+                      class="form-control color-input"
+                      ng-style="{'background-color':model.viewModel.record[input.key]}"
+                      type="text"
+                      colorpicker="hex"
+                      colorpicker-size="200"
+                      colorpicker-close-on-select
+                      autocomplete="off"
+                      spellcheck="false"
+                      ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
+                      maxlength="{{ model.metadata.columnList[input.key].max_length }}"
+                      ng-required="model.metadata.columnList[input.key].required"
+                      onkeydown="return false"></input>
+                    <select ng-switch-when="select"
+                      ng-attr-id="{{ input.key }}"
+                      name="name"
+                      ng-options="item.value as item.name for item in input.enumList"
+                      cn-options-disabled="item.disabled for item in input.enumList"
+                      ng-model="model.viewModel.record[input.key]"
+                      ng-change="patch( input.key )"
                     class="form-control"
                     ng-disabled="true === input.constant || 'view' == input.constant ||
                                  !model.editEnabled ||

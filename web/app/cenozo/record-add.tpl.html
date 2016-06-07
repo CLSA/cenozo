@@ -30,6 +30,36 @@
                 autocomplete="off"
                 ng-readonly="true === input.constant || 'add' == input.constant"
                 ng-required="model.metadata.columnList[input.key].required"></input>
+              <div ng-switch-when="size">
+                <div class="col-sm-8 col-slim">
+                  <input ng-attr-id="{{ input.key }}"
+                    name="name"
+                    ng-model="formattedRecord[input.key][0]"
+                    cn-change="check( input.key )"
+                    class="form-control"
+                    type="text"
+                    autocomplete="off"
+                    ng-readonly="true === input.constant || 'add' == input.constant"
+                    ng-required="model.metadata.columnList[input.key].required"></input>
+                </div>
+                <div class="col-sm-4 col-slim">
+                  <select ng-attr-id="{{ input.key }}"
+                          name="name"
+                          ng-model="formattedRecord[input.key][1]"
+                          ng-change="check( input.key )"
+                          class="form-control"
+                          ng-disabled="true === input.constant || 'add' == input.constanta"
+                          ng-required="model.metadata.columnList[input.key].required">
+                    <option ng-disabled="null === model.viewModel.record[input.key]" value="Bytes">Bytes</option>
+                    <option ng-disabled="null === model.viewModel.record[input.key]" value="KB">KB</option>
+                    <option ng-disabled="null === model.viewModel.record[input.key]" value="MB">MB</option>
+                    <option ng-disabled="null === model.viewModel.record[input.key]" value="GB">GB</option>
+                    <option ng-disabled="null === model.viewModel.record[input.key]" value="TB">TB</option>
+                    <option ng-disabled="null === model.viewModel.record[input.key]" value="PB">PB</option>
+                    <option ng-disabled="null === model.viewModel.record[input.key]" value="EB">EB</option>
+                  </select>
+                  </div>
+                </div>
               <input ng-switch-when="typeahead"
                 ng-attr-id="{{ input.key }}"
                 name="name"

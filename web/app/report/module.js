@@ -32,13 +32,17 @@ define( function() {
         column: 'role.name',
         title: 'Role'
       },
-      datetime: {
-        title: 'Date & Time',
-        type: 'datetimesecond'
+      size: {
+        title: 'Size',
+        type: 'size'
       },
       stage: {
         title: 'Status',
         type: 'string'
+      },
+      datetime: {
+        title: 'Date & Time',
+        type: 'datetimesecond'
       }
     },
     defaultOrder: {
@@ -75,12 +79,6 @@ define( function() {
       exclude: 'add',
       constant: true
     },
-    datetime: {
-      title: 'Date & Time',
-      type: 'datetimesecond',
-      exclude: 'add',
-      constant: true
-    },
     format: {
       title: 'Format',
       type: 'enum',
@@ -89,6 +87,19 @@ define( function() {
     stage: {
       title: 'Status',
       type: 'string',
+      exclude: 'add',
+      constant: true
+    },
+    size: {
+      title: 'Size',
+      type: 'size',
+      format: 'float',
+      exclude: 'add',
+      constant: true
+    },
+    datetime: {
+      title: 'Date & Time',
+      type: 'datetimesecond',
       exclude: 'add',
       constant: true
     }

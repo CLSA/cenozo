@@ -158,12 +158,19 @@ class module extends \cenozo\service\site_restricted_module
     }
     else if( 'PATCH' == $method )
     {
-      // we need to complete any transactions before continuing
-      $session = lib::create( 'business\session' );
-      $session->get_database()->complete_transaction();
+      // execute the report if the stage has been set to started and the progress to 1
+      $file = $this->get_file_as_array();
+      if( 2 == count( $file ) &&
+          array_key_exists( 'stage', $file ) && 'started' == $file['stage'] &&
+          array_key_exists( 'progress', $file ) && 1 == $file['progress'] )
+      {
+        // we need to complete any transactions before continuing
+        $session = lib::create( 'business\session' );
+        $session->get_database()->complete_transaction();
 
-      // get the report's executer and generate the report file
-      $this->get_resource()->get_executer()->generate();
+        // get the report's executer and generate the report file
+        $this->get_resource()->get_executer()->generate();
+      }
     }
   }
 }
