@@ -131,9 +131,9 @@ define( function() {
           // change the heading to the form's title
           CnHttpFactory.instance( {
             path: 'report_type/' + $scope.model.getParentIdentifier().identifier,
-            data: { select: { column: [ 'name' ] } }
+            data: { select: { column: [ 'title' ] } }
           } ).get().then( function( response ) {
-            $scope.model.addModel.heading = 'Create ' + response.data.name + ' Report';
+            $scope.model.addModel.heading = 'Run ' + response.data.title + ' Report';
           } );
 
           // wait a smidge for the directive to render then rebuild the form restrictions

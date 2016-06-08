@@ -12,6 +12,7 @@ define( function() {
     },
     columnList: {
       title: { title: 'Title' },
+      subject: { title: 'Subject' },
       description: {
         title: 'Description',
         align: 'left'
@@ -31,6 +32,10 @@ define( function() {
     },
     title: {
       title: 'Title',
+      type: 'string'
+    },
+    subject: {
+      title: 'Subject',
       type: 'string'
     },
     description: {

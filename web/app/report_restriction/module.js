@@ -32,6 +32,10 @@ define( function() {
         title: 'Subject',
         type: 'string'
       },
+      operator: {
+        title: 'Operator',
+        type: 'string'
+      },
       mandatory: {
         title: 'Mandatory',
         type: 'boolean'
@@ -59,6 +63,10 @@ define( function() {
     subject: {
       title: 'Subject',
       type: 'string'
+    },
+    operator: {
+      title: 'Operator',
+      type: 'enum'
     },
     mandatory: {
       title: 'Mandatory',

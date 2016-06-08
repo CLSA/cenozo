@@ -483,6 +483,7 @@ abstract class base_report extends \cenozo\base_object
     $select->add_table_column( 'report_has_report_restriction', 'value' );
     $select->add_column( 'restriction_type' );
     $select->add_column( 'subject' );
+    $select->add_column( 'operator' );
     foreach( $this->db_report->get_report_restriction_list( $select ) as $restriction )
     {
       if( 'table' == $restriction['restriction_type'] )
@@ -520,14 +521,11 @@ abstract class base_report extends \cenozo\base_object
       else if( 'decimal' == $restriction['restriction_type'] )
       {
       }
-      else if( 'date' == $restriction['restriction_type'] )
+      else if( 'date' == $restriction['restriction_type'] ||
+               'datetime' == $restriction['restriction_type'] ||
+               'time' == $restriction['restriction_type'] )
       {
-      }
-      else if( 'datetime' == $restriction['restriction_type'] )
-      {
-      }
-      else if( 'time' == $restriction['restriction_type'] )
-      {
+        $modifier->where( $restriction['subject'], $restriction['operator'], $restriction['value'] );
       }
     }
   }

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS report_restriction (
   mandatory TINYINT(1) NOT NULL DEFAULT 0,
   restriction_type ENUM('table', 'uid_list', 'string', 'integer', 'decimal', 'date', 'datetime', 'time', 'boolean', 'enum') NOT NULL,
   subject VARCHAR(45) NULL,
+  operator ENUM('=', '<=>', '!=', '<>', '<', '<=', '>', '>=') NOT NULL,
   enum_list VARCHAR(511) NULL,
   description TEXT NULL,
   PRIMARY KEY (id),
@@ -20,8 +21,11 @@ CREATE TABLE IF NOT EXISTS report_restriction (
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
-INSERT IGNORE INTO report_restriction ( report_type_id, name, title, mandatory, restriction_type, subject, enum_list, description )
-SELECT report_type.id, restriction.name, restriction.title, mandatory, type, subject, enum_list, restriction.description
+INSERT IGNORE INTO report_restriction (
+  report_type_id, name, title, mandatory,
+  restriction_type, subject, operator, enum_list, description )
+SELECT report_type.id, restriction.name, restriction.title, mandatory,
+       type, restriction.subject, operator, enum_list, restriction.description
 FROM report_type, (
   SELECT
     'uid_list' AS name,
@@ -29,6 +33,7 @@ FROM report_type, (
     1 AS mandatory,
     'uid_list' AS type,
     NULL AS subject,
+    NULL AS operator,
     NULL AS enum_list,
     'Provide a list of participant unique identifiers (UIDs) for which the report is to include.' AS description
   UNION SELECT
@@ -37,13 +42,17 @@ FROM report_type, (
     0 AS mandatory,
     'table' AS type,
     'collection' AS subject,
+    NULL AS operator,
     NULL AS enum_list,
     'Restrict to a particular collection.' AS description
 ) AS restriction
 WHERE report_type.name = 'contact';
 
-INSERT IGNORE INTO report_restriction ( report_type_id, name, title, mandatory, restriction_type, subject, enum_list, description )
-SELECT report_type.id, restriction.name, restriction.title, mandatory, type, subject, enum_list, restriction.description
+INSERT IGNORE INTO report_restriction (
+  report_type_id, name, title, mandatory,
+  restriction_type, subject, operator, enum_list, description )
+SELECT report_type.id, restriction.name, restriction.title, mandatory,
+       type, restriction.subject, operator, enum_list, restriction.description
 FROM report_type, (
   SELECT
     'collection' AS name,
@@ -51,6 +60,7 @@ FROM report_type, (
     0 AS mandatory,
     'table' AS type,
     'collection' AS subject,
+    NULL AS operator,
     NULL AS enum_list,
     'Restrict to a particular collection.' AS description
   UNION SELECT
@@ -59,6 +69,7 @@ FROM report_type, (
     0 AS mandatory,
     'table' AS type,
     'language' AS subject,
+    NULL AS operator,
     NULL AS enum_list,
     'Restrict to a particular language.' AS description
   UNION SELECT
@@ -66,7 +77,8 @@ FROM report_type, (
     'Start Date' AS title,
     0 AS mandatory,
     'date' AS type,
-    'start_date' AS subject,
+    'email_datetime' AS subject,
+    '>=' AS operator,
     NULL AS enum_list,
     'Report changes starting on the given date.' AS description
   UNION SELECT
@@ -74,16 +86,9 @@ FROM report_type, (
     'End Date' AS title,
     0 AS mandatory,
     'date' AS type,
-    'end_date' AS subject,
+    'email_datetime' AS subject,
+    '<=' AS operator,
     NULL AS enum_list,
     'Report changes up to and including the given date.' AS description
-  UNION SELECT
-    'type' AS name,
-    'Type' AS title,
-    1 AS mandatory,
-    'enum' AS type,
-    'type' AS subject,
-    '"added or changed","removed"' AS enum_list,
-    'Whether to provide new/changed addresses or a list of addresses which have been removed.' AS description
 ) AS restriction
 WHERE report_type.name = 'email';
