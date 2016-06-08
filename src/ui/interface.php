@@ -142,7 +142,7 @@
                     <a class="btn btn-default btn-default btn-menu full-width"
                        ng-class="getListItemClass( $first, $last )"
                        ui-sref-active="btn-warning"
-                       ui-sref="report.{{ name }}">{{ title }}</a>
+                       ui-sref="report_type.view({identifier:'name={{name}}'})">{{ title }}</a>
                   </li>
                 </ul>
               </div>

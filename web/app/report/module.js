@@ -20,6 +20,10 @@ define( function() {
         column: 'report_type.name',
         title: 'Report Type'
       },
+      report_schedule: {
+        title: 'Automatic',
+        type: 'boolean'
+      },
       user: {
         column: 'user.name',
         title: 'User'
@@ -42,7 +46,7 @@ define( function() {
       },
       datetime: {
         title: 'Date & Time',
-        type: 'datetimesecond'
+        type: 'datetime'
       }
     },
     defaultOrder: {

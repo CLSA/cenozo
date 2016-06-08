@@ -108,20 +108,8 @@ class ui extends \cenozo\base_object
 
       // prepare which reports to show in the list
       $report_items = $this->get_report_items();
-      /*
       if( 0 == count( $report_items ) ) $report_items = NULL;
-      else
-      {
-        ksort( $report_items );
-
-        $module_list['report'] = array(
-          'actions' => array(),
-          'children' => array(),
-          'choosing' => array(),
-          'list_menu' => false );
-        foreach( $report_items as $title => $name ) $module_list['report']['actions'][$name] = '';
-      }
-      */
+      else ksort( $report_items );
 
       // create the json strings for the interface
       $framework_module_string = $util_class_name::json_encode( $framework_module_list );
@@ -339,8 +327,6 @@ class ui extends \cenozo\base_object
       $list['Participants'] = 'participant';
     if( array_key_exists( 'quota', $module_list ) && $module_list['quota']['list_menu'] )
       $list['Quotas'] = 'quota';
-    if( array_key_exists( 'report_type', $module_list ) && $module_list['report_type']['list_menu'] )
-      $list['Reports'] = 'report_type';
     if( 3 <= $db_role->tier &&
         array_key_exists( 'recording', $module_list ) && $module_list['recording']['list_menu'] )
       $list['Recordings'] = 'recording';
@@ -423,12 +409,18 @@ class ui extends \cenozo\base_object
   {
     $report_list = array();
 
-    $db_role = lib::create( 'business\session' )->get_role();
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_role = $session->get_role();
 
-    if( 3 <= $db_role->tier )
-    {
-      $report_list['Contact'] = 'contact';
-    }
+    $select = lib::create( 'database\select' );
+    $select->add_column( 'name' );
+    $select->add_column( 'title' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'application_id', '=', NULL );
+    $modifier->or_where( 'application_id', '=', $db_application->id );
+    foreach( $db_role->get_report_type_list( $select ) as $report_type )
+      $report_list[$report_type['title']] = $report_type['name'];
 
     return $report_list;
   }

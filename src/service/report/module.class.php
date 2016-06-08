@@ -67,12 +67,9 @@ class module extends \cenozo\service\site_restricted_module
 
         if( !is_null( $record ) )
         {
-          $db_report_type = $record->get_report_type();
-
           // restrict by application
           $db_application = $session->get_application();
-          if( !is_null( $db_report_type->application_id ) &&
-              $db_report_type->application_id != $session->get_application()->id )
+          if( $record->application_id != $session->get_application()->id )
           {
             $this->get_status()->set_code( 404 );
             return;
@@ -81,7 +78,7 @@ class module extends \cenozo\service\site_restricted_module
           // restrict by role
           $modifier = lib::create( 'database\modifier' );
           $modifier->where( 'role_id', '=', $session->get_role()->id );
-          if( 0 == $db_report_type->get_role_count( $modifier ) )
+          if( 0 == $record->get_report_type()->get_role_count( $modifier ) )
           {
             $this->get_status()->set_code( 404 );
             return;
@@ -98,6 +95,9 @@ class module extends \cenozo\service\site_restricted_module
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
+
+    // restrict by application
+    $modifier->where( 'report.application_id', '=', lib::create( 'business\session' )->get_application()->id );
 
     if( $select->has_column( 'report_schedule' ) )
       $select->add_column( 'report_schedule_id IS NOT NULL', 'report_schedule', true, 'boolean' );
