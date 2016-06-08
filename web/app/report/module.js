@@ -136,7 +136,7 @@ define( function() {
             $scope.model.addModel.heading = 'Create ' + response.data.name + ' Report';
           } );
 
-          // wait a smidge for the directive to render then rebuild the 
+          // wait a smidge for the directive to render then rebuild the form restrictions
           $timeout( function() {
             // remove the parameters group heading
             var parameterData = $scope.$$childHead.dataArray.findByProperty( 'title', 'Parameters' );
@@ -157,24 +157,81 @@ define( function() {
               restrictionList.forEach( function( restriction ) {
                 var key = 'restrict_' + restriction.name;
                 var type = restriction.restriction_type;
-                if( 'table' == type ) {
-                  type = 'enum';
-                } else if( 'uid_list' == type ) {
-                  type = 'text';
-                } else if( 'integer' == type ) {
-                  type = 'string';
-                } else if( 'decimal' == type ) {
-                  type = 'string';
-                }
-
-                $scope.model.metadata.columnList[key] = { required: restriction.mandatory };
-                parameterData.inputArray.push( {
+                var input = {
                   key: key,
-                  type: type,
                   title: restriction.title,
                   constant: 'view',
                   help: restriction.description
-                } );
+                };
+                $scope.model.metadata.columnList[key] = { required: restriction.mandatory };
+
+                if( 'table' == type ) {
+                  input.type = 'enum';
+                  
+                  // loop through the subject column data to determine where and order data
+                  CnHttpFactory.instance( {
+                    path: restriction.subject
+                  } ).head().then( function( response ) {
+                    var data = {
+                      modifier: {
+                        where: [],
+                        order: undefined
+                      },
+                      select: { column: [ 'id' ] }
+                    };
+                    var columnList = angular.fromJson( response.headers( 'Columns' ) );
+                    for( var column in columnList ) {
+                      if( 'active' == column )
+                        data.modifier.where.push( { column: 'active', operator: '=', value: true } );
+                      else if( 'name' == column ) {
+                        data.modifier.order = { name: false };
+                        data.select.column.push( 'name' );
+                      }
+                    };
+
+                    // query the table for the enum list
+                    CnHttpFactory.instance( {
+                      path: restriction.subject,
+                      data: data
+                    } ).get().then( function( response ) {
+                      var enumList = [ {
+                        value: undefined,
+                        name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+                      } ];
+                      response.data.forEach( function( item ) {
+                        enumList.push( { value: item.id, name: item.name } );
+                      } );
+                      $scope.model.metadata.columnList[key].enumList = enumList;
+                      input.enumList = angular.copy( enumList );
+                    } );
+                  } );
+                } else if( 'uid_list' == type ) {
+                  input.type = 'text';
+                } else if( 'integer' == type ) {
+                  input.type = 'string';
+                } else if( 'decimal' == type ) {
+                  input.type = 'string';
+                } else if( 'enum' == type ) {
+                  input.type = 'enum';
+
+                  var enumList =
+                    angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
+                      function( list, name ) {
+                        list.push( { value: name, name: name } );
+                        return list;
+                      },
+                      [ {
+                        value: undefined,
+                        name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+                      } ]
+                    );
+                  $scope.model.metadata.columnList[key].enumList = enumList;
+                  input.enumList = angular.copy( enumList );
+                } else {
+                  input.type = type;
+                }
+
+                parameterData.inputArray.push( input );
               } );
             } );
           }, 200 );

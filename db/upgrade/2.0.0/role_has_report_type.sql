@@ -22,4 +22,4 @@ INSERT IGNORE INTO role_has_report_type( role_id, report_type_id )
 SELECT role.id, report_type.id
 FROM role, report_type
 WHERE role.name = "administrator"
-AND report_type.name = "Contact";
+AND report_type.name IN( "Contact", "Email" );

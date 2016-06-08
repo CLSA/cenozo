@@ -475,6 +475,10 @@ abstract class base_report extends \cenozo\base_object
       return;
     }
     
+    $report_type_subject = $this->db_report->get_report_type()->subject;
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
+    $subject_class_name = lib::get_class_name( sprintf( 'database\%s', $report_type_subject ) );
+
     $select = lib::create( 'database\select' );
     $select->add_table_column( 'report_has_report_restriction', 'value' );
     $select->add_column( 'restriction_type' );
@@ -483,6 +487,25 @@ abstract class base_report extends \cenozo\base_object
     {
       if( 'table' == $restriction['restriction_type'] )
       {
+        $relationship = $subject_class_name::get_relationship( $restriction['subject'] );
+        if( $relationship_class_name::ONE_TO_MANY == $relationship )
+        {
+          $column = sprintf( '%s_id', $restriction['subject'] );
+          if( $subject_class_name::column_exists( $column ) )
+            $modifier->where( $column, '=', $restriction['value'] );
+        }
+        else if( $relationship_class_name::MANY_TO_MANY == $relationship )
+        {
+          $joining_table = $subject_class_name::get_joining_table_name( $restriction['subject'] );
+          $modifier->join(
+            $joining_table,
+            sprintf( '%s.id', $report_type_subject ),
+            sprintf( '%s.%s_id', $joining_table, $report_type_subject ) );
+          $modifier->where(
+            sprintf( '%s.%s_id', $joining_table, $restriction['subject'] ),
+            '=',
+            $restriction['value'] );
+        }
       }
       else if( 'uid_list' == $restriction['restriction_type'] )
       {

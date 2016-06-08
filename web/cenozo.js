@@ -909,10 +909,9 @@ cenozo.directive( 'cnRecordAdd', [
                   } );
 
                   if( !meta.required || 1 < enumList.length ) {
-                    enumList.unshift( {
-                      value: undefined,
-                      name: meta.required ? '(Select ' + input.title + ')' : '(empty)'
-                    } );
+                    var name = meta.required ? '(Select ' + input.title + ')' : '(empty)';
+                    if( null == enumList.findByProperty( 'name', name ) )
+                      enumList.unshift( { value: undefined, name: name } );
                   }
 
                   if( 1 == enumList.length ) $scope.record[input.key] = enumList[0].value;
@@ -1298,7 +1297,8 @@ cenozo.directive( 'cnRecordView', [
                                  : angular.copy( $scope.model.metadata.columnList[key].enumList );
                   // add the empty option if input is not required
                   if( angular.isArray( input.enumList ) && !$scope.model.metadata.columnList[key].required )
-                    input.enumList.unshift( { value: '', name: '(empty)' } );
+                    if( null == input.enumList.findByProperty( 'name', '(empty)' ) )
+                      input.enumList.unshift( { value: '', name: '(empty)' } );
                 }
               } );
             } );
