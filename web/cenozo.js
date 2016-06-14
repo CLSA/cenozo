@@ -3911,6 +3911,45 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * Returns an array of possible values for typeahead inputs
          */
+        cenozo.addExtendableFunction( self, 'getTypeaheadData', function( input, viewValue ) {
+          // create the where statement
+          var where = {};
+          if( angular.isUndefined( input.typeahead.where ) ) {
+            where = {
+              column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.select,
+              operator: 'like',
+              value: viewValue + '%'
+            };
+          } else {
+            where = [];
+            var whereList = angular.isArray( input.typeahead.where )
+                          ? input.typeahead.where
+                          : [ input.typeahead.where ];
+            whereList.forEach( function( item ) {
+              where.push( {
+                column: item,
+                operator: 'like',
+                value: viewValue + '%',
+                or: true
+              } );
+            } );
+          }
+
+          return {
+            select: {
+              column: [ 'id', {
+                column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.typeahead.select,
+                alias: 'value',
+                table_prefix: false
+              } ]
+            },
+            modifier: { where: where }
+          };
+        } );
+
+        /**
+         * Returns an array of possible values for typeahead inputs
+         */
         cenozo.addExtendableFunction( self, 'getTypeaheadValues', function( input, viewValue ) {
           // sanity checking
           if( angular.isUndefined( input ) )
@@ -3935,41 +3974,9 @@ cenozo.factory( 'CnBaseModelFactory', [
             // make note that we are loading the typeahead values
             input.typeahead.isLoading = true;
 
-            // create the where statement
-            var where = {};
-            if( angular.isUndefined( input.typeahead.where ) ) {
-              where = {
-                column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.select,
-                operator: 'like',
-                value: viewValue + '%'
-              };
-            } else {
-              where = [];
-              var whereList = angular.isArray( input.typeahead.where )
-                            ? input.typeahead.where
-                            : [ input.typeahead.where ];
-              whereList.forEach( function( item ) {
-                where.push( {
-                  column: item,
-                  operator: 'like',
-                  value: viewValue + '%',
-                  or: true
-                } );
-              } );
-            }
-
             return CnHttpFactory.instance( {
               path: input.typeahead.table,
-              data: {
-                select: {
-                  column: [ 'id', {
-                    column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.typeahead.select,
-                    alias: 'value',
-                    table_prefix: false
-                  } ]
-                },
-                modifier: { where: where }
-              }
+              data: this.getTypeaheadData( input, viewValue )
             } ).get().then( function( response ) { return angular.copy( response.data ); } )
                      .finally( function() { input.typeahead.isLoading = false; } );
           }
