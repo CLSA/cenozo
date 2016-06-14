@@ -488,15 +488,23 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantHistory', [
-    'CnParticipantHistoryFactory', 'CnSession', '$state',
-    function( CnParticipantHistoryFactory, CnSession, $state ) {
+    'CnParticipantHistoryFactory', 'CnSession', 'CnHttpFactory', '$state',
+    function( CnParticipantHistoryFactory, CnSession, CnHttpFactory, $state ) {
       return {
-        templateUrl: module.getFileUrl( 'history.tpl.html' ),
+        templateUrl: cenozo.getFileUrl( 'cenozo', 'history.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           $scope.isLoading = false;
           $scope.model = CnParticipantHistoryFactory.instance();
-          $scope.uid = String( $state.params.identifier ).split( '=' ).pop();
+
+          CnHttpFactory.instance( {
+            path: 'participant/' + $state.params.identifier,
+            data: { select: { column: [ 'uid', 'first_name', 'last_name' ] } }
+          } ).get().then( function( response ) {
+            $scope.name = response.data.first_name + ' ' +
+                          response.data.last_name + ' (' +
+                          response.data.uid + ')';
+          } );
 
           // create an array from the history categories object
           $scope.historyCategoryArray = [];
@@ -507,14 +515,6 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               $scope.model.module.historyCategoryList[name].name = name;
             $scope.historyCategoryArray.push( $scope.model.module.historyCategoryList[name] );
           }
-
-          $scope.viewNotes = function() {
-            $state.go( 'participant.notes', { identifier: $state.params.identifier } );
-          };
-
-          $scope.viewParticipant = function() {
-            $state.go( 'participant.view', { identifier: $state.params.identifier } );
-          };
 
           $scope.refresh = function() {
             $scope.isLoading = true;
@@ -801,62 +801,25 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantHistoryFactory', [
-    'CnParticipantModelFactory', 'CnSession', 'CnHttpFactory', '$state', '$q',
-    function( CnParticipantModelFactory, CnSession, CnHttpFactory, $state, $q ) {
+    'CnBaseHistoryFactory', 'CnParticipantModelFactory', 'CnSession', '$state',
+    function( CnBaseHistoryFactory, CnParticipantModelFactory, CnSession, $state ) {
       var object = function() {
         var self = this;
-        this.module = module;
-        this.participantModel = CnParticipantModelFactory.root;
+        CnBaseHistoryFactory.construct( this, module, CnParticipantModelFactory.root );
 
-        this.selectAllCategories = function() {
-          for( var name in this.module.historyCategoryList ) {
-            this.module.historyCategoryList[name].active = true;
-          }
-          this.participantModel.reloadState( false, false );
-        };
-
-        this.unselectAllCategories = function() {
-          for( var name in this.module.historyCategoryList ) {
-            this.module.historyCategoryList[name].active = false;
-          }
-          this.participantModel.reloadState( false, false );
-        };
-
-        this.toggleCategory = function( name ) {
-          // update the query parameters with whatever the category's active state is
-          this.participantModel.setQueryParameter(
-            name.toLowerCase(), this.module.historyCategoryList[name].active
+        this.onView().then( function() {
+          CnSession.setBreadcrumbTrail(
+            [ {
+              title: 'Participants',
+              go: function() { $state.go( 'participant.list' ); }
+            }, {
+              title: self.uid,
+              go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
+            }, {
+              title: 'History'
+            } ]
           );
-          this.participantModel.reloadState( false, false );
-        };
-
-        this.onView = function() {
-          this.historyList = [];
-
-          // get all history category promises, run them and then sort the resulting history list
-          var promiseList = [];
-          for( var name in this.module.historyCategoryList ) {
-            // sync the active parameter to the state while we're at it
-            var active = this.participantModel.getQueryParameter( name.toLowerCase() );
-            this.module.historyCategoryList[name].active = angular.isDefined( active ) ? active : true;
-            if( 'function' == cenozo.getType( this.module.historyCategoryList[name].promise ) ) {
-              promiseList.push(
-                this.module.historyCategoryList[name].promise( this.historyList, $state, CnHttpFactory, $q )
-              );
-            }
-          };
-
-          return $q.all( promiseList ).then( function() {
-            // convert invalid dates to null
-            self.historyList.forEach( function( item ) {
-              if( '0000-00-00' == item.datetime.substring( 0, 10 ) ) item.datetime = null;
-            } );
-            // sort the history list by datetime
-            self.historyList = self.historyList.sort( function( a, b ) {
-              return moment( new Date( a.datetime ) ).isBefore( new Date( b.datetime ) ) ? 1 : -1;
-            } );
-          } );
-        };
+        } );
       };
 
       return { instance: function() { return new object( false ); } };
@@ -1152,8 +1115,8 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantNotesFactory', [
-    'CnBaseNoteFactory', 'CnSession', 'CnHttpFactory', '$state',
-    function( CnBaseNoteFactory, CnSession, CnHttpFactory, $state ) {
+    'CnBaseNoteFactory', 'CnSession', '$state',
+    function( CnBaseNoteFactory, CnSession, $state ) {
       var object = function() {
         var self = this;
         CnBaseNoteFactory.construct( this, module );

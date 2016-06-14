@@ -14,15 +14,11 @@
     <button type="button"
             class="btn btn-default pull-left"
             ng-if="model.viewHistory"
-            ng-click="model.viewHistory()">
-      History
-    </button>
-    <button type="button"
-            class="btn btn-primary"
-            ng-click="model.viewRecord()">
+            ng-click="model.viewHistory()">History</button>
+    <button type="button" class="btn btn-primary" ng-click="model.viewRecord()">
       View {{ model.module.name.singular.ucWords() }}
     </button>
-  </div> 
+  </div>
   <div class="container-fluid">
     <cn-loading ng-if="model.isLoading"></cn-loading>
     <div class="spacer" ng-if="!model.isLoading">
@@ -37,7 +33,7 @@
         </div>
         <div style="position:relative;">
           <textarea id="newNote" ng-model="model.newNote" class="form-control note" cn-elastic></textarea>
-          <button class="btn btn-info bottom-right" ng-click="addNote()">
+          <button class="btn btn-info bottom-right" ng-click="addNote()" ng-disabled="0 == model.newNote.length">
             <i class="glyphicon glyphicon-cloud-upload"></i> Submit
           </button>
         </div>
@@ -97,13 +93,9 @@
     <button type="button"
             class="btn btn-default pull-left"
             ng-if="model.viewHistory"
-            ng-click="model.viewHistory()">
-      History
-    </button>
-    <button type="button"
-            class="btn btn-primary"
-            ng-click="model.viewRecord()">
+            ng-click="model.viewHistory()">History</button>
+    <button type="button" class="btn btn-primary" ng-click="model.viewRecord()">
       View {{ model.module.name.singular.ucWords() }}
     </button>
-  </div> 
+  </div>
 </div>

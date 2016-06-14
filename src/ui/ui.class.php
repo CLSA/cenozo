@@ -226,6 +226,8 @@ class ui extends \cenozo\base_object
     {
       $module_list['alternate']['children'] = array( 'address', 'phone' );
       $module_list['alternate']['actions']['notes'] = '/{identifier}?{search}';
+      $module_list['alternate']['actions']['history'] =
+        '/{identifier}?{address}&{note}&{phone}';
     }
     if( array_key_exists( 'collection', $module_list ) )
     {

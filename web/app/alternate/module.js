@@ -158,9 +158,186 @@ define( function() {
   } );
 
   module.addExtraOperation( 'view', {
+    title: 'History',
+    operation: function( $state, model ) {
+      model.viewModel.onViewPromise.then( function() {
+        $state.go( 'alternate.history', { identifier: model.viewModel.record.getIdentifier() } );
+      } );
+    }
+  } );
+
+  module.addExtraOperation( 'view', {
     title: 'Alternate List',
     operation: function( $state ) { $state.go( 'alternate.list' ); }
   } );
+
+  /**
+   * The historyCategoryList object stores the following information
+   *   category:
+   *     active: whether or not to show the category in the history list by default
+   *     promise: a function which gets all history items for that category and which must return a promise
+   * 
+   * This can be extended by applications by adding new history categories or changing existing ones.
+   * Note: make sure the category name (the object's property) matches the property set in the historyList
+   */
+  module.historyCategoryList = {
+
+    Address: {
+      active: true,
+      framework: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'alternate/' + $state.params.identifier + '/address',
+          data: {
+            modifier: {
+              join: {
+                table: 'region',
+                onleft: 'address.region_id',
+                onright: 'region.id'
+              }
+            },
+            select: {
+              column: [ 'create_timestamp', 'rank', 'address1', 'address2',
+                        'city', 'postcode', 'international', {
+                table: 'region',
+                column: 'name',
+                alias: 'region'
+              }, {
+                table: 'region',
+                column: 'country'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            var description = item.address1;
+            if( item.address2 ) description += '\n' + item.address2;
+            description += '\n' + item.city + ', ' + item.region + ', ' + item.country + "\n" + item.postcode;
+            if( item.international ) description += "\n(international)";
+            historyList.push( {
+              datetime: item.create_timestamp,
+              category: 'Address',
+              title: 'added rank ' + item.rank,
+              description: description
+            } );
+          } );
+        } );
+      }
+    },
+
+    Note: {
+      active: true,
+      framework: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'alternate/' + $state.params.identifier + '/note',
+          data: {
+            modifier: {
+              join: {
+                table: 'user',
+                onleft: 'note.user_id',
+                onright: 'user.id'
+              },
+              order: { datetime: true }
+            },
+            select: {
+              column: [ 'datetime', 'note', {
+                table: 'user',
+                column: 'first_name',
+                alias: 'user_first'
+              }, {
+                table: 'user',
+                column: 'last_name',
+                alias: 'user_last'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.datetime,
+              category: 'Note',
+              title: 'added by ' + item.user_first + ' ' + item.user_last,
+              description: item.note
+            } );
+          } );
+        } );
+      }
+    },
+
+    Phone: {
+      active: true,
+      framework: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'alternate/' + $state.params.identifier + '/phone',
+          data: {
+            select: { column: [ 'create_timestamp', 'rank', 'type', 'number', 'international' ] }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.create_timestamp,
+              category: 'Phone',
+              title: 'added rank ' + item.rank,
+              description: item.type + ': ' + item.number + ( item.international ? ' (international)' : '' )
+            } );
+          } );
+        } );
+      }
+    }
+
+  };
+
+  /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnAlternateHistory', [
+    'CnAlternateHistoryFactory', 'CnSession', 'CnHttpFactory', '$state',
+    function( CnAlternateHistoryFactory, CnSession, CnHttpFactory, $state ) {
+      return {
+        templateUrl: cenozo.getFileUrl( 'cenozo', 'history.tpl.html' ),
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.isLoading = false;
+          $scope.model = CnAlternateHistoryFactory.instance();
+
+          CnHttpFactory.instance( {
+            path: 'alternate/' + $state.params.identifier,
+            data: { select: { column: [ 'first_name', 'last_name' ] } }
+          } ).get().then( function( response ) {
+            $scope.name = response.data.first_name + ' ' + response.data.last_name;
+          } );
+
+          // create an array from the history categories object
+          $scope.historyCategoryArray = [];
+          for( var name in $scope.model.module.historyCategoryList ) {
+            if( angular.isUndefined( $scope.model.module.historyCategoryList[name].framework ) )
+              $scope.model.module.historyCategoryList[name].framework = false;
+            if( angular.isUndefined( $scope.model.module.historyCategoryList[name].name ) )
+              $scope.model.module.historyCategoryList[name].name = name;
+            $scope.historyCategoryArray.push( $scope.model.module.historyCategoryList[name] );
+          }
+
+          $scope.refresh = function() {
+            $scope.isLoading = true;
+            $scope.model.onView().then( function() {
+              CnSession.setBreadcrumbTrail(
+                [ {
+                  title: 'Alternates',
+                  go: function() { $state.go( 'alternate.list' ); }
+                }, {
+                  title: $scope.uid,
+                  go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
+                }, {
+                  title: 'History'
+                } ]
+              );
+            } ).finally( function finished() { $scope.isLoading = false; } );
+          };
+          $scope.refresh();
+        }
+      };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAlternateAdd', [
@@ -375,6 +552,33 @@ define( function() {
       };
     }
   ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnAlternateHistoryFactory', [
+    'CnBaseHistoryFactory', 'CnAlternateModelFactory', 'CnSession', '$state',
+    function( CnBaseHistoryFactory, CnAlternateModelFactory, CnSession, $state ) {
+      var object = function() {
+        var self = this;
+        CnBaseHistoryFactory.construct( this, module, CnAlternateModelFactory.root );
+
+        this.onView().then( function() {
+          CnSession.setBreadcrumbTrail(
+            [ {
+              title: 'Alternates',
+              go: function() { $state.go( 'alternate.list' ); } 
+            }, {
+              title: self.uid,
+              go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); } 
+            }, {
+              title: 'History'
+            } ]
+          );
+        } );
+      };   
+
+      return { instance: function() { return new object( false ); } }; 
+    }    
+  ] ); 
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateNotesFactory', [

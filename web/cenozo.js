@@ -4141,6 +4141,91 @@ cenozo.factory( 'CnBaseModelFactory', [
 /**
  * TODO: document
  */
+cenozo.factory( 'CnBaseHistoryFactory', [
+  'CnSession', 'CnHttpFactory', '$state', '$q',
+  function( CnSession, CnHttpFactory, $state, $q ) {
+    return {
+      construct: function( object, module, model ) {
+        angular.extend( object, {
+          module: module,
+          model: model,
+
+          viewNotes: function() {
+            $state.go( module.subject.snake + '.notes', { identifier: $state.params.identifier } ); 
+          },
+
+          viewRecord: function() {
+            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } ); 
+          },
+
+          selectAllCategories: function() {
+            for( var name in this.module.historyCategoryList ) {
+              this.module.historyCategoryList[name].active = true;
+            }
+            this.model.reloadState( false, false );
+          },
+
+          unselectAllCategories: function() {
+            for( var name in this.module.historyCategoryList ) {
+              this.module.historyCategoryList[name].active = false;
+            }
+            this.model.reloadState( false, false );
+          },
+
+          toggleCategory: function( name ) {
+            // update the query parameters with whatever the category's active state is
+            this.model.setQueryParameter(
+              name.toLowerCase(), this.module.historyCategoryList[name].active
+            );
+            this.model.reloadState( false, false );
+          },
+
+          getVisibleHistoryList: function() {
+            var self = this;
+            return this.historyList.filter( function( item ) {
+              return self.module.historyCategoryList[item.category].active;
+            } );
+          },
+
+          onView: function() {
+            var self = this;
+            this.historyList = [];
+
+            // get all history category promises, run them and then sort the resulting history list
+            var promiseList = [];
+            for( var name in this.module.historyCategoryList ) {
+              // sync the active parameter to the state while we're at it
+              var active = this.model.getQueryParameter( name.toLowerCase() );
+              this.module.historyCategoryList[name].active = angular.isDefined( active ) ? active : true;
+              if( 'function' == cenozo.getType( this.module.historyCategoryList[name].promise ) ) {
+                promiseList.push(
+                  this.module.historyCategoryList[name].promise( this.historyList, $state, CnHttpFactory, $q )
+                );
+              }
+            };
+
+            return $q.all( promiseList ).then( function() {
+              // convert invalid dates to null
+              self.historyList.forEach( function( item ) {
+                if( '0000-00-00' == item.datetime.substring( 0, 10 ) ) item.datetime = null;
+              } );
+              // sort the history list by datetime
+              self.historyList = self.historyList.sort( function( a, b ) {
+                return moment( new Date( a.datetime ) ).isBefore( new Date( b.datetime ) ) ? 1 : -1;
+              } );
+            } );
+          }
+        } );
+      }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.factory( 'CnBaseNoteFactory', [
   'CnSession', 'CnHttpFactory', '$state',
   function CnHttpFactory( CnSession, CnHttpFactory, $state ) {
@@ -4301,6 +4386,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
     };
   }
 ] );
+
 /* ######################################################################################################## */
 
 /**
