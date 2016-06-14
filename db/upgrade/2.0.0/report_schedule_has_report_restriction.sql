@@ -1,3 +1,5 @@
+SELECT "Creating new report_schedule_has_report_restriction table" AS "";
+
 CREATE TABLE IF NOT EXISTS report_schedule_has_report_restriction (
   report_schedule_id INT UNSIGNED NOT NULL,
   report_restriction_id INT UNSIGNED NOT NULL,

@@ -6,6 +6,7 @@ SOURCE age_group.sql
 SOURCE collection.sql
 SOURCE state.sql
 SOURCE person_first_address.sql
+SOURCE application_type.sql
 SOURCE application.sql
 SOURCE application_has_participant.sql
 SOURCE application_has_cohort.sql
@@ -44,6 +45,7 @@ SOURCE report_schedule.sql
 SOURCE report_schedule_has_report_restriction.sql
 SOURCE report.sql
 SOURCE report_has_report_restriction.sql
+SOURCE application_has_report_type.sql
 SOURCE role_has_report_type.sql
 SOURCE search.sql
 SOURCE search_result.sql

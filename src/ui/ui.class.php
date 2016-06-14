@@ -140,11 +140,11 @@ class ui extends \cenozo\base_object
   protected function get_framework_module_list()
   {
     return array(
-      'access', 'activity', 'address', 'alternate', 'application', 'availability_type', 'cohort', 'collection',
-      'consent', 'consent_type', 'event', 'event_type', 'hin', 'jurisdiction', 'language', 'participant', 'phone',
-      'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'report', 'report_restriction',
-      'report_schedule', 'report_type', 'script', 'search_result', 'site', 'source', 'state', 'system_message',
-      'user', 'webphone' );
+      'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
+      'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'hin', 'jurisdiction', 'language',
+      'participant', 'phone', 'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'report',
+      'report_restriction', 'report_schedule', 'report_type', 'script', 'search_result', 'site', 'source', 'state',
+      'system_message', 'user', 'webphone' );
   }
 
   /**
@@ -260,7 +260,7 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'report_type', $module_list ) )
     {
       $module_list['report_type']['children'] = array( 'report', 'report_schedule', 'report_restriction' );
-      $module_list['report_type']['choosing'] = array( 'role' );
+      $module_list['report_type']['choosing'] = array( 'application_type', 'role' );
     }
     if( array_key_exists( 'script', $module_list ) )
     {
@@ -412,16 +412,16 @@ class ui extends \cenozo\base_object
     $report_list = array();
 
     $session = lib::create( 'business\session' );
-    $db_application = $session->get_application();
+    $db_application_type = $session->get_application()->get_application_type();
     $db_role = $session->get_role();
 
     $select = lib::create( 'database\select' );
     $select->add_column( 'name' );
     $select->add_column( 'title' );
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'application_id', '=', NULL );
-    $modifier->or_where( 'application_id', '=', $db_application->id );
-    foreach( $db_role->get_report_type_list( $select ) as $report_type )
+    $modifier->join( 'role_has_report_type', 'report_type.id', 'role_has_report_type.report_type_id' );
+    $modifier->where( 'role_has_report_type.role_id', '=', $db_role->id );
+    foreach( $db_application_type->get_report_type_list( $select, $modifier ) as $report_type )
       $report_list[$report_type['title']] = $report_type['name'];
 
     return $report_list;

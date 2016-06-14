@@ -29,8 +29,10 @@ class module extends \cenozo\service\module
       if( !is_null( $record ) )
       {
         // restrict by application
-        $db_application = $session->get_application();
-        if( !is_null( $record->application_id ) && $record->application_id != $session->get_application()->id )
+        $application_type_mod = lib::create( 'database\modifier' );
+        $application_type_mod->where(
+          'application_type.id', '=', $session->get_application()->get_application_type()->id );
+        if( 0 == $record->get_application_type_count( $application_type_mod ) )
         {
           $this->get_status()->set_code( 404 );
           return;
@@ -58,9 +60,14 @@ class module extends \cenozo\service\module
     $session = lib::create( 'business\session' );
     $application_id = $session->get_application()->id;
 
-    // restrict by application
-    $modifier->where(
-      sprintf( 'IFNULL( report_type.application_id, "%s" )', $application_id ), '=', $application_id );
+    // restrict by application type
+    $modifier->join(
+      'application_type_has_report_type', 'report_type.id', 'application_type_has_report_type.report_type_id' );
+    $modifier->join(
+      'application_type', 'application_type_has_report_type.application_type_id', 'application_type.id' );
+    $modifier->join( 'application', 'application_type.id', 'application.application_type_id' );
+    $modifier->where( 'application.id', '=', lib::create( 'business\session' )->get_application()->id );
+
 
     // restrict by role
     $modifier->join( 'role_has_report_type', 'report_type.id', 'role_has_report_type.report_type_id', false );

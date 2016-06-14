@@ -1,3 +1,5 @@
+SELECT "Creating new report_schedule table" AS "";
+
 CREATE TABLE IF NOT EXISTS report_schedule (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   update_timestamp TIMESTAMP NOT NULL,

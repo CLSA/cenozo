@@ -1,3 +1,5 @@
+SELECT "Creating new report_restriction table" AS "";
+
 CREATE TABLE IF NOT EXISTS report_restriction (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   update_timestamp TIMESTAMP NOT NULL,

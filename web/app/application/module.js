@@ -47,9 +47,9 @@ define( function() {
       type: 'string',
       help: 'A user-friendly name for the service, may contain any characters.'
     },
-    type: {
+    application_type_id: {
       title: 'Type',
-      type: 'string',
+      type: 'enum',
       constant: true
     },
     url: {
@@ -171,14 +171,37 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationModelFactory', [
     'CnBaseModelFactory', 'CnApplicationListFactory', 'CnApplicationViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnApplicationListFactory.instance( this );
         this.viewModel = CnApplicationViewFactory.instance( this, root );
+
+        // extend getMetadata
+        this.getMetadata = function() {
+          return this.$$getMetadata().then( function() {
+            return $q.all( [
+              CnHttpFactory.instance( {
+                path: 'application_type',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: { name: false } }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.application_type_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.application_type_id.enumList.push( {
+                    value: item.id,
+                    name: item.name
+                  } );
+                } );
+              } )
+            ] );
+          } );
+        };
       };
 
       return {

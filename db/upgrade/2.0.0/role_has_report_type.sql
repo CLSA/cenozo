@@ -1,3 +1,5 @@
+SELECT "Creating new role_has_report_type table" AS "";
+
 CREATE TABLE IF NOT EXISTS role_has_report_type (
   role_id INT UNSIGNED NOT NULL,
   report_type_id INT UNSIGNED NOT NULL,
@@ -22,4 +24,4 @@ INSERT IGNORE INTO role_has_report_type( role_id, report_type_id )
 SELECT role.id, report_type.id
 FROM role, report_type
 WHERE role.name = "administrator"
-AND report_type.name IN( "Contact", "Email" );
+AND report_type.name IN( "contact", "email" );
