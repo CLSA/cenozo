@@ -808,6 +808,20 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         this.module = module;
         this.participantModel = CnParticipantModelFactory.root;
 
+        this.selectAllCategories = function() {
+          for( var name in this.module.historyCategoryList ) {
+            this.module.historyCategoryList[name].active = true;
+          }
+          this.participantModel.reloadState( false, false );
+        };
+
+        this.unselectAllCategories = function() {
+          for( var name in this.module.historyCategoryList ) {
+            this.module.historyCategoryList[name].active = false;
+          }
+          this.participantModel.reloadState( false, false );
+        };
+
         this.toggleCategory = function( name ) {
           // update the query parameters with whatever the category's active state is
           this.participantModel.setQueryParameter(
