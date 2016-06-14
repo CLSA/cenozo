@@ -892,7 +892,7 @@ cenozo.directive( 'cnRecordAdd', [
         $scope.isComplete = false;
         $scope.model.addModel.onNew( $scope.record ).then( function() {
           $scope.model.metadata.getPromise().then( function() {
-            $scope.model.setupBreadcrumbTrail();
+            if( 'add' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
 
             $scope.dataArray.forEach( function( group ) {
               group.inputArray.forEach( function( input ) {
@@ -1158,7 +1158,7 @@ cenozo.directive( 'cnRecordList', [
         $scope.directive = 'cnRecordList';
         $scope.reportTypeListOpen = false;
         $scope.model.listModel.onList( true ).then( function() {
-          $scope.model.setupBreadcrumbTrail();
+          if( 'list' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
         } );
 
         $scope.refresh = function() {
@@ -1282,7 +1282,7 @@ cenozo.directive( 'cnRecordView', [
         $scope.directive = 'cnRecordView';
         $scope.isComplete = false;
         $scope.model.viewModel.onView().then( function() {
-          $scope.model.setupBreadcrumbTrail();
+          if( 'view' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
 
           // build enum lists
           for( var key in $scope.model.metadata.columnList ) {
@@ -2610,7 +2610,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
 
             // call onCalendar to make sure we have the events in the requested date span
             object.onCalendar( false, start, end ).then( function() {
-              object.parentModel.setupBreadcrumbTrail();
+              if( 'calendar' == object.parentModel.getActionFromState() )
+                object.parentModel.setupBreadcrumbTrail();
               callback(
                 object.cache.reduce( function( eventList, e ) {
                   if( moment( e.start ).isBefore( end, 'day' ) &&
