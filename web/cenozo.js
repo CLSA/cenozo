@@ -2053,6 +2053,7 @@ cenozo.factory( 'CnSession', [
             }
 
             // if the user's email isn't set then open the password dialog
+            /* disabling this for now
             if( !self.user.email && !CnModalAccountFactory.isOpen() ) {
               CnModalAccountFactory.instance( {
                 allowCancel: false,
@@ -2061,6 +2062,7 @@ cenozo.factory( 'CnSession', [
                 if( response ) self.setUserDetails();
               } );
             }
+            */
 
             // if voip is enabled the load the voip data
             self.voip = { enabled: false, info: false };
