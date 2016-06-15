@@ -174,6 +174,7 @@ define( function() {
         controller: function( $scope ) {
           $scope.model = CnUserOverviewFactory.instance();
           $scope.model.listModel.heading = "Active User List";
+          $scope.model.setupBreadcrumbTrail();
         }
       };
     }
