@@ -60,9 +60,11 @@ CREATE PROCEDURE patch_application()
           url = CONCAT( 'https://localhost/', application.name ),
           country = 'Canada';
 
-      UPDATE application SET update_queue = 1
-      WHERE type IN ( "beartooth", "sabretooth" )
-      AND name != "sabretooth_qc";
+      UPDATE application
+      JOIN application_type ON application.application_type_id = application_type.id
+      SET update_queue = 1
+      WHERE application_type.name IN ( "beartooth", "sabretooth" )
+      AND application_type.name != "sabretooth_qc";
 
       SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

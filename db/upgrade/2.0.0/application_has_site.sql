@@ -35,23 +35,27 @@ CREATE PROCEDURE patch_application_has_site()
       -- this is clsa-specific
       INSERT INTO application_has_site( application_id, site_id )
       SELECT application.id, site.id
-      FROM application, site
-      WHERE application.type = "mastodon"
+      FROM site, application
+      JOIN application_type ON application.application_type_id = application_type.id
+      WHERE application_type.name = "mastodon"
       UNION SELECT application.id, site.id
-      FROM application, site
-      WHERE application.type = "beartooth"
+      FROM site, application
+      JOIN application_type ON application.application_type_id = application_type.id
+      WHERE application_type.name = "beartooth"
       AND site.name LIKE "% DCS"
       UNION SELECT application.id, site.id
-      FROM application, site
-      WHERE application.type = "sabretooth" AND application.name != "sabretooth_qc"
+      FROM site, application
+      JOIN application_type ON application.application_type_id = application_type.id
+      WHERE application_type.name = "sabretooth" AND application.name != "sabretooth_qc"
       AND site.name LIKE "% CATI"
       UNION SELECT application.id, site.id
-      FROM application, site
+      FROM site, application
       WHERE application.name = "sabretooth_qc"
       AND site.name LIKE "% QC"
       UNION SELECT application.id, site.id
-      FROM application, site
-      WHERE application.type = "cedar"
+      FROM site, application
+      JOIN application_type ON application.application_type_id = application_type.id
+      WHERE application_type.name = "cedar"
       AND site.name LIKE "% REC";
 
       DELETE FROM application_has_site
