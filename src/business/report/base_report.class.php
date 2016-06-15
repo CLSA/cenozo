@@ -33,6 +33,9 @@ abstract class base_report extends \cenozo\base_object
     if( 'report' != $class_name )
       throw lib::create( 'exception\argument', 'db_report (class)', $class_name, __METHOD__ );
     $this->db_report = $db_report;
+    $this->db_user = $db_report->get_user();
+    $this->db_role = $db_report->get_role();
+    $this->db_site = $db_report->get_site();
   }
 
   /**
@@ -555,6 +558,27 @@ abstract class base_report extends \cenozo\base_object
    * @access protected
    */
   protected $db_report = NULL;
+
+  /**
+   * The user active record associated with this report
+   * @var database\user $db_user
+   * @access protected
+   */
+  protected $db_user = NULL;
+
+  /**
+   * The role active record associated with this report
+   * @var database\role $db_role
+   * @access protected
+   */
+  protected $db_role = NULL;
+
+  /**
+   * The site active record associated with this report
+   * @var database\site $db_site
+   * @access protected
+   */
+  protected $db_site = NULL;
 
   /**
    * An associative array of all reports to put in the report.

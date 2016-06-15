@@ -139,6 +139,8 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::post_write( $record );
 
+    $session = lib::create( 'business\session' );
+
     $method = $this->get_method();
     if( 'DELETE' == $method )
     {
@@ -153,7 +155,6 @@ class module extends \cenozo\service\site_restricted_module
           array_key_exists( 'progress', $file ) && 1 == $file['progress'] )
       {
         // we need to complete any transactions before continuing
-        $session = lib::create( 'business\session' );
         $session->get_database()->complete_transaction();
 
         // get the report's executer and generate the report file
@@ -176,10 +177,15 @@ class module extends \cenozo\service\site_restricted_module
           $db_report->set_restriction_value( $report_restriction['id'], $file[$column] );
       }
 
+      $db_application = $session->get_application();
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $authentication = sprintf( '%s:%s',
+        $setting_manager->get_setting( 'utility', 'username' ),
+        $setting_manager->get_setting( 'utility', 'password' ) );
       $command = sprintf(
         'curl -v -H %s -k %s -X PATCH -d %s &',
-        sprintf( "'Authorization:Basic %s'", base64_encode( 'patrick:elephant arrows' ) ),
-        sprintf( "'https://localhost/patrick/beartooth_f1/api/report/%d'", $db_report->id ),
+        sprintf( "'Authorization:Basic %s'", base64_encode( $authentication ) ),
+        sprintf( "'%s/api/report/%d'", $db_application->url, $db_report->id ),
         "'{\"stage\":\"started\",\"progress\":1}'" );
 
       fclose( popen( $command, 'r' ) );
