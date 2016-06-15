@@ -77,6 +77,10 @@ $settings['path']['PHPEXCEL'] = '/usr/local/lib/PHPExcel';
 // the location of the Shift8 Asterisk library
 $settings['path']['SHIFT8'] = '/usr/local/lib/shift8';
 
+// utility account
+$settings['utility']['username'] = 'cenozo';
+$settings['utility']['password'] = '';
+
 // database settings
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';

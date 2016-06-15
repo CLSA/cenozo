@@ -35,6 +35,9 @@ $settings['path']['PHPEXCEL'] = '/path/to/PHPExcel';
 // the location of the Shift8 Asterisk library
 $settings['path']['SHIFT8'] = '/path/to/shift8';
 
+// utility account
+$settings['utility']['password'] = 'set password to utility account here'; 
+
 // database settings (username and password are set in the application's settings)
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';

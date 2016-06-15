@@ -33,6 +33,7 @@ class setting_manager extends \cenozo\singleton
     $this->read_settings( 'opal', $args );
     $this->read_settings( 'path', $args );
     $this->read_settings( 'url', $args );
+    $this->read_settings( 'utility', $args );
     $this->read_settings( 'voip', $args );
 
     $file = LIMESURVEY_PATH.'/application/config/config.php';
