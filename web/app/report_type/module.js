@@ -118,8 +118,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnReportTypeViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnSession',
+    function( CnBaseViewFactory, CnSession ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
@@ -138,6 +138,10 @@ define( function() {
             self.reportScheduleModel.listModel.heading = 'Schedule List';
           if( angular.isDefined( self.reportRestrictionModel ) )
             self.reportRestrictionModel.listModel.heading = 'Parameter List';
+          if( angular.isDefined( self.applicationTypeModel ) )
+            self.applicationTypeModel.enableChoose( 3 <= CnSession.role.tier );
+          if( angular.isDefined( self.roleModel ) )
+            self.roleModel.enableChoose( 3 <= CnSession.role.tier );
         } );
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

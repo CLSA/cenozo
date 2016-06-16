@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS report (
   stage ENUM('started', 'reading data', 'writing data', 'completed', 'failed') NOT NULL DEFAULT 'started',
   progress FLOAT NOT NULL DEFAULT 0,
   datetime DATETIME NOT NULL,
+  elapsed FLOAT NULL DEFAULT NULL,
   PRIMARY KEY (id),
   INDEX fk_report_type_id (report_type_id ASC),
   INDEX fk_user_id (user_id ASC),

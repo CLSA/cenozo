@@ -465,7 +465,9 @@ abstract class base_report extends \cenozo\base_object
   /**
    * Applies the report's restrictions to the given modifier
    * 
-   * This method is usually called in the extending class' build() method
+   * This method is usually called in the extending class' build() method.
+   * Note that restrictions marked as "default" will be ignored, and it assumed that extending
+   * report classes will handle them.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
@@ -482,12 +484,16 @@ abstract class base_report extends \cenozo\base_object
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $subject_class_name = lib::get_class_name( sprintf( 'database\%s', $report_type_subject ) );
 
-    $select = lib::create( 'database\select' );
-    $select->add_table_column( 'report_has_report_restriction', 'value' );
-    $select->add_column( 'restriction_type' );
-    $select->add_column( 'subject' );
-    $select->add_column( 'operator' );
-    foreach( $this->db_report->get_report_restriction_list( $select ) as $restriction )
+    $report_restriction_sel = lib::create( 'database\select' );
+    $report_restriction_sel->add_table_column( 'report_has_report_restriction', 'value' );
+    $report_restriction_sel->add_column( 'restriction_type' );
+    $report_restriction_sel->add_column( 'subject' );
+    $report_restriction_sel->add_column( 'operator' );
+    $report_restriction_mod = lib::create( 'database\modifier' );
+    $report_restriction_mod->where( 'custom', '=', false );
+    $restriction_list =
+      $this->db_report->get_report_restriction_list( $report_restriction_sel, $report_restriction_modifier )
+    foreach( $restriction_list as $restriction )
     {
       if( 'table' == $restriction['restriction_type'] )
       {
@@ -523,6 +529,10 @@ abstract class base_report extends \cenozo\base_object
       }
       else if( 'decimal' == $restriction['restriction_type'] )
       {
+      }
+      else if( 'boolean' == $restriction['restriction_type'] )
+      {
+        $modifier->where( $restriction['subject'], '=', $restriction['value'] );
       }
       else if( 'date' == $restriction['restriction_type'] ||
                'datetime' == $restriction['restriction_type'] ||

@@ -32,22 +32,15 @@ class module extends \cenozo\service\site_restricted_module
         $db_collection = $this->get_resource();
       else if( 'POST' == $this->get_method() && ( !$this->is_leaf_module() || $this->get_parent_subject() ) )
       {
-        // make sure the collection isn't locked
         $db_collection = $this->get_resource();
         if( is_null( $db_collection ) )
         {
-          // we're replacing the list of collections, make sure we're not adding or removing any locked
-          // collections that the user doesn't have access to
-          $select = lib::create( 'database\select' );
-          $select->add_column( 'id' );
-          $existing_list = array();
-          foreach( $this->get_parent_resource()->get_collection_list( $select ) as $row )
-            $existing_list[] = $row['id'];
-          $replacement_list = $this->get_file_as_object();
-          $xor_list = array_merge(
-            array_diff( $existing_list, $replacement_list ),
-            array_diff( $replacement_list, $existing_list ) );
-          if( 0 < count( $xor_list ) )
+          // make sure no collection being added or removed are locked
+          $obj = $this->get_file_as_object();
+          $id_list = array();
+          foreach( $obj as $list ) $id_list = array_merge( $id_list, $list );
+
+          if( 0 < count( $id_list ) )
           {
             // determine if the user doesn't have access to any locked collections in the list
             $collection_mod = lib::create( 'database\modifier' );
@@ -55,7 +48,7 @@ class module extends \cenozo\service\site_restricted_module
             $join_mod->where( 'collection.id', '=', 'user_has_collection.collection_id', false );
             $join_mod->where( 'user_id', '=', $db_user->id );
             $collection_mod->join_modifier( 'user_has_collection', $join_mod, 'left' );
-            $collection_mod->where( 'collection.id', 'IN', $xor_list );
+            $collection_mod->where( 'collection.id', 'IN', $id_list );
             $collection_mod->where( 'collection.locked', '=', true );
             $collection_mod->where( 'user_id', '=', NULL );
             if( 0 < $collection_class_name::count( $collection_mod ) )

@@ -106,6 +106,12 @@ define( function() {
       type: 'datetimesecond',
       exclude: 'add',
       constant: true
+    },
+    elapsed: {
+      title: 'Elapsed',
+      type: 'float',
+      exclude: 'add',
+      constant: true
     }
   } );
 
@@ -119,8 +125,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportAdd', [
-    'CnReportModelFactory', 'CnHttpFactory', '$timeout',
-    function( CnReportModelFactory, CnHttpFactory, $timeout ) {
+    'CnReportModelFactory', 'CnSession', 'CnHttpFactory', '$timeout',
+    function( CnReportModelFactory, CnSession, CnHttpFactory, $timeout ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
@@ -154,7 +160,11 @@ define( function() {
 
             // add restrictions back into the metadata and dataArray
             $scope.model.rebuildFormRestrictions().then( function( restrictionList ) {
-              restrictionList.forEach( function( restriction ) {
+              restrictionList.filter( function( restriction ) {
+                return CnSession.role.allSites ||
+                       'table' != restriction.restriction_type ||
+                       'site' != restriction.subject;
+              } ).forEach( function( restriction ) {
                 var key = 'restrict_' + restriction.name;
                 var type = restriction.restriction_type;
                 var input = {
@@ -354,7 +364,8 @@ define( function() {
           return this.$$onView().then( function() {
             // get the report restriction values
             CnHttpFactory.instance( {
-              path: 'report/' + self.record.getIdentifier() + '/report_restriction'
+              path: 'report/' + self.record.getIdentifier() + '/report_restriction',
+              data: { modifier: { order: { rank: false } } }
             } ).query().then( function( response ) {
               response.data.forEach( function( restriction ) {
                 self.record['restrict_'+restriction.name] = restriction.value;
@@ -423,7 +434,8 @@ define( function() {
 
         this.rebuildFormRestrictions = function() {
           return CnHttpFactory.instance( {
-            path: 'report_type/' + this.getParentIdentifier().identifier + '/report_restriction'
+            path: 'report_type/' + this.getParentIdentifier().identifier + '/report_restriction',
+            data: { modifier: { order: { rank: false } } }
           } ).get().then( function( response ) { return response.data; } );
         };
       };

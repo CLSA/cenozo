@@ -13,12 +13,17 @@ define( function() {
       singular: 'report restriction',
       plural: 'report restrictions',
       possessive: 'report restriction\'s',
-      pluralPossessive: 'report restrictions\''
+      pluralPossessive: 'report restrictions\'',
+      friendlyColumn: 'rank'
     },
     columnList: {
       report_type: {
         column: 'report_type.name',
         title: 'Report Type'
+      },
+      rank: {
+        title: 'Rank',
+        type: 'rank'
       },
       title: {
         title: 'Heading',
@@ -42,12 +47,16 @@ define( function() {
       }
     },
     defaultOrder: {
-      column: 'report_type.name',
+      column: 'rank',
       reverse: false
     }
   } );
 
   module.addInputGroup( '', {
+    rank: {
+      title: 'Rank',
+      type: 'rank'
+    },
     name: {
       title: 'Name',
       type: 'string'

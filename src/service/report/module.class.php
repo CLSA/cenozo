@@ -163,6 +163,10 @@ class module extends \cenozo\service\site_restricted_module
     }
     else if( 'POST' == $method )
     {
+      $db_application = $session->get_application();
+      $db_site = $session->get_site();
+      $db_role = $session->get_role();
+
       // add the restrictions to the record
       $db_report = $this->get_resource();
       $db_report_type = $this->get_parent_resource();
@@ -170,14 +174,18 @@ class module extends \cenozo\service\site_restricted_module
       $select = lib::create( 'database\select' );
       $select->add_column( 'id' );
       $select->add_column( 'name' );
+      $select->add_column( 'subject' );
       foreach( $db_report_type->get_report_restriction_list( $select ) as $report_restriction )
       {
         $column = 'restrict_'.$report_restriction['name'];
-        if( array_key_exists( $column, $file ) )
+
+        // treat restrictions with subject=site special (if the role doesn't have all-sites access)
+        if( 'site' == $report_restriction['subject'] && !$db_role->all_sites )
+          $db_report->set_restriction_value( $report_restriction['id'], $db_site->id );
+        else if( array_key_exists( $column, $file ) )
           $db_report->set_restriction_value( $report_restriction['id'], $file[$column] );
       }
 
-      $db_application = $session->get_application();
       $setting_manager = lib::create( 'business\setting_manager' );
       $authentication = sprintf( '%s:%s',
         $setting_manager->get_setting( 'utility', 'username' ),
