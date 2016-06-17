@@ -225,35 +225,44 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     }
   } );
 
-  module.addExtraOperation( 'view', {
-    title: 'Notes',
-    operation: function( $state, model ) {
-      model.viewModel.onViewPromise.then( function() {
-        $state.go( 'participant.notes', { identifier: model.viewModel.record.getIdentifier() } );
-      } );
-    }
-  } );
+  if( angular.isDefined( module.actions.notes ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'Notes',
+      operation: function( $state, model ) {
+        model.viewModel.onViewPromise.then( function() {
+          $state.go( 'participant.notes', { identifier: model.viewModel.record.getIdentifier() } );
+        } );
+      }
+    } );
+  }
 
-  module.addExtraOperation( 'view', {
-    title: 'History',
-    operation: function( $state, model ) {
-      model.viewModel.onViewPromise.then( function() {
-        $state.go( 'participant.history', { identifier: model.viewModel.record.getIdentifier() } );
-      } );
-    }
-  } );
+  if( angular.isDefined( module.actions.history ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'History',
+      operation: function( $state, model ) {
+        model.viewModel.onViewPromise.then( function() {
+          $state.go( 'participant.history', { identifier: model.viewModel.record.getIdentifier() } );
+        } );
+      }
+    } );
+  }
 
-  module.addExtraOperation( 'list', {
-    title: 'Search',
-    isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
-    operation: function( $state, model ) { $state.go( 'search_result.list' ); }
-  } );
+  var searchResultModule = cenozoApp.module( 'search_result' );
+  if( angular.isDefined( searchResultModule.actions.list ) ) {
+    module.addExtraOperation( 'list', {
+      title: 'Search',
+      isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
+      operation: function( $state, model ) { $state.go( 'search_result.list' ); }
+    } );
+  }
 
-  module.addExtraOperation( 'list', {
-    title: 'Multiedit',
-    isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
-    operation: function( $state, model ) { $state.go( 'participant.multiedit' ); }
-  } );
+  if( angular.isDefined( module.actions.multiedit ) ) {
+    module.addExtraOperation( 'list', {
+      title: 'Multiedit',
+      isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
+      operation: function( $state, model ) { $state.go( 'participant.multiedit' ); }
+    } );
+  }
 
   /**
    * The historyCategoryList object stores the following information

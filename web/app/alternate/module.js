@@ -148,28 +148,34 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', {
-    title: 'Notes',
-    operation: function( $state, model ) {
-      model.viewModel.onViewPromise.then( function() {
-        $state.go( 'alternate.notes', { identifier: model.viewModel.record.getIdentifier() } )
-      } );
-    }
-  } );
+  if( angular.isDefined( module.actions.notes ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'Notes',
+      operation: function( $state, model ) {
+        model.viewModel.onViewPromise.then( function() {
+          $state.go( 'alternate.notes', { identifier: model.viewModel.record.getIdentifier() } )
+        } );
+      }
+    } );
+  }
 
-  module.addExtraOperation( 'view', {
-    title: 'History',
-    operation: function( $state, model ) {
-      model.viewModel.onViewPromise.then( function() {
-        $state.go( 'alternate.history', { identifier: model.viewModel.record.getIdentifier() } );
-      } );
-    }
-  } );
+  if( angular.isDefined( module.actions.history ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'History',
+      operation: function( $state, model ) {
+        model.viewModel.onViewPromise.then( function() {
+          $state.go( 'alternate.history', { identifier: model.viewModel.record.getIdentifier() } );
+        } );
+      }
+    } );
+  }
 
-  module.addExtraOperation( 'view', {
-    title: 'Alternate List',
-    operation: function( $state ) { $state.go( 'alternate.list' ); }
-  } );
+  if( angular.isDefined( module.actions.list ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'Alternate List',
+      operation: function( $state ) { $state.go( 'alternate.list' ); }
+    } );
+  }
 
   /**
    * The historyCategoryList object stores the following information

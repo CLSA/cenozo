@@ -44,14 +44,22 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', {
-    title: 'Run Report',
-    operation: function( $state, model ) {
-      model.viewModel.onViewPromise.then( function() {
-        $state.go( 'report_type.add_report', { parentIdentifier: model.viewModel.record.getIdentifier() } ); 
-      } ); 
-    }    
-  } ); 
+  module.children.some( function( child ) {
+    if( 'report' == child.subject.snake ) {
+      if( angular.isDefined( child.actions.add ) ) {
+        module.addExtraOperation( 'view', {
+          title: 'Run Report',
+          operation: function( $state, model ) {
+            model.viewModel.onViewPromise.then( function() {
+              $state.go( 'report_type.add_report', { parentIdentifier: model.viewModel.record.getIdentifier() } );
+            } );
+          }
+        } );
+      }
+      return true; // stop processing
+    }
+  } );
+
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportTypeAdd', [

@@ -111,10 +111,12 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', {
-    title: 'Reset Password',
-    operation: function( $state, model ) { model.viewModel.resetPassword(); }
-  } );
+  if( angular.isDefined( module.actions.edit ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'Reset Password',
+      operation: function( $state, model ) { model.viewModel.resetPassword(); }
+    } );
+  }
 
   module.addExtraOperation( 'view', {
     title: 'Listen to Call',
