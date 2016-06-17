@@ -492,7 +492,7 @@ abstract class base_report extends \cenozo\base_object
     $report_restriction_mod = lib::create( 'database\modifier' );
     $report_restriction_mod->where( 'custom', '=', false );
     $restriction_list =
-      $this->db_report->get_report_restriction_list( $report_restriction_sel, $report_restriction_modifier )
+      $this->db_report->get_report_restriction_list( $report_restriction_sel, $report_restriction_mod );
     foreach( $restriction_list as $restriction )
     {
       if( 'table' == $restriction['restriction_type'] )
