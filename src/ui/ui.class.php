@@ -377,7 +377,8 @@ class ui extends \cenozo\base_object
       'query' => '?{q}&{restrict}&{order}&{reverse}' );
     $list['User Overview'] = array(
       'subject' => 'user',
-      'action' => 'overview' );
+      'action' => 'overview',
+      'query' => '?{restrict}&{order}&{reverse}' );
     if( $setting_manager->get_setting( 'voip', 'enabled' ) )
       $list['Webphone'] = array(
         'subject' => 'webphone',
