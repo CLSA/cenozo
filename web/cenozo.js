@@ -2890,7 +2890,6 @@ cenozo.factory( 'CnBaseListFactory', [
             if( angular.isDefined( restrict ) ) {
               this.columnRestrictLists = angular.fromJson( restrict );
               for( var name in this.columnRestrictLists ) {
-                console.log( 'TODO: convert from number to size' );
                 this.columnRestrictLists[name].forEach( function( obj ) {
                   obj.description = CnSession.describeRestriction(
                     angular.isDefined( self.parentModel.module.columnList[name] ) ?
