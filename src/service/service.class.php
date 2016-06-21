@@ -250,29 +250,26 @@ abstract class service extends \cenozo\base_object
   protected function finish()
   {
     // set the content type and length headers, if the service has produced output
-    $data_length = strlen( $this->get_data() );
-    if( 0 < $data_length )
-    {
-      $this->headers['Content-Type'] = $this->get_mime_type();
-      $this->headers['Content-Length'] = $data_length;
 
-      if( false !== strpos( $this->get_mime_type(), 'application/vnd' ) )
-      {
-        $this->headers['Content-type'] = 'application/octet-stream';
-        $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
-        $this->headers['Content-Transfer-Encoding'] = 'binary';
-        $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-        $this->headers['Pragma'] = 'no-cache';
-        $this->headers['Expires'] = '0';
-      }
-      else if( 'text/csv' == $this->get_mime_type() )
-      {
-        $this->headers['Content-type'] = 'text/csv';
-        $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
-        $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-        $this->headers['Pragma'] = 'no-cache';
-        $this->headers['Expires'] = '0';
-      }
+    $this->headers['Content-Type'] = $this->get_mime_type();
+    $this->headers['Content-Length'] = strlen( $this->get_data() );
+
+    if( false !== strpos( $this->get_mime_type(), 'application/vnd' ) )
+    {
+      $this->headers['Content-type'] = 'application/octet-stream';
+      $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
+      $this->headers['Content-Transfer-Encoding'] = 'binary';
+      $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+      $this->headers['Pragma'] = 'no-cache';
+      $this->headers['Expires'] = '0';
+    }
+    else if( 'text/csv' == $this->get_mime_type() )
+    {
+      $this->headers['Content-type'] = 'text/csv';
+      $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
+      $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+      $this->headers['Pragma'] = 'no-cache';
+      $this->headers['Expires'] = '0';
     }
 
     if( $this->temporary_login ) lib::create( 'business\session' )->logout();
