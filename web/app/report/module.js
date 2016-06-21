@@ -107,9 +107,10 @@ define( function() {
       exclude: 'add',
       constant: true
     },
-    elapsed: {
+    formatted_elapsed: {
       title: 'Elapsed',
-      type: 'float',
+      type: 'string',
+      format: 'float',
       exclude: 'add',
       constant: true
     }
@@ -178,7 +179,7 @@ define( function() {
                 if( 'table' == type ) {
                   input.type = 'enum';
                   
-                  // loop through the subject column data to determine where and order data
+                  // loop through the subject column data to determine the http data
                   CnHttpFactory.instance( {
                     path: restriction.subject
                   } ).head().then( function( response ) {
@@ -215,6 +216,20 @@ define( function() {
                       input.enumList = angular.copy( enumList );
                     } );
                   } );
+                } else if( 'boolean' == type ) {
+                  input.type = 'boolean';
+
+                  // create yes/no options
+                  var enumList = [ {
+                    value: undefined,
+                    name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+                  }, {
+                    value: true, name: 'Yes'
+                  }, {
+                    value: false, name: 'No'
+                  } ];
+                  $scope.model.metadata.columnList[key].enumList = enumList;
+                  input.enumList = angular.copy( enumList );
                 } else if( 'uid_list' == type ) {
                   input.type = 'text';
                 } else if( 'integer' == type ) {

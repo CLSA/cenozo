@@ -63,16 +63,6 @@ class contact extends \cenozo\business\report\base_report
     // set up requirements
     $this->apply_restrictions( $modifier );
 
-    $header = array();
-    $content = array();
-    $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
-
-    // set up the content
-    foreach( $participant_class_name::select( $select, $modifier ) as $row ) $content[] = array_values( $row );
-
-    // set up the header
-    foreach( $row as $column => $value ) $header[] = ucwords( str_replace( '_', ' ', $column ) );
-
-    $this->add_table( NULL, $header, $content, NULL );
+    $this->add_table_from_select( NULL, $participant_class_name::select( $select, $modifier ) );
   }
 }

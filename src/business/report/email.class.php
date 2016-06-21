@@ -47,14 +47,6 @@ class email extends \cenozo\business\report\base_report
     $content = array();
     $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
 
-    // set up the content
-    $row = NULL;
-    foreach( $participant_class_name::select( $select, $modifier ) as $row ) $content[] = array_values( $row );
-
-    // set up the header
-    if( !is_null( $row ) )
-      foreach( $row as $column => $value ) $header[] = ucwords( str_replace( '_', ' ', $column ) );
-
-    $this->add_table( NULL, $header, $content, NULL );
+    $this->add_table_from_select( NULL, $participant_class_name::select( $select, $modifier ) );
   }
 }

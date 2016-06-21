@@ -103,6 +103,43 @@ class module extends \cenozo\service\site_restricted_module
       $select->add_column( 'report_schedule_id IS NOT NULL', 'report_schedule', true, 'boolean' );
 
     if( $select->has_column( 'restrict_placeholder' ) ) $select->remove_column( NULL, 'restrict_placeholder' );
+
+    // pretty-print the elapsed time
+    if( $select->has_column( 'formatted_elapsed' ) )
+    {
+      $select->add_column(
+        'CONCAT_WS( ", ",'."\n".
+        '  IF('."\n".
+        '    elapsed >= 3600,'."\n".
+        '    CONCAT('."\n".
+        '      TIME_FORMAT( SEC_TO_TIME( elapsed ), "%k" ),'."\n".
+        '      " hour",'."\n".
+        '      IF( FLOOR( elapsed/3600 ) != 1, "s", "" )'."\n".
+        '    ),'."\n".
+        '    NULL'."\n".
+        '  ),'."\n".
+        '  IF('."\n".
+        '    elapsed >= 60 && MOD( elapsed, 3600 ) > 60,'."\n".
+        '    CONCAT('."\n".
+        '      TRIM( LEADING "0" FROM TIME_FORMAT( SEC_TO_TIME( elapsed ), "%i" ) ),'."\n".
+        '      " minute",'."\n".
+        '      IF( FLOOR( MOD( elapsed, 3600 )/60 ) != 1, "s", "" )'."\n".
+        '    ),'."\n".
+        '    NULL'."\n".
+        '  ),'."\n".
+        '  IF('."\n".
+        '    MOD( elapsed, 60 ),'."\n".
+        '    CONCAT('."\n".
+        '      ROUND( MOD( elapsed, 60 ), IF( MOD( elapsed, 1 ), 2, 1 ) ),'."\n".
+        '      " second",'."\n".
+        '      IF( MOD( elapsed, 60 ) = 1, "", "s" )'."\n".
+        '    ),'."\n".
+        '    NULL'."\n".
+        '  )'."\n".
+        ')',
+        'formatted_elapsed',
+        false );
+    }
   }
 
   /**

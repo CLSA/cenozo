@@ -437,6 +437,7 @@ abstract class base_report extends \cenozo\base_object
       else
       {
         $this->db_report->stage = 'completed';
+        $this->db_report->elapsed = $util_class_name::get_elapsed_time();
         $this->db_report->progress = 1.0;
         $this->db_report->size = $result;
       }
@@ -544,7 +545,7 @@ abstract class base_report extends \cenozo\base_object
   }
 
   /**
-   * Adds a table to the report.
+   * Adds a table to the report
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $title The title of the report.
@@ -560,6 +561,29 @@ abstract class base_report extends \cenozo\base_object
              'header' => $header,
              'contents' => $contents,
              'footer' => $footer ) );
+  }
+
+  /**
+   * Convenience method
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $title The title of the report.
+   * @param array $rows The result set returned from calling an active record's select command
+   * @access public
+   */
+  protected function add_table_from_select( $title = NULL, $rows )
+  {
+    // set up the content
+    $content = array();
+    $row = NULL;
+    foreach( $rows as $row ) $content[] = array_values( $row );
+
+    // set up the header
+    $header = array();
+    if( !is_null( $row ) )
+      foreach( $row as $column => $value ) $header[] = ucwords( str_replace( '_', ' ', $column ) );
+
+    $this->add_table( $title, $header, $content );
   }
 
   /**
