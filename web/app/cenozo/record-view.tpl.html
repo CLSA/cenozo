@@ -141,7 +141,7 @@
                     ng-model="model.viewModel.formattedRecord[input.key]"
                     class="form-control"
                     type="text"
-                    ng-click="model.editEnabled && true !== input.constant && 'view' != constant &&
+                    ng-click="model.editEnabled && true !== input.constant && 'view' != input.constant &&
                               selectDatetime( input )"
                     ng-readonly="!model.editEnabled || true === input.constant || 'view' == input.constant"
                     onkeydown="return false"></input>
