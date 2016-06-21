@@ -134,6 +134,7 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportModelFactory.root;
+          $scope.model.setupBreadcrumbTrail();
 
           // change the heading to the form's title
           CnHttpFactory.instance( {
@@ -282,14 +283,25 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportView', [
-    'CnReportModelFactory', 'CnHttpFactory', '$timeout',
-    function( CnReportModelFactory, CnHttpFactory, $timeout ) {
+    'CnReportModelFactory', 'CnHttpFactory', '$interval',
+    function( CnReportModelFactory, CnHttpFactory, $interval ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
-        controller: function( $scope ) {
+        controller: function( $scope, $element ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportModelFactory.root;
+
+          // keep reloading the data until the report is either completed or failed (or the UI goes away)
+          var promise = $interval( function() {
+            if( 'completed' == $scope.model.viewModel.record.stage ||
+                'failed' == $scope.model.viewModel.record.stage ) {
+              $interval.cancel( promise );
+            } else {
+              $scope.model.viewModel.onView();
+            }
+          }, 3000 );
+          $element.on( '$destroy', function() { $interval.cancel( promise ); } );
 
           // wait a smidge for the directive to render then rebuild the 
           $scope.model.viewModel.afterView( function() {
@@ -311,26 +323,82 @@ define( function() {
 
             // add restrictions back into the dataArray
             $scope.model.rebuildFormRestrictions().then( function( restrictionList ) {
+              var inputArray = $scope.$$childHead.dataArray.findByProperty( 'title', 'Parameters' ).inputArray;
               restrictionList.forEach( function( restriction ) {
                 var key = 'restrict_' + restriction.name;
                 var type = restriction.restriction_type;
-                if( 'table' == type ) {
-                  type = 'enum';
-                } else if( 'uid_list' == type ) {
-                  type = 'text';
-                } else if( 'integer' == type ) {
-                  type = 'string';
-                } else if( 'decimal' == type ) {
-                  type = 'string';
-                }
-
-                parameterData.inputArray.push( {
+                var input = {
                   key: key,
-                  type: type,
                   title: restriction.title,
                   constant: 'view',
                   help: restriction.description
-                } );
+                };
+
+                if( 'table' == type ) {
+                  input.type = 'enum';
+                  
+                  // loop through the subject column data to determine the http data
+                  CnHttpFactory.instance( {
+                    path: restriction.subject
+                  } ).head().then( function( response ) {
+                    var data = {
+                      modifier: {
+                        where: [],
+                        order: undefined
+                      },
+                      select: { column: [ 'id' ] }
+                    };
+                    var columnList = angular.fromJson( response.headers( 'Columns' ) );
+                    for( var column in columnList ) {
+                      if( 'active' == column )
+                        data.modifier.where.push( { column: 'active', operator: '=', value: true } );
+                      else if( 'name' == column ) {
+                        data.modifier.order = { name: false };
+                        data.select.column.push( 'name' );
+                      }
+                    };
+
+                    // query the table for the enum list
+                    CnHttpFactory.instance( {
+                      path: restriction.subject,
+                      data: data
+                    } ).get().then( function( response ) {
+                      var enumList = [ {
+                        value: undefined,
+                        name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+                      } ];
+                      response.data.forEach( function( item ) {
+                        enumList.push( { value: item.id, name: item.name } );
+                      } );
+                      inputArray.findByProperty( 'key', key ).enumList = enumList;
+                      input.enumList = angular.copy( enumList );
+                    } );
+                  } );
+                } else if( 'boolean' == type ) {
+                  input.type = 'boolean';
+
+                  // create yes/no options
+                  var enumList = [ {
+                    value: undefined,
+                    name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+                  }, {
+                    value: true, name: 'Yes'
+                  }, {
+                    value: false, name: 'No'
+                  } ];
+                  //inputArray.findByProperty( 'key', key ).enumList = enumList;
+                  input.enumList = angular.copy( enumList );
+                } else if( 'uid_list' == type ) {
+                  input.type = 'text';
+                } else if( 'integer' == type ) {
+                  input.type = 'string';
+                } else if( 'decimal' == type ) {
+                  input.type = 'string';
+                } else {
+                  input.type = type;
+                }
+
+                parameterData.inputArray.push( input );
               } );
             } );
           } );
@@ -341,17 +409,14 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnReportAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory', '$timeout',
-    function( CnBaseAddFactory, CnHttpFactory, $timeout ) {
+    'CnBaseAddFactory', 'CnHttpFactory',
+    function( CnBaseAddFactory, CnHttpFactory ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
         // transition to viewing the new record instead of the default functionality
-        this.transitionOnSave = function( record ) {
-          parentModel.transitionToViewState( record );
-          $timeout( function() { parentModel.viewModel.onView(); }, 1000 );
-        };
+        this.transitionOnSave = function( record ) { parentModel.transitionToViewState( record ); };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
