@@ -3126,11 +3126,15 @@ cenozo.factory( 'CnBaseViewFactory', [
         /**
          * Updates a property of the formatted copy of the record
          */
-        cenozo.addExtendableFunction( object, 'updateFormattedRecord', function( property ) {
+        cenozo.addExtendableFunction( object, 'updateFormattedRecord', function( property, type ) {
           if( angular.isDefined( property ) ) {
-            var input = this.parentModel.module.getInput( property );
-            if( null !== input ) {
-              if( 'lookup-typeahead' == input.type ) {
+            if( angular.isUndefined( type ) ) {
+              var input = this.parentModel.module.getInput( property );
+              if( null !== input ) type = input.type;
+            }
+
+            if( angular.isDefined( type ) ) {
+              if( 'lookup-typeahead' == type ) {
                 // When lookup-typeaheads are first loaded move the formatted property from the record
                 // to the formatted record.  We must do this so that future calls to this function do
                 // not overrite the formatted typeahead property (the onSelectTypeahead callback is
@@ -3139,11 +3143,11 @@ cenozo.factory( 'CnBaseViewFactory', [
                   this.formattedRecord[property] = this.record['formatted_'+property];
                   delete this.record['formatted_'+property];
                 }
-              } else if( 'size' == input.type ) {
+              } else if( 'size' == type ) {
                 this.formattedRecord[property] = $filter( 'cnSize' )( this.record[property] ).split( ' ' );
               } else {
                 this.formattedRecord[property] =
-                  CnSession.formatValue( this.record[property], input.type, true );
+                  CnSession.formatValue( this.record[property], type, true );
               }
             }
           } else {
