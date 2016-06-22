@@ -204,12 +204,16 @@ angular.extend( cenozoApp, {
            */
           addInput: function( groupTitle, key, input ) {
             // make sure the key is unique throughout all groups
+            var foundGroup = null;
             if( this.inputGroupList.some( function( group ) {
-              if( angular.isDefined( group.inputList[key] ) ) return true;
+              if( angular.isDefined( group.inputList[key] ) ) {
+                foundGroup = group;
+                return true;
+              }
             } ) ) {
               console.error(
                 'Cannot add input "%s" to group "%s" as it already exists in the existing group "%s".',
-                key, groupTitle, g.title
+                key, groupTitle, foundGroup.title
               );
             } else {
               // add the key to the input
