@@ -102,8 +102,6 @@ class module extends \cenozo\service\site_restricted_module
     if( $select->has_column( 'report_schedule' ) )
       $select->add_column( 'report_schedule_id IS NOT NULL', 'report_schedule', true, 'boolean' );
 
-    if( $select->has_column( 'restrict_placeholder' ) ) $select->remove_column( NULL, 'restrict_placeholder' );
-
     // pretty-print the elapsed time
     if( $select->has_column( 'formatted_elapsed' ) )
     {
