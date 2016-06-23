@@ -110,4 +110,4 @@ $settings['voip']['url'] = 'http://localhost:8088/mxml';
 $settings['voip']['username'] = '';
 $settings['voip']['password'] = '';
 $settings['voip']['prefix'] = '';
-$settings['voip']['monitor'] = '/var/local/recordings/sabretooth_f1-patrick';
+$settings['voip']['monitor'] = '/var/local/recordings';
