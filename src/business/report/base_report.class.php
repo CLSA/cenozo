@@ -86,8 +86,12 @@ abstract class base_report extends \cenozo\base_object
       return;
     }
     
+    $setting_manager = lib::create( 'business\setting_manager' );
     $util_class_name = lib::get_class_name( 'util' );
     $db_report_type = $this->db_report->get_report_type();
+
+    // set time limit (from here on out) to 2 minutes since some reports are big
+    set_time_limit( $setting_manager->get_setting( 'report', 'time_limit' ) );
 
     try
     {
@@ -99,13 +103,17 @@ abstract class base_report extends \cenozo\base_object
       // start by building the report (this is done by extenders to this class)
       $this->build();
 
+      // make sure the report hasn't been deleted
+      try { $db_test_report = lib::create( 'database\report', $this->db_report->id ); }
+      catch( \cenozo\exception\runtime $e ) { return ; }
+
       // mark the report stage/progress
       $this->db_report->stage = 'writing data';
       $this->db_report->progress = 0.0;
       $this->db_report->save();
 
       // estimate the number of lines being written
-      $last_progress_save = $this->db_report->progress;
+      $last_progress_save = 0;
       $line = 0;
       $lines = 0;
       foreach( $this->report_tables as $table ) $lines += count( $table['contents'] );
@@ -113,7 +121,7 @@ abstract class base_report extends \cenozo\base_object
       $data = '';
       if( 'CSV' == $this->db_report->format )
       {
-        $data .= $db_report_type->title;
+        $data .= $db_report_type->title."\n";
 
         foreach( $this->report_tables as $table )
         {
@@ -159,15 +167,12 @@ abstract class base_report extends \cenozo\base_object
             $data .= implode( ',', $cells )."\n";
           }
         }
-
-        // mark the report stage/progress
-        $this->db_report->stage = 'writing data';
-        $this->db_report->progress = 0.0;
-        $this->db_report->save();
       }
       else
       {
-        /*
+        $max_cells = $setting_manager->get_setting( 'report', 'max_cells' );
+        $spreadsheet = lib::create( 'business\spreadsheet' );
+
         // determine the widest table size
         $max = 1;
         foreach( $this->report_tables as $table )
@@ -181,8 +186,7 @@ abstract class base_report extends \cenozo\base_object
           }
         }
 
-        // the underlying php-excel library is very inefficient, fail the report if there are more
-        // than 20,000 cells to avoid mem/cpu overruns
+        // determine the total number of cells in the report
         $cell_count = 0;
         foreach( $this->report_tables as $table )
         {
@@ -193,129 +197,33 @@ abstract class base_report extends \cenozo\base_object
 
           $cell_count += $column_count * $row_count;
         }
-        if( 20000 < $cell_count )
-        {
-          throw lib::create( 'exception\notice',
-            sprintf(
-              'Report is too large to create in %s format.  Please try again using CSV format.',
-              $this->db_report->format ),
-            __METHOD__ );
-        }
         
-        // add in the title(s)
+        // add in the title
         $row = 1;
         $max_col = 1 < $max ? chr( 64 + $max ) : false;
 
-        $main_title = $this->db_report_type->title;
-        if( !is_null( $this->get_argument( 'restrict_site_id', NULL ) ) )
-        {
-          $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-          if( $restrict_site_id )
-          {
-            $db_site = lib::create( 'database\site', $restrict_site_id );
-            $main_title = $main_title.' for '.$db_site->get_full_name();
-          }
-          else
-          {
-            $main_title = $main_title.' for All Sites';
-          }
-        }
+        $main_title = $db_report_type->title;
           
-        $this->report->set_size( 16 );
-        $this->report->set_bold( true );
-        $this->report->set_horizontal_alignment( 'center' );
-        if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-        $this->report->set_cell( 'A'.$row, $main_title );
+        $spreadsheet->set_size( 16 );
+        $spreadsheet->set_bold( true );
+        $spreadsheet->set_horizontal_alignment( 'center' );
+        if( $max_col ) $spreadsheet->merge_cells( 'A'.$row.':'.$max_col.$row );
+        $spreadsheet->set_cell( 'A'.$row, $main_title );
 
         $row++;
 
-        $now_datetime_obj = $util_class_name::get_datetime_object();
-        $time_title = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
-                       ' at '.$now_datetime_obj->format( 'H:i T' );
-        $this->report->set_size( 14 );
-        $this->report->set_bold( false );
-        if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-        $this->report->set_cell( 'A'.$row, $time_title );
-
-        $row++;
-
-        if( !is_null( $this->get_argument( 'restrict_start_date', NULL ) ) ||
-            !is_null( $this->get_argument( 'restrict_end_date', NULL ) ) )
+        if( $max_cells < $cell_count )
         {
-          $restrict_start_date = $this->get_argument( 'restrict_start_date' );
-          $restrict_end_date = $this->get_argument( 'restrict_end_date' );
-          $now_datetime_obj = $util_class_name::get_datetime_object();
-          if( $restrict_start_date )
-          {
-            $start_datetime_obj = $util_class_name::get_datetime_object( $restrict_start_date );
-            if( $start_datetime_obj > $now_datetime_obj )
-            {
-              $start_datetime_obj = clone $now_datetime_obj;
-            }
-          }
-          if( $restrict_end_date )
-          {
-            $end_datetime_obj = $util_class_name::get_datetime_object( $restrict_end_date );
-            if( $end_datetime_obj > $now_datetime_obj )
-            {
-              $end_datetime_obj = clone $now_datetime_obj;
-            }
-          }
+          $spreadsheet->set_size( 14 );
 
-          $date_title = '';
-          if( $restrict_start_date && $restrict_end_date )
-          {
-            if( $end_datetime_obj < $start_datetime_obj )
-            {
-              $start_datetime_obj = $util_class_name::get_datetime_object( $restrict_end_date );
-              $end_datetime_obj = $util_class_name::get_datetime_object( $restrict_start_date );
-            }
-            if( $start_datetime_obj == $end_datetime_obj ) 
-            {
-              $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
-            }
-            else
-            {
-              $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
-                       $end_datetime_obj->format( 'Y-m-d' );
-            }       
-          }
-          else if( $restrict_start_date && !$restrict_end_date ) 
-          {
-            if( $start_datetime_obj == $now_datetime_obj )
-            {
-              $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
-            }
-            else
-            {
-              $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
-                $now_datetime_obj->format( 'Y-m-d' );
-            }    
-          }
-          else if( !$restrict_start_date && $restrict_end_date )
-          {
-            $date_title = 'Dated up to '.$end_datetime_obj->format( 'Y-m-d' );
-          }
-          else
-          {
-            $date_title = 'No date restriction';
-          }
-          if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-          $this->report->set_cell( 'A'.$row, $date_title );
+          $spreadsheet->set_cell( 'A'.$row, 'WARNING: report truncated since it is too large' );
           $row++;
         }
 
-        $this->report->set_size( 14 );
-        $this->report->set_bold( false );
-
-        foreach( $this->report_titles as $title )
-        {
-          if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-          $this->report->set_cell( 'A'.$row, $title );
-          $row++;
-        }
-
-        $this->report->set_size( NULL );
+        $spreadsheet->set_size( NULL );
+        
+        // the underlying php-excel library is very inefficient so truncate the report after 20,000 cells
+        $cell_count = 0;
         
         // add in each table
         foreach( $this->report_tables as $table )
@@ -328,37 +236,37 @@ abstract class base_report extends \cenozo\base_object
           // always skip a row before each table
           $row++;
 
-          $this->report->set_horizontal_alignment( 'center' );
-          $this->report->set_bold( true );
+          $spreadsheet->set_horizontal_alignment( 'center' );
+          $spreadsheet->set_bold( true );
 
           // put in the table title
           if( !is_null( $table['title'] ) )
           {
-            if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-            $this->report->set_background_color( '000000' );
-            $this->report->set_foreground_color( 'FFFFFF' );
-            $this->report->set_cell( 'A'.$row, $table['title'] );
-            $this->report->set_foreground_color( '000000' );
+            if( $max_col ) $spreadsheet->merge_cells( 'A'.$row.':'.$max_col.$row );
+            $spreadsheet->set_background_color( '000000' );
+            $spreadsheet->set_foreground_color( 'FFFFFF' );
+            $spreadsheet->set_cell( 'A'.$row, $table['title'] );
+            $spreadsheet->set_foreground_color( '000000' );
             $row++;
           }
 
           // put in the table header
           if( count( $table['header'] ) )
           {
-            $this->report->set_background_color( 'CCCCCC' );
+            $spreadsheet->set_background_color( 'CCCCCC' );
             $col = 'A';
             foreach( $table['header'] as $header )
             {
               $autosize = !in_array( $col, $table['fixed'] );
-              $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-              $this->report->set_cell( $col.$row, $header, $autosize );
+              $spreadsheet->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+              $spreadsheet->set_cell( $col.$row, $header, $autosize );
               $col++;
             }
             $row++;
           }
 
-          $this->report->set_bold( false );
-          $this->report->set_background_color( NULL );
+          $spreadsheet->set_bold( false );
+          $spreadsheet->set_background_color( NULL );
           
           $first_content_row = $row;
 
@@ -374,8 +282,8 @@ abstract class base_report extends \cenozo\base_object
               foreach( $contents as $content )
               {
                 $autosize = !in_array( $col, $table['fixed'] );
-                $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-                $this->report->set_cell( $col.$row, $content, $autosize );
+                $spreadsheet->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+                $spreadsheet->set_cell( $col.$row, $content, $autosize );
                 if( !array_key_exists( $col, $contents_are_numeric ) )
                   $contents_are_numeric[$col] = false;
                 $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
@@ -384,13 +292,23 @@ abstract class base_report extends \cenozo\base_object
               
               if( $insert_row && in_array( $content_row, $table['blanks'] ) ) $row++;    
                         
+              $cell_count += count( $contents );
               $content_row++;
               $row++;
+
+              if( $max_cells < $cell_count )
+              {
+                $spreadsheet->set_cell( 'A'.$row, '(report truncated)' );
+                break;
+              }
             }
           }
+
+          if( $max_cells < $cell_count ) break;
+
           $last_content_row = $row - 1;
           
-          $this->report->set_bold( true );
+          $spreadsheet->set_bold( true );
 
           // put in the table footer
           if( count( $table['footer'] ) )
@@ -416,17 +334,25 @@ abstract class base_report extends \cenozo\base_object
                 }
               }
 
-              $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-              $this->report->set_cell( $col.$row, $footer );
+              $spreadsheet->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+              $spreadsheet->set_cell( $col.$row, $footer );
               $col++;
             }
             $row++;
           }
         }
 
-        $data = $this->report->get_file( $this->db_report->format );
-        */
+        $data = $spreadsheet->get_file( $this->db_report->format );
       }
+
+      // make sure the report hasn't been deleted
+      try { $db_test_report = lib::create( 'database\report', $this->db_report->id ); }
+      catch( \cenozo\exception\runtime $e ) { return ; }
+
+      // mark the report stage/progress
+      $this->db_report->stage = 'writing data';
+      $this->db_report->progress = 1.0;
+      $this->db_report->save();
 
       // write the data to a file
       $result = file_put_contents( $this->get_filename(), $data, LOCK_EX );
@@ -560,6 +486,8 @@ abstract class base_report extends \cenozo\base_object
       array( 'title' => $title,
              'header' => $header,
              'contents' => $contents,
+             'fixed' => array(), // TODO: to implement or remove
+             'blanks' => array(), // TODO: to implement or remove
              'footer' => $footer ) );
   }
 
