@@ -233,7 +233,8 @@ define( function() {
           // wait a smidge for the directive to render then rebuild the form restrictions
           $timeout( function() {
             // remove the parameters group heading
-            var parameterData = $scope.$$childHead.dataArray.findByProperty( 'title', 'Parameters' );
+            var parameterData = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' )
+                                      .dataArray.findByProperty( 'title', 'Parameters' );
             document.querySelector( '[name="Parameters"]' ).querySelector( 'div' ).remove();
 
             // remove all restrict_* columns in the base-add directive's dataArray
@@ -253,8 +254,17 @@ define( function() {
                 parameterData.inputArray.push( input );
                 if( angular.isDefined( input.enumList ) )
                   $scope.model.metadata.columnList[input.key].enumList = angular.copy( input.enumList );
-                //parameterData.inputArray.push( getInputFromRestriction( restriction, CnHttpFactory ) );
               } );
+            } );
+
+            $scope.model.addModel.afterNew( function() {
+              var cnRecordAdd = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' )
+              for( var column in cnRecordAdd.record ) {
+                if( 'restrict_' == column.substring( 0, 9 ) &&
+                    angular.isDefined( $scope.model.metadata.columnList[column].restriction_type ) &&
+                    cenozo.isDatetimeType( $scope.model.metadata.columnList[column].restriction_type ) )
+                  cnRecordAdd.formattedRecord[column] = '(empty)';
+              }
             } );
           }, 200 );
         }
@@ -315,9 +325,6 @@ define( function() {
               $scope.model.viewModel.heading = response.data.title + ' Details';
             } );
 
-            // remove the parameters group heading
-            var parameterData = $scope.$$childHead.dataArray.findByProperty( 'title', 'Parameters' );
-
             // remove all restrict_* columns in the base-add directive's dataArray
             parameterData.inputArray = parameterData.inputArray.filter( function( input ) {
               return 'restrict_' != input.key.substring( 0, 9 );
@@ -325,7 +332,7 @@ define( function() {
 
             // add restrictions back into the dataArray
             $scope.model.rebuildFormRestrictions().then( function( restrictionList ) {
-              var inputArray = $scope.$$childHead.dataArray.findByProperty( 'title', 'Parameters' ).inputArray;
+              var inputArray = parameterData.inputArray;
               restrictionList.forEach( function( restriction ) {
                 var input = getInputFromRestriction( restriction, CnHttpFactory );
                 parameterData.inputArray.push( input );
@@ -357,6 +364,22 @@ define( function() {
 
         // transition to viewing the new record instead of the default functionality
         this.transitionOnSave = function( record ) { parentModel.transitionToViewState( record ); };
+
+        this.onNew = function( record ) {
+          return this.$$onNew( record ).then( function() {
+            for( var column in self.parentModel.metadata.columnList ) {
+              var meta = self.parentModel.metadata.columnList[column];
+              if( angular.isDefined( meta.restriction_type ) ) {
+                if( cenozo.isDatetimeType( meta.restriction_type ) ) {
+                  record[column] = null;
+                  
+                } else if( 'boolean' == meta.restriction_type ) {
+                  if( meta.required ) record[column] = true;
+                }
+              }
+            }
+          } );
+        };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
@@ -391,8 +414,13 @@ define( function() {
               }
             } ).query().then( function( response ) {
               response.data.forEach( function( restriction ) {
-                self.record['restrict_'+restriction.name] =
-                  'table' == restriction.restriction_type ? parseInt( restriction.value ) : restriction.value;
+                if( 'table' == restriction.restriction_type ) {
+                  self.record['restrict_'+restriction.name] = parseInt( restriction.value );
+                } else if( 'boolean' == restriction.restriction_type ) {
+                  self.record['restrict_'+restriction.name] = '1' == restriction.value;
+                } else {
+                  self.record['restrict_'+restriction.name] = restriction.value;
+                }
               } );
             } );
           } );
@@ -476,7 +504,10 @@ define( function() {
 
             // now add all restrictions
             response.data.forEach( function( restriction ) {
-              self.metadata.columnList['restrict_'+restriction.name] = { required: restriction.mandatory };
+              self.metadata.columnList['restrict_'+restriction.name] = {
+                required: restriction.mandatory,
+                restriction_type: restriction.restriction_type
+              };
             } );
 
             return response.data;

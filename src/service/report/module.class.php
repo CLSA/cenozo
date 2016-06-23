@@ -41,8 +41,10 @@ class module extends \cenozo\service\site_restricted_module
         $select->add_column( 'mandatory', NULL, true, 'boolean' );
         foreach( $db_report_type->get_report_restriction_list( $select ) as $report_restriction )
         {
+          $column = 'restrict_'.$report_restriction['name'];
+
           if( $report_restriction['mandatory'] &&
-              !array_key_exists( 'restrict_'.$report_restriction['name'], $file ) )
+              ( !array_key_exists( $column, $file ) || is_null( $file[$column] ) ) )
           {
             $this->get_status()->set_code( 400 );
             return;

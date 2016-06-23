@@ -83,28 +83,42 @@ class report extends \cenozo\database\record
     if( is_null( $db_report_restriction ) )
       throw lib::create( 'exception\argument', 'restriction', $restriction );
 
-    // process the value, if necessary
-    if( 'uid_list' == $db_report_restriction->restriction_type )
+    // delete value if null, otherwise set it
+    if( is_null( $value ) )
     {
-      $uid_list = $participant_class_name::get_valid_uid_list( $value );
+      $sql = sprintf(
+        'DELETE FROM report_has_report_restriction'."\n".
+        'WHERE report_id = %s'."\n".
+        '  AND report_restriction_id = %s',
+        static::db()->format_string( $this->id ),
+        static::db()->format_string( $db_report_restriction->id ) );
+    }
+    else
+    {
+      // process the value, if necessary
+      if( 'uid_list' == $db_report_restriction->restriction_type )
+      {
+        $uid_list = $participant_class_name::get_valid_uid_list( $value );
 
-      if( $db_report_restriction->mandatory && 0 == count( $uid_list ) )
-        throw lib::create( 'exception\notice',
-          'The participant list you generated resulted in no participants. '.
-          'Please check your input and try again.',
-          __METHOD__ );
+        if( $db_report_restriction->mandatory && 0 == count( $uid_list ) )
+          throw lib::create( 'exception\notice',
+            'The participant list you generated resulted in no participants. '.
+            'Please check your input and try again.',
+            __METHOD__ );
 
-      $value = implode( ' ', $uid_list );
+        $value = implode( ' ', $uid_list );
+      }
+
+      $sql = sprintf(
+        'INSERT INTO report_has_report_restriction'."\n".
+        'SET report_id = %s,'."\n".
+        '    report_restriction_id = %s,'."\n".
+        '    value = %s',
+        static::db()->format_string( $this->id ),
+        static::db()->format_string( $db_report_restriction->id ),
+        static::db()->format_string( $value ) );
     }
 
-    $sql = sprintf(
-      'INSERT INTO report_has_report_restriction'."\n".
-      'SET report_id = %s,'."\n".
-      '    report_restriction_id = %s,'."\n".
-      '    value = %s',
-      static::db()->format_string( $this->id ),
-      static::db()->format_string( $db_report_restriction->id ),
-      static::db()->format_string( $value ) );
     static::db()->execute( $sql );
   }
 }
