@@ -34,11 +34,17 @@ $settings['general']['default_password'] = 'password';
 // the maximum number of login failures before deactivating a user
 $settings['general']['login_failure_limit'] = 15;
 
+// the maximum time (in seconds) allowed for a report to finish
+$settings['report']['time_limit'] = 180;
+
+// the maximum number of cells allowed in a non-csv report
+$settings['report']['max_cells'] = 20000;
+
 // the maximum number of rows allowed in a list-report
-$settings['general']['max_big_report'] = 10000;
+$settings['report']['max_big_rows'] = 10000;
 
 // the maximum number of rows allowed in a non-csv list-report
-$settings['general']['max_small_report'] = 1000;
+$settings['report']['max_small_rows'] = 1000;
 
 // cenozo's sub-directory urls
 $settings['url']['ROOT'] = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) );
