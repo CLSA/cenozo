@@ -460,7 +460,7 @@ class database extends \cenozo\base_object
       // if a deadlock or lock-wait timout has occurred then notify the user with a notice
       if( 1213 == $this->connection->errno || 1205 == $this->connection->errno )
       {
-        log::warning( 'Deadlock has prevented an update to the database.' );
+        log::warning( "Deadlock has prevented the following query from completing:\n".$sql );
         throw lib::create( 'exception\notice',
           'The server was too busy to complete your request, please try again. '.
           'If this error persists please contact support.' , __METHOD__ );
