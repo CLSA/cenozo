@@ -42,33 +42,38 @@ class activity extends record
     $modifier->where( 'activity.application_id', '=', $db_application->id );
     $modifier->where( 'end_datetime', '=', NULL );
 
-    // close all lapsed activity
-    static::db()->execute( sprintf(
-      'UPDATE activity'.
-      "\n".'JOIN access USING( user_id, role_id, site_id )'.
-      "\n".'SET end_datetime = datetime %s',
-      $modifier->get_sql() ) );
-
-    if( !is_null( $db_user ) )
+    try
     {
-      // close all open activity by this user NOT for the current site/role
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'end_datetime', '=', NULL );
-      $modifier->where( 'application_id', '=', $db_application->id );
-      $modifier->where( 'user_id', '=', $db_user->id );
-
-      if( !is_null( $db_access ) )
-      {
-        $modifier->where_bracket( true );
-        $modifier->where( 'site_id', '!=', $db_access->site_id );
-        $modifier->or_where( 'role_id', '!=', $db_access->role_id );
-        $modifier->where_bracket( false );
-      }
-
+      // close all lapsed activity
       static::db()->execute( sprintf(
-        'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
+        'UPDATE activity'.
+        "\n".'JOIN access USING( user_id, role_id, site_id )'.
+        "\n".'SET end_datetime = datetime %s',
         $modifier->get_sql() ) );
+
+      if( !is_null( $db_user ) )
+      {
+        // close all open activity by this user NOT for the current site/role
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'end_datetime', '=', NULL );
+        $modifier->where( 'application_id', '=', $db_application->id );
+        $modifier->where( 'user_id', '=', $db_user->id );
+
+        if( !is_null( $db_access ) )
+        {
+          $modifier->where_bracket( true );
+          $modifier->where( 'site_id', '!=', $db_access->site_id );
+          $modifier->or_where( 'role_id', '!=', $db_access->role_id );
+          $modifier->where_bracket( false );
+        }
+
+        static::db()->execute( sprintf(
+          'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
+          $modifier->get_sql() ) );
+      }
     }
+    // catch any deadlock notices and ignore them
+    catch( \cenozo\exception\notice $e ) {}
   }
 
   // TODO: document
