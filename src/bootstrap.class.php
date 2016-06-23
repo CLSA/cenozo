@@ -64,6 +64,7 @@ final class bootstrap
     // setup
     ob_start();
     define( 'START_TIME', microtime( true ) );
+    set_time_limit( 60 );
     ini_set( 'display_errors', '0' );
     error_reporting( E_ALL | E_STRICT );
     $this->read_settings();
