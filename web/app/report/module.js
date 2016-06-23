@@ -137,7 +137,7 @@ define( function() {
 
     if( 'table' == type ) {
       input.type = 'enum';
-      
+
       // loop through the subject column data to determine the http data
       CnHttpFactory.instance( {
         path: restriction.subject
@@ -208,8 +208,7 @@ define( function() {
 
     return input;
   }
-  
-  
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportAdd', [
     'CnReportModelFactory', 'CnSession', 'CnHttpFactory', '$timeout',
@@ -233,8 +232,8 @@ define( function() {
           // wait a smidge for the directive to render then rebuild the form restrictions
           $timeout( function() {
             // remove the parameters group heading
-            var parameterData = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' )
-                                      .dataArray.findByProperty( 'title', 'Parameters' );
+            var cnRecordAdd = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' )
+            var parameterData = cnRecordAdd.dataArray.findByProperty( 'title', 'Parameters' );
             document.querySelector( '[name="Parameters"]' ).querySelector( 'div' ).remove();
 
             // remove all restrict_* columns in the base-add directive's dataArray
@@ -254,17 +253,8 @@ define( function() {
                 parameterData.inputArray.push( input );
                 if( angular.isDefined( input.enumList ) )
                   $scope.model.metadata.columnList[input.key].enumList = angular.copy( input.enumList );
+                if( cenozo.isDatetimeType( input.type ) ) cnRecordAdd.formattedRecord[input.key] = '(empty)';
               } );
-            } );
-
-            $scope.model.addModel.afterNew( function() {
-              var cnRecordAdd = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' )
-              for( var column in cnRecordAdd.record ) {
-                if( 'restrict_' == column.substring( 0, 9 ) &&
-                    angular.isDefined( $scope.model.metadata.columnList[column].restriction_type ) &&
-                    cenozo.isDatetimeType( $scope.model.metadata.columnList[column].restriction_type ) )
-                  cnRecordAdd.formattedRecord[column] = '(empty)';
-              }
             } );
           }, 200 );
         }
@@ -297,6 +287,7 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope, $element ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportModelFactory.root;
+          var afterViewCompleted = false;
 
           // keep reloading the data until the report is either completed or failed (or the UI goes away)
           var promise = $interval( function() {
@@ -304,50 +295,57 @@ define( function() {
                 'failed' == $scope.model.viewModel.record.stage ) {
               $interval.cancel( promise );
             } else {
-              $scope.model.viewModel.onView();
+              $scope.model.viewModel.onView( false );
             }
           }, 3000 );
-          $element.on( '$destroy', function() { $interval.cancel( promise ); } );
+          $element.on( '$destroy', function() {
+            $interval.cancel( promise );
+            afterViewCompleted = false;
+          } );
 
           $scope.model.viewModel.afterView( function() {
-            var parameterData = $scope.$$childHead.dataArray.findByProperty( 'title', 'Parameters' );
+            if( !afterViewCompleted ) {
+              var parameterData = $scope.$$childHead.dataArray.findByProperty( 'title', 'Parameters' );
 
-            // remove all restrict_* columns in the base-add directive's dataArray
-            parameterData.inputArray = parameterData.inputArray.filter( function( input ) {
-              return 'restrict_' != input.key.substring( 0, 9 );
-            } );
-
-            // change the heading to the form's title
-            CnHttpFactory.instance( {
-              path: 'report_type/' + $scope.model.getParentIdentifier().identifier,
-              data: { select: { column: [ 'title' ] } }
-            } ).get().then( function( response ) {
-              $scope.model.viewModel.heading = response.data.title + ' Details';
-            } );
-
-            // remove all restrict_* columns in the base-add directive's dataArray
-            parameterData.inputArray = parameterData.inputArray.filter( function( input ) {
-              return 'restrict_' != input.key.substring( 0, 9 );
-            } );
-
-            // add restrictions back into the dataArray
-            $scope.model.rebuildFormRestrictions().then( function( restrictionList ) {
-              var inputArray = parameterData.inputArray;
-              restrictionList.forEach( function( restriction ) {
-                var input = getInputFromRestriction( restriction, CnHttpFactory );
-                parameterData.inputArray.push( input );
-
-                // the record will only have existing, unformatted restriction values set at this point:
-                // 1) if this is a datetime then set the value to null if it doesn't exist, otherwise today's date
-                //    will show instead
-                if( cenozo.isDatetimeType( input.type ) &&
-                    angular.isUndefined( $scope.model.viewModel.record[input.key] ) )
-                  $scope.model.viewModel.record[input.key] = null;
-                // 2) update the formatted record since this is done in the framework BEFORE we had a chance to
-                //    add the input/column
-                $scope.model.viewModel.updateFormattedRecord( input.key, input.type );
+              // remove all restrict_* columns in the base-add directive's dataArray
+              parameterData.inputArray = parameterData.inputArray.filter( function( input ) {
+                return 'restrict_' != input.key.substring( 0, 9 );
               } );
-            } );
+
+              // change the heading to the form's title
+              CnHttpFactory.instance( {
+                path: 'report_type/' + $scope.model.getParentIdentifier().identifier,
+                data: { select: { column: [ 'title' ] } }
+              } ).get().then( function( response ) {
+                $scope.model.viewModel.heading = response.data.title + ' Details';
+              } );
+
+              // remove all restrict_* columns in the base-add directive's dataArray
+              parameterData.inputArray = parameterData.inputArray.filter( function( input ) {
+                return 'restrict_' != input.key.substring( 0, 9 );
+              } );
+
+              // add restrictions back into the dataArray
+              $scope.model.rebuildFormRestrictions().then( function( restrictionList ) {
+                var inputArray = parameterData.inputArray;
+                restrictionList.forEach( function( restriction ) {
+                  var input = getInputFromRestriction( restriction, CnHttpFactory );
+                  parameterData.inputArray.push( input );
+
+                  // the record will only have existing, unformatted restriction values set at this point:
+                  // 1) if this is a datetime then set the value to null if it doesn't exist, otherwise today's
+                  //    date will show instead
+                  if( cenozo.isDatetimeType( input.type ) &&
+                      angular.isUndefined( $scope.model.viewModel.record[input.key] ) )
+                    $scope.model.viewModel.record[input.key] = null;
+                  // 2) update the formatted record since this is done in the framework BEFORE we had a chance to
+                  //    add the input/column
+                  $scope.model.viewModel.updateFormattedRecord( input.key, input.type );
+                } );
+              } );
+
+              afterViewCompleted = true;
+            }
           } );
         }
       };
@@ -372,7 +370,7 @@ define( function() {
               if( angular.isDefined( meta.restriction_type ) ) {
                 if( cenozo.isDatetimeType( meta.restriction_type ) ) {
                   record[column] = null;
-                  
+
                 } else if( 'boolean' == meta.restriction_type ) {
                   if( meta.required ) record[column] = true;
                 }
@@ -403,29 +401,39 @@ define( function() {
         CnBaseViewFactory.construct( this, parentModel, root );
 
         // extend onView
-        this.onView = function() {
+        this.onView = function( updateRestrictions ) {
+          if( angular.isUndefined( updateRestrictions ) ) updateRestrictions = true;
+
+          if( !updateRestrictions ) var recordBackup = angular.copy( self.record );
+
           return this.$$onView().then( function() {
-            // get the report restriction values
-            CnHttpFactory.instance( {
-              path: 'report/' + self.record.getIdentifier() + '/report_restriction',
-              data: {
-                select: { column: [ 'name', 'value', 'restriction_type' ] },
-                modifier: { order: { rank: false } }
-              }
-            } ).query().then( function( response ) {
-              response.data.forEach( function( restriction ) {
-                if( 'table' == restriction.restriction_type ) {
-                  self.record['restrict_'+restriction.name] = parseInt( restriction.value );
-                } else if( 'boolean' == restriction.restriction_type ) {
-                  self.record['restrict_'+restriction.name] = '1' == restriction.value;
-                } else {
-                  self.record['restrict_'+restriction.name] = restriction.value;
+            if( updateRestrictions ) {
+              // get the report restriction values
+              return CnHttpFactory.instance( {
+                path: 'report/' + self.record.getIdentifier() + '/report_restriction',
+                data: {
+                  select: { column: [ 'name', 'value', 'restriction_type' ] },
+                  modifier: { order: { rank: false } }
                 }
+              } ).query().then( function( response ) {
+                response.data.forEach( function( restriction ) {
+                  if( 'table' == restriction.restriction_type ) {
+                    self.record['restrict_'+restriction.name] = parseInt( restriction.value );
+                  } else if( 'boolean' == restriction.restriction_type ) {
+                    self.record['restrict_'+restriction.name] = '1' == restriction.value;
+                  } else {
+                    self.record['restrict_'+restriction.name] = restriction.value;
+                  }
+                } );
               } );
-            } );
+            } else {
+              for( var column in recordBackup )
+                if( 'restrict_' == column.substring( 0, 9 ) )
+                  self.record[column] = recordBackup[column];
+            }
           } );
         };
-        
+
         // download the report's file
         this.downloadFile = function() {
           var format = 'csv';
