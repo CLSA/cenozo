@@ -896,7 +896,8 @@ cenozo.directive( 'cnRecordAdd', [
         $scope.isComplete = false;
         $scope.model.addModel.onNew( $scope.record ).then( function() {
           $scope.model.metadata.getPromise().then( function() {
-            if( 'add' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
+            if( 'add' == $scope.model.getActionFromState().substring( 0, 3 ) )
+              $scope.model.setupBreadcrumbTrail();
 
             $scope.dataArray.forEach( function( group ) {
               group.inputArray.forEach( function( input ) {
@@ -2641,7 +2642,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             return object.parentModel.transitionToAddState();
           },
           eventClick: function( record ) {
-            return object.parentModel.transitionToViewState( record );
+            if( object.parentModel.viewEnabled )
+              return object.parentModel.transitionToViewState( record );
           }
         };
 
@@ -4128,12 +4130,12 @@ cenozo.factory( 'CnBaseModelFactory', [
             return this.promise;
           }
         };
-        self.addEnabled = angular.isDefined( self.module.actions.add );
-        self.chooseEnabled = false;
-        self.deleteEnabled = angular.isDefined( self.module.actions.delete );
-        self.editEnabled = angular.isDefined( self.module.actions.edit );
-        self.viewEnabled = angular.isDefined( self.module.actions.view );
-        self.listingState = 'list';
+        self.enableAdd( angular.isDefined( self.module.actions.add ) );
+        self.enableChoose( false );
+        self.enableDelete( angular.isDefined( self.module.actions.delete ) );
+        self.enableEdit( angular.isDefined( self.module.actions.edit ) );
+        self.enableView( angular.isDefined( self.module.actions.view ) );
+        self.enableListingState = 'list';
         // see the base list factory's orderBy function for how to use this variable
         self.queryParameterSubject = self.module.subject.snake;
 
