@@ -105,7 +105,7 @@ abstract class base_report extends \cenozo\base_object
 
       // make sure the report hasn't been deleted
       try { $db_test_report = lib::create( 'database\report', $this->db_report->id ); }
-      catch( \cenozo\exception\runtime $e ) { return ; }
+      catch( \cenozo\exception\runtime $e ) { return; }
 
       // mark the report stage/progress
       $this->db_report->stage = 'writing data';
@@ -347,7 +347,7 @@ abstract class base_report extends \cenozo\base_object
 
       // make sure the report hasn't been deleted
       try { $db_test_report = lib::create( 'database\report', $this->db_report->id ); }
-      catch( \cenozo\exception\runtime $e ) { return ; }
+      catch( \cenozo\exception\runtime $e ) { return; }
 
       // mark the report stage/progress
       $this->db_report->stage = 'writing data';
