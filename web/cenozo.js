@@ -2276,7 +2276,12 @@ cenozo.factory( 'CnBaseAddFactory', [
          * 
          * @param function
          */
-        object.afterAdd = function( fn ) { this.afterAddFunctions.push( fn ); };
+        object.afterAdd = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterAddFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterAddFunctions.push( fn );
+        };
         object.afterAddFunctions = [];
 
         /**
@@ -2322,7 +2327,12 @@ cenozo.factory( 'CnBaseAddFactory', [
          * 
          * @param function
          */
-        object.afterNew = function( fn ) { this.afterNewFunctions.push( fn ); };
+        object.afterNew = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterNewFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterNewFunctions.push( fn );
+        };
         object.afterNewFunctions = [];
 
         /**
@@ -2457,7 +2467,12 @@ cenozo.factory( 'CnBaseCalendarFactory', [
          * 
          * @param function
          */
-        object.afterDelete = function( fn ) { this.afterDeleteFunctions.push( fn ); };
+        object.afterDelete = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterDeleteFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterDeleteFunctions.push( fn );
+        };
         object.afterDeleteFunctions = [];
 
         /**
@@ -2500,7 +2515,12 @@ cenozo.factory( 'CnBaseCalendarFactory', [
          * 
          * @param function
          */
-        object.afterCalendar = function( fn ) { this.afterCalendarFunctions.push( fn ); };
+        object.afterCalendar = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterCalendarFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterCalendarFunctions.push( fn );
+        };
         object.afterCalendarFunctions = [];
 
         /**
@@ -2769,7 +2789,12 @@ cenozo.factory( 'CnBaseListFactory', [
          * 
          * @param function
          */
-        object.afterChoose = function( fn ) { this.afterChooseFunctions.push( fn ); };
+        object.afterChoose = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterChooseFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterChooseFunctions.push( fn );
+        };
         object.afterChooseFunctions = [];
 
         /**
@@ -2822,7 +2847,12 @@ cenozo.factory( 'CnBaseListFactory', [
          * 
          * @param function
          */
-        object.afterDelete = function( fn ) { this.afterDeleteFunctions.push( fn ); };
+        object.afterDelete = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterDeleteFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterDeleteFunctions.push( fn );
+        };
         object.afterDeleteFunctions = [];
 
         /**
@@ -2872,7 +2902,12 @@ cenozo.factory( 'CnBaseListFactory', [
          * 
          * @param function
          */
-        object.afterList = function( fn ) { this.afterListFunctions.push( fn ); };
+        object.afterList = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterListFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterListFunctions.push( fn );
+        };
         object.afterListFunctions = [];
 
         /**
@@ -3025,7 +3060,12 @@ cenozo.factory( 'CnBaseListFactory', [
          * 
          * @param function
          */
-        object.afterSelect = function( fn ) { this.afterSelectFunctions.push( fn ); };
+        object.afterSelect = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterSelectFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterSelectFunctions.push( fn );
+        };
         object.afterSelectFunctions = [];
 
         /**
@@ -3163,7 +3203,12 @@ cenozo.factory( 'CnBaseViewFactory', [
          * 
          * @param function
          */
-        object.afterDelete = function( fn ) { this.afterDeleteFunctions.push( fn ); };
+        object.afterDelete = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterDeleteFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterDeleteFunctions.push( fn );
+        };
         object.afterDeleteFunctions = [];
 
         /**
@@ -3205,7 +3250,12 @@ cenozo.factory( 'CnBaseViewFactory', [
          * 
          * @param function
          */
-        object.afterPatch = function( fn ) { this.afterPatchFunctions.push( fn ); };
+        object.afterPatch = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterPatchFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterPatchFunctions.push( fn );
+        };
         object.afterPatchFunctions = [];
 
         /**
@@ -3291,7 +3341,12 @@ cenozo.factory( 'CnBaseViewFactory', [
          * 
          * @param function
          */
-        object.afterView = function( fn ) { this.afterViewFunctions.push( fn ); };
+        object.afterView = function( fn ) {
+          // make sure the function doesn't already exist
+          if( !this.afterViewFunctions.some( function( viewFn ) {
+            return fn === viewFn || fn.toString() == viewFn.toString();
+          } ) ) this.afterViewFunctions.push( fn );
+        };
         object.afterViewFunctions = [];
 
         /**
@@ -3307,73 +3362,71 @@ cenozo.factory( 'CnBaseViewFactory', [
           if( !this.parentModel.viewEnabled ) throw new Error( 'Calling onView() but viewEnabled is false.' );
 
           // get the record's data and metadata
-          return $q.all( [
-            CnHttpFactory.instance( {
-              path: this.parentModel.getServiceResourcePath(),
-              data: this.parentModel.getServiceData( 'view' ),
-              redirectOnError: true
-            } ).get().then( function( response ) {
-              // create the record
-              self.record = angular.copy( response.data );
-              self.record.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
+          return CnHttpFactory.instance( {
+            path: this.parentModel.getServiceResourcePath(),
+            data: this.parentModel.getServiceData( 'view' ),
+            redirectOnError: true
+          } ).get().then( function( response ) {
+            // create the record
+            self.record = angular.copy( response.data );
+            self.record.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
 
-              // create the backup record
-              self.backupRecord = angular.copy( self.record );
+            // create the backup record
+            self.backupRecord = angular.copy( self.record );
 
-              return self.parentModel.metadata.getPromise();
-            } )
-          ] ).then( function() {
-            var promiseList = [];
+            self.parentModel.metadata.getPromise().then( function() {
+              var promiseList = [];
 
-            if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
-              // add the parent subject and identifier to the service
-              var path = self.parentModel.getServiceCollectionPath();
-              var parent = self.parentModel.getParentIdentifier();
-              if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) )
-                path = [ parent.subject, parent.identifier, path ].join( '/' );
+              if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
+                // add the parent subject and identifier to the service
+                var path = self.parentModel.getServiceCollectionPath();
+                var parent = self.parentModel.getParentIdentifier();
+                if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) )
+                  path = [ parent.subject, parent.identifier, path ].join( '/' );
 
-              promiseList.push( CnHttpFactory.instance( {
-                path: path,
-                data: { select: { column: {
-                  column: 'MAX(' + self.parentModel.module.subject.snake + '.rank)',
-                  alias: 'max',
-                  table_prefix: false
-                } } },
-                redirectOnError: true
-              } ).query().then( function( response ) {
-                if( 0 < response.data.length ) {
-                  self.parentModel.metadata.columnList.rank.enumList = [];
-                  if( null !== response.data[0].max ) {
-                    for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ ) {
-                      self.parentModel.metadata.columnList.rank.enumList.push( {
-                        value: rank,
-                        name: $filter( 'cnOrdinal' )( rank )
-                      } );
+                promiseList.push( CnHttpFactory.instance( {
+                  path: path,
+                  data: { select: { column: {
+                    column: 'MAX(' + self.parentModel.module.subject.snake + '.rank)',
+                    alias: 'max',
+                    table_prefix: false
+                  } } },
+                  redirectOnError: true
+                } ).query().then( function( response ) {
+                  if( 0 < response.data.length ) {
+                    self.parentModel.metadata.columnList.rank.enumList = [];
+                    if( null !== response.data[0].max ) {
+                      for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ ) {
+                        self.parentModel.metadata.columnList.rank.enumList.push( {
+                          value: rank,
+                          name: $filter( 'cnOrdinal' )( rank )
+                        } );
+                      }
+                    }
+                  }
+                } ) );
+              }
+
+              // convert blank enums into empty strings (for ng-options)
+              self.parentModel.module.inputGroupList.forEach( function( group ) {
+                for( var column in group.inputList ) {
+                  var input = group.inputList[column];
+                  if( 'view' != input.exclude && 'enum' == input.type && null === self.record[column] ) {
+                    var metadata = self.parentModel.metadata.columnList[column];
+                    if( angular.isDefined( metadata ) && !metadata.required ) {
+                      self.record[column] = '';
+                      self.backupRecord[column] = '';
                     }
                   }
                 }
-              } ) );
-            }
+              } );
 
-            // convert blank enums into empty strings (for ng-options)
-            self.parentModel.module.inputGroupList.forEach( function( group ) {
-              for( var column in group.inputList ) {
-                var input = group.inputList[column];
-                if( 'view' != input.exclude && 'enum' == input.type && null === self.record[column] ) {
-                  var metadata = self.parentModel.metadata.columnList[column];
-                  if( angular.isDefined( metadata ) && !metadata.required ) {
-                    self.record[column] = '';
-                    self.backupRecord[column] = '';
-                  }
-                }
-              }
-            } );
+              // update all properties in the formatted record
+              self.updateFormattedRecord();
 
-            // update all properties in the formatted record
-            self.updateFormattedRecord();
-
-            return $q.all( promiseList ).then( function() {
-              self.afterViewFunctions.forEach( function( fn ) { fn(); } );
+              return $q.all( promiseList ).then( function() {
+                self.afterViewFunctions.forEach( function( fn ) { fn(); } );
+              } );
             } );
           } );
         } );
