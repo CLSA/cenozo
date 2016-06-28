@@ -33,14 +33,6 @@ define( function() {
         title: 'Type',
         type: 'string'
       },
-      subject: {
-        title: 'Subject',
-        type: 'string'
-      },
-      operator: {
-        title: 'Operator',
-        type: 'string'
-      },
       mandatory: {
         title: 'Mandatory',
         type: 'boolean'
@@ -68,6 +60,10 @@ define( function() {
     restriction_type: {
       title: 'Type',
       type: 'enum'
+    },
+    custom: {
+      title: 'Custom',
+      type: 'boolean'
     },
     subject: {
       title: 'Subject',

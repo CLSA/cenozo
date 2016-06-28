@@ -399,7 +399,6 @@ define( function() {
             }
 
             return promise.then( function() {
-              
               var parameterData = self.parentModel.module.inputGroupList.findByProperty( 'title', 'Parameters' );
               Object.keys( parameterData.inputList ).filter( function( column ) {
                 return 'restrict_' == column.substring( 0, 9 );
@@ -409,6 +408,8 @@ define( function() {
                   self.updateFormattedRecord( column, type );
                 } else if( cenozo.isDatetimeType( type ) ) {
                   self.formattedRecord[column] = '(empty)';
+                } else if( 'boolean' == type ) {
+                  self.record[column] = '';
                 }
               } );
             } );
