@@ -56,7 +56,9 @@
         <span ng-if="!search.length">There are no notes for this {{ model.module.name.singular }}.</span>
         <span ng-if="0 < search.length">There are no notes which have all of the words in your search.</span>
       </p>
-      <div class="panel panel-default" ng-repeat="note in model.noteList | orderBy:['-sticky','-datetime']">
+      <div class="panel"
+           ng-class="note.sticky ? 'panel-warning' : 'panel-default'"
+           ng-repeat="note in model.noteList | orderBy:['-sticky','-datetime']">
         <div class="panel-heading">
           <span class="allow-select">{{ note.userFirst }} {{ note.userLast }}</span>
           <span class="pull-right">
