@@ -3951,8 +3951,10 @@ cenozo.factory( 'CnBaseModelFactory', [
               var inputArray = Object.keys( group.inputList ).map( function( key ) {
                 return group.inputList[key];
               } ).filter( function( input ) {
-                return 0 > removeList.indexOf( key ) && stateSubject+'_id' != key && type != input.exclude;
-              } )
+                return 0 > removeList.indexOf( input.key ) &&
+                       stateSubject+'_id' != input.key &&
+                       type != input.exclude;
+              } );
 
               if( 0 < inputArray.length ) data.push( {
                 title: group.title,
