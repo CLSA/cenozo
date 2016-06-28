@@ -124,75 +124,82 @@ define( function() {
     isDisabled: function( $state, model ) { return 'completed' != model.viewModel.record.stage; }
   } );
 
-  function getInputFromRestriction( restriction, CnHttpFactory ) {
-    var key = 'restrict_' + restriction.name;
+  function getTypeFromRestriction( restriction ) {
     var type = restriction.restriction_type;
-    var input = {
-      key: key,
-      title: restriction.title,
-      constant: 'view',
-      help: restriction.description
-    };
-    var enumList = null;
+    if( 'table' == type ) return 'enum';
+    else if( 'boolean' == type ) return 'boolean';
+    else if( 'uid_list' == type ) return 'text';
+    else if( 'integer' == type ) return 'string';
+    else if( 'decimal' == type ) return 'string';
+    else if( 'enum' == type ) return 'enum';
+    else return type;
+  }
 
-    if( 'table' == type ) {
-      input.type = 'enum';
+  var inputFromRestrictionCache = {};
 
-      // loop through the subject column data to determine the http data
-      CnHttpFactory.instance( {
-        path: restriction.subject
-      } ).head().then( function( response ) {
-        var data = {
-          modifier: {
-            where: [],
-            order: undefined
-          },
-          select: { column: [ 'id' ] }
-        };
-        var columnList = angular.fromJson( response.headers( 'Columns' ) );
-        for( var column in columnList ) {
-          if( 'active' == column )
-            data.modifier.where.push( { column: 'active', operator: '=', value: true } );
-          else if( 'name' == column ) {
-            data.modifier.order = { name: false };
-            data.select.column.push( 'name' );
-          }
-        };
+  function getInputFromRestriction( restriction, CnHttpFactory ) {
+    if( angular.isUndefined( inputFromRestrictionCache[restriction.id] ) ) {
+      var key = 'restrict_' + restriction.name;
+      var type = restriction.restriction_type;
+      var promiseList = [];
+      var input = {
+        key: key,
+        title: restriction.title,
+        type: getTypeFromRestriction( restriction ),
+        constant: 'view',
+        help: restriction.description
+      };
 
-        // query the table for the enum list
-        CnHttpFactory.instance( {
-          path: restriction.subject,
-          data: data
-        } ).get().then( function( response ) {
-          input.enumList = [ {
-            value: undefined,
-            name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
-          } ];
-          response.data.forEach( function( item ) {
-            input.enumList.push( { value: item.id, name: item.name } );
-          } );
-        } );
-      } );
-    } else if( 'boolean' == type ) {
-      input.type = 'boolean';
-      input.enumList = [ {
-        value: undefined,
-        name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
-      }, {
-        value: true, name: 'Yes'
-      }, {
-        value: false, name: 'No'
-      } ];
-    } else if( 'uid_list' == type ) {
-      input.type = 'text';
-    } else if( 'integer' == type ) {
-      input.type = 'string';
-    } else if( 'decimal' == type ) {
-      input.type = 'string';
-    } else if( 'enum' == type ) {
-      input.type = 'enum';
-      input.enumList =
-        angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
+      if( 'table' == type ) {
+        // loop through the subject column data to determine the http data
+        input.enumList = [ {
+          value: undefined,
+          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+        } ];
+
+        promiseList.push(
+          CnHttpFactory.instance( {
+            path: restriction.subject
+          } ).head().then( function( response ) {
+            var data = {
+              modifier: {
+                where: [],
+                order: undefined
+              },
+              select: { column: [ 'id' ] }
+            };
+            var columnList = angular.fromJson( response.headers( 'Columns' ) );
+            for( var column in columnList ) {
+              if( 'active' == column )
+                data.modifier.where.push( { column: 'active', operator: '=', value: true } );
+              else if( 'name' == column ) {
+                data.modifier.order = { name: false };
+                data.select.column.push( 'name' );
+              }
+            };
+
+            // query the table for the enum list
+            return CnHttpFactory.instance( {
+              path: restriction.subject,
+              data: data
+            } ).get().then( function( response ) {
+              response.data.forEach( function( item ) {
+                input.enumList.push( { value: item.id, name: item.name } );
+              } );
+            } );
+          } )
+        );
+      } else if( 'boolean' == type ) {
+        input.enumList = [ {
+          value: undefined,
+          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+        }, {
+          value: true, name: 'Yes'
+        }, {
+          value: false, name: 'No'
+        } ];
+      } else if( 'enum' == type ) {
+        input.enumList = angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
           function( list, name ) {
             list.push( { value: name, name: name } );
             return list;
@@ -202,11 +209,12 @@ define( function() {
             name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
           } ]
         );
-    } else {
-      input.type = type;
+      }
+      
+      inputFromRestrictionCache[restriction.id] = { input: input, promiseList: promiseList };
     }
 
-    return input;
+    return inputFromRestrictionCache[restriction.id];
   }
 
   /* ######################################################################################################## */
@@ -221,6 +229,16 @@ define( function() {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportModelFactory.root;
           $scope.model.setupBreadcrumbTrail();
 
+          $timeout( function() {
+            $scope.model.getMetadata().then( function() {
+              var cnRecordAdd = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+              cnRecordAdd.dataArray = $scope.model.getDataArray( [], 'add' );
+              cnRecordAdd.dataArray.findByProperty( 'title', 'Parameters' ).inputArray.forEach( function( input ) {
+                if( cenozo.isDatetimeType( input.type ) ) cnRecordAdd.formattedRecord[input.key] = '(empty)';
+              } );
+            } );
+          }, 200 );
+
           // change the heading to the form's title
           CnHttpFactory.instance( {
             path: 'report_type/' + $scope.model.getParentIdentifier().identifier,
@@ -228,35 +246,6 @@ define( function() {
           } ).get().then( function( response ) {
             $scope.model.addModel.heading = 'Run ' + response.data.title + ' Report';
           } );
-
-          // wait a smidge for the directive to render then rebuild the form restrictions
-          $timeout( function() {
-            // remove the parameters group heading
-            var cnRecordAdd = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' )
-            var parameterData = cnRecordAdd.dataArray.findByProperty( 'title', 'Parameters' );
-            document.querySelector( '[name="Parameters"]' ).querySelector( 'div' ).remove();
-
-            // remove all restrict_* columns in the base-add directive's dataArray
-            parameterData.inputArray = parameterData.inputArray.filter( function( input ) {
-              return 'restrict_' != input.key.substring( 0, 9 );
-            } );
-
-            // add restrictions back into the dataArray
-            $scope.model.rebuildFormRestrictions().then( function( restrictionList ) {
-              restrictionList.filter( function( restriction ) {
-                // don't include site restrictions for roles which don't have all-sites access
-                return CnSession.role.allSites ||
-                       'table' != restriction.restriction_type ||
-                       'site' != restriction.subject;
-              } ).forEach( function( restriction ) {
-                var input = getInputFromRestriction( restriction, CnHttpFactory );
-                parameterData.inputArray.push( input );
-                if( angular.isDefined( input.enumList ) )
-                  $scope.model.metadata.columnList[input.key].enumList = angular.copy( input.enumList );
-                if( cenozo.isDatetimeType( input.type ) ) cnRecordAdd.formattedRecord[input.key] = '(empty)';
-              } );
-            } );
-          }, 200 );
         }
       };
     }
@@ -279,8 +268,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportView', [
-    'CnReportModelFactory', 'CnHttpFactory', '$interval',
-    function( CnReportModelFactory, CnHttpFactory, $interval ) {
+    'CnReportModelFactory', 'CnHttpFactory', '$interval', '$timeout',
+    function( CnReportModelFactory, CnHttpFactory, $interval, $timeout ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
@@ -288,6 +277,11 @@ define( function() {
         controller: function( $scope, $element ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportModelFactory.root;
           var afterViewCompleted = false;
+
+          $scope.model.getMetadata().then( function() {
+            var cnRecordView = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
+            cnRecordView.dataArray = $scope.model.getDataArray( [], 'view' );
+          } );
 
           // keep reloading the data until the report is either completed or failed (or the UI goes away)
           var promise = $interval( function() {
@@ -305,13 +299,6 @@ define( function() {
 
           $scope.model.viewModel.afterView( function() {
             if( !afterViewCompleted ) {
-              var parameterData = $scope.$$childHead.dataArray.findByProperty( 'title', 'Parameters' );
-
-              // remove all restrict_* columns in the base-add directive's dataArray
-              parameterData.inputArray = parameterData.inputArray.filter( function( input ) {
-                return 'restrict_' != input.key.substring( 0, 9 );
-              } );
-
               // change the heading to the form's title
               CnHttpFactory.instance( {
                 path: 'report_type/' + $scope.model.getParentIdentifier().identifier,
@@ -319,32 +306,6 @@ define( function() {
               } ).get().then( function( response ) {
                 $scope.model.viewModel.heading = response.data.title + ' Details';
               } );
-
-              // remove all restrict_* columns in the base-add directive's dataArray
-              parameterData.inputArray = parameterData.inputArray.filter( function( input ) {
-                return 'restrict_' != input.key.substring( 0, 9 );
-              } );
-
-              // add restrictions back into the dataArray
-              $scope.model.rebuildFormRestrictions().then( function( restrictionList ) {
-                var inputArray = parameterData.inputArray;
-                restrictionList.forEach( function( restriction ) {
-                  var input = getInputFromRestriction( restriction, CnHttpFactory );
-                  parameterData.inputArray.push( input );
-
-                  // the record will only have existing, unformatted restriction values set at this point:
-                  // 1) if this is a datetime then set the value to null if it doesn't exist, otherwise today's
-                  //    date will show instead
-                  if( cenozo.isDatetimeType( input.type ) &&
-                      angular.isUndefined( $scope.model.viewModel.record[input.key] ) )
-                    $scope.model.viewModel.record[input.key] = null;
-                  // 2) update the formatted record since this is done in the framework BEFORE we had a chance to
-                  //    add the input/column
-                  $scope.model.viewModel.updateFormattedRecord( input.key, input.type );
-                } );
-              } );
-
-              afterViewCompleted = true;
             }
           } );
         }
@@ -394,8 +355,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnReportViewFactory', [
-    'CnBaseViewFactory', 'CnHttpFactory',
-    function( CnBaseViewFactory, CnHttpFactory ) {
+    'CnBaseViewFactory', 'CnHttpFactory', '$q',
+    function( CnBaseViewFactory, CnHttpFactory, $q ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
@@ -405,11 +366,11 @@ define( function() {
           if( angular.isUndefined( updateRestrictions ) ) updateRestrictions = true;
 
           if( !updateRestrictions ) var recordBackup = angular.copy( self.record );
-
           return this.$$onView().then( function() {
+            var promise = $q.all();
             if( updateRestrictions ) {
               // get the report restriction values
-              return CnHttpFactory.instance( {
+              promise = CnHttpFactory.instance( {
                 path: 'report/' + self.record.getIdentifier() + '/report_restriction',
                 data: {
                   select: { column: [ 'name', 'value', 'restriction_type' ] },
@@ -417,20 +378,40 @@ define( function() {
                 }
               } ).query().then( function( response ) {
                 response.data.forEach( function( restriction ) {
+                  var key = 'restrict_' + restriction.name;
                   if( 'table' == restriction.restriction_type ) {
-                    self.record['restrict_'+restriction.name] = parseInt( restriction.value );
+                    self.record[key] = parseInt( restriction.value );
                   } else if( 'boolean' == restriction.restriction_type ) {
-                    self.record['restrict_'+restriction.name] = '1' == restriction.value;
+                    self.record[key] = '1' == restriction.value;
                   } else {
-                    self.record['restrict_'+restriction.name] = restriction.value;
+                    self.record[key] = restriction.value;
                   }
+                  self.updateFormattedRecord( key, getTypeFromRestriction( restriction ) );
                 } );
               } );
             } else {
-              for( var column in recordBackup )
-                if( 'restrict_' == column.substring( 0, 9 ) )
+              for( var column in recordBackup ) {
+                if( 'restrict_' == column.substring( 0, 9 ) ) {
                   self.record[column] = recordBackup[column];
+                  self.updateFormattedRecord( column, self.parentModel.module.getInput( column ).type );
+                }
+              }
             }
+
+            return promise.then( function() {
+              
+              var parameterData = self.parentModel.module.inputGroupList.findByProperty( 'title', 'Parameters' );
+              Object.keys( parameterData.inputList ).filter( function( column ) {
+                return 'restrict_' == column.substring( 0, 9 );
+              } ).forEach( function( column ) {
+                var type = parameterData.inputList[column].type;
+                if( angular.isDefined( self.record[column] ) ) {
+                  self.updateFormattedRecord( column, type );
+                } else if( cenozo.isDatetimeType( type ) ) {
+                  self.formattedRecord[column] = '(empty)';
+                }
+              } );
+            } );
           } );
         };
 
@@ -462,33 +443,71 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnReportModelFactory', [
     'CnBaseModelFactory', 'CnReportListFactory', 'CnReportAddFactory', 'CnReportViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnReportListFactory, CnReportAddFactory, CnReportViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnReportAddFactory.instance( this );
         this.listModel = CnReportListFactory.instance( this );
         this.viewModel = CnReportViewFactory.instance( this, root );
-        this.restrictionList = [];
+        var hasBaseMetadata = false;
+        var lastReportTypeIdentifier = null;
 
         // extend getMetadata
         this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'report_type',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name' }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.report_type_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.report_type_id.enumList.push( { value: item.id, name: item.name } );
-              } );
+          // don't use the parent identifier when in the view state, it doesn't work
+          var reportTypeIdentifier = this.getParentIdentifier().identifier;
+          var reportTypePromise = $q.all();
+
+          if( 'view' == this.getActionFromState() ) {
+            reportTypePromise = CnHttpFactory.instance( {
+              path: self.getServiceResourcePath(),
+              data: { select: { column: [ 'report_type_id' ] } }
+            } ).get().then( function( response ) {
+              reportTypeIdentifier = response.data.report_type_id;
             } );
-          } );
+          }
+
+          var promiseList = [
+            reportTypePromise.then( function() {
+              if( lastReportTypeIdentifier != reportTypeIdentifier ) {
+                // remove the parameter group's input list and metadata
+                var parameterData = self.module.inputGroupList.findByProperty( 'title', 'Parameters' );
+                parameterData.inputList = {};
+                for( var column in self.metadata.columnList )
+                  if( 'restrict_' == column.substring( 0, 9 ) )
+                    delete self.metadata.columnList[column];
+
+                lastReportTypeIdentifier = reportTypeIdentifier;
+                return CnHttpFactory.instance( {
+                  path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
+                  data: { modifier: { order: { rank: false } } }
+                } ).get().then( function( response ) {
+                  // replace all restrictions from the module and metadata
+                  var inputPromiseList = [];
+                  response.data.forEach( function( restriction ) {
+                    var key = 'restrict_' + restriction.name;
+                    var result = getInputFromRestriction( restriction, CnHttpFactory );
+                    parameterData.inputList[key] = result.input;
+                    inputPromiseList = inputPromiseList.concat( result.inputPromiseList );
+                    self.metadata.columnList[key] = {
+                      required: restriction.mandatory,
+                      restriction_type: restriction.restriction_type
+                    };
+                    if( angular.isDefined( result.input.enumList ) )
+                      self.metadata.columnList[key].enumList = result.input.enumList;
+                  } );
+
+                  return $q.all( inputPromiseList );
+                } );
+              }
+            } )
+          ];
+          if( !hasBaseMetadata ) promiseList.push( this.$$getMetadata() );
+
+          return $q.all( promiseList );
         };
 
         this.getServiceData = function( type, columnRestrictLists ) {
@@ -498,28 +517,6 @@ define( function() {
             return 'restrict_' != column.column.substring( 0, 9 );
           } );
           return data;
-        };
-
-        this.rebuildFormRestrictions = function() {
-          return CnHttpFactory.instance( {
-            path: 'report_type/' + this.getParentIdentifier().identifier + '/report_restriction',
-            data: { modifier: { order: { rank: false } } }
-          } ).get().then( function( response ) {
-            // remove all restrict_* columns from the metadata
-            for( var column in self.metadata.columnList )
-              if( 'restrict_' == column.substring( 0, 9 ) )
-                delete self.metadata.columnList[column];
-
-            // now add all restrictions
-            response.data.forEach( function( restriction ) {
-              self.metadata.columnList['restrict_'+restriction.name] = {
-                required: restriction.mandatory,
-                restriction_type: restriction.restriction_type
-              };
-            } );
-
-            return response.data;
-          } );
         };
       };
 
