@@ -3374,59 +3374,59 @@ cenozo.factory( 'CnBaseViewFactory', [
             // create the backup record
             self.backupRecord = angular.copy( self.record );
 
-            self.parentModel.metadata.getPromise().then( function() {
-              var promiseList = [];
+            return self.parentModel.metadata.getPromise();
+          } ).then( function() {
+            var promiseList = [];
 
-              if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
-                // add the parent subject and identifier to the service
-                var path = self.parentModel.getServiceCollectionPath();
-                var parent = self.parentModel.getParentIdentifier();
-                if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) )
-                  path = [ parent.subject, parent.identifier, path ].join( '/' );
+            if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
+              // add the parent subject and identifier to the service
+              var path = self.parentModel.getServiceCollectionPath();
+              var parent = self.parentModel.getParentIdentifier();
+              if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) )
+                path = [ parent.subject, parent.identifier, path ].join( '/' );
 
-                promiseList.push( CnHttpFactory.instance( {
-                  path: path,
-                  data: { select: { column: {
-                    column: 'MAX(' + self.parentModel.module.subject.snake + '.rank)',
-                    alias: 'max',
-                    table_prefix: false
-                  } } },
-                  redirectOnError: true
-                } ).query().then( function( response ) {
-                  if( 0 < response.data.length ) {
-                    self.parentModel.metadata.columnList.rank.enumList = [];
-                    if( null !== response.data[0].max ) {
-                      for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ ) {
-                        self.parentModel.metadata.columnList.rank.enumList.push( {
-                          value: rank,
-                          name: $filter( 'cnOrdinal' )( rank )
-                        } );
-                      }
-                    }
-                  }
-                } ) );
-              }
-
-              // convert blank enums into empty strings (for ng-options)
-              self.parentModel.module.inputGroupList.forEach( function( group ) {
-                for( var column in group.inputList ) {
-                  var input = group.inputList[column];
-                  if( 'view' != input.exclude && 'enum' == input.type && null === self.record[column] ) {
-                    var metadata = self.parentModel.metadata.columnList[column];
-                    if( angular.isDefined( metadata ) && !metadata.required ) {
-                      self.record[column] = '';
-                      self.backupRecord[column] = '';
+              promiseList.push( CnHttpFactory.instance( {
+                path: path,
+                data: { select: { column: {
+                  column: 'MAX(' + self.parentModel.module.subject.snake + '.rank)',
+                  alias: 'max',
+                  table_prefix: false
+                } } },
+                redirectOnError: true
+              } ).query().then( function( response ) {
+                if( 0 < response.data.length ) {
+                  self.parentModel.metadata.columnList.rank.enumList = [];
+                  if( null !== response.data[0].max ) {
+                    for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ ) {
+                      self.parentModel.metadata.columnList.rank.enumList.push( {
+                        value: rank,
+                        name: $filter( 'cnOrdinal' )( rank )
+                      } );
                     }
                   }
                 }
-              } );
+              } ) );
+            }
 
-              // update all properties in the formatted record
-              self.updateFormattedRecord();
+            // convert blank enums into empty strings (for ng-options)
+            self.parentModel.module.inputGroupList.forEach( function( group ) {
+              for( var column in group.inputList ) {
+                var input = group.inputList[column];
+                if( 'view' != input.exclude && 'enum' == input.type && null === self.record[column] ) {
+                  var metadata = self.parentModel.metadata.columnList[column];
+                  if( angular.isDefined( metadata ) && !metadata.required ) {
+                    self.record[column] = '';
+                    self.backupRecord[column] = '';
+                  }
+                }
+              }
+            } );
 
-              return $q.all( promiseList ).then( function() {
-                self.afterViewFunctions.forEach( function( fn ) { fn(); } );
-              } );
+            // update all properties in the formatted record
+            self.updateFormattedRecord();
+
+            return $q.all( promiseList ).then( function() {
+              self.afterViewFunctions.forEach( function( fn ) { fn(); } );
             } );
           } );
         } );
