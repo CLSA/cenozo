@@ -410,6 +410,17 @@ abstract class base_report extends \cenozo\base_object
     $report_type_subject = $this->db_report->get_report_type()->subject;
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $subject_class_name = lib::get_class_name( sprintf( 'database\%s', $report_type_subject ) );
+    $db_application = lib::create( 'business\session' )->get_application();
+
+    // if the report's subject is participant then restrict to this application's participants
+    if( 'participant' == $report_type_subject )
+    {
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );
+      $join_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+      $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
+      $modifier->join_modifier( 'application_has_participant', $join_mod );
+    }
 
     $report_restriction_sel = lib::create( 'database\select' );
     $report_restriction_sel->add_table_column( 'report_has_report_restriction', 'value' );
@@ -424,24 +435,36 @@ abstract class base_report extends \cenozo\base_object
     {
       if( 'table' == $restriction['restriction_type'] )
       {
-        $relationship = $subject_class_name::get_relationship( $restriction['subject'] );
-        if( $relationship_class_name::ONE_TO_MANY == $relationship )
+        // define the participant-site relationship
+        if( 'site' == $restriction['subject'] && 'participant' == $report_type_subject )
         {
-          $column = sprintf( '%s_id', $restriction['subject'] );
-          if( $subject_class_name::column_exists( $column ) )
-            $modifier->where( $column, '=', $restriction['value'] );
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
+          $join_mod->where( 'participant_site.application_id', '=', $db_application->id );
+          $modifier->join_modifier( 'participant_site', $join_mod );
+          $modifier->where( 'participant_site.site_id', '=', $restriction['value'] );
         }
-        else if( $relationship_class_name::MANY_TO_MANY == $relationship )
+        else // determine all other relationships directly
         {
-          $joining_table = $subject_class_name::get_joining_table_name( $restriction['subject'] );
-          $modifier->join(
-            $joining_table,
-            sprintf( '%s.id', $report_type_subject ),
-            sprintf( '%s.%s_id', $joining_table, $report_type_subject ) );
-          $modifier->where(
-            sprintf( '%s.%s_id', $joining_table, $restriction['subject'] ),
-            '=',
-            $restriction['value'] );
+          $relationship = $subject_class_name::get_relationship( $restriction['subject'] );
+          if( $relationship_class_name::ONE_TO_MANY == $relationship )
+          {
+            $column = sprintf( '%s_id', $restriction['subject'] );
+            if( $subject_class_name::column_exists( $column ) )
+              $modifier->where( $column, '=', $restriction['value'] );
+          }
+          else if( $relationship_class_name::MANY_TO_MANY == $relationship )
+          {
+            $joining_table = $subject_class_name::get_joining_table_name( $restriction['subject'] );
+            $modifier->join(
+              $joining_table,
+              sprintf( '%s.id', $report_type_subject ),
+              sprintf( '%s.%s_id', $joining_table, $report_type_subject ) );
+            $modifier->where(
+              sprintf( '%s.%s_id', $joining_table, $restriction['subject'] ),
+              '=',
+              $restriction['value'] );
+          }
         }
       }
       else if( 'uid_list' == $restriction['restriction_type'] )
@@ -512,6 +535,41 @@ abstract class base_report extends \cenozo\base_object
       foreach( $row as $column => $value ) $header[] = ucwords( str_replace( '_', ' ', $column ) );
 
     $this->add_table( $title, $header, $content );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function get_datetime_column( $column, $type = 'datetime' )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    // get the timezone abbreviation
+    $date = $util_class_name::get_datetime_object();
+    $date->setTimezone( new \DateTimeZone( $this->db_user->timezone ) );
+
+    $format = '';
+    if( 'date' == $type )
+    {
+      $format = '%Y-%m-%d';
+    }
+    else if( 'time' == $type )
+    {
+      $format = sprintf( '%s %s',
+                         $this->db_user->use_12hour_clock ? '%l:%i %p' : '%H:%i',
+                         $date->format( 'T' ) );
+    }
+    else
+    {
+      $format = sprintf( '%s %s',
+                         $this->db_user->use_12hour_clock ? '%Y-%m-%d %l:%i %p' : '%Y-%m-%d %H:%i',
+                         $date->format( 'T' ) );
+    }
+
+    return sprintf( 'DATE_FORMAT( CONVERT_TZ( %s, "UTC", "%s" ), "%s" )',
+                    $column,
+                    $this->db_user->timezone,
+                    $format );
   }
 
   /**

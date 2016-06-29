@@ -34,7 +34,10 @@ class email extends \cenozo\business\report\base_report
     $select->add_column( 'last_name', 'Last Name' );
     $select->add_column( 'IFNULL( email_old, "" )', 'Previous Email', false );
     $select->add_column( 'IFNULL( email, "" )', 'Email', false );
-    $select->add_column( 'IFNULL( email_datetime, "" )', 'Date Changed', false );
+    $select->add_column(
+      sprintf( 'IFNULL( %s, "" )', $this->get_datetime_column( 'email_datetime', 'date' ) ),
+      'Date Changed',
+      false );
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
