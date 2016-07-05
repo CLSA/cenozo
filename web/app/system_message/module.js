@@ -48,13 +48,13 @@ define( function() {
     },
     site_id: {
       title: 'Site',
-      type: 'enum', // TODO: Blank for all sites //
+      type: 'enum',
       help: 'Leaving the site blank will show the message across all sites.  If application is blank then this ' +
             'will be ignored.'
     },
     role_id: {
       title: 'Role',
-      type: 'enum', // TODO: Blank for all roles //
+      type: 'enum',
       help: 'Leaving the site blank will show the message across all roles.'
     },
     title: {
