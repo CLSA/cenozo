@@ -191,6 +191,7 @@
             <div class="btn-group pull-right" ng-if="model.chooseEnabled">
               <button class="btn btn-default"
                       ng-if="model.chooseEnabled"
+                      ng-disabled="applyingChoose"
                       ng-click="model.listModel.toggleChooseMode()">
                 <i class="glyphicon glyphicon-edit"
                    ng-class="{'glyphicon-edit':!model.listModel.chooseMode}"></i>
@@ -198,6 +199,7 @@
               </button>
               <button class="btn btn-success"
                       ng-if="model.listModel.chooseMode"
+                      ng-disabled="applyingChoose"
                       ng-click="applyChosenRecords()">
                 <i class="glyphicon glyphicon-check"></i> Apply
               </button>

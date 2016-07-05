@@ -12,4 +12,4 @@ use cenozo\lib, cenozo\log;
 /**
  * report_schedule: record
  */
-class report_schedule extends \cenozo\database\record {}
+class report_schedule extends base_report {}

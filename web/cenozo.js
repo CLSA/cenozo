@@ -578,7 +578,102 @@ angular.extend( cenozo, {
   getFormElement: function( property ) {
     var scope = cenozo.getScopeByQuerySelector( '#' + property );
     return scope ? scope.$parent.innerForm.name : null;
+  },
+
+  // returns the column-type from a restriction (used by report* modules)
+  getTypeFromRestriction: function( restriction ) {
+    var type = restriction.restriction_type;
+    if( 'table' == type ) return 'enum';
+    else if( 'boolean' == type ) return 'boolean';
+    else if( 'uid_list' == type ) return 'text';
+    else if( 'integer' == type ) return 'string';
+    else if( 'decimal' == type ) return 'string';
+    else if( 'enum' == type ) return 'enum';
+    else return type;
+  },
+
+  // returns an input object from a restriction (used by report* modules)
+  inputFromRestrictionCache: {},
+  getInputFromRestriction: function( restriction, CnHttpFactory ) {
+    if( angular.isUndefined( this.inputFromRestrictionCache[restriction.id] ) ) {
+      var key = 'restrict_' + restriction.name;
+      var type = restriction.restriction_type;
+      var promiseList = [];
+      var input = {
+        key: key,
+        title: restriction.title,
+        type: this.getTypeFromRestriction( restriction ),
+        constant: 'view',
+        help: restriction.description
+      };
+
+      if( 'table' == type ) {
+        // loop through the subject column data to determine the http data
+        input.enumList = [ {
+          value: undefined,
+          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+        } ];
+
+        promiseList.push(
+          CnHttpFactory.instance( {
+            path: restriction.subject
+          } ).head().then( function( response ) {
+            var data = {
+              modifier: {
+                where: [],
+                order: undefined
+              },
+              select: { column: [ 'id' ] }
+            };
+            var columnList = angular.fromJson( response.headers( 'Columns' ) );
+            for( var column in columnList ) {
+              if( 'active' == column )
+                data.modifier.where.push( { column: 'active', operator: '=', value: true } );
+              else if( 'name' == column ) {
+                data.modifier.order = { name: false };
+                data.select.column.push( 'name' );
+              }
+            };
+
+            // query the table for the enum list
+            return CnHttpFactory.instance( {
+              path: restriction.subject,
+              data: data
+            } ).get().then( function( response ) {
+              response.data.forEach( function( item ) {
+                input.enumList.push( { value: item.id, name: item.name } );
+              } );
+            } );
+          } )
+        );
+      } else if( 'boolean' == type ) {
+        input.enumList = [ {
+          value: undefined,
+          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+        }, {
+          value: true, name: 'Yes'
+        }, {
+          value: false, name: 'No'
+        } ];
+      } else if( 'enum' == type ) {
+        input.enumList = angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
+          function( list, name ) {
+            list.push( { value: name, name: name } );
+            return list;
+          },
+          [ {
+            value: undefined,
+            name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+          } ]
+        );
+      }
+
+      this.inputFromRestrictionCache[restriction.id] = { input: input, promiseList: promiseList };
+    }
+
+    return this.inputFromRestrictionCache[restriction.id];
   }
+
 } );
 
 /* ######################################################################################################## */
@@ -1162,6 +1257,7 @@ cenozo.directive( 'cnRecordList', [
       controller: function( $scope, $element ) {
         $scope.directive = 'cnRecordList';
         $scope.reportTypeListOpen = false;
+        $scope.applyingChoose = false;
         $scope.model.listModel.onList( true ).then( function() {
           if( 'list' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
         } );
@@ -1218,7 +1314,10 @@ cenozo.directive( 'cnRecordList', [
 
         $scope.applyChosenRecords = function() {
           if( $scope.model.chooseEnabled ) {
-            if( $scope.model.listModel.chooseMode ) $scope.model.listModel.onApplyChosen();
+            if( $scope.model.listModel.chooseMode ) {
+              $scope.applyingChoose = true;
+              $scope.model.listModel.onApplyChosen().finally( function() { $scope.applyingChoose = false; } );
+            }
           }
         };
       },
@@ -2785,7 +2884,7 @@ cenozo.factory( 'CnBaseListFactory', [
         } );
 
         /**
-         * Add a function to be executed after onChoose is complete
+         * Add a function to be executed after onApplyChosen is complete
          * 
          * @param function
          */
@@ -4217,11 +4316,11 @@ cenozo.factory( 'CnBaseHistoryFactory', [
           model: model,
 
           viewNotes: function() {
-            $state.go( module.subject.snake + '.notes', { identifier: $state.params.identifier } ); 
+            $state.go( module.subject.snake + '.notes', { identifier: $state.params.identifier } );
           },
 
           viewRecord: function() {
-            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } ); 
+            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } );
           },
 
           selectAllCategories: function() {
@@ -4309,11 +4408,11 @@ cenozo.factory( 'CnBaseNoteFactory', [
           allowEdit: module.allowNoteEdit,
 
           viewHistory: function() {
-            $state.go( module.subject.snake + '.history', { identifier: $state.params.identifier } ); 
+            $state.go( module.subject.snake + '.history', { identifier: $state.params.identifier } );
           },
 
           viewRecord: function() {
-            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } ); 
+            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } );
           },
 
           updateSearch: function() {
@@ -4342,7 +4441,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
 
             CnHttpFactory.instance( {
               path: module.subject.snake + '/' + $state.params.identifier + '/note',
-              data: note 
+              data: note
             } ).post().then( function( response ) {
               note.id = response.data;
               note.sticky = false;
@@ -4581,7 +4680,7 @@ cenozo.factory( 'CnHttpFactory', [
             } ).show().then( function() {
               if( hasLoginMismatch ) $window.location.assign( cenozoApp.baseUrl );
             } );
-          } else { 
+          } else {
             if( self.redirectOnError ) {
               // only redirect once, afterwords ignore any additional error redirect requests
               if( !hasRedirectedOnError && null == $state.current.name.match( /^error\./ ) ) {

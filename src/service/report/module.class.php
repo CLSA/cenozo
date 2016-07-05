@@ -51,40 +51,60 @@ class module extends \cenozo\service\site_restricted_module
           }
         }
       }
-      else if( 'PATCH' == $method )
-      {
-        // the only patch allowed is setting the stage to 'started' and progress to 1,
-        // this will generate (or re-generate) the report
-        $file = $this->get_file_as_array();
-        if( 2 != count( $file ) ||
-            !array_key_exists( 'stage', $file ) ||
-            'started' != $file['stage'] ||
-            !array_key_exists( 'progress', $file ) ||
-            1 != $file['progress'] ) $this->get_status()->set_code( 403 );
-      }
       else
       {
         $session = lib::create( 'business\session' );
+        $db_application = $session->get_application();
+        $db_role = $session->get_role();
         $record = $this->get_resource();
 
         if( !is_null( $record ) )
         {
           // restrict by application
-          $db_application = $session->get_application();
-          if( $record->application_id != $session->get_application()->id )
+          if( $record->application_id != $db_application->id )
           {
             $this->get_status()->set_code( 404 );
             return;
           }
 
-          // restrict by role
+          // restrict reporty type by role
           $modifier = lib::create( 'database\modifier' );
-          $modifier->where( 'role_id', '=', $session->get_role()->id );
+          $modifier->where( 'role_id', '=', $db_role->id );
           if( 0 == $record->get_report_type()->get_role_count( $modifier ) )
           {
             $this->get_status()->set_code( 404 );
             return;
           }
+
+          // restrict by role (if not tier 3)
+          if( 3 < $db_role->tier && $record->role_id != $db_role->id )
+          {
+            $this->get_status()->set_code( 403 );
+            return;
+          }
+
+          // restrict by site
+          $db_restrict_site = $this->get_restricted_site();
+          if( !is_null( $db_restrict_site ) )
+          {
+            if( $record->site_id != $db_restrict_site->id )
+            {
+              $this->get_status()->set_code( 403 );
+              return;
+            }
+          }
+        }
+
+        if( 'PATCH' == $method )
+        {
+          // the only patch allowed is setting the stage to 'started' and progress to 1,
+          // this will generate (or re-generate) the report
+          $file = $this->get_file_as_array();
+          if( 2 != count( $file ) ||
+              !array_key_exists( 'stage', $file ) ||
+              'started' != $file['stage'] ||
+              !array_key_exists( 'progress', $file ) ||
+              1 != $file['progress'] ) $this->get_status()->set_code( 403 );
         }
       }
     }
@@ -98,8 +118,20 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::prepare_read( $select, $modifier );
 
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_role = $session->get_role();
+
     // restrict by application
-    $modifier->where( 'report.application_id', '=', lib::create( 'business\session' )->get_application()->id );
+    $modifier->where( 'report.application_id', '=', $db_application->id );
+
+    // restrict by site
+    $db_restrict_site = $this->get_restricted_site();
+    if( !is_null( $db_restrict_site ) )
+      $modifier->where( 'report.site_id', '=', $db_restrict_site->id );
+
+    // restrict by role
+    if( 3 < $db_role->tier ) $modifier->where( 'report.role_id', '=', $db_role->id );
 
     if( $select->has_column( 'report_schedule' ) )
       $select->add_column( 'report_schedule_id IS NOT NULL', 'report_schedule', true, 'boolean' );

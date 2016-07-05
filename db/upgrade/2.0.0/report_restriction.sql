@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS report_restriction (
   restriction_type ENUM('table', 'uid_list', 'string', 'integer', 'decimal', 'date', 'datetime', 'time', 'boolean', 'enum') NOT NULL,
   custom TINYINT(1) NOT NULL DEFAULT 0,
   subject VARCHAR(45) NULL,
-  operator ENUM('=', '<=>', '!=', '<>', '<', '<=', '>', '>=') NOT NULL,
+  operator ENUM('=', '<=>', '!=', '<>', '<', '<=', '>', '>=') NULL,
   enum_list VARCHAR(511) NULL,
   description TEXT NULL,
   PRIMARY KEY (id),

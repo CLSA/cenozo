@@ -124,103 +124,10 @@ define( function() {
     isDisabled: function( $state, model ) { return 'completed' != model.viewModel.record.stage; }
   } );
 
-  function getTypeFromRestriction( restriction ) {
-    var type = restriction.restriction_type;
-    if( 'table' == type ) return 'enum';
-    else if( 'boolean' == type ) return 'boolean';
-    else if( 'uid_list' == type ) return 'text';
-    else if( 'integer' == type ) return 'string';
-    else if( 'decimal' == type ) return 'string';
-    else if( 'enum' == type ) return 'enum';
-    else return type;
-  }
-
-  var inputFromRestrictionCache = {};
-
-  function getInputFromRestriction( restriction, CnHttpFactory ) {
-    if( angular.isUndefined( inputFromRestrictionCache[restriction.id] ) ) {
-      var key = 'restrict_' + restriction.name;
-      var type = restriction.restriction_type;
-      var promiseList = [];
-      var input = {
-        key: key,
-        title: restriction.title,
-        type: getTypeFromRestriction( restriction ),
-        constant: 'view',
-        help: restriction.description
-      };
-
-      if( 'table' == type ) {
-        // loop through the subject column data to determine the http data
-        input.enumList = [ {
-          value: undefined,
-          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
-        } ];
-
-        promiseList.push(
-          CnHttpFactory.instance( {
-            path: restriction.subject
-          } ).head().then( function( response ) {
-            var data = {
-              modifier: {
-                where: [],
-                order: undefined
-              },
-              select: { column: [ 'id' ] }
-            };
-            var columnList = angular.fromJson( response.headers( 'Columns' ) );
-            for( var column in columnList ) {
-              if( 'active' == column )
-                data.modifier.where.push( { column: 'active', operator: '=', value: true } );
-              else if( 'name' == column ) {
-                data.modifier.order = { name: false };
-                data.select.column.push( 'name' );
-              }
-            };
-
-            // query the table for the enum list
-            return CnHttpFactory.instance( {
-              path: restriction.subject,
-              data: data
-            } ).get().then( function( response ) {
-              response.data.forEach( function( item ) {
-                input.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } );
-          } )
-        );
-      } else if( 'boolean' == type ) {
-        input.enumList = [ {
-          value: undefined,
-          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
-        }, {
-          value: true, name: 'Yes'
-        }, {
-          value: false, name: 'No'
-        } ];
-      } else if( 'enum' == type ) {
-        input.enumList = angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
-          function( list, name ) {
-            list.push( { value: name, name: name } );
-            return list;
-          },
-          [ {
-            value: undefined,
-            name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
-          } ]
-        );
-      }
-      
-      inputFromRestrictionCache[restriction.id] = { input: input, promiseList: promiseList };
-    }
-
-    return inputFromRestrictionCache[restriction.id];
-  }
-
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportAdd', [
-    'CnReportModelFactory', 'CnSession', 'CnHttpFactory', '$timeout',
-    function( CnReportModelFactory, CnSession, CnHttpFactory, $timeout ) {
+    'CnReportModelFactory', 'CnHttpFactory', '$timeout',
+    function( CnReportModelFactory, CnHttpFactory, $timeout ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
@@ -278,10 +185,12 @@ define( function() {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportModelFactory.root;
           var afterViewCompleted = false;
 
-          $scope.model.getMetadata().then( function() {
-            var cnRecordView = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
-            cnRecordView.dataArray = $scope.model.getDataArray( [], 'view' );
-          } );
+          $timeout( function() {
+            $scope.model.getMetadata().then( function() {
+              var cnRecordView = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
+              cnRecordView.dataArray = $scope.model.getDataArray( [], 'view' );
+            } );
+          }, 200 );
 
           // keep reloading the data until the report is either completed or failed (or the UI goes away)
           var promise = $interval( function() {
@@ -304,7 +213,7 @@ define( function() {
                 path: 'report_type/' + $scope.model.getParentIdentifier().identifier,
                 data: { select: { column: [ 'title' ] } }
               } ).get().then( function( response ) {
-                $scope.model.viewModel.heading = response.data.title + ' Details';
+                $scope.model.viewModel.heading = response.data.title + ' Report Details';
               } );
             }
           } );
@@ -315,8 +224,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnReportAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory',
-    function( CnBaseAddFactory, CnHttpFactory ) {
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -329,12 +238,8 @@ define( function() {
             for( var column in self.parentModel.metadata.columnList ) {
               var meta = self.parentModel.metadata.columnList[column];
               if( angular.isDefined( meta.restriction_type ) ) {
-                if( cenozo.isDatetimeType( meta.restriction_type ) ) {
-                  record[column] = null;
-
-                } else if( 'boolean' == meta.restriction_type ) {
-                  if( meta.required ) record[column] = true;
-                }
+                if( cenozo.isDatetimeType( meta.restriction_type ) ) record[column] = null;
+                else if( 'boolean' == meta.restriction_type && meta.required ) record[column] = true;
               }
             }
           } );
@@ -386,7 +291,7 @@ define( function() {
                   } else {
                     self.record[key] = restriction.value;
                   }
-                  self.updateFormattedRecord( key, getTypeFromRestriction( restriction ) );
+                  self.updateFormattedRecord( key, cenozo.getTypeFromRestriction( restriction ) );
                 } );
               } );
             } else {
@@ -455,6 +360,7 @@ define( function() {
         this.viewModel = CnReportViewFactory.instance( this, root );
         var hasBaseMetadata = false;
         var lastReportTypeIdentifier = null;
+        var lastAction = null;
 
         // extend getMetadata
         this.getMetadata = function() {
@@ -473,7 +379,8 @@ define( function() {
 
           var promiseList = [
             reportTypePromise.then( function() {
-              if( lastReportTypeIdentifier != reportTypeIdentifier ) {
+              if( lastReportTypeIdentifier != reportTypeIdentifier ||
+                  lastAction != self.getActionFromState() ) {
                 // remove the parameter group's input list and metadata
                 var parameterData = self.module.inputGroupList.findByProperty( 'title', 'Parameters' );
                 parameterData.inputList = {};
@@ -482,6 +389,7 @@ define( function() {
                     delete self.metadata.columnList[column];
 
                 lastReportTypeIdentifier = reportTypeIdentifier;
+                lastAction = self.getActionFromState();
                 return CnHttpFactory.instance( {
                   path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
                   data: { modifier: { order: { rank: false } } }
@@ -490,9 +398,9 @@ define( function() {
                   var inputPromiseList = [];
                   response.data.forEach( function( restriction ) {
                     var key = 'restrict_' + restriction.name;
-                    var result = getInputFromRestriction( restriction, CnHttpFactory );
+                    var result = cenozo.getInputFromRestriction( restriction, CnHttpFactory );
                     parameterData.inputList[key] = result.input;
-                    inputPromiseList = inputPromiseList.concat( result.inputPromiseList );
+                    inputPromiseList = inputPromiseList.concat( result.promiseList );
                     self.metadata.columnList[key] = {
                       required: restriction.mandatory,
                       restriction_type: restriction.restriction_type

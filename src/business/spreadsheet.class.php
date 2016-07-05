@@ -36,6 +36,7 @@ class spreadsheet extends \cenozo\base_object
     {
       $this->php_excel = new \PHPExcel();
     }
+
     $this->php_excel->getActiveSheet()->getPageSetup()->setHorizontalCentered( true );
   }
 
@@ -51,10 +52,6 @@ class spreadsheet extends \cenozo\base_object
     else if( is_array( $data ) )
     {
       $this->load_data_from_array( $data );
-    }
-    else if( is_a( $data, lib::get_class_name( 'database\report' ) ) )
-    {
-      $this->load_data_from_record( $data );
     }
     else throw lib::create( 'exception\runtime',
       'Tried to load spreadsheet data using unrecognized input data type.',
@@ -154,10 +151,177 @@ class spreadsheet extends \cenozo\base_object
   /**
    * TODO: document
    */
-  protected function load_data_from_record( $db_report )
+  protected function load_data_from_table_list( $title, $table_list )
   {
-    $db_report_type = $db_report->get_report_type();
-    // TODO: implement report
+    $max_cells = $setting_manager->get_setting( 'report', 'max_cells' );
+    $spreadsheet = lib::create( 'business\spreadsheet' );
+
+    // determine the widest table size
+    $max = 1;
+    foreach( $table_list as $table )
+    {
+      if( is_array( $table['header'] ) )
+      {
+        $width = max(
+          count( $table['header'] ),
+          count( $table['footer'] ) );
+        if( $max < $width ) $max = $width;
+      }
+    }
+
+    // determine the total number of cells in the report
+    $cell_count = 0;
+    foreach( $table_list as $table )
+    {
+      $column_count = max(
+        count( $table['header'] ),
+        count( $table['footer'] ) );
+      $row_count = count( $table['contents'] );
+
+      $cell_count += $column_count * $row_count;
+    }
+    
+    // add in the title
+    $row = 1;
+    $max_col = 1 < $max ? chr( 64 + $max ) : false;
+
+    $spreadsheet->set_size( 16 );
+    $spreadsheet->set_bold( true );
+    $spreadsheet->set_horizontal_alignment( 'center' );
+    if( $max_col ) $spreadsheet->merge_cells( 'A'.$row.':'.$max_col.$row );
+    $spreadsheet->set_cell( 'A'.$row, $title );
+
+    $row++;
+
+    if( $max_cells < $cell_count )
+    {
+      $spreadsheet->set_size( 14 );
+
+      $spreadsheet->set_cell( 'A'.$row, 'WARNING: report truncated since it is too large' );
+      $row++;
+    }
+
+    $spreadsheet->set_size( NULL );
+    
+    // the underlying php-excel library is very inefficient so truncate the report after 20,000 cells
+    $cell_count = 0;
+    
+    // add in each table
+    foreach( $table_list as $table )
+    {
+      $width = max(
+        count( $table['header'] ),
+        count( $table['footer'] ) );
+      $max_col = 1 < $max ? chr( 64 + $width ) : false;
+
+      // always skip a row before each table
+      $row++;
+
+      $spreadsheet->set_horizontal_alignment( 'center' );
+      $spreadsheet->set_bold( true );
+
+      // put in the table title
+      if( !is_null( $table['title'] ) )
+      {
+        if( $max_col ) $spreadsheet->merge_cells( 'A'.$row.':'.$max_col.$row );
+        $spreadsheet->set_background_color( '000000' );
+        $spreadsheet->set_foreground_color( 'FFFFFF' );
+        $spreadsheet->set_cell( 'A'.$row, $table['title'] );
+        $spreadsheet->set_foreground_color( '000000' );
+        $row++;
+      }
+
+      // put in the table header
+      if( count( $table['header'] ) )
+      {
+        $spreadsheet->set_background_color( 'CCCCCC' );
+        $col = 'A';
+        foreach( $table['header'] as $header )
+        {
+          $autosize = !in_array( $col, $table['fixed'] );
+          $spreadsheet->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+          $spreadsheet->set_cell( $col.$row, $header, $autosize );
+          $col++;
+        }
+        $row++;
+      }
+
+      $spreadsheet->set_bold( false );
+      $spreadsheet->set_background_color( NULL );
+      
+      $first_content_row = $row;
+
+      // put in the table contents
+      $contents_are_numeric = array();
+      if( count( $table['contents'] ) )
+      {
+        $content_row = 0;
+        $insert_row = count( $table['blanks'] ) > 0 ? true : false;
+        foreach( $table['contents'] as $contents )
+        {
+          $col = 'A';
+          foreach( $contents as $content )
+          {
+            $autosize = !in_array( $col, $table['fixed'] );
+            $spreadsheet->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+            $spreadsheet->set_cell( $col.$row, $content, $autosize );
+            if( !array_key_exists( $col, $contents_are_numeric ) )
+              $contents_are_numeric[$col] = false;
+            $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
+            $col++;
+          }
+          
+          if( $insert_row && in_array( $content_row, $table['blanks'] ) ) $row++;    
+                    
+          $cell_count += count( $contents );
+          $content_row++;
+          $row++;
+
+          if( $max_cells < $cell_count )
+          {
+            $spreadsheet->set_cell( 'A'.$row, '(report truncated)' );
+            break;
+          }
+        }
+      }
+
+      if( $max_cells < $cell_count ) break;
+
+      $last_content_row = $row - 1;
+      
+      $spreadsheet->set_bold( true );
+
+      // put in the table footer
+      if( count( $table['footer'] ) )
+      {
+        $col = 'A';
+        foreach( $table['footer'] as $footer )
+        {
+          // the footer may be a function, convert if necessary
+          if( preg_match( '/[0-9a-zA-Z_]+\(\)/', $footer ) )
+          {
+            if( $first_content_row == $last_content_row + 1 || !$contents_are_numeric[ $col ] )
+            {
+              $footer = 'N/A';
+            }
+            else
+            {
+              $coordinate = sprintf( '%s%s:%s%s',
+                                     $col,
+                                     $first_content_row,
+                                     $col,
+                                     $last_content_row );
+              $footer = '='.preg_replace( '/\(\)/', '('.$coordinate.')', $footer );
+            }
+          }
+
+          $spreadsheet->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+          $spreadsheet->set_cell( $col.$row, $footer );
+          $col++;
+        }
+        $row++;
+      }
+    }
   }
 
   /**
