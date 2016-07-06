@@ -2240,21 +2240,6 @@ cenozo.factory( 'CnSession', [
           } );
         },
 
-        setSiteSettings: function() {
-          return CnHttpFactory.instance( {
-            path: 'setting/site_id=' + this.site.id,
-            data: {
-              call_without_webphone: self.setting.callWithoutWebphone,
-              calling_start_time: self.setting.callingStartTime,
-              calling_end_time: self.setting.callingEndTime,
-              short_appointment: self.setting.shortAppointment,
-              long_appointment: self.setting.longAppointment,
-              pre_call_window: self.setting.preCallWindow,
-              post_call_window: self.setting.postCallWindow
-            }
-          } ).patch();
-        },
-
         setUserDetails: function() {
           return CnHttpFactory.instance( {
             path: 'self/0',
