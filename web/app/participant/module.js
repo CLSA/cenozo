@@ -159,6 +159,10 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       type: 'enum',
       help: 'If set then the participant will be assigned to this site instead of the default site.'
     },
+    callback: {
+      title: 'Callback',
+      type: 'datetime'
+    },
     availability_type_id: {
       title: 'Availability Preference',
       type: 'enum'

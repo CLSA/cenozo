@@ -137,6 +137,21 @@ CREATE PROCEDURE patch_participant()
       SET availability_type_id = ( SELECT id FROM availability_type WHERE name = "saturdays" );
     END IF;
 
+    SELECT "Adding callback column to participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "callback" );
+    IF @test = 0 THEN
+      ALTER TABLE participant ADD COLUMN callback DATETIME NULL DEFAULT NULL
+      AFTER withdraw_letter;
+
+      ALTER TABLE participant ADD INDEX dk_calback (callback ASC);
+    END IF;
+
   END //
 DELIMITER ;
 
