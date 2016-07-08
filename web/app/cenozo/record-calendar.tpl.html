@@ -20,7 +20,7 @@
          ng-if="allowChangeSite"
          ng-click="clickHeading(); $event.stopPropagation()">{{ model.calendarModel.heading }}</a>
       <span ng-if="!allowChangeSite">{{ model.calendarModel.heading }}</span>
-      {{ model.editEnabled ? '' : '(read only)' }}
+      {{ model.getEditEnabled() ? '' : '(read only)' }}
       <span ng-if="model.calendarModel.isLoading">(Loading&hellip;)</span>
     </h4>
   </div>

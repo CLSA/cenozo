@@ -473,8 +473,8 @@ define( function() {
             return data;
           }
         } );
-        this.enableAdd( false );
-        this.enableDelete( false );
+        this.getAddEnabled = function() { return false; };
+        this.getDeleteEnabled = function() { return false; };
       };
 
       return { instance: function() { return new object( false ); } };

@@ -1282,11 +1282,11 @@ cenozo.directive( 'cnRecordList', [
         };
 
         $scope.addRecord = function() {
-          if( $scope.model.addEnabled ) $scope.model.listModel.transitionOnAdd();
+          if( $scope.model.getAddEnabled() ) $scope.model.listModel.transitionOnAdd();
         };
 
         $scope.deleteRecord = function( record ) {
-          if( $scope.model.deleteEnabled ) {
+          if( $scope.model.getDeleteEnabled() ) {
             if( 0 > $scope.isDeleting.indexOf( record.id ) ) $scope.isDeleting.push( record.id );
             var index = $scope.isDeleting.indexOf( record.id );
             $scope.model.listModel.onDelete( record ).finally(
@@ -1296,7 +1296,7 @@ cenozo.directive( 'cnRecordList', [
         };
 
         $scope.chooseRecord = function( record ) {
-          if( $scope.model.chooseEnabled ) {
+          if( $scope.model.getChooseEnabled() ) {
             if( $scope.model.listModel.chooseMode ) {
               // record.chosen shows in the list which record is selected
               record.chosen = record.chosen ? 0 : 1;
@@ -1307,13 +1307,13 @@ cenozo.directive( 'cnRecordList', [
         };
 
         $scope.selectRecord = function( record ) {
-          if( $scope.model.viewEnabled ) {
+          if( $scope.model.getViewEnabled() ) {
             $scope.model.listModel.onSelect( record );
           }
         };
 
         $scope.applyChosenRecords = function() {
-          if( $scope.model.chooseEnabled ) {
+          if( $scope.model.getChooseEnabled() ) {
             if( $scope.model.listModel.chooseMode ) {
               $scope.applyingChoose = true;
               $scope.model.listModel.onApplyChosen().finally( function() { $scope.applyingChoose = false; } );
@@ -1437,7 +1437,7 @@ cenozo.directive( 'cnRecordView', [
 
         $scope.delete = function() {
           $scope.isDeleting = true;
-          if( $scope.model.deleteEnabled ) {
+          if( $scope.model.getDeleteEnabled() ) {
             $scope.model.viewModel.onDelete().then( function() {
               $scope.model.viewModel.transitionOnDelete();
             } ).finally( function() { $scope.isDeleting = false; } );
@@ -1445,7 +1445,7 @@ cenozo.directive( 'cnRecordView', [
         };
 
         $scope.undo = function( property ) {
-          if( $scope.model.editEnabled ) {
+          if( $scope.model.getEditEnabled() ) {
             if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
               $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
               if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) ) {
@@ -1458,7 +1458,7 @@ cenozo.directive( 'cnRecordView', [
         };
 
         $scope.patch = function( property ) {
-          if( $scope.model.editEnabled ) {
+          if( $scope.model.getEditEnabled() ) {
             // test the format
             if( !$scope.model.testFormat( property, $scope.model.viewModel.record[property] ) ) {
               var element = cenozo.getFormElement( property );
@@ -1516,11 +1516,11 @@ cenozo.directive( 'cnRecordView', [
         };
 
         $scope.getTypeaheadValues = function( input, viewValue ) {
-          return $scope.model.editEnabled ? $scope.model.getTypeaheadValues( input, viewValue ) : []
+          return $scope.model.getEditEnabled() ? $scope.model.getTypeaheadValues( input, viewValue ) : []
         };
 
         $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
-          if( $scope.model.editEnabled ) {
+          if( $scope.model.getEditEnabled() ) {
             if( 'lookup-typeahead' == input.type ) {
               $scope.model.viewModel.formattedRecord[input.key] = $label;
               $scope.model.viewModel.record[input.key] = $model;
@@ -1532,7 +1532,7 @@ cenozo.directive( 'cnRecordView', [
         };
 
         $scope.selectDatetime = function( input ) {
-          if( $scope.model.editEnabled ) {
+          if( $scope.model.getEditEnabled() ) {
             $scope.model.metadata.getPromise().then( function() {
               CnModalDatetimeFactory.instance( {
                 title: input.title,
@@ -2376,7 +2376,7 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         cenozo.addExtendableFunction( object, 'onAdd', function( record ) {
           var self = this;
-          if( !this.parentModel.addEnabled ) throw new Error( 'Calling onAdd() but addEnabled is false.' );
+          if( !this.parentModel.getAddEnabled() ) throw new Error( 'Calling onAdd() but add is not enabled.' );
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: record };
           httpObj.onError = function( response ) { self.onAddError( response ); };
           return CnHttpFactory.instance( httpObj ).post().then( function( response ) {
@@ -2427,7 +2427,7 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         cenozo.addExtendableFunction( object, 'onNew', function( record ) {
           var self = this;
-          if( !this.parentModel.addEnabled ) throw new Error( 'Calling onNew() but addEnabled is false.' );
+          if( !this.parentModel.getAddEnabled() ) throw new Error( 'Calling onNew() but add is not enabled.' );
 
           // load the metadata and use it to apply default values to the record
           return this.parentModel.metadata.getPromise().then( function() {
@@ -2567,8 +2567,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
          */
         cenozo.addExtendableFunction( object, 'onDelete', function( record ) {
           var self = this;
-          if( !this.parentModel.deleteEnabled )
-            throw new Error( 'Calling onDelete() but deleteEnabled is false.' );
+          if( !this.parentModel.getDeleteEnabled() )
+            throw new Error( 'Calling onDelete() but delete is not enabled.' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
           httpObj.onError = function( response ) { self.onDeleteError( response ); }
@@ -2746,7 +2746,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             return object.parentModel.transitionToAddState();
           },
           eventClick: function( record ) {
-            if( object.parentModel.viewEnabled )
+            if( object.parentModel.getViewEnabled() )
               return object.parentModel.transitionToViewState( record );
           }
         };
@@ -2889,8 +2889,8 @@ cenozo.factory( 'CnBaseListFactory', [
          */
         cenozo.addExtendableFunction( object, 'onApplyChosen', function() {
           var self = this;
-          if( !this.parentModel.chooseEnabled )
-            throw new Error( 'Calling onApplyChosen() but chooseEnabled is false.' );
+          if( !this.parentModel.getChooseEnabled() )
+            throw new Error( 'Calling onApplyChosen() but choose is not enabled.' );
 
           var data = {};
           var addArray = this.cache.reduce( function( list, record ) {
@@ -2947,8 +2947,8 @@ cenozo.factory( 'CnBaseListFactory', [
          */
         cenozo.addExtendableFunction( object, 'onDelete', function( record ) {
           var self = this;
-          if( !this.parentModel.deleteEnabled )
-            throw new Error( 'Calling onDelete() but deleteEnabled is false.' );
+          if( !this.parentModel.getDeleteEnabled() )
+            throw new Error( 'Calling onDelete() but delete is not enabled.' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
           httpObj.onError = function( response ) { self.onDeleteError( response ); }
@@ -3038,7 +3038,7 @@ cenozo.factory( 'CnBaseListFactory', [
           var data = this.parentModel.getServiceData( 'list', this.columnRestrictLists );
           if( angular.isUndefined( data.modifier ) ) data.modifier = {};
           data.modifier.offset = replace ? 0 : this.cache.length;
-          if( this.parentModel.chooseEnabled && this.chooseMode ) data.choosing = 1;
+          if( this.parentModel.getChooseEnabled() && this.chooseMode ) data.choosing = 1;
 
           // add the table prefix to the column if there isn't already a prefix
           var column = this.order.column;
@@ -3160,8 +3160,8 @@ cenozo.factory( 'CnBaseListFactory', [
          * @return promise
          */
         cenozo.addExtendableFunction( object, 'onSelect', function( record ) {
-          if( !this.parentModel.viewEnabled )
-            throw new Error( 'Calling onSelect() but viewEnabled is false.' );
+          if( !this.parentModel.getViewEnabled() )
+            throw new Error( 'Calling onSelect() but view is not enabled.' );
           this.afterSelectFunctions.forEach( function( fn ) { fn(); } );
           return this.parentModel.transitionToViewState( record );
         } );
@@ -3232,18 +3232,26 @@ cenozo.factory( 'CnBaseViewFactory', [
             parentModel.module.children.forEach( function( item ) {
               var factoryName = 'Cn' + item.subject.Camel + 'ModelFactory';
               var model = getFactory( factoryName ).instance();
-              if( !parentModel.editEnabled ) model.enableAdd( false );
-              if( !parentModel.editEnabled ) model.enableDelete( false );
-              if( !parentModel.viewEnabled ) model.enableView( false );
+              // rewrite get*Enabled functions
+              model.$$getAddEnabled = function() {
+                return angular.isDefined( model.module.actions.add ) && parentModel.getEditEnabled();
+              }
+              model.$$getDeleteEnabled = function() {
+                return angular.isDefined( model.module.actions.delete ) && parentModel.getEditEnabled();
+              }
+              model.$$getViewEnabled = function() {
+                return angular.isDefined( model.module.actions.view ) && parentModel.getViewEnabled();
+              }
               object[item.subject.camel+'Model'] = model;
             } );
             parentModel.module.choosing.forEach( function( item ) {
               var factoryName = 'Cn' + item.subject.Camel + 'ModelFactory';
               var model = getFactory( factoryName ).instance();
-              model.enableChoose( true );
-              model.enableAdd( false );
-              model.enableDelete( false );
-              model.enableEdit( false );
+              // rewrite get*Enabled functions
+              model.$$getChooseEnabled = function() { return true; };
+              model.$$getAddEnabled = function() { return false; };
+              model.$$getDeleteEnabled = function() { return false; };
+              model.$$getEditEnabled = function() { return false; };
               object[item.subject.camel+'Model'] = model;
             } );
           } );
@@ -3302,8 +3310,8 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onDelete', function() {
           var self = this;
-          if( !this.parentModel.deleteEnabled )
-            throw new Error( 'Calling onDelete() but deleteEnabled is false.' );
+          if( !this.parentModel.getDeleteEnabled() )
+            throw new Error( 'Calling onDelete() but delete is not enabled.' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath() };
           httpObj.onError = function( response ) { self.onDeleteError( response ); }
@@ -3350,7 +3358,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onPatch', function( data ) {
           var self = this;
-          if( !this.parentModel.editEnabled ) throw new Error( 'Calling onPatch() but editEnabled is false.' );
+          if( !this.parentModel.getEditEnabled() ) throw new Error( 'Calling onPatch() but edit is not enabled.' );
 
           var httpObj = {
             path: this.parentModel.getServiceResourcePath(),
@@ -3443,7 +3451,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onView', function() {
           var self = this;
-          if( !this.parentModel.viewEnabled ) throw new Error( 'Calling onView() but viewEnabled is false.' );
+          if( !this.parentModel.getViewEnabled() ) throw new Error( 'Calling onView() but view is not enabled.' );
 
           // get the record's data and metadata
           return CnHttpFactory.instance( {
@@ -4129,11 +4137,19 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         // enable/disable module functionality
-        cenozo.addExtendableFunction( self, 'enableAdd', function( enable ) { self.addEnabled = enable; } );
-        cenozo.addExtendableFunction( self, 'enableChoose', function( enable ) { self.chooseEnabled = enable; } );
-        cenozo.addExtendableFunction( self, 'enableDelete', function( enable ) { self.deleteEnabled = enable; } );
-        cenozo.addExtendableFunction( self, 'enableEdit', function( enable ) { self.editEnabled = enable; } );
-        cenozo.addExtendableFunction( self, 'enableView', function( enable ) { self.viewEnabled = enable; } );
+        cenozo.addExtendableFunction( self, 'getAddEnabled', function() {
+          return angular.isDefined( self.module.actions.add );
+        } );
+        cenozo.addExtendableFunction( self, 'getChooseEnabled', function() { return false; } );
+        cenozo.addExtendableFunction( self, 'getDeleteEnabled', function() {
+          return angular.isDefined( self.module.actions.delete );
+        } );
+        cenozo.addExtendableFunction( self, 'getEditEnabled', function() {
+          return angular.isDefined( self.module.actions.edit );
+        } );
+        cenozo.addExtendableFunction( self, 'getViewEnabled', function() {
+          return angular.isDefined( self.module.actions.view );
+        } );
 
         /**
          * Loads the model's base metadata
@@ -4269,11 +4285,6 @@ cenozo.factory( 'CnBaseModelFactory', [
             return this.promise;
           }
         };
-        self.enableAdd( angular.isDefined( self.module.actions.add ) );
-        self.enableChoose( false );
-        self.enableDelete( angular.isDefined( self.module.actions.delete ) );
-        self.enableEdit( angular.isDefined( self.module.actions.edit ) );
-        self.enableView( angular.isDefined( self.module.actions.view ) );
         self.enableListingState = 'list';
         // see the base list factory's orderBy function for how to use this variable
         self.queryParameterSubject = self.module.subject.snake;

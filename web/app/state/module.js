@@ -119,7 +119,8 @@ define( function() {
 
         // allow add/delete of roles and participants
         this.deferred.promise.then( function() {
-          if( angular.isDefined( self.roleModel ) ) self.roleModel.enableChoose( parentModel.editEnabled );
+          if( angular.isDefined( self.roleModel ) )
+            self.roleModel.getEnableChoose = function() { return parentModel.getEditEnabled(); };
         } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

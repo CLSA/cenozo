@@ -45,7 +45,7 @@
   </div>
   <div class="collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}List">
     <table class="table table-striped rounded"
-           ng-class="{ 'table-hover':model.viewEnabled || model.chooseEnabled }">
+           ng-class="{ 'table-hover':model.getViewEnabled() || model.getChooseEnabled() }">
       <thead class="bg-info">
         <tr>
           <td ng-repeat="column in dataArray">
@@ -107,17 +107,17 @@
               </p>
             </div>
           </td>
-          <td class="tiny" ng-if="model.deleteEnabled || model.listModel.chooseMode"></td>
+          <td class="tiny" ng-if="model.getDeleteEnabled() || model.listModel.chooseMode"></td>
         </tr>
       </thead>
       <tbody>
         <tr ng-if="model.listModel.isLoading">
-          <td colspan="{{ numColumns + ( model.deleteEnabled ? 1 : 0 ) }}" class="bg-white">
+          <td colspan="{{ numColumns + ( model.getDeleteEnabled() ? 1 : 0 ) }}" class="bg-white">
             <div class="loading" tooltip="Loading&hellip;"></div>
           </td>
         </tr>
         <tr ng-if="!model.listModel.isLoading && 0 == model.listModel.cache.length">
-          <td colspan="{{ numColumns + ( model.deleteEnabled ? 1 : 0 ) }}">
+          <td colspan="{{ numColumns + ( model.getDeleteEnabled() ? 1 : 0 ) }}">
             There are no {{ model.module.name.plural }} found.
           </td>
         </tr>
@@ -134,7 +134,7 @@
                 ng-class="{'text-left':'left'==column.align,'text-right':'right'==column.align}">
               <span ng-bind-html="record[column.key] | cnMetaFilter:column.filter"></span>
             </td>
-            <td class="tiny" ng-if="model.deleteEnabled">
+            <td class="tiny" ng-if="model.getDeleteEnabled()">
               <button class="btn btn-xs btn-danger"
                       ng-disabled="0 <= isDeleting.indexOf( record.id )"
                       tooltip="Delete {{ model.module.name.singular }}"
@@ -157,7 +157,7 @@
       </tbody>
       <tfoot class="bg-info">
         <tr>
-          <td colspan="{{ numColumns + ( model.deleteEnabled ? 1 : 0 ) + ( model.listModel.chooseMode ? 1 : 0 ) }}"
+          <td colspan="{{ numColumns + ( model.getDeleteEnabled() ? 1 : 0 ) + ( model.listModel.chooseMode ? 1 : 0 ) }}"
               class="rounded-bottom">
             <pagination class="pagination pull-left"
                         ng-model="model.listModel.paginationModel.currentPage"
@@ -172,7 +172,7 @@
               {{ model.listModel.total }}
               {{ 1 == model.listModel.total ? model.module.name.singular : model.module.name.plural }} total
             </span>
-            <div class="btn-group pull-right" ng-if="!model.chooseEnabled">
+            <div class="btn-group pull-right" ng-if="!model.getChooseEnabled()">
               <button class="btn btn-default"
                       type="button"
                       ng-repeat="op in model.module.extraOperationList.list"
@@ -183,14 +183,14 @@
                       toolip="op.help"
                       ng-click="op.operation( $state, model )">{{ op.title }}</button>
               <button class="btn btn-default pull-right"
-                      ng-if="model.addEnabled"
+                      ng-if="model.getAddEnabled()"
                       ng-click="addRecord()">
                 <i class="glyphicon glyphicon-plus"></i> Add
               </button>
             </div>
-            <div class="btn-group pull-right" ng-if="model.chooseEnabled">
+            <div class="btn-group pull-right" ng-if="model.getChooseEnabled()">
               <button class="btn btn-default"
-                      ng-if="model.chooseEnabled"
+                      ng-if="model.getChooseEnabled()"
                       ng-disabled="applyingChoose"
                       ng-click="model.listModel.toggleChooseMode()">
                 <i class="glyphicon glyphicon-edit"
@@ -214,7 +214,7 @@
       {{ model.listModel.total }}
       {{ 1 == model.listModel.total ? model.module.name.singular : model.module.name.plural }} total
     </span>
-    <div class="btn-group pull-right" ng-if="!model.chooseEnabled">
+    <div class="btn-group pull-right" ng-if="!model.getChooseEnabled()">
       <button class="btn btn-default"
               type="button"
               ng-repeat="op in model.module.extraOperationList.list"
@@ -224,7 +224,7 @@
               tooltip="{{ op.help }}"
               ng-click="op.operation( $state, model )">{{ op.title }}</button>
       <button class="btn btn-default"
-              ng-if="model.addEnabled"
+              ng-if="model.getAddEnabled()"
               ng-click="addRecord()">
         <i class="glyphicon glyphicon-plus"></i> Add
       </button>

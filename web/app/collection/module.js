@@ -134,57 +134,44 @@ define( function() {
           if( angular.isDefined( self.userModel ) ) self.userModel.listModel.heading = 'User Control List';
         } );
 
-        // private function used in the block below
-        function setAccess( enable ) {
-          self.parentModel.enableEdit( enable ? angular.isDefined( module.actions.edit ) : false );
-          if( angular.isDefined( self.participantModel ) ) self.participantModel.enableChoose( enable );
-          if( angular.isDefined( self.userModel ) ) self.userModel.enableChoose( enable );
+        function updateAccess() {
+          // private function used in the block below
+          function setAccess( enable ) {
+            self.parentModel.getEnabledEdit = enable
+                                            ? function() { return self.parentModel.$$getEnabledEdit(); }
+                                            : function() { return false; };
+            if( angular.isDefined( self.participantModel ) )
+              self.participantModel.getChooseEnabled =
+                enable ? function() { return true; } : function() { return false; };
+            if( angular.isDefined( self.userModel ) )
+              self.userModel.getChooseEnabled =
+                enable ? function() { return true; } : function() { return false; };
+          };
+
+          // only allow users belonging to this collection to edit it when it is locked
+          setAccess( !self.record.locked );
+          if( self.record.locked ) {
+            CnHttpFactory.instance( {
+              path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id,
+              onError: function error( response ) {
+                if( 404 == response.status ) {
+                  // 404 when searching for current user in collection means we should turn off editing
+                  console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
+                } else CnModalMessageFactory.httpError( response );
+              }
+            } ).get().then( function() { setAccess( true ); } );
+          }
         };
 
-        var defaultEditEnabled = this.parentModel.editEnabled;
         this.onView = function() {
-          return this.$$onView().then( function() {
-
-            // only allow users belonging to this collection to edit it when it is locked
-            if( !self.record.locked ) {
-              setAccess( true );
-            } else {
-              CnHttpFactory.instance( {
-                path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id,
-                onError: function error( response ) {
-                  if( 404 == response.status ) {
-                    // 404 when searching for current user in collection means we should turn off editing
-                    console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
-                    setAccess( false );
-                  } else CnModalMessageFactory.httpError( response );
-                }
-              } ).get().then( function() { setAccess( true ); } );
-            }
-          } );
+          // update the access after onView has completed
+          return this.$$onView().then( function() { updateAccess(); } );
         };
 
         this.onPatch = function( data ) {
           return this.$$onPatch( data ).then( function() {
-            if( angular.isDefined( data.locked ) ) {
-              // update the choose and edit modes
-              if( angular.isDefined( self.participantModel ) )
-                self.participantModel.enableChoose( !self.record.locked );
-              if( angular.isDefined( self.userModel ) )
-                self.userModel.enableChoose( !self.record.locked );
-
-              if( self.record.locked ) {
-                CnHttpFactory.instance( {
-                  path: 'collection/' + self.record.getIdentifier() + '/user/' + CnSession.user.id,
-                  onError: function error() {
-                    // 404 when searching for current user in collection means we should turn off editing
-                    self.parentModel.enableEdit( false );
-                  }
-                } ).get().then( function() {
-                  // if the user is found then they may edit
-                  self.parentModel.enableEdit( defaultEditEnabled );
-                } );
-              }
-            }
+            // if the locked data has changed then update the access
+            if( angular.isDefined( data.locked ) ) updateAccess();
           } );
         };
       };

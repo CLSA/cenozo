@@ -631,7 +631,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             };
 
             if( angular.isDefined( self.applicationModel ) ) {
-              self.applicationModel.enableView( false );
+              self.applicationModel.getViewEnabled = function() { return false; };
               self.applicationModel.addColumn(
                 'default_site',
                 { title: 'Default Site', column: 'default_site.name' }
