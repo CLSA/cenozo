@@ -181,6 +181,7 @@
                       ng-disabled="op.isDisabled( $state, model )"
                       ng-class="op.classes"
                       toolip="op.help"
+                      tooltip-placement="right"
                       ng-click="op.operation( $state, model )">{{ op.title }}</button>
               <button class="btn btn-default pull-right"
                       ng-if="model.getAddEnabled()"
@@ -222,6 +223,7 @@
               ng-disabled="op.disabled"
               ng-class="op.classes"
               tooltip="{{ op.help }}"
+              tooltip-placement="right"
               ng-click="op.operation( $state, model )">{{ op.title }}</button>
       <button class="btn btn-default"
               ng-if="model.getAddEnabled()"

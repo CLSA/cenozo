@@ -275,7 +275,16 @@ angular.extend( cenozoApp, {
               extraObject.isIncluded = function() { return true; }
             if( angular.isUndefined( extraObject.isDisabled ) )
               extraObject.isDisabled = function() { return false; }
+            this.removeExtraOperation( type, extraObject.title ); // remove first, so we replace
             this.extraOperationList[type].push( extraObject );
+          },
+
+          /**
+           * Remove an extra operation by its title
+           */
+          removeExtraOperation: function( type, title ) {
+            var index = this.extraOperationList[type].findIndexByProperty( 'title', title );
+            if( null != index ) this.extraOperationList[type].splice( index, 1 );
           }
         } );
       }

@@ -37,6 +37,7 @@
               ng-disabled="op.isDisabled( $state, model )"
               ng-class="op.classes"
               tooltip="{{ op.help }}"
+              tooltip-placement="right"
               ng-click="op.operation( $state, model )">{{ op.title }}</button>
     </div>
     <div class="btn-group" ng-if="viewList">

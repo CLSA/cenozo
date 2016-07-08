@@ -267,6 +267,7 @@
               ng-disabled="op.isDisabled( $state, model )"
               ng-class="op.classes"
               tooltip="{{ op.help }}"
+              tooltip-placement="right"
               ng-click="op.operation( $state, model )">{{ op.title }}</button>
     </div>
     <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
