@@ -296,7 +296,6 @@ define( function() {
             }
 
             return reportTypePromise.then( function() {
-              console.error( promiseInProgress );
               if( null == promiseInProgress ) {
                 // remove the parameter group's input list and metadata
                 var parameterData = self.module.inputGroupList.findByProperty( 'title', 'Parameters' );
