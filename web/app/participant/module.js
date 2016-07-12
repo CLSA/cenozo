@@ -161,7 +161,8 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     },
     callback: {
       title: 'Callback',
-      type: 'datetime'
+      type: 'datetime',
+      min: 'now'
     },
     availability_type_id: {
       title: 'Availability Preference',
