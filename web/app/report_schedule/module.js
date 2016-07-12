@@ -82,15 +82,17 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportScheduleModelFactory.root;
+          $scope.loading = true;
 
           $timeout( function() {
-            $scope.model.getMetadata( true ).then( function() {
-              var cnRecordAdd = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+            var cnRecordAdd = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+            cnRecordAdd.dataArray = {};
+            $scope.model.metadata.getPromise().then( function() {
               cnRecordAdd.dataArray = $scope.model.getDataArray( [], 'add' );
               cnRecordAdd.dataArray.findByProperty( 'title', 'Parameters' ).inputArray.forEach( function( input ) {
                 if( cenozo.isDatetimeType( input.type ) ) cnRecordAdd.formattedRecord[input.key] = '(empty)';
               } );
-              console.log( 'enumList is missing in role_id -- but not always', cnRecordAdd.dataArray.findByProperty( 'title', '' ).inputArray.findByProperty( 'key', 'role_id' ) );
+              $scope.loading = false;
             } );
           }, 200 );
 
@@ -133,7 +135,7 @@ define( function() {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportScheduleModelFactory.root;
 
           $timeout( function() {
-            $scope.model.getMetadata( true ).then( function() {
+            $scope.model.metadata.getPromise().then( function() {
               var cnRecordView = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
               cnRecordView.dataArray = $scope.model.getDataArray( [], 'view' );
             } );
@@ -257,10 +259,10 @@ define( function() {
   cenozo.providers.factory( 'CnReportScheduleModelFactory', [
     'CnBaseModelFactory',
     'CnReportScheduleAddFactory', 'CnReportScheduleListFactory', 'CnReportScheduleViewFactory',
-    'CnHttpFactory', '$q',
+    'CnHttpFactory', '$q', '$timeout',
     function( CnBaseModelFactory,
               CnReportScheduleAddFactory, CnReportScheduleListFactory, CnReportScheduleViewFactory,
-              CnHttpFactory, $q ) {
+              CnHttpFactory, $q, $timeout ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -270,27 +272,14 @@ define( function() {
         var hasBaseMetadata = false;
         var lastReportTypeIdentifier = null;
         var lastAction = null;
+        var promiseInProgress = null;
+
+        this.metadata = { getPromise: function() { return self.getMetadata(); } };
 
         // extend getMetadata
-        this.getMetadata = function( updateParameters ) {
-          if( angular.isUndefined( updateParameters ) ) updateParameters = false;
-
-          var firstPromise = hasBaseMetadata ? $q.all() : 
-            this.$$getMetadata().then( function() {
-              return CnHttpFactory.instance( {
-                path: 'site',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name' }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.site_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-                hasBaseMetadata = true;
-              } );
-            } );
+        this.getMetadata = function() {
+          var firstPromise = hasBaseMetadata ? $q.all() :
+            this.$$getMetadata().then( function() { hasBaseMetadata = true; } );
 
           return firstPromise.then( function() {
             // don't use the parent identifier when in the view state, it doesn't work
@@ -307,9 +296,8 @@ define( function() {
             }
 
             return reportTypePromise.then( function() {
-              if( updateParameters &&
-                  ( lastReportTypeIdentifier != reportTypeIdentifier ||
-                    lastAction != self.getActionFromState() ) ) {
+              console.error( promiseInProgress );
+              if( null == promiseInProgress ) {
                 // remove the parameter group's input list and metadata
                 var parameterData = self.module.inputGroupList.findByProperty( 'title', 'Parameters' );
                 parameterData.inputList = {};
@@ -320,7 +308,20 @@ define( function() {
                 lastReportTypeIdentifier = reportTypeIdentifier;
                 lastAction = self.getActionFromState();
 
-                return $q.all( [
+                promiseInProgress = $q.all( [
+
+                  CnHttpFactory.instance( {
+                    path: 'site',
+                    data: {
+                      select: { column: [ 'id', 'name' ] },
+                      modifier: { order: 'name' }
+                    }
+                  } ).query().then( function success( response ) {
+                    self.metadata.columnList.site_id.enumList = [];
+                    response.data.forEach( function( item ) {
+                      self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
+                    } );
+                  } ),
 
                   CnHttpFactory.instance( {
                     path: 'report_type/' + reportTypeIdentifier + '/role',
@@ -333,7 +334,6 @@ define( function() {
                     response.data.forEach( function( item ) {
                       self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
                     } );
-                    console.log( 'a', self.metadata.columnList.role_id.enumList );
                   } ),
                   
                   CnHttpFactory.instance( {
@@ -359,6 +359,11 @@ define( function() {
 
                 ] );
               }
+
+              return promiseInProgress.then( function() {
+                // hold on to the last promise for a second to avoid unnecessarily calling it too often
+                $timeout( function() { promiseInProgress = null; }, 1000 );
+              } );
             } );
           } );
         };
