@@ -3468,6 +3468,9 @@ cenozo.factory( 'CnBaseViewFactory', [
             data: this.parentModel.getServiceData( 'view' ),
             redirectOnError: true
           } ).get().then( function( response ) {
+            if( '' === response.data )
+              throw new Error( 'Request for record responded with an empty string (should be 403 or 404).' );
+
             // create the record
             self.record = angular.copy( response.data );
             self.record.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
@@ -3648,7 +3651,8 @@ cenozo.factory( 'CnBaseModelFactory', [
          * determine whether a query parameter belongs to the model
          */
         cenozo.addExtendableFunction( self, 'hasQueryParameter', function( name ) {
-          return 0 <= $state.current.url.indexOf( '{' + name + '}' ) &&
+          return angular.isDefined( $state.current.url ) &&
+                 0 <= $state.current.url.indexOf( '{' + name + '}' ) &&
                  self.getSubjectFromState() == self.queryParameterSubject;
         } );
 
@@ -4690,7 +4694,12 @@ cenozo.factory( 'CnHttpFactory', [
               // only redirect once, afterwords ignore any additional error redirect requests
               if( !hasRedirectedOnError && null == $state.current.name.match( /^error\./ ) ) {
                 hasRedirectedOnError = true;
-                $state.go( 'error.' + ( angular.isDefined( response ) ? response.status : 500 ), response );
+                $state.go(
+                  'error.' + ( angular.isDefined( response ) ? response.status : 500 ),
+                  response
+                ).then( function() {
+                  $timeout( function() { hasRedirectedOnError = false; }, 1000 );
+                } );
               }
             } else {
               // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
