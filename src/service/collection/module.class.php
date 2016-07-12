@@ -23,16 +23,32 @@ class module extends \cenozo\service\site_restricted_module
 
     if( 300 > $this->get_status()->get_code() )
     {
+      $service_class_name = lib::get_class_name( 'service\service' );
       $collection_class_name = lib::get_class_name( 'database\collection' );
-      $db_user = lib::create( 'business\session' )->get_user();
+      $session = lib::create( 'business\session' );
+      $db_user = $session->get_user();
+      $db_collection = $this->get_resource();
+      $method = $this->get_method();
+
+      // restrict by application
+      if( !is_null( $db_collection ) )
+      {
+        if( 0 < $db_collection->get_application_count() )
+        {
+          $modifier = lib::create( 'database\modifier' );
+          $modifier->where( 'application.id', '=', $session->get_application()->id );
+          if( 0 == $db_collection->get_application_count( $modifier ) )
+          {
+            $this->get_status()->set_code( 404 );
+            return;
+          }
+        }
+      }
 
       // don't allow modifying a locked collection
-      $db_collection = NULL;
-      if( 'DELETE' == $this->get_method() || 'PATCH' == $this->get_method() )
-        $db_collection = $this->get_resource();
-      else if( 'POST' == $this->get_method() && ( !$this->is_leaf_module() || $this->get_parent_subject() ) )
+      if( 'POST' == $method && ( !$this->is_leaf_module() || $this->get_parent_subject() ) )
       {
-        $db_collection = $this->get_resource();
+        $check_locked = true;
         if( is_null( $db_collection ) )
         {
           // make sure no collection being added or removed are locked
@@ -60,7 +76,7 @@ class module extends \cenozo\service\site_restricted_module
         }
       }
 
-      if( !is_null( $db_collection ) )
+      if( !is_null( $db_collection ) && $service_class_name::is_write_method( $method ) )
       {
         if( $db_collection->locked )
         {
@@ -81,6 +97,12 @@ class module extends \cenozo\service\site_restricted_module
     parent::prepare_read( $select, $modifier );
 
     $db_application = lib::create( 'business\session' )->get_application();
+
+    // left join to application since it may be null
+    $modifier->left_join(
+      'application_has_collection', 'collection.id', 'application_has_collection.collection_id' );
+    $column = sprintf( 'IFNULL( application_has_collection.application_id, %d )', $db_application->id );
+    $modifier->where( $column, '=', $db_application->id );
 
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )

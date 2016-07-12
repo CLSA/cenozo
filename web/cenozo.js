@@ -3162,8 +3162,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.afterSelectFunctions = [];
 
         /**
-         * Adds a record on the server in a
-         * many-to-many relationship.
+         * Adds a record on the server in a many-to-many relationship.
          * 
          * @param object record: The record to select
          * @return promise

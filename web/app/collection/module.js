@@ -132,6 +132,24 @@ define( function() {
 
         this.deferred.promise.then( function() {
           if( angular.isDefined( self.userModel ) ) self.userModel.listModel.heading = 'User Control List';
+          if( angular.isDefined( self.applicationModel ) ) {
+            var listModel = self.applicationModel.listModel;
+            listModel.heading = 'Application Restriction List';
+
+            // when applying the application list redirect to collection list if we no longer have access
+            listModel.toggleChooseMode = function() {
+              return CnHttpFactory.instance( {
+                path: self.parentModel.getServiceResourcePath(),
+                onError: function( response ) {
+                  if( 404 == response.status ) {
+                    console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
+                    listModel.chooseMode = !listModel.chooseMode;
+                    return self.parentModel.transitionToListState();
+                  } else { CnModalMessageFactory.httpError( response ); }
+                }
+              } ).get().then( function() { return listModel.$$toggleChooseMode(); } );
+            };
+          }
         } );
 
         function updateAccess() {
@@ -145,6 +163,9 @@ define( function() {
                 enable ? function() { return true; } : function() { return false; };
             if( angular.isDefined( self.userModel ) )
               self.userModel.getChooseEnabled =
+                enable ? function() { return true; } : function() { return false; };
+            if( angular.isDefined( self.applicationModel ) )
+              self.applicationModel.getChooseEnabled =
                 enable ? function() { return true; } : function() { return false; };
           };
 

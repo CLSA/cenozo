@@ -220,7 +220,7 @@ class ui extends \cenozo\base_object
     if( array_key_exists( 'application', $module_list ) )
     {
       $module_list['application']['children'] = array( 'cohort', 'role' );
-      $module_list['application']['choosing'] = array( 'site', 'script' );
+      $module_list['application']['choosing'] = array( 'site', 'script', 'collection' );
     }
     if( array_key_exists( 'alternate', $module_list ) )
     {
@@ -231,7 +231,7 @@ class ui extends \cenozo\base_object
     }
     if( array_key_exists( 'collection', $module_list ) )
     {
-      $module_list['collection']['choosing'] = array( 'participant', 'user' );
+      $module_list['collection']['choosing'] = array( 'participant', 'user', 'application' );
     }
     if( array_key_exists( 'consent_type', $module_list ) )
     {
