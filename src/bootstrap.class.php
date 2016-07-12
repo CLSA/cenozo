@@ -284,7 +284,7 @@ final class bootstrap
       $status = NULL;
       if( !is_null( $service ) &&
           !is_null( $service->get_status() ) &&
-          400 <= $service->get_status()->get_code() )
+          300 <= $service->get_status()->get_code() )
       {
         $status = $service->get_status();
       }
@@ -323,7 +323,7 @@ final class bootstrap
     // fail transactions on error
     if( !is_null( $db ) )
     {
-      if( 400 <= $status->get_code() ) $db->fail_transaction();
+      if( 300 <= $status->get_code() ) $db->fail_transaction();
       else $db->complete_transaction();
     }
 
