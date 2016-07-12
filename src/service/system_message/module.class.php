@@ -24,12 +24,23 @@ class module extends \cenozo\service\site_restricted_module
     if( 300 > $this->get_status()->get_code() )
     {
       $service_class_name = lib::get_class_name( 'service\service' );
+      $session = lib::create( 'business\session' );
+      $record = $this->get_resource();
+
+      // restrict by application
+      if( $record )
+      {
+        if( !is_null( $record->application_id ) && $session->get_application()->id != $record->application_id )
+        {
+          $this->get_status()->set_code( 404 );
+          return;
+        }
+      }
 
       // restrict by site
       $db_restrict_site = $this->get_restricted_site();
       if( !is_null( $db_restrict_site ) )
       {
-        $record = $this->get_resource();
         if( $record && !is_null( $record->site_id ) && $record->site_id != $db_restrict_site->id )
         {
           $this->get_status()->set_code( 403 );
@@ -40,18 +51,17 @@ class module extends \cenozo\service\site_restricted_module
       $method = $this->get_method();
       if( $service_class_name::is_write_method( $method ) )
       {
-        $db_role = lib::create( 'business\session' )->get_role();
-        $db_system_message = $this->get_resource();
+        $db_role = $session->get_role();
 
         // make sure that only tier 3 roles can create/edit cross-application messages
-        if( 3 > $db_role->tier && is_null( $db_system_message->application_id ) )
+        if( 3 > $db_role->tier && is_null( $record->application_id ) )
         {
           $this->set_data(
             'You are not allowed to create or edit system messages which span across all applications.' );
           $this->get_status()->set_code( 306 );
         }
         // make sure that only all-site roles can create/edit cross-site messages
-        else if( !$db_role->all_sites && is_null( $db_system_message->site_id ) )
+        else if( !$db_role->all_sites && is_null( $record->site_id ) )
         {
           $this->set_data(
             'You are not allowed to create or edit system messages which span across all sites.' );
