@@ -101,7 +101,7 @@ class get extends \cenozo\service\service
       'access' => $db_user->get_access_list( $access_sel, $access_mod ),
       'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
       'session_list' => $session->get_session_list(),
-      'no_password' => $_SESSION['no_password'] );
+      'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false );
 
     // include the last (closed) activity for this user
     $activity_sel = lib::create( 'database\select' );
