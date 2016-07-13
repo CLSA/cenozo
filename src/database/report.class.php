@@ -50,6 +50,7 @@ class report extends base_report
       'report_schedule_has_report_restriction',
       'report_schedule.id',
       'report_schedule_has_report_restriction.report_schedule_id' );
+    $modifier->where( 'report.id', '=', $this->id );
 
     static::db()->execute( sprintf(
       "INSERT INTO report_has_report_restriction( report_id, report_restriction_id, value )\n%s\n%s",
