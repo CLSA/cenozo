@@ -3927,7 +3927,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * TODO: document
          */
-        cenozo.addExtendableFunction( self, 'transitionToListState', function( record ) {
+        cenozo.addExtendableFunction( self, 'transitionToListState', function() {
           return $state.go( self.module.subject.snake + '.list' );
         } );
 
