@@ -361,7 +361,12 @@ abstract class record extends \cenozo\base_object
     if( 'create_timestamp' == $column_name || 'update_timestamp' == $column_name )
       throw lib::create( 'exception\runtime', sprintf( 'Cannot edit %s column', $column_name ), __METHOD__ );
 
-    if( !is_null( $value ) )
+    $same = false;
+    if( is_null( $value ) )
+    {
+      $same = is_null( $this->passive_column_values[$column_name] );
+    }
+    else
     {
       // if the column is an enum, make sure the new value is valid
       $enum_values = $this->get_enum_values( $column_name );
@@ -370,17 +375,23 @@ abstract class record extends \cenozo\base_object
 
       // if the column is a datetime or timestamp
       $type = static::db()->get_column_data_type( static::get_table_name(), $column_name );
-      if( 'datetime' == $type || 'timestamp' == $type )
+      if( 'date' == $type || 'datetime' == $type || 'timestamp' == $type )
       {
         // convert to a datetime object
         $value = $util_class_name::get_datetime_object( $value );
 
         // convert timestamps from server to UTC time
         if( 'timestamp' == $type ) $value->setTimezone( new \DateTimeZone( 'UTC' ) );
+
+        $same = $this->passive_column_values[$column_name] == $value;
+      }
+      else
+      {
+        $same = $this->passive_column_values[$column_name] === $value;
       }
     }
 
-    if( $this->passive_column_values[$column_name] === $value )
+    if( $same )
     {
       // we're setting the value to the passive value, so remove the column from the active array
       if( array_key_exists( $column_name, $this->active_column_values ) )
