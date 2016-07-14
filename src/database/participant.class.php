@@ -49,6 +49,18 @@ class participant extends record
   }
 
   /**
+   * Get this participant's next_of_kin record
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return next_of_kin
+   * @access public
+   */
+  public function get_next_of_kin()
+  {
+    $next_of_kin_list = $this->get_next_of_kin_object_list();
+    return count( $next_of_kin_list ) ? current( $next_of_kin_list ) : NULL;
+  }
+
+  /**
    * Get the participant's last event by event type
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\event_type $db_event_type
