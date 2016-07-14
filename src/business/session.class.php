@@ -53,6 +53,10 @@ class session extends \cenozo\singleton
     // only initialize once and after construction only
     if( 'created' != $this->state ) return;
 
+    // make sure the session was successfully started
+    if( 0 == strlen( session_id() ) )
+      throw lib::create( 'exception\runtime', 'Session failed to start.', __METHOD__ );
+
     $application_class_name = lib::get_class_name( 'database\application' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $util_class_name = lib::get_class_name( 'util' );
