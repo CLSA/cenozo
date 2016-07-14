@@ -102,3 +102,27 @@ DELIMITER ;
 
 CALL patch_hin();
 DROP PROCEDURE IF EXISTS patch_hin;
+
+SELECT "Adding new triggers to hin table" AS "";
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS hin_AFTER_INSERT $$
+CREATE DEFINER = CURRENT_USER TRIGGER hin_AFTER_INSERT AFTER INSERT ON hin FOR EACH ROW
+BEGIN
+  CALL update_participant_last_hin( NEW.participant_id );
+END;$$
+
+DROP TRIGGER IF EXISTS hin_AFTER_UPDATE $$
+CREATE DEFINER = CURRENT_USER TRIGGER hin_AFTER_UPDATE AFTER UPDATE ON hin FOR EACH ROW
+BEGIN
+  CALL update_participant_last_hin( NEW.participant_id );
+END;$$
+
+DROP TRIGGER IF EXISTS hin_AFTER_DELETE $$
+CREATE DEFINER = CURRENT_USER TRIGGER hin_AFTER_DELETE AFTER DELETE ON hin FOR EACH ROW
+BEGIN
+  CALL update_participant_last_hin( OLD.participant_id );
+END;$$
+
+DELIMITER ;

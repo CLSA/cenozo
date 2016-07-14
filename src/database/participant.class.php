@@ -37,18 +37,6 @@ class participant extends record
   }
 
   /**
-   * Get this participant's hin record
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return hin
-   * @access public
-   */
-  public function get_hin()
-  {
-    $hin_list = $this->get_hin_object_list();
-    return count( $hin_list ) ? current( $hin_list ) : NULL;
-  }
-
-  /**
    * Get this participant's next_of_kin record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return next_of_kin
@@ -58,6 +46,31 @@ class participant extends record
   {
     $next_of_kin_list = $this->get_next_of_kin_object_list();
     return count( $next_of_kin_list ) ? current( $next_of_kin_list ) : NULL;
+  }
+
+  /**
+   * Get this participant's last hin record
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return hin
+   * @access public
+   */
+  public function get_last_hin()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no primary key.' );
+      return NULL;
+    }
+
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_last_hin' );
+    $select->add_column( 'hin_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_id', '=', $this->id );
+
+    $hin_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    return $hin_id ? lib::create( 'database\hin', $hin_id ) : NULL;
   }
 
   /**
