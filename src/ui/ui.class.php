@@ -141,10 +141,10 @@ class ui extends \cenozo\base_object
   {
     return array(
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
-      'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'hin', 'jurisdiction', 'language',
-      'participant', 'phone', 'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'report',
-      'report_restriction', 'report_schedule', 'report_type', 'script', 'search_result', 'site', 'source', 'state',
-      'system_message', 'user', 'webphone' );
+      'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'form', 'form_type', 'hin',
+      'jurisdiction', 'language', 'participant', 'phone', 'quota', 'recording', 'recording_file', 'region',
+      'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'script',
+      'search_result', 'site', 'source', 'state', 'system_message', 'user', 'webphone' );
   }
 
   /**
@@ -241,13 +241,17 @@ class ui extends \cenozo\base_object
     {
       $module_list['event_type']['children'] = array( 'participant' );
     }
+    if( array_key_exists( 'form_type', $module_list ) )
+    {
+      $module_list['form_type']['children'] = array( 'form' );
+    }
     if( array_key_exists( 'participant', $module_list ) )
     {
       $module_list['participant']['children'] =
-        array( 'address', 'phone', 'consent', 'hin', 'alternate', 'event' );
+        array( 'address', 'phone', 'consent', 'hin', 'alternate', 'event', 'form' );
       $module_list['participant']['choosing'] = array( 'collection' );
       $module_list['participant']['actions']['history'] =
-        '/{identifier}?{address}&{alternate}&{consent}&{event}&{note}&{phone}';
+        '/{identifier}?{address}&{alternate}&{consent}&{event}&{form}&{note}&{phone}';
       $module_list['participant']['actions']['notes'] = '/{identifier}?{search}';
       // remove the add action as this services is used for utility purposes only
       if( array_key_exists( 'add', $module_list['participant']['actions'] ) )
@@ -320,6 +324,8 @@ class ui extends \cenozo\base_object
       $list['Consent Types'] = 'consent_type';
     if( array_key_exists( 'event_type', $module_list ) && $module_list['event_type']['list_menu'] )
       $list['Event Types'] = 'event_type';
+    if( array_key_exists( 'form_type', $module_list ) && $module_list['form_type']['list_menu'] )
+      $list['Form Types'] = 'form_type';
     if( in_array( 'jurisdiction', $grouping_list ) &&
         array_key_exists( 'jurisdiction', $module_list ) && $module_list['jurisdiction']['list_menu'] )
       $list['Jurisdictions'] = 'jurisdiction';

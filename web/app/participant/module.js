@@ -393,6 +393,44 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       }
     },
 
+    Form: {
+      active: true,
+      framework: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/form',
+          data: {
+            modifier: {
+              join: {
+                table: 'form_type',
+                onleft: 'form.form_type_id',
+                onright: 'form_type.id'
+              },
+              order: { datetime: true }
+            },
+            select: {
+              column: [ 'datetime', {
+                table: 'form_type',
+                column: 'name'
+              }, {
+                table: 'form_type',
+                column: 'description'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.datetime,
+              category: 'Form',
+              title: 'added "' + item.name + '"',
+              description: item.description
+            } );
+          } );
+        } );
+      }
+    },
+
     Note: {
       active: true,
       framework: true,

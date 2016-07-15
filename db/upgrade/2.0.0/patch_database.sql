@@ -50,6 +50,8 @@ SOURCE application_has_report_type.sql
 SOURCE role_has_report_type.sql
 SOURCE search.sql
 SOURCE search_result.sql
+SOURCE form_type.sql
+SOURCE form.sql
 
 SOURCE participant_default_site.sql
 SOURCE participant_preferred_site.sql
