@@ -271,6 +271,14 @@ abstract class service extends \cenozo\base_object
       $this->headers['Pragma'] = 'no-cache';
       $this->headers['Expires'] = '0';
     }
+    else if( 'application/pdf' == $this->get_mime_type() )
+    {
+      $this->headers['Content-type'] = 'application/pdf';
+      $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
+      $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+      $this->headers['Pragma'] = 'no-cache';
+      $this->headers['Expires'] = '0';
+    }
 
     if( $this->temporary_login ) lib::create( 'business\session' )->logout();
   }
@@ -700,9 +708,10 @@ abstract class service extends \cenozo\base_object
     // supported mime types
     return array(
       'application/json',
-      'text/csv',
+      'application/pdf',
+      'application/vnd.oasis.opendocument.spreadsheet',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.oasis.opendocument.spreadsheet'
+      'text/csv'
     );
   }
 
@@ -783,12 +792,13 @@ abstract class service extends \cenozo\base_object
 
     // now get the extension
     $mime_type = $this->get_mime_type();
-    if( $mime_type == 'application/json' ) $filename .= '.json';
-    else if( $mime_type == 'text/csv' ) $filename .= '.csv';
-    else if( $mime_type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' )
+    if( 'application/json' == $mime_type ) $filename .= '.json';
+    else if( 'application/pdf' == $mime_type ) $filename .= '.pdf';
+    else if( 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == $mime_type )
       $filename .= '.xlsx';
-    else if( $mime_type == 'application/vnd.oasis.opendocument.spreadsheet' )
+    else if( 'application/vnd.oasis.opendocument.spreadsheet' == $mime_type )
       $filename .= '.ods';
+    else if( 'text/csv' == $mime_type ) $filename .= '.csv';
 
     return $filename;
   }
@@ -827,16 +837,16 @@ abstract class service extends \cenozo\base_object
           }
         }
 
-        if( 'text/csv' == $mime_type )
-        {
-          $this->encoded_data = $util_class_name::get_data_as_csv( $this->data );
-        }
-        else if( 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == $mime_type ||
+        if( 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == $mime_type ||
                  'application/vnd.oasis.opendocument.spreadsheet' == $mime_type )
         {
           $spreadsheet = lib::create( 'business\spreadsheet' );
           $spreadsheet->load_data( $this->data );
           $this->encoded_data = $spreadsheet->get_file( $mime_type );
+        }
+        else if( 'text/csv' == $mime_type )
+        {
+          $this->encoded_data = $util_class_name::get_data_as_csv( $this->data );
         }
         else // 'application/json' == $encoding
         {

@@ -93,6 +93,8 @@ class module extends \cenozo\service\base_report_module
   {
     parent::pre_write( $record );
 
+    $util_class_name = lib::get_class_name( 'util' );
+
     $method = $this->get_method();
     if( 'DELETE' == $method )
     {

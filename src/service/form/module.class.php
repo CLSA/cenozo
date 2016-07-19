@@ -25,28 +25,30 @@ class module extends \cenozo\service\site_restricted_module
     {
       $db_form = $this->get_resource();
 
-      // make sure the application has access to the participant
-      $db_application = lib::create( 'business\session' )->get_application();
-      if( $db_application->release_based && !is_null( $db_form ) )
+      if( !is_null( $db_form ) )
       {
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'participant_id', '=', $db_form->participant_id );
-        if( 0 == $db_application->get_participant_count( $modifier ) )
+        // make sure the application has access to the participant
+        $db_application = lib::create( 'business\session' )->get_application();
+        if( $db_application->release_based )
         {
-          $this->get_status()->set_code( 404 );
-          return;
+          $modifier = lib::create( 'database\modifier' );
+          $modifier->where( 'participant_id', '=', $db_form->participant_id );
+          if( 0 == $db_application->get_participant_count( $modifier ) )
+          {
+            $this->get_status()->set_code( 404 );
+            return;
+          }
         }
-      }
 
-      // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) && !is_null( $db_form ) )
-      {
-        if( !is_null( $db_participant ) &&
-            $db_form->get_participant()->get_effective_site()->id != $db_restrict_site->id )
+        // restrict by site
+        $db_restrict_site = $this->get_restricted_site();
+        if( !is_null( $db_restrict_site ) )
         {
-          $this->get_status()->set_code( 403 );
-          return;
+          if( $db_form->get_participant()->get_effective_site()->id != $db_restrict_site->id )
+          {
+            $this->get_status()->set_code( 403 );
+            return;
+          }
         }
       }
     }

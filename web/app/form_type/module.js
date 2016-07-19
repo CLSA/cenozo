@@ -11,7 +11,7 @@ define( function() {
       pluralPossessive: 'form types\''
     },
     columnList: {
-      name: { title: 'Name' },
+      title: { title: 'Title' },
       form_count: {
         title: 'Forms',
         type: 'number'
@@ -22,7 +22,7 @@ define( function() {
       }
     },
     defaultOrder: {
-      column: 'name',
+      column: 'title',
       reverse: false
     }
   } );
@@ -30,6 +30,10 @@ define( function() {
   module.addInputGroup( '', {
     name: {
       title: 'Name',
+      type: 'string'
+    },
+    title: {
+      title: 'Title',
       type: 'string'
     },
     description: {

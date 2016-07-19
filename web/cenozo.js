@@ -4658,17 +4658,20 @@ cenozo.factory( 'CnHttpFactory', [
           else object.params = self.data;
         }
 
-        if( 'xlsx' == self.format ) {
+        if( 'csv' == self.format ) {
+          object.responseType = 'arraybuffer';
+          object.headers = { Accept: 'text/csv;charset=utf-8' };
+        } else if( 'ods' == self.format ) {
+          object.responseType = 'arraybuffer';
+          object.headers = { Accept: 'application/vnd.oasis.opendocument.spreadsheet;charset=utf-8' };
+        } else if( 'pdf' == self.format ) {
+          object.responseType = 'arraybuffer';
+          object.headers = { Accept: 'application/pdf' };
+        } else if( 'xlsx' == self.format ) {
           object.responseType = 'arraybuffer';
           object.headers = {
             Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'
           };
-        } else if( 'ods' == self.format ) {
-          object.responseType = 'arraybuffer';
-          object.headers = { Accept: 'application/vnd.oasis.opendocument.spreadsheet;charset=utf-8' };
-        } else if( 'csv' == self.format ) {
-          object.responseType = 'arraybuffer';
-          object.headers = { Accept: 'text/csv;charset=utf-8' };
         }
 
         var promise = $http( object )

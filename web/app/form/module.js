@@ -17,7 +17,7 @@ define( function() {
     },
     columnList: {
       form_type: {
-        column: 'form_type.name',
+        column: 'form_type.title',
         title: 'Form Type'
       },
       uid: {
@@ -45,6 +45,11 @@ define( function() {
       type: 'date',
       max: 'now'
     }
+  } );
+
+  module.addExtraOperation( 'view', {
+    title: 'Download',
+    operation: function( $state, model ) { model.viewModel.downloadFile(); }
   } );
 
   /* ######################################################################################################## */
@@ -112,9 +117,29 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnFormViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+    'CnBaseViewFactory', 'CnHttpFactory',
+    function( CnBaseViewFactory, CnHttpFactory ) {
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        // download the form's file
+        this.downloadFile = function() {
+          return CnHttpFactory.instance( {
+            path: 'form/' + self.record.getIdentifier(),
+            data: { 'download': true },
+            format: 'pdf'
+          } ).get().then( function( response ) { 
+            saveAs(
+              new Blob(
+                [response.data],
+                { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) } 
+              ),
+              response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
+            );
+          } );
+        };
+      }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
@@ -146,13 +171,13 @@ define( function() {
             return CnHttpFactory.instance( {
               path: 'form_type',
               data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name' }
+                select: { column: [ 'id', 'title' ] },
+                modifier: { order: 'title' }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.form_type_id.enumList = [];
               response.data.forEach( function( item ) {
-                self.metadata.columnList.form_type_id.enumList.push( { value: item.id, name: item.name } );
+                self.metadata.columnList.form_type_id.enumList.push( { value: item.id, name: item.title } );
               } );
             } );
           } );
