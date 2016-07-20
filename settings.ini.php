@@ -60,7 +60,7 @@ if( array_key_exists( 'CENOZO', $this->settings['url'] ) )
 $settings['path']['COOKIE'] = substr( $_SERVER['SCRIPT_NAME'], 0, -9 );
 
 // the location of cenozo internal path
-$settings['path']['CENOZO'] = '/usr/local/lib/cenozo';
+$settings['path']['CENOZO'] = str_replace( '/settings.ini.php', '', __FILE__ );
 
 // the location of log files
 $settings['path']['LOG_FILE'] = '/var/local/cenozo/log';
@@ -81,10 +81,10 @@ $settings['path']['LIMESURVEY'] = '/var/www/limesurvey';
 $settings['url']['LIMESURVEY'] = '../limesurvey';
 
 // the url of PHPExcel
-$settings['path']['PHPEXCEL'] = '/usr/local/lib/PHPExcel';
+$settings['path']['PHPEXCEL'] = str_replace( 'settings.ini.php', '../PHPExcel', __FILE__ );
 
 // the location of the Shift8 Asterisk library
-$settings['path']['SHIFT8'] = '/usr/local/lib/shift8';
+$settings['path']['SHIFT8'] = str_replace( 'settings.ini.php', '../shift8', __FILE__ );
 
 // utility account
 $settings['utility']['username'] = 'cenozo';

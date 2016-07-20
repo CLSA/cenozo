@@ -29,12 +29,6 @@ if( !is_null( $host ) ) $settings['url']['CENOZO'] = sprintf( 'https://%s/url/to
 $settings['path']['LIMESURVEY'] = '/path/to/limesurvey';
 $settings['url']['LIMESURVEY'] = '../limesurvey';
 
-// the url of PHPExcel
-$settings['path']['PHPEXCEL'] = '/path/to/PHPExcel';
-
-// the location of the Shift8 Asterisk library
-$settings['path']['SHIFT8'] = '/path/to/shift8';
-
 // utility account
 $settings['utility']['password'] = 'set password to utility account here'; 
 
