@@ -209,6 +209,12 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     } );
   }
 
+  module.addExtraOperation( 'view', {
+    title: 'View Contact Form',
+    isDisabled: function( $state, model ) { return !model.viewModel.formId; },
+    operation: function( $state, model ) { $state.go( 'form.view', { identifier: model.viewModel.formId } ); }
+  } );
+
   var searchResultModule = cenozoApp.module( 'search_result' );
   if( angular.isDefined( searchResultModule.actions.list ) ) {
     module.addExtraOperation( 'list', {
@@ -645,8 +651,8 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantViewFactory', [
-    'CnBaseViewFactory', '$state',
-    function( CnBaseViewFactory, $state ) {
+    'CnBaseViewFactory', 'CnHttpFactory', '$state',
+    function( CnBaseViewFactory, CnHttpFactory, $state ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
@@ -654,7 +660,21 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
         // track the promise returned by the onView function
         this.onView = function() {
-          this.onViewPromise = this.$$onView();
+          this.formId = null;
+          this.onViewPromise = this.$$onView().then( function() {
+            CnHttpFactory.instance( {
+              path: 'form_type/name=contact/form',
+              data: {
+                select: { column: [ 'id' ] },
+                modifier: {
+                  where: [ { column: 'record_id', operator: '=', value: self.record.id } ],
+                  order: { date: true }
+                }
+              }
+            } ).get().then( function( response ) {
+              self.formId = 0 < response.data.length ? response.data[0].id : null;
+            } );
+          } );
           return this.onViewPromise;
         };
 

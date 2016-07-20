@@ -67,6 +67,13 @@ define( function() {
     }
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'View Form',
+    isIncluded: function( $state, model ) { return angular.isDefined( model.viewModel.formId ); },
+    isDisabled: function( $state, model ) { return !model.viewModel.formId; },
+    operation: function( $state, model ) { $state.go( 'form.view', { identifier: model.viewModel.formId } ); }
+  } ); 
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnConsentAdd', [
     'CnConsentModelFactory',
@@ -132,9 +139,36 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+    'CnBaseViewFactory', 'CnHttpFactory',
+    function( CnBaseViewFactory, CnHttpFactory ) {
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        // override onView method
+        this.onView = function() {
+          this.formId = undefined;
+          return this.$$onView().then( function() {
+            self.parentModel.metadata.promise.then( function() {
+              if( self.parentModel.metadata.columnList.consent_type_id.enumList.findByProperty(
+                  'value', self.record.consent_type_id ).name == 'participation' ) {
+                CnHttpFactory.instance( {
+                  path: 'form_type/name=consent/form',
+                  data: {
+                    select: { column: [ 'id' ] },
+                    modifier: {
+                      where: [ { column: 'record_id', operator: '=', value: self.record.id } ],
+                      order: { date: true }
+                    }
+                  }
+                } ).get().then( function( response ) {
+                  self.formId = 0 < response.data.length ? response.data[0].id : null;
+                } );
+              }
+            } );
+          } );
+        };
+      }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
