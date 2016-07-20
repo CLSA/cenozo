@@ -172,8 +172,8 @@ abstract class base_report extends \cenozo\base_object
       {
         $max_cells = $setting_manager->get_setting( 'report', 'max_cells' );
         $spreadsheet = lib::create( 'business\spreadsheet' );
-        $spreadsheet->load_data_from_table_list( $db_report_type->title, $this->report_tables );
-        $data = $spreadsheet->get_file( $this->db_report->format );
+        $spreadsheet->load_data( $this->report_tables, $db_report_type->title.' Report' );
+        $data = $spreadsheet->get_file( $this->get_mime_type() );
       }
 
       // make sure the report hasn't been deleted
@@ -244,7 +244,7 @@ abstract class base_report extends \cenozo\base_object
     $db_application = lib::create( 'business\session' )->get_application();
 
     // if the report's subject is participant then restrict to this application's participants
-    if( 'participant' == $report_type_subject )
+    if( 'participant' == $report_type_subject && $db_application->release_based )
     {
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );

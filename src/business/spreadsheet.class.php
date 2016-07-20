@@ -43,15 +43,16 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Loads database data into the spreadsheet
    */
-  public function load_data( $data )
+  public function load_data( $data, $title = NULL )
   {
     if( is_string( $data ) )
     {
-      $this->load_data_from_string( $data );
+      $this->load_data_from_string( $data, $title );
     }
     else if( is_array( $data ) )
     {
-      $this->load_data_from_array( $data );
+      if( array_key_exists( 'contents', current( $data ) ) ) $this->load_data_from_table_list( $data, $title );
+      else $this->load_data_from_array( $data, $title );
     }
     else throw lib::create( 'exception\runtime',
       'Tried to load spreadsheet data using unrecognized input data type.',
@@ -61,15 +62,28 @@ class spreadsheet extends \cenozo\base_object
   /**
    * TODO: document
    */
-  protected function load_data_from_string( $string )
+  protected function load_data_from_string( $string, $title )
   {
-    $this->set_cell( 'A1', $string );
+    $row = 1;
+    if( !is_null( $title ) )
+    {
+      // add in the title
+      $this->set_size( 16 );
+      $this->set_bold( true );
+      $this->set_horizontal_alignment( 'center' );
+      $this->set_cell( 'A'.$row, $title );
+      $this->set_size( NULL );
+      $this->set_bold( false );
+      $row++;
+    }
+
+    $this->set_cell( 'A'.$row, $string );
   }
 
   /**
    * TODO: document
    */
-  protected function load_data_from_array( $array )
+  protected function load_data_from_array( $array, $title )
   {
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
@@ -80,13 +94,33 @@ class spreadsheet extends \cenozo\base_object
     $time_format = is_null( $db_user ) || !$db_user->use_12hour_clock ? 'H:i:s' : 'h:i:s a';
 
     $row = 1;
+    if( !is_null( $title ) )
+    {
+      // determine the widest table size
+      $temp = current( $array );
+      $max = is_array( $temp ) ? count( $temp ) : 2;
+
+      // add in the title
+      $max_col = 1 < $max ? chr( 64 + $max ) : false;
+
+      $this->set_size( 16 );
+      $this->set_bold( true );
+      $this->set_horizontal_alignment( 'center' );
+      if( $max_col ) $this->merge_cells( 'A'.$row.':'.$max_col.$row );
+      $this->set_cell( 'A'.$row, $title );
+      $this->set_size( NULL );
+      $this->set_bold( false );
+      $row++;
+    }
+
+    $first_row = $row;
     foreach( $array as $key => $value )
     {
       $col = 'A';
       if( is_array( $value ) )
       {
         // put in the header row
-        if( 1 == $row )
+        if( $first_row == $row )
         {
           $this->set_bold( true );
           foreach( $value as $sub_key => $sub_value )
@@ -151,22 +185,20 @@ class spreadsheet extends \cenozo\base_object
   /**
    * TODO: document
    */
-  protected function load_data_from_table_list( $title, $table_list )
+  protected function load_data_from_table_list( $table_list, $title )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
     $max_cells = $setting_manager->get_setting( 'report', 'max_cells' );
-    $spreadsheet = lib::create( 'business\spreadsheet' );
 
     // determine the widest table size
     $max = 1;
     foreach( $table_list as $table )
     {
-      if( is_array( $table['header'] ) )
-      {
-        $width = max(
-          count( $table['header'] ),
-          count( $table['footer'] ) );
-        if( $max < $width ) $max = $width;
-      }
+      $width = max(
+        is_array( $table['header'] ) ? count( $table['header'] ) : 0,
+        is_array( $table['contents'] ) ? count( $table['contents'] ) : 0,
+        is_array( $table['footer'] ) ? count( $table['footer'] ) : 0 );
+      if( $max < $width ) $max = $width;
     }
 
     // determine the total number of cells in the report
@@ -181,27 +213,29 @@ class spreadsheet extends \cenozo\base_object
       $cell_count += $column_count * $row_count;
     }
     
-    // add in the title
     $row = 1;
     $max_col = 1 < $max ? chr( 64 + $max ) : false;
 
-    $spreadsheet->set_size( 16 );
-    $spreadsheet->set_bold( true );
-    $spreadsheet->set_horizontal_alignment( 'center' );
-    if( $max_col ) $spreadsheet->merge_cells( 'A'.$row.':'.$max_col.$row );
-    $spreadsheet->set_cell( 'A'.$row, $title );
-
-    $row++;
-
-    if( $max_cells < $cell_count )
+    // add in the title
+    if( !is_null( $title ) )
     {
-      $spreadsheet->set_size( 14 );
-
-      $spreadsheet->set_cell( 'A'.$row, 'WARNING: report truncated since it is too large' );
+      $this->set_size( 16 );
+      $this->set_bold( true );
+      $this->set_horizontal_alignment( 'center' );
+      if( $max_col ) $this->merge_cells( 'A'.$row.':'.$max_col.$row );
+      $this->set_cell( 'A'.$row, $title );
+      $this->set_size( NULL );
+      $this->set_bold( false );
       $row++;
     }
 
-    $spreadsheet->set_size( NULL );
+    if( $max_cells < $cell_count )
+    {
+      $this->set_size( 14 );
+      $this->set_cell( 'A'.$row, 'WARNING: report truncated since it is too large' );
+      $this->set_size( NULL );
+      $row++;
+    }
     
     // the underlying php-excel library is very inefficient so truncate the report after 20,000 cells
     $cell_count = 0;
@@ -217,37 +251,38 @@ class spreadsheet extends \cenozo\base_object
       // always skip a row before each table
       $row++;
 
-      $spreadsheet->set_horizontal_alignment( 'center' );
-      $spreadsheet->set_bold( true );
+      $this->set_horizontal_alignment( 'center' );
 
       // put in the table title
       if( !is_null( $table['title'] ) )
       {
-        if( $max_col ) $spreadsheet->merge_cells( 'A'.$row.':'.$max_col.$row );
-        $spreadsheet->set_background_color( '000000' );
-        $spreadsheet->set_foreground_color( 'FFFFFF' );
-        $spreadsheet->set_cell( 'A'.$row, $table['title'] );
-        $spreadsheet->set_foreground_color( '000000' );
+        $this->set_bold( true );
+        if( $max_col ) $this->merge_cells( 'A'.$row.':'.$max_col.$row );
+        $this->set_background_color( '000000' );
+        $this->set_foreground_color( 'FFFFFF' );
+        $this->set_cell( 'A'.$row, $table['title'] );
+        $this->set_foreground_color( '000000' );
+        $this->set_bold( false );
         $row++;
       }
 
       // put in the table header
       if( count( $table['header'] ) )
       {
-        $spreadsheet->set_background_color( 'CCCCCC' );
+        $this->set_background_color( 'CCCCCC' );
+        $this->set_bold( true );
         $col = 'A';
         foreach( $table['header'] as $header )
         {
           $autosize = !in_array( $col, $table['fixed'] );
-          $spreadsheet->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-          $spreadsheet->set_cell( $col.$row, $header, $autosize );
+          $this->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+          $this->set_cell( $col.$row, $header, $autosize );
           $col++;
         }
+        $this->set_bold( false );
+        $this->set_background_color( NULL );
         $row++;
       }
-
-      $spreadsheet->set_bold( false );
-      $spreadsheet->set_background_color( NULL );
       
       $first_content_row = $row;
 
@@ -263,8 +298,8 @@ class spreadsheet extends \cenozo\base_object
           foreach( $contents as $content )
           {
             $autosize = !in_array( $col, $table['fixed'] );
-            $spreadsheet->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-            $spreadsheet->set_cell( $col.$row, $content, $autosize );
+            $this->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+            $this->set_cell( $col.$row, $content, $autosize );
             if( !array_key_exists( $col, $contents_are_numeric ) )
               $contents_are_numeric[$col] = false;
             $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
@@ -279,7 +314,7 @@ class spreadsheet extends \cenozo\base_object
 
           if( $max_cells < $cell_count )
           {
-            $spreadsheet->set_cell( 'A'.$row, '(report truncated)' );
+            $this->set_cell( 'A'.$row, '(report truncated)' );
             break;
           }
         }
@@ -289,11 +324,10 @@ class spreadsheet extends \cenozo\base_object
 
       $last_content_row = $row - 1;
       
-      $spreadsheet->set_bold( true );
-
       // put in the table footer
       if( count( $table['footer'] ) )
       {
+        $this->set_bold( true );
         $col = 'A';
         foreach( $table['footer'] as $footer )
         {
@@ -315,10 +349,11 @@ class spreadsheet extends \cenozo\base_object
             }
           }
 
-          $spreadsheet->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-          $spreadsheet->set_cell( $col.$row, $footer );
+          $this->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
+          $this->set_cell( $col.$row, $footer );
           $col++;
         }
+        $this->set_bold( false );
         $row++;
       }
     }
@@ -432,6 +467,9 @@ class spreadsheet extends \cenozo\base_object
 
       // set the auto size property
       $this->php_excel->getActiveSheet()->getColumnDimension( $column )->setAutoSize( $autosize );
+      if( !is_null( $this->current_format['size'] ) )
+        $this->php_excel->getActiveSheet()->getRowDimension( $row )->setRowHeight(
+          1.66 * $this->current_format['size'] );
     }
     catch( \Exception $e )
     {
