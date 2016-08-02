@@ -98,11 +98,14 @@ class module extends \cenozo\service\site_restricted_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
-    // left join to application since it may be null
-    $modifier->left_join(
-      'application_has_collection', 'collection.id', 'application_has_collection.collection_id' );
-    $column = sprintf( 'IFNULL( application_has_collection.application_id, %d )', $db_application->id );
-    $modifier->where( $column, '=', $db_application->id );
+    if( false === $this->get_argument( 'choosing', false ) )
+    {
+      // left join to application since it may be null
+      $modifier->left_join(
+        'application_has_collection', 'collection.id', 'application_has_collection.collection_id' );
+      $column = sprintf( 'IFNULL( application_has_collection.application_id, %d )', $db_application->id );
+      $modifier->where( $column, '=', $db_application->id );
+    }
 
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )

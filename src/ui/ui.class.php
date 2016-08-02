@@ -231,7 +231,8 @@ class ui extends \cenozo\base_object
     }
     if( array_key_exists( 'collection', $module_list ) )
     {
-      $module_list['collection']['choosing'] = array( 'participant', 'user', 'application' );
+      $module_list['collection']['choosing'] = array( 'participant', 'user' );
+      if( 2 < $db_role->tier ) $module_list['collection']['choosing'][] = 'application';
     }
     if( array_key_exists( 'consent', $module_list ) )
     {
