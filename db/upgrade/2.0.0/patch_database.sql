@@ -52,6 +52,7 @@ SOURCE search.sql
 SOURCE search_result.sql
 SOURCE form_type.sql
 SOURCE form.sql
+SOURCE form_association.sql
 
 SOURCE participant_default_site.sql
 SOURCE participant_preferred_site.sql

@@ -170,12 +170,6 @@ define( function() {
     } );
   }
 
-  module.addExtraOperation( 'view', {
-    title: 'View Form',
-    isDisabled: function( $state, model ) { return !model.viewModel.formId; },   
-    operation: function( $state, model ) { $state.go( 'form.view', { identifier: model.viewModel.formId } ); }    
-  } ); 
-
   if( angular.isDefined( module.actions.list ) ) {
     module.addExtraOperation( 'view', {
       title: 'Alternate List',
@@ -452,21 +446,7 @@ define( function() {
 
         // track the promise returned by the onView function
         this.onView = function() {
-          this.formId = null;
-          this.onViewPromise = this.$$onView().then( function() {
-            CnHttpFactory.instance( {
-              path: 'form_type/name=proxy/form',
-              data: {
-                select: { column: [ 'id' ] },
-                modifier: {
-                  where: [ { column: 'record_id', operator: '=', value: self.record.id } ],
-                  order: { date: true }
-                }
-              }
-            } ).get().then( function( response ) {
-              self.formId = 0 < response.data.length ? response.data[0].id : null;
-            } );
-          } );
+          this.onViewPromise = this.$$onView();
           return this.onViewPromise;
         };
       }

@@ -7,10 +7,10 @@ CREATE TABLE IF NOT EXISTS form (
   participant_id INT UNSIGNED NOT NULL,
   form_type_id INT UNSIGNED NOT NULL,
   date DATE NOT NULL,
-  record_id INT UNSIGNED NULL,
   PRIMARY KEY (id),
   INDEX fk_participant_id (participant_id ASC),
   INDEX fk_form_type_id (form_type_id ASC),
+  UNIQUE INDEX uq_participant_id_form_type_id_date (participant_id ASC, form_type_id ASC, date ASC),
   CONSTRAINT fk_form_participant_id
     FOREIGN KEY (participant_id)
     REFERENCES participant (id)

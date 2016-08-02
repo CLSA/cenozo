@@ -15,16 +15,30 @@ CREATE PROCEDURE patch_hin()
       ALTER TABLE hin DROP COLUMN hin;
     END IF;
 
-    SELECT "Removing future_hin column from hin table" AS "";
+    SELECT "Removing extended_access column from hin table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
       FROM information_schema.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = "hin"
-      AND COLUMN_NAME = "future_hin" );
+      AND COLUMN_NAME = "extended_access" );
     IF @test = 1 THEN
-      ALTER TABLE hin DROP COLUMN future_hin;
+      ALTER TABLE hin DROP COLUMN extended_access;
+    END IF;
+
+    SELECT "Making hin.code column mandatory" AS "";
+
+    SELECT "Removing future_access column from hin table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "hin"
+      AND COLUMN_NAME = "future_access" );
+    IF @test = 1 THEN
+      ALTER TABLE hin DROP COLUMN future_access;
     END IF;
 
     SELECT "Making hin.code column mandatory" AS "";

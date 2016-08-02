@@ -51,12 +51,6 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', {
-    title: 'View Form',
-    isDisabled: function( $state, model ) { return !model.viewModel.formId; },   
-    operation: function( $state, model ) { $state.go( 'form.view', { identifier: model.viewModel.formId } ); }    
-  } ); 
-
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnHinAdd', [
     'CnHinModelFactory',
@@ -135,29 +129,7 @@ define( function() {
   cenozo.providers.factory( 'CnHinViewFactory', [
     'CnBaseViewFactory', 'CnHttpFactory',
     function( CnBaseViewFactory, CnHttpFactory ) {
-      var object = function( parentModel, root ) {
-        var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
-
-        // override onView method
-        this.onView = function() {
-          this.formId = null;
-          return this.$$onView().then( function() {
-            CnHttpFactory.instance( {
-              path: 'form_type/name=hin/form',
-              data: {
-                select: { column: [ 'id' ] },
-                modifier: {
-                  where: [ { column: 'record_id', operator: '=', value: self.record.id } ],
-                  order: { date: true }
-                }
-              }
-            } ).get().then( function( response ) {
-              self.formId = 0 < response.data.length ? response.data[0].id : null;
-            } );
-          } );
-        };
-      };
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );

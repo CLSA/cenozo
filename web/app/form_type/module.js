@@ -43,21 +43,6 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnFormTypeAdd', [
-    'CnFormTypeModelFactory',
-    function( CnFormTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnFormTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnFormTypeList', [
     'CnFormTypeModelFactory',
     function( CnFormTypeModelFactory ) {
@@ -88,15 +73,6 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnFormTypeAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnFormTypeListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
@@ -116,11 +92,10 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnFormTypeModelFactory', [
-    'CnBaseModelFactory', 'CnFormTypeAddFactory', 'CnFormTypeListFactory', 'CnFormTypeViewFactory',
-    function( CnBaseModelFactory, CnFormTypeAddFactory, CnFormTypeListFactory, CnFormTypeViewFactory ) {
+    'CnBaseModelFactory', 'CnFormTypeListFactory', 'CnFormTypeViewFactory',
+    function( CnBaseModelFactory, CnFormTypeListFactory, CnFormTypeViewFactory ) {
       var object = function( root ) {
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnFormTypeAddFactory.instance( this );
         this.listModel = CnFormTypeListFactory.instance( this );
         this.viewModel = CnFormTypeViewFactory.instance( this, root );
       };

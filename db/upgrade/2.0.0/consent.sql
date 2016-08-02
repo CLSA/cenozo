@@ -77,6 +77,13 @@ DROP PROCEDURE IF EXISTS patch_consent;
       AND consent_type.name = "HIN access";
 
       INSERT INTO consent( participant_id, consent_type_id, accept, written, datetime, note )
+      SELECT participant_id, consent_type.id, extended_access, false, hin.update_timestamp,
+             "Transferred from old HIN information."
+      FROM hin, consent_type
+      WHERE hin.extended_access IS NOT NULL
+      AND consent_type.name = "HIN extended access";
+
+      INSERT INTO consent( participant_id, consent_type_id, accept, written, datetime, note )
       SELECT participant_id, consent_type.id, future_access, false, hin.update_timestamp,
              "Transferred from old HIN information."
       FROM hin, consent_type
