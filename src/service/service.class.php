@@ -468,6 +468,7 @@ abstract class service extends \cenozo\base_object
     if( array_key_exists( $index, $this->collection_name_list ) &&
         array_key_exists( $index, $this->resource_value_list ) )
     {
+      $subject = $this->collection_name_list[$index];
       $resource_value = $this->resource_value_list[$index];
 
       $util_class_name = lib::get_class_name( 'util' );
@@ -477,7 +478,11 @@ abstract class service extends \cenozo\base_object
       { // there is a resource, get the corresponding record
         try
         {
-          $record = new $record_class_name( $resource_value );
+          // some subjects may self-reference with a value of 0
+          $get_method = sprintf( 'get_%s', $subject );
+          $record = 0 == $resource_value && in_array( $subject, array( 'application', 'role', 'site', 'user' ) )
+                  ? $session->$get_method()
+                  : new $record_class_name( $resource_value );
         }
         catch( \cenozo\exception\notice $e )
         {
