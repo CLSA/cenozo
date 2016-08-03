@@ -18,18 +18,6 @@ CREATE PROCEDURE clsa_pre_update()
       WHERE constraint_schema = CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_beartooth_f1" )
       AND constraint_name = "fk_role_has_operation_operation_id" );
 
-    SET @cedar_bl = (
-      SELECT unique_constraint_schema
-      FROM information_schema.referential_constraints
-      WHERE constraint_schema = CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_cedar" )
-      AND constraint_name = "fk_role_has_operation_operation_id" );
-
-    SET @cedar_f1 = (
-      SELECT unique_constraint_schema
-      FROM information_schema.referential_constraints
-      WHERE constraint_schema = CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_cedar_f1" )
-      AND constraint_name = "fk_role_has_operation_operation_id" );
-
     SET @mastodon = (
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
@@ -62,8 +50,6 @@ CREATE PROCEDURE clsa_pre_update()
 
     SET @bt_bl_service_id = ( SELECT id FROM service WHERE name = "beartooth" );
     SET @bt_f1_service_id = ( SELECT id FROM service WHERE name = "beartooth_f1" );
-    SET @ce_bl_service_id = ( SELECT id FROM service WHERE name = "cedar" );
-    SET @ce_f1_service_id = ( SELECT id FROM service WHERE name = "cedar_f1" );
     SET @ma_service_id = ( SELECT id FROM service WHERE name = "mastodon" );
     SET @st_bl_service_id = ( SELECT id FROM service WHERE name = "sabretooth" );
     SET @st_mc_service_id = ( SELECT id FROM service WHERE name = "sabretooth_mc" );
@@ -94,40 +80,6 @@ CREATE PROCEDURE clsa_pre_update()
 
       IF @beartooth_f1 IS NOT NULL THEN
         SET @sql = CONCAT( "TRUNCATE ", @beartooth_f1, ".activity" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-      END IF;
-
-      IF @cedar_bl IS NOT NULL THEN
-        SET @sql = CONCAT( "TRUNCATE ", @cedar_bl, ".activity" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @cedar_bl, ".away_time" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @cedar_bl, ".user_time" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-      END IF;
-
-      IF @cedar_f1 IS NOT NULL THEN
-        SET @sql = CONCAT( "TRUNCATE ", @cedar_f1, ".activity" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @cedar_f1, ".away_time" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT( "TRUNCATE ", @cedar_f1, ".user_time" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
@@ -351,108 +303,6 @@ CREATE PROCEDURE clsa_pre_update()
         DEALLOCATE PREPARE statement;
       END IF;
 
-      IF @cedar_bl IS NOT NULL THEN
-        SELECT "Processing access table for cedar sites" AS "";
-
-        SET @sql = CONCAT(
-          "CREATE TABLE IF NOT EXISTS ", @cedar_bl, ".access ( ",
-            "id INT UNSIGNED NOT NULL AUTO_INCREMENT, ",
-            "update_timestamp TIMESTAMP NOT NULL, ",
-            "create_timestamp TIMESTAMP NOT NULL, ",
-            "user_id INT UNSIGNED NOT NULL, ",
-            "role_id INT UNSIGNED NOT NULL, ",
-            "site_id INT UNSIGNED NOT NULL, ",
-            "datetime DATETIME NULL, ",
-            "microtime DOUBLE NULL, ",
-            "PRIMARY KEY (id), ",
-            "INDEX fk_user_id (user_id ASC), ",
-            "INDEX fk_role_id (role_id ASC), ",
-            "INDEX fk_site_id (site_id ASC), ",
-            "UNIQUE INDEX uq_user_id_role_id_site_id (user_id ASC, role_id ASC, site_id ASC), ",
-            "INDEX datetime_microtime (datetime ASC, microtime ASC), ",
-            "CONSTRAINT fk_access_user_id ",
-              "FOREIGN KEY (user_id) ",
-              "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE CASCADE ",
-              "ON UPDATE CASCADE, ",
-            "CONSTRAINT fk_access_role_id ",
-              "FOREIGN KEY (role_id) ",
-              "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE CASCADE ",
-              "ON UPDATE CASCADE, ",
-            "CONSTRAINT fk_access_site_id ",
-              "FOREIGN KEY (site_id) ",
-              "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE CASCADE ",
-              "ON UPDATE CASCADE) ",
-          "ENGINE = InnoDB" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT(
-          "INSERT IGNORE INTO ", @cedar_bl, ".access( user_id, role_id, site_id ) ",
-          "SELECT access.user_id, access.role_id, site1.id ",
-          "FROM access ",
-          "JOIN site AS site2 ON access.site_id = site2.id ",
-          "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = ", @ce_bl_service_id, " ",
-          "WHERE site_id IN ( SELECT id FROM site WHERE service_id = ", @ce_bl_service_id, " )" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-      END IF;
-
-      IF @cedar_f1 IS NOT NULL THEN
-        SELECT "Processing access table for Cedar F1 sites" AS "";
-
-        SET @sql = CONCAT(
-          "CREATE TABLE IF NOT EXISTS ", @cedar_f1, ".access ( ",
-            "id INT UNSIGNED NOT NULL AUTO_INCREMENT, ",
-            "update_timestamp TIMESTAMP NOT NULL, ",
-            "create_timestamp TIMESTAMP NOT NULL, ",
-            "user_id INT UNSIGNED NOT NULL, ",
-            "role_id INT UNSIGNED NOT NULL, ",
-            "site_id INT UNSIGNED NOT NULL, ",
-            "datetime DATETIME NULL, ",
-            "microtime DOUBLE NULL, ",
-            "PRIMARY KEY (id), ",
-            "INDEX fk_user_id (user_id ASC), ",
-            "INDEX fk_role_id (role_id ASC), ",
-            "INDEX fk_site_id (site_id ASC), ",
-            "UNIQUE INDEX uq_user_id_role_id_site_id (user_id ASC, role_id ASC, site_id ASC), ",
-            "INDEX datetime_microtime (datetime ASC, microtime ASC), ",
-            "CONSTRAINT fk_access_user_id ",
-              "FOREIGN KEY (user_id) ",
-              "REFERENCES ", DATABASE(), ".user (id) ",
-              "ON DELETE CASCADE ",
-              "ON UPDATE CASCADE, ",
-            "CONSTRAINT fk_access_role_id ",
-              "FOREIGN KEY (role_id) ",
-              "REFERENCES ", DATABASE(), ".role (id) ",
-              "ON DELETE CASCADE ",
-              "ON UPDATE CASCADE, ",
-            "CONSTRAINT fk_access_site_id ",
-              "FOREIGN KEY (site_id) ",
-              "REFERENCES ", DATABASE(), ".site (id) ",
-              "ON DELETE CASCADE ",
-              "ON UPDATE CASCADE) ",
-          "ENGINE = InnoDB" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-
-        SET @sql = CONCAT(
-          "INSERT IGNORE INTO ", @cedar_f1, ".access( user_id, role_id, site_id ) ",
-          "SELECT access.user_id, access.role_id, site1.id ",
-          "FROM access ",
-          "JOIN site AS site2 ON access.site_id = site2.id ",
-          "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = ", @ce_bl_service_id, " ",
-          "WHERE site_id IN ( SELECT id FROM site WHERE service_id = ", @ce_f1_service_id, " )" );
-        PREPARE statement FROM @sql;
-        EXECUTE statement;
-        DEALLOCATE PREPARE statement;
-      END IF;
-
       IF @mastodon IS NOT NULL THEN
         SELECT "Processing access table for Mastodon F1 sites" AS "";
 
@@ -497,8 +347,18 @@ CREATE PROCEDURE clsa_pre_update()
           "SELECT access.user_id, access.role_id, site1.id ",
           "FROM access ",
           "JOIN site AS site2 ON access.site_id = site2.id ",
-          "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = ", @ma_service_id, " ",
-          "WHERE site_id IN ( SELECT id FROM site WHERE service_id = ", @ma_service_id, " )" );
+          "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = ", @bt_bl_service_id, " ",
+          "WHERE site_id IN ( SELECT id FROM site WHERE service_id = ", @bt_f1_service_id, " ) "
+          "AND role_id IN ( ",
+            "SELECT id FROM role WHERE name IN( 'administrator', 'curator', 'typist' ) "
+          ") UNION ",
+          "SELECT access.user_id, access.role_id, IFNULL( site1.id, IFNULL( site2.id, site3.id ) ) ",
+          "FROM access ",
+          "JOIN site AS site3 ON access.site_id = site3.id ",
+          "LEFT JOIN site AS site1 ON site1.name = site3.name AND site1.service_id = ", @st_bl_service_id, " ",
+          "LEFT JOIN site AS site2 ON site2.name = site3.name AND site2.service_id = ", @st_mc_service_id, " ",
+          "WHERE site_id IN ( SELECT id FROM site WHERE service_id = ", @st_f1_service_id, " ) ",
+          "AND role_id IN ( SELECT id FROM role WHERE name IN( 'administrator', 'curator', 'typist' ) )" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
