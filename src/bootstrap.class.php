@@ -12,10 +12,6 @@ use cenozo\lib, cenozo\log;
 
 /**
  * This class is responsible for bootstrapping the application's restful api and web interface.
- * 
- * Create the object, run the initialization() method then call
- * 
- * @package cenozo\business
  */
 final class bootstrap
 {
@@ -67,7 +63,9 @@ final class bootstrap
     set_time_limit( 60 );
     ini_set( 'display_errors', '0' );
     error_reporting( E_ALL | E_STRICT );
-    $this->read_settings();
+    require_once dirname( __FILE__ ).'/initial.class.php';
+    $initial = new initial;
+    $this->settings = $initial->get_settings();
     
     ini_set( 'session.save_path', TEMPORARY_FILES_PATH );
     ini_set( 'session.gc_probability', 1 );
@@ -97,66 +95,6 @@ final class bootstrap
       'initialize() method and make sure it is either "ui" or "api".' );
 
     $this->session->shutdown();
-  }
-
-  /**
-   * Reads the framework and application settings
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function read_settings()
-  {
-    // include the initialization settings
-    global $SETTINGS;
-    $this->add_settings( $SETTINGS, true );
-    unset( $SETTINGS );
-
-    // include the framework's initialization settings
-    require_once( dirname( __FILE__ ).'/../settings.local.ini.php' );
-    $this->add_settings( $settings );
-    require_once( dirname( __FILE__ ).'/../settings.ini.php' );
-    $this->add_settings( $settings );
-
-    if( !array_key_exists( 'general', $this->settings ) ||
-        !array_key_exists( 'application_name', $this->settings['general'] ) )
-      die( 'Error, application name not set!' );
-
-    // make sure all paths are valid
-    foreach( $this->settings['path'] as $key => $path )
-    {
-      if( 'TEMP' == $key )
-      { // create the temp directory if it doesn't already exist
-        if( !is_dir( $path ) ) mkdir( $path, 0755, true );
-      }
-      else if( false !== strpos( $path, $this->settings['path']['TEMP'] ) )
-      { // create paths which are in the temp directory
-        if( !is_dir( $path ) ) mkdir( $path, 0755, true );
-      }
-      else if( 'COOKIE' != $key &&
-               'TEMPLATE_CACHE' != $key &&
-               !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
-      {
-        die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
-      }
-      else if( 'REPORT' == $key && !is_writable( $path ) )
-      {
-        die( sprintf( 'Error, report path, %s, is not writable!', $path ) );
-      }
-    }
-
-    define( 'CENOZO_BUILD', $this->settings['general']['cenozo_build'] );
-    define( 'APP_BUILD', $this->settings['general']['build'] );
-    define( 'APPLICATION', $this->settings['general']['application_name'] );
-    define( 'INSTANCE', $this->settings['general']['instance_name'] );
-    $this->settings['path']['CENOZO_SRC'] = $this->settings['path']['CENOZO'].'/src';
-    $this->settings['path']['APP_SRC'] = $this->settings['path']['APPLICATION'].'/src';
-    $this->settings['path']['WEB'] = $this->settings['path']['CENOZO'].'/web';
-
-    foreach( $this->settings['path'] as $path_name => $path_value )
-      define( $path_name.'_PATH', $path_value );
-    foreach( $this->settings['url'] as $path_name => $path_value )
-      define( $path_name.'_URL', $path_value );
   }
 
   /**
@@ -339,38 +277,6 @@ final class bootstrap
 
       // close the services writelog, if needed
       $service->close_writelog();
-    }
-  }
-
-  /**
-   * Adds a list of key/value pairs to the settings
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $settings
-   * @param boolean $replace Whether to replace the existing settings array
-   * @access public
-   */
-  public function add_settings( $settings, $replace = false )
-  {
-    if( $replace )
-    {
-      $this->settings = $settings;
-    }
-    else
-    {
-      foreach( $settings as $category => $setting )
-      {
-        if( !array_key_exists( $category, $this->settings ) )
-        {
-          $this->settings[$category] = $setting;
-        }
-        else
-        {
-          foreach( $setting as $key => $value )
-            if( !array_key_exists( $key, $this->settings[$category] ) )
-              $this->settings[$category][$key] = $value;
-        }
-      }
     }
   }
 
