@@ -17,6 +17,35 @@ class tokens extends sid_record
   const TOKEN_POSTFIX_LENGTH = 7;
 
   /**
+   * Returns a list of all survey records which match the token column
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
+   */
+  public function get_survey_list()
+  {
+    // check the primary key value
+    if( is_null( $this->tid ) )
+    {
+      log::warning( 'Tried to query token with no primary key.' );
+      return array();
+    }
+
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $old_sid = $survey_class_name::get_sid();
+    $survey_class_name::set_sid( static::get_sid() );
+
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'token', '=', $this->token );
+    $survey_list = $survey_class_name::select_objects( $modifier );
+
+    $survey_class_name::set_sid( $old_sid );
+
+    return $survey_list;
+  }
+
+  /**
    * TODO: document
    */
   public static function where_token( $modifier, $db_participant, $repeated = false )

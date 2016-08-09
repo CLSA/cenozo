@@ -15,6 +15,35 @@ use cenozo\lib, cenozo\log;
 class survey extends sid_record
 {
   /**
+   * Returns a list of all tokens records which match the survey's token column
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
+   */
+  public function get_tokens_list()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query survey with no primary key.' );
+      return array();
+    }
+
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $old_sid = $tokens_class_name::get_sid();
+    $tokens_class_name::set_sid( static::get_sid() );
+
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'token', '=', $this->token );
+    $tokens_list = $tokens_class_name::select_objects( $modifier );
+
+    $tokens_class_name::set_sid( $old_sid );
+
+    return $tokens_list;
+  }
+
+  /**
    * Returns a response to this survey
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
