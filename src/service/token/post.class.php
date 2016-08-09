@@ -18,7 +18,8 @@ class post extends \cenozo\service\post
   {
     parent::__construct( $path, $args, $file );
 
-    // token is a special case (because it is a limesurvey table)
+    // Token is a special case (because it is a limesurvey table)
+    // See class service\post\script\token\post
     $this->status->set_code( 404 );
   }
 }
