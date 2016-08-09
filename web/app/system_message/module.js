@@ -207,7 +207,10 @@ define( function() {
                 path: 'role',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name' }
+                  modifier: {
+                    where: [ { column: 'tier', operator: '<=', value: CnSession.role.tier } ],
+                    order: 'name'
+                  }
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.role_id.enumList = [];
