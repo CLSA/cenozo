@@ -2155,6 +2155,9 @@ cenozo.factory( 'CnSession', [
               site.getIdentifier = function() { return 'name=' + this.name };
             } );
 
+            // add the withdraw script id
+            self.withdrawScript = response.data.withdraw_script;
+
             // process session records
             self.sessionList = response.data.session_list;
 
@@ -5655,6 +5658,94 @@ cenozo.factory( 'CnPaginationFactory',
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
 );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.factory( 'CnScriptLauncherFactory', [
+  'CnHttpFactory', 'CnModalMessageFactory', '$q', '$window',
+  function CnHttpFactory( CnHttpFactory, CnModalMessageFactory, $q, $window ) {
+    var object = function( params ) {
+      var self = this;
+
+      this.lang = 'en';
+      if( angular.isUndefined( params.script ) )
+        throw new Error( 'Tried to create CnScriptLauncherFactory instance without a script' );
+      if( angular.isUndefined( params.script.url ) )
+        throw new Error( 'Tried to create CnScriptLauncherFactory instance without a script.url' );
+      if( angular.isUndefined( params.uid ) )
+        throw new Error( 'Tried to create CnScriptLauncherFactory instance without a uid' );
+      angular.extend( this, params );
+      this.token = undefined;
+      this.deferred = $q.defer();
+
+      CnHttpFactory.instance( {
+        path: 'script/' + self.script.id + '/token/uid=' + self.uid,
+        data: { select: { column: [ 'token', 'completed' ] } },
+        onError: function( response ) {
+          // ignore 404
+          if( 404 == response.status ) {
+            console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
+            self.token = null;
+            if( angular.isDefined( self.onReady ) ) self.onReady();
+            self.deferred.resolve();
+          } else {
+            CnModalMessageFactory.httpError( response );
+          }
+        }
+      } ).get().then( function( response ) {
+        self.token = response.data;
+        if( angular.isDefined( self.onReady ) ) self.onReady();
+        self.deferred.resolve();
+      } );
+
+      this.launch = function() {
+        var url = self.script.url + '&lang=' + self.lang + '&newtest=Y';
+
+        return this.deferred.promise.then( function() {
+          if( null == self.token ) {
+            // the token doesn't exist so create it
+            var modal = CnModalMessageFactory.instance( {
+              title: 'Please Wait',
+              message: 'Please wait while the participant\'s data is retrieved.',
+              block: true
+            } );
+            modal.show();
+
+            return CnHttpFactory.instance( {
+              path: 'script/' + self.script.id + '/token',
+              data: { uid: self.uid },
+              onError: function( response ) {
+                modal.close();
+                CnModalMessageFactory.httpError( response );
+              }
+            } ).post().then( function( response ) {
+              // close the wait message
+              modal.close();
+
+              // now get the new token string we just created and use it to open the script window
+              return CnHttpFactory.instance( {
+                path: 'script/' + self.script.id + '/token/' + response.data
+              } ).get().then( function( response ) {
+                self.token = { token: response.data.token, completed: 'N' };
+
+                // launch the script
+                $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
+              } );
+            } );
+          } else {
+            // launch the script
+            $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
+          }
+        } );
+      }
+    };
+
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+  }
+] );
 
 /* ######################################################################################################## */
 

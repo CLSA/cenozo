@@ -34,6 +34,7 @@ class get extends \cenozo\service\service
   {
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $system_message_class_name = lib::get_class_name( 'database\system_message' );
+    $script_class_name = lib::get_class_name( 'database\script' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
@@ -93,12 +94,23 @@ class get extends \cenozo\service\service
     $access_mod->order( 'site.name' );
     $access_mod->order( 'role.name' );
 
+    // determine the withdraw script id
+    $script_sel = lib::create( 'database\select' );
+    $script_sel->from( 'script' );
+    $script_sel->add_column( 'id' );
+    $script_sel->add_column(
+      sprintf( 'CONCAT( "%s/index.php?sid=", script.sid )', LIMESURVEY_URL ), 'url', false );
+    $script_mod = lib::create( 'database\modifier' );
+    $script_mod->where( 'withdraw', '=', true );
+    $withdraw_script = current( $script_class_name::select( $script_sel, $script_mod ) );
+
     $pseudo_record = array(
       'application' => $db_application->get_column_values( $application_sel ),
       'role' => $db_role->get_column_values( $role_sel ),
       'site' => $db_site->get_column_values( $site_sel ),
       'user' => $db_user->get_column_values( $user_sel ),
       'access' => $db_user->get_access_list( $access_sel, $access_mod ),
+      'withdraw_script' => $withdraw_script,
       'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
       'session_list' => $session->get_session_list(),
       'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false );
