@@ -393,35 +393,6 @@ class participant extends record
   }
 
   /**
-   * Returns a user-friendly string describing which withdraw option the participant has selected
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_withdraw_option()
-  {
-    $withdraw_option = 'Not withdrawn';
-    if( !is_null( $this->withdraw_letter ) )
-    {
-      if( in_array( $this->withdraw_letter, array( 'a', 'b', 'c', 'd' ) ) )
-        $withdraw_option = 'Withdrawn: Option #1';
-      else if( in_array( $this->withdraw_letter, array( 'e', 'f', 'g', 'h' ) ) )
-        $withdraw_option = 'Withdrawn: Option #2';
-      else if( in_array( $this->withdraw_letter, array( 'i', 'j' ) ) )
-        $withdraw_option = 'Withdrawn: Option #3';
-      else if( in_array( $this->withdraw_letter, array( 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't' ) ) )
-        $withdraw_option = 'Withdrawn: Option #4';
-      else if( '0' == $this->withdraw_letter )
-        $withdraw_option = 'Withdrawn: no option (data never provided)';
-      else
-        $withdraw_option = 'Withdrawn: unknown option';
-    }
-
-    return $withdraw_option;
-  }
-
-  /**
    * Returns a list of UIDs which the application and current role has access to
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

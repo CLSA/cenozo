@@ -28,6 +28,12 @@ class patch extends \cenozo\service\patch
       unset( $patch_array['preferred_site_id'] );
     }
 
+    if( array_key_exists( 'reverse_withdraw', $patch_array ) )
+    {
+      $this->reverse_withdraw = true;
+      unset( $patch_array['reverse_withdraw'] );
+    }
+
     return $patch_array;
   }
 
@@ -42,9 +48,13 @@ class patch extends \cenozo\service\patch
     {
       $this->get_file_as_array(); // make sure to process the site array before the following check
 
+      $db_role = lib::create( 'business\session' )->get_role();
+
       // make sure that only all-site roles can change the preferred site
-      if( $this->update_preferred_site && !lib::create( 'business\session' )->get_role()->all_sites )
-        $this->status->set_code( 403 );
+      if( $this->update_preferred_site && !$db_role->all_sites ) $this->status->set_code( 403 );
+
+      // make sure that only tier 2+ roles can reverse a withdraw
+      if( $this->reverse_withdraw && 2 > $db_role->tier ) $this->status->set_code( 403 );
     }
   }
 
@@ -55,18 +65,22 @@ class patch extends \cenozo\service\patch
   {
     parent::execute();
 
-    // process the preferred site, if it exists
-    if( $this->update_preferred_site ) $this->set_preferred_site();
-  }
+    $db_participant = $this->get_leaf_record();
 
-  /**
-   * TODO: document
-   */
-  protected function set_preferred_site()
-  {
-    $this->get_leaf_record()->set_preferred_site(
-      lib::create( 'business\session' )->get_application(),
-      $this->preferred_site_id );
+    // process the preferred site, if it exists
+    if( $this->update_preferred_site )
+    {
+      $db_participant->set_preferred_site(
+        lib::create( 'business\session' )->get_application(),
+        $this->preferred_site_id );
+    }
+
+    // reverse the participant's withdraw, if needed
+    if( $this->reverse_withdraw )
+    {
+      $survey_manager = lib::create( 'business\survey_manager' );
+      $survey_manager->reverse_withdraw( $db_participant );
+    }
   }
 
   /**
@@ -82,4 +96,11 @@ class patch extends \cenozo\service\patch
    * @access protected
    */
   protected $preferred_site_id;
+
+  /**
+   * Whether to reverse a participant's withdraw
+   * @var boolean
+   * @access protected
+   */
+  protected $reverse_withdraw;
 }

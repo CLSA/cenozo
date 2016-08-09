@@ -83,7 +83,7 @@ class activity extends record
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->where(
-      sprintf( 'access.datetime + INTERVAL %s',
+      sprintf( 'access.datetime + INTERVAL %d MINUTE',
                $setting_manager->get_setting( 'general', 'activity_timeout' ) ),
       '<', 'UTC_TIMESTAMP()', false );
     return $modifier;

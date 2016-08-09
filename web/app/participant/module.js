@@ -137,11 +137,6 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     language_id: {
       title: 'Preferred Language',
       type: 'enum'
-    },
-    withdraw_option: {
-      title: 'Withdraw Option',
-      type: 'string',
-      constant: true
     }
   } );
 
@@ -208,6 +203,25 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       }
     } );
   }
+
+  try {
+    var tokenModule = cenozoApp.module( 'token' );
+    if( tokenModule && angular.isDefined( tokenModule.actions.add ) ) {
+      module.addExtraOperation( 'view', {
+        title: 'Withdraw',
+        operation: function( $state, model ) { model.viewModel.launchWithdraw(); },
+        isIncluded: function( $state, model ) {
+          return false === model.viewModel.hasWithdrawn;
+        }
+      } );
+      module.addExtraOperation( 'view', {
+        title: 'Reverse Withdraw',
+        operation: function( $state, model ) { model.viewModel.reverseWithdraw(); },
+        isIncluded: function( $state, model ) { return true === model.viewModel.hasWithdrawn; },
+        isDisabled: function( $state, model ) { return model.viewModel.reverseWithdrawDisabled; }
+      } );
+    }
+  } catch( err ) {}
 
   var searchResultModule = cenozoApp.module( 'search_result' );
   if( angular.isDefined( searchResultModule.actions.list ) ) {
@@ -645,17 +659,70 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantViewFactory', [
-    'CnBaseViewFactory', 'CnHttpFactory', '$state',
-    function( CnBaseViewFactory, CnHttpFactory, $state ) {
+    'CnBaseViewFactory',
+    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnScriptLauncherFactory', '$window',
+    function( CnBaseViewFactory,
+              CnSession, CnHttpFactory, CnModalConfirmFactory, CnScriptLauncherFactory, $window ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
         this.onViewPromise = null;
+        this.scriptLauncher = null;
+        this.hasWithdrawn = null;
 
         // track the promise returned by the onView function
         this.onView = function() {
+          this.scriptLauncher = CnScriptLauncherFactory.instance( {
+            script: CnSession.withdrawScript,
+            uid: String( this.parentModel.getQueryParameter( 'identifier' ) ).split( '=' ).pop(),
+            onReady: function() {
+              self.hasWithdrawn = null != self.scriptLauncher.token && 
+                                  null != self.scriptLauncher.token.completed.match(
+                                    /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
+            }
+          } );
           this.onViewPromise = this.$$onView();
           return this.onViewPromise;
+        };
+
+
+        // launches the withdraw script for the current participant
+        this.launchWithdraw = function() {
+          this.onViewPromise.then( function() {
+            var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
+              'value', self.record.language_id );
+            if( language ) self.scriptLauncher.lang = language.code;
+            self.scriptLauncher.launch();
+
+            // check for when the window gets focus back and update the participant details
+            var win = angular.element( $window ).on( 'focus', function() {
+              self.onView();
+              win.off( 'focus' );
+            } );
+          } );
+        };
+
+        // reverses the participant's withdraw status
+        this.reverseWithdrawDisabled = false;
+        this.reverseWithdraw = function() {
+          this.reverseWithdrawDisabled = true;
+          CnModalConfirmFactory.instance( {
+            title: 'Reverse Withdraw',
+            message: 'Are you sure you wish to reverse this participant\'s withdraw status?\n\n' +
+                     'By selecting yes you are confirming that the participant has re-consented to ' +
+                     'participate in the study.'
+          } ).show().then( function( response ) {
+            if( response ) {
+              CnHttpFactory.instance( {
+                path: self.parentModel.getServiceResourcePath(),
+                data: { reverse_withdraw: true }
+              } ).patch().then( function() {
+                self.onView();
+              } ).finally( function() {
+                self.reverseWithdrawDisabled = false;
+              } );
+            } else self.reverseWithdrawDisabled = false;
+          } );
         };
 
         if( root ) {
@@ -714,7 +781,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnParticipantListFactory.instance( this );
-        this.viewModel = CnParticipantViewFactory.instance( this, root );
+        if( root ) this.viewModel = CnParticipantViewFactory.instance( this, root );
 
         // extend getMetadata
         this.getMetadata = function() {
@@ -754,7 +821,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               CnHttpFactory.instance( {
                 path: 'language',
                 data: {
-                  select: { column: [ 'id', 'name' ] },
+                  select: { column: [ 'id', 'name', 'code' ] },
                   modifier: {
                     where: { column: 'active', operator: '=', value: true },
                     order: 'name'
@@ -763,7 +830,11 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               } ).query().then( function success( response ) {
                 self.metadata.columnList.language_id.enumList = [];
                 response.data.forEach( function( item ) {
-                  self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
+                  self.metadata.columnList.language_id.enumList.push( {
+                    value: item.id,
+                    name: item.name,
+                    code: item.code // code is needed by the withdraw action
+                  } );
                 } );
               } ),
 

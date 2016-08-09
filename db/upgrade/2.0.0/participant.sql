@@ -146,10 +146,62 @@ CREATE PROCEDURE patch_participant()
       AND TABLE_NAME = "participant"
       AND COLUMN_NAME = "callback" );
     IF @test = 0 THEN
-      ALTER TABLE participant ADD COLUMN callback DATETIME NULL DEFAULT NULL
-      AFTER withdraw_letter;
+      ALTER TABLE participant ADD COLUMN callback DATETIME NULL DEFAULT NULL AFTER availability_type_id;
+      ALTER TABLE participant ADD INDEX dk_callback (callback ASC);
+    END IF;
 
-      ALTER TABLE participant ADD INDEX dk_calback (callback ASC);
+    SELECT "Adding delink column to participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "delink" );
+    IF @test = 0 THEN
+      ALTER TABLE participant ADD COLUMN delink TINYINT(1) NOT NULL DEFAULT 0 AFTER mass_email;
+      UPDATE participant SET delink = 1 WHERE withdraw_letter IN( "i", "j" );
+    END IF;
+
+    SELECT "Adding check_withdraw column to participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "check_withdraw" );
+    IF @test = 0 THEN
+      ALTER TABLE participant ADD COLUMN check_withdraw DATETIME NULL DEFAULT NULL AFTER mass_email;
+    END IF;
+
+    SELECT "Removing withdraw_letter column from participant table" AS "";
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "withdraw_letter" );
+    IF @test = 1 THEN
+      -- insert consent records before dropping columns
+      CREATE TEMPORARY TABLE new_consent
+      SELECT participant.id AS participant_id,
+             hin_access_consent_type.id AS consent_type_id,
+             consent.datetime,
+             "Added as part of the withdraw process." AS note
+      FROM consent_type AS hin_access_consent_type, participant
+      JOIN participant_last_consent ON participant.id = participant_last_consent.participant_id
+      JOIN consent_type ON participant_last_consent.consent_type_id = consent_type.id
+      JOIN consent ON participant_last_consent.consent_id = consent.id
+      WHERE hin_access_consent_type.name = "HIN access"
+      AND consent.accept = false
+      AND consent_type.name = "participation"
+      AND participant.withdraw_letter IN( "e", "f", "g", "h" );
+
+      INSERT IGNORE INTO consent( participant_id, consent_type_id, accept, written, datetime, note )
+      SELECT participant_id, consent_type_id, 0, 0, datetime, note FROM new_consent;
+
+      ALTER TABLE participant DROP COLUMN withdraw_letter;
     END IF;
 
   END //

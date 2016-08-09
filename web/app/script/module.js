@@ -46,6 +46,11 @@ define( function() {
       title: 'Repeated',
       type: 'boolean'
     },
+    withdraw: {
+      title: 'Withdraw',
+      type: 'boolean',
+      help: 'Only one script can be identified as the withdraw script'
+    },
     description: {
       title: 'Description',
       type: 'text'

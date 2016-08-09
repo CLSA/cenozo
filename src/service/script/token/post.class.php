@@ -72,17 +72,27 @@ class post extends \cenozo\service\post
     // if the script doesn't repeat and the participant doesn't have its start event yet, then create it
     if( !$this->db_script->repeated )
     {
-      $event_mod = lib::create( 'database\modifier' );
-      $event_mod->where( 'participant_id', '=', $this->db_participant->id );
-      $event_mod->where( 'event_type_id', '=', $this->db_script->started_event_type_id );
-      if( 0 == $this->db_participant->get_event_count( $event_mod ) )
+      if( !is_null( $this->db_script->started_event_type_id ) )
       {
-        $db_event = lib::create( 'database\event' );
-        $db_event->participant_id = $this->db_participant->id;
-        $db_event->event_type_id = $this->db_script->started_event_type_id;
-        $db_event->datetime = $util_class_name::get_datetime_object();
-        $db_event->save();
+        $event_mod = lib::create( 'database\modifier' );
+        $event_mod->where( 'participant_id', '=', $this->db_participant->id );
+        $event_mod->where( 'event_type_id', '=', $this->db_script->started_event_type_id );
+        if( 0 == $this->db_participant->get_event_count( $event_mod ) )
+        {
+          $db_event = lib::create( 'database\event' );
+          $db_event->participant_id = $this->db_participant->id;
+          $db_event->event_type_id = $this->db_script->started_event_type_id;
+          $db_event->datetime = $util_class_name::get_datetime_object();
+          $db_event->save();
+        }
       }
+    }
+
+    // if this is the withdraw script the mark the participant for withdraw processing
+    if( $this->db_script->withdraw )
+    {
+      $this->db_participant->check_withdraw = $util_class_name::get_datetime_object();
+      $this->db_participant->save();
     }
   }
 

@@ -69,7 +69,7 @@ class search_manager extends \cenozo\singleton
 
     // clean out expired searches
     $delete_mod = lib::create( 'database\modifier' );
-    $delete_mod->where( 'datetime', '<', sprintf( 'UTC_TIMESTAMP() - INTERVAL %s', $timeout ), false );
+    $delete_mod->where( 'datetime', '<', sprintf( 'UTC_TIMESTAMP() - INTERVAL %s MINUTE', $timeout ), false );
     $search_class_name::db()->execute( 'DELETE FROM search '.$delete_mod->get_sql() );
 
     // for every keyword, check to see if the search exists and is still fresh

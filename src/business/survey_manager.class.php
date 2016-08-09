@@ -88,66 +88,249 @@ class survey_manager extends \cenozo\singleton
   }
 
   /**
-   * Internal method to handle the withdraw script
+   * Removes the participant's withdraw script token and survey
+   * Note that this method does nothing if the participant has not completed the withdraw script
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
-   * @access private
+   * @access public
    */
-  private function process_withdraw( $db_participant )
+  public function reverse_withdraw( $db_participant )
   {
-    /* TODO: rewrite
+    $util_class_name = lib::get_class_name( 'util' );
+    $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
 
-    $data_manager = lib::create( 'business\data_manager' );
-    $withdraw_manager = lib::create( 'business\withdraw_manager' );
-
-    // let the tokens record class know which SID we are dealing with by checking if
-    // there is a source-specific survey for the participant, and if not falling back
-    // on the default withdraw survey
-    $withdraw_sid = $withdraw_manager->get_withdraw_sid( $db_participant );
-    if( is_null( $withdraw_sid ) )
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Trying to withdraw participant %s without a withdraw survey.',
-                 $db_participant->uid ),
-        __METHOD__ );
-    $db_surveys = lib::create( 'database\limesurvey\surveys', $withdraw_sid );
-
-    $old_sid = tokens_class_name::get_sid();
-    $tokens_class_name::set_sid( $withdraw_sid );
-    $token = $db_participant->uid;
-    $tokens_mod = lib::create( 'database\modifier' );
-    $tokens_mod->where( 'token', '=', $token );
-    $db_tokens = current( $tokens_class_name::select_objects( $tokens_mod ) );
-
-    if( false === $db_tokens )
-    { // token not found, create it
-      $db_tokens = lib::create( 'database\limesurvey\tokens' );
-      $db_tokens->token = $token;
-      $db_tokens->firstname = $db_participant->honorific.' '.$db_participant->first_name;
-      $db_tokens->lastname = $db_participant->last_name;
-      $db_tokens->email = $db_participant->email;
-
-      if( 0 < strlen( $db_participant->other_name ) )
-        $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
-
-      // fill in the attributes
-      foreach( $db_surveys->get_token_attribute_names() as $key => $value )
-        $db_tokens->$key = 0 === strpos( $value, 'participant\.' )
-                           ? $data_manager->get_participant_value( $db_participant, $value )
-                           : $data_manager->get_value( $value );
-      $db_tokens->save();
-    }
-    else if( 'N' == $db_tokens->completed )
+    $withdraw_sid = $this->get_withdraw_sid();
+    if( $withdraw_sid )
     {
-      $this->current_sid = $withdraw_sid;
-      $this->current_token = $token;
-    }
-    else // token is complete, store the survey results
-    {
-      $withdraw_manager->process( $db_participant );
-    }
+      // the withdraw option will be null if the survey hasn't been submitted
+      $option = $this->get_withdraw_option( $db_participant );
+      if( !is_null( $option['choice'] ) )
+      {
+        $old_tokens_sid = $tokens_class_name::get_sid();
+        $tokens_class_name::set_sid( $withdraw_sid );
 
-    $tokens_class_name::set_sid( $old_sid );
-    */
+        // delete the token
+        $tokens_mod = lib::create( 'database\modifier' );
+        $tokens_mod->where( 'token', '=', $db_participant->uid );
+        foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens )
+        {
+          foreach( $db_tokens->get_survey_list() as $db_survey ) $db_survey->delete();
+          $db_tokens->delete();
+        }
+
+        $tokens_class_name::set_sid( $old_tokens_sid );
+
+        // make sure the most recent participation consent is not negative
+        $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'participation' );
+        $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
+        if( !is_null( $db_last_consent ) && !$db_last_consent->accept )
+        {
+          $db_consent = lib::create( 'database\consent' );
+          $db_consent->participant_id = $db_participant->id;
+          $db_consent->consent_type_id = $db_consent_type->id;
+          $db_consent->accept = true;
+          $db_consent->written = false;
+          $db_consent->datetime = $util_class_name::get_datetime_object();
+          $db_consent->note = 'Added as part of reversing the withdraw process.';
+          $db_consent->save();
+        }
+
+        if( 1 < $option['choice'] )
+        {
+          // make sure the most recent HIN access consent is not negative
+          $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
+          $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
+          if( !is_null( $db_last_consent ) && !$db_last_consent->accept )
+          {
+            $db_consent = lib::create( 'database\consent' );
+            $db_consent->participant_id = $db_participant->id;
+            $db_consent->consent_type_id = $db_consent_type->id;
+            $db_consent->accept = true;
+            $db_consent->written = false;
+            $db_consent->datetime = $util_class_name::get_datetime_object();
+            $db_consent->note = 'Added as part of reversing the withdraw process.';
+            $db_consent->save();
+          }
+        }
+
+        $db_participant->delink = false;
+        $db_participant->save();
+      }
+    }
   }
+
+  /**
+   * Processes the withdraw script of a participant who has been fully withdrawn
+   * Note that this method does nothing if the participant has not completed the withdraw script
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @access public
+   */
+  public function process_withdraw( $db_participant )
+  {
+    $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
+
+    if( $this->get_withdraw_sid() )
+    {
+      // the withdraw option will be null if the survey hasn't been submitted
+      $option = $this->get_withdraw_option( $db_participant );
+      if( !is_null( $option['choice'] ) )
+      {
+        // Add consent participation verbal deny
+        $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'participation' );
+        $db_consent = lib::create( 'database\consent' );
+        $db_consent->participant_id = $db_participant->id;
+        $db_consent->consent_type_id = $db_consent_type->id;
+        $db_consent->accept = false;
+        $db_consent->written = false;
+        $db_consent->datetime = $option['datetime'];
+        $db_consent->note = 'Added as part of the withdraw process.';
+        $db_consent->save();
+
+        if( 1 < $option['choice'] )
+        {
+          // Add consent HIN access verbal deny
+          $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
+          $db_consent = lib::create( 'database\consent' );
+          $db_consent->participant_id = $db_participant->id;
+          $db_consent->consent_type_id = $db_consent_type->id;
+          $db_consent->accept = false;
+          $db_consent->written = false;
+          $db_consent->datetime = $option['datetime'];
+          $db_consent->note = 'Added as part of the withdraw process.';
+          $db_consent->save();
+
+          if( 2 < $option['choice'] ) $db_participant->delink = true;
+        }
+
+        $db_participant->check_withdraw = NULL;
+        $db_participant->save();
+      }
+    }
+  }
+
+  /**
+   * Gets the participant's withdraw option (may be null if the participant hasn't withdrawn)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @access protected
+   */
+  protected function get_withdraw_option( $db_participant )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+
+    if( !array_key_exists( $db_participant->uid, $this->withdraw_option_list ) )
+    {
+      $option = array( 'choice' => NULL, 'datetime' => NULL );
+
+      $withdraw_sid = $this->get_withdraw_sid();
+      if( $withdraw_sid )
+      {
+        // set the SID for the the survey and tokens records
+        $old_tokens_sid = $tokens_class_name::get_sid();
+        $tokens_class_name::set_sid( $withdraw_sid );
+
+        $db_tokens = NULL;
+        $db_survey = NULL;
+        $tokens_mod = lib::create( 'database\modifier' );
+        $tokens_class_name::where_token( $tokens_mod, $db_participant, false );
+        $tokens_mod->order_desc( 'tid' );
+        foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens )
+        {
+          $survey_list = $db_tokens->get_survey_list();
+          if( 0 < count( $survey_list ) ) $db_survey = current( $survey_list );
+          if( !is_null( $survey_list ) ) break;
+        }
+
+        if( !is_null( $db_tokens ) && !is_null( $db_survey ) )
+        {
+          if( !is_null( $db_survey->submitdate ) )
+          {
+            // determine the UTC survey submit datetime
+            $datetime_obj = $util_class_name::get_datetime_object( $db_survey->submitdate );
+            $tz = new \DateTimeZone( date_default_timezone_get() );
+            $offset = $tz->getOffset( $datetime_obj );
+            $interval = new \DateInterval( sprintf( 'PT%dS', abs( $offset ) ) );
+            if( 0 > $offset ) $datetime_obj->add( $interval );
+            else $datetime_obj->sub( $interval );
+            $option['datetime'] = $datetime_obj;
+
+            // figure out which token attributes are which
+            $attributes = array();
+            $db_surveys = lib::create( 'database\limesurvey\surveys', $withdraw_sid );
+            foreach( $db_surveys->get_token_attribute_names() as $key => $value )
+              $attributes[$key] = $db_tokens->$key;
+
+            // get the code for the def and opt responses
+            $code = 0 < $attributes['attribute_1'] ? 'HIN' : 'NO_HIN';
+            $code .= 0 < $attributes['attribute_2'] ? '_SAMP' : '_NO_SAMP';
+
+            $response = array();
+            $response['start'] = $db_survey->get_response( 'WTD_START' );
+            $response['def'] = $db_survey->get_response( 'WTD_DEF_'.$code );
+            $response['opt'] = $db_survey->get_response( 'WTD_OPT_'.$code );
+
+            // the default option was applied if...
+            if( 'REFUSED' == $response['start'] ||
+                'YES' == $response['def'] ||
+                'REFUSED' == $response['def'] ||
+                'REFUSED' == $response['opt'] )
+            {
+              $option['choice'] = 1;
+            }
+            else
+            {
+              $option['choice'] = 1 === preg_match( '/^OPTION([123])$/', $response['opt'], $matches )
+                                ? $matches[1] : NULL;
+            }
+          }
+        }
+
+        $tokens_class_name::set_sid( $old_tokens_sid );
+      }
+
+      $this->withdraw_option_list[$db_participant->uid] = $option;
+    }
+
+    return $this->withdraw_option_list[$db_participant->uid];
+  }
+
+  /** 
+   * Returns the survey id of the withdraw script
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function get_withdraw_sid()
+  {
+    $script_class_name = lib::get_class_name( 'database\script' );
+
+    if( is_null( $this->withdraw_sid ) )
+    {
+      $script_mod = lib::create( 'database\modifier' );
+      $script_mod->where( 'withdraw', '=', true );
+      $script_sel = lib::create( 'database\select' );
+      $script_sel->from( 'script' );
+      $script_sel->add_column( 'sid' );
+      $sid_list = $script_class_name::select( $script_sel, $script_mod );
+      $this->withdraw_sid = 0 < count( $sid_list ) ? $sid_list[0]['sid'] : 0;
+    }
+
+    return $this->withdraw_sid;
+  }
+
+  /**
+   * A cache of the withdraw SID
+   * @var integer
+   * @access private
+   */
+  private $withdraw_sid = NULL;
+
+  /**
+   * A cache of participant withdraw options
+   * @var array( uid => array( option => int, datetime => DateTime ) )
+   * @access private
+   */
+  private $withdraw_option_list = array();
 }

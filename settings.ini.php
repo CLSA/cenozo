@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.0.1';
-$settings['general']['cenozo_build'] = 'ac1fc4d';
+$settings['general']['cenozo_build'] = '9c99d17';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -22,19 +22,22 @@ $settings['general']['maintenance_mode'] = false;
 // always leave as false when running as production server
 $settings['general']['development_mode'] = false;
 
-// how long before a search result is considered out of date
-$settings['general']['search_timeout'] = '10 MINUTE';
-
-// how much inactivity before activity logs are considered closed
-$settings['general']['activity_timeout'] = '60 MINUTE';
-
 // the default password given to all new users
 $settings['general']['default_password'] = 'password';
 
 // the maximum number of login failures before deactivating a user
 $settings['general']['login_failure_limit'] = 15;
 
-// the maximum time (in seconds) allowed for a report to finish
+// how long before a search result is considered out of date (in minutes)
+$settings['general']['search_timeout'] = 10;
+
+// how much inactivity before activity logs are considered closed (in minutes)
+$settings['general']['activity_timeout'] = 60;
+
+// how much inactivity before withdraw scripts are considered abandoned (in minutes)
+$settings['general']['withdraw_timeout'] = 60;
+
+// the maximum time allowed for a report to finish (in seconds)
 $settings['report']['time_limit'] = 180;
 
 // the maximum number of cells allowed in a non-csv report

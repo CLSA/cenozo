@@ -15,6 +15,25 @@ use cenozo\lib, cenozo\log;
 class script extends record
 {
   /**
+   * Override parent save method by making sure that only one script is the withdraw script
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\permission
+   * @access public
+   */
+  public function save()
+  {
+    if( $this->withdraw )
+    {
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'withdraw', '=', true );
+      if( 0 < static::count( $modifier ) ) static::db()->execute( 'UPDATE script SET withdraw = 0' );
+    }
+
+    parent::save();
+  }
+
+  /**
    * Adds all missing started events for this script
    */
   public function add_started_event_types( $db_participant )
