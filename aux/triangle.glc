@@ -1,0 +1,103 @@
+function onGLC(glc) {
+  var width = 283, height = 80;
+  glc.loop();
+  glc.size( width, height );
+  glc.setDuration(3);
+  glc.setFPS(20);
+  glc.setMode('single');
+  glc.setEasing(false);
+  
+  var list = glc.renderList,
+      width = glc.w,
+      height = glc.h,
+      color = glc.color;
+
+  // your code goes here:
+  var w = 45,
+      h = Math.sqrt( 3/4*w*w ),
+      strokeStyle = function(t) { return color.gray( this.show(t) ? 255*( t>0.5 ? 2*t-1 : 1-2*t ) : 255 ); };
+  
+  function line( o ) {
+    o.gap = undefined === o.gap || o.gap;
+
+    if( o.gap ) {
+        list.addLine({
+            maxt: 0.425,
+            t0: function(t) { return 0.5 > t ? 0 : 2*t-1; },
+            t1: function(t) { return 0.5 > t ? 2*t : 1; },
+            t: function(t) { return t < this.maxt ? t : this.maxt; },
+            show: function(t) { return true; },
+            x0: function(t){ return o.x0 + this.t(this.t0(t))*(o.x1-o.x0); },
+            y0: function(t){ return o.y0 + this.t(this.t0(t))*(o.y1-o.y0); },
+            x1: function(t){ return o.x0 + this.t(this.t1(t))*(o.x1-o.x0); },
+            y1: function(t){ return o.y0 + this.t(this.t1(t))*(o.y1-o.y0); },
+            lineWidth: 2,
+            strokeStyle: strokeStyle
+        });
+        list.addLine({
+            mint: 0.575,
+            t0: function(t) { return 0.5 > t ? 0 : 2*t-1; },
+            t1: function(t) { return 0.5 > t ? 2*t : 1; },
+            t: function(t) { return t > this.mint ? t : this.mint; },
+            show: function(t) { return this.mint/2 < t; },
+            x0: function(t) { return o.x0 + this.t(this.t0(t))*(o.x1-o.x0); },
+            y0: function(t) { return o.y0 + this.t(this.t0(t))*(o.y1-o.y0); },
+            x1: function(t) { return o.x0 + this.t(this.t1(t))*(o.x1-o.x0); },
+            y1: function(t) { return o.y0 + this.t(this.t1(t))*(o.y1-o.y0); },
+            lineWidth: 2,
+            strokeStyle: strokeStyle
+        });
+    } else { // no gap
+
+        list.addLine({
+            t0: function(t) { return 0.5 > t ? 0 : 2*t-1; },
+            t1: function(t) { return 0.5 > t ? 2*t : 1; },
+            show: function(t) { return true; },
+            x0: function(t){ return o.x0 + this.t0(t)*(o.x1-o.x0); },
+            y0: function(t){ return o.y0 + this.t0(t)*(o.y1-o.y0); },
+            x1: function(t){ return o.x0 + this.t1(t)*(o.x1-o.x0); },
+            y1: function(t){ return o.y0 + this.t1(t)*(o.y1-o.y0); },
+            lineWidth: 2,
+            strokeStyle: strokeStyle
+        });
+    }
+  }  
+  
+  function triangle( o ) {
+    line( { x0: o.x, y0: o.y, x1: o.x+w, y1: o.y, gap: !o.bottom } );
+    line( { x0: o.x+w, y0: o.y, x1: o.x+w/2, y1: o.y-h, gap: !o.right } );
+    line( { x0: o.x+w/2, y0: o.y-h, x1: o.x, y1: o.y, gap: !o.left } );  
+  }
+
+  var fw = 0.75, bx = 2, by = height/1.9;
+  
+  triangle({ x: bx, y: by + fw/2*w, bottom: true, left: true });
+  
+  bx += 0.65*w;
+  triangle({ x: bx, y: by, right: true, left: true });
+  triangle({ x: bx, y: by + fw*w, bottom: true });
+  
+  bx += 0.65*w;
+  triangle({ x: bx, y: by + fw/2*w, bottom: true });
+  
+  bx += 0.65*w;
+  triangle({ x: bx, y: by, right: true, left: true });
+  triangle({ x: bx, y: by + fw*w, bottom: true });
+  
+  bx += 0.65*w;
+  triangle({ x: bx, y: by + fw/2*w, bottom: true });
+  
+  bx += 0.65*w;
+  triangle({ x: bx, y: by, right: true, left: true });
+  triangle({ x: bx, y: by + fw*w, bottom: true });
+  
+  bx += 0.65*w;
+  triangle({ x: bx, y: by + fw/2*w, bottom: true });
+  
+  bx += 0.65*w;
+  triangle({ x: bx, y: by, right: true, left: true });
+  triangle({ x: bx, y: by + fw*w, bottom: true });
+  
+  bx += 0.65*w;
+  triangle({ x: bx, y: by + fw/2*w, bottom: true, right: true });
+}
