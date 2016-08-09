@@ -267,6 +267,14 @@ class data_manager extends \cenozo\singleton
       else
       {
         $db_consent = NULL;
+        $default = NULL;
+
+        if( 4 < count( $parts ) && 'default' == $parts[ count( $parts )-2 ] )
+        {
+          $default = array_pop( $parts );
+          array_pop( $parts );
+        }
+
         if( 'consent' == $subject )
         {
           // participant.consent.<type>.<n>.<column> or consent.<type>.<n>.<column>
@@ -309,11 +317,21 @@ class data_manager extends \cenozo\singleton
             throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
           $value = $db_consent->$column;
         }
+        else if( !is_null( $default ) )
+        {
+          $value = $default;
+        }
       }
     }
     else if( 'event' == $subject )
     {
       $event_class_name = lib::get_class_name( 'database\event' );
+
+      if( 5 < count( $parts ) && 'default' == $parts[ count( $parts )-2 ] )
+      {
+        $value = array_pop( $parts );
+        array_pop( $parts );
+      }
 
       // participant.event.<type>.<column>.<first|last> or event.<type>.<column>.<first|last>
       if( !( 3 <= count( $parts ) && count( $parts ) <= 4 ) )
