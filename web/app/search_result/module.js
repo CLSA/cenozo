@@ -80,7 +80,7 @@ define( function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnSearchResultListFactory.instance( this );
-        this.getViewEnabled() = function() { return true; };
+        this.getViewEnabled = function() { return true; };
 
         this.transitionToViewState = function( record ) {
           $state.go( 'participant.view', { identifier: record.participant_id } );
