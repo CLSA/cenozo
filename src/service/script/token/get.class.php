@@ -32,9 +32,12 @@ class get extends \cenozo\service\get
 
     if( 'token' == $this->get_subject( $index ) )
     {
+      $util_class_name = lib::get_class_name( 'util' );
+      $tokens_class_name = $this->get_record_class_name( $index );
+      $setting_manager = lib::create( 'business\setting_manager' );
+
       // make sure to set the token class name SID
       $db_script = $this->get_parent_record();
-      $tokens_class_name = $this->get_record_class_name( $index );
       $old_sid = $tokens_class_name::get_sid();
       $tokens_class_name::set_sid( $db_script->sid );
 
@@ -52,6 +55,32 @@ class get extends \cenozo\service\get
         $db_participant = $participant_class_name::get_unique_record( 'uid', $matches[1] );
         $token = $tokens_class_name::determine_token_string( $db_participant, $db_script->repeated );
         $record = $tokens_class_name::get_unique_record( 'token', $token );
+
+        // the withdraw script may be deleted if it is incomplete
+        if( $db_script->withdraw && !is_null( $record ) && 'N' == $record->completed )
+        {
+          $remove = false;
+          if( is_null( $db_participant->check_withdraw ) )
+          {
+            // the script is incomplete and there is no check withdraw date, so remove it
+            $remove = true;
+          }
+          else
+          {
+            // if the withdraw is older than the timeout value then remove it
+            $timeout = $setting_manager->get_setting( 'general', 'withdraw_timeout' );
+            $now = $util_class_name::get_datetime_object();
+            $now->sub( new \DateInterval( sprintf( 'PT%dM', $timeout ) ) );
+            $remove = $now > $db_participant->check_withdraw;
+          }
+
+          if( $remove )
+          {
+            foreach( $record->get_survey_list() as $db_survey ) $db_survey->delete();
+            $record->delete();
+            $record = NULL;
+          }
+        }
       }
       else $record = parent::create_resource( $index );
 
@@ -63,5 +92,28 @@ class get extends \cenozo\service\get
     }
 
     return $record;
+  }
+
+  /** 
+   * Override parent method
+   */
+  protected function finish()
+  {
+    parent::finish();
+
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+
+    // if this is a completed withdraw token then process it required
+    $db_script = $this->get_resource( 0 );
+    $db_tokens = $this->get_resource( 1 );
+    if( $db_script->withdraw )
+    {
+      $db_participant = $participant_class_name::get_unique_record( 'uid', $db_tokens->token );
+      if( !is_null( $db_participant->check_withdraw ) )
+      {
+        $survey_manager = lib::create( 'business\survey_manager' );
+        $survey_manager->process_withdraw( $db_participant );
+      }
+    }
   }
 }
