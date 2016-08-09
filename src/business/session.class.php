@@ -450,7 +450,7 @@ class session extends \cenozo\singleton
       $parts = explode( ' ', $headers['Authorization'] );
       if( 'Basic' == $parts[0] )
       {
-        $auth = explode( ':', base64_decode( $parts[1] ) );
+        $auth = explode( ':', base64_decode( $parts[1] ), 2 );
         if( 2 == count( $auth ) )
         {
           if( $util_class_name::validate_user( $auth[0], $auth[1], true ) )

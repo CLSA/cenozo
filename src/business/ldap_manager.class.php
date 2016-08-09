@@ -90,11 +90,11 @@ class ldap_manager extends \cenozo\singleton
     if( 'samba' == $this->type )
     {
       // command: user create USERNAME "password"
-      // arguments: --given-name="John" --surname="Smith"
+      // arguments: --use-username-as-cn
       // on success: User 'USERNAME' created successfully
       // on error: ERROR(ldb): Failed to add user 'USERNAME':  - LDAP error 68 LDAP_ENTRY_ALREADY_EXISTS - \
       //           <00002071: samldb: Account name (sAMAccountName) 'USERNAME' already in use!> <> 
-      $command = sprintf( 'user create "%s" "%s" --given-name="%s" --surname="%s"',
+      $command = sprintf( 'user create "%s" "%s" --use-username-as-cn',
                           $username,
                           $password,
                           $first_name,
