@@ -39,18 +39,31 @@ class patch extends \cenozo\service\patch
 
     if( 300 > $this->status->get_code() )
     {
+      $session = lib::create( 'business\session' );
+      $db_site = $session->get_site();
+      $db_role = $session->get_role();
       $db_user = $this->get_leaf_record();
 
-      // don't allow roles to reset passwords of users with roles in a higher tier
-      $access_sel = lib::create( 'database\select' );
-      $access_sel->add_column( 'MAX( role.tier )', 'max_tier', false );
+      // only allow all-site users to edit users who do not have access to their current site
       $access_mod = lib::create( 'database\modifier' );
-      $access_mod->join( 'role', 'access.role_id', 'role.id' );
-      $access_mod->where( 'access.user_id', '=', $db_user->id );
-      $access = current( $db_user->get_access_list( $access_sel, $access_mod ) );
-      if( !$access || $access['max_tier'] > lib::create( 'business\session' )->get_role()->tier )
+      $access_mod->where( 'site_id', '=', $db_site->id );
+      if( !$db_role->all_sites && 0 == $db_user->get_access_count( $access_mod ) )
       {
         $this->status->set_code( 403 );
+      }
+      else
+      {
+        // don't allow roles to edit users with roles in a higher tier
+        $access_sel = lib::create( 'database\select' );
+        $access_sel->add_column( 'MAX( role.tier )', 'max_tier', false );
+        $access_mod = lib::create( 'database\modifier' );
+        $access_mod->join( 'role', 'access.role_id', 'role.id' );
+        $access_mod->where( 'access.user_id', '=', $db_user->id );
+        $access = current( $db_user->get_access_list( $access_sel, $access_mod ) );
+        if( !$access || $access['max_tier'] > $db_role->tier )
+        {
+          $this->status->set_code( 403 );
+        }
       }
     }
   }

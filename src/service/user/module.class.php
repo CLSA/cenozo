@@ -63,7 +63,8 @@ class module extends \cenozo\service\site_restricted_module
 
     // we want to allow direct access to users even if they don't have access to this application/site,
     // so only restrict by application and site if we're getting a list of users, otherwise allow access
-    if( is_null( $this->get_resource() ) )
+    // exception: collection user lists should never be restricted
+    if( is_null( $this->get_resource() ) && 'collection' != $this->get_parent_subject() )
     {
       // only include users with access to this application
       $join_sel = lib::create( 'database\select' );
