@@ -681,7 +681,12 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
                                     /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
             }
           } );
-          this.onViewPromise = this.$$onView();
+          this.onViewPromise = this.$$onView().then( function() {
+            var nameList = [ self.record.first_name, self.record.last_name ];
+            if( self.record.other_name ) nameList.splice( 1, 0, '(' + self.record.other_name + ')' );
+            if( self.record.honorific ) nameList.unshift( self.record.honorific );
+            self.heading = 'Participant Details for ' + nameList.join( ' ' );
+          } );
           return this.onViewPromise;
         };
 
