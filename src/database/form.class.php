@@ -14,12 +14,15 @@ use cenozo\lib, cenozo\log;
  */
 class form extends record
 {
+  /**
+   * TODO: document
+   */
   public function get_filename()
   {
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query participant with no primary key.' );
+      log::warning( 'Tried to query form with no primary key.' );
       return NULL;
     }
 
