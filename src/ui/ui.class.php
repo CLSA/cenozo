@@ -318,6 +318,7 @@ class ui extends \cenozo\base_object
   {
     $session = lib::create( 'business\session' );
     $db_role = $session->get_role();
+    $extended = in_array( $db_role->name, array( 'administrator', 'curator', 'helpline' ) );
 
     // determine which grouping type to use
     $grouping_list = $session->get_application()->get_cohort_groupings();
@@ -325,7 +326,7 @@ class ui extends \cenozo\base_object
     $list = array();
     if( array_key_exists( 'activity', $module_list ) && $module_list['activity']['list_menu'] )
       $list['Activities'] = 'activity';
-    if( array_key_exists( 'alternate', $module_list ) && $module_list['alternate']['list_menu'] )
+    if( $extended && array_key_exists( 'alternate', $module_list ) && $module_list['alternate']['list_menu'] )
       $list['Alternates'] = 'alternate';
     if( array_key_exists( 'application', $module_list ) && $module_list['application']['list_menu'] )
       $list['Applications'] = 'application';
@@ -337,13 +338,12 @@ class ui extends \cenozo\base_object
       $list['Consent Types'] = 'consent_type';
     if( array_key_exists( 'event_type', $module_list ) && $module_list['event_type']['list_menu'] )
       $list['Event Types'] = 'event_type';
-    if( array_key_exists( 'form_type', $module_list ) && $module_list['form_type']['list_menu'] )
+    if( $extended && array_key_exists( 'form_type', $module_list ) && $module_list['form_type']['list_menu'] )
       $list['Form Types'] = 'form_type';
-    if( in_array( 'jurisdiction', $grouping_list ) &&
+    if( $extended && in_array( 'jurisdiction', $grouping_list ) &&
         array_key_exists( 'jurisdiction', $module_list ) && $module_list['jurisdiction']['list_menu'] )
       $list['Jurisdictions'] = 'jurisdiction';
-    if( 2 < $db_role->tier &&
-        array_key_exists( 'language', $module_list ) && $module_list['language']['list_menu'] )
+    if( $extended && array_key_exists( 'language', $module_list ) && $module_list['language']['list_menu'] )
       $list['Languages'] = 'language';
     if( array_key_exists( 'participant', $module_list ) && $module_list['participant']['list_menu'] )
       $list['Participants'] = 'participant';
@@ -352,7 +352,7 @@ class ui extends \cenozo\base_object
     if( 3 <= $db_role->tier &&
         array_key_exists( 'recording', $module_list ) && $module_list['recording']['list_menu'] )
       $list['Recordings'] = 'recording';
-    if( in_array( 'region', $grouping_list ) &&
+    if( $extended && in_array( 'region', $grouping_list ) &&
         array_key_exists( 'region_site', $module_list ) && $module_list['region_site']['list_menu'] )
       $list['Region Sites'] = 'region_site';
     if( 3 <= $db_role->tier &&
@@ -363,7 +363,7 @@ class ui extends \cenozo\base_object
     if( $db_role->all_sites &&
         array_key_exists( 'site', $module_list ) && $module_list['site']['list_menu'] )
       $list['Sites'] = 'site';
-    if( array_key_exists( 'source', $module_list ) && $module_list['source']['list_menu'] )
+    if( $extended && array_key_exists( 'source', $module_list ) && $module_list['source']['list_menu'] )
       $list['Sources'] = 'source';
     if( array_key_exists( 'state', $module_list ) && $module_list['state']['list_menu'] )
       $list['States'] = 'state';
@@ -389,7 +389,7 @@ class ui extends \cenozo\base_object
 
     $list = array();
 
-    if( 2 <= $db_role->tier )
+    if( 3 <= $db_role->tier )
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
     $list['Participant Search'] = array(
       'subject' => 'search_result',
