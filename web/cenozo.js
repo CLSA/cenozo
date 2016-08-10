@@ -2752,9 +2752,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           dayClick: function( date, event, view ) {
             // mark which date has been chosen in the add model
             // Note: it is up to the add model's module to implement what to do with this variable
-            object.parentModel.addModel.calendarDate =
-              moment( date ).tz( CnSession.user.timezone ).hour( 12 ).minute( 0 ).second( 0 );
-
+            object.parentModel.addModel.calendarDate = date.format( 'YYYY-MM-DD' );
             return object.parentModel.transitionToAddState();
           },
           eventClick: function( record ) {
