@@ -16,9 +16,6 @@ define( function() {
       pluralPossessive: 'HINs\''
     },
     columnList: {
-      code: {
-        title: 'Code'
-      },
       region: {
         column: 'region.name',
         title: 'Region'
