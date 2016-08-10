@@ -37,7 +37,8 @@ define( function() {
       },
       available: {
         title: 'Available',
-        type: 'boolean'
+        type: 'boolean',
+        help: 'Whether the address is active in the current month.' 
       }
     },
     defaultOrder: {
