@@ -1,5 +1,23 @@
 <div class="container-fluid bg-primary rounded-top"><h4>{{ model.addModel.heading }}</h4></div>
 <form name="form" class="form-horizontal" novalidate>
+  <div class="form-footer text-right bg-info" ng-if="footerAtTop">
+    <div class="btn-group pull-left">
+      <button class="btn btn-default"
+              type="button"
+              ng-repeat="op in model.module.extraOperationList.add"
+              id="{{ op.id }}"
+              ng-if="op.isIncluded( $state, model )"
+              ng-disabled="op.isDisabled( $state, model )"
+              ng-class="op.classes"
+              tooltip="{{ op.help }}"
+              tooltip-placement="right"
+              ng-click="op.operation( $state, model )">{{ op.title }}</button>
+    </div>
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="save()" ng-disabled="isAdding">
+      <i class="glyphicon glyphicon-cloud-upload"></i> Save
+    </button>
+  </div>
   <div class="form-body">
     <div ng-repeat="group in dataArray" ng-attr-name="{{ group.title }}">
       <div ng-if="0 < group.title.length"

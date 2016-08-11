@@ -22,6 +22,43 @@
     </h4>
   </div>
   <form name="form" class="form-horizontal" novalidate>
+    <div class="form-footer text-right bg-info" ng-if="footerAtTop">
+      <div class="btn-group pull-left">
+        <button class="btn btn-default"
+                type="button"
+                ng-repeat="op in model.module.extraOperationList.view"
+                id="{{ op.id }}"
+                ng-if="op.isIncluded( $state, model )"
+                ng-disabled="op.isDisabled( $state, model )"
+                ng-class="op.classes"
+                tooltip="{{ op.help }}"
+                tooltip-placement="right"
+                ng-click="op.operation( $state, model )">{{ op.title }}</button>
+      </div>
+      <div class="btn-group">
+        <button ng-if="model.getDeleteEnabled()"
+                type="button"
+                class="btn btn-danger"
+                ng-disabled="isDeleting"
+                cn-really-message="Are you sure you want to delete this {{ model.module.name.singular }}?"
+                cn-really-click="delete()">
+          <i class="glyphicon glyphicon-remove-sign"></i> Delete
+        </button>
+        <button ng-if="!hasParent()"
+                type="button"
+                class="btn btn-primary"
+                ng-click="viewParent()">
+          {{ viewTitle }}
+        </button>
+        <button ng-repeat="parent in model.module.identifier.parent"
+                ng-if="parentExists( parent.subject )"
+                type="button"
+                class="btn btn-primary"
+                ng-click="viewParent( parent.subject )">
+          View {{ parent.subject.replace( '_', ' ' ) | cnUCWords }}
+        </button>
+      </div>
+    </div> 
     <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
       <div ng-repeat="group in dataArray" ng-attr-name="{{ group.title }}">
         <div ng-if="0 < group.title.length"

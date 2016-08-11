@@ -992,6 +992,7 @@ cenozo.directive( 'cnRecordAdd', [
       restrict: 'E',
       scope: {
         model: '=',
+        footerAtTop: '@',
         removeInputs: '@'
       },
       controller: function( $scope ) {
@@ -1388,6 +1389,7 @@ cenozo.directive( 'cnRecordView', [
       restrict: 'E',
       scope: {
         model: '=',
+        footerAtTop: '@',
         removeInputs: '@',
         initCollapsed: '@'
       },
@@ -5250,10 +5252,13 @@ cenozo.service( 'CnModalMessageFactory', [
         if( angular.isDefined( response.config ) ) {
           // add the url to the message
           var re = new RegExp( '^' + cenozoApp.baseUrl + '/(api/?)?' );
-          message += '\n    Resource "' + response.config.method + ':'
-                   + response.config.url.replace( re, '' ) + '"';
+          message += '\n    Resource: "' + response.config.method + ':'
+                   + response.config.url.replace( re, '' ) + '"'
+                   + '\n    Parameters: ' + angular.toJson( response.config.params );
         }
-        if( response.data && 306 != type && 406 != type ) message += '\n    Error Code: ' + response.data;
+        if( 'string' == cenozo.getType( response.data ) &&
+            0 < response.data.length &&
+            306 != type && 406 != type ) message += '\n    Error Code: ' + response.data;
         var modal = new object( { title: title, message: message, error: true } );
         return modal.show();
       }
