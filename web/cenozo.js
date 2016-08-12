@@ -5345,7 +5345,7 @@ cenozo.service( 'CnModalPasswordFactory', [
  */
 cenozo.service( 'CnModalRestrictFactory', [
   '$modal', 'CnModalDatetimeFactory', 'CnSession',
-  function( $modal, rnModalDatetimeFactory, CnSession ) {
+  function( $modal, CnModalDatetimeFactory, CnSession ) {
     var object = function( params ) {
       var self = this;
       if( angular.isUndefined( params.column ) )
