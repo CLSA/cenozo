@@ -36,4 +36,27 @@ class form extends record
 
     return $filename;
   }
+
+  /**
+   * TODO: document
+   */
+  public function add_association( $subject, $id )
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query form with no primary key.' );
+      return NULL;
+    }
+
+    static::db()->execute( sprintf(
+      'INSERT IGNORE INTO form_association SET'."\n".
+      '  create_timestamp = NULL,'."\n".
+      '  form_id = %s'."\n".
+      '  subject = %s'."\n".
+      '  record_id = %s',
+      $this->id,
+      $subject,
+      $id ) );
+  }
 }
