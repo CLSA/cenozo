@@ -33,22 +33,17 @@ class user extends base_access
     if( 0 >= $role_id )
       throw lib::create( 'exception\argument', 'role_id', $role_id, __METHOD__ );
 
-    $values = '';
-    $first = true;
+    $value_list = array();
     foreach( $site_id_list as $id )
-    {
-      if( !$first ) $values .= ', ';
-      $values .= sprintf( '(NULL, %s, %s, %s)',
-                       static::db()->format_string( $id ),
-                       static::db()->format_string( $role_id ),
-                       static::db()->format_string( $this->id ) );
-      $first = false;
-    }
+      $value_list[] = sprintf( '(NULL, %s, %s, %s)',
+                               static::db()->format_string( $id ),
+                               static::db()->format_string( $role_id ),
+                               static::db()->format_string( $this->id ) );
 
     static::db()->execute(
-      sprintf( 'INSERT IGNORE INTO access (create_timestamp, site_id, role_id, user_id) '.
-               "\n".'VALUES %s',
-               $values ) );
+      sprintf( 'INSERT IGNORE INTO access (create_timestamp, site_id, role_id, user_id)'."\n".
+               'VALUES %s',
+               implode( ",\n       ", $values ) ) );
   }
 
   /**

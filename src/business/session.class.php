@@ -315,6 +315,7 @@ class session extends \cenozo\singleton
       if( array_key_exists( 'access.id', $_SESSION ) &&
           ( is_null( $db_access ) || $_SESSION['address'] != $_SERVER['REMOTE_ADDR'] ) )
       {
+        log::debug( 'a', array( 'session' => $_SESSION, 'server' => $_SERVER, 'access' => $db_access ) );
         $this->logout();
       }
       else
@@ -341,6 +342,7 @@ class session extends \cenozo\singleton
         {
           if( !$this->db_user->active )
           {
+            log::debug( 'b', $this->db_user );
             $this->logout();
           }
           else

@@ -102,21 +102,17 @@ class site extends base_access
 
     $database_class_name = lib::get_class_name( 'database\database' );
 
-    $values = '';
-    $first = true;
+    $value_list = array();
     foreach( $user_id_list as $id )
-    {
-      if( !$first ) $values .= ', ';
-      $values .= sprintf( '(NULL, %s, %s, %s)',
-                       static::db()->format_string( $id ),
-                       static::db()->format_string( $role_id ),
-                       static::db()->format_string( $this->id ) );
-      $first = false;
-    }
+      $value_list[] = sprintf( '(NULL, %s, %s, %s)',
+                               static::db()->format_string( $id ),
+                               static::db()->format_string( $role_id ),
+                               static::db()->format_string( $this->id ) );
 
     static::db()->execute(
-      sprintf( 'INSERT IGNORE INTO access (create_timestamp, user_id, role_id, site_id) VALUES %s',
-               $values ) );
+      sprintf( 'INSERT IGNORE INTO access (create_timestamp, user_id, role_id, site_id)'."\n".
+               'VALUES %s',
+               implode( ",\n       ", $values ) ) );
   }
 
   /**

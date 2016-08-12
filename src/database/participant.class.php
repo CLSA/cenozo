@@ -284,9 +284,12 @@ class participant extends record
     // we want to add the row (if none exists) or just update the preferred_site_id column
     // if a row already exists
     static::db()->execute( sprintf(
-      'INSERT INTO application_has_participant '.
-      "\n".'SET application_id = %s, participant_id = %s, preferred_site_id = %s '.
-      "\n".'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
+      'INSERT INTO application_has_participant'."\n".
+      'SET create_timestamp = NULL,'."\n".
+      '    application_id = %s,'."\n".
+      '    participant_id = %s,'."\n".
+      '    preferred_site_id = %s'."\n".
+      'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
       static::db()->format_string( $db_application->id ),
       static::db()->format_string( $this->id ),
       static::db()->format_string( $site_id ) ) );

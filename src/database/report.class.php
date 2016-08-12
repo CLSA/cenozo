@@ -41,6 +41,7 @@ class report extends base_report
 
     $select = lib::create( 'database\select' );
     $select->from( 'report' );
+    $select->add_constant( NULL, 'create_timestamp' );
     $select->add_column( 'id' );
     $select->add_table_column( 'report_schedule_has_report_restriction', 'report_restriction_id' );
     $select->add_table_column( 'report_schedule_has_report_restriction', 'value' );
@@ -53,7 +54,8 @@ class report extends base_report
     $modifier->where( 'report.id', '=', $this->id );
 
     static::db()->execute( sprintf(
-      "INSERT INTO report_has_report_restriction( report_id, report_restriction_id, value )\n%s\n%s",
+      "INSERT INTO report_has_report_restriction( create_timestamp, report_id, report_restriction_id, value )\n".
+      "%s\n%s",
       $select->get_sql(),
       $modifier->get_sql() ) );
   }
