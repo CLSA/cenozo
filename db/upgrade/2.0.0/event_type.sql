@@ -23,6 +23,10 @@ CALL patch_event_type();
 DROP PROCEDURE IF EXISTS patch_event_type;
 
 
+SELECT "Deleting defunct event types" AS "";
+DELETE FROM event_type
+WHERE name IN ( "consent to contact signed", "consent signed", "consent for proxy signed" );
+
 SELECT "Adding new triggers to event_type table" AS "";
 
 DELIMITER $$
