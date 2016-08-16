@@ -269,6 +269,9 @@
               <span class="help-block" ng-if="innerForm.name.$error.editable">
                 Must be chosen from type-ahead list
               </span>
+              <span class="help-block" ng-if="innerForm.name.$error.custom">
+                {{ innerForm.name.$error.custom }}
+              </span>
             </span>
           </div>
         </div>

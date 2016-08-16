@@ -550,7 +550,7 @@ angular.extend( cenozo, {
     if( angular.isUndefined( clean ) ) clean = false;
     var invalid = false;
     for( var error in element.$error ) {
-      invalid = true === element.$error[error];
+      invalid = ( 'custom' == error && 0 < element.$error[error].length ) || true === element.$error[error];
       if( invalid ) break;
     }
     if( clean ) element.$dirty = invalid;
