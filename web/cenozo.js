@@ -184,9 +184,16 @@ angular.extend( cenozoApp, {
            *     lookup-typeahead: list of typeahead values which are downloaded dynamically
            *     months: 12 checkboxes, one for every month
            *     rank: a ranked value (1st, 2nd, 3rd, etc)
-           *     string: any string
+           *     string: any string (use format for numbers, etc)
            *     text: any long string
            *     typeahead: like lookup-typeahead but values are not loaded (must be provided as an array)
+           *   format: one of the following
+           *     integer: will only accept integers
+           *     float: will only accept float and integers
+           *     alphanum: will only accept numbers and letters
+           *     alpha_num: will only accept numbers, letters and underscores
+           *     email: requires a valid email address (<name>@<domain>.<type>)
+           *   regex: A regular expression that the input must match
            *   constant: one of the following:
            *     true: makes the input immutable when adding or viewing
            *     'add': makes the input immutable when adding but not viewing
