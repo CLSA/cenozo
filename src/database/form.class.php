@@ -40,7 +40,276 @@ class form extends record
   /**
    * TODO: document
    */
-  public function add_association( $subject, $id )
+  public function add_consent( $type, $consent )
+  {
+    $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
+
+    $datetime = array_key_exists( 'datetime', $consent ) ? $consent['datetime'] : $this->date;
+
+    $db_consent_type = $consent_type_class_name::get_unique_record( 'name', $type );
+    $consent_mod = lib::create( 'database\modifier' );
+    $consent_mod->where( 'consent_type_id', '=', $db_consent_type->id );
+    $consent_mod->where( 'accept', '=', $consent['accept'] );
+    $consent_mod->where( 'written', '=', true );
+    $consent_mod->where( 'datetime', '=', $datetime );
+    $consent_list = $this->get_participant()->get_consent_object_list( $consent_mod );
+    $db_consent = current( $consent_list );
+
+    if( is_null( $db_consent ) )
+    {
+      $db_consent = lib::create( 'database\consent' );
+      $db_consent->participant_id = $this->participant_id;
+      $db_consent->consent_type_id = $db_consent_type->id;
+      $db_consent->accept = $consent['accept'];
+      $db_consent->written = true;
+      $db_consent->datetime = $datetime;
+      $db_consent->note = 'Provided by Onyx.';
+      $db_consent->save();
+    }
+
+    $db_form->add_association( 'consent', $db_consent->id );
+
+    return $db_consent;
+  }
+
+  /**
+   * TODO: document
+   */
+  public function add_hin( $hin )
+  {
+    $datetime = array_key_exists( 'datetime', $hin ) ? $hin['datetime'] : $this->date;
+
+    $hin_mod = lib::create( 'database\modifier' );
+    $hin_mod->where( 'datetime', '=', $datetime );
+    $hin_list = $this->get_participant()->get_hin_object_list( $hin_mod );
+    $db_hin = current( $hin_list );
+
+    if( !is_null( $db_hin ) )
+    {
+      $db_hin = lib::create( 'database\hin' );
+      $db_hin->participant_id = $this->participant_id;
+      $db_hin->code = $hin['code'];
+      $db_hin->region_id = $hin['region_id'];
+      $db_hin->datetime = $datetime;
+      $db_hin->save();
+    }
+
+    $this->add_association( 'hin', $db_hin->id );
+
+    return $db_hin;
+  }
+
+  /**
+   * TODO: document
+   */
+  public function add_proxy_alternate( $proxy )
+  {
+    $alternate_class_name = lib::get_class_name( 'database\alternate' );
+    $user_class_name = lib::get_class_name( 'database\user' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+
+    // if this participant already has an alternate with the same first and last name then
+    // overwrite instead of creating a new record
+    $alternate_mod = lib::create( 'database\modifier' );
+    $alternate_mod->where( 'participant_id', '=', $this->participant_id );
+    $alternate_mod->where( 'first_name', '=', $proxy['first_name'] );
+    $alternate_mod->where( 'last_name', '=', $proxy['last_name'] );
+    $alternate_list = $alternate_class_name::select( $alternate_mod );
+    $db_alternate = current( $alternate_list );
+
+    if( false == $db_alternate )
+    { // create a new alternate if no match was found
+      $db_alternate = lib::create( 'database\alternate' );
+    }
+    else
+    {
+      // replace any address and phone numbers
+      foreach( $db_alternate->get_address_list() as $db_address ) $db_address->delete();
+      foreach( $db_alternate->get_phone_list() as $db_phone ) $db_phone->delete();
+    }
+
+    $db_alternate->participant_id = $this->participant_id;
+    $db_alternate->informant = $proxy['same_as_proxy'] && $proxy['informant'];
+    $db_alternate->proxy = true;
+    $db_alternate->first_name = $proxy['first_name'];
+    $db_alternate->last_name = $proxy['last_name'];
+    $db_alternate->association = 'Unknown';
+    $db_alternate->save();
+
+    $this->add_association( 'alternate', $db_alternate->id );
+
+    if( array_key_exists( 'note', $proxy ) && !is_null( $proxy['note'] ) )
+    {
+      $db_utility_user =
+        $user_class_name::get_unique_record( 'name', $setting_manager->get_setting( 'utility', 'username' ) );
+
+      // import data to the note table
+      $db_note = lib::create( 'database\note' );
+      $db_note->alternate_id = $db_alternate->id;
+      $db_note->user_id = $db_utility_user->id;
+      $db_note->datetime = util::get_datetime_object();
+      $db_note->note = $proxy['note'];
+      $db_note->save();
+    }
+
+    // import data to the address table
+    $address = util::parse_address(
+      $proxy['apartment_number'],
+      $proxy['street_number'],
+      $proxy['street_name'],
+      $proxy['box'],
+      $proxy['rural_route'],
+      $proxy['address_other'] );
+
+    $db_address = lib::create( 'database\address' );
+    $db_address->alternate_id = $db_alternate->id;
+    $db_address->active = true;
+    $db_address->rank = 1;
+    $db_address->address1 = $address[0];
+    $db_address->address2 = $address[1];
+    $db_address->city = $proxy['city'];
+    $db_address->region_id = $proxy['region_id'];
+    $postcode = 6 == strlen( $proxy['postcode'] )
+              ? sprintf( '%s %s',
+                         substr( $proxy['postcode'], 0, 3 ),
+                         substr( $proxy['postcode'], 3, 3 ) )
+              : $proxy['postcode'];
+    $db_address->postcode = $postcode;
+    $db_address->source_postcode();
+    $db_address->note = $proxy['address_note'];
+    $db_address->save();
+
+    // import data to the phone table
+    $db_phone = lib::create( 'database\phone' );
+    $db_phone->alternate_id = $db_alternate->id;
+    $db_phone->active = true;
+    $db_phone->rank = 1;
+    $db_phone->type = 'other';
+    $db_phone->number = $proxy['phone'];
+    $db_phone->note = $proxy['phone_note'];
+    $db_phone->save();
+
+    return $db_alternate;
+  }
+
+  /**
+   * TODO: document
+   */
+  public function add_informant_alternate( $informant )
+  {
+    $alternate_class_name = lib::get_class_name( 'database\alternate' );
+    $user_class_name = lib::get_class_name( 'database\user' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+
+    // if this participant already has an alternate with the same first and last name then
+    // overwrite instead of creating a new record
+    $alternate_mod = lib::create( 'database\modifier' );
+    $alternate_mod->where( 'participant_id', '=', $this->participant_id );
+    $alternate_mod->where( 'first_name', '=', $informant['first_name'] );
+    $alternate_mod->where( 'last_name', '=', $informant['last_name'] );
+    $alternate_list = $alternate_class_name::select( $alternate_mod );
+    $db_alternate = current( $alternate_list );
+
+    if( false == $db_alternate )
+    { // create a new alternate if no match was found
+      $db_alternate = lib::create( 'database\alternate' );
+    }
+    else
+    {
+      // replace any address and phone numbers
+      foreach( $db_alternate->get_address_list() as $db_address ) $db_address->delete();
+      foreach( $db_alternate->get_phone_list() as $db_phone ) $db_phone->delete();
+    }
+
+    $db_alternate->participant_id = $this->participant_id;
+    $db_alternate->informant = true;
+    $db_alternate->first_name = $informant['first_name'];
+    $db_alternate->last_name = $informant['last_name'];
+    $db_alternate->association = 'Unknown';
+    $db_alternate->save();
+
+    $this->add_association( 'alternate', $db_alternate->id );
+
+    if( array_key_exists( 'informant_note', $informant ) && !is_null( $informant['note'] ) )
+    {
+      $db_utility_user =
+        $user_class_name::get_unique_record( 'name', $setting_manager->get_setting( 'utility', 'username' ) );
+
+      // import data to the note table
+      $db_note = lib::create( 'database\note' );
+      $db_note->alternate_id = $db_alternate->id;
+      $db_note->user_id = $db_utility_user->id;
+      $db_note->datetime = util::get_datetime_object();
+      $db_note->note = $informant['note'];
+      $db_note->save();
+    }
+
+    // import data to the address table
+    $address = util::parse_address(
+      $informant['apartment_number'],
+      $informant['street_number'],
+      $informant['street_name'],
+      $informant['box'],
+      $informant['rural_route'],
+      $informant['address_other'] );
+
+    $db_address = lib::create( 'database\address' );
+    $db_address->alternate_id = $db_alternate->id;
+    $db_address->active = true;
+    $db_address->rank = 1;
+    $db_address->address1 = $address[0];
+    $db_address->address2 = $address[1];
+    $db_address->city = $informant['city'];
+    $db_address->region_id = $informant['region_id'];
+    $postcode = 6 == strlen( $informant['postcode'] )
+              ? sprintf( '%s %s',
+                         substr( $informant['postcode'], 0, 3 ),
+                         substr( $informant['postcode'], 3, 3 ) )
+              : $informant['postcode'];
+    $db_address->postcode = $postcode;
+    $db_address->source_postcode();
+    $db_address->note = $informant['address_note'];
+    $db_address->save();
+
+    // import data to the phone table
+    $db_phone = lib::create( 'database\phone' );
+    $db_phone->alternate_id = $db_alternate->id;
+    $db_phone->active = true;
+    $db_phone->rank = 1;
+    $db_phone->type = 'other';
+    $db_phone->number = $informant['phone'];
+    $db_phone->note = $informant['phone_note'];
+    $db_phone->save();
+
+    return $db_alternate;
+  }
+
+  /**
+   * save the form to disk
+   * TODO: document
+   */
+  public function write_file( $data )
+  {
+    $directory = dirname( $this->get_filename() );
+    if( !is_dir( $directory ) ) mkdir( $directory, 0777, true );
+    return false !== file_put_contents( $this->get_filename(), $data );
+  }
+
+  /**
+   * copy the form from the disk
+   * TODO: document
+   */
+  public function copy_file( $filename )
+  {
+    $directory = dirname( $this->get_filename() );
+    if( !is_dir( $directory ) ) mkdir( $directory, 0777, true );
+    return copy( $filename, $this->get_filename() );
+  }
+
+  /**
+   * TODO: document
+   */
+  private function add_association( $subject, $id )
   {
     // check the primary key value
     if( is_null( $this->id ) )
