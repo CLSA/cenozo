@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * site: record
  */
-class site extends base_access
+class site extends record
 {
   /**
    * Override parent method

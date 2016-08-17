@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * user: record
  */
-class user extends base_access
+class user extends record
 {
   /**
    * Adds a list of sites to the user with the given role.

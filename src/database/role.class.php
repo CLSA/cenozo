@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * role: record
  */
-class role extends base_access
+class role extends record
 {
   /**
    * Returns whether the role has access to an operation
