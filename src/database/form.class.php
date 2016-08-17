@@ -55,7 +55,7 @@ class form extends record
     $consent_list = $this->get_participant()->get_consent_object_list( $consent_mod );
     $db_consent = current( $consent_list );
 
-    if( is_null( $db_consent ) )
+    if( !$db_consent )
     {
       $db_consent = lib::create( 'database\consent' );
       $db_consent->participant_id = $this->participant_id;
@@ -67,7 +67,7 @@ class form extends record
       $db_consent->save();
     }
 
-    $db_form->add_association( 'consent', $db_consent->id );
+    $this->add_association( 'consent', $db_consent->id );
 
     return $db_consent;
   }
@@ -84,7 +84,7 @@ class form extends record
     $hin_list = $this->get_participant()->get_hin_object_list( $hin_mod );
     $db_hin = current( $hin_list );
 
-    if( !is_null( $db_hin ) )
+    if( !$db_hin )
     {
       $db_hin = lib::create( 'database\hin' );
       $db_hin->participant_id = $this->participant_id;
@@ -104,6 +104,7 @@ class form extends record
    */
   public function add_proxy_alternate( $proxy )
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $alternate_class_name = lib::get_class_name( 'database\alternate' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $setting_manager = lib::create( 'business\setting_manager' );
@@ -114,10 +115,10 @@ class form extends record
     $alternate_mod->where( 'participant_id', '=', $this->participant_id );
     $alternate_mod->where( 'first_name', '=', $proxy['first_name'] );
     $alternate_mod->where( 'last_name', '=', $proxy['last_name'] );
-    $alternate_list = $alternate_class_name::select( $alternate_mod );
+    $alternate_list = $alternate_class_name::select_objects( $alternate_mod );
     $db_alternate = current( $alternate_list );
 
-    if( false == $db_alternate )
+    if( !$db_alternate )
     { // create a new alternate if no match was found
       $db_alternate = lib::create( 'database\alternate' );
     }
@@ -147,13 +148,13 @@ class form extends record
       $db_note = lib::create( 'database\note' );
       $db_note->alternate_id = $db_alternate->id;
       $db_note->user_id = $db_utility_user->id;
-      $db_note->datetime = util::get_datetime_object();
+      $db_note->datetime = $util_class_name::get_datetime_object();
       $db_note->note = $proxy['note'];
       $db_note->save();
     }
 
     // import data to the address table
-    $address = util::parse_address(
+    $address = $util_class_name::parse_address(
       $proxy['apartment_number'],
       $proxy['street_number'],
       $proxy['street_name'],
@@ -197,6 +198,7 @@ class form extends record
    */
   public function add_informant_alternate( $informant )
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $alternate_class_name = lib::get_class_name( 'database\alternate' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $setting_manager = lib::create( 'business\setting_manager' );
@@ -207,10 +209,10 @@ class form extends record
     $alternate_mod->where( 'participant_id', '=', $this->participant_id );
     $alternate_mod->where( 'first_name', '=', $informant['first_name'] );
     $alternate_mod->where( 'last_name', '=', $informant['last_name'] );
-    $alternate_list = $alternate_class_name::select( $alternate_mod );
+    $alternate_list = $alternate_class_name::select_objects( $alternate_mod );
     $db_alternate = current( $alternate_list );
 
-    if( false == $db_alternate )
+    if( !$db_alternate )
     { // create a new alternate if no match was found
       $db_alternate = lib::create( 'database\alternate' );
     }
@@ -239,13 +241,13 @@ class form extends record
       $db_note = lib::create( 'database\note' );
       $db_note->alternate_id = $db_alternate->id;
       $db_note->user_id = $db_utility_user->id;
-      $db_note->datetime = util::get_datetime_object();
+      $db_note->datetime = $util_class_name::get_datetime_object();
       $db_note->note = $informant['note'];
       $db_note->save();
     }
 
     // import data to the address table
-    $address = util::parse_address(
+    $address = $util_class_name::parse_address(
       $informant['apartment_number'],
       $informant['street_number'],
       $informant['street_name'],
@@ -303,7 +305,7 @@ class form extends record
   {
     $directory = dirname( $this->get_filename() );
     if( !is_dir( $directory ) ) mkdir( $directory, 0777, true );
-    return copy( $filename, $this->get_filename() );
+    return @copy( $filename, $this->get_filename() );
   }
 
   /**
