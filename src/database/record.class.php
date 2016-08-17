@@ -702,20 +702,25 @@ abstract class record extends \cenozo\base_object
   {
     $foreign_key_name = $record_type.'_id';
 
-    // make sure this table has the correct foreign key
-    if( !static::column_exists( $foreign_key_name ) )
+    // create the record using the foreign key
+    if( !array_key_exists( $foreign_key_name, $this->record_cache ) )
     {
-      log::warning( 'Tried to get invalid record type: '.$record_type );
-      return NULL;
+      $this->record_cache[$foreign_key_name] = NULL;
+
+      // make sure this table has the correct foreign key
+      if( !static::column_exists( $foreign_key_name ) )
+      {
+        log::warning( 'Tried to get invalid record type: '.$record_type );
+      }
+      else
+      {
+        $foreign_key_value = $this->{ $foreign_key_name };
+        if( !is_null( $foreign_key_value ) )
+          $this->record_cache[$foreign_key_name] = lib::create( 'database\\'.$record_type, $foreign_key_value );
+      }
     }
 
-    // create the record using the foreign key
-    $record = NULL;
-    $foreign_key_value = $this->{ $foreign_key_name };
-    if( !is_null( $foreign_key_value ) )
-      $record = lib::create( 'database\\'.$record_type, $foreign_key_value );
-
-    return $record;
+    return $this->record_cache[$foreign_key_name];
   }
 
   /**
@@ -1463,6 +1468,15 @@ abstract class record extends \cenozo\base_object
    * @access private
    */
   private $active_column_values = array();
+
+  /**
+   * A cache of all active records that have a 1-to-N relationship to this record.  This member is used
+   * internally by get_record() for performance purposes.
+   * 
+   * @var array
+   * @access private
+   */
+  private $record_cache = array();
 
   /**
    * Determines whether or not to include create_timestamp and update_timestamp when writing
