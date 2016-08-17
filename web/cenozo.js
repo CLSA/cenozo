@@ -1477,14 +1477,15 @@ cenozo.directive( 'cnRecordView', [
 
         $scope.patch = function( property ) {
           if( $scope.model.getEditEnabled() ) {
-            // test the format
-            if( !$scope.model.testFormat( property, $scope.model.viewModel.record[property] ) ) {
-              var element = cenozo.getFormElement( property );
-              if( element ) {
-                element.$error.format = true;
-                cenozo.updateFormElement( element, true );
-              }
-            } else {
+            var element = cenozo.getFormElement( property );
+            var valid = $scope.model.testFormat( property, $scope.model.viewModel.record[property] );
+
+            if( element ) {
+              element.$error.format = !valid;
+              cenozo.updateFormElement( element, true );
+            }
+
+            if( valid ) {
               // convert size types and write record property from formatted record
               var input = null;
               $scope.dataArray.some( function( group ) {
@@ -3487,6 +3488,12 @@ cenozo.factory( 'CnBaseViewFactory', [
             // create the backup record
             self.backupRecord = angular.copy( self.record );
 
+            // reset the error status
+            cenozo.forEachFormElement( 'form', function( element ) {
+              element.$error = {};
+              cenozo.updateFormElement( element, true );
+            } );
+
             return self.parentModel.metadata.getPromise();
           } ).then( function() {
             var promiseList = [];
@@ -5260,8 +5267,10 @@ cenozo.service( 'CnModalMessageFactory', [
           // add the url to the message
           var re = new RegExp( '^' + cenozoApp.baseUrl + '/(api/?)?' );
           message += '\n    Resource: "' + response.config.method + ':'
-                   + response.config.url.replace( re, '' ) + '"'
-                   + '\n    Parameters: ' + angular.toJson( response.config.params );
+                   + response.config.url.replace( re, '' ) + '"';
+
+          if( angular.isDefined( response.config.params ) )
+            message += '\n    Parameters: ' + angular.toJson( response.config.params );
         }
         if( 'string' == cenozo.getType( response.data ) &&
             0 < response.data.length &&
