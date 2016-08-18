@@ -95,13 +95,13 @@ class post extends \cenozo\service\service
         }
       }
       else if( array_key_exists( 'event', $file ) )
-      { // add the given event record all participants in th
+      { // add the given event record
         $db_event = lib::create( 'database\event' );
         foreach( $file['event'] as $column => $value ) $db_event->$column = $value;
         $db_event->save_list( $select, $modifier );
       }
       else if( array_key_exists( 'note', $file ) )
-      { // add the given event record all participants in th
+      { // add the given event record
         $db_note = lib::create( 'database\note' );
         foreach( $file['note'] as $column => $value ) $db_note->$column = $value;
         $db_note->user_id = $db_user->id;

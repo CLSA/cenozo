@@ -74,7 +74,10 @@ class script extends record
     $util_class_name = lib::get_class_name( 'util' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $db_application = lib::create( 'business\session' )->get_application();
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_site = $session->get_site();
+    $db_user = $session->get_user();
     $server_timezone = date_default_timezone_get();
 
     $select = lib::create( 'database\select' );
@@ -125,6 +128,8 @@ class script extends record
             $db_event = lib::create( 'database\event' );
             $db_event->participant_id = $db_participant->id;
             $db_event->event_type_id = $script['started_event_type_id'];
+            $db_event->site_id = $db_site->id;
+            $db_event->user_id = $db_user->id;
             $db_event->datetime = $survey['startdate'];
             $db_event->save();
           }
@@ -147,6 +152,8 @@ class script extends record
             $db_event = lib::create( 'database\event' );
             $db_event->participant_id = $db_participant->id;
             $db_event->event_type_id = $script['finished_event_type_id'];
+            $db_event->site_id = $db_site->id;
+            $db_event->user_id = $db_user->id;
             $db_event->datetime = $survey['submitdate'];
             $db_event->save();
           }

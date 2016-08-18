@@ -79,9 +79,15 @@ class post extends \cenozo\service\post
         $event_mod->where( 'event_type_id', '=', $this->db_script->started_event_type_id );
         if( 0 == $this->db_participant->get_event_count( $event_mod ) )
         {
+          $session = lib::create( 'business\session' );
+          $db_site = $session->get_site();
+          $db_user = $session->get_user();
+
           $db_event = lib::create( 'database\event' );
           $db_event->participant_id = $this->db_participant->id;
           $db_event->event_type_id = $this->db_script->started_event_type_id;
+          $db_event->site_id = $db_site->id;
+          $db_event->user_id = $db_user->id;
           $db_event->datetime = $util_class_name::get_datetime_object();
           $db_event->save();
         }
