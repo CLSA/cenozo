@@ -105,11 +105,11 @@ define( function() {
             path: 'form/' + self.record.getIdentifier(),
             data: { 'download': true },
             format: 'pdf'
-          } ).get().then( function( response ) { 
+          } ).get().then( function( response ) {
             saveAs(
               new Blob(
                 [response.data],
-                { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) } 
+                { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
               ),
               response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
             );

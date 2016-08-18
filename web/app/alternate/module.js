@@ -138,7 +138,7 @@ define( function() {
     address_postcode: {
       title: 'Postcode',
       type: 'string',
-      help: 'Non-international postal codes must be in "A1A1A1" format, zip codes in "01234" format.',
+      help: 'Non-international postal codes must be in "A1A 1A1" format, zip codes in "01234" format.',
       exclude: 'view'
     },
     address_note: {
@@ -381,7 +381,7 @@ define( function() {
     function( CnAlternateNotesFactory, $timeout) {
       return {
         templateUrl: cenozo.getFileUrl( 'cenozo', 'notes.tpl.html' ),
-        restrict: 'E', 
+        restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAlternateNotesFactory.instance();
 
@@ -399,9 +399,9 @@ define( function() {
           $scope.refresh = function() { $scope.model.onView(); };
           $scope.model.onView();
         }
-      };   
-    }    
-  ] ); 
+      };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAlternateView', [
@@ -571,20 +571,20 @@ define( function() {
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Alternates',
-              go: function() { $state.go( 'alternate.list' ); } 
+              go: function() { $state.go( 'alternate.list' ); }
             }, {
               title: self.uid,
-              go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); } 
+              go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
             }, {
               title: 'History'
             } ]
           );
         } );
-      };   
+      };
 
-      return { instance: function() { return new object( false ); } }; 
-    }    
-  ] ); 
+      return { instance: function() { return new object( false ); } };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateNotesFactory', [

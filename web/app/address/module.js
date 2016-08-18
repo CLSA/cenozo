@@ -38,7 +38,7 @@ define( function() {
       available: {
         title: 'Available',
         type: 'boolean',
-        help: 'Whether the address is active in the current month.' 
+        help: 'Whether the address is active in the current month.'
       }
     },
     defaultOrder: {
@@ -84,7 +84,7 @@ define( function() {
     postcode: {
       title: 'Postcode',
       type: 'string',
-      help: 'Non-international postal codes must be in "A1A1A1" format, zip codes in "01234" format.'
+      help: 'Non-international postal codes must be in "A1A 1A1" format, zip codes in "01234" format.'
     },
     timezone_offset: {
       title: 'Timezone Offset',

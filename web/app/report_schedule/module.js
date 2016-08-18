@@ -99,8 +99,8 @@ define( function() {
           // change the heading to the form's title
           CnHttpFactory.instance( {
             path: 'report_type/' + $scope.model.getParentIdentifier().identifier,
-            data: { select: { column: [ 'title' ] } } 
-          } ).get().then( function( response ) { 
+            data: { select: { column: [ 'title' ] } }
+          } ).get().then( function( response ) {
             $scope.model.addModel.heading = 'Schedule ' + response.data.title + ' Report';
           } );
         }
@@ -334,7 +334,7 @@ define( function() {
                       self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
                     } );
                   } ),
-                  
+
                   CnHttpFactory.instance( {
                     path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
                     data: { modifier: { order: { rank: false } } }

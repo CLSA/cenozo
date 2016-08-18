@@ -58,7 +58,7 @@
           View {{ parent.subject.replace( '_', ' ' ) | cnUCWords }}
         </button>
       </div>
-    </div> 
+    </div>
     <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
       <div ng-repeat="group in dataArray" ng-attr-name="{{ group.title }}">
         <div ng-if="0 < group.title.length"
@@ -463,6 +463,6 @@
           View {{ parent.subject.replace( '_', ' ' ) | cnUCWords }}
         </button>
       </div>
-    </div> 
+    </div>
   </form>
 </div>

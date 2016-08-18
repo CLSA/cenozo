@@ -676,7 +676,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             script: CnSession.withdrawScript,
             uid: String( this.parentModel.getQueryParameter( 'identifier' ) ).split( '=' ).pop(),
             onReady: function() {
-              self.hasWithdrawn = null != self.scriptLauncher.token && 
+              self.hasWithdrawn = null != self.scriptLauncher.token &&
                                   null != self.scriptLauncher.token.completed.match(
                                     /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
             }

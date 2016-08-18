@@ -44,7 +44,7 @@
                   class="btn btn-primary"
                   ng-disabled="null != model.confirmedCount || model.confirmInProgress"
                   ng-click="confirm()">Confirm List</button>
-        </div> 
+        </div>
       </div>
       <div ng-if="model.confirmedCount">
         <ul class="nav nav-tabs">
@@ -133,7 +133,7 @@
                     class="btn btn-primary"
                     ng-disabled="!model.confirmedCount || !model.hasActiveInputs"
                     ng-click="model.applyMultiedit( 'participant' )">Change Details</button>
-          </div> 
+          </div>
         </div>
         <div ng-if="'consent'==tab" class="panel panel-default">
           <div class="panel-body">
@@ -212,7 +212,7 @@
                     class="btn btn-primary"
                     ng-disabled="!model.confirmedCount"
                     ng-click="model.applyMultiedit( 'consent' )">Add Consents</button>
-          </div> 
+          </div>
         </div>
         <div ng-if="'collection'==tab" class="panel panel-default">
           <div class="panel-body">
@@ -268,7 +268,7 @@
                     ng-click="model.applyMultiedit( 'collection' )">
               {{ 'add' == model.collectionOperation ? 'Add To Collection' : 'Remove From Collection' }}
             </button>
-          </div> 
+          </div>
         </div>
         <div ng-if="'event'==tab" class="panel panel-default">
           <div class="panel-body">
@@ -347,7 +347,7 @@
                     class="btn btn-primary"
                     ng-disabled="!model.confirmedCount"
                     ng-click="model.applyMultiedit( 'event' )">Add Events</button>
-          </div> 
+          </div>
         </div>
         <div ng-if="'note'==tab" class="panel panel-default">
           <div class="panel-body">
@@ -387,7 +387,7 @@
                     class="btn btn-primary"
                     ng-disabled="!model.confirmedCount || 0 == model.note.note.length"
                     ng-click="model.applyMultiedit( 'note' )">Add Notes</button>
-          </div> 
+          </div>
         </div>
       </div>
     </div>

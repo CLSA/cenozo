@@ -40,7 +40,7 @@ define( function() {
       title: 'Postcode',
       type: 'string',
       regex: '^(([A-Z][0-9][A-Z] [0-9][A-Z][0-9])|([0-9]{5}))$',
-      help: 'Non-international postal codes must be in "A1A1A1" format, zip codes in "01234" format.'
+      help: 'Non-international postal codes must be in "A1A 1A1" format, zip codes in "01234" format.'
     },
     longitude: {
       title: 'Longitude',

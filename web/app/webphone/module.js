@@ -88,7 +88,7 @@ define( function() {
           } else {
             data.recording_file_id = this.activeRecordingFile.id;
           }
-          
+
           CnHttpFactory.instance( {
             path: 'voip/0',
             data: data,
