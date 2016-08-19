@@ -4739,6 +4739,19 @@ cenozo.factory( 'CnHttpFactory', [
       this.patch = function() { return http( 'PATCH', 'api/' + this.path ); };
       this.post = function() { return http( 'POST', 'api/' + this.path ); };
       this.query = function() { return http( 'GET', 'api/' + this.path ); };
+      this.file = function() {
+        if( 'json' === this.format ) this.format = 'pdf';
+        if( angular.isUndefined( this.data.download ) || !this.data.download ) this.data.download = true;
+        return this.get().then( function( response ) {
+          saveAs(
+            new Blob(
+              [response.data],
+              { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
+            ),
+            response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
+          );
+        } );
+      };
     };
 
     return {

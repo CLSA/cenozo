@@ -49,6 +49,7 @@ define( function() {
 
   module.addExtraOperation( 'view', {
     title: 'Download',
+    isDisabled: function( $state, model ) { return angular.isUndefined( model.viewModel.downloadFile ); },
     operation: function( $state, model ) { model.viewModel.downloadFile(); }
   } );
 
@@ -99,22 +100,13 @@ define( function() {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        // download the form's file
-        this.downloadFile = function() {
-          return CnHttpFactory.instance( {
-            path: 'form/' + self.record.getIdentifier(),
-            data: { 'download': true },
-            format: 'pdf'
-          } ).get().then( function( response ) {
-            saveAs(
-              new Blob(
-                [response.data],
-                { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
-              ),
-              response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
-            );
-          } );
-        };
+        this.afterView( function() {
+          if( angular.isUndefined( self.downloadFile ) ) {
+            self.downloadFile = function() {
+              return CnHttpFactory.instance( { path: 'form/' + self.record.getIdentifier() } ).file();
+            };
+          }
+        } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

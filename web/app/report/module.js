@@ -121,7 +121,9 @@ define( function() {
   module.addExtraOperation( 'view', {
     title: 'Download',
     operation: function( $state, model ) { model.viewModel.downloadFile(); },
-    isDisabled: function( $state, model ) { return 'completed' != model.viewModel.record.stage; }
+    isDisabled: function( $state, model ) {
+      return 'completed' != model.viewModel.record.stage || angular.isUndefined( model.viewModel.downloadFile );
+    }
   } );
 
   /* ######################################################################################################## */
@@ -321,26 +323,20 @@ define( function() {
           } );
         };
 
-        // download the report's file
-        this.downloadFile = function() {
-          var format = 'csv';
-          if( 'Excel' == self.record.format ) format = 'xlsx';
-          else if( 'LibreOffice' == self.record.format ) format = 'ods';
+        this.afterView( function() {
+          if( angular.isUndefined( self.downloadFile ) ) {
+            self.downloadFile = function() {
+              var format = 'csv';
+              if( 'Excel' == self.record.format ) format = 'xlsx';
+              else if( 'LibreOffice' == self.record.format ) format = 'ods';
 
-          return CnHttpFactory.instance( {
-            path: 'report/' + self.record.getIdentifier(),
-            data: { 'download': true },
-            format: format
-          } ).get().then( function( response ) {
-            saveAs(
-              new Blob(
-                [response.data],
-                { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
-              ),
-              response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
-            );
-          } );
-        };
+              return CnHttpFactory.instance( {
+                path: 'report/' + self.record.getIdentifier(),
+                format: format
+              } ).file();
+            };
+          }
+        } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
