@@ -3532,7 +3532,9 @@ cenozo.factory( 'CnBaseViewFactory', [
             self.parentModel.module.inputGroupList.forEach( function( group ) {
               for( var column in group.inputList ) {
                 var input = group.inputList[column];
-                if( 'view' != input.exclude && 'enum' == input.type && null === self.record[column] ) {
+                if( 'view' != input.exclude &&
+                    0 <= ['boolean','enum','rank'].indexOf( input.type ) &&
+                    null === self.record[column] ) {
                   var metadata = self.parentModel.metadata.columnList[column];
                   if( angular.isDefined( metadata ) && !metadata.required ) {
                     self.record[column] = '';
