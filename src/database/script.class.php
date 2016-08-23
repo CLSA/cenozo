@@ -81,11 +81,20 @@ class script extends record
     $server_timezone = date_default_timezone_get();
 
     $select = lib::create( 'database\select' );
-    $select->add_column( 'sid' );
-    if( $started_events ) $select->add_column( 'started_event_type_id' );
-    if( $finished_events ) $select->add_column( 'finished_event_type_id' );
-    $select->from( 'script' );
     $modifier = lib::create( 'database\modifier' );
+
+    $select->add_column( 'sid' );
+    if( $started_events )
+    {
+      $select->add_column( 'started_event_type_id' );
+      $modifier->where( 'started_event_type_id', '!=', NULL );
+    }
+    if( $finished_events )
+    {
+      $select->add_column( 'finished_event_type_id' );
+      $modifier->where( 'finished_event_type_id', '!=', NULL );
+    }
+    $select->from( 'script' );
     if( !is_null( $db_script ) ) $modifier->where( 'script.id', '=', $db_script->id );
     $modifier->where( 'repeated', '=', false );
 
