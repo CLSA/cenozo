@@ -402,6 +402,20 @@ abstract class record extends \cenozo\base_object
       // the value is different from what's in the passive array, so store it in the active array
       $this->active_column_values[$column_name] = $value;
     }
+
+    // if this column is in the record cache then check if it has changed
+    if( array_key_exists( $column_name, $this->record_cache ) )
+    {
+      if( is_null( $this->record_cache[$column_name] ) )
+      {
+        if( !is_null( $value ) ) unset( $this->record_cache[$column_name] );
+      }
+      else
+      {
+        if( is_null( $value ) || $value != $this->record_cache[$column_name]->id )
+          unset( $this->record_cache[$column_name] );
+      }
+    }
   }
 
   /**
