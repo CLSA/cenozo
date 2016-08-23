@@ -84,16 +84,16 @@ CREATE PROCEDURE patch_participant()
       ALTER TABLE participant DROP COLUMN use_informant;
     END IF;
 
-    SELECT "Adding note column to participant table" AS "";
+    SELECT "Adding global_note column to participant table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
       FROM information_schema.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = "participant"
-      AND COLUMN_NAME = "note" );
+      AND COLUMN_NAME = "global_note" );
     IF @test = 0 THEN
-      ALTER TABLE participant ADD COLUMN note TEXT NULL DEFAULT NULL;
+      ALTER TABLE participant ADD COLUMN global_note TEXT NULL DEFAULT NULL;
     END IF;
 
     SELECT "Adding availability_type_id column to participant table" AS "";

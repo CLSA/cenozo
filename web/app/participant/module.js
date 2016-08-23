@@ -43,9 +43,9 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         column: 'site.name',
         title: 'Site'
       },
-      note: {
-        column: 'participant.note',
-        title: 'Notes',
+      global_note: {
+        column: 'participant.global_note',
+        title: 'Special Note',
         type: 'text',
         limit: 20
       }
@@ -83,9 +83,9 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       type: 'string',
       constant: true
     },
-    note: {
-      column: 'participant.note',
-      title: 'Special Notes',
+    global_note: {
+      column: 'participant.global_note',
+      title: 'Special Note',
       type: 'text'
     },
   } );

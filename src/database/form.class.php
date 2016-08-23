@@ -135,23 +135,11 @@ class form extends record
     $db_alternate->first_name = $proxy['first_name'];
     $db_alternate->last_name = $proxy['last_name'];
     $db_alternate->association = 'Unknown';
+    if( array_key_exists( 'global_note', $proxy ) && !is_null( $proxy['global_note'] ) )
+      $db_alternate->global_note = $proxy['global_note'];
     $db_alternate->save();
 
     $this->add_association( 'alternate', $db_alternate->id );
-
-    if( array_key_exists( 'note', $proxy ) && !is_null( $proxy['note'] ) )
-    {
-      $db_utility_user =
-        $user_class_name::get_unique_record( 'name', $setting_manager->get_setting( 'utility', 'username' ) );
-
-      // import data to the note table
-      $db_note = lib::create( 'database\note' );
-      $db_note->alternate_id = $db_alternate->id;
-      $db_note->user_id = $db_utility_user->id;
-      $db_note->datetime = $util_class_name::get_datetime_object();
-      $db_note->note = $proxy['note'];
-      $db_note->save();
-    }
 
     // import data to the address table
     $address = $util_class_name::parse_address(
@@ -228,23 +216,11 @@ class form extends record
     $db_alternate->first_name = $informant['first_name'];
     $db_alternate->last_name = $informant['last_name'];
     $db_alternate->association = 'Unknown';
+    if( array_key_exists( 'global_note', $informant ) && !is_null( $informant['global_note'] ) )
+      $db_alternate->global_note = $informant['global_note'];
     $db_alternate->save();
 
     $this->add_association( 'alternate', $db_alternate->id );
-
-    if( array_key_exists( 'informant_note', $informant ) && !is_null( $informant['note'] ) )
-    {
-      $db_utility_user =
-        $user_class_name::get_unique_record( 'name', $setting_manager->get_setting( 'utility', 'username' ) );
-
-      // import data to the note table
-      $db_note = lib::create( 'database\note' );
-      $db_note->alternate_id = $db_alternate->id;
-      $db_note->user_id = $db_utility_user->id;
-      $db_note->datetime = $util_class_name::get_datetime_object();
-      $db_note->note = $informant['note'];
-      $db_note->save();
-    }
 
     // import data to the address table
     $address = $util_class_name::parse_address(

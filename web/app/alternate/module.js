@@ -39,9 +39,9 @@ define( function() {
       types: {
         title: 'Types'
       },
-      note: {
-        column: 'alternate.note',
-        title: 'Notes',
+      global_note: {
+        column: 'alternate.global_note',
+        title: 'Special Note',
         type: 'text',
         limit: 20
       }
@@ -92,9 +92,9 @@ define( function() {
       title: 'Decision Maker',
       type: 'boolean'
     },
-    note: {
-      column: 'alternate.note',
-      title: 'Special Notes',
+    global_note: {
+      column: 'alternate.global_note',
+      title: 'Special Note',
       type: 'text'
     }
   } );
