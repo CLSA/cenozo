@@ -26,6 +26,18 @@ CREATE PROCEDURE patch_alternate()
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
     END IF;
 
+    SELECT "Adding note column to alternate table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "alternate"
+      AND COLUMN_NAME = "note" );
+    IF @test = 0 THEN
+      ALTER TABLE alternate ADD COLUMN note TEXT NULL;
+    END IF;
+
     SELECT "Allowing null values for alternate.association in alternate table" AS "";
 
     SET @test = (

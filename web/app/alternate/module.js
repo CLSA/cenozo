@@ -38,6 +38,12 @@ define( function() {
       },
       types: {
         title: 'Types'
+      },
+      note: {
+        column: 'alternate.note',
+        title: 'Notes',
+        type: 'text',
+        limit: 20
       }
     },
     defaultOrder: {
@@ -85,6 +91,11 @@ define( function() {
     proxy: {
       title: 'Decision Maker',
       type: 'boolean'
+    },
+    note: {
+      column: 'alternate.note',
+      title: 'Special Notes',
+      type: 'text'
     }
   } );
 
