@@ -117,7 +117,7 @@ DROP PROCEDURE IF EXISTS patch_event;
   END //
 DELIMITER ;
 
--- now call the procedure and remove the procedure
+-- now call the PROCEDURE and remove the PROCEDURE
 CALL patch_event();
 DROP PROCEDURE IF EXISTS patch_event;
 

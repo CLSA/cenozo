@@ -94,7 +94,7 @@ DROP PROCEDURE IF EXISTS patch_consent;
   END //
 DELIMITER ;
 
--- now call the procedure and remove the procedure
+-- now call the PROCEDURE and remove the PROCEDURE
 CALL patch_consent();
 DROP PROCEDURE IF EXISTS patch_consent;
 

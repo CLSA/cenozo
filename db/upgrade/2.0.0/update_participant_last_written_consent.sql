@@ -1,6 +1,6 @@
 SELECT "Creating new update_participant_last_consent procedure" AS "";
 
-DROP procedure IF EXISTS update_participant_last_written_consent;
+DROP PROCEDURE IF EXISTS update_participant_last_written_consent;
 
 DELIMITER $$
 CREATE PROCEDURE update_participant_last_written_consent(IN proc_participant_id INT(10) UNSIGNED, IN proc_consent_type_id INT(10) UNSIGNED)

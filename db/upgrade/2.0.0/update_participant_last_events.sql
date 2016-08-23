@@ -1,6 +1,6 @@
 SELECT "Creating new update_participant_last_events procedure" AS "";
 
-DROP procedure IF EXISTS update_participant_last_events;
+DROP PROCEDURE IF EXISTS update_participant_last_events;
 
 DELIMITER $$
 CREATE PROCEDURE update_participant_last_events(IN proc_participant_id INT(10) UNSIGNED)

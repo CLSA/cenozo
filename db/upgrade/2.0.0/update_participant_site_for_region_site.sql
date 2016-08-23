@@ -1,6 +1,6 @@
 SELECT "Creating new update_participant_site_for_region_site" AS "";
 
-DROP procedure IF EXISTS update_participant_site_for_region_site;
+DROP PROCEDURE IF EXISTS update_participant_site_for_region_site;
 
 DELIMITER $$
 CREATE PROCEDURE update_participant_site_for_region_site(IN proc_region_site_id INT(10) UNSIGNED)

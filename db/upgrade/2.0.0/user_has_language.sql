@@ -44,6 +44,6 @@ DROP PROCEDURE IF EXISTS patch_user_has_language;
   END //
 DELIMITER ;
 
--- now call the procedure and remove the procedure
+-- now call the PROCEDURE and remove the PROCEDURE
 CALL patch_user_has_language();
 DROP PROCEDURE IF EXISTS patch_user_has_language;

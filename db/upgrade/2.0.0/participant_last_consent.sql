@@ -60,5 +60,45 @@ CREATE PROCEDURE patch_participant_last_consent()
   END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS patch_participant;
+DELIMITER //
+CREATE PROCEDURE patch_participant()
+  BEGIN
+
+    SELECT "Removing withdraw_letter column from participant table" AS "";
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "withdraw_letter" );
+    IF @test = 1 THEN
+      -- insert consent records before dropping columns
+      CREATE TEMPORARY TABLE new_consent
+      SELECT participant.id AS participant_id,
+             hin_access_consent_type.id AS consent_type_id,
+             consent.datetime,
+             "Added as part of the withdraw process." AS note
+      FROM consent_type AS hin_access_consent_type, participant
+      JOIN participant_last_consent ON participant.id = participant_last_consent.participant_id
+      JOIN consent_type ON participant_last_consent.consent_type_id = consent_type.id
+      JOIN consent ON participant_last_consent.consent_id = consent.id
+      WHERE hin_access_consent_type.name = "HIN access"
+      AND consent.accept = false
+      AND consent_type.name = "participation"
+      AND participant.withdraw_letter IN( "e", "f", "g", "h" );
+
+      INSERT IGNORE INTO consent( participant_id, consent_type_id, accept, written, datetime, note )
+      SELECT participant_id, consent_type_id, 0, 0, datetime, note FROM new_consent;
+
+      ALTER TABLE participant DROP COLUMN withdraw_letter;
+    END IF;
+
+  END //
+DELIMITER ;
+
 CALL patch_participant_last_consent();
 DROP PROCEDURE IF EXISTS patch_participant_last_consent;
+
+CALL patch_participant();
+DROP PROCEDURE IF EXISTS patch_participant;

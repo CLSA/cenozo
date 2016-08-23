@@ -54,18 +54,6 @@ SOURCE form_type.sql
 SOURCE form.sql
 SOURCE form_association.sql
 
-SOURCE participant_default_site.sql
-SOURCE participant_preferred_site.sql
-SOURCE alternate_first_address.sql
-SOURCE participant_first_address.sql
-SOURCE participant_last_hin.sql
-SOURCE participant_last_event.sql
-SOURCE participant_last_consent.sql
-SOURCE participant_last_written_consent.sql
-
-SOURCE alternate_first_address.sql
-SOURCE participant_first_address.sql
-SOURCE participant_primary_address.sql
 SOURCE update_alternate_first_address.sql
 SOURCE update_participant_first_address.sql
 SOURCE update_participant_primary_address.sql
@@ -79,6 +67,19 @@ SOURCE update_participant_last_consent.sql
 SOURCE update_participant_last_consents.sql
 SOURCE update_participant_last_written_consent.sql
 SOURCE update_participant_last_written_consents.sql
+
+SOURCE participant_default_site.sql
+SOURCE participant_preferred_site.sql
+SOURCE alternate_first_address.sql
+SOURCE participant_first_address.sql
+SOURCE participant_last_hin.sql
+SOURCE participant_last_event.sql
+SOURCE participant_last_written_consent.sql
+SOURCE participant_last_consent.sql
+SOURCE alternate_first_address.sql
+SOURCE participant_first_address.sql
+SOURCE participant_primary_address.sql
+
 SOURCE address.sql
 SOURCE phone.sql
 SOURCE participant_site.sql

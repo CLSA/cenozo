@@ -44,6 +44,6 @@ DROP PROCEDURE IF EXISTS patch_script;
   END //
 DELIMITER ;
 
--- now call the procedure and remove the procedure
+-- now call the PROCEDURE and remove the PROCEDURE
 CALL patch_script();
 DROP PROCEDURE IF EXISTS patch_script;

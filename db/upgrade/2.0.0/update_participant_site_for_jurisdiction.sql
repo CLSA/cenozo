@@ -1,6 +1,6 @@
 SELECT "Creating new update_participant_site_for_jurisdiction" AS "";
 
-DROP procedure IF EXISTS update_participant_site_for_jurisdiction;
+DROP PROCEDURE IF EXISTS update_participant_site_for_jurisdiction;
 
 DELIMITER $$
 
