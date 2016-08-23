@@ -229,6 +229,10 @@ class ui extends \cenozo\base_object
       $module_list['alternate']['actions']['history'] =
         '/{identifier}?{address}&{note}&{phone}';
     }
+    if( array_key_exists( 'availability_type', $module_list ) )
+    {
+      $module_list['availability_type']['children'] = array( 'participant' );
+    }
     if( array_key_exists( 'collection', $module_list ) )
     {
       $module_list['collection']['choosing'] = array( 'participant', 'user' );
