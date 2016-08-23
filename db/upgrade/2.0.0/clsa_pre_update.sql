@@ -165,25 +165,31 @@ CREATE PROCEDURE clsa_pre_update()
       INSERT IGNORE INTO access( site_id, role_id, user_id )
       SELECT site1.id, role_id, user_id
       FROM access
+      JOIN user ON access.user_id = user.id
       JOIN site AS site2 ON access.site_id = site2.id
       JOIN site AS site1 ON site1.name = "Sherbrooke" AND site1.service_id = @st_bl_service_id
-      WHERE site2.name = "McMaster" AND site2.service_id = @st_bl_service_id
+      WHERE user.active = true
+      AND site2.name = "McMaster" AND site2.service_id = @st_bl_service_id
       AND role_id = ( SELECT id FROM role WHERE name = "administrator" );
 
       INSERT IGNORE INTO access( site_id, role_id, user_id )
       SELECT site1.id, role_id, user_id
       FROM access
+      JOIN user ON access.user_id = user.id
       JOIN site AS site2 ON access.site_id = site2.id
       JOIN site AS site1 ON site1.name = "Sherbrooke" AND site1.service_id = @st_mc_service_id
-      WHERE site2.name = "McMaster" AND site2.service_id = @st_mc_service_id
+      WHERE user.active = true
+      AND site2.name = "McMaster" AND site2.service_id = @st_mc_service_id
       AND role_id = ( SELECT id FROM role WHERE name = "administrator" );
 
       INSERT IGNORE INTO access( site_id, role_id, user_id )
       SELECT site1.id, role_id, user_id
       FROM access
+      JOIN user ON access.user_id = user.id
       JOIN site AS site2 ON access.site_id = site2.id
       JOIN site AS site1 ON site1.name = "Sherbrooke" AND site1.service_id = @st_f1_service_id
-      WHERE site2.name = "McMaster" AND site2.service_id = @st_f1_service_id
+      WHERE user.active = true
+      AND site2.name = "McMaster" AND site2.service_id = @st_f1_service_id
       AND role_id = ( SELECT id FROM role WHERE name = "administrator" );
 
       SELECT "Removing McMaster CATI sites" AS "";
@@ -295,9 +301,11 @@ CREATE PROCEDURE clsa_pre_update()
           "INSERT IGNORE INTO ", @beartooth_f1, ".access( user_id, role_id, site_id ) ",
           "SELECT access.user_id, access.role_id, site1.id ",
           "FROM access ",
+          "JOIN user ON access.user_id = user.id ",
           "JOIN site AS site2 ON access.site_id = site2.id ",
           "JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = ", @bt_bl_service_id, " ",
-          "WHERE site_id IN ( SELECT id FROM site WHERE service_id = ", @bt_f1_service_id, " )" );
+          "WHERE user.active = true ",
+          "AND site_id IN ( SELECT id FROM site WHERE service_id = ", @bt_f1_service_id, " )" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
@@ -458,9 +466,11 @@ CREATE PROCEDURE clsa_pre_update()
           "INSERT IGNORE INTO ", @sabretooth_mc, ".access( user_id, role_id, site_id ) ",
           "SELECT access.user_id, access.role_id, IFNULL( site1.id, site2.id ) ",
           "FROM access ",
+          "JOIN user ON access.user_id = user.id ",
           "JOIN site AS site2 ON access.site_id = site2.id ",
           "LEFT JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = ", @st_bl_service_id, " ",
-          "WHERE site_id IN ( SELECT id FROM site WHERE service_id = ", @st_mc_service_id, " )" );
+          "WHERE user.active = true ",
+          "AND site_id IN ( SELECT id FROM site WHERE service_id = ", @st_mc_service_id, " )" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
@@ -509,10 +519,12 @@ CREATE PROCEDURE clsa_pre_update()
           "INSERT IGNORE INTO ", @sabretooth_f1, ".access( user_id, role_id, site_id ) ",
           "SELECT access.user_id, access.role_id, IFNULL( site1.id, IFNULL( site2.id, site3.id ) ) ",
           "FROM access ",
+          "JOIN user ON access.user_id = user.id ",
           "JOIN site AS site3 ON access.site_id = site3.id ",
           "LEFT JOIN site AS site1 ON site1.name = site3.name AND site1.service_id = ", @st_bl_service_id, " ",
           "LEFT JOIN site AS site2 ON site2.name = site3.name AND site2.service_id = ", @st_mc_service_id, " ",
-          "WHERE site_id IN ( SELECT id FROM site WHERE service_id = ", @st_f1_service_id, " )" );
+          "WHERE user.active = true ",
+          "AND site_id IN ( SELECT id FROM site WHERE service_id = ", @st_f1_service_id, " )" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
@@ -561,9 +573,11 @@ CREATE PROCEDURE clsa_pre_update()
           "INSERT IGNORE INTO ", @sabretooth_qc, ".access( user_id, role_id, site_id ) ",
           "SELECT access.user_id, access.role_id, IFNULL( site1.id, site2.id ) ",
           "FROM access ",
+          "JOIN user ON access.user_id = user.id ",
           "JOIN site AS site2 ON access.site_id = site2.id ",
           "LEFT JOIN site AS site1 ON site1.name = site2.name AND site1.service_id = ", @st_bl_service_id, " ",
-          "WHERE site_id IN ( SELECT id FROM site WHERE service_id = ", @st_qc_service_id, " )" );
+          "WHERE user.active = true ",
+          "AND site_id IN ( SELECT id FROM site WHERE service_id = ", @st_qc_service_id, " )" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
