@@ -124,7 +124,6 @@ angular.extend( cenozoApp, {
     var self = this;
     this.moduleList = list;
     for( var name in this.moduleList ) {
-      // TODO: make note an auxiliary module so we don't have to do this custom code
       if( "note" == name ) {
         // notes are handled by the alternate and participant modules
         try {
