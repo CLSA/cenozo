@@ -210,14 +210,14 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       module.addExtraOperation( 'view', {
         title: 'Withdraw',
         operation: function( $state, model ) { model.viewModel.launchWithdraw(); },
-        isIncluded: function( $state, model ) {
-          return false === model.viewModel.hasWithdrawn;
-        }
+        isIncluded: function( $state, model ) { return false === model.viewModel.hasWithdrawn; }
       } );
       module.addExtraOperation( 'view', {
         title: 'Reverse Withdraw',
         operation: function( $state, model ) { model.viewModel.reverseWithdraw(); },
-        isIncluded: function( $state, model ) { return true === model.viewModel.hasWithdrawn; },
+        isIncluded: function( $state, model ) {
+          return true === model.viewModel.hasWithdrawn && model.viewModel.allowReverseWithdraw;
+        },
         isDisabled: function( $state, model ) { return model.viewModel.reverseWithdrawDisabled; }
       } );
     }
@@ -669,6 +669,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         this.onViewPromise = null;
         this.scriptLauncher = null;
         this.hasWithdrawn = null;
+        this.allowReverseWithdraw = 3 <= CnSession.role.tier;
 
         // track the promise returned by the onView function
         this.onView = function() {
