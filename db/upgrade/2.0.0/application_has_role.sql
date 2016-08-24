@@ -38,31 +38,31 @@ CREATE PROCEDURE patch_application_has_role()
       FOREIGN KEY (role_id) REFERENCES role (id)
       ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-      SELECT "Adding new operator+ role to application_has_role" AS "";
-
-      INSERT IGNORE INTO application_has_role ( application_id, role_id )
-      SELECT application.id, role.id
-      FROM role, application
-      JOIN application_type ON application.application_type_id = application_type.id
-      WHERE application_type.name = "sabretooth"
-      AND role.name = "operator+";
-
-      SELECT "Removing defunct roles from application_has_role" AS "";
-
-      DELETE FROM application_has_role
-      WHERE (
-        role_id IN ( SELECT id FROM role WHERE name IN ( "cedar" ) )
-      ) OR (
-        application_id IN (
-          SELECT id FROM application
-          JOIN application_type ON application.application_type_id = application_type.id
-          WHERE application_type.name = "mastodon"
-        ) AND role_id IN (
-          SELECT id FROM role WHERE name IN ( "coordinator", "interviewer", "operator", "supervisor" )
-        )
-      );
-
     END IF;
+
+    SELECT "Adding new operator+ role to application_has_role" AS "";
+
+    INSERT IGNORE INTO application_has_role ( application_id, role_id )
+    SELECT application.id, role.id
+    FROM role, application
+    JOIN application_type ON application.application_type_id = application_type.id
+    WHERE application_type.name = "sabretooth"
+    AND role.name = "operator+";
+
+    SELECT "Removing defunct roles from application_has_role" AS "";
+
+    DELETE FROM application_has_role
+    WHERE (
+      role_id IN ( SELECT id FROM role WHERE name IN ( "cedar" ) )
+    ) OR (
+      application_id IN (
+        SELECT application.id FROM application
+        JOIN application_type ON application.application_type_id = application_type.id
+        WHERE application_type.name = "mastodon"
+      ) AND role_id IN (
+        SELECT id FROM role WHERE name IN ( "coordinator", "interviewer", "operator", "supervisor" )
+      )
+    );
 
   END //
 DELIMITER ;
