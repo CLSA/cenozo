@@ -13,7 +13,7 @@
     "url": "https://github.com/patrickdemond/cenozo"
   },
   "dependencies": {
-    "angular": "1.2.x",
+    "angular": "1.2.*",
     "angular-bootstrap": "0.12.x",
     "angular-ui-router": "0.2.x",
     "jquery": "~2.1.1",
@@ -23,9 +23,8 @@
     "requirejs": "2.1.x",
     "angular-animate": "1.2.x",
     "angular-sanitize": "1.2.x",
-    "angular-slider": "0.2.x",
     "angular-bootstrap-colorpicker": "latest",
-    "fullcalendar": "latest",
+    "fullcalendar": "2.6.0",
     "file-saver": "latest"
   },
   "scripts": {
