@@ -37,6 +37,22 @@ CREATE PROCEDURE patch_application_has_role()
       ADD CONSTRAINT fk_application_has_role_role_id
       FOREIGN KEY (role_id) REFERENCES role (id)
       ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+      SELECT "Removing defunct roles from application_has_role" AS "";
+
+      DELETE FROM application_has_role
+      WHERE (
+        role_id IN ( SELECT id FROM role WHERE name IN ( "cedar" ) )
+      ) OR (
+        application_id IN (
+          SELECT id FROM application
+          JOIN application_type ON application.application_type_id = application_type.id
+          WHERE application_type.name = "mastodon"
+        ) AND role_id IN (
+          SELECT id FROM role WHERE name IN ( "coordinator", "interviewer", "operator", "supervisor" )
+        )
+      );
+
     END IF;
 
   END //
