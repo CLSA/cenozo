@@ -6,6 +6,7 @@ SOURCE age_group.sql
 SOURCE collection.sql
 SOURCE state.sql
 SOURCE person_first_address.sql
+SOURCE role.sql
 SOURCE application_type.sql
 SOURCE application.sql
 SOURCE application_has_participant.sql
@@ -15,7 +16,6 @@ SOURCE application_has_collection.sql
 SOURCE activity.sql
 SOURCE user_has_application.sql
 SOURCE user_has_language.sql
-SOURCE role.sql
 SOURCE site.sql
 SOURCE application_has_site.sql
 SOURCE jurisdiction.sql

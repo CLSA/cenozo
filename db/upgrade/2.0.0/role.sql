@@ -34,3 +34,11 @@ SET name = "operator+",
     tier = 1,
     all_sites = false,
     special = false;
+
+SELECT "Adding new interviewer+ role" AS "";
+
+INSERT IGNORE INTO role
+SET name = "interviewer+",
+    tier = 1,
+    all_sites = false,
+    special = false;
