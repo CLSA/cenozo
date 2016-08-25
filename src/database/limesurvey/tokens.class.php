@@ -48,6 +48,34 @@ class tokens extends sid_record
   /**
    * TODO: document
    */
+  public function get_script()
+  {
+    $script_class_name = lib::get_class_name( 'database\script' );
+    return $script_class_name::get_unique_record( 'sid', static::get_sid() );
+  }
+
+  /**
+   * TODO: document
+   */
+  public function get_participant()
+  {
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+
+    $db_participant = NULL;
+    $db_script = $this->get_script();
+
+    if( !is_null( $db_script ) )
+    {
+      $uid = $db_script->repeated ? substr( $this->token, 0, strpos( $this->token, '.' ) ) : $this->token;
+      $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
+    }
+    
+    return $db_participant;
+  }
+
+  /**
+   * TODO: document
+   */
   public static function where_token( $modifier, $db_participant, $repeated = false )
   {
     if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )

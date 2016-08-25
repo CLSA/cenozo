@@ -675,7 +675,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         this.onView = function() {
           this.scriptLauncher = CnScriptLauncherFactory.instance( {
             script: CnSession.withdrawScript,
-            uid: String( this.parentModel.getQueryParameter( 'identifier' ) ).split( '=' ).pop(),
+            identifier: this.parentModel.getQueryParameter( 'identifier' ),
             onReady: function() {
               self.hasWithdrawn = null != self.scriptLauncher.token &&
                                   null != self.scriptLauncher.token.completed.match(

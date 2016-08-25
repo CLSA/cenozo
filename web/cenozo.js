@@ -5708,14 +5708,14 @@ cenozo.factory( 'CnScriptLauncherFactory', [
         throw new Error( 'Tried to create CnScriptLauncherFactory instance without a script' );
       if( angular.isUndefined( params.script.url ) )
         throw new Error( 'Tried to create CnScriptLauncherFactory instance without a script.url' );
-      if( angular.isUndefined( params.uid ) )
-        throw new Error( 'Tried to create CnScriptLauncherFactory instance without a uid' );
+      if( angular.isUndefined( params.identifier ) )
+        throw new Error( 'Tried to create CnScriptLauncherFactory instance without a identifier' );
       angular.extend( this, params );
       this.token = undefined;
       this.deferred = $q.defer();
 
       CnHttpFactory.instance( {
-        path: 'script/' + self.script.id + '/token/uid=' + self.uid,
+        path: 'script/' + self.script.id + '/token/' + self.identifier,
         data: { select: { column: [ 'token', 'completed' ] } },
         onError: function( response ) {
           // ignore 404
@@ -5749,7 +5749,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
 
             return CnHttpFactory.instance( {
               path: 'script/' + self.script.id + '/token',
-              data: { uid: self.uid },
+              data: { identifier: self.identifier },
               onError: function( response ) {
                 modal.close();
                 CnModalMessageFactory.httpError( response );
