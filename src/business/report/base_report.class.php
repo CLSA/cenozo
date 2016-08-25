@@ -39,7 +39,11 @@ abstract class base_report extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns where the report is saved on the file system
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
    */
   public function get_filename()
   {
@@ -47,7 +51,11 @@ abstract class base_report extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the report's extension (csv, xlsx or ods)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
    */
   public function get_extension()
   {
@@ -59,7 +67,11 @@ abstract class base_report extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the report's mime type
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
    */
   public function get_mime_type()
   {
@@ -369,7 +381,13 @@ abstract class base_report extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Used by implementing classes to get the SQL for fetching formatted datetime column data
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The database column to format (may include a table prefix)
+   * @param string $type Can be "datetime", "date" or "time
+   * @return string
+   * @access protected
    */
   protected function get_datetime_column( $column, $type = 'datetime' )
   {

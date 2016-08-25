@@ -25,7 +25,12 @@ class search_manager extends \cenozo\singleton
   protected function __construct() {}
 
   /**
-   * TODO: document
+   * Returns a list of distinct keywords from a query string
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $query A raw query string
+   * @return array A list of keywords (may be double-quote delimited)
+   * @access public
    */
   public function get_keywords( $query )
   {
@@ -58,7 +63,11 @@ class search_manager extends \cenozo\singleton
   }
 
   /**
-   * TODO: document
+   * Creates search results in the database
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $query A raw query string
+   * @access public
    */
   public function search( $query )
   {

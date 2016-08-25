@@ -48,11 +48,17 @@ class theme_manager extends \cenozo\singleton
   }
 
   /**
-   * TODO: document
+   * Used internally to return RGB-HEX color codes
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $type Which color type to return (primary or secondary)
+   * @param float $fraction What fraction to show the color at (0.0 to 1.0)
+   * @return string
+   * @access protected
    */
-  public function get_color( $type = 'primary', $percent = 1.0 )
+  protected function get_color( $type = 'primary', $fraction = 1.0 )
   {
-    $percent = strval( $percent );
+    $fraction = strval( $fraction );
 
     if( !array_key_exists( $type, $this->theme_color_list ) )
       throw lib::create( 'exception\runtime',
@@ -60,23 +66,26 @@ class theme_manager extends \cenozo\singleton
         __METHOD__ );
 
     // add the color if it doesn't exist
-    if( !array_key_exists( $percent, $this->theme_color_list[$type] ) )
+    if( !array_key_exists( $fraction, $this->theme_color_list[$type] ) )
     {
-      $r = $percent * $this->base_theme_color[$type]['r'];
+      $r = $fraction * $this->base_theme_color[$type]['r'];
       if( 0 > $r ) $r = 0; else if( 255 < $r ) $r = 255;
-      $g = $percent * $this->base_theme_color[$type]['g'];
+      $g = $fraction * $this->base_theme_color[$type]['g'];
       if( 0 > $g ) $g = 0; else if( 255 < $g ) $g = 255;
-      $b = $percent * $this->base_theme_color[$type]['b'];
+      $b = $fraction * $this->base_theme_color[$type]['b'];
       if( 0 > $b ) $b = 0; else if( 255 < $b ) $b = 255;
 
-      $this->theme_color_list[$type][$percent] = sprintf( '#%s%s%s', dechex( $r ), dechex( $g ), dechex( $b ) );
+      $this->theme_color_list[$type][$fraction] = sprintf( '#%s%s%s', dechex( $r ), dechex( $g ), dechex( $b ) );
     }
 
-    return $this->theme_color_list[$type][$percent];
+    return $this->theme_color_list[$type][$fraction];
   }
 
   /**
-   * TODO: document
+   * Writes the theme.css file to disk
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
    */
   public function generate_theme_css()
   {
@@ -92,8 +101,8 @@ class theme_manager extends \cenozo\singleton
     foreach( $matches[0] as $index => $match )
     {
       $type = strtolower( $matches[1][$index] );
-      $percent = $matches[2][$index];
-      $css = str_replace( $match, $this->get_color( $type, $percent ), $css );
+      $fraction = $matches[2][$index];
+      $css = str_replace( $match, $this->get_color( $type, $fraction ), $css );
     }
 
     $filename = sprintf( '%s/web/css/theme.css', APPLICATION_PATH );
@@ -101,16 +110,25 @@ class theme_manager extends \cenozo\singleton
   }
 
   /**
-   * TODO: document
+   * Internal cache of colors generated for get_color()
+   * @var array
+   * @access private
    */
-  protected $theme_color_list = array();
+  private $theme_color_list = array();
 
   /**
-   * TODO: document
+   * The base theme colors.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
    */
-  protected $base_theme_color = array();
+  private $base_theme_color = array();
 
-  protected $css_template = <<<'CSS'
+  /**
+   * A CSS template used when writing the theme.css file
+   * @var
+   * @access private
+   */
+  private $css_template = <<<'CSS'
 /* primary colours */
 a, .text-primary,
 .pagination > li > a,

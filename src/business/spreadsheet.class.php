@@ -22,6 +22,7 @@ class spreadsheet extends \cenozo\base_object
    * Constructor.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $filename A template file to load (may be NULL)
    * @access public
    */
   public function __construct( $filename = NULL )
@@ -42,6 +43,11 @@ class spreadsheet extends \cenozo\base_object
 
   /**
    * Loads database data into the spreadsheet
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string|array $data Data to load into the spreadsheet (may be a table list)
+   * @param string $title The title of the data (may be NULL)
+   * @access public
    */
   public function load_data( $data, $title = NULL )
   {
@@ -60,7 +66,12 @@ class spreadsheet extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Used internally to load data in the form of a string
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The data
+   * @param string $title The data's title
+   * @access protected
    */
   protected function load_data_from_string( $string, $title )
   {
@@ -81,7 +92,12 @@ class spreadsheet extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Used internally to load data in the form of an array
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $array The data
+   * @param string $title The data's title
+   * @access protected
    */
   protected function load_data_from_array( $array, $title )
   {
@@ -183,7 +199,12 @@ class spreadsheet extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Used internally to load data in the form of a table list (array of arrays)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $table_list The data
+   * @param string $title The data's title
+   * @access protected
    */
   protected function load_data_from_table_list( $table_list, $title )
   {
