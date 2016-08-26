@@ -694,7 +694,7 @@ angular.extend( cenozo, {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Animation used to fade between states
  */
 cenozo.animation( '.fade-transition', function() {
   return {
@@ -885,7 +885,7 @@ cenozo.directive( 'cnElastic', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Shows a loading component
  */
 cenozo.directive( 'cnLoading',
   function() {
@@ -908,7 +908,7 @@ cenozo.directive( 'cnLoading',
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Adds functionality to allow some select options to be disabled
  */
 cenozo.directive( 'cnOptionsDisabled', [
   '$parse',
@@ -1699,7 +1699,7 @@ cenozo.directive( 'cnTimer', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A tree directive
  */
 cenozo.directive( 'cnTree',
   function() {
@@ -1715,7 +1715,7 @@ cenozo.directive( 'cnTree',
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Used by the tree directive
  */
 cenozo.directive( 'cnTreeBranch', [
   'CnRecursionHelper',
@@ -1740,7 +1740,12 @@ cenozo.directive( 'cnTreeBranch', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Filters a listof objects based on a property's value
+ * Usage: myList|cnByObjectProperty:'active':true
+ *   This will only show objects in myList which have a property "active" equal to true
+ * 
+ * @param string prop The object's property to compare
+ * @param mixed value The value to compare to
  */
 cenozo.filter( 'cnByObjectProperty', function() {
   return function( input, prop, value ) {
@@ -1751,7 +1756,7 @@ cenozo.filter( 'cnByObjectProperty', function() {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A filter that displays comparitors as HTML encodings
  */
 cenozo.filter( 'cnComparator', function() {
   return function( input ) {
@@ -1769,30 +1774,7 @@ cenozo.filter( 'cnComparator', function() {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
- */
-cenozo.filter( 'cnCheckmark', function() {
-  return function( input ) {
-    if( "boolean" != cenozo.getType( input ) ) input = 0 != input;
-    return input ? '\u2714' : '\u2718';
-  };
-} );
-
-/* ######################################################################################################## */
-
-/**
- * TODO: document
- */
-cenozo.filter( 'cnCrop', function() {
-  return function( string, max ) {
-    return max < string.length ? string.substring( 0, max-2 ) + '\u2026' : string;
-  };
-} );
-
-/* ######################################################################################################## */
-
-/**
- * TODO: document
+ * Formats datetimes
  */
 cenozo.filter( 'cnDatetime', [
   'CnSession',
@@ -1819,37 +1801,7 @@ cenozo.filter( 'cnDatetime', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
- */
-cenozo.filter( 'cnIsEmpty',
-  function() {
-    return function( input ) {
-      if( angular.isArray( input ) ) return 0 == input.length;
-      else if( angular.isObject( input ) ) return 0 == Object.keys( input ).length;
-      else return angular.isUndefined( input );
-    };
-  }
-);
-
-/* ######################################################################################################## */
-
-/**
- * TODO: document
- */
-cenozo.filter( 'cnIsNotEmpty',
-  function() {
-    return function( input ) {
-      if( angular.isArray( input ) ) return 0 != input.length;
-      else if( angular.isObject( input ) ) return 0 != Object.keys( input ).length;
-      else return angular.isDefined( input );
-    };
-  }
-);
-
-/* ######################################################################################################## */
-
-/**
- * TODO: document
+ * A meta filter used to apply dynamic filters on a value
  */
 cenozo.filter( 'cnMetaFilter', [
   '$filter',
@@ -1874,7 +1826,7 @@ cenozo.filter( 'cnMetaFilter', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Replaces newlines with HTML line breaks <br>
  */
 cenozo.filter( 'cnNewlines', function () {
   return function( text ) { return text.replace( /\r?\n/g, '<br/>' ); }
@@ -1883,7 +1835,7 @@ cenozo.filter( 'cnNewlines', function () {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Adds numeral postfixes for rankings (1st, 2nd, 3rd, etc)
  */
 cenozo.filter( 'cnOrdinal', function() {
   return function( input ) {
@@ -1906,7 +1858,7 @@ cenozo.filter( 'cnOrdinal', function() {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A filter for percentages
  */
 cenozo.filter( 'cnPercent', function() {
   return function( input ) {
@@ -1923,7 +1875,7 @@ cenozo.filter( 'cnPercent', function() {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Filters restrictions into restriction types
  */
 cenozo.filter( 'cnRestrictType', function() {
   return function( input ) {
@@ -1935,7 +1887,7 @@ cenozo.filter( 'cnRestrictType', function() {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Filters numbers into bit sizes (or bit sizes into numbers)
  */
 cenozo.filter( 'cnSize', function() {
   return function( input, reverse ) {
@@ -1978,7 +1930,9 @@ cenozo.filter( 'cnSize', function() {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A filter that crops long strings to the given maximum length
+ * 
+ * @param integer max The maximum length a string can get before cropping it
  */
 cenozo.filter( 'cnStub', function() {
   return function( input, limit ) {
@@ -1990,7 +1944,7 @@ cenozo.filter( 'cnStub', function() {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A filter that capitolizes the first letter of every word
  */
 cenozo.filter( 'cnUCWords', function() {
   return function( input ) {
@@ -2003,7 +1957,7 @@ cenozo.filter( 'cnUCWords', function() {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Filters views into view types
  */
 cenozo.filter( 'cnViewType', function() {
   return function( input ) {
@@ -2016,7 +1970,7 @@ cenozo.filter( 'cnViewType', function() {
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Filters values into "Yes" or "No"
  */
 cenozo.filter( 'cnYesNo', function() {
   return function( input ) {
@@ -2060,7 +2014,7 @@ cenozo.factory( '$exceptionHandler', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * The session factory
  */
 cenozo.factory( 'CnSession', [
   '$state', '$timeout', '$filter', '$window', 'CnHttpFactory',
@@ -2178,7 +2132,7 @@ cenozo.factory( 'CnSession', [
             }
 
             // if the user's email isn't set then open the password dialog
-            /* disabling this for now
+            /* TODO: disabling this for now, either implement or remove
             if( !self.user.email && !CnModalAccountFactory.isOpen() ) {
               CnModalAccountFactory.instance( {
                 allowCancel: false,
@@ -2366,7 +2320,7 @@ cenozo.factory( 'CnSession', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * The base factory for all module Add factories
  */
 cenozo.factory( 'CnBaseAddFactory', [
   'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$filter', '$q',
@@ -2521,7 +2475,7 @@ cenozo.factory( 'CnBaseAddFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * The base factory for all module Calendar factories
  */
 cenozo.factory( 'CnBaseCalendarFactory', [
   'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
@@ -2784,7 +2738,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * The base factory for all module List factories
  */
 cenozo.factory( 'CnBaseListFactory', [
   'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
@@ -3203,7 +3157,7 @@ cenozo.factory( 'CnBaseListFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * The base factory for all module View factories
  */
 cenozo.factory( 'CnBaseViewFactory', [
   'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$injector', '$filter', '$q',
@@ -3592,7 +3546,7 @@ cenozo.factory( 'CnBaseViewFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * The base factory for all module Model factories
  */
 cenozo.factory( 'CnBaseModelFactory', [
   '$state', '$filter', 'CnSession', 'CnHttpFactory',
@@ -3734,7 +3688,9 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
-         * TODO: document
+         * Returns the collection path for this model
+         * 
+         * @param boolean ignoreParent Whether to not include parent's part of the path
          */
         cenozo.addExtendableFunction( self, 'getServiceCollectionPath', function( ignoreParent ) {
           if( angular.isUndefined( ignoreParent ) ) ignoreParent = false;
@@ -3749,7 +3705,10 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
-         * TODO: document
+         * Returns the resource path for this model
+         * 
+         * @param string|integer The resource may be specified, or if left blank the state's parameters
+         *                       will be used instead
          */
         cenozo.addExtendableFunction( self, 'getServiceResourcePath', function( resource ) {
           var identifier = angular.isUndefined( resource ) ? $state.params.identifier : resource;
@@ -3757,7 +3716,10 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
-         * TODO: document
+         * Returns the service data used by onList, OnView, etc, functions
+         * 
+         * @param string type One of calendar, list, report or view
+         * @param array columnRestrictLists Column restrictions
          */
         cenozo.addExtendableFunction( self, 'getServiceData', function( type, columnRestrictLists ) {
           if( angular.isUndefined( type ) || 0 > ['calendar','list','report','view'].indexOf( type ) )
@@ -3907,7 +3869,10 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
-         * TODO: document
+         * Reloads the current state
+         * 
+         * @param boolean reload Whether to force reload the state
+         * @param boolean notify Whether to send notification of a state change
          */
         cenozo.addExtendableFunction( self, 'reloadState', function( reload, notify ) {
           if( angular.isUndefined( reload ) ) reload = false;
@@ -3916,7 +3881,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
-         * TODO: document
+         * Transitions back to the previous state
          */
         cenozo.addExtendableFunction( self, 'transitionToLastState', function() {
           var stateName = $state.last.name;
@@ -3933,7 +3898,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
-         * TODO: document
+         * Transitions to this module's add state
          */
         cenozo.addExtendableFunction( self, 'transitionToAddState', function() {
           var stateName = $state.current.name;
@@ -3943,14 +3908,14 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
-         * TODO: document
+         * Transitions to the module's list state
          */
         cenozo.addExtendableFunction( self, 'transitionToListState', function() {
           return $state.go( self.module.subject.snake + '.list' );
         } );
 
         /**
-         * TODO: document
+         * Transitions to the module's view state
          */
         cenozo.addExtendableFunction( self, 'transitionToViewState', function( record ) {
           var stateName = $state.current.name;
@@ -3961,14 +3926,14 @@ cenozo.factory( 'CnBaseModelFactory', [
         } );
 
         /**
-         * TODO: document
+         * Transitions to the module's parent's view state
          */
         cenozo.addExtendableFunction( self, 'transitionToParentViewState', function( subject, identifier ) {
           return $state.go( subject + '.view', { identifier: identifier } );
         } );
 
         /**
-         * TODO: document
+         * Transitions to the module's parent's list state
          */
         cenozo.addExtendableFunction( self, 'transitionToParentListState', function( subject ) {
           if( angular.isUndefined( subject ) ) subject = '^';
@@ -4330,7 +4295,7 @@ cenozo.factory( 'CnBaseModelFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * The base factory for History factories
  */
 cenozo.factory( 'CnBaseHistoryFactory', [
   'CnSession', 'CnHttpFactory', '$state', '$q',
@@ -4415,7 +4380,7 @@ cenozo.factory( 'CnBaseHistoryFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * The base factory for Note factories
  */
 cenozo.factory( 'CnBaseNoteFactory', [
   'CnSession', 'CnHttpFactory', '$state',
@@ -4581,7 +4546,9 @@ cenozo.factory( 'CnBaseNoteFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * The master HTTP factory
+ * 
+ * All requests to the server's web API is done by creating an instance from this factory.
  */
 cenozo.factory( 'CnHttpFactory', [
   'CnModalMessageFactory', '$http', '$state', '$rootScope', '$timeout', '$window',
@@ -4767,7 +4734,7 @@ cenozo.factory( 'CnHttpFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A factory for showing account details in a modal window
  */
 cenozo.service( 'CnModalAccountFactory', [
   '$modal',
@@ -4822,7 +4789,7 @@ cenozo.service( 'CnModalAccountFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A factory for showing a yes/no confirmation dialog in a modal window
  */
 cenozo.service( 'CnModalConfirmFactory', [
   '$modal',
@@ -4856,7 +4823,7 @@ cenozo.service( 'CnModalConfirmFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A factory for showing a datetime picker in a modal window
  */
 cenozo.service( 'CnModalDatetimeFactory', [
   '$modal', '$window', 'CnSession',
@@ -5214,7 +5181,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A factory for showing a message dialog in a modal window
  */
 cenozo.service( 'CnModalMessageFactory', [
   '$modal',
@@ -5299,7 +5266,7 @@ cenozo.service( 'CnModalMessageFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A factory for showing a message password changing dialog in a modal window
  */
 cenozo.service( 'CnModalPasswordFactory', [
   '$modal',
@@ -5371,7 +5338,7 @@ cenozo.service( 'CnModalPasswordFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A factory for showing a column restriction dialog in a modal window
  */
 cenozo.service( 'CnModalRestrictFactory', [
   '$modal', 'CnModalDatetimeFactory', 'CnSession',
@@ -5516,7 +5483,7 @@ cenozo.service( 'CnModalRestrictFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A factory for showing a list of sites in a modal window
  */
 cenozo.service( 'CnModalSiteFactory', [
   '$modal', 'CnSession',
@@ -5549,7 +5516,7 @@ cenozo.service( 'CnModalSiteFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A factory for changing the current site and role in a modal window
  */
 cenozo.service( 'CnModalSiteRoleFactory', [
   '$modal', 'CnHttpFactory',
@@ -5620,7 +5587,7 @@ cenozo.service( 'CnModalSiteRoleFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * A factory for changing the current timezone in a modal window
  */
 cenozo.service( 'CnModalTimezoneFactory', [
   '$modal', 'CnSession',
@@ -5674,7 +5641,7 @@ cenozo.service( 'CnModalTimezoneFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Creates a pagination widget for paging through lists
  */
 cenozo.factory( 'CnPaginationFactory',
   function CnPaginationFactory() {
@@ -5695,7 +5662,7 @@ cenozo.factory( 'CnPaginationFactory',
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Launches scripts in a separate tab
  */
 cenozo.factory( 'CnScriptLauncherFactory', [
   'CnHttpFactory', 'CnModalMessageFactory', '$q', '$window',
@@ -5783,7 +5750,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Configures Cenozo's providers and sets up various configurations
  */
 cenozo.config( [
   '$controllerProvider', '$compileProvider', '$filterProvider', '$locationProvider',
@@ -5820,7 +5787,7 @@ cenozo.config( [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Adds callbacks to various events, primarily for logging
  */
 cenozo.run( [
   '$state', '$rootScope', 'CnSession',
