@@ -157,7 +157,11 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Used internally when saving records to the database
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $new Whether we are creating a new record or not
+   * @access private
    */
   private function get_set_list( $new )
   {
@@ -252,7 +256,12 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Saves multiple records at once (using INSERT SELECT syntax)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\select $select A selection of column values
+   * @param database\modifier $modifier A modifier defining which rows to insert
+   * @access public
    */
   public function save_list( $select, $modifier )
   {

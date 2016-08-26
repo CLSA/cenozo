@@ -159,7 +159,11 @@ class voip_manager extends \cenozo\singleton
   }
 
   /**
-   * TODO: document
+   * Returns an array of all SIP calls
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
    */
   public function get_call_list()
   {
@@ -307,7 +311,13 @@ class voip_manager extends \cenozo\singleton
   public function get_prefix() { return $this->prefix; }
 
   /**
-   * TODO: document
+   * Gets the "peer" from a user record
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\user $user Use NULL for the current session's user
+   * @return integer
+   * @access public
+   * @static
    */
   public static function get_peer_from_user( $user = NULL )
   {
@@ -319,7 +329,13 @@ class voip_manager extends \cenozo\singleton
   }
 
   /**
-   * TODO: document
+   * Gets the user record from the "peer"
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $peer
+   * @return database\user
+   * @access public
+   * @static
    */
   public static function get_user_from_peer( $peer )
   {

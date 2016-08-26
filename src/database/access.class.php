@@ -47,7 +47,13 @@ class access extends record
     parent::delete();
   }
 
-  // TODO: document
+  /**
+   * Determines whether the access has expired (timed-out)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
   public function has_expired()
   {
     $activity_class_name = lib::get_class_name( 'database\activity' );

@@ -15,7 +15,11 @@ use cenozo\lib, cenozo\log;
 class report extends base_report
 {
   /**
-   * TODO: document
+   * Gets the report's business class (which generates the report)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return business\report\*
+   * @access public
    */
   public function get_executer()
   {
@@ -23,7 +27,11 @@ class report extends base_report
   }
 
   /**
-   * TODO: document
+   * Copies the parent report schedule's restrictions into this report.
+   * This method is for reports linked to a report schedule only.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
    */
   public function copy_report_schedule_restrictions()
   {

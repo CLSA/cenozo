@@ -15,7 +15,12 @@ use cenozo\lib, cenozo\log;
 abstract class module extends \cenozo\base_object
 {
   /**
-   * TODO: document
+   * Constructor
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer The module's index
+   * @param service\service The module's service
+   * @access public
    */
   public function __construct( $index, $service )
   {
@@ -71,7 +76,10 @@ abstract class module extends \cenozo\base_object
   public function validate() {}
 
   /**
-   * Returns whether this is the leaf module (has no children)
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function is_leaf_module()
   {
@@ -79,7 +87,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * Returns the method of the parent service
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function get_method()
   {
@@ -87,7 +98,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * Returns this module's subject
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function get_subject()
   {
@@ -95,7 +109,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * Returns the parent module's (collection's) subject
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function get_parent_subject()
   {
@@ -103,7 +120,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function get_resource()
   {
@@ -111,7 +131,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function get_parent_resource()
   {
@@ -119,7 +142,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function set_data( $data )
   {
@@ -127,7 +153,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function get_status()
   {
@@ -135,7 +164,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   public function get_file_as_raw()
   {
@@ -143,7 +175,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   public function get_file_as_object()
   {
@@ -151,7 +186,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   public function get_file_as_array()
   {
@@ -159,7 +197,10 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns information about the parent service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
   protected function get_argument( $name, $default = NULL )
   {
@@ -169,12 +210,16 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * The module's index
+   * @var integer
+   * @access private
    */
   private $index = NULL;
 
   /**
-   * TODO: document
+   * The module's service
+   * @var service\service
+   * @access private
    */
   private $service = NULL;
 }

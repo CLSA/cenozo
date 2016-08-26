@@ -16,7 +16,9 @@ class report_schedule extends base_report
 {
   /**
    * Runs any scheduled report who's schedule indicates a new report must be generated.
-   * TODO: document
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
    */
   public static function update_all()
   {

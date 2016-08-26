@@ -382,7 +382,11 @@ abstract class service extends \cenozo\base_object
   public function get_method() { return $this->method; }
 
   /**
-   * TODO: document
+   * Returns the number of collections in the service
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return integer
+   * @access public
    */
   public function get_number_of_collections()
   {
@@ -420,8 +424,14 @@ abstract class service extends \cenozo\base_object
     return array_key_exists( $index, $this->resource_value_list ) ? $this->resource_value_list[$index] : NULL;
   }
 
-  /** 
-   * TODO: document
+  /**
+   * Returns the record's class name by index
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $index
+   * @param boolean $relative Whether to return the relative class name (without full path)
+   * @return string
+   * @access protected
    */
   protected function get_record_class_name( $index, $relative = false )
   {
@@ -448,6 +458,7 @@ abstract class service extends \cenozo\base_object
    * @param integer $index
    * @return database\record
    * @access public
+   * @final
    */
   public final function get_resource( $index )
   {
@@ -457,7 +468,12 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Creates the resource for a given index (almost always a database record)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $index
+   * @return database\record|mixed The created resource
+   * @access protected
    */
   protected function create_resource( $index )
   {
@@ -563,7 +579,11 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the leaf record's class name
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
    */
   public function get_leaf_record_class_name()
   {
@@ -1061,12 +1081,14 @@ abstract class service extends \cenozo\base_object
   private $resource_value_list = NULL;
 
   /**
-   * TODO: document
+   * A list of all modules
+   * @var array
+   * @access private
    */
   private $module_list = NULL;
 
   /**
-   * 
+   * A cache of generated resources
    * @var array( database\record )
    * @access private
    */

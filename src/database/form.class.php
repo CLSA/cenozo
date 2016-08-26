@@ -15,7 +15,11 @@ use cenozo\lib, cenozo\log;
 class form extends record
 {
   /**
-   * TODO: document
+   * Returns the filesystem location of the form
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
    */
   public function get_filename()
   {
@@ -38,7 +42,13 @@ class form extends record
   }
 
   /**
-   * TODO: document
+   * Adds consent data and associates it to this form
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $type The type of consent (see consent_type.name)
+   * @param array $consent An associative array containing "datetime" and "accept" keys
+   * @return database\consent The consent record created by this method
+   * @access public
    */
   public function add_consent( $type, $consent )
   {
@@ -73,7 +83,13 @@ class form extends record
   }
 
   /**
-   * TODO: document
+   * Adds hin data and associates it to this form
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $type The type of hin (see hin_type.name)
+   * @param array $hin An associative array containing "datetime", "code" and "region_id" keys
+   * @return database\hin The hin record created by this method
+   * @access public
    */
   public function add_hin( $hin )
   {
@@ -100,7 +116,13 @@ class form extends record
   }
 
   /**
-   * TODO: document
+   * Adds proxy data and associates it to this form
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $type The type of proxy (see proxy_type.name)
+   * @param array $proxy An associative array containing all proxy data
+   * @return database\proxy The proxy record created by this method
+   * @access public
    */
   public function add_proxy_alternate( $proxy )
   {
@@ -182,7 +204,13 @@ class form extends record
   }
 
   /**
-   * TODO: document
+   * Adds informant data and associates it to this form
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $type The type of informant (see informant_type.name)
+   * @param array $informant An associative array containing all informant data
+   * @return database\informant The informant record created by this method
+   * @access public
    */
   public function add_informant_alternate( $informant )
   {
@@ -263,8 +291,12 @@ class form extends record
   }
 
   /**
-   * save the form to disk
-   * TODO: document
+   * Save the form to disk
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param binary $data The form's raw file data
+   * @return boolean Whether the operation is successful
+   * @access public
    */
   public function write_file( $data )
   {
@@ -274,8 +306,12 @@ class form extends record
   }
 
   /**
-   * copy the form from the disk
-   * TODO: document
+   * Copy the form from the disk
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $filename A local file to copy as this form's file
+   * @return boolean Whether the operation is successful
+   * @access public
    */
   public function copy_file( $filename )
   {
@@ -285,7 +321,12 @@ class form extends record
   }
 
   /**
-   * TODO: document
+   * Used internall to add associated records to this form
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $subject The table name of the associated record
+   * @param integer $id The primary ID of the associated record
+   * @access private
    */
   private function add_association( $subject, $id )
   {

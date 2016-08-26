@@ -15,7 +15,11 @@ use cenozo\lib, cenozo\log;
 abstract class base_report extends \cenozo\database\record
 {
   /**
-   * TODO: document
+   * Returns an array of all report restrictions
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
    */
   public function get_restriction_value_list()
   {
@@ -45,7 +49,12 @@ abstract class base_report extends \cenozo\database\record
   }
 
   /**
-   * TODO: document
+   * Set's a report's restriction value
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer|string|database\report_restriction $restriction
+   * @param string $value
+   * @access public
    */
   public function set_restriction_value( $restriction, $value )
   {

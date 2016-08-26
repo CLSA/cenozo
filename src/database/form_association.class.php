@@ -15,7 +15,11 @@ use cenozo\lib, cenozo\log;
 class form_association extends record
 {
   /**
-   * TODO: document
+   * Gets the record linked by this association
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\record
+   * @access public
    */
   public function get_associated_record()
   {

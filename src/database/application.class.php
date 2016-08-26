@@ -31,7 +31,11 @@ class application extends record
 
   /**
    * Determine whether the current application has access to the participant
-   * TODO: document
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @return boolean
+   * @access public
    */
   public function has_participant( $db_participant )
   {

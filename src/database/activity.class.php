@@ -76,7 +76,14 @@ class activity extends record
     catch( \cenozo\exception\notice $e ) {}
   }
 
-  // TODO: document
+  /**
+   * Returns a modifier which restricts to expired activity
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\modifier
+   * @access public
+   * @static
+   */
   public static function get_expired_modifier()
   {
     $setting_manager = lib::create( 'business\setting_manager' );

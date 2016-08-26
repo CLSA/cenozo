@@ -23,7 +23,7 @@ class post extends write
   }
 
   /**
-   * TODO: document
+   * Extends parent method
    */
   protected function prepare()
   {
@@ -55,7 +55,7 @@ class post extends write
   }
 
   /**
-   * TODO: document
+   * Extends parent method
    */
   protected function validate()
   {
@@ -161,7 +161,7 @@ class post extends write
   }
 
   /**
-   * TODO: document
+   * Extends parent method
    */
   protected function create_resource( $index )
   {

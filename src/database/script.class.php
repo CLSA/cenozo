@@ -35,6 +35,11 @@ class script extends record
 
   /**
    * Adds all missing started events for this script
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @access public
+   * @static
    */
   public function add_started_event_types( $db_participant )
   {
@@ -43,6 +48,12 @@ class script extends record
 
   /**
    * Adds all missing started events for all of this application's scripts
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @param database\script $db_script
+   * @access public
+   * @static
    */
   public static function add_all_started_event_types( $db_participant, $db_script = NULL )
   {
@@ -51,6 +62,11 @@ class script extends record
 
   /**
    * Adds all missing finished events for this script
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @access public
+   * @static
    */
   public function add_finished_event_types( $db_participant )
   {
@@ -59,6 +75,12 @@ class script extends record
 
   /**
    * Adds all missing finished events for all of this application's scripts
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @param database\script $db_script
+   * @access public
+   * @static
    */
   public static function add_all_finished_event_types( $db_participant, $db_script = NULL )
   {
@@ -66,7 +88,15 @@ class script extends record
   }
 
   /**
-   * TODO: document
+   * Adds a script's missing events to a participant.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @param database\script $db_script
+   * @param boolean $started_events Whether to include started_events
+   * @param boolean $finished_events Whether to include finished_events
+   * @access public
+   * @static
    */
   public static function add_all_event_types(
     $db_participant, $db_script = NULL, $started_events = true, $finished_events = true )

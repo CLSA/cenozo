@@ -46,7 +46,11 @@ class tokens extends sid_record
   }
 
   /**
-   * TODO: document
+   * Returns the script this token was created for
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\script
+   * @access public
    */
   public function get_script()
   {
@@ -55,7 +59,11 @@ class tokens extends sid_record
   }
 
   /**
-   * TODO: document
+   * Returns the participant this token was created for
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\participant
+   * @access public
    */
   public function get_participant()
   {
@@ -74,7 +82,14 @@ class tokens extends sid_record
   }
 
   /**
-   * TODO: document
+   * Adds where statements to a modifier to restrict it to participant's token
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier The modifier which will be changed by this function
+   * @param database\participant $db_participant
+   * @param boolean $repeated Whether the token is for a repeating script
+   * @access public
+   * @static
    */
   public static function where_token( $modifier, $db_participant, $repeated = false )
   {

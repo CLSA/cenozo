@@ -91,7 +91,7 @@ class query extends read
   }
 
   /**
-   * TODO: document
+   * Extends parent method
    */
   protected function get_record_count()
   {
@@ -109,7 +109,7 @@ class query extends read
   }
 
   /**
-   * TODO: document
+   * Extends parent method
    */
   protected function get_record_list()
   {

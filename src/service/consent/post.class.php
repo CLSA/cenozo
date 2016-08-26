@@ -60,7 +60,7 @@ class post extends \cenozo\service\service
   }
 
   /**
-   * TODO: document
+   * Extends parent method
    */
   protected function create_resource( $index )
   {

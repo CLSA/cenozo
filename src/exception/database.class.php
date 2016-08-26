@@ -98,7 +98,11 @@ class database extends base_exception
   }
 
   /**
-   * TODO: document
+   * Used to identify which table failed the foreign key constraint
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
    */
   public function get_failed_constraint_table()
   {
