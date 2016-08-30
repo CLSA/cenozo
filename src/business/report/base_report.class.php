@@ -231,7 +231,7 @@ abstract class base_report extends \cenozo\base_object
    * @abstract
    */
   abstract protected function build();
-  
+
   /**
    * Applies the report's restrictions to the given modifier
    * 
@@ -249,7 +249,7 @@ abstract class base_report extends \cenozo\base_object
       log::warning( 'Tried to apply restrictions for a report without a valid report record.' );
       return;
     }
-    
+
     $report_type_subject = $this->db_report->get_report_type()->subject;
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $subject_class_name = lib::get_class_name( sprintf( 'database\%s', $report_type_subject ) );
