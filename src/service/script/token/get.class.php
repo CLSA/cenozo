@@ -43,32 +43,13 @@ class get extends \cenozo\service\get
       $tokens_class_name::set_sid( $db_script->sid );
 
       // handle special case of token resource value being uid=<uid>
-      $db_participant = NULL;
       $resource_value = $this->get_resource_value( $index );
-      $matches = array();
-      if( 1 === preg_match( '/^token=([^;=]+)$/', $resource_value, $matches ) )
-      {
-        $record = $tokens_class_name::get_unique_record( 'token', $matches[1] );
-      }
-      else if( 1 === preg_match( '/^uid=([^;=]+)$/', $resource_value, $matches ) )
-      {
-        // translate uid and parent script into token string
-        $db_participant = $participant_class_name::get_unique_record( 'uid', $matches[1] );
-        $token = $tokens_class_name::determine_token_string( $db_participant, $db_script->repeated );
-        $record = $tokens_class_name::get_unique_record( 'token', $token );
-      }
-      else if( $util_class_name::string_matches_int( $resource_value ) )
-      {
-        $db_participant = lib::create( 'database\participant', $resource_value );
-        $token = $tokens_class_name::determine_token_string( $db_participant, $db_script->repeated );
-        $record = $tokens_class_name::get_unique_record( 'token', $token );
-      }
-      else throw lib::create( 'database\runtime', 'Invalid resource provided for token.', __METHOD__ );
+      $record = $tokens_class_name::get_record_from_identifier( $resource_value );
 
       // the withdraw script may be deleted if it is incomplete
       if( $db_script->withdraw && !is_null( $record ) && 'N' == $record->completed )
       {
-        if( is_null( $db_participant ) ) $db_participant = $record->get_participant();
+        $db_participant = $record->get_participant();
 
         $remove = false;
         if( is_null( $db_participant->check_withdraw ) )

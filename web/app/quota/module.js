@@ -184,7 +184,7 @@ define( function() {
               } ),
 
               CnHttpFactory.instance( {
-                path: 'application/' + CnSession.application.id + '/site',
+                path: 'application/0/site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
                   modifier: { order: 'name' }

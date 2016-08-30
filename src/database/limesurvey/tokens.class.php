@@ -155,8 +155,11 @@ class tokens extends sid_record
    */
   public static function get_unique_record( $column, $value )
   {
-    // there are no unique keys in limesurvey, so emulate one for the "token" column
-    if( 'token' == $column )
+    // column and value may be arrays
+    if( is_array( $column ) && 1 == count( $column ) ) $column = $column[0];
+    if( is_array( $value ) && 1 == count( $value ) ) $value = $value[0];
+
+    if( 'token' == $column || 'uid' == $column )
     {
       $select = lib::create( 'database\select' );
       $select->from( static::get_table_name() );

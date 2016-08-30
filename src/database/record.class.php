@@ -1348,6 +1348,46 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * Get record using an identifier.
+   * 
+   * This method returns an instance of the record using an identifier.  Identifiers are used by the
+   * web API and are either an ID or a list of key=value pairs delimited by semicolons.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer|string $identifier String is in the format: key1=value1;key2=value2;etc
+   * @return database\record
+   * @static
+   * @access public
+   */
+  public static function get_record_from_identifier( $identifier )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $record = NULL;
+    if( $util_class_name::string_matches_int( $identifier ) )
+    { // the identifier is an integer, so load the record directly
+      $record = new static( $identifier );
+    }
+    else if( 1 == preg_match( '/^[^=;]+=[^=;]+(;[^=;]+=[^=;]+)*$/', $identifier ) )
+    { // the identifier is a set of key=value pairs, load the record using unique keys
+      $columns = array();
+      $values = array();
+      foreach( explode( ';', $identifier ) as $part )
+      {
+        $pair = explode( '=', $part );
+        if( 2 == count( $pair ) )
+        {
+          $columns[] = $pair[0];
+          $values[] = $pair[1];
+        }
+      }
+
+      $record = static::get_unique_record( $columns, $values );
+    }
+
+    return $record;
+  }
+
+  /**
    * Returns the name of the table associated with this record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string

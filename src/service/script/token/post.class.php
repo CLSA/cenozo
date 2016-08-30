@@ -22,8 +22,7 @@ class post extends \cenozo\service\post
     {
       // must have a participant_id in the provided data
       $data = $this->get_file_as_array();
-      if( 1 !== count( $data ) || !in_array( key( $data ), array( 'uid', 'participant_id' ) ) )
-        $this->status->set_code( 400 );
+      if( !array_key_exists( 'identifier', $data ) ) $this->status->set_code( 400 );
     }
   }
 
@@ -41,11 +40,13 @@ class post extends \cenozo\service\post
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $data = $this->get_file_as_array();
 
-    // populate the token
+    // get the script and participant records
     if( is_null( $this->db_script ) ) $this->db_script = $this->get_parent_record();
-    $this->db_participant = array_key_exists( 'uid', $data )
-                    ? $participant_class_name::get_unique_record( 'uid', $data['uid'] )
-                    : lib::create( 'database\participant', $data['participant_id'] );
+    $this->db_participant = $participant_class_name::get_record_from_identifier( $data['identifier'] );
+    if( is_null( $this->db_participant ) )
+      throw lib::create( 'database\runtime', 'Invalid resource provided for token.', __METHOD__ );
+
+    // populate the token
     $db_tokens = $this->get_leaf_record();
     $db_tokens->token = $db_tokens::determine_token_string( $this->db_participant, $this->db_script->repeated );
 

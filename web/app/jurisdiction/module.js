@@ -129,9 +129,9 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnJurisdictionModelFactory', [
     'CnBaseModelFactory', 'CnJurisdictionListFactory', 'CnJurisdictionAddFactory', 'CnJurisdictionViewFactory',
-    'CnHttpFactory', 'CnSession',
+    'CnHttpFactory',
     function( CnBaseModelFactory, CnJurisdictionListFactory, CnJurisdictionAddFactory, CnJurisdictionViewFactory,
-              CnHttpFactory, CnSession ) {
+              CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -143,7 +143,7 @@ define( function() {
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
             return CnHttpFactory.instance( {
-              path: 'application/' + CnSession.application.id + '/site',
+              path: 'application/0/site',
               data: {
                 select: { column: [ 'id', 'name' ] },
                 modifier: { order: 'name' }

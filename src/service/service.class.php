@@ -490,52 +490,25 @@ abstract class service extends \cenozo\base_object
       $util_class_name = lib::get_class_name( 'util' );
       $record_class_name = $this->get_record_class_name( $index );
 
-      if( $util_class_name::string_matches_int( $resource_value ) )
-      { // there is a resource, get the corresponding record
-        try
-        {
-          // some subjects may self-reference with a value of 0
-          $get_method = sprintf( 'get_%s', $subject );
-          $record = 0 == $resource_value && in_array( $subject, array( 'application', 'role', 'site', 'user' ) )
-                  ? $session->$get_method()
-                  : new $record_class_name( $resource_value );
-        }
-        catch( \cenozo\exception\notice $e )
-        {
-          $this->set_data( $e->get_notice() );
-          $this->status->set_code( 306 );
-        }
-        // ignore runtime exceptions and instead just return a null record
-        catch( \cenozo\exception\runtime $e ) {}
+      // if the resource value has key=value pairs and has a parent then add the parent ID
+      $parent_index = $index - 1;
+      if( 1 == preg_match( '/^[^=;]+=[^=;]+(;[^=;]+=[^=;]+)*$/', $resource_value ) && 0 <= $parent_index )
+      {
+        $parent_record = $this->get_resource( $parent_index );
+        $resource_value .= sprintf( ';%s_id=%s', $parent_record->get_class_name(), $parent_record->id );
       }
-      else if( false !== strpos( $resource_value, '=' ) )
-      { // check unique keys
-        $columns = array();
-        $values = array();
-        foreach( explode( ';', $resource_value ) as $part )
-        {
-          $pair = explode( '=', $part );
-          if( 2 == count( $pair ) )
-          {
-            $columns[] = $pair[0];
-            $values[] = $pair[1];
-          }
-        }
 
-        if( 0 < count( $columns ) )
-        {
-          $parent_index = $index - 1;
-          if( 0 <= $parent_index )
-          {
-            // add the parent ID to the unique key
-            $parent_record = $this->get_resource( $parent_index );
-            $columns[] = sprintf( '%s_id', $parent_record->get_class_name() );
-            $values[] = $parent_record->id;
-          }
-
-          $record = $record_class_name::get_unique_record( $columns, $values );
-        }
+      try
+      {
+        $record = $record_class_name::get_record_from_identifier( $resource_value );
       }
+      catch( \cenozo\exception\notice $e )
+      {
+        $this->set_data( $e->get_notice() );
+        $this->status->set_code( 306 );
+      }
+      // ignore runtime exceptions and instead just return a null record
+      catch( \cenozo\exception\runtime $e ) {}
     }
 
     return $record;

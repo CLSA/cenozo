@@ -15,6 +15,18 @@ use cenozo\lib, cenozo\log;
 class site extends record
 {
   /**
+   * Override parent method if identifier is 0 (get record from session)
+   */
+  public static function get_record_from_identifier( $identifier )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $session = lib::create( 'business\session' );
+
+    // session objects can be loaded by using the identifier 0
+    return 0 == $identifier ? $session->get_application() : parent::get_record_from_identifier( $identifier );
+  }
+
+  /**
    * Override parent method
    */
   public function save()

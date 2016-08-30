@@ -15,6 +15,18 @@ use cenozo\lib, cenozo\log;
 class application extends record
 {
   /**
+   * Override parent method if identifier is 0 (get record from session)
+   */
+  public static function get_record_from_identifier( $identifier )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $session = lib::create( 'business\session' );
+
+    // session objects can be loaded by using the identifier 0
+    return 0 == $identifier ? $session->get_application() : parent::get_record_from_identifier( $identifier );
+  }
+
+  /**
    * Override parent save method to mark the theme as changed when the colors change
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
