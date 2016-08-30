@@ -64,7 +64,7 @@ abstract class downloadable extends get
     return $this->get_argument( 'download', false ) ?
       $this->get_downloadable_public_name() : parent::get_filename();
   }
-  
+
   /**
    * Override parent method when the download argument is present
    */

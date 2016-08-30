@@ -77,7 +77,7 @@ class tokens extends sid_record
       $uid = $db_script->repeated ? substr( $this->token, 0, strpos( $this->token, '.' ) ) : $this->token;
       $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
     }
-    
+
     return $db_participant;
   }
 

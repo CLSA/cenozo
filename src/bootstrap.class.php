@@ -66,7 +66,7 @@ final class bootstrap
     require_once dirname( __FILE__ ).'/initial.class.php';
     $initial = new initial;
     $this->settings = $initial->get_settings();
-    
+
     ini_set( 'session.save_path', TEMPORARY_FILES_PATH );
     ini_set( 'session.gc_probability', 1 );
     ini_set( 'session.gc_divisor', 100 );

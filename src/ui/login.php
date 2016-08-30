@@ -148,7 +148,7 @@
               </div>
               <div class="form-footer text-right rounded-bottom bg-info">
                 <button type="submit" class="btn btn-primary" ng-disabled="'processing' == state">Login</button>
-              </div> 
+              </div>
             </form>
           </div>
         </div>

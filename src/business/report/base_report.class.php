@@ -97,7 +97,7 @@ abstract class base_report extends \cenozo\base_object
       log::warning( 'Tried to generate report without a valid report record.' );
       return;
     }
-    
+
     $setting_manager = lib::create( 'business\setting_manager' );
     $util_class_name = lib::get_class_name( 'util' );
     $db_report_type = $this->db_report->get_report_type();

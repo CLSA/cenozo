@@ -233,7 +233,7 @@ class spreadsheet extends \cenozo\base_object
 
       $cell_count += $column_count * $row_count;
     }
-    
+
     $row = 1;
     $max_col = 1 < $max ? chr( 64 + $max ) : false;
 
@@ -257,10 +257,10 @@ class spreadsheet extends \cenozo\base_object
       $this->set_size( NULL );
       $row++;
     }
-    
+
     // the underlying php-excel library is very inefficient so truncate the report after 20,000 cells
     $cell_count = 0;
-    
+
     // add in each table
     foreach( $table_list as $table )
     {
@@ -304,7 +304,7 @@ class spreadsheet extends \cenozo\base_object
         $this->set_background_color( NULL );
         $row++;
       }
-      
+
       $first_content_row = $row;
 
       // put in the table contents
@@ -326,9 +326,9 @@ class spreadsheet extends \cenozo\base_object
             $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
             $col++;
           }
-          
-          if( $insert_row && in_array( $content_row, $table['blanks'] ) ) $row++;    
-                    
+
+          if( $insert_row && in_array( $content_row, $table['blanks'] ) ) $row++;
+
           $cell_count += count( $contents );
           $content_row++;
           $row++;
@@ -344,7 +344,7 @@ class spreadsheet extends \cenozo\base_object
       if( $max_cells < $cell_count ) break;
 
       $last_content_row = $row - 1;
-      
+
       // put in the table footer
       if( count( $table['footer'] ) )
       {

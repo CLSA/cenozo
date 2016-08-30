@@ -102,12 +102,12 @@ class util
 
     $descriptorspec = array( array( 'pipe', 'r' ), array( 'pipe', 'w' ), array( 'pipe', 'w' ) );
     $pipes = array();
-   
+
     $timeout += time();
     $process = proc_open( $command, $descriptorspec, $pipes );
     if( !is_resource( $process ) )
       throw lib::create( 'exception\runtime', sprintf( 'proc_open failed on: "%s"', $command ), __METHOD__ );
-   
+
     $output = '';
     do
     {
@@ -116,10 +116,10 @@ class util
       $write = array();
       $exeptions= array();
       stream_select( $read, $write, $exeptions, $timeleft );
-   
+
       if( !empty( $read ) ) $output .= fread( $pipes[1], 8192 );
     } while( !feof( $pipes[1] ) && $timeleft > 0 );
-   
+
     if( $timeleft <= 0 )
     {
       proc_terminate( $process );

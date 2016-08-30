@@ -93,13 +93,13 @@ class ldap_manager extends \cenozo\singleton
       // arguments: --use-username-as-cn
       // on success: User 'USERNAME' created successfully
       // on error: ERROR(ldb): Failed to add user 'USERNAME':  - LDAP error 68 LDAP_ENTRY_ALREADY_EXISTS - \
-      //           <00002071: samldb: Account name (sAMAccountName) 'USERNAME' already in use!> <> 
+      //           <00002071: samldb: Account name (sAMAccountName) 'USERNAME' already in use!> <>
       $command = sprintf( 'user create "%s" "%s" --use-username-as-cn',
                           $username,
                           $password,
                           $first_name,
                           $last_name );
-      
+
       $command = sprintf( 'samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
                           $command,
                           $this->server,
@@ -162,13 +162,13 @@ class ldap_manager extends \cenozo\singleton
     if( 'samba' == $this->type )
     {
       // command: user delete USERNAME
-      // error response: 
+      // error response:
       // ERROR(exception): Failed to remove user "USERNAME" - Unable to find user "USERNAME"
       //   File "/usr/lib/python2.7/dist-packages/samba/netcmd/user.py", line 238, in run
       //     samdb.deleteuser(username)
       //   File "/usr/lib/python2.7/dist-packages/samba/samdb.py", line 449, in deleteuser
       //     raise Exception('Unable to find user "%s"' % username)
-      // success response: Deleted user USERNAME 
+      // success response: Deleted user USERNAME
       $command = sprintf( 'user delete "%s"', $username );
 
       $command = sprintf( 'samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
@@ -298,9 +298,9 @@ class ldap_manager extends \cenozo\singleton
       // command: user setpassword "USERNAME" --newpassword="PASSWORD"
       // error response: (may timeout if newpassword is empty string)
       // ERROR: Failed to set password for user 'USERNAME2': Unable to find user "USERNAME2"
-      // success response: Changed password OK 
+      // success response: Changed password OK
       $command = sprintf( 'user setpassword "%s" --newpassword="%s"', $username, $password );
-      
+
       $command = sprintf( 'samba-tool %s --URL="ldap://%s" --username="%s" --password="%s"',
                           $command,
                           $this->server,

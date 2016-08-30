@@ -75,7 +75,7 @@ class patch extends \cenozo\service\service
       // no other arguments required
     }
     else $error_code = 412;
-    
+
     if( !is_null( $error_code ) ) $this->get_status()->set_code( $error_code );
   }
 

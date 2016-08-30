@@ -30,7 +30,7 @@ class get extends \cenozo\service\downloadable
                     $db_report->id,
                     $db_report->get_executer()->get_extension() );
   }
-  
+
   /**
    * Replace parent method
    */
