@@ -19,10 +19,10 @@ class phone extends has_rank
    */
   public function save()
   {
-    $util = lib::get_class_name( 'util' );
+    $util_class_name = lib::get_class_name( 'util' );
 
     // make sure national numbers are in valid format
-    if( !$this->international && !$util::validate_north_american_phone_number( $this->number ) )
+    if( !$this->international && !$util_class_name::validate_north_american_phone_number( $this->number ) )
       throw lib::create( 'exception\notice',
         sprintf( 'The provided number "%s" is not a valid North American phone number', $this->number ),
         __METHOD__ );
