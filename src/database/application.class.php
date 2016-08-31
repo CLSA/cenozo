@@ -23,7 +23,7 @@ class application extends record
     $session = lib::create( 'business\session' );
 
     // session objects can be loaded by using the identifier 0
-    return 0 == $identifier ? $session->get_application() : parent::get_record_from_identifier( $identifier );
+    return 0 === $identifier ? $session->get_application() : parent::get_record_from_identifier( $identifier );
   }
 
   /**
