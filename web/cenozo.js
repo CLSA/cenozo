@@ -238,6 +238,52 @@ angular.extend( cenozoApp, {
               group.inputList[key] = input;
             }
           },
+          addInputAfter: function( groupTitle, afterKey, key, input ) {
+            // make sure the key is unique throughout all groups
+            var foundGroup = null;
+            if( this.inputGroupList.some( function( group ) {
+              if( angular.isDefined( group.inputList[key] ) ) {
+                foundGroup = group;
+                return true;
+              }
+            } ) ) {
+              console.error(
+                'Cannot add input "%s" to group "%s" after "%s" as it already exists in the existing group "%s".',
+                key, groupTitle, afterKey, foundGroup.title
+              );
+            } else {
+              // add the key to the input
+              input.key = key;
+
+              // create the group if it doesn't exist
+              var group = this.inputGroupList.findByProperty( 'title', groupTitle );
+              if( !group ) {
+                console.error(
+                  'Cannot add input "%s" to group "%s" after "%s" as the group doesn\'t exist.',
+                  key, groupTitle, afterKey
+                );
+              } else {
+                var found = false;
+                var newInputList = {};
+                for( var k in group.inputList ) {
+                  newInputList[k] = group.inputList[k];
+                  if( afterKey === k ) {
+                    newInputList[key] = input;
+                    found = true;
+                  }
+                }
+
+                if( !found ) {
+                  console.error(
+                    'Cannot add input "%s" to group "%s" after "%s" as it (the input) doesn\'t exist.',
+                    key, groupTitle, afterKey
+                  );
+                } else {
+                  group.inputList = newInputList;
+                }
+              }
+            }
+          },
           addInputGroup: function( title, inputList, expanded ) {
             if( 0 == title.length ) expanded = true;
             else if( angular.isUndefined( expanded ) ) expanded = false;
