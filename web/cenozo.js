@@ -60,37 +60,6 @@ angular.extend( Array.prototype, {
   }
 } );
 
-// Extend the Object prototype with extra functions
-angular.extend( Object.prototype, {
-  insertPropertyAfter: function( afterProperty, newProperty, value ) {
-    if( angular.isUndefined( this[afterProperty] ) ) {
-      console.error(
-        'Tried to insert object new property "%s" after existing property "%s" which doesn\'t exist.',
-        newProperty, afterProperty
-      );
-      return;
-    } else if( angular.isDefined( this[newProperty] ) ) {
-      console.error( 'Tried to insert object new property "%s" which already exists in the object.', newProperty );
-      return;
-    }
-
-    // make a copy of all properties
-    var properties = {};
-    for( var prop in this ) {
-      if( this.hasOwnProperty( prop ) ) {
-        properties[prop] = this[prop];
-        delete this[prop];
-      }
-    }
-
-    // now loop through and add the new property as we go
-    for( var prop in properties ) {
-      this[prop] = properties[prop];
-      if( afterProperty === prop ) this[newProperty] = value;
-    }
-  }
-} );
-
 // Extend the String prototype with extra functions
 angular.extend( String.prototype, {
   snakeToCamel: function( first ) {
@@ -294,7 +263,7 @@ angular.extend( cenozoApp, {
                   key, groupTitle, afterKey
                 );
               } else {
-                group.inputList.insertPropertyAfter( afterKey, key, input );
+                cenozo.insertPropertyAfter( group.inputList, afterKey, key, input );
               }
             }
           },
@@ -427,6 +396,35 @@ angular.extend( cenozo, {
   addExtendableFunction: function( object, name, fn ) {
     object['$$'+name] = fn;
     object[name] = function() { return object['$$'+name].apply( this, arguments ); }
+  },
+
+  // Inserts a new property into an objects after an existing property
+  insertPropertyAfter: function( object, afterProperty, newProperty, value ) {
+    if( angular.isUndefined( object[afterProperty] ) ) {
+      console.error(
+        'Tried to insert object new property "%s" after existing property "%s" which doesn\'t exist.',
+        newProperty, afterProperty
+      );
+      return;
+    } else if( angular.isDefined( object[newProperty] ) ) {
+      console.error( 'Tried to insert object new property "%s" which already exists in the object.', newProperty );
+      return;
+    }
+
+    // make a copy of all properties
+    var properties = {};
+    for( var prop in object ) {
+      if( object.hasOwnProperty( prop ) ) {
+        properties[prop] = object[prop];
+        delete object[prop];
+      }
+    }
+
+    // now loop through and add the new property as we go
+    for( var prop in properties ) {
+      object[prop] = properties[prop];
+      if( afterProperty === prop ) object[newProperty] = value;
+    }
   },
 
   // defines all modules belonging to the framework
