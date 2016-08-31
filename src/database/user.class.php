@@ -23,7 +23,8 @@ class user extends record
     $session = lib::create( 'business\session' );
 
     // session objects can be loaded by using the identifier 0
-    return 0 === $identifier ? $session->get_user() : parent::get_record_from_identifier( $identifier );
+    return 0 === $identifier || '0' === $identifier ?
+      $session->get_user() : parent::get_record_from_identifier( $identifier );
   }
 
   /**
