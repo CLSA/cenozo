@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.0.1';
-$settings['general']['cenozo_build'] = 'f912423';
+$settings['general']['cenozo_build'] = '704ea7e';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -36,6 +36,9 @@ $settings['general']['activity_timeout'] = 60;
 
 // how much inactivity before withdraw scripts are considered abandoned (in minutes)
 $settings['general']['withdraw_timeout'] = 60;
+
+// list of all optional modules (off by default)
+$settings['module']['interview'] = false;
 
 // the maximum time allowed for a report to finish (in seconds)
 $settings['report']['time_limit'] = 180;

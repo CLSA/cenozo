@@ -60,6 +60,37 @@ angular.extend( Array.prototype, {
   }
 } );
 
+// Extend the Object prototype with extra functions
+angular.extend( Object.prototype, {
+  insertPropertyAfter: function( afterProperty, newProperty, value ) {
+    if( angular.isUndefined( this[afterProperty] ) ) {
+      console.error(
+        'Tried to insert object new property "%s" after existing property "%s" which doesn\'t exist.',
+        newProperty, afterProperty
+      );
+      return;
+    } else if( angular.isDefined( this[newProperty] ) ) {
+      console.error( 'Tried to insert object new property "%s" which already exists in the object.', newProperty );
+      return;
+    }
+
+    // make a copy of all properties
+    var properties = {};
+    for( var prop in this ) {
+      if( this.hasOwnProperty( prop ) ) {
+        properties[prop] = this[prop];
+        delete this[prop];
+      }
+    }
+
+    // now loop through and add the new property as we go
+    for( var prop in properties ) {
+      this[prop] = properties[prop];
+      if( afterProperty === prop ) this[newProperty] = value;
+    }
+  }
+} );
+
 // Extend the String prototype with extra functions
 angular.extend( String.prototype, {
   snakeToCamel: function( first ) {
@@ -263,24 +294,7 @@ angular.extend( cenozoApp, {
                   key, groupTitle, afterKey
                 );
               } else {
-                var found = false;
-                var newInputList = {};
-                for( var k in group.inputList ) {
-                  newInputList[k] = group.inputList[k];
-                  if( afterKey === k ) {
-                    newInputList[key] = input;
-                    found = true;
-                  }
-                }
-
-                if( !found ) {
-                  console.error(
-                    'Cannot add input "%s" to group "%s" after "%s" as it (the input) doesn\'t exist.',
-                    key, groupTitle, afterKey
-                  );
-                } else {
-                  group.inputList = newInputList;
-                }
+                group.inputList.insertPropertyAfter( afterKey, key, input );
               }
             }
           },
