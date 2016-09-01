@@ -809,28 +809,26 @@ abstract class service extends \cenozo\base_object
    */
   public function get_data()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     if( is_null( $this->encoded_data ) )
     {
-      $util_class_name = lib::get_class_name( 'util' );
+      $this->encoded_data = $this->data;
 
-      if( !$this->encode )
-      {
-        // do not encode the data (it is usually the case that it has already been done)
-        $this->encoded_data = $this->data;
-      }
-      else
+      if( $this->encode )
       {
         $mime_type = $this->get_mime_type();
 
         // when not returning json data remove id column from data, if found
-        if( 'application/json' != $mime_type && is_array( $this->data ) )
+        if( 'application/json' != $mime_type && is_array( $this->encoded_data ) )
         {
-          foreach( $this->data as $index => &$row )
+          foreach( $this->encoded_data as $index => $row )
           {
-            if( 'id' == $index ) unset( $this->data[$index] );
+            if( 'id' === $index ) unset( $this->encoded_data[$index] );
             else if( is_array( $row ) )
             {
-              foreach( $row as $column => $cell ) if( 'id' == $column ) unset( $row[$column] );
+              foreach( $row as $column => $cell )
+                if( 'id' === $column ) unset( $this->encoded_data[$index][$column] );
             }
           }
         }
@@ -839,22 +837,21 @@ abstract class service extends \cenozo\base_object
                  'application/vnd.oasis.opendocument.spreadsheet' == $mime_type )
         {
           $spreadsheet = lib::create( 'business\spreadsheet' );
-          $spreadsheet->load_data( $this->data );
+          $spreadsheet->load_data( $this->encoded_data );
           $this->encoded_data = $spreadsheet->get_file( $mime_type );
         }
         else if( 'text/csv' == $mime_type )
         {
-          $this->encoded_data = $util_class_name::get_data_as_csv( $this->data );
+          $this->encoded_data = $util_class_name::get_data_as_csv( $this->encoded_data );
         }
         else // 'application/json' == $encoding
         {
           $mime_type = 'application/json';
-          if( is_null( $this->data ) ) $this->encoded_data = '';
-          else if( is_string( $this->data ) ) $this->encoded_data = $this->data;
-          else
+          if( is_null( $this->encoded_data ) ) $this->encoded_data = '';
+          else if( !is_string( $this->encoded_data ) )
           {
             $util_class_name = lib::get_class_name( 'util' );
-            $this->encoded_data = $util_class_name::json_encode( $this->data );
+            $this->encoded_data = $util_class_name::json_encode( $this->encoded_data );
           }
         }
       }
