@@ -1239,6 +1239,7 @@ cenozo.directive( 'cnRecordCalendar', [
       },
       controller: function( $scope, $element ) {
         $scope.directive = 'cnRecordCalendar';
+        $scope.reportTypeListOpen = false;
         $scope.refresh = function() {
           if( !$scope.model.calendarModel.isLoading ) {
             $scope.model.calendarModel.onCalendar( true ).then( function() {
@@ -1255,6 +1256,17 @@ cenozo.directive( 'cnRecordCalendar', [
               } );
             }
           } );
+        };
+
+        $scope.toggleReportTypeDropdown = function() {
+          $element.find( '.report-dropdown' ).find( '.dropdown-menu' ).toggle();
+        };
+
+        $scope.getReport = function( format ) {
+          $scope.model.calendarModel.onReport( format ).then( function() {
+            saveAs( $scope.model.calendarModel.reportBlob, $scope.model.calendarModel.reportFilename );
+          } );
+          $scope.toggleReportTypeDropdown();
         };
 
         // only include a viewList operation if the state exists
@@ -2548,6 +2560,11 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         object.cache = [];
         object.cacheMinDate = null;
         object.cacheMaxDate = null;
+        object.isReportLoading = false;
+        object.isReportAllowed = false;
+        object.isReportBig = false;
+        object.reportBlob = null;
+        object.reportFilename = null;
 
         /**
          * Determines the lower date boundary for which the cache will require given a new minimum date
@@ -2561,7 +2578,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
                  // if the min date comes after the cache's min date then load from the new min date
                  this.cacheMinDate.isAfter( minDate, 'day' )
                ? minDate
-               : this.cacheMaxDate;
+               : moment( this.cacheMaxDate ).add( 1, 'days' );
         };
 
         /**
@@ -2576,7 +2593,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
                  // if the max date comes before the cache's max date then load to the new max date
                  this.cacheMaxDate.isBefore( maxDate, 'day' )
                ? maxDate
-               : this.cacheMinDate;
+               : moment( this.cacheMinDate ).subtract( 1, 'days' );
         };
 
         /**
@@ -2625,6 +2642,52 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               error: true
             } ).show();
           } else { CnModalMessageFactory.httpError( response ); }
+        } );
+
+        /**
+         * Loads a report from the server.
+         * 
+         * @return promise
+         */
+        cenozo.addExtendableFunction( object, 'onReport', function( format ) {
+          var self = this;
+          this.isReportLoading = true;
+          if( angular.isUndefined( format ) ) format = 'csv';
+
+          // start by getting the data from the parent model using the column restrict lists
+          var data = this.parentModel.getServiceData( 'report' );
+
+          // set up the to-from dates
+          if( 'agendaDay' == this.currentView ) {
+            data.min_date = moment( this.currentDate ).format( 'YYYY-MM-DD' );
+            data.max_date = data.min_date;
+          } else if( 'agendaWeek' == this.currentView ) {
+            data.min_date = moment( this.currentDate ).day( 0 ).format( 'YYYY-MM-DD' );
+            data.max_date = moment( this.currentDate ).day( 6 ).format( 'YYYY-MM-DD' );
+          } else { // 'month' == this.currentView
+            data.min_date = moment( this.currentDate ).date( 1 ).day( 0 ).format( 'YYYY-MM-DD' );
+            data.max_date = moment( data.min_date ).add( 5, 'weeks' ).day( 6 ).format( 'YYYY-MM-DD' );
+          }
+
+          var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
+          httpObj.onError = function( response ) { self.onReportError( response ); }
+          httpObj.format = format;
+          return CnHttpFactory.instance( httpObj ).query().then( function( response ) {
+            self.reportBlob = new Blob(
+              [response.data],
+              { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
+            );
+            self.reportFilename = response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1];
+          } ).finally( function() { self.isReportLoading = false; } );
+        } );
+
+        /**
+         * Handles errors when getting a report.
+         * 
+         * @param object response: The response of a failed http call
+         */
+        cenozo.addExtendableFunction( object, 'onReportError', function( response ) {
+          CnModalMessageFactory.httpError( response );
         } );
 
         /**
@@ -2717,6 +2780,9 @@ cenozo.factory( 'CnBaseCalendarFactory', [
                 item.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( item ); };
               } );
               self.cache = self.cache.concat( response.data );
+              var total = response.headers( 'Total' );
+              self.isReportAllowed = CnSession.application.maxBigReport >= total;
+              self.isReportBig = CnSession.application.maxSmallReport < total;
             } ).finally( function() { self.isLoading = false; } ) );
           }
 
@@ -2753,7 +2819,9 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             object.currentDate = this.getDate();
 
             // call onCalendar to make sure we have the events in the requested date span
-            object.onCalendar( false, start, end ).then( function() {
+            var minDate = moment( start.format( 'YYYY-MM-DD' ) );
+            var maxDate = moment( end.format( 'YYYY-MM-DD' ) ).subtract( 1, 'days' );
+            object.onCalendar( false, minDate, maxDate ).then( function() {
               if( 'calendar' == object.parentModel.getActionFromState() )
                 object.parentModel.setupBreadcrumbTrail();
               callback(
