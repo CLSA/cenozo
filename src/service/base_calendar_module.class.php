@@ -25,12 +25,12 @@ abstract class base_calendar_module extends site_restricted_module
     {
       if( !is_null( $this->get_argument( 'min_date', NULL ) ) && is_null( $this->lower_date ) )
       {
-        $this->set_data( 'This module cannot be restricting by min_date.' );
+        $this->set_data( 'This module cannot be restricted by min_date.' );
         $this->get_status()->set_code( 400 );
       }
       else if( !is_null( $this->get_argument( 'max_date', NULL ) ) && is_null( $this->upper_date ) )
       {
-        $this->set_data( 'This module cannot be restricting by max_date.' );
+        $this->set_data( 'This module cannot be restricted by max_date.' );
         $this->get_status()->set_code( 400 );
       }
     }
