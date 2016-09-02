@@ -4832,6 +4832,18 @@ cenozo.factory( 'CnHttpFactory', [
       this.post = function() { return http( 'POST', 'api/' + this.path ); };
       this.query = function() { return http( 'GET', 'api/' + this.path ); };
       this.file = function() {
+        // change the default error
+        if( this.onError === CnModalMessageFactory.httpError ) {
+          this.onError = function( response ) {
+            if( 404 == response.status ) {
+              CnModalMessageFactory.instance( {
+                title: 'File Not Found',
+                message: 'Sorry, the file you are trying to download doesn\'t exist on the server.',
+                error: true
+              } ).show();
+            } else CnModalMessageFactory.httpError( response );
+          };
+        }
         if( 'json' === this.format ) this.format = 'pdf';
         if( angular.isUndefined( this.data.download ) || !this.data.download ) this.data.download = true;
         return this.get().then( function( response ) {
