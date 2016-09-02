@@ -27,7 +27,7 @@ define( function() {
       city: {
         title: 'City'
       },
-      international_region: {
+      region: {
         title: 'Region'
       },
       active: {
@@ -79,7 +79,18 @@ define( function() {
       type: 'enum',
       exclude: 'add',
       constant: true,
-      help: 'Cannot be changed once the address has been created.'
+      help: 'The region cannot be changed directly, instead it is automatically updated based on the postcode.'
+    },
+    international_region: {
+      title: 'Region',
+      type: 'string',
+      exclude: true,
+      help: 'International regions are unrestricted and are not automatically set by the postcode.'
+    },
+    international_country: {
+      title: 'Country',
+      type: 'string',
+      exclude: true
     },
     postcode: {
       title: 'Postcode',
@@ -111,14 +122,31 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAddressAdd', [
-    'CnAddressModelFactory',
-    function( CnAddressModelFactory ) {
+    'CnAddressModelFactory', '$timeout',
+    function( CnAddressModelFactory, $timeout ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAddressModelFactory.root;
+        },
+        link: function( scope ) {
+          // add/remove inputs based on whether international is set to true or false
+          $timeout( function() {
+            var mainInputGroup = scope.model.module.inputGroupList.findByProperty( 'title', '' );
+            var cnRecordAdd = cenozo.findChildDirectiveScope( scope, 'cnRecordAdd' );
+            var checkFunction = cnRecordAdd.check;
+            cnRecordAdd.check = function( property ) {
+              // run the original check function first
+              checkFunction( property );
+
+              if( 'international' == property ) {
+                mainInputGroup.inputList.international_region.exclude = !cnRecordAdd.record.international;
+                mainInputGroup.inputList.international_country.exclude = !cnRecordAdd.record.international;
+              }
+            };
+          }, 200 );
         }
       };
     }
@@ -158,7 +186,21 @@ define( function() {
   cenozo.providers.factory( 'CnAddressAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+      var object = function( parentModel ) {
+        CnBaseAddFactory.construct( this, parentModel );
+
+        // make sure that columns are showing as they should when we first create a new address record
+        this.onNew = function( record ) {
+          return this.$$onNew( record ).then( function() {
+            var mainInputGroup = parentModel.module.inputGroupList.findByProperty( 'title', '' );
+            if( mainInputGroup ) {
+              mainInputGroup.inputList.region_id.exclude = false;
+              mainInputGroup.inputList.international_region.exclude = true;
+              mainInputGroup.inputList.international_country.exclude = true;
+            }
+          } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -176,7 +218,22 @@ define( function() {
   cenozo.providers.factory( 'CnAddressViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        // once we have loaded the record show/hide the international inputs
+        this.onView = function() {
+          return this.$$onView().then( function() {
+            var mainInputGroup = parentModel.module.inputGroupList.findByProperty( 'title', '' );
+            if( mainInputGroup ) {
+              mainInputGroup.inputList.region_id.exclude = self.record.international;
+              mainInputGroup.inputList.international_region.exclude = !self.record.international;
+              mainInputGroup.inputList.international_country.exclude = !self.record.international;
+            }
+          } );
+        };
+      };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );

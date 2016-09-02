@@ -3,7 +3,7 @@ DELIMITER //
 CREATE PROCEDURE patch_address()
   BEGIN
 
-    SELECT "Replacing person_id column with alternate_id and participant_id columns and adding international column to address table" AS "";
+    SELECT "Replacing person_id column with alternate_id and participant_id columns to the address table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
@@ -47,6 +47,8 @@ CREATE PROCEDURE patch_address()
       ADD UNIQUE INDEX uq_alternate_id_participant_id_rank (alternate_id, participant_id, rank);
     END IF;
 
+    SELECT "Adding international columns to the address table" AS "";
+
     SET @test = (
       SELECT COUNT(*)
       FROM information_schema.COLUMNS
@@ -56,7 +58,34 @@ CREATE PROCEDURE patch_address()
     IF @test = 0 THEN
       -- add columns
       ALTER TABLE address
-      ADD COLUMN international TINYINT(1) NOT NULL DEFAULT 0 AFTER rank;
+      ADD COLUMN international TINYINT(1) NOT NULL DEFAULT 0
+      AFTER rank;
+    END IF;
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "address"
+      AND COLUMN_NAME = "international_region" );
+    IF @test = 0 THEN
+      -- add columns
+      ALTER TABLE address
+      ADD COLUMN international_region VARCHAR(100) NULL DEFAULT NULL
+      AFTER postcode;
+    END IF;
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "address"
+      AND COLUMN_NAME = "international_country" );
+    IF @test = 0 THEN
+      -- add columns
+      ALTER TABLE address
+      ADD COLUMN international_country VARCHAR(100) NULL DEFAULT NULL
+      AFTER international_region;
     END IF;
 
     SET @test = (
