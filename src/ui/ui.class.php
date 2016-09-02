@@ -97,14 +97,16 @@ class ui extends \cenozo\base_object
 
       // add auxiliary modules
       $auxiliary_items = $this->get_auxiliary_items();
-      foreach( $auxiliary_items as $module )
+      foreach( $auxiliary_items as $subject => $module )
       {
-        if( !array_key_exists( $module, $module_list ) )
-          $module_list[$module] = array(
-            'actions' => array(),
-            'children' => array(),
-            'choosing' => array(),
-            'list_menu' => false );
+        if( !array_key_exists( $subject, $module_list ) )
+        {
+          if( !array_key_exists( 'actions', $module ) ) $module['actions'] = array();
+          if( !array_key_exists( 'children', $module ) ) $module['children'] = array();
+          if( !array_key_exists( 'choosing', $module ) ) $module['choosing'] = array();
+          if( !array_key_exists( 'list_menu', $module ) ) $module['list_menu'] = false;
+          $module_list[$subject] = $module;
+        }
       }
 
       // prepare which reports to show in the list
