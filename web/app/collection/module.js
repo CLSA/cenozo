@@ -155,8 +155,8 @@ define( function() {
         function updateAccess() {
           // private function used in the block below
           function setAccess( enable ) {
-            self.parentModel.getEnabledEdit = enable
-                                            ? function() { return self.parentModel.$$getEnabledEdit(); }
+            self.parentModel.getEditEnabled = enable
+                                            ? function() { return self.parentModel.$$getEditEnabled(); }
                                             : function() { return false; };
             if( angular.isDefined( self.participantModel ) )
               self.participantModel.getChooseEnabled =
