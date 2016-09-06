@@ -142,12 +142,22 @@ class ui extends \cenozo\base_object
    */
   protected function get_framework_module_list()
   {
-    return array(
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $list = array(
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'form', 'form_association',
       'form_type', 'hin', 'jurisdiction', 'language', 'participant', 'phone', 'quota', 'recording',
       'recording_file', 'region', 'region_site', 'role', 'report', 'report_restriction', 'report_schedule',
-      'report_type', 'script', 'search_result', 'site', 'source', 'state', 'system_message', 'user', 'webphone' );
+      'report_type', 'script', 'search_result', 'site', 'source', 'state', 'system_message', 'user', 'webphone'
+    );
+
+    if( $setting_manager->get_setting( 'module', 'interview' ) )
+    {
+      $list = array_merge( $list, array( 'assignment', 'interview', 'phone_call' ) );
+      sort( $list );
+    }
+
+    return $list;
   }
 
   /**
@@ -160,6 +170,7 @@ class ui extends \cenozo\base_object
   protected function get_module_list( $modifier = NULL )
   {
     $service_class_name = lib::get_class_name( 'database\service' );
+    $setting_manager = lib::create( 'business\setting_manager' );
     $db_role = lib::create( 'business\session' )->get_role();
 
     $select = lib::create( 'database\select' );
@@ -232,6 +243,7 @@ class ui extends \cenozo\base_object
       $module_list['alternate']['actions']['history'] =
         '/{identifier}?{address}&{note}&{phone}';
     }
+
     if( array_key_exists( 'availability_type', $module_list ) )
     {
       $module_list['availability_type']['children'] = array( 'participant' );
@@ -311,6 +323,26 @@ class ui extends \cenozo\base_object
       }
     }
 
+    // now add the interview module
+    if( $setting_manager->get_setting( 'module', 'interview' ) )
+    {
+      if( array_key_exists( 'assignment', $module_list ) )
+      {
+        $module_list['assignment']['children'] = array( 'phone_call' );
+      }
+      if( array_key_exists( 'interview', $module_list ) )
+      {
+        $module_list['interview']['children'] = array( 'assignment' );
+      }
+      if( array_key_exists( 'participant', $module_list ) )
+      {
+        array_unshift( $module_list['participant']['children'], 'interview' );
+
+        // add extra query variables to history action
+        $module_list['participant']['actions']['history'] .= '&{assignment}';
+      }
+    }
+
     return $module_list;
   }
 
@@ -323,6 +355,7 @@ class ui extends \cenozo\base_object
    */
   protected function get_list_items( $module_list )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_role = $session->get_role();
     $extended = in_array( $db_role->name, array( 'administrator', 'curator', 'helpline' ) );
@@ -378,6 +411,13 @@ class ui extends \cenozo\base_object
       $list['System Messages'] = 'system_message';
     if( array_key_exists( 'user', $module_list ) && $module_list['user']['list_menu'] )
       $list['Users'] = 'user';
+
+    // now add the interview module
+    if( $setting_manager->get_setting( 'module', 'interview' ) )
+    {
+      if( array_key_exists( 'interview', $module_list ) && $module_list['interview']['list_menu'] )
+        $list['Interviews'] = 'interview';
+    }
 
     return $list;
   }

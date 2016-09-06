@@ -509,6 +509,76 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   };
 
+  // add the assignment category if the module exists
+  try {
+    cenozoApp.module( 'assignment' );
+    module.historyCategoryList.Assignment = {
+      active: true,
+      promise: function( historyList, $state, CnHttpFactory, $q ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/interview',
+          data: {
+            modifier: { order: { start_datetime: true } },
+            select: { column: [ 'id' ] }
+          }
+        } ).query().then( function( response ) {
+          var promiseArray = [];
+          response.data.forEach( function( item ) {
+            promiseArray.push(
+              CnHttpFactory.instance( {
+                path: 'interview/' + item.id + '/assignment',
+                data: {
+                  modifier: { order: { start_datetime: true } },
+                  select: {
+                    column: [ 'start_datetime', 'end_datetime', {
+                      table: 'user',
+                      column: 'first_name',
+                      alias: 'user_first'
+                    }, {
+                      table: 'user',
+                      column: 'last_name',
+                      alias: 'user_last'
+                    }, {
+                      table: 'site',
+                      column: 'name',
+                      alias: 'site'
+                    }, {
+                      table: 'script',
+                      column: 'name',
+                      alias: 'script'
+                    } ]
+                  }
+                }
+              } ).query().then( function( response ) {
+                response.data.forEach( function( item ) {
+                  if( null != item.start_datetime ) {
+                    historyList.push( {
+                      datetime: item.start_datetime,
+                      category: 'Assignment',
+                      title: 'started by ' + item.user_first + ' ' + item.user_last,
+                      description: 'Started an assignment for the "' + item.script + '" questionnaire.\n' +
+                                   'Assigned from the ' + item.site + ' site.'
+                    } );
+                  }
+                  if( null != item.end_datetime ) {
+                    historyList.push( {
+                      datetime: item.end_datetime,
+                      category: 'Assignment',
+                      title: 'completed by ' + item.user_first + ' ' + item.user_last,
+                      description: 'Completed an assignment for the "' + item.script + '" questionnaire.\n' +
+                                   'Assigned from the ' + item.site + ' site.'
+                    } );
+                  }
+                } );
+              } )
+            );
+          } );
+          return $q.all( promiseArray );
+        } );
+      }
+    };
+  } catch( err ) {}
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantHistory', [
     'CnParticipantHistoryFactory', 'CnSession', 'CnHttpFactory', '$state',
@@ -891,22 +961,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     'CnBaseHistoryFactory', 'CnParticipantModelFactory', 'CnSession', '$state',
     function( CnBaseHistoryFactory, CnParticipantModelFactory, CnSession, $state ) {
       var object = function() {
-        var self = this;
         CnBaseHistoryFactory.construct( this, module, CnParticipantModelFactory.root );
-
-        this.onView().then( function() {
-          CnSession.setBreadcrumbTrail(
-            [ {
-              title: 'Participants',
-              go: function() { $state.go( 'participant.list' ); }
-            }, {
-              title: self.uid,
-              go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
-            }, {
-              title: 'History'
-            } ]
-          );
-        } );
       };
 
       return { instance: function() { return new object( false ); } };

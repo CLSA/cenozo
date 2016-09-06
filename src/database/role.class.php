@@ -19,12 +19,10 @@ class role extends record
    */
   public static function get_record_from_identifier( $identifier )
   {
-    $util_class_name = lib::get_class_name( 'util' );
-    $session = lib::create( 'business\session' );
-
     // session objects can be loaded by using the identifier 0
     return 0 === $identifier || '0' === $identifier ?
-      $session->get_role() : parent::get_record_from_identifier( $identifier );
+      lib::create( 'business\session' )->get_role() :
+      parent::get_record_from_identifier( $identifier );
   }
 
   /**
