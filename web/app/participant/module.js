@@ -524,6 +524,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             path: 'participant/' + $state.params.identifier,
             data: { select: { column: [ 'uid', 'first_name', 'last_name' ] } }
           } ).get().then( function( response ) {
+            $scope.uid = response.data.uid;
             $scope.name = response.data.first_name + ' ' +
                           response.data.last_name + ' (' +
                           response.data.uid + ')';
