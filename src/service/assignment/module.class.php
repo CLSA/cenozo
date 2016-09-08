@@ -112,6 +112,8 @@ class module extends \cenozo\service\site_restricted_module
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) ) $modifier->where( 'assignment.site_id', '=', $db_restrict_site->id );
 
+    $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
+
     if( $select->has_table_columns( 'user' ) )
       $modifier->left_join( 'user', 'assignment.user_id', 'user.id' );
 
@@ -119,10 +121,7 @@ class module extends \cenozo\service\site_restricted_module
       $modifier->left_join( 'site', 'assignment.site_id', 'site.id' );
 
     if( $select->has_table_columns( 'participant' ) )
-    {
-      $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
       $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
-    }
 
     if( $select->has_column( 'phone_call_count' ) )
     {
