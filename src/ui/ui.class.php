@@ -58,22 +58,12 @@ class ui extends \cenozo\base_object
       sort( $framework_module_list );
 
       // prepare the module list (used to create all necessary states needed by the active role)
-      $module_list = $this->get_module_list();
-      ksort( $module_list );
+      $this->build_module_list();
 
       // prepare which modules to show in the list
-      $list_items = $this->get_list_items( $module_list );
-      if( 0 == count( $list_items ) ) $list_items = NULL;
-      else
-      {
-        ksort( $list_items );
-
-        // remove list items the role doesn't have access to
-        foreach( $list_items as $title => $subject )
-          if( !array_key_exists( $subject, $module_list ) ||
-              !array_key_exists( 'list', $module_list[$subject]['actions'] ) )
-            unset( $list_items[$subject] );
-      }
+      $this->build_listitem_list();
+      if( 0 == count( $this->listitem_list ) ) $this->listitem_list = NULL;
+      else ksort( $this->listitem_list );
 
       // prepare which utilities to show in the list
       $utility_items = $this->get_utility_items();
@@ -82,30 +72,10 @@ class ui extends \cenozo\base_object
       {
         ksort( $utility_items );
 
-        foreach( $utility_items as $title => $module )
+        foreach( $utility_items as $title => $item )
         {
-          if( !array_key_exists( $module['subject'], $module_list ) )
-            $module_list[$module['subject']] = array(
-              'actions' => array(),
-              'children' => array(),
-              'choosing' => array(),
-              'list_menu' => false );
-          $module_list[$module['subject']]['actions'][$module['action']] =
-            array_key_exists( 'query', $module ) ? $module['query'] : '';
-        }
-      }
-
-      // add auxiliary modules
-      $auxiliary_items = $this->get_auxiliary_items();
-      foreach( $auxiliary_items as $subject => $module )
-      {
-        if( !array_key_exists( $subject, $module_list ) )
-        {
-          if( !array_key_exists( 'actions', $module ) ) $module['actions'] = array();
-          if( !array_key_exists( 'children', $module ) ) $module['children'] = array();
-          if( !array_key_exists( 'choosing', $module ) ) $module['choosing'] = array();
-          if( !array_key_exists( 'list_menu', $module ) ) $module['list_menu'] = false;
-          $module_list[$subject] = $module;
+          $module = $this->assert_module( $item['subject'] );
+          $module->add_action( $item['action'], array_key_exists( 'query', $item ) ? $item['query'] : '' );
         }
       }
 
@@ -115,9 +85,11 @@ class ui extends \cenozo\base_object
       else ksort( $report_items );
 
       // create the json strings for the interface
+      $module_array = array();
+      foreach( $this->module_list as $module ) $module_array[$module->get_subject()] = $module->as_array();
       $framework_module_string = $util_class_name::json_encode( $framework_module_list );
-      $module_string = $util_class_name::json_encode( $module_list );
-      $list_item_string = $util_class_name::json_encode( $list_items );
+      $module_string = $util_class_name::json_encode( $module_array );
+      $listitem_string = $util_class_name::json_encode( $this->listitem_list );
       $utility_item_string = $util_class_name::json_encode( $utility_items );
       $report_item_string = $util_class_name::json_encode( $report_items );
 
@@ -167,10 +139,11 @@ class ui extends \cenozo\base_object
    * @return array( title, add )
    * @access protected
    */
-  protected function get_module_list( $modifier = NULL )
+  protected function build_module_list()
   {
     $service_class_name = lib::get_class_name( 'database\service' );
     $setting_manager = lib::create( 'business\setting_manager' );
+    $use_interview_module = $setting_manager->get_setting( 'module', 'interview' );
     $db_role = lib::create( 'business\session' )->get_role();
 
     $select = lib::create( 'database\select' );
@@ -178,7 +151,7 @@ class ui extends \cenozo\base_object
     $select->add_column( 'method' );
     $select->add_column( 'resource' );
 
-    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier = lib::create( 'database\modifier' );
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where( 'service.id', '=', 'role_has_service.service_id', false );
     $join_mod->where( 'role_has_service.role_id', '=', $db_role->id );
@@ -190,160 +163,168 @@ class ui extends \cenozo\base_object
     $modifier->order( 'subject' );
     $modifier->order( 'method' );
 
-    $module_list = array();
     foreach( $service_class_name::select( $select, $modifier ) as $service )
     {
-      $subject = $service['subject'];
-      if( !array_key_exists( $subject, $module_list ) )
-        $module_list[$subject] = array(
-          'actions' => array(),
-          'children' => array(),
-          'choosing' => array(),
-          'list_menu' => false );
+      $module = $this->assert_module( $service['subject'] );
+
+      // check that modules are activated before using them
+      if( in_array( $module->get_subject(), array( 'assignment', 'interview', 'phone_call' ) ) )
+      {
+        if( !$use_interview_module )
+          throw lib::create( 'exception\runtime',
+            'Application has %s service but it\'s parent module, interview, is not activated.',
+            __METHOD__ );
+      }
 
       // add delete, view, list, edit and add actions
       if( 'DELETE' == $service['method'] )
       {
-        $module_list[$subject]['actions']['delete'] = '/{identifier}';
+        $module->add_action( 'delete', '/{identifier}' );
       }
       else if( 'GET' == $service['method'] )
       {
-        if( $service['resource'] ) $module_list[$subject]['actions']['view'] = '/{identifier}';
-        else $module_list[$subject]['actions']['list'] = '?{restrict}&{order}&{reverse}';
-
-        // add the module to the list menu if:
-        // 1) it is the activity module and we can list it or
-        // 2) we can both view and list it
-        if( ( 'activity' == $subject &&
-              array_key_exists( 'list', $module_list[$subject]['actions'] ) ) ||
-            ( array_key_exists( 'list', $module_list[$subject]['actions'] ) &&
-              array_key_exists( 'view', $module_list[$subject]['actions'] ) ) )
-          $module_list[$subject]['list_menu'] = true;
+        if( $service['resource'] ) $module->add_action( 'view', '/{identifier}' );
+        else $module->add_action( 'list', '?{restrict}&{order}&{reverse}' );
       }
       else if( 'PATCH' == $service['method'] )
       {
-        $module_list[$subject]['actions']['edit'] = '/{identifier}';
+        $module->add_action( 'edit', '/{identifier}' );
       }
       else if( 'POST' == $service['method'] )
       {
-        $module_list[$subject]['actions']['add'] = '';
+        $module->add_action( 'add', '' );
       }
     }
 
-    // add child/choose actions to certain modules
-    if( array_key_exists( 'application', $module_list ) )
+    foreach( $this->module_list as $module )
     {
-      $module_list['application']['children'] = array( 'cohort', 'role' );
-      $module_list['application']['choosing'] = array( 'site', 'script', 'collection' );
-    }
-    if( array_key_exists( 'alternate', $module_list ) )
-    {
-      $module_list['alternate']['children'] = array( 'address', 'phone', 'form' );
-      $module_list['alternate']['actions']['notes'] = '/{identifier}?{search}';
-      $module_list['alternate']['actions']['history'] =
-        '/{identifier}?{address}&{note}&{phone}';
-    }
+      // add the module to the list menu if:
+      // 1) it is the activity module and we can list it or
+      // 2) we can both view and list it
+      $module->set_list_menu(
+        ( 'activity' == $module->get_subject() && $module->has_action( 'list' ) ) ||
+        ( $module->has_action( 'list' ) && $module->has_action( 'view' ) )
+      );
 
-    if( array_key_exists( 'availability_type', $module_list ) )
-    {
-      $module_list['availability_type']['children'] = array( 'participant' );
-    }
-    if( array_key_exists( 'collection', $module_list ) )
-    {
-      $module_list['collection']['choosing'] = array( 'participant', 'user' );
-      if( 2 < $db_role->tier ) $module_list['collection']['choosing'][] = 'application';
-    }
-    if( array_key_exists( 'consent', $module_list ) )
-    {
-      $module_list['consent']['children'] = array( 'form' );
-    }
-    if( array_key_exists( 'consent_type', $module_list ) )
-    {
-      $module_list['consent_type']['children'] = array( 'participant' );
-    }
-    if( array_key_exists( 'event', $module_list ) )
-    {
-      $module_list['event']['children'] = array( 'form' );
-    }
-    if( array_key_exists( 'event_type', $module_list ) )
-    {
-      $module_list['event_type']['children'] = array( 'participant' );
-    }
-    if( array_key_exists( 'form', $module_list ) )
-    {
-      $module_list['form']['children'] = array( 'form_association' );
-    }
-    if( array_key_exists( 'form_type', $module_list ) )
-    {
-      $module_list['form_type']['children'] = array( 'form' );
-    }
-    if( array_key_exists( 'participant', $module_list ) )
-    {
-      $module_list['participant']['children'] =
-        array( 'address', 'phone', 'consent', 'hin', 'alternate', 'event', 'form' );
-      $module_list['participant']['choosing'] = array( 'collection' );
-      $module_list['participant']['actions']['history'] =
-        '/{identifier}?{address}&{alternate}&{consent}&{event}&{form}&{note}&{phone}';
-      $module_list['participant']['actions']['notes'] = '/{identifier}?{search}';
-      // remove the add action as this services is used for utility purposes only
-      if( array_key_exists( 'add', $module_list['participant']['actions'] ) )
-        unset( $module_list['participant']['actions']['add'] );
-    }
-    if( array_key_exists( 'recording', $module_list ) )
-    {
-      $module_list['recording']['children'] = array( 'recording_file' );
-    }
-    if( array_key_exists( 'report_type', $module_list ) )
-    {
-      $module_list['report_type']['children'] = array( 'report', 'report_schedule', 'report_restriction' );
-      $module_list['report_type']['choosing'] = array( 'application_type', 'role' );
-    }
-    if( array_key_exists( 'script', $module_list ) )
-    {
-      $module_list['script']['choosing'] = array( 'application' );
-    }
-    if( array_key_exists( 'site', $module_list ) )
-    {
-      $module_list['site']['children'] = array( 'access', 'activity' );
-    }
-    if( array_key_exists( 'source', $module_list ) )
-    {
-      $module_list['source']['children'] = array( 'participant' );
-    }
-    if( array_key_exists( 'state', $module_list ) )
-    {
-      $module_list['state']['children'] = array( 'role', 'participant' );
-    }
-    if( array_key_exists( 'user', $module_list ) )
-    {
-      if( 1 < $db_role->tier )
+      // add child/choose actions to certain modules
+      if( 'application' == $module->get_subject() )
       {
-        $module_list['user']['children'] = array( 'access', 'activity' );
-        $module_list['user']['choosing'] = array( 'language' );
+        $module->add_child( 'cohort' );
+        $module->add_child( 'role' );
+        $module->add_choose( 'site' );
+        $module->add_choose( 'script' );
+        $module->add_choose( 'collection' );
+      }
+      else if( 'assignment' == $module->get_subject() )
+      {
+        $module->add_child( 'phone_call' );
+      }
+      else if( 'alternate' == $module->get_subject() )
+      {
+        $module->add_child( 'address' );
+        $module->add_child( 'phone' );
+        $module->add_child( 'form' );
+        $module->add_action( 'notes', '/{identifier}?{search}' );
+        $module->add_action( 'history', '/{identifier}?{address}&{note}&{phone}' );
+      }
+      else if( 'availability_type' == $module->get_subject() )
+      {
+        $module->add_child( 'participant' );
+      }
+      else if( 'collection' == $module->get_subject() )
+      {
+        $module->add_choose( 'participant' );
+        $module->add_choose( 'user' );
+        if( 2 < $db_role->tier ) $module->add_choose( 'application' );
+      }
+      else if( 'consent' == $module->get_subject() )
+      {
+        $module->add_child( 'form' );
+      }
+      else if( 'consent_type' == $module->get_subject() )
+      {
+        $module->add_child( 'participant' );
+      }
+      else if( 'event' == $module->get_subject() )
+      {
+        $module->add_child( 'form' );
+      }
+      else if( 'event_type' == $module->get_subject() )
+      {
+        $module->add_child( 'participant' );
+      }
+      else if( 'form' == $module->get_subject() )
+      {
+        $module->add_child( 'form_association' );
+      }
+      else if( 'form_type' == $module->get_subject() )
+      {
+        $module->add_child( 'form' );
+      }
+      else if( 'interview' == $module->get_subject() )
+      {
+        $module->add_child( 'assignment' );
+      }
+      else if( 'participant' == $module->get_subject() )
+      {
+        if( $use_interview_module ) $module->add_child( 'interview' );
+        $module->add_child( 'address' );
+        $module->add_child( 'phone' );
+        $module->add_child( 'consent' );
+        $module->add_child( 'hin' );
+        $module->add_child( 'alternate' );
+        $module->add_child( 'event' );
+        $module->add_child( 'form' );
+        $module->add_choose( 'collection' );
+        $module->add_action( 'history', $use_interview_module ?
+          '/{identifier}?{address}&{alternate}&{assignment}&{consent}&{event}&{form}&{note}&{phone}' :
+          '/{identifier}?{address}&{alternate}&{consent}&{event}&{form}&{note}&{phone}' );
+        $module->add_action( 'notes', '/{identifier}?{search}' );
+        // remove the add action it is used for utility purposes only
+        $module->remove_action( 'add' );
+      }
+      else if( 'recording' == $module->get_subject() )
+      {
+        $module->add_child( 'recording_file' );
+      }
+      else if( 'report_type' == $module->get_subject() )
+      {
+        $module->add_child( 'report' );
+        $module->add_child( 'report_schedule' );
+        $module->add_child( 'report_restriction' );
+        $module->add_choose( 'application_type' );
+        $module->add_choose( 'role' );
+      }
+      else if( 'script' == $module->get_subject() )
+      {
+        $module->add_choose( 'application' );
+      }
+      else if( 'site' == $module->get_subject() )
+      {
+        $module->add_child( 'access' );
+        $module->add_child( 'activity' );
+      }
+      else if( 'source' == $module->get_subject() )
+      {
+        $module->add_child( 'participant' );
+      }
+      else if( 'state' == $module->get_subject() )
+      {
+        $module->add_child( 'role' );
+        $module->add_child( 'participant' );
+      }
+      else if( 'user' == $module->get_subject() )
+      {
+        if( 1 < $db_role->tier )
+        {
+          $module->add_child( 'access' );
+          $module->add_child( 'activity' );
+          $module->add_choose( 'language' );
+        }
       }
     }
 
-    // now add the interview module
-    if( $setting_manager->get_setting( 'module', 'interview' ) )
-    {
-      if( array_key_exists( 'assignment', $module_list ) )
-      {
-        $module_list['assignment']['children'] = array( 'phone_call' );
-      }
-      if( array_key_exists( 'interview', $module_list ) )
-      {
-        $module_list['interview']['children'] = array( 'assignment' );
-      }
-      if( array_key_exists( 'participant', $module_list ) )
-      {
-        array_unshift( $module_list['participant']['children'], 'interview' );
-
-        // add extra query variables to history action
-        $module_list['participant']['actions']['history'] .= '&{assignment}';
-      }
-    }
-
-    return $module_list;
+    ksort( $this->module_list );
   }
 
   /**
@@ -353,73 +334,37 @@ class ui extends \cenozo\base_object
    * @return array( title, add )
    * @access protected
    */
-  protected function get_list_items( $module_list )
+  protected function build_listitem_list()
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_role = $session->get_role();
     $extended = in_array( $db_role->name, array( 'administrator', 'curator', 'helpline' ) );
-
-    // determine which grouping type to use
     $grouping_list = $session->get_application()->get_cohort_groupings();
 
-    $list = array();
-    if( array_key_exists( 'activity', $module_list ) && $module_list['activity']['list_menu'] )
-      $list['Activities'] = 'activity';
-    if( $extended && array_key_exists( 'alternate', $module_list ) && $module_list['alternate']['list_menu'] )
-      $list['Alternates'] = 'alternate';
-    if( array_key_exists( 'application', $module_list ) && $module_list['application']['list_menu'] )
-      $list['Applications'] = 'application';
-    if( array_key_exists( 'availability_type', $module_list ) && $module_list['availability_type']['list_menu'] )
-      $list['Availability Types'] = 'availability_type';
-    if( array_key_exists( 'collection', $module_list ) && $module_list['collection']['list_menu'] )
-      $list['Collections'] = 'collection';
-    if( array_key_exists( 'consent_type', $module_list ) && $module_list['consent_type']['list_menu'] )
-      $list['Consent Types'] = 'consent_type';
-    if( array_key_exists( 'event_type', $module_list ) && $module_list['event_type']['list_menu'] )
-      $list['Event Types'] = 'event_type';
-    if( $extended && array_key_exists( 'form_type', $module_list ) && $module_list['form_type']['list_menu'] )
-      $list['Form Types'] = 'form_type';
-    if( $extended && in_array( 'jurisdiction', $grouping_list ) &&
-        array_key_exists( 'jurisdiction', $module_list ) && $module_list['jurisdiction']['list_menu'] )
-      $list['Jurisdictions'] = 'jurisdiction';
-    if( $extended && array_key_exists( 'language', $module_list ) && $module_list['language']['list_menu'] )
-      $list['Languages'] = 'language';
-    if( array_key_exists( 'participant', $module_list ) && $module_list['participant']['list_menu'] )
-      $list['Participants'] = 'participant';
-    if( array_key_exists( 'quota', $module_list ) && $module_list['quota']['list_menu'] )
-      $list['Quotas'] = 'quota';
-    if( 3 <= $db_role->tier &&
-        array_key_exists( 'recording', $module_list ) && $module_list['recording']['list_menu'] )
-      $list['Recordings'] = 'recording';
-    if( $extended && in_array( 'region', $grouping_list ) &&
-        array_key_exists( 'region_site', $module_list ) && $module_list['region_site']['list_menu'] )
-      $list['Region Sites'] = 'region_site';
-    if( 3 <= $db_role->tier &&
-        array_key_exists( 'script', $module_list ) && $module_list['script']['list_menu'] )
-      $list['Scripts'] = 'script';
-    if( array_key_exists( 'setting', $module_list ) && $module_list['setting']['list_menu'] )
-      $list['Settings'] = 'setting';
-    if( $db_role->all_sites &&
-        array_key_exists( 'site', $module_list ) && $module_list['site']['list_menu'] )
-      $list['Sites'] = 'site';
-    if( $extended && array_key_exists( 'source', $module_list ) && $module_list['source']['list_menu'] )
-      $list['Sources'] = 'source';
-    if( array_key_exists( 'state', $module_list ) && $module_list['state']['list_menu'] )
-      $list['States'] = 'state';
-    if( array_key_exists( 'system_message', $module_list ) && $module_list['system_message']['list_menu'] )
-      $list['System Messages'] = 'system_message';
-    if( array_key_exists( 'user', $module_list ) && $module_list['user']['list_menu'] )
-      $list['Users'] = 'user';
-
-    // now add the interview module
-    if( $setting_manager->get_setting( 'module', 'interview' ) )
-    {
-      if( array_key_exists( 'interview', $module_list ) && $module_list['interview']['list_menu'] )
-        $list['Interviews'] = 'interview';
-    }
-
-    return $list;
+    $this->add_listitem( 'Activities', 'activity' );
+    if( $extended ) $this->add_listitem( 'Alternates', 'alternate' );
+    $this->add_listitem( 'Applications', 'application' );
+    $this->add_listitem( 'Availability Types', 'availability_type' );
+    $this->add_listitem( 'Collections', 'collection' );
+    $this->add_listitem( 'Consent Types', 'consent_type' );
+    $this->add_listitem( 'Event Types', 'event_type' );
+    if( $extended ) $this->add_listitem( 'Form Types', 'form_type' );
+    if( $setting_manager->get_setting( 'module', 'interview' ) ) $this->add_listitem( 'Interviews', 'interview' );
+    if( $extended && in_array( 'jurisdiction', $grouping_list ) )
+    $this->add_listitem( 'Jurisdictions', 'jurisdiction' );
+    if( $extended ) $this->add_listitem( 'Languages', 'language' );
+    $this->add_listitem( 'Participants', 'participant' );
+    $this->add_listitem( 'Quotas', 'quota' );
+    if( 3 <= $db_role->tier ) $this->add_listitem( 'Recordings', 'recording' );
+    if( $extended && in_array( 'region', $grouping_list ) ) $this->add_listitem( 'Region Sites', 'region_site' );
+    if( 3 <= $db_role->tier ) $this->add_listitem( 'Scripts', 'script' );
+    $this->add_listitem( 'Settings', 'setting' );
+    if( $db_role->all_sites ) $this->add_listitem( 'Sites', 'site' );
+    if( $extended ) $this->add_listitem( 'Sources', 'source' );
+    $this->add_listitem( 'States', 'state' );
+    $this->add_listitem( 'System Messages', 'system_message' );
+    $this->add_listitem( 'Users', 'user' );
   }
 
   /**
@@ -456,19 +401,6 @@ class ui extends \cenozo\base_object
   }
 
   /**
-   * Returns an array of all auxiliary modules
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access protected
-   */
-  protected function get_auxiliary_items()
-  {
-    $list = array();
-    return $list;
-  }
-
-  /**
    * Returns an array of all report modules
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -494,4 +426,68 @@ class ui extends \cenozo\base_object
 
     return $report_list;
   }
+
+  /**
+   * TODO: document
+   */
+  protected function get_module( $subject )
+  {
+    return array_key_exists( $subject, $this->module_list ) ? $this->module_list[$subject] : NULL;
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function assert_module( $subject )
+  {
+    if( !array_key_exists( $subject, $this->module_list ) )
+      $this->module_list[$subject] = lib::create( 'ui\module', $subject );
+    return $this->module_list[$subject];
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function set_all_list_menu( $list_menu )
+  {
+    foreach( $this->module_list as $module ) $module->set_list_menu( $list_menu );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function add_listitem( $title, $subject )
+  {
+    if( array_key_exists( $subject, $this->module_list ) )
+    {
+      $module = $this->module_list[$subject];
+      if( $module->get_list_menu() && $module->has_action( 'list' ) ) $this->listitem_list[$title] = $subject;
+    }
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function remove_listitem( $title )
+  {
+    if( array_key_exists( $title, $this->listitem_list ) ) unset( $this->listitem_list[$title] );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function has_listitem( $title )
+  {
+    return array_key_exists( $title, $this->listitem_list );
+  }
+
+  /**
+   * TODO: document
+   */
+  private $module_list = array();
+
+  /**
+   * TODO: document
+   */
+  private $listitem_list = array();
 }

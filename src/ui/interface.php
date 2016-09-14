@@ -60,7 +60,7 @@
       '$scope', '$state',
       function( $scope, $state ) {
         $scope.isCurrentState = function isCurrentState( state ) { return $state.is( state ); };
-        $scope.lists = <?php print $list_item_string; ?>;
+        $scope.lists = <?php print $listitem_string; ?>;
         $scope.utilities = <?php print $utility_item_string; ?>;
         $scope.reports = <?php print $report_item_string; ?>;
 
