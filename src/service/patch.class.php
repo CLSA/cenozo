@@ -25,9 +25,9 @@ class patch extends write
   /**
    * Extends parent method
    */
-  protected function prepare()
+  protected function setup()
   {
-    parent::prepare();
+    parent::setup();
 
     $leaf_record = $this->get_leaf_record();
     if( !is_null( $leaf_record ) )
