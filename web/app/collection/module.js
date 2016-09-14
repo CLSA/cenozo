@@ -158,6 +158,9 @@ define( function() {
             self.parentModel.getEditEnabled = enable
                                             ? function() { return self.parentModel.$$getEditEnabled(); }
                                             : function() { return false; };
+            self.parentModel.getDeleteEnabled = enable
+                                              ? function() { return self.parentModel.$$getDeleteEnabled(); }
+                                              : function() { return false; };
             if( angular.isDefined( self.participantModel ) )
               self.participantModel.getChooseEnabled =
                 enable ? function() { return true; } : function() { return false; };
