@@ -30,8 +30,8 @@ class module extends \cenozo\service\site_restricted_module
       $db_collection = $this->get_resource();
       $method = $this->get_method();
 
-      // restrict by application
-      if( !is_null( $db_collection ) )
+      // restrict by application (if ID is null then this is a new collection, so don't bother checking)
+      if( !is_null( $db_collection ) && !is_null( $db_collection->id ) )
       {
         if( 0 < $db_collection->get_application_count() )
         {
