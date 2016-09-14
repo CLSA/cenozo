@@ -130,7 +130,7 @@ class module extends \cenozo\service\site_restricted_module
                          'application_has_participant.participant_id', false );
         $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
         $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
-        $join_mod->join_modifier( 'application_has_participant', $sub_mod, 'left' );
+        $join_mod->join_modifier( 'application_has_participant', $sub_mod );
       }
 
       // restrict by site
@@ -142,14 +142,14 @@ class module extends \cenozo\service\site_restricted_module
                          'participant_site.participant_id', false );
         $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
         $sub_mod->where( 'participant_site.site_id', '=', $db_restrict_site->id );
-        $join_mod->join_modifier( 'participant_site', $sub_mod, 'left' );
+        $join_mod->join_modifier( 'participant_site', $sub_mod );
       }
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS collection_join_participant', $join_sel->get_sql(), $join_mod->get_sql() ),
         'collection.id',
         'collection_join_participant.collection_id' );
-      $select->add_column( 'participant_count', 'participant_count', false );
+      $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
     }
 
     // add the total number of users
