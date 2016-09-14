@@ -588,7 +588,7 @@ angular.extend( cenozo, {
         if( angular.isDefined( childModule.actions.add ) ) {
           var directive = 'cn-' + child.subject.snake.replace( '_', '-' ) + '-add';
           stateProvider.state( name + '.add_' + child.subject.snake, {
-            url: baseAddUrl + '/' + child.subject.snake,
+            url: baseAddUrl + '/' + child.subject.snake + childModule.actions.add,
             template: '<' + directive + '></' + directive + '>',
             resolve: {
               childFiles: [ '$q', function( $q ) {
