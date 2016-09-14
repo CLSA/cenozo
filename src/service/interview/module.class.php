@@ -64,16 +64,20 @@ class module extends \cenozo\service\site_restricted_module
 
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
 
-    // restrict by site
+    // restrict by site (or provide link to participant_site table
     $db_restrict_site = $this->get_restricted_site();
-    if( !is_null( $db_restrict_site ) )
+    if( !is_null( $db_restrict_site ) || $select->has_table_columns( 'effective_site' ) )
     {
       $sub_mod = lib::create( 'database\modifier' );
       $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
       $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
-
       $modifier->join_modifier( 'participant_site', $sub_mod );
-      $modifier->where( 'participant_site.site_id', '=', $db_restrict_site->id );
+
+      if( !is_null( $db_restrict_site ) )
+        $modifier->where( 'participant_site.site_id', '=', $db_restrict_site->id );
+
+      if( $select->has_table_columns( 'effective_site' ) )
+        $modifier->join( 'site', 'participant_site.site_id', 'effective_site.id', 'left', 'effective_site' );
     }
 
     if( $select->has_table_columns( 'site' ) )
