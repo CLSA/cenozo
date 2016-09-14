@@ -579,12 +579,16 @@ angular.extend( cenozo, {
       }
 
       // add child add states (if they exist)
+      var baseAddUrl = angular.isDefined( module.actions.view )
+                     ? module.actions.view.replace( '{identifier}', '{parentIdentifier}' )
+                     : '{parentIdentifier}';
+      baseAddUrl = '/view' + baseAddUrl;
       module.children.forEach( function( child ) {
         var childModule = cenozoApp.module( child.subject.snake );
         if( angular.isDefined( childModule.actions.add ) ) {
           var directive = 'cn-' + child.subject.snake.replace( '_', '-' ) + '-add';
           stateProvider.state( name + '.add_' + child.subject.snake, {
-            url: '/view/{parentIdentifier}/' + child.subject.snake,
+            url: baseAddUrl + '/' + child.subject.snake,
             template: '<' + directive + '></' + directive + '>',
             resolve: {
               childFiles: [ '$q', function( $q ) {
