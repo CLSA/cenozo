@@ -2189,7 +2189,7 @@ cenozo.factory( 'CnSession', [
             // process site records
             self.siteList = response.data.site_list;
             self.siteList.forEach( function( site ) {
-              site.getIdentifier = function() { return 'name=' + this.name };
+              site.getIdentifier = function() { return 'name=' + this.name; };
             } );
 
             // add the withdraw script id
