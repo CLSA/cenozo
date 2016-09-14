@@ -2206,7 +2206,6 @@ cenozo.factory( 'CnSession', [
             }
 
             // if the user's email isn't set then open the password dialog
-            /* TODO: disabling this for now, either implement or remove
             if( !self.user.email && !CnModalAccountFactory.isOpen() ) {
               CnModalAccountFactory.instance( {
                 allowCancel: false,
@@ -2215,7 +2214,6 @@ cenozo.factory( 'CnSession', [
                 if( response ) self.setUserDetails();
               } );
             }
-            */
 
             // if voip is enabled the load the voip data
             self.voip = { enabled: false, info: false };
@@ -4913,7 +4911,7 @@ cenozo.service( 'CnModalAccountFactory', [
               }
             };
             $scope.testEmailFormat = function() {
-              $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]+$/.test( $scope.user.email );
+              $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]{2,}$/.test( $scope.user.email );
               cenozo.updateFormElement( $scope.form.email, true );
             };
           }
