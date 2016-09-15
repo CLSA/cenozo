@@ -2562,6 +2562,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
         object.cache = [];
         object.cacheMinDate = null;
         object.cacheMaxDate = null;
+        object.enableReports = 1 < CnSession.role.tier;
         object.isReportLoading = false;
         object.isReportAllowed = false;
         object.isReportBig = false;
@@ -2878,6 +2879,7 @@ cenozo.factory( 'CnBaseListFactory', [
         object.order = object.parentModel.module.defaultOrder;
         object.total = 0;
         object.cache = [];
+        object.enableReports = 1 < CnSession.role.tier;
         object.isReportLoading = false;
         object.isReportAllowed = false;
         object.isReportBig = false;

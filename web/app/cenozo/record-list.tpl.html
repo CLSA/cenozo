@@ -11,7 +11,7 @@
            ng-click="refresh(); $event.stopPropagation()"
            tooltip="Click to refresh data"
            tooltip-placement="left"></i>
-        <span class="dropdown report-dropdown">
+        <span class="dropdown report-dropdown" ng-if="model.listModel.enableReports">
           <i class="glyphicon glyphicon-file glyph-hover btn-header"
              ng-class="model.listModel.isReportAllowed && !model.listModel.isReportLoading ?
                'btn-primary' : 'glyph-disabled'"
