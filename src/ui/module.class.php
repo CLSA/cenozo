@@ -102,7 +102,7 @@ class module extends \cenozo\base_object
     {
       if( $util_class_name::string_matches_int( $before ) )
       { // an index was provided
-        if( count( $this->child_list ) <= $before )
+        if( count( $this->child_list ) >= $before )
         {
           array_splice( $this->child_list, $before, 0, $name );
         }
@@ -136,13 +136,37 @@ class module extends \cenozo\base_object
    */
   public function add_choose( $name, $before = NULL )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // remove the choose if it already exists
     $index = array_search( $name, $this->choose_list );
     if( false !== $index ) array_splice( $this->choose_list, $index, 1 );
 
-    if( !is_null( $before ) && false !== ( $index = array_search( $before, $this->choose_list ) ) )
+    if( !is_null( $before ) )
     {
-      array_splice( $this->choose_list, $index, 0, $name );
+      if( $util_class_name::string_matches_int( $before ) )
+      { // an index was provided
+        if( count( $this->choose_list ) >= $before )
+        {
+          array_splice( $this->choose_list, $before, 0, $name );
+        }
+        else
+        {
+          $this->choose_list[] = $name;
+        }
+      }
+      else // a choose name was provided
+      {
+        $index = array_search( $before, $this->choose_list );
+        if( false !== $index )
+        {
+          array_splice( $this->choose_list, $index, 0, $name );
+        }
+        else
+        {
+          $this->choose_list[] = $name;
+        }
+      }
     }
     else
     {
