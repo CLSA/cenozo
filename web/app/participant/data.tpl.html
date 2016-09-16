@@ -1,0 +1,82 @@
+<div class="utility-view rounded">
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>Participant Data</h4>
+  </div>
+  <div class="container-fluid">
+    <p class="text-info" style="margin-top: 1em;">
+      Participant data allows you to create arbitrary lists of participants.
+      Each list can then be exported along with supplementary data related to each participant in the list.
+    </p>
+    <hr />
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <span class="allow-select">
+          <strong>Table Joins</strong>
+        </span>
+      </div>
+      <div class="container-fluid spacer">
+        <div ng-if="false">
+          There are no joins to other tables.  Only participant-specific details can be restricted or selected.<br>
+          To restrict or select to other tables click on the <a href="#" ng-click="">Add Join</a> button below.
+        </div>
+        <div class="row">
+          <div class="col-sm-1">===</div>
+          <label for="" class="col-sm-1 control-label">Table</label>
+          <div class="col-sm-4">
+            <select class="form-control">
+              <option>Address</option>
+              <option>Interview</option>
+              <option>Phone</option>
+            </select>
+          </div>
+          <label for="" class="col-sm-1 control-label">Type</label>
+          <div class="col-sm-4">
+            <select class="form-control">
+              <option>Cross</option>
+              <option selected>Default</option>
+              <option>Inner</option>
+              <option>Left</option>
+              <option>Left Outer</option>
+              <option>Right</option>
+              <option>Right Outer</option>
+              <option>Straight</option>
+            </select>
+          </div>
+          <div class="col-sm-1">X</div>
+        </div>
+      </div>
+      <div class="form-footer text-right rounded-bottom bg-info">
+        <button type="button" class="btn btn-primary" ng-click="">Add Join</button>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <span class="allow-select">
+          <strong>Restrictions</strong>
+        </span>
+      </div>
+      <div class="container-fluid">
+        Rawr.
+      </div>
+      <div class="form-footer text-right rounded-bottom bg-info">
+        <button type="button" class="btn btn-primary" ng-click="">Add Restriction</button>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <span class="allow-select">
+          <strong>Selections</strong>
+        </span>
+      </div>
+      <div class="container-fluid">
+        Rawr.
+      </div>
+      <div class="form-footer text-right rounded-bottom bg-info">
+        <button type="button" class="btn btn-primary" ng-click="">Add Selection</button>
+      </div>
+    </div>
+  </div>
+  <div class="form-footer text-right rounded-bottom bg-info">
+    <button type="button" class="btn btn-primary" ng-click-"">Rawr</button>
+  </div>
+</div>

@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS report_type (
   subject VARCHAR(45) NOT NULL,
   description TEXT NULL DEFAULT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_name (name ASC))
+  UNIQUE INDEX uq_name (name ASC),
+  UNIQUE INDEX uq_title (title ASC))
 ENGINE = InnoDB;
 
 INSERT IGNORE INTO report_type ( name, title, subject, description ) VALUES
