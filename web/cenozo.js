@@ -2474,7 +2474,6 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         cenozo.addExtendableFunction( object, 'onNew', function( record ) {
           var self = this;
-          if( !this.parentModel.getAddEnabled() ) throw new Error( 'Calling onNew() but add is not enabled.' );
 
           // load the metadata and use it to apply default values to the record
           return this.parentModel.metadata.getPromise().then( function() {
