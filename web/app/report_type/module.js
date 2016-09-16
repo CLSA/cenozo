@@ -3,7 +3,7 @@ define( function() {
 
   try { var module = cenozoApp.module( 'report_type', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
-    identifier: { column: 'name' },
+    identifier: { column: 'title' },
     name: {
       singular: 'report type',
       plural: 'report types',
@@ -19,17 +19,12 @@ define( function() {
       }
     },
     defaultOrder: {
-      column: 'name',
+      column: 'title',
       reverse: false
     }
   } );
 
   module.addInputGroup( '', {
-    name: {
-      title: 'Name',
-      type: 'string',
-      constant: true
-    },
     title: {
       title: 'Title',
       type: 'string'
