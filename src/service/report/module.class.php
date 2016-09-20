@@ -25,14 +25,17 @@ class module extends \cenozo\service\base_report_module
     {
       if( 'PATCH' == $this->get_method() )
       {
-        // the only patch allowed is setting the stage to 'started' and progress to 1,
-        // this will generate (or re-generate) the report
+        $session = lib::create( 'business\session' );
+        $setting_manager = lib::create( 'business\setting_manager' );
+
+        // only the utility user can patch reports, and only to set the stage to started or failed
         $file = $this->get_file_as_array();
-        if( 2 != count( $file ) ||
-            !array_key_exists( 'stage', $file ) ||
-            'started' != $file['stage'] ||
-            !array_key_exists( 'progress', $file ) ||
-            1 != $file['progress'] ) $this->get_status()->set_code( 403 );
+        if( $session->get_user()->name != $setting_manager->get_setting( 'utility', 'username' ) ||
+           2 != count( $file ) ||
+           !array_key_exists( 'stage', $file ) ||
+           !in_array( $file['stage'], array( 'failed', 'started' ) ) ||
+           !array_key_exists( 'progress', $file ) ||
+           1 != $file['progress'] ) $this->get_status()->set_code( 403 );
       }
     }
   }
@@ -145,11 +148,14 @@ class module extends \cenozo\service\base_report_module
       $authentication = sprintf( '%s:%s',
         $setting_manager->get_setting( 'utility', 'username' ),
         $setting_manager->get_setting( 'utility', 'password' ) );
-      $command = sprintf(
-        'curl -v -H %s -k %s -X PATCH -d %s &',
+      $curl = sprintf( 'curl -f -H %s -k %s',
         sprintf( "'Authorization:Basic %s'", base64_encode( $authentication ) ),
-        sprintf( "'%s/api/report/%d'", $db_application->url, $this->get_resource()->id ),
-        "'{\"stage\":\"started\",\"progress\":1}'" );
+        sprintf( "'%s/api/report/%d'", $db_application->url, $this->get_resource()->id )
+      );
+      $command = sprintf(
+        '( %s -X PATCH -d %s; if [ "0" != $? ]; then %s -X PATCH -d %s; fi ) &',
+        $curl, "'{\"stage\":\"started\",\"progress\":1}'",
+        $curl, "'{\"stage\":\"failed\",\"progress\":1}'" );
 
       fclose( popen( $command, 'r' ) );
     }
