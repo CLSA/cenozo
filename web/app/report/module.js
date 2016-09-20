@@ -384,7 +384,6 @@ define( function() {
                   if( 'restrict_' == column.substring( 0, 9 ) )
                     delete self.metadata.columnList[column];
 
-                lastReportTypeIdentifier = reportTypeIdentifier;
                 lastAction = self.getActionFromState();
                 return CnHttpFactory.instance( {
                   path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
@@ -412,7 +411,7 @@ define( function() {
           ];
           if( !hasBaseMetadata ) promiseList.push( this.$$getMetadata() );
 
-          return $q.all( promiseList );
+          return $q.all( promiseList ).then( function() { lastReportTypeIdentifier = reportTypeIdentifier; } );
         };
 
         this.getServiceData = function( type, columnRestrictLists ) {
