@@ -21,6 +21,15 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
+    // don't show site selection restriction for roles that do not have all-site access
+    if( !lib::create( 'business\session' )->get_role()->all_sites )
+    {
+      $modifier->where_bracket( true );
+      $modifier->where( 'report_restriction.subject', '!=', 'site' );
+      $modifier->or_where( 'report_restriction.restriction_type', '!=', 'table' );
+      $modifier->where_bracket( false );
+    }
+
     // if the parent is a report then add the value
     if( 'report' == $this->get_parent_subject() )
       $select->add_table_column( 'report_has_report_restriction', 'value' );

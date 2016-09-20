@@ -77,7 +77,7 @@ class base_report_module extends \cenozo\service\site_restricted_module
           }
 
           // restrict by role (if not tier 3)
-          if( 3 < $db_role->tier && $record->role_id != $db_role->id )
+          if( 3 > $db_role->tier && $record->role_id != $db_role->id )
           {
             $this->get_status()->set_code( 403 );
             return;
@@ -119,7 +119,7 @@ class base_report_module extends \cenozo\service\site_restricted_module
       $modifier->where( $subject.'.site_id', '=', $db_restrict_site->id );
 
     // restrict by role
-    if( 3 < $db_role->tier ) $modifier->where( $subject.'.role_id', '=', $db_role->id );
+    if( 3 > $db_role->tier ) $modifier->where( $subject.'.role_id', '=', $db_role->id );
   }
 
   /**

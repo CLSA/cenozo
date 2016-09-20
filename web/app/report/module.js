@@ -358,6 +358,9 @@ define( function() {
         var lastReportTypeIdentifier = null;
         var lastAction = null;
 
+        // override getDeleteEnabled
+        this.getDeleteEnabled = function() { return angular.isDefined( this.module.actions.delete ); };
+
         // extend getMetadata
         this.getMetadata = function() {
           // don't use the parent identifier when in the view state, it doesn't work
