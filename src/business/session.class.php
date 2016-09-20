@@ -77,6 +77,17 @@ class session extends \cenozo\singleton
         'setting in application\'s settings.local.ini.php file',
         __METHOD__ );
 
+    // check that the server and app urls match
+    $app_url = $this->db_application->url;
+    $server_name = $_SERVER['SERVER_NAME'];
+    if( false === strpos( $app_url, $server_name ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Server name, "%s", is not found in the application URL, "%s". '.
+                 'Check the application URL name in the database and make sure they are correct.',
+                 $server_name,
+                 $app_url ),
+        __METHOD__ );
+
     define( 'APP_TITLE', $this->db_application->title );
 
     // update the theme if we need to
