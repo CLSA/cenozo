@@ -46,10 +46,6 @@ class email extends \cenozo\business\report\base_report
     // set up requirements
     $this->apply_restrictions( $modifier );
 
-    $header = array();
-    $content = array();
-    $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
-
     $this->add_table_from_select( NULL, $participant_class_name::select( $select, $modifier ) );
   }
 }
