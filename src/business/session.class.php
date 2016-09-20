@@ -298,6 +298,9 @@ class session extends \cenozo\singleton
     // only perform if not shut down and user record is set
     if( !$this->is_shutdown() )
     {
+      // close all lapsed activity before we proceed
+      $activity_class_name::close_lapsed();
+
       if( !is_null( $username ) && !is_string( $username ) )
         throw lib::create( 'exception\argument', 'username', $username, __METHOD__ );
       if( !is_null( $db_site ) && !is_a( $db_site, $site_class_name ) )
@@ -383,8 +386,6 @@ class session extends \cenozo\singleton
               $this->db_role = $this->db_access->get_role();
               $_SESSION['access.id'] = $db_access->id;
               $_SESSION['address'] = $_SERVER['REMOTE_ADDR'];
-
-              $activity_class_name::close_lapsed( $this->db_user, $this->db_access );
 
               // create a new activity if there isn't already one open
               $activity_mod = lib::create( 'database\modifier' );
