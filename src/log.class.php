@@ -36,6 +36,9 @@ final class log extends singleton
    */
   protected function __construct()
   {
+    // reserve some memory for emergency purposes (in case we run out)
+    if( is_null( static::$emergency_memory ) ) static::$emergency_memory = str_repeat( '*', 1024*1024 );
+
     $this->loggers['display'] = NULL;
     $this->loggers['file'] = NULL;
 
@@ -499,8 +502,9 @@ final class log extends singleton
   {
     $error = error_get_last();
 
-    if( $error )
+    if( $error ) 
     {
+      static::$emergency_memory = NULL;
       log::error_handler( $error['type'], $error['message'], $error['file'], $error['line'] );
     }
   }
@@ -518,6 +522,14 @@ final class log extends singleton
    * @access private
    */
   private $policy_list = array();
+
+  /**
+   * A reference to a block of memory that can be freed in the event of running out of memory
+   * @var string
+   * @access private
+   * @static
+   */
+  private static $emergency_memory = NULL;
 }
 
 // define a custom error handlers
