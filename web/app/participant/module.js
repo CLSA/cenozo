@@ -731,9 +731,11 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantViewFactory', [
     'CnBaseViewFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnScriptLauncherFactory', '$window',
+    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnScriptLauncherFactory',
+    '$window', '$q', '$state',
     function( CnBaseViewFactory,
-              CnSession, CnHttpFactory, CnModalConfirmFactory, CnScriptLauncherFactory, $window ) {
+              CnSession, CnHttpFactory, CnModalConfirmFactory, CnScriptLauncherFactory,
+              $window, $q, $state ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
@@ -762,6 +764,26 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           return this.onViewPromise;
         };
 
+        // warn non all-sites users when changing the preferred site
+        this.onPatch = function( data ) {
+          if( angular.isDefined( data.preferred_site_id ) && !CnSession.role.allSites ) {
+            if( ( "" === data.preferred_site_id && this.record.default_site != CnSession.site.name ) ||
+                ( "" !== data.preferred_site_id && data.preferred_site_id != CnSession.site.id ) ) {
+              return CnModalConfirmFactory.instance( {
+                title: 'Change Preferred Site',
+                message: 'Are you sure you wish to change this participant\'s preferred site?\n\n' +
+                         'By selecting yes you will no longer have access to this participant and will be ' +
+                         'sent back to your home screen.'
+              } ).show().then( function( response ) {
+                if( response ) {
+                  return self.$$onPatch( data ).then( function() { $state.go( 'root.home' ); } );
+                } else self.record.preferred_site_id = self.backupRecord.preferred_site_id;
+              } );
+            }
+          }
+
+          return this.$$onPatch( data );
+        };
 
         // launches the withdraw script for the current participant
         this.launchWithdraw = function() {

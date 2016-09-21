@@ -50,9 +50,6 @@ class patch extends \cenozo\service\patch
 
       $db_role = lib::create( 'business\session' )->get_role();
 
-      // make sure that only all-site roles can change the preferred site
-      if( $this->update_preferred_site && !$db_role->all_sites ) $this->status->set_code( 403 );
-
       // make sure that only tier 2+ roles can reverse a withdraw
       if( $this->reverse_withdraw && 2 > $db_role->tier ) $this->status->set_code( 403 );
     }
