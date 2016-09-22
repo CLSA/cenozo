@@ -384,6 +384,10 @@ angular.extend( cenozo, {
   providers: {},
   frameworkModules: {},
 
+  xor: function( a, b ) {
+    return ( a || b ) && !( a && b );
+  },
+
   getFileUrl: function( module, file, build ) {
     if( angular.isUndefined( build ) ) build = cenozo.build;
     var url = this.baseUrl + '/app/';
