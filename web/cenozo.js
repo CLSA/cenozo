@@ -4298,13 +4298,16 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @return promise
          */
         cenozo.addExtendableFunction( self, 'getMetadata', function() {
+          self.metadata.columnList = {};
+
+          /* TODO: this is likely unnecessary, so remove it if no problems occur
           // Pre-build empty objects for every colum in all input groups
           // We do this so that if getMetadata is extended it can call this function and its own
           // in parallel instead of having to wait for this function's promise to resolve
-          self.metadata.columnList = {};
           for( var group in self.module.inputGroupList )
-            for( var column in self.module.inputGroupList[group] )
+            for( var column in self.module.inputGroupList[group].inputList )
               self.metadata.columnList[column] = {};
+          */
 
           return CnHttpFactory.instance( {
             path: self.module.subject.snake
