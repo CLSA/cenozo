@@ -1830,6 +1830,17 @@ cenozo.filter( 'cnByObjectProperty', function() {
 /* ######################################################################################################## */
 
 /**
+ * A filter that adds commas to large integers
+ */
+cenozo.filter( 'cnCommaInteger', function() {
+  return function( input ) {
+    return parseInt( input ).toString().replace( /\B(?=(\d{3})+(?!\d))/g, ',' );
+  };
+} );
+
+/* ######################################################################################################## */
+
+/**
  * A filter that displays comparitors as HTML encodings
  */
 cenozo.filter( 'cnComparator', function() {
@@ -4834,6 +4845,10 @@ cenozo.factory( 'CnHttpFactory', [
       this.patch = function() { return http( 'PATCH', 'api/' + this.path ); };
       this.post = function() { return http( 'POST', 'api/' + this.path ); };
       this.query = function() { return http( 'GET', 'api/' + this.path ); };
+      this.count = function() {
+        this.path += ( 0 <= this.path.indexOf( '?' ) ? '&' : '?' ) + 'count=true';
+        return this.query();
+      }
       this.file = function() {
         // change the default error
         if( this.onError === CnModalMessageFactory.httpError ) {
