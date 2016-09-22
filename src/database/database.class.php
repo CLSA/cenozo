@@ -907,7 +907,9 @@ class database extends \cenozo\base_object
    */
   public static function is_date_column( $column_name )
   {
-    return 'date' == $column_name || '_date' == substr( $column_name, -5 );
+    $pos = strpos( $column_name, '.' );
+    $column = false === $pos ? $column_name : substr( $column_name, $pos+1 );
+    return 'date' == $column || '_date' == substr( $column, -5 );
   }
 
   /**
@@ -920,7 +922,9 @@ class database extends \cenozo\base_object
    */
   public static function is_time_column( $column_name )
   {
-    return 'time' == $column_name || '_time' == substr( $column_name, -5 );
+    $pos = strpos( $column_name, '.' );
+    $column = false === $pos ? $column_name : substr( $column_name, $pos+1 );
+    return 'time' == $column || '_time' == substr( $column, -5 );
   }
 
   /**
@@ -933,8 +937,9 @@ class database extends \cenozo\base_object
    */
   public static function is_datetime_column( $column_name )
   {
-    return 'datetime' == $column_name ||
-           '_datetime' == substr( $column_name, -9 );
+    $pos = strpos( $column_name, '.' );
+    $column = false === $pos ? $column_name : substr( $column_name, $pos+1 );
+    return 'datetime' == $column || '_datetime' == substr( $column, -9 );
   }
 
   /**
