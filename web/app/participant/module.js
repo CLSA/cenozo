@@ -580,6 +580,28 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   } catch( err ) {}
 
   /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnParticipantExport', [
+    'CnParticipantExportFactory', 'CnSession', '$state', '$timeout',
+    function( CnParticipantExportFactory, CnSession, $state, $timeout ) {
+      return {
+        templateUrl: module.getFileUrl( 'export.tpl.html' ),
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnParticipantExportFactory.instance();
+          CnSession.setBreadcrumbTrail(
+            [ {
+              title: 'Participants',
+              go: function() { $state.go( 'participant.list' ); }
+            }, {
+              title: 'Export'
+            } ]
+          );
+        }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantHistory', [
     'CnParticipantHistoryFactory', 'CnSession', 'CnHttpFactory', '$state',
     function( CnParticipantHistoryFactory, CnSession, CnHttpFactory, $state ) {
@@ -975,6 +997,199 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         root: new object( true ),
         instance: function() { return new object( false ); }
       };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnParticipantExportFactory', [
+    'CnParticipantModelFactory', 'CnSession', 'CnHttpFactory', 'CnModalDatetimeFactory', '$q',
+    function( CnParticipantModelFactory, CnSession, CnHttpFactory, CnModalDatetimeFactory, $q ) {
+      var object = function() {
+        var self = this;
+        this.participantModel = CnParticipantModelFactory.root;
+        this.isLoading = true;
+        this.participantCount = 0;
+        this.restrictionList = [];
+        this.restrictionTypeList = [
+          { key: undefined, title: 'Loading...' },
+          { key: 'active', title: 'Active', type: 'boolean' },
+          { key: 'source_id', title: 'Source', type: 'enum' },
+          { key: 'cohort_id', title: 'Cohort', type: 'enum' },
+          { key: 'grouping', title: 'Grouping', type: 'string' },
+          { key: 'honorific', title: 'Honorific', type: 'string' },
+          { key: 'first_name', title: 'First Name', type: 'string' },
+          { key: 'other_name', title: 'Other Name', type: 'string' },
+          { key: 'last_name', title: 'Last Name', type: 'string' },
+          { key: 'sex', title: 'Sex', type: 'enum' },
+          { key: 'date_of_birth', title: 'Date of Birth', type: 'dob' },
+          { key: 'age_group_id', title: 'Age Group', type: 'enum' },
+          { key: 'state_id', title: 'Condition', type: 'enum' },
+          { key: 'language_id', title: 'Language', type: 'enum' },
+          { key: 'availability_type_id', title: 'Availability Type', type: 'enum' },
+          { key: 'callback', title: 'Callback', type: 'datetime' },
+          { key: 'override_quota', title: 'Override Quota', type: 'boolean' },
+          { key: 'has_email', title: 'Has Email', type: 'boolean' },
+          { key: 'delink', title: 'Delink', type: 'boolean' },
+          { key: 'out_of_area', title: 'Out of Area', type: 'boolean' },
+          { key: 'low_education', title: 'Low Education', type: 'boolean' }
+        ];
+        this.participantColumnList = [ { column: undefined, title: 'Loading...' } ];
+        this.columnList = [];
+
+        this.restrictionTypeList.filter( function( restriction ) {
+          return 'boolean' == restriction.type;
+        } ).forEach( function( restriction ) {
+          restriction.enumList = [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ];
+        } );
+
+        this.addRestriction = function( key ) {
+          var item = {
+            restriction: this.restrictionTypeList.findByProperty( 'key', key ),
+            value: null,
+            logic: 'and',
+            test: '<=>'
+          };
+
+          if( 'boolean' == item.restriction.type ) {
+            item.value = true;
+          } else if( 'dob' == item.restriction.type || 'datetime' == item.restriction.type ) {
+            var datetime = moment();
+            if( 'dob' == item.restriction.type ) datetime.subtract( 50, 'years' );
+            item.value = datetime.format( 'dob' == item.restriction.type ? 'YYYY-MM-DD' : null );
+            item.formattedValue = CnSession.formatValue( item.value, item.restriction.type, true );
+          } else if( 'enum' == item.restriction.type ) {
+            item.value = item.restriction.enumList[0].value;
+          } else if( 'string' == item.restriction.type ) {
+            item.value = '';
+          }
+
+          this.restrictionList.push( item );
+          this.newRestriction = undefined;
+        };
+
+        this.removeRestriction = function( index ) {
+          this.restrictionList.splice( index, 1 );
+        };
+
+        this.selectDatetime = function( index ) {
+          var item = this.restrictionList[index];
+          if( 'dob' != item.restriction.type && 'datetime' != item.restriction.type ) {
+            console.error( 'Tried to select datetime for restriction type "' + item.restriction.type + '".' );
+          } else {
+            CnModalDatetimeFactory.instance( {
+              title: item.restriction.title,
+              date: item.value,
+              pickerType: item.restriction.type,
+              emptyAllowed: false
+            } ).show().then( function( response ) {
+              if( false !== response ) {
+                item.value = response.replace( /Z$/, '' ); // remove the Z at the end
+                item.formattedValue = CnSession.formatValue( response, item.restriction.type, true );
+              }
+            } );
+          }
+        };
+
+        this.applyRestrictions = function() {
+          this.confirmInProgress = true;
+
+          // build the modifier from the restriction list
+          var whereList = [];
+          this.restrictionList.forEach( function( item ) {
+            var where = {
+              column: 'participant.' + item.restriction.key,
+              operator: item.test,
+              value: item.value
+            };
+
+            if( 'has_email' == item.restriction.key ) {
+              where.column = 'email';
+              where.operator = cenozo.xor( '<=>' == item.test, item.value ) ? '<=>' : '<>';
+              where.value = null;
+            }
+
+            if( ( 'like' == item.test || 'not like' == item.test ) ) {
+              // LIKE "" is meaningless, so search for <=> "" instead
+              if( 0 == where.value.length ) item.test = '<=>';
+              // LIKE without % is meaningless, so add % at each end of the string
+              else if( 0 > where.value.indexOf( '%' ) ) where.value = '%' + where.value + '%';
+            }
+
+            whereList.push( where );
+          } );
+
+          var data = { modifier: {}, select: {} };
+          if( 0 < whereList.length ) data.modifier.where = whereList;
+
+          // get a count of participants to be included in the export
+          CnHttpFactory.instance( {
+            path: 'participant',
+            data: data
+          } ).count().then( function( response ) {
+            self.participantCount = parseInt( response.headers( 'Total' ) );
+          } ).finally( function() {
+            self.confirmInProgress = false;
+          } );
+        };
+
+        var fromMetaList = [
+          'sex', 'date_of_birth', 'age_group_id', 'state_id', 'language_id', 'availability_type_id'
+        ];
+        $q.all( [
+          
+          this.participantModel.metadata.getPromise().then( function() {
+            self.restrictionTypeList.filter( function( restriction ) {
+              return 0 <= fromMetaList.indexOf( restriction.key );
+            } ).forEach( function( restriction ) {
+              restriction.enumList = self.participantModel.metadata.columnList[restriction.key].enumList;
+            } );
+            
+            for( var column in self.participantModel.metadata.columnList ) {
+              var item = self.participantModel.metadata.columnList[column];
+              item.column = column;
+              item.title = item.column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords();
+              self.participantColumnList.push( self.participantModel.metadata.columnList[column] );
+            }
+          } ),
+
+          CnHttpFactory.instance( {
+            path: 'source',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: ['name'] }
+            }
+          } ).query().then( function( response ) {
+            var restriction = self.restrictionTypeList.findByProperty( 'key', 'source_id' );
+            restriction.enumList = [];
+            response.data.forEach( function( item ) {
+              restriction.enumList.push( { value: item.id, name: item.name } );
+            } );
+          } ),
+
+          CnHttpFactory.instance( {
+            path: 'cohort',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: ['name'] }
+            }
+          } ).query().then( function( response ) {
+            var restriction = self.restrictionTypeList.findByProperty( 'key', 'cohort_id' );
+            restriction.enumList = [];
+            response.data.forEach( function( item ) {
+              restriction.enumList.push( { value: item.id, name: item.name } );
+            } );
+          } )
+
+        ] ).then( function() {
+          self.restrictionTypeList.findByProperty( 'key', undefined ).title = 'Select a new restriction';
+          self.participantColumnList.findByProperty( 'column', undefined ).title = 'Add a participant column';
+        } ).finally( function() {
+          self.isLoading = false;
+          self.applyRestrictions();
+        } );
+      };
+
+      return { instance: function() { return new object( false ); } };
     }
   ] );
 

@@ -59,6 +59,7 @@ class ui extends \cenozo\base_object
 
       // prepare the module list (used to create all necessary states needed by the active role)
       $this->build_module_list();
+      ksort( $this->module_list );
 
       // prepare which modules to show in the list
       $this->build_listitem_list();
@@ -124,10 +125,7 @@ class ui extends \cenozo\base_object
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
-    {
       $list = array_merge( $list, array( 'assignment', 'interview', 'phone_call' ) );
-      sort( $list );
-    }
 
     return $list;
   }
@@ -323,8 +321,6 @@ class ui extends \cenozo\base_object
         }
       }
     }
-
-    ksort( $this->module_list );
   }
 
   /**
@@ -383,6 +379,8 @@ class ui extends \cenozo\base_object
 
     if( 3 <= $db_role->tier )
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
+    if( 3 <= $db_role->tier )
+      $list['Participant Export'] = array( 'subject' => 'participant', 'action' => 'export' );
     $list['Participant Search'] = array(
       'subject' => 'search_result',
       'action' => 'list',
