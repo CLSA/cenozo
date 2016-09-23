@@ -91,15 +91,13 @@ class read extends service
    */
   protected function finish()
   {
-    parent::finish();
-
-    // modify the data after it has been fetched
+    // modify the data after it has been fetched but before calling the parent finish method
     $leaf_module = $this->get_leaf_module();
     if( !is_null( $leaf_module ) )
-    {
       if( is_array( $this->data ) && is_array( current( $this->data ) ) )
         foreach( $this->data as $index => $row ) $leaf_module->post_read( $this->data[$index] );
-    }
+
+    parent::finish();
   }
 
   /**
