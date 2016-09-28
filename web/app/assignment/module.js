@@ -28,6 +28,10 @@ define( [], function() {
         column: 'site.name',
         title: 'Site'
       },
+      status: {
+        column: 'status',
+        title: 'Status'
+      },
       start_datetime: {
         column: 'assignment.start_datetime',
         title: 'Start',
