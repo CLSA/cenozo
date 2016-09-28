@@ -115,6 +115,9 @@ class get extends \cenozo\service\service
       'session_list' => $session->get_session_list(),
       'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false );
 
+    // add the application type name
+    $pseudo_record['application']['type'] = $db_application->get_application_type()->name;
+
     // include the last (closed) activity for this user
     $activity_sel = lib::create( 'database\select' );
     $activity_sel->add_column( 'start_datetime' );
