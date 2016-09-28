@@ -85,7 +85,9 @@ class module extends \cenozo\service\site_restricted_module
     }
 
     // join to participant_site table
-    if( $select->has_table_columns( 'site' ) || $select->has_table_columns( 'default_site' ) )
+    if( $select->has_table_columns( 'site' ) ||
+        $select->has_table_columns( 'default_site' ) ||
+        $modifier->has_where( 'site.id' ) )
     {
       if( !$modifier->has_join( 'participant_site' ) )
       {
