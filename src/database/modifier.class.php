@@ -1117,39 +1117,25 @@ class modifier extends \cenozo\base_object
    *   join:
    *   [
    *     {
-   *       table:   <table>
-   *       onleft:  <column>
-   *       onright: <column>
+   *       table:   <table>,
+   *       onleft:  <column>,
+   *       onright: <column>,
+   *       type: inner|cross|straight|left|left outer|right|right outer (optional)
+   *       alias: <string> (optional),
+   *       prepend: true|false (optional)
    *     }
    *   ],
    *   having|where:
    *   [
    *     {
    *       bracket: true,
-   *       open: true
-   *     },
-   *     {
-   *       column:   <column>
-   *       operator: =,!=,<,>,LIKE,NOT LIKE,etc
-   *       value:    <value>
-   *     },
-   *     {
-   *       bracket: true,
-   *       open: false
-   *     },
-   *     {
-   *       bracket: true,
-   *       open: true,
-   *       or: true
+   *       open: true|false,
+   *       or: true|false
    *     },
    *     {
    *       column:   <column>
    *       operator: =|!=|<|>|LIKE|NOT LIKE|etc
    *       value:    <value>
-   *     },
-   *     {
-   *       bracket: true,
-   *       open: false
    *     }
    *   ],
    *   order:
@@ -1185,7 +1171,16 @@ class modifier extends \cenozo\base_object
                 array_key_exists( 'onright', $join ) )
             {
               if( !array_key_exists( 'type', $join ) ) $join->type = 'cross';
-              $modifier->join( $join->table, $join->onleft, $join->onright, $join->type );
+              if( !array_key_exists( 'alias', $join ) ) $join->alias = NULL;
+              if( !array_key_exists( 'prepend', $join ) ) $join->prepend = false;
+              $modifier->join(
+                $join->table,
+                $join->onleft,
+                $join->onright,
+                $join->type,
+                $join->alias,
+                $join->prepend
+              );
             }
             else throw lib::create( 'exception\runtime', 'Invalid join sub-statement', __METHOD__ );
           }
