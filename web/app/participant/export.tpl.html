@@ -103,102 +103,61 @@
         <span class="pull-right">
           <span ng-if="model.confirmInProgress">working, please wait...</span>
           <span ng-if="!model.confirmInProgress">
-            {{ model.getDataPointCount() ?
-               (model.getDataPointCount()|cnCommaInteger) + ' data points total' :
+            {{ model.participantCount*model.columnList.length ?
+               (model.participantCount*model.columnList.length|cnCommaInteger) + ' data points total' :
                'no data points' }}
-            <i class="glyphicon" ng-class="model.getDataPointCount() ? 'glyphicon-ok' : 'glyphicon-remove'"></i>
+            <i class="glyphicon"
+               ng-class="model.participantCount*model.columnList.length ? 'glyphicon-ok' : 'glyphicon-remove'"></i>
           </span>
         </span>
       </div>
       <div class="container-fluid spacer">
         <p class="text-info" style="margin-top: 1em;">
-          Add which columns are to be included in the participant export.
+          Add columns to include in the participant export.<br>
+          Some columns will require you to define a type.  This means that there are multiple records for one
+          participant, so you must specify which record to include in the report.
         </p>
         <hr />
-        <p ng-if="0 == model.getSelectedColumnCount()">
+        <p ng-if="0 == model.columnList.length">
           No columns selected.
         </p>
-        <div class="row vertical-spacer"
-             ng-repeat="item in model.columnList
-                        | cnByObjectProperty:'selected':true
-                        | orderBy:'rank'">
+        <div class="row vertical-spacer" ng-repeat="item in model.columnList">
           <div class="col-sm-2">
             <select class="form-control"
                     ng-model="item.rank"
-                    ng-change="model.moveColumn( item )"
-                    ng-options="obj.rank as obj.rank for obj in model.columnList
-                                | cnByObjectProperty:'selected':true
-                                | orderBy: 'rank'">
+                    ng-change="model.moveColumn( $index, item.rank-1 )"
+                    ng-options="rank for rank in [] | cnRange:1:model.columnList.length">
             </select>
           </div>
-          <div class="col-sm-4">
-            {{ item.table }}
+          <div class="col-sm-2 text-center">
+            <strong>{{ item.type|cnUCWords }}</strong>
+          </div>
+          <div class="col-sm-2 text-center">
+            <strong>{{ item.column.title }}</strong>
           </div>
           <div class="col-sm-5">
-            {{ item.title }}
+            <select class="form-control"
+                    ng-if="item.column.subtypeList"
+                    ng-model="item.subtype"
+                    ng-options="obj.key as obj.name for obj in item.column.subtypeList">
+            </select>
           </div>
           <div class="col-sm-1">
-            <button class="btn btn-danger pull-right" ng-click="model.removeColumn( item )">
+            <button class="btn btn-danger pull-right" ng-click="model.removeColumn( $index )">
               <i class="glyphicon glyphicon-remove"></i>
             </button>
           </div>
         </div>
         <hr />
         <div class="vertical-spacer">
-          <select class="form-control"
-                  ng-disabled="model.isLoading.participant"
-                  ng-model="model.newParticipantColumn"
-                  ng-change="model.addColumn( model.newParticipantColumn )"
-                  ng-options="obj.column as obj.title for obj in model.columnList
-                              | cnByObjectProperty:'table':'Participant'
-                              | cnByObjectProperty:'selected':false">
-            <option>test</option>
-          </select>
-          <select class="form-control"
-                  ng-disabled="model.isLoading.site"
-                  ng-model="model.newSiteColumn"
-                  ng-change="model.addColumn( model.newSiteColumn )"
-                  ng-options="obj.column as obj.title for obj in model.columnList
-                              | cnByObjectProperty:'table':'Site'
-                              | cnByObjectProperty:'selected':false">
-            <option>test</option>
-          </select>
-          <select class="form-control"
-                  ng-disabled="model.isLoading.address"
-                  ng-model="model.newAddressColumn"
-                  ng-change="model.addColumn( model.newAddressColumn )"
-                  ng-options="obj.column as obj.title for obj in model.columnList
-                              | cnByObjectProperty:'table':'Address'
-                              | cnByObjectProperty:'selected':false">
-            <option>test</option>
-          </select>
-          <select class="form-control"
-                  ng-disabled="model.isLoading.phone"
-                  ng-model="model.newPhoneColumn"
-                  ng-change="model.addColumn( model.newPhoneColumn )"
-                  ng-options="obj.column as obj.title for obj in model.columnList
-                              | cnByObjectProperty:'table':'Phone'
-                              | cnByObjectProperty:'selected':false">
-            <option>test</option>
-          </select>
-          <select class="form-control"
-                  ng-disabled="model.isLoading.consent"
-                  ng-model="model.newConsentColumn"
-                  ng-change="model.addColumn( model.newConsentColumn )"
-                  ng-options="obj.column as obj.title for obj in model.columnList
-                              | cnByObjectProperty:'table':'Consent'
-                              | cnByObjectProperty:'selected':false">
-            <option>test</option>
-          </select>
-          <select class="form-control"
-                  ng-disabled="model.isLoading.event"
-                  ng-model="model.newEventColumn"
-                  ng-change="model.addColumn( model.newEventColumn )"
-                  ng-options="obj.column as obj.title for obj in model.columnList
-                              | cnByObjectProperty:'table':'Event'
-                              | cnByObjectProperty:'selected':false">
-            <option>test</option>
-          </select>
+          <span ng-repeat="(type, typeList) in model.columnTypeList">
+            <select class="form-control"
+                    ng-disabled="model.isLoading[type]"
+                    ng-model="model.newColumn[type]"
+                    ng-change="model.addColumn( type, model.newColumn[type] )"
+                    ng-options="obj.key as obj.title for obj in model.columnTypeList[type]">
+            </select>
+          </span>
         </div>
       </div>
     </div>

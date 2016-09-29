@@ -1058,50 +1058,28 @@ define( [ 'consent', 'event', 'site' ].reduce( function( list, name ) {
           ],
           applicationRestrictionList: [],
           applicationRestrictionTypeList: [ { key: undefined, title: 'Loading...' } ],
-          columnList: [ {
-            column: undefined,
-            table: 'Participant',
-            selected: false,
-            rank: null,
-            title: 'Loading...'
-          }, {
-            column: undefined,
-            table: 'Site',
-            selected: false,
-            rank: null,
-            title: 'Loading...'
-          }, {
-            column: undefined,
-            table: 'Address',
-            selected: false,
-            rank: null,
-            title: 'Loading...'
-          }, {
-            column: undefined,
-            table: 'Phone',
-            selected: false,
-            rank: null,
-            title: 'Loading...'
-          }, {
-            column: undefined,
-            table: 'Consent',
-            selected: false,
-            rank: null,
-            title: 'Loading...'
-          }, {
-            column: undefined,
-            table: 'Event',
-            selected: false,
-            rank: null,
-            title: 'Loading...'
-          } ],
-
-          getSelectedColumnCount: function() {
-            return this.columnList.filter( function( column ) { return column.selected; } ).length;
+          columnTypeList: {
+            participant: [ { key: undefined, title: 'Loading...' } ],
+            site: [ { key: undefined, title: 'Loading...' } ],
+            address: [ { key: undefined, title: 'Loading...' } ],
+            phone: [ { key: undefined, title: 'Loading...' } ],
+            consent: [ { key: undefined, title: 'Loading...' } ],
+            event: [ { key: undefined, title: 'Loading...' } ]
           },
-
-          getDataPointCount: function() {
-            return this.participantCount * this.getSelectedColumnCount();
+          newColumn: {},
+          columnList: [],
+          columnSubtypeList: {
+            site: [
+              { key: 'effective', name: 'Effective' },
+              { key: 'default', name: 'Default' },
+              { key: 'preferred', name: 'Preferred' }
+            ],
+            address: [
+              { key: 'primary', name: 'Primary' },
+              { key: 'first', name: 'First' }
+            ],
+            consent: [],
+            event: []
           },
 
           addRestriction: function( key ) {
@@ -1270,65 +1248,26 @@ define( [ 'consent', 'event', 'site' ].reduce( function( list, name ) {
             } );
           },
 
-          addColumn: function( column ) {
-            var item = this.columnList.findByProperty( 'column', column );
-            if( item ) {
-              item.selected = true;
-              item.rank = this.columnList.reduce( function( count, column ) {
-                if( column.selected ) count++;
-                return count;
-              }, 0 );
+          addColumn: function( type, key ) {
+            var column = this.columnTypeList[type].findByProperty( 'key', key );
+            if( column ) {
+              var newColumn = { type: type, column: column };
+              if( angular.isDefined( column.subtypeList ) ) newColumn.subtype = column.subtypeList[0].key;
+              this.columnList.push( newColumn );
+              this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
             }
-            this.newParticipantColumn = undefined;
-            this.newSiteColumn = undefined;
-            this.newAddressColumn = undefined;
-            this.newPhoneColumn = undefined;
-            this.newConsentColumn = undefined;
-            this.newEventColumn = undefined;
+            this.newColumn[type] = undefined;
           },
 
-          moveColumn: function( column ) {
-            // find the missing index (what the column was
-            var total = this.columnList.filter( function( item ) { return item.selected; } ).length;
-            var rankList = this.columnList
-              .filter( function( item ) { return item.selected; } )
-              .reduce( function( rankList, item ) {
-                if( -1 == rankList.indexOf( item.rank ) ) rankList.push( item.rank );
-                return rankList;
-              }, [] );
-
-            var oldRank = null;
-            for( var r = 1; r <= total; r++ ) {
-              if( -1 == rankList.indexOf( r ) ) {
-                oldRank = r;
-                break;
-              }
-            }
-
-            // now rerank the selected columns
-            this.columnList
-              .filter( function( item ) { return item.selected; } )
-              .forEach( function( item ) {
-                if( item.column != column.column ) { // only change other columns
-                  if( oldRank > column.rank ) { // we've moved the column higher in rank
-                    // increment all columns between the new rank and the old one
-                    if( column.rank <= item.rank && item.rank < oldRank ) item.rank++;
-                  } else if( oldRank < column.rank ) { // we've moved the column lower in rank
-                    // decrement all columns between the old rank and the new one
-                    if( oldRank < item.rank && item.rank <= column.rank ) item.rank--;
-                  }
-                }
-              } );
+          moveColumn: function( oldIndex, newIndex ) {
+            var column = this.columnList.splice( oldIndex, 1 );
+            this.columnList.splice( newIndex, 0, column[0] );
+            this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
           },
 
-          removeColumn: function( item ) {
-            var rank = 1;
-            item.selected = false;
-            item.rank = null;
-            this.columnList
-              .filter( function( column ) { return column.selected; } )
-              .sort( function( column1, column2 ) { return column1.rank > column2.rank; } )
-              .forEach( function( column ) { if( column.selected ) column.rank = rank++; } );
+          removeColumn: function( index ) {
+            this.columnList.splice( index, 1 );
+            this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
           }
         } );
 
@@ -1362,138 +1301,126 @@ define( [ 'consent', 'event', 'site' ].reduce( function( list, name ) {
             } );
             
             for( var column in self.participantModel.metadata.columnList ) {
-              var item = angular.copy( self.participantModel.metadata.columnList[column] );
-              item.table = 'Participant';
-              item.column = 'participant.' + column;
-              item.title = 'id' == column || 'uid' == column
-                         ? column.toUpperCase()
-                         : column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords();
-              item.selected = false;
-
-              self.columnList.push( item );
+              self.columnTypeList.participant.push( {
+                key: column,
+                title: 'id' == column || 'uid' == column ?
+                       column.toUpperCase() :
+                       column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
+                subtypeList: self.columnSubtypeList.participant
+              } );
             }
-            self.columnList.some( function( column ) {
-              if( 'Participant' == column.table && 'Loading...' == column.title ) {
-                column.title = 'Add a Participant column...';
-                return true;
-              }
-            } );
+            self.columnTypeList.participant.findByProperty( 'key', undefined ).title =
+              'Add a Participant column...';
             self.isLoading.participant = false;
           } ),
 
           this.siteModel.metadata.getPromise().then( function() {
             for( var column in self.siteModel.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                var item = angular.copy( self.siteModel.metadata.columnList[column] );
-                item.table = 'Site';
-                item.column = 'site.' + column;
-                item.title = 'id' == column
-                           ? column.toUpperCase()
-                           : column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords();
-                item.selected = false;
-
-                self.columnList.push( item );
+                self.columnTypeList.site.push( {
+                  key: column,
+                  title: 'id' == column ?
+                         column.toUpperCase() :
+                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
+                  subtypeList: self.columnSubtypeList.site
+                } );
               }
             }
-            self.columnList.some( function( column ) {
-              if( 'Site' == column.table && 'Loading...' == column.title ) {
-                column.title = 'Add a Site column...';
-                return true;
-              }
-            } );
+            self.columnTypeList.site.findByProperty( 'key', undefined ).title =
+              'Add a Site column...';
             self.isLoading.site = false;
           } ),
 
           this.addressModel.metadata.getPromise().then( function() {
             for( var column in self.addressModel.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                var item = angular.copy( self.addressModel.metadata.columnList[column] );
-                item.table = 'Address';
-                item.column = 'address.' + column;
-                item.title = 'id' == column
-                           ? column.toUpperCase()
-                           : column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords();
-                item.selected = false;
-
-                self.columnList.push( item );
+                self.columnTypeList.address.push( {
+                  key: column,
+                  title: 'id' == column ?
+                         column.toUpperCase() :
+                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
+                  subtypeList: self.columnSubtypeList.address
+                } );
               }
             }
-            self.columnList.some( function( column ) {
-              if( 'Address' == column.table && 'Loading...' == column.title ) {
-                column.title = 'Add an Address column...';
-                return true;
-              }
-            } );
+            self.columnTypeList.address.findByProperty( 'key', undefined ).title =
+              'Add an Address column...';
             self.isLoading.address = false;
           } ),
 
           this.phoneModel.metadata.getPromise().then( function() {
             for( var column in self.phoneModel.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                var item = angular.copy( self.phoneModel.metadata.columnList[column] );
-                item.table = 'Phone';
-                item.column = 'phone.' + column;
-                item.title = 'id' == column
-                           ? column.toUpperCase()
-                           : column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords();
-                item.selected = false;
-
-                self.columnList.push( item );
+                self.columnTypeList.phone.push( {
+                  key: column,
+                  title: 'id' == column ?
+                         column.toUpperCase() :
+                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
+                  subtypeList: self.columnSubtypeList.phone
+                } );
               }
             }
-            self.columnList.some( function( column ) {
-              if( 'Phone' == column.table && 'Loading...' == column.title ) {
-                column.title = 'Add a Phone column...';
-                return true;
-              }
-            } );
+            self.columnTypeList.phone.findByProperty( 'key', undefined ).title =
+              'Add a Phone column...';
             self.isLoading.phone = false;
           } ),
 
           this.consentModel.metadata.getPromise().then( function() {
             for( var column in self.consentModel.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                var item = angular.copy( self.consentModel.metadata.columnList[column] );
-                item.table = 'Consent';
-                item.column = 'consent.' + column;
-                item.title = 'id' == column
-                           ? column.toUpperCase()
-                           : column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords();
-                item.selected = false;
-
-                self.columnList.push( item );
+                self.columnTypeList.consent.push( {
+                  key: column,
+                  title: 'id' == column ?
+                         column.toUpperCase() :
+                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
+                  subtypeList: self.columnSubtypeList.consent
+                } );
               }
             }
-            self.columnList.some( function( column ) {
-              if( 'Consent' == column.table && 'Loading...' == column.title ) {
-                column.title = 'Add a Consent column...';
-                return true;
-              }
-            } );
+            self.columnTypeList.consent.findByProperty( 'key', undefined ).title =
+              'Add a Consent column...';
             self.isLoading.consent = false;
+          } ),
+
+          CnHttpFactory.instance( {
+            path: 'consent_type',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: ['name'] }
+            }
+          } ).query().then( function( response ) {
+            response.data.forEach( function( item ) {
+              self.columnSubtypeList.consent.push( { key: item.id, name: item.name } );
+            } );
           } ),
 
           this.eventModel.metadata.getPromise().then( function() {
             for( var column in self.eventModel.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                var item = angular.copy( self.eventModel.metadata.columnList[column] );
-                item.table = 'Event';
-                item.column = 'event.' + column;
-                item.title = 'id' == column
-                           ? column.toUpperCase()
-                           : column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords();
-                item.selected = false;
-
-                self.columnList.push( item );
+                self.columnTypeList.event.push( {
+                  key: column,
+                  title: 'id' == column ?
+                         column.toUpperCase() :
+                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
+                  subtypeList: self.columnSubtypeList.event
+                } );
               }
             }
-            self.columnList.some( function( column ) {
-              if( 'Event' == column.table && 'Loading...' == column.title ) {
-                column.title = 'Add an Event column...';
-                return true;
-              }
-            } );
+            self.columnTypeList.event.findByProperty( 'key', undefined ).title =
+              'Add an Event column...';
             self.isLoading.event = false;
+          } ),
+
+          CnHttpFactory.instance( {
+            path: 'event_type',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: ['name'] }
+            }
+          } ).query().then( function( response ) {
+            response.data.forEach( function( item ) {
+              self.columnSubtypeList.event.push( { key: item.id, name: item.name } );
+            } );
           } ),
 
           CnHttpFactory.instance( {
