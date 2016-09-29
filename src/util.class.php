@@ -203,7 +203,10 @@ class util
     else if( is_string( $datetime ) || is_null( $datetime ) )
     {
       if( 'CURRENT_TIMESTAMP' == $datetime ) $datetime = NULL;
-      return new \DateTime( $datetime, new \DateTimeZone( 'UTC' ) );
+      $timezone = new \DateTimeZone( 'UTC' );
+      $datetime_obj = new \DateTime( $datetime, $timezone );
+      $datetime_obj->setTimezone( $timezone );
+      return $datetime_obj;
     }
 
     // no way to convert to a datetime object
