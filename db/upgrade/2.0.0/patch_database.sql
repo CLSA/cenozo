@@ -7,6 +7,7 @@ SOURCE collection.sql
 SOURCE state.sql
 SOURCE person_first_address.sql
 SOURCE role.sql
+SOURCE role_has_state.sql
 SOURCE application_type.sql
 SOURCE application.sql
 SOURCE application_has_participant.sql
