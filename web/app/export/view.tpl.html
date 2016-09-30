@@ -1,0 +1,159 @@
+<cn-record-view model="model"></cn-record-view>
+<div class="record-view rounded vertical-spacer">
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>
+      Columns
+      <span class="pull-right">
+        <span ng-if="model.viewModel.confirmInProgress">working, please wait...</span>
+        <span ng-if="!model.viewModel.confirmInProgress">
+          {{ model.viewModel.participantCount*model.viewModel.columnList.length ?
+             (model.viewModel.participantCount*model.viewModel.columnList.length|cnCommaInteger) + ' data points total' :
+             'no data points' }}
+          <i class="glyphicon"
+             ng-class="model.viewModel.participantCount*model.viewModel.columnList.length ? 'glyphicon-ok' : 'glyphicon-remove'"></i>
+        </span>
+      </span>
+    </h4>
+  </div>
+  <div class="form-body container-fluid">
+    <p class="text-info" style="margin-top: 1em;">
+      Add columns to include in the participant export.<br>
+      Some columns will require you to define a type.  This means that there are multiple records for one
+      participant, so you must specify which record to include in the report.
+    </p>
+    <hr />
+    <p ng-if="0 == model.viewModel.columnList.length">
+      No columns selected.
+    </p>
+    <div class="row vertical-spacer" ng-repeat="item in model.viewModel.columnList">
+      <div class="col-sm-2">
+        <select class="form-control"
+                ng-model="item.rank"
+                ng-change="model.viewModel.moveColumn( $index, item.rank-1 )"
+                ng-options="rank for rank in [] | cnRange:1:model.viewModel.columnList.length">
+        </select>
+      </div>
+      <div class="col-sm-2 text-center">
+        <strong>{{ item.type|cnUCWords }}</strong>
+      </div>
+      <div class="col-sm-2 text-center">
+        <strong>{{ item.column.title }}</strong>
+      </div>
+      <div class="col-sm-5">
+        <select class="form-control"
+                ng-if="item.column.subtypeList"
+                ng-model="item.subtype"
+                ng-options="obj.key as obj.name for obj in item.column.subtypeList">
+        </select>
+      </div>
+      <div class="col-sm-1">
+        <button class="btn btn-danger pull-right" ng-click="model.viewModel.removeColumn( $index )">
+          <i class="glyphicon glyphicon-remove"></i>
+        </button>
+      </div>
+    </div>
+    <hr />
+    <div class="vertical-spacer" style="margin-bottom: 1em;">
+      <span ng-repeat="(type, typeList) in model.viewModel.columnTypeList">
+        <select class="form-control"
+                ng-disabled="model.viewModel.isLoading[type]"
+                ng-model="model.viewModel.newColumn[type]"
+                ng-change="model.viewModel.addColumn( type, model.viewModel.newColumn[type] )"
+                ng-options="obj.key as obj.title for obj in model.viewModel.columnTypeList[type]">
+        </select>
+      </span>
+    </div>
+  </div>
+</div>
+<div class="record-view rounded vertical-spacer">
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>
+      Restrictions
+      <span class="pull-right">
+        <span ng-if="model.viewModel.confirmInProgress">working, please wait...</span>
+        <span ng-if="!model.viewModel.confirmInProgress">
+          {{ model.viewModel.participantCount ?
+             (model.viewModel.participantCount|cnCommaInteger) + ' participants selected' :
+             'no participants selected' }}
+          <i class="glyphicon" ng-class="model.viewModel.participantCount ? 'glyphicon-ok' : 'glyphicon-remove'"></i>
+        </span>
+      </span>
+    </h4>
+  </div>
+  <div class="form-body container-fluid">
+    <p class="text-info" style="margin-top: 1em;">
+      Add restrictions if you wish to narrow down the list of participants included in the returned data.<br>
+      If you do not add any restrictions then all participants available to this application will be included.
+    </p>
+    <hr />
+    <p ng-if="0 == model.viewModel.restrictionList.length">
+      No restrictions selected.
+    </p>
+    <div class="row vertical-spacer" ng-repeat="item in model.viewModel.restrictionList">
+      <hr ng-if="0 < $index && 'or' == item.logic"/>
+      <div class="col-sm-2">
+        <select class="form-control"
+                ng-model="item.logic"
+                ng-if="0 < $index"
+                ng-change="model.viewModel.applyRestrictions()">
+          <option value="and">AND</option>
+          <option value="or">OR</option>
+        </select>
+      </div>
+      <label class="col-sm-2 control-label text-right">{{ item.restriction.title }}</label>
+      <div class="col-sm-2 col-slim">
+        <select class="form-control" ng-model="item.test" ng-change="model.viewModel.applyRestrictions()">
+          <option value="&lt;=&gt;">is</option>
+          <option value="&lt;&gt;">is not</option>
+          <option ng-if="'dob' == item.restriction.type || 'datetime' == item.restriction.type"
+                  value="&lt;">before</option>
+          <option ng-if="'dob' == item.restriction.type || 'datetime' == item.restriction.type"
+                  value="&gt;">after</option>
+          <option value="like" ng-if="'string' == item.restriction.type">like</option>
+          <option value="not like" ng-if="'string' == item.restriction.type">not like</option>
+        </select>
+      </div>
+      <div class="col-sm-5">
+        <input ng-if="'string' == item.restriction.type"
+               class="form-control"
+               type="text"
+               autocomplete="off"
+               ng-model="item.value"
+               cn-change="model.viewModel.applyRestrictions()"
+               maxlength="255"></input>
+        <input ng-if="'dob' == item.restriction.type || 'datetime' == item.restriction.type"
+               class="form-control"
+               type="text"
+               ng-click="model.viewModel.selectDatetime( $index )"
+               ng-model="item.formattedValue"
+               onkeydown="return false"></input>
+        <select ng-if="'application' == item.restriction.type ||
+                       'boolean' == item.restriction.type ||
+                       'enum' == item.restriction.type"
+                class="form-control"
+                ng-model="item.value"
+                ng-change="model.viewModel.applyRestrictions()"
+                ng-options="obj.value as obj.name for obj in item.restriction.enumList"></select>
+      </div>
+      <div class="col-sm-1">
+        <button class="btn btn-danger pull-right" ng-click="model.viewModel.removeRestriction( $index )">
+          <i class="glyphicon glyphicon-remove"></i>
+        </button>
+      </div>
+    </div>
+    <hr />
+    <div class="vertical-spacer" style="margin-bottom: 1em;">
+      <select class="form-control"
+              ng-disabled="model.viewModel.isLoading.restriction"
+              ng-model="model.viewModel.newRestriction"
+              ng-change="model.viewModel.addRestriction( model.viewModel.newRestriction )"
+              ng-options="obj.key as obj.title for obj in model.viewModel.restrictionTypeList"></select>
+      <select class="form-control"
+              ng-if="model.viewModel.extendedSiteSelection"
+              ng-disabled="model.viewModel.isLoading.applicationRestriction"
+              ng-model="model.viewModel.newApplicationRestriction"
+              ng-change="model.viewModel.addApplicationRestriction( model.viewModel.newApplicationRestriction )"
+              ng-options="obj.key as obj.title for obj in model.viewModel.applicationRestrictionTypeList"></select>
+    </div>
+  </div>
+</div>

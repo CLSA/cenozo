@@ -118,10 +118,11 @@ class ui extends \cenozo\base_object
     $setting_manager = lib::create( 'business\setting_manager' );
     $list = array(
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
-      'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'form', 'form_association',
-      'form_type', 'hin', 'jurisdiction', 'language', 'participant', 'phone', 'quota', 'recording',
-      'recording_file', 'region', 'region_site', 'role', 'report', 'report_restriction', 'report_schedule',
-      'report_type', 'script', 'search_result', 'site', 'source', 'state', 'system_message', 'user', 'webphone'
+      'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export', 'export_column',
+      'export_restriction', 'form', 'form_association', 'form_type', 'hin', 'jurisdiction', 'language',
+      'participant', 'phone', 'quota', 'recording', 'recording_file', 'region', 'region_site', 'role',
+      'report', 'report_restriction', 'report_schedule', 'report_type', 'script', 'search_result', 'site',
+      'source', 'state', 'system_message', 'user', 'webphone'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -380,7 +381,7 @@ class ui extends \cenozo\base_object
     if( 3 <= $db_role->tier )
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
     if( 3 <= $db_role->tier )
-      $list['Participant Export'] = array( 'subject' => 'participant', 'action' => 'export' );
+      $list['Participant Export'] = array( 'subject' => 'export', 'action' => 'list' );
     $list['Participant Search'] = array(
       'subject' => 'search_result',
       'action' => 'list',
