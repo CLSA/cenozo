@@ -5534,14 +5534,9 @@ cenozo.service( 'CnModalRestrictFactory', [
       if( !angular.isArray( this.restrictList ) ) this.restrictList = [];
 
       this.getInitialValue = function() {
-        var value = 1; // boolean, number, size, rank
-        if( 'string' == this.type ) value = '';
-        else if( cenozo.isDatetimeType( this.type ) ) {
-          var date = moment().tz( 'utc' );
-          if( !cenozo.isDatetimeType( this.type, 'second' ) ) date.second( 0 );
-          value = date.format();
-        }
-        return value;
+        if( 'string' == this.type ) return '';
+        else if( cenozo.isDatetimeType( this.type ) ) return null;
+        return 1; // boolean, number, size, rank
       };
 
       this.addRestriction = function() {
@@ -5577,6 +5572,11 @@ cenozo.service( 'CnModalRestrictFactory', [
           this.restrictList[index].value = angular.isUndefined( this.emptyList[index].oldValue )
                                          ? this.getInitialValue()
                                          : this.emptyList[index].oldValue;
+          if( null == this.restrictList[index].value && cenozo.isDatetimeType( this.type ) ) {
+            var date = moment().tz( 'utc' );
+            if( !cenozo.isDatetimeType( this.type, 'second' ) ) date.second( 0 );
+            this.restrictList[index].value = date.format();
+          }
         } else {
           this.emptyList[index].oldValue = this.restrictList[index].value;
           this.restrictList[index].value = null;
