@@ -64,14 +64,25 @@
         $scope.utilities = <?php print $utility_item_string; ?>;
         $scope.reports = <?php print $report_item_string; ?>;
 
-        var subMenuCount = ( $scope.lists?1:0 ) + ( $scope.utilities?1:0 ) + ( $scope.reports?1:0 );
+        $scope.splitLists = $scope.lists && 20 <= Object.keys( $scope.lists ).length;
+        $scope.halfListLength = Math.ceil( Object.keys( $scope.lists ).length / 2 );
+        $scope.splitOdd = Object.keys( $scope.lists ).length % 2;
+        console.log( $scope.splitOdd );
+        var subMenuCount = ( $scope.lists ? ( $scope.splitLists ? 2 : 1 ) : 0 )
+                         + ( $scope.utilities ? 1 : 0 )
+                         + ( $scope.reports ? 1 : 0 );
         $scope.subMenuWidth = 12 / subMenuCount;
         $scope.showSubMenuHeaders = 1 < subMenuCount;
 
-        $scope.getListItemClass = function( first, last ) {
+        $scope.getListItemClass = function( first, last, left ) {
+          if( angular.isUndefined( left ) ) left = false;
           var className = 'no-rounding';
           if( $scope.showSubMenuHeaders ) {
-            if( last ) className = 'rounded-bottom';
+            if( last ) {  
+              className = $scope.splitLists && !$scope.splitOdd && left
+                        ? 'rounded-bottom-left'
+                        : ( $scope.splitLists && !left ? 'rounded-bottom-right' : 'rounded-bottom' );
+            }
           } else {
             if( first ) {
               className = last ? 'rounded' : 'rounded-top';
@@ -108,7 +119,38 @@
                 </div>
               </div>
               <div class="container-fluid row">
-                <ul ng-if="lists" class="navigation-group col-sm-{{ subMenuWidth }}">
+                <div ng-if="lists && splitLists" class="col-sm-{{ subMenuWidth*2 }} col-slim">
+                  <ul class="navigation-group navigation-group-split-header">
+                    <li ng-if="showSubMenuHeaders" class="container-fluid bg-primary rounded-top">
+                      <h4 class="text-center">Lists</h4>
+                    </li>
+                  </ul>
+                  <div class="row">
+                    <div class="col-xs-6 col-slim-right">
+                      <ul class="navigation-group navigation-group-split-left">
+                        <li ng-repeat="(title,module) in lists">
+                          <a class="btn btn-default btn-default btn-menu full-width"
+                             ng-if="halfListLength > $index"
+                             ng-class="getListItemClass( $first, $index+1 == halfListLength, true )"
+                             ui-sref-active="btn-warning"
+                             ui-sref="{{ module }}.list">{{ title }}</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="col-xs-6 col-slim-left">
+                      <ul class="navigation-group navigation-group-split-right">
+                        <li ng-repeat="(title,module) in lists">
+                          <a class="btn btn-default btn-default btn-menu full-width"
+                             ng-if="halfListLength <= $index"
+                             ng-class="getListItemClass( $first, $last, false )"
+                             ui-sref-active="btn-warning"
+                             ui-sref="{{ module }}.list">{{ title }}</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <ul ng-if="lists && !splitLists" class="navigation-group col-sm-{{ subMenuWidth }}">
                   <li ng-if="showSubMenuHeaders" class="container-fluid bg-primary rounded-top">
                     <h4 class="text-center">Lists</h4>
                   </li>
