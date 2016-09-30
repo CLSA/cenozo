@@ -240,14 +240,16 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     } );
   }
 
-  var exportModule = cenozoApp.module( 'export' );
-  if( angular.isDefined( exportModule.actions.list ) ) {
-    module.addExtraOperation( 'list', {
-      title: 'Export',
-      isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
-      operation: function( $state, model ) { $state.go( 'export.list' ); }
-    } );
-  }
+  try {
+    var exportModule = cenozoApp.module( 'export' );
+    if( angular.isDefined( exportModule.actions.list ) ) {
+      module.addExtraOperation( 'list', {
+        title: 'Export',
+        isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
+        operation: function( $state, model ) { $state.go( 'export.list' ); }
+      } );
+    }
+  } catch( err ) {}
 
   /**
    * The historyCategoryList object stores the following information
