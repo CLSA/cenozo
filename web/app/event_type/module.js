@@ -38,7 +38,7 @@ define( function() {
     },
     description: {
       title: 'Description',
-      type: 'string'
+      type: 'text'
     }
   } );
 
