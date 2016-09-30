@@ -21,7 +21,11 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::prepare_read( $select, $modifier );
 
-    $db_application = lib::create( 'business\session' )->get_application();
+    
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_site = $session->get_site();
+    $db_role = $session->get_role();
 
     // do not include special roles
     $modifier->where( 'role.special', '=', false );
@@ -43,6 +47,7 @@ class module extends \cenozo\service\site_restricted_module
       $join_sel->add_column( 'MAX( datetime )', 'last_access_datetime', false );
 
       $join_mod = lib::create( 'database\modifier' );
+      if( !$db_role->all_sites ) $join_mod->where( 'site_id', '=', $db_site->id );
       $join_mod->group( 'role_id' );
 
       $modifier->left_join(
