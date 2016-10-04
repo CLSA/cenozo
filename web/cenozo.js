@@ -1827,7 +1827,8 @@ cenozo.directive( 'cnTreeBranch', [
  */
 cenozo.filter( 'cnByObjectProperty', function() {
   return function( input, prop, value ) {
-    return input.filter( function( object ) { return value == object[prop]; } );
+    return angular.isArray( input ) ?
+      input.filter( function( object ) { return value == object[prop]; } ) : input;
   };
 } );
 
