@@ -67,7 +67,6 @@
         $scope.splitLists = $scope.lists && 20 <= Object.keys( $scope.lists ).length;
         $scope.halfListLength = Math.ceil( Object.keys( $scope.lists ).length / 2 );
         $scope.splitOdd = Object.keys( $scope.lists ).length % 2;
-        console.log( $scope.splitOdd );
         var subMenuCount = ( $scope.lists ? ( $scope.splitLists ? 2 : 1 ) : 0 )
                          + ( $scope.utilities ? 1 : 0 )
                          + ( $scope.reports ? 1 : 0 );
