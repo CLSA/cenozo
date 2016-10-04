@@ -12,4 +12,13 @@ use cenozo\lib, cenozo\log;
 /**
  * export_restriction: record
  */
-class export_restriction extends \cenozo\database\record {}
+class export_restriction extends has_rank
+{
+  /**
+   * The type of record which the record has a rank for.
+   * @var string
+   * @access protected
+   * @static
+   */
+  protected static $rank_parent = 'export';
+}
