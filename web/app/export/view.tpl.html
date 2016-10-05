@@ -20,7 +20,7 @@
     </h4>
   </div>
   <div class="form-body container-fluid">
-    <div class="loading" ng-if="model.viewModel.columnListIsLoading"></div>
+    <div class="loading vertical-spacer" ng-if="model.viewModel.columnListIsLoading"></div>
     <div ng-if="!model.viewModel.columnListIsLoading">
       <p class="text-info" style="margin-top: 1em;">
         Add columns to include in the participant export.<br>
@@ -48,7 +48,7 @@
                   ng-model="item.subtype"
                   ng-change="model.viewModel.updateColumn( item.id, 'subtype' )"
                   ng-disabled="item.isUpdating"
-                  ng-options="obj.id as obj.name for obj in model.viewModel.columnSubtypeList[item.type]">
+                  ng-options="obj.key as obj.name for obj in model.viewModel.columnSubtypeList[item.type]">
           </select>
         </div>
         <div class="col-sm-1">
@@ -91,7 +91,7 @@
     </h4>
   </div>
   <div class="form-body container-fluid">
-    <div class="loading" ng-if="model.viewModel.restrictionListIsLoading"></div>
+    <div class="loading vertical-spacer" ng-if="model.viewModel.restrictionListIsLoading"></div>
     <div ng-if="!model.viewModel.restrictionListIsLoading">
       <p class="text-info" style="margin-top: 1em;">
         Add restrictions if you wish to narrow down the list of participants included in the returned data.<br>
@@ -125,7 +125,7 @@
           </select>
         </div>
         <label class="col-sm-1 control-label text-center">{{ item.restriction.title }}</label>
-        <div class="col-sm-2 col-slim">
+        <div class="col-sm-2">
           <select class="form-control"
                   ng-model="item.test"
                   ng-disabled="item.isUpdating"

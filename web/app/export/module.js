@@ -155,7 +155,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   rank: item.rank,
                   type: item.table_name,
                   column: self.columnTypeList[item.table_name].list.findByProperty( 'key', item.column_name ),
-                  subtype: isNaN( parseInt( item.subtype ) ) ? item.subtype : parseInt( item.subtype ),
+                  subtype: null == item.subtype ? null : item.subtype.toString(),
                   isUpdating: false
                 } );
 
@@ -186,7 +186,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                       restriction:
                         self.restrictionTypeList[item.type].list.findByProperty( 'key', item.column_name ),
                       logic: item.logic,
-                      value: item.value,
+                      value: isNaN( parseInt( item.value ) ) ? item.value : parseInt( item.value ),
                       test: item.test,
                       isUpdating: false
                     };
@@ -201,6 +201,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                     self.restrictionList.push( restriction );
                   } );
                   self.restrictionListIsLoading = false;
+                  self.updateParticipantCount();
                 } )
               } );
             } );
@@ -285,13 +286,13 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           columnList: [],
           columnSubtypeList: {
             site: [
-              { id: 'effective', name: 'Effective' },
-              { id: 'default', name: 'Default' },
-              { id: 'preferred', name: 'Preferred' }
+              { key: 'effective', name: 'Effective' },
+              { key: 'default', name: 'Default' },
+              { key: 'preferred', name: 'Preferred' }
             ],
             address: [
-              { id: 'primary', name: 'Primary' },
-              { id: 'first', name: 'First' }
+              { key: 'primary', name: 'Primary' },
+              { key: 'first', name: 'First' }
             ],
             consent: [],
             event: []
@@ -308,7 +309,6 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
 
             // we need to associate this restriction with a column of the same type
             this.columnList.some( function( column ) {
-              console.log( type, column );
               if( type === column.type ) {
                 item.column = column;
                 item.columnId = column.id;
@@ -343,7 +343,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               item.id = response.data;
               self.restrictionList.push( item );
               self.newRestriction = undefined;
-              self.applyRestrictions();
+              self.updateParticipantCount();
             } );
           },
 
@@ -363,6 +363,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               data: data
             } ).patch().finally( function() {
               restriction.isUpdating = false;
+              self.updateParticipantCount();
             } );
           },
 
@@ -371,7 +372,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               path: 'export_restriction/' + this.restrictionList[index].id
             } ).delete().then( function() {
               self.restrictionList.splice( index, 1 );
-              self.applyRestrictions();
+              self.updateParticipantCount();
             } );
           },
 
@@ -379,7 +380,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             var item = this.restrictionList[index];
             item.column = this.columnList.findByProperty( 'id', item.columnId );
             item.columnId = item.column.id;
-            this.updateRestriction( item.id, 'export_column_id' );
+            return this.updateRestriction( item.id, 'export_column_id' );
           },
 
           selectDatetime: function( index ) {
@@ -405,7 +406,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   } );
                 }
               } );
-              this.applyRestrictions();
+              this.updateParticipantCount();
             }
           },
 
@@ -425,105 +426,20 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
 
             this.restrictionList.push( item );
             this.newApplicationRestriction = undefined;
-            this.applyRestrictions();
+            this.updateParticipantCount();
           },
 
-          applyRestrictions: function() {
-            /* 
+          updateParticipantCount: function() {
             this.confirmInProgress = true;
-
-            // build the modifier from the restriction list
-            var joinList = [];
-            var whereList = [];
-            this.restrictionList.forEach( function( item ) {
-              if( angular.isDefined( item.restriction.application ) ) {
-                // application restrictions always have a number (the application id) for a key
-                if( 'enum' == item.restriction.type ) {
-                  // process application site restrictions
-                  var tableName = 'participant_site_' + item.restriction.application.name;
-                  joinList.push( {
-                    table: 'participant_site',
-                    onleft: 'participant.id',
-                    onright: tableName + '.participant_id',
-                    alias: tableName
-                  } );
-
-                  whereList.push( { bracket: true, open: true, or: 'or' == item.logic } );
-                  whereList.push( {
-                    column: tableName + '.application_id',
-                    operator: '=',
-                    value: item.restriction.application.id
-                  } );
-                  whereList.push( {
-                    column: tableName + '.site_id',
-                    operator: item.test,
-                    value: item.value,
-                  } );
-                  whereList.push( { bracket: true, open: false } );
-                } else if( 'boolean' == item.restriction.type ) {
-                  // process application released restrictions
-                  var tableName = 'application_has_participant_' + item.restriction.application.name;
-                  joinList.push( {
-                    table: 'application_has_participant',
-                    onleft: 'participant.id',
-                    onright: tableName + '.participant_id',
-                    alias: tableName
-                  } );
-
-                  whereList.push( { bracket: true, open: true, or: 'or' == item.logic } );
-                  whereList.push( {
-                    column: tableName + '.application_id',
-                    operator: '=',
-                    value: item.restriction.application.id
-                  } );
-                  whereList.push( {
-                    column: tableName + '.datetime',
-                    operator: cenozo.xor( '<=>' == item.test, item.value ) ? '<=>' : '<>',
-                    value: null
-                  } );
-                  whereList.push( { bracket: true, open: false } );
-                }
-              } else { // non-application restrictions
-                var where = {
-                  column: 'participant.' + item.restriction.key,
-                  operator: item.test,
-                  value: item.value,
-                  or: 'or' == item.logic
-                };
-
-                if( 'has_email' == item.restriction.key ) {
-                  where.column = 'email';
-                  where.operator = cenozo.xor( '<=>' == item.test, item.value ) ? '<=>' : '<>';
-                  where.value = null;
-                } else if ( 'site' == item.restriction.key ) {
-                  where.column = 'site.id';
-                } else if ( 'like' == item.test || 'not like' == item.test ) {
-                  // LIKE "" is meaningless, so search for <=> "" instead
-                  if( 0 == where.value.length ) where.operator = '<=>';
-                  // LIKE without % is meaningless, so add % at each end of the string
-                  else if( -1 == where.value.indexOf( '%' ) ) where.value = '%' + where.value + '%';
-                } else if( !item.restriction.required && '' === item.value ) {
-                  where.value = null;
-                }
-
-                whereList.push( where );
-              }
-            } );
-
-            var data = { modifier: {} };
-            if( 0 < joinList.length ) data.modifier.join = joinList;
-            if( 0 < whereList.length ) data.modifier.where = whereList;
 
             // get a count of participants to be included in the export
             CnHttpFactory.instance( {
-              path: 'participant',
-              data: data
+              path: 'export/' + this.record.getIdentifier() + '/participant'
             } ).count().then( function( response ) {
               self.participantCount = parseInt( response.headers( 'Total' ) );
             } ).finally( function() {
               self.confirmInProgress = false;
             } );
-            */
           },
 
           addColumn: function( type, key ) {
@@ -587,19 +503,50 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           },
 
           removeColumn: function( index ) {
-            CnHttpFactory.instance( {
-              path: 'export_column/' + this.columnList[index].id
-            } ).delete().then( function() {
-              self.columnList.splice( index, 1 );
-              self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+            // first move restrictions to another column, or remove them
+            var removeColumn = this.columnList[index];
+
+            // find a column with the same subtype to move the restrictions to
+            var switchColumn = null;
+            this.columnList.some( function( column ) {
+              if( column.id != removeColumn.id &&
+                  column.type == removeColumn.type &&
+                  column.subtype == removeColumn.subtype ) {
+                switchColumn = column;
+                return true;
+              }
+            } );
+
+            var promiseList = [];
+            if( null == switchColumn ) {
+              this.restrictionList = this.restrictionList.filter( function( restriction ) {
+                return restriction.columnId != removeColumn.id;
+              } );
+            } else {
+              this.restrictionList.forEach( function( restriction, innerIndex ) {
+                if( restriction.columnId == removeColumn.id ) {
+                  restriction.columnId = switchColumn.id;
+                  promiseList.push( self.selectRestrictionColumn( innerIndex ) );
+                }
+              } );
+            }
+
+            return $q.all( promiseList ).then( function() {
+              self.updateParticipantCount();
+              return CnHttpFactory.instance( {
+                path: 'export_column/' + self.columnList[index].id
+              } ).delete().then( function() {
+                self.columnList.splice( index, 1 );
+                self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+              } );
             } );
           },
 
-          getSubtypeName: function( column, id ) {
+          getSubtypeName: function( column, key ) {
             var name = column.type.ucWords();
             var subtypeList = this.columnSubtypeList[column.type];
             if( subtypeList ) {
-              var subtype = subtypeList.findByProperty( 'id', id );
+              var subtype = subtypeList.findByProperty( 'key', key );
               if( subtype ) name += ' - ' + subtype.name;
             }
             return name;
@@ -608,6 +555,8 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           getSubtypeList: function( column ) {
             var subtypeObj = {};
             return this.columnList.filter( function( item ) {
+              return column.type == item.type;
+            } ).filter( function( item ) {
               if( angular.isDefined( subtypeObj[item.subtype] ) ) {
                 return false;
               } else {
@@ -834,7 +783,9 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               modifier: { order: ['name'] }
             }
           } ).query().then( function( response ) {
-            response.data.forEach( function( item ) { self.columnSubtypeList.consent.push( item ); } );
+            response.data.forEach( function( item ) {
+              self.columnSubtypeList.consent.push( { key: item.id.toString(), name: item.name } );
+            } );
           } ),
 
           this.modelList.event.metadata.getPromise().then( function() {
@@ -860,7 +811,9 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               modifier: { order: ['name'] }
             }
           } ).query().then( function( response ) {
-            response.data.forEach( function( item ) { self.columnSubtypeList.event.push( item ); } );
+            response.data.forEach( function( item ) {
+              self.columnSubtypeList.consent.push( { key: item.id.toString(), name: item.name } );
+            } );
           } )
 
         ];
@@ -938,7 +891,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
         );
         */
 
-        $q.all( promiseList ).then( function() { self.applyRestrictions(); } );
+        $q.all( promiseList );
       };
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
