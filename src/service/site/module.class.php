@@ -107,7 +107,17 @@ class module extends \cenozo\service\site_restricted_module
       $join_sel->add_column( 'COUNT(*)', 'participant_count', false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'application_id', '=', $db_application->id );
+      $sub_mod = lib::create( 'database\modifier' );
+      if( $db_application->release_based )
+      {
+        $sub_mod->where(
+          'participant_site.participant_id', '=', 'application_has_participant.participant_id', false );
+        $sub_mod->where( 
+          'participant_site.application_id', '=', 'application_has_participant.application_id', false );
+        $join_mod->join_modifier( 'application_has_participant', $sub_mod );
+        $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
+      }
+      $join_mod->where( 'participant_site.application_id', '=', $db_application->id );
       $join_mod->group( 'site_id' );
 
       $modifier->left_join(
