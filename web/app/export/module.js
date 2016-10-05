@@ -147,6 +147,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 modifier: { order: { rank: false } }
               }
             } ).query().then( function( response ) {
+              self.columnList = [];
               var promiseList = [];
               response.data.forEach( function( item ) {
                 self.columnList.push( {
@@ -154,7 +155,8 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   rank: item.rank,
                   type: item.table_name,
                   column: self.columnTypeList[item.table_name].list.findByProperty( 'key', item.column_name ),
-                  subtype: isNaN( parseInt( item.subtype ) ) ? item.subtype : parseInt( item.subtype )
+                  subtype: isNaN( parseInt( item.subtype ) ) ? item.subtype : parseInt( item.subtype ),
+                  isUpdating: false
                 } );
 
                 // load the restriction list
@@ -175,17 +177,28 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                     modifier: { order: { rank: false } }
                   }
                 } ).query().then( function( response ) {
+                  self.restrictionList = [];
                   response.data.forEach( function( item ) {
-                    self.restrictionList.push( {
+                    var restriction = {
                       id: item.id,
-                      columnId: item.export_column_id,
+                      column: self.columnList.findByProperty( 'id', item.export_column_id ),
                       rank: item.rank,
                       restriction:
                         self.restrictionTypeList[item.type].list.findByProperty( 'key', item.column_name ),
                       logic: item.logic,
-                      value: null == item.value ? '' : item.value,
-                      test: item.test
-                    } );
+                      value: item.value,
+                      test: item.test,
+                      isUpdating: false
+                    };
+                    restriction.columnId = restriction.column.id;
+                    if( cenozo.isDatetimeType( restriction.restriction.type ) ) {
+                      restriction.formattedValue = CnSession.formatValue(
+                        restriction.value, restriction.restriction.type, true
+                      );
+                    } else {
+                      if( null == restriction.value ) restriction.value = '';
+                    }
+                    self.restrictionList.push( restriction );
                   } );
                   self.restrictionListIsLoading = false;
                 } )
@@ -211,26 +224,32 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           restrictionTypeList: {
             participant: {
               isLoading: true,
+              promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
             },
             site: {
               isLoading: true,
+              promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
             },
             address: {
               isLoading: true,
+              promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
             },
             phone: {
               isLoading: true,
+              promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
             },
             consent: {
               isLoading: true,
+              promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
             },
             event: {
               isLoading: true,
+              promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
             }
           },
@@ -266,13 +285,13 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           columnList: [],
           columnSubtypeList: {
             site: [
-              { key: 'effective', name: 'Effective' },
-              { key: 'default', name: 'Default' },
-              { key: 'preferred', name: 'Preferred' }
+              { id: 'effective', name: 'Effective' },
+              { id: 'default', name: 'Default' },
+              { id: 'preferred', name: 'Preferred' }
             ],
             address: [
-              { key: 'primary', name: 'Primary' },
-              { key: 'first', name: 'First' }
+              { id: 'primary', name: 'Primary' },
+              { id: 'first', name: 'First' }
             ],
             consent: [],
             event: []
@@ -283,13 +302,15 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               restriction: this.restrictionTypeList[type].list.findByProperty( 'key', key ),
               value: null,
               logic: 'and',
-              test: '<=>'
+              test: '<=>',
+              isUpdating: false
             };
 
             // we need to associate this restriction with a column of the same type
             this.columnList.some( function( column ) {
               console.log( type, column );
               if( type === column.type ) {
+                item.column = column;
                 item.columnId = column.id;
                 return true;
               }
@@ -311,7 +332,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             CnHttpFactory.instance( {
               path: 'export/' + this.record.getIdentifier() + '/export_restriction',
               data: {
-                export_column_id: item.columnId,
+                export_column_id: item.column.id,
                 rank: this.restrictionList.length + 1,
                 column_name: key,
                 logic: item.logic,
@@ -326,6 +347,25 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             } );
           },
 
+          updateRestriction: function( restrictionId, key ) {
+            var restriction = this.restrictionList.findByProperty( 'id', restrictionId );
+            var data = {};
+            if( angular.isArray( key ) ) {
+              key.forEach( function( k ) { data[k] = restriction[k]; } );
+            } else {
+              data[key] = restriction[key];
+            }
+            for( var key in data ) if( 'export_column_id' == key ) data[key] = restriction.column.id;
+
+            restriction.isUpdating = true;
+            return CnHttpFactory.instance( {
+              path: 'export_restriction/' + restriction.id,
+              data: data
+            } ).patch().finally( function() {
+              restriction.isUpdating = false;
+            } );
+          },
+
           removeRestriction: function( index ) {
             CnHttpFactory.instance( {
               path: 'export_restriction/' + this.restrictionList[index].id
@@ -333,6 +373,13 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               self.restrictionList.splice( index, 1 );
               self.applyRestrictions();
             } );
+          },
+
+          selectRestrictionColumn: function( index ) {
+            var item = this.restrictionList[index];
+            item.column = this.columnList.findByProperty( 'id', item.columnId );
+            item.columnId = item.column.id;
+            this.updateRestriction( item.id, 'export_column_id' );
           },
 
           selectDatetime: function( index ) {
@@ -344,11 +391,18 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 title: item.restriction.title,
                 date: item.value,
                 pickerType: item.restriction.type,
-                emptyAllowed: false
+                emptyAllowed: !item.restriction.required
               } ).show().then( function( response ) {
                 if( false !== response ) {
-                  item.value = response.replace( /Z$/, '' ); // remove the Z at the end
-                  item.formattedValue = CnSession.formatValue( response, item.restriction.type, true );
+                  var key = 'value';
+                  item.value = null == response ? null : response.replace( /Z$/, '' ); // remove the Z at the end
+                  if( null == item.value && '<=>' != item.test && '<>' != item.test ) {
+                    item.test = '<=>';
+                    key = ['test','value'];
+                  }
+                  self.updateRestriction( item.id, key ).then( function() {
+                    item.formattedValue = CnSession.formatValue( response, item.restriction.type, true );
+                  } );
                 }
               } );
               this.applyRestrictions();
@@ -492,7 +546,8 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   id: response.data,
                   type: type,
                   column: column,
-                  subtype: subtype
+                  subtype: subtype,
+                  isUpdating: false
                 } );
                 self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
               } );
@@ -504,9 +559,31 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           },
 
           moveColumn: function( oldIndex, newIndex ) {
-            var column = this.columnList.splice( oldIndex, 1 );
-            this.columnList.splice( newIndex, 0, column[0] );
-            this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+            CnHttpFactory.instance( {
+              path: 'export_column/' + this.columnList[oldIndex].id,
+              data: { rank: newIndex + 1 }
+            } ).patch().then( function() {
+              var column = self.columnList.splice( oldIndex, 1 );
+              self.columnList.splice( newIndex, 0, column[0] );
+              self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+            } );
+          },
+
+          updateColumn: function( columnId, key ) {
+            var column = this.columnList.findByProperty( 'id', columnId );
+            var data = {};
+            if( angular.isArray( key ) ) {
+              key.forEach( function( k ) { data[k] = column[k]; } );
+            } else {
+              data[key] = column[key];
+            }
+            column.isUpdating = true;
+            return CnHttpFactory.instance( {
+              path: 'export_column/' + column.id,
+              data: data
+            } ).patch().finally( function() {
+              column.isUpdating = false;
+            } );
           },
 
           removeColumn: function( index ) {
@@ -515,6 +592,28 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             } ).delete().then( function() {
               self.columnList.splice( index, 1 );
               self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+            } );
+          },
+
+          getSubtypeName: function( column, id ) {
+            var name = column.type.ucWords();
+            var subtypeList = this.columnSubtypeList[column.type];
+            if( subtypeList ) {
+              var subtype = subtypeList.findByProperty( 'id', id );
+              if( subtype ) name += ' - ' + subtype.name;
+            }
+            return name;
+          },
+
+          getSubtypeList: function( column ) {
+            var subtypeObj = {};
+            return this.columnList.filter( function( item ) {
+              if( angular.isDefined( subtypeObj[item.subtype] ) ) {
+                return false;
+              } else {
+                subtypeObj[item.subtype] = true;
+                return true;
+              }
             } );
           },
 
@@ -540,103 +639,109 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               'participant_id',
               'preferred_site_id'
             ];
-            var restriction = this.restrictionTypeList[type];
+            var restrictionType = this.restrictionTypeList[type];
             var metadata = this.modelList[type].metadata;
-            return 1 < restriction.list.length ? $q.all() : metadata.getPromise().then( function() {
-              // add the site restriction type if not using extended site selection
-              if( 'participant' == type && !self.extendedSiteSelection )
-                restriction.list.push( { key: 'site', title: 'Site', type: 'enum', required: false } );
 
-              for( var column in metadata.columnList ) {
-                var item = metadata.columnList[column];
-                if( -1 == ignoreColumnList.indexOf( column ) ) {
-                  var restrictionItem = {
-                    key: column,
-                    title: 'id' == column || 'uid' == column ?
-                           column.toUpperCase() :
-                           column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
-                    type: 'tinyint' == item.data_type ? 'boolean' :
-                          angular.isDefined( item.enumList ) ? 'enum' :
-                          'datetime' == item.type | 'timestamp' == item.type ? 'datetime' :
-                          'date_of_birth' == column ? 'dob' :
-                          'varchar' ? 'string' : 'unknown',
-                    required: item.required
-                  };
-                  
-                  // add additional details to certain restriction types
-                  if( 'boolean' == restrictionItem.type || 'enum' == restrictionItem.type ) {
-                    restrictionItem.enumList = 'boolean' == restrictionItem.type
-                                             ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
-                                             : angular.copy( item.enumList );
-                    restrictionItem.enumList.unshift( { value: '', name: '(empty)' } );
+            // only load the restriction type list if we haven't already done so
+            if( null == restrictionType.promise ) {
+              restrictionType.promise = metadata.getPromise().then( function() {
+                // add the site restriction type if not using extended site selection
+                if( 'participant' == type && !self.extendedSiteSelection )
+                  restrictionType.list.push( { key: 'site', title: 'Site', type: 'enum', required: false } );
+
+                for( var column in metadata.columnList ) {
+                  var item = metadata.columnList[column];
+                  if( -1 == ignoreColumnList.indexOf( column ) ) {
+                    var restrictionItem = {
+                      key: column,
+                      title: 'id' == column || 'uid' == column ?
+                             column.toUpperCase() :
+                             column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
+                      type: 'tinyint' == item.data_type ? 'boolean' :
+                            angular.isDefined( item.enumList ) ? 'enum' :
+                            'datetime' == item.type | 'timestamp' == item.type ? 'datetime' :
+                            'date_of_birth' == column ? 'dob' :
+                            'varchar' ? 'string' : 'unknown',
+                      required: item.required
+                    };
+                    
+                    // add additional details to certain restriction types
+                    if( 'boolean' == restrictionItem.type || 'enum' == restrictionItem.type ) {
+                      restrictionItem.enumList = 'boolean' == restrictionItem.type
+                                               ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
+                                               : angular.copy( item.enumList );
+                      restrictionItem.enumList.unshift( { value: '', name: '(empty)' } );
+                    }
+
+                    restrictionType.list.push( restrictionItem );
+                  }
+                }
+
+                var promiseList = [];
+                if( 'participant' == type ) {
+                  // add the site enum list if this site selection isn't extended
+                  if( !self.extendedSiteSelection ) {
+                    promiseList.push(
+                      CnHttpFactory.instance( {
+                        path: 'site',
+                        data: {
+                          select: { column: [ 'id', 'name' ] },
+                          modifier: { order: ['name'] }
+                        }
+                      } ).query().then( function( response ) {
+                        var item = self.restrictionTypeList.participant.list.findByProperty( 'key', 'site' );
+                        item.enumList = [ { value: '', name: '(empty)' } ];
+                        response.data.forEach( function( site ) {
+                          item.enumList.push( { value: site.id, name: site.name } );
+                        } );
+                      } )
+                    );
                   }
 
-                  restriction.list.push( restrictionItem );
-                }
-              }
-
-              var promiseList = [];
-              if( 'participant' == type ) {
-                // add the site enum list if this site selection isn't extended
-                if( !self.extendedSiteSelection ) {
+                  // participant.source_id is not filled in regularly, we must do it here
                   promiseList.push(
                     CnHttpFactory.instance( {
-                      path: 'site',
+                      path: 'source',
                       data: {
                         select: { column: [ 'id', 'name' ] },
                         modifier: { order: ['name'] }
                       }
                     } ).query().then( function( response ) {
-                      var restriction = self.restrictionTypeList.participant.list.findByProperty( 'key', 'site' );
-                      restriction.enumList = [ { value: '', name: '(empty)' } ];
-                      response.data.forEach( function( item ) {
-                        restriction.enumList.push( { value: item.id, name: item.name } );
+                      var item = restrictionType.list.findByProperty( 'key', 'source_id' );
+                      item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
+                      response.data.forEach( function( source ) {
+                        item.enumList.push( { value: source.id, name: source.name } );
+                      } );
+                    } )
+                  );
+
+                  // participant.cohort_id is not filled in regularly, we must do it here
+                  promiseList.push(
+                    CnHttpFactory.instance( {
+                      path: 'cohort',
+                      data: {
+                        select: { column: [ 'id', 'name' ] },
+                        modifier: { order: ['name'] }
+                      }
+                    } ).query().then( function( response ) {
+                      var item = restrictionType.list.findByProperty( 'key', 'cohort_id' );
+                      item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
+                      response.data.forEach( function( cohort ) {
+                        item.enumList.push( { value: cohort.id, name: cohort.name } );
                       } );
                     } )
                   );
                 }
 
-                // participant.source_id is not filled in regularly, we must do it here
-                promiseList.push(
-                  CnHttpFactory.instance( {
-                    path: 'source',
-                    data: {
-                      select: { column: [ 'id', 'name' ] },
-                      modifier: { order: ['name'] }
-                    }
-                  } ).query().then( function( response ) {
-                    var item = restriction.list.findByProperty( 'key', 'source_id' );
-                    item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
-                    response.data.forEach( function( source ) {
-                      item.enumList.push( { value: source.id, name: source.name } );
-                    } );
-                  } )
-                );
-
-                // participant.cohort_id is not filled in regularly, we must do it here
-                promiseList.push(
-                  CnHttpFactory.instance( {
-                    path: 'cohort',
-                    data: {
-                      select: { column: [ 'id', 'name' ] },
-                      modifier: { order: ['name'] }
-                    }
-                  } ).query().then( function( response ) {
-                    var item = restriction.list.findByProperty( 'key', 'cohort_id' );
-                    item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
-                    response.data.forEach( function( cohort ) {
-                      item.enumList.push( { value: cohort.id, name: cohort.name } );
-                    } );
-                  } )
-                );
-              }
-
-              return $q.all( promiseList ).then( function() {
-                restriction.isLoading = false;
-                restriction.list.findByProperty( 'key', undefined ).title =
-                  'Select a new ' + type + ' restriction...';
+                return $q.all( promiseList ).then( function() {
+                  restrictionType.isLoading = false;
+                  restrictionType.list.findByProperty( 'key', undefined ).title =
+                    'Select a new ' + type + ' restriction...';
+                } );
               } );
-            } );
+            }
+
+            return restrictionType.promise;
           }
         } );
 

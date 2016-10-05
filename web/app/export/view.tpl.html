@@ -36,6 +36,7 @@
           <select class="form-control"
                   ng-model="item.rank"
                   ng-change="model.viewModel.moveColumn( $index, item.rank-1 )"
+                  ng-disabled="item.isUpdating"
                   ng-options="rank for rank in [] | cnRange:1:model.viewModel.columnList.length">
           </select>
         </div>
@@ -45,6 +46,8 @@
           <select class="form-control"
                   ng-if="model.viewModel.columnSubtypeList[item.type]"
                   ng-model="item.subtype"
+                  ng-change="model.viewModel.updateColumn( item.id, 'subtype' )"
+                  ng-disabled="item.isUpdating"
                   ng-options="obj.id as obj.name for obj in model.viewModel.columnSubtypeList[item.type]">
           </select>
         </div>
@@ -61,6 +64,7 @@
                   ng-disabled="column.isLoading"
                   ng-model="model.viewModel.newColumn[type]"
                   ng-change="model.viewModel.addColumn( type, model.viewModel.newColumn[type] )"
+                  ng-disabled="item.isUpdating"
                   ng-options="o.key as o.title for o in column.list">
           </select>
         </span>
@@ -103,53 +107,62 @@
           <select class="form-control"
                   ng-model="item.logic"
                   ng-if="0 < $index"
-                  ng-change="model.viewModel.applyRestrictions()">
+                  ng-disabled="item.isUpdating"
+                  ng-change="model.viewModel.updateRestriction( item.id, 'logic' )">
             <option value="and">AND</option>
             <option value="or">OR</option>
           </select>
         </div>
-        <label class="col-sm-3 control-label text-right">
-          {{ item.restriction.title }}
-          <!--
-          <select class="form-control"
-                  ng-if="item.columnRank"
-                  ng-model="item.columnRank"
-                  ng-options="o.key as o.name for o in model.viewModel.getRestrictionColumnList( item.columnRank )">
-          </select>
-          -->
+        <label class="col-sm-2 control-label text-center" ng-if="null == item.column.subtype">
+          {{ item.column.type|cnUCWords }}
         </label>
+        <div class="col-sm-2 col-slim" ng-if="null != item.column.subtype">
+          <select class="form-control pull-right"
+                  ng-model="item.columnId"
+                  ng-change="model.viewModel.selectRestrictionColumn( $index )"
+                  ng-options="o.id as model.viewModel.getSubtypeName( item.column, o.subtype )
+                              for o in model.viewModel.getSubtypeList( item.column )">
+          </select>
+        </div>
+        <label class="col-sm-1 control-label text-center">{{ item.restriction.title }}</label>
         <div class="col-sm-2 col-slim">
-          <select class="form-control" ng-model="item.test" ng-change="model.viewModel.applyRestrictions()">
+          <select class="form-control"
+                  ng-model="item.test"
+                  ng-disabled="item.isUpdating"
+                  ng-change="model.viewModel.updateRestriction( item.id, 'test' )">
             <option value="&lt;=&gt;">is</option>
             <option value="&lt;&gt;">is not</option>
-            <option ng-if="'dob' == item.restriction.type || 'datetime' == item.restriction.type"
+            <option ng-if="'datetime' == (item.restriction.type|cnRestrictType) && null != item.value"
                     value="&lt;">before</option>
-            <option ng-if="'dob' == item.restriction.type || 'datetime' == item.restriction.type"
+            <option ng-if="'datetime' == (item.restriction.type|cnRestrictType) && null != item.value"
                     value="&gt;">after</option>
             <option value="like" ng-if="'string' == item.restriction.type">like</option>
             <option value="not like" ng-if="'string' == item.restriction.type">not like</option>
           </select>
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-4 col-slim-right">
           <input ng-if="'string' == item.restriction.type"
                  class="form-control"
                  type="text"
                  autocomplete="off"
                  ng-model="item.value"
-                 cn-change="model.viewModel.applyRestrictions()"
+                 ng-disabled="item.isUpdating"
+                 cn-change="model.viewModel.updateRestriction( item.id, 'value' )"
                  maxlength="255"></input>
           <input ng-if="'dob' == item.restriction.type || 'datetime' == item.restriction.type"
                  class="form-control"
                  type="text"
                  ng-click="model.viewModel.selectDatetime( $index )"
                  ng-model="item.formattedValue"
+                 ng-disabled="item.isUpdating"
                  onkeydown="return false"></input>
           <select ng-if="'application' == item.restriction.type ||
                          'boolean' == item.restriction.type ||
                          'enum' == item.restriction.type"
                   class="form-control"
                   ng-model="item.value"
-                  ng-change="model.viewModel.applyRestrictions()"
+                  ng-disabled="item.isUpdating"
+                  ng-change="model.viewModel.updateRestriction( item.id, 'value' )"
                   ng-options="o.value as o.name for o in item.restriction.enumList"></select>
         </div>
         <div class="col-sm-1">
