@@ -57,6 +57,16 @@ angular.extend( Array.prototype, {
         return angular.isObject( array[index] ) ? cenozo.objectsAreEqual( item, array[index] ) : false;
       else return item == array[index];
     } );
+  },
+  getUnique: function() {
+    var valueObj = {};
+    return this.reduce( function( list, item ) {
+      if( !angular.isDefined( valueObj[item] ) ) {
+        valueObj[item] = true;
+        list.push( item );
+      }
+      return list;
+    }, [] );
   }
 } );
 
@@ -2055,6 +2065,18 @@ cenozo.filter( 'cnUCWords', function() {
     if( 'string' == cenozo.getType( input ) )
       input = input.replace( /(?:^|\s)\S/g, function( a ) { return angular.uppercase( a ); } );
     return input;
+  };
+} );
+
+/* ######################################################################################################## */
+
+/**
+ * A filter that returns all unique items in an array
+ */
+cenozo.filter( 'cnUnique', function() {
+  return function( input ) {
+    console.log( input, input.getUnique() );
+    return angular.isArray( input ) ? input.getUnique() : input;
   };
 } );
 
