@@ -36,6 +36,7 @@ class assignment extends \cenozo\database\record
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'interview_id', '=', $this->interview_id );
       $modifier->where( 'end_datetime', '=', NULL );
+      $modifier->where( 'id', '!=', $this->id );
       if( 0 < static::count( $modifier ) )
         throw lib::create( 'exception\runtime',
           'Cannot have more than one active assignment per interview.', __METHOD__ );
@@ -43,6 +44,7 @@ class assignment extends \cenozo\database\record
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'user_id', '=', $this->user_id );
       $modifier->where( 'end_datetime', '=', NULL );
+      $modifier->where( 'id', '!=', $this->id );
       if( 0 < static::count( $modifier ) )
         throw lib::create( 'exception\runtime',
           'Cannot have more than one active assignment per user.', __METHOD__ );
