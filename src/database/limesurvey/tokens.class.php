@@ -93,9 +93,9 @@ class tokens extends sid_record
    */
   public static function where_token( $modifier, $db_participant, $repeated = false )
   {
-    if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
+    if( is_null( $modifier ) || !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
-    if( !is_null( $db_participant ) && !is_a( $db_participant, lib::get_class_name( 'database\participant' ) ) )
+    if( is_null( $db_participant ) || !is_a( $db_participant, lib::get_class_name( 'database\participant' ) ) )
       throw lib::create( 'exception\argument', 'db_participant', $db_participant, __METHOD__ );
 
     if( $repeated )
