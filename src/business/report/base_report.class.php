@@ -33,6 +33,7 @@ abstract class base_report extends \cenozo\base_object
     if( 'report' != $class_name )
       throw lib::create( 'exception\argument', 'db_report (class)', $class_name, __METHOD__ );
     $this->db_report = $db_report;
+    $this->db_application = $db_report->get_application();
     $this->db_user = $db_report->get_user();
     $this->db_role = $db_report->get_role();
     $this->db_site = $db_report->get_site();
@@ -253,37 +254,28 @@ abstract class base_report extends \cenozo\base_object
     $report_type_subject = $this->db_report->get_report_type()->subject;
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $subject_class_name = lib::get_class_name( sprintf( 'database\%s', $report_type_subject ) );
-    $db_application = lib::create( 'business\session' )->get_application();
 
     // if the report's subject is participant then restrict to this application's participants
-    if( 'participant' == $report_type_subject && $db_application->release_based )
+    if( 'participant' == $report_type_subject && $this->db_application->release_based )
     {
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );
-      $join_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+      $join_mod->where( 'application_has_participant.application_id', '=', $this->db_application->id );
       $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
       $modifier->join_modifier( 'application_has_participant', $join_mod );
     }
 
-    $report_restriction_sel = lib::create( 'database\select' );
-    $report_restriction_sel->add_table_column( 'report_has_report_restriction', 'value' );
-    $report_restriction_sel->add_column( 'restriction_type' );
-    $report_restriction_sel->add_column( 'subject' );
-    $report_restriction_sel->add_column( 'operator' );
-    $report_restriction_mod = lib::create( 'database\modifier' );
-    $report_restriction_mod->where( 'custom', '=', false );
-    $restriction_list =
-      $this->db_report->get_report_restriction_list( $report_restriction_sel, $report_restriction_mod );
-    foreach( $restriction_list as $restriction )
+    foreach( $this->get_restriction_list( false ) as $restriction )
     {
       if( 'table' == $restriction['restriction_type'] )
       {
         // define the participant-site relationship
-        if( 'site' == $restriction['subject'] && 'participant' == $report_type_subject )
+        if( 'site' == $restriction['subject'] && 
+            ( 'participant' == $report_type_subject || $modifier->has_join( 'participant' ) ) )
         {
           $join_mod = lib::create( 'database\modifier' );
           $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
-          $join_mod->where( 'participant_site.application_id', '=', $db_application->id );
+          $join_mod->where( 'participant_site.application_id', '=', $this->db_application->id );
           $modifier->join_modifier( 'participant_site', $join_mod );
           $modifier->where( 'participant_site.site_id', '=', $restriction['value'] );
         }
@@ -381,6 +373,27 @@ abstract class base_report extends \cenozo\base_object
   }
 
   /**
+   * Returns an array of this report's restrictions
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $custom Whether to return custom or non-custom parameters (extending classes should 
+   *                        only use custom restrictions)
+   * @return array
+   * @access public
+   */
+  protected function get_restriction_list( $custom = true )
+  {
+    $select = lib::create( 'database\select' );
+    $select->add_table_column( 'report_has_report_restriction', 'value' );
+    $select->add_column( 'restriction_type' );
+    $select->add_column( 'name' );
+    $select->add_column( 'subject' );
+    $select->add_column( 'operator' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'custom', '=', $custom );
+    return $this->db_report->get_report_restriction_list( $select, $modifier );
+  }
+
+  /**
    * Used by implementing classes to get the SQL for fetching formatted datetime column data
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -427,6 +440,13 @@ abstract class base_report extends \cenozo\base_object
    * @access protected
    */
   protected $db_report = NULL;
+
+  /**
+   * The application active record associated with this report
+   * @var database\application $db_application
+   * @access protected
+   */
+  protected $db_application = NULL;
 
   /**
    * The user active record associated with this report

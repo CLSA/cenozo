@@ -289,10 +289,13 @@ class ui extends \cenozo\base_object
       else if( 'report_type' == $module->get_subject() )
       {
         $module->add_child( 'report' );
-        $module->add_child( 'report_schedule' );
-        $module->add_child( 'report_restriction' );
-        $module->add_choose( 'application_type' );
-        $module->add_choose( 'role' );
+        if( 3 <= $db_role->tier )
+        {
+          $module->add_child( 'report_schedule' );
+          $module->add_child( 'report_restriction' );
+          $module->add_choose( 'application_type' );
+          $module->add_choose( 'role' );
+        }
       }
       else if( 'script' == $module->get_subject() )
       {

@@ -10,9 +10,7 @@ namespace cenozo\business\report;
 use cenozo\lib, cenozo\log;
 
 /**
- * Mailout required report data.
- * 
- * @abstract
+ * Email report
  */
 class email extends \cenozo\business\report\base_report
 {

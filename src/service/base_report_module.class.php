@@ -56,6 +56,7 @@ class base_report_module extends \cenozo\service\site_restricted_module
         $session = lib::create( 'business\session' );
         $db_application = $session->get_application();
         $db_role = $session->get_role();
+        $db_user = $session->get_user();
         $record = $this->get_resource();
 
         if( !is_null( $record ) )
@@ -76,8 +77,16 @@ class base_report_module extends \cenozo\service\site_restricted_module
             return;
           }
 
-          // restrict by role (if not tier 3)
-          if( 3 > $db_role->tier && $record->role_id != $db_role->id )
+          // restrict by role tier
+          $db_report_role = $record->get_role();
+          if( $db_role->tier < $db_report_role->tier )
+          {
+            $this->get_status()->set_code( 403 );
+            return;
+          }
+
+          // role 1 only get their own reports
+          if( 1 == $db_role->tier && $db_user->id != $record->user_id )
           {
             $this->get_status()->set_code( 403 );
             return;
@@ -108,6 +117,7 @@ class base_report_module extends \cenozo\service\site_restricted_module
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
     $db_role = $session->get_role();
+    $db_user = $session->get_user();
     $subject = $this->get_subject();
 
     // restrict by application
@@ -119,7 +129,9 @@ class base_report_module extends \cenozo\service\site_restricted_module
       $modifier->where( $subject.'.site_id', '=', $db_restrict_site->id );
 
     // restrict by role
-    if( 3 > $db_role->tier ) $modifier->where( $subject.'.role_id', '=', $db_role->id );
+    $modifier->join( 'role', $this->get_subject().'.role_id', 'role.id' );
+    if( 1 == $db_role->tier ) $modifier->where( $this->get_subject().'.user_id', '=', $db_user->id );
+    $modifier->where( 'role.tier', '<=', $db_role->tier );
   }
 
   /**
