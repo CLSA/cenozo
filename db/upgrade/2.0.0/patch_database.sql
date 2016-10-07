@@ -54,6 +54,9 @@ SOURCE search_result.sql
 SOURCE form_type.sql
 SOURCE form.sql
 SOURCE form_association.sql
+SOURCE overview.sql
+SOURCE application_type_has_overview.sql
+SOURCE role_has_overview.sql
 
 SOURCE update_alternate_first_address.sql
 SOURCE update_participant_first_address.sql

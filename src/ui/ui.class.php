@@ -120,7 +120,7 @@ class ui extends \cenozo\base_object
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export', 'export_column',
       'export_restriction', 'form', 'form_association', 'form_type', 'hin', 'jurisdiction', 'language',
-      'participant', 'phone', 'quota', 'recording', 'recording_file', 'region', 'region_site', 'role',
+      'overview', 'participant', 'phone', 'quota', 'recording', 'recording_file', 'region', 'region_site', 'role',
       'report', 'report_restriction', 'report_schedule', 'report_type', 'script', 'search_result', 'site',
       'source', 'state', 'system_message', 'user', 'webphone'
     );
@@ -354,6 +354,7 @@ class ui extends \cenozo\base_object
     if( $extended && in_array( 'jurisdiction', $grouping_list ) )
     $this->add_listitem( 'Jurisdictions', 'jurisdiction' );
     if( $extended ) $this->add_listitem( 'Languages', 'language' );
+    if( 2 <= $db_role->tier ) $this->add_listitem( 'Overviews', 'overview' );
     $this->add_listitem( 'Participants', 'participant' );
     $this->add_listitem( 'Quotas', 'quota' );
     if( 3 <= $db_role->tier ) $this->add_listitem( 'Recordings', 'recording' );

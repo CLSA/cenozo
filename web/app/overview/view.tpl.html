@@ -1,0 +1,56 @@
+<div class="container-fluid vertical-spacer">
+  <h4>{{ model.viewModel.record.description }}</h4>
+  <hr/>
+  <div class="panel panel-primary allow-select" style="margin-top: 20px; margin-bottom: 0px;" ng-repeat="item1 in model.viewModel.record.data">
+    <div class="panel-heading">
+      <div class="container-fluid" ng-if="item1.value.length">
+        <label class="col-sm-6 col-slim-left">{{ item1.label }}</label>
+        <div class="col-sm-6 text-right">{{ item1.value }}</div>
+      </div>
+      <strong ng-if="!item1.value.length">{{ item1.label }}</strong>
+    </div>
+    <div class="panel-body">
+      <div ng-if="item1.list" ng-repeat="item2 in item1.list">
+        <div class="container-fluid" ng-if="item2.value.length">
+          <label class="col-sm-6 col-slim-left">{{ item2.label }}</label>
+          <div class="col-sm-6 text-right">{{ item2.value }}</div>
+        </div>
+        <div class="panel panel-info" style="margin-top: 20px; margin-bottom: 0px;" ng-if="!item2.value.length">
+          <div class="panel-heading">
+            <strong>{{ item2.label }}</strong>
+          </div>
+          <div class="panel-body">
+            <div style="padding-left: 2em;" ng-if="item2.list" ng-repeat="item3 in item2.list">
+              <div class="container-fluid" ng-if="item3.value.length">
+                <label class="col-sm-6 col-slim-left">{{ item3.label }}</label>
+                <div class="col-sm-6 text-right">{{ item3.value }}</div>
+              </div>
+              <strong ng-if="!item3.value.length">{{ item3.label }}</strong>
+              <div style="padding-left: 4em;" ng-if="item3.list" ng-repeat="item4 in item3.list">
+                <div class="container-fluid" ng-if="item4.value.length">
+                  <label class="col-sm-6 col-slim-left">{{ item4.label }}</label>
+                  <div class="col-sm-6 text-right">{{ item4.value }}</div>
+                </div>
+                <strong ng-if="!item4.value.length">{{ item4.label }}</strong>
+                <div style="padding-left: 6em;" ng-if="item4.list" ng-repeat="item5 in item4.list">
+                  <div class="container-fluid" ng-if="item5.value.length">
+                    <label class="col-sm-6 col-slim-left">{{ item5.label }}</label>
+                    <div class="col-sm-6 text-right">{{ item5.value }}</div>
+                  </div>
+                  <strong ng-if="!item5.value.length">{{ item5.label }}</strong>
+                  <div style="padding-left: 8em;" ng-if="item5.list" ng-repeat="item6 in item5.list">
+                    <div class="container-fluid" ng-if="item6.value.length">
+                      <label class="col-sm-6 col-slim-left">{{ item5.label }}</label>
+                      <div class="col-sm-6 text-right">{{ item5.value }}</div>
+                    </div>
+                    <strong ng-if="!item6.value.length">{{ item6.label }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
