@@ -3378,6 +3378,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.isReportLoading = false;
         object.reportBlob = null;
         object.reportFilename = null;
+        object.isLoading = false;
         object.deferred = $q.defer();
 
         // for all dependencies require its files, inject and set up the model
@@ -3617,6 +3618,7 @@ cenozo.factory( 'CnBaseViewFactory', [
          * @return promise
          */
         cenozo.addExtendableFunction( object, 'onView', function() {
+          this.isLoading = true;
           var self = this;
           if( !this.parentModel.getViewEnabled() ) throw new Error( 'Calling onView() but view is not enabled.' );
 
@@ -3697,7 +3699,7 @@ cenozo.factory( 'CnBaseViewFactory', [
 
             return $q.all( promiseList ).then( function() {
               self.afterViewFunctions.forEach( function( fn ) { fn(); } );
-            } );
+            } ).finally( function() { self.isLoading = false; } );
           } );
         } );
 
