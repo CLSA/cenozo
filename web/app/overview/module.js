@@ -57,8 +57,10 @@ define( function() {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
-        directive: function( $scope ) {
-          $scope.isNull = function( value ) { console.log( value, null === value ); return null === value; };
+        controller: function( $scope ) {
+          $scope.refresh = function() {
+            if( !$scope.model.viewModel.isLoading ) $scope.model.viewModel.onView();
+          };
         },
         link: function( scope, element ) {
           if( angular.isUndefined( scope.model ) ) scope.model = CnOverviewModelFactory.root;

@@ -1,5 +1,15 @@
-<div class="container-fluid vertical-spacer allow-select">
-  <h4>{{ model.viewModel.record.description }}</h4>
+<cn-loading ng-if="model.viewModel.isLoading"></cn-loading>
+<div ng-if="!model.viewModel.isLoading" class="container-fluid vertical-spacer allow-select">
+  <h4>
+    <div class="horizontal-spacer pull-right">
+      <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
+         style="cursor: pointer;"
+         ng-click="refresh()"
+         tooltip="Click to refresh data"
+         tooltip-placement="left"></i>
+    </div>
+    {{ model.viewModel.record.description }}
+  </h4>
   <hr/>
   <div ng-repeat="item1 in model.viewModel.record.data">
     <!-- value is not an array -->
