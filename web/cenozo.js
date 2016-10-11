@@ -1901,6 +1901,20 @@ cenozo.filter( 'cnDatetime', [
 /* ######################################################################################################## */
 
 /**
+ * Determines whether the input is an array
+ */
+cenozo.filter( 'cnIsArray', [
+  '$filter',
+  function( $filter ) {
+    return function( value ) {
+      return angular.isArray( value );
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * A meta filter used to apply dynamic filters on a value
  */
 cenozo.filter( 'cnMetaFilter', [
