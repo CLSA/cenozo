@@ -199,6 +199,22 @@ fieldset[disabled] .btn-primary.active,
   background-color: PRIMARY(0.75);
   border-color: PRIMARY(0.4);
 }
+.panel-primary {
+  border-color: PRIMARY(1.0);
+}
+.panel-primary > .panel-heading {
+  background-color: PRIMARY(1.0);
+  border-color: PRIMARY(1.0);
+}
+.panel-primary > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: PRIMARY(1.0);
+}
+.panel-primary > .panel-heading .badge {
+  color: PRIMARY(1.0);
+}
+.panel-primary > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: PRIMARY(1.0);
+}
 
 /* info colours */
 a, .text-info {
@@ -228,9 +244,6 @@ a.text-info:focus,
 .table > tfoot > tr.info > th,
 .alert-info,
 .list-group-item-info,
-.panel-info > .panel-heading {
-  background-color: SECONDARY(1.25);
-}
 .btn-info {
   color: #fff;
   background-color: SECONDARY(1.0);
@@ -283,6 +296,27 @@ fieldset[disabled] .btn-info.active {
   color: #fff;
   background-color: SECONDARY(0.75);
   border-color: SECONDARY(0.4);
+}
+.panel-info > .panel-heading {
+  background-color: SECONDARY(1.25);
+}
+.panel-info {
+  border-color: SECONDARY(1.0);
+}
+.panel-info > .panel-heading {
+  color: SECONDARY(0.3);
+  background-color: SECONDARY(1.1);
+  border-color: SECONDARY(1.0);
+}
+.panel-info > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: SECONDARY(1.0);
+}
+.panel-info > .panel-heading .badge {
+  color: SECONDARY(1.1);
+  background-color: SECONDARY(0.6);
+}
+.panel-info > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: SECONDARY(1.0);
 }
 CSS;
 }
