@@ -15,20 +15,14 @@ use cenozo\lib, cenozo\log;
 class overview extends record
 {
   /**
-   * Returns the overview's data
+   * Gets the overview's business class (which generates the overview)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return mixed
+   * @return business\overview\*
+   * @access public
    */
-  public function get_data()
+  public function get_executer()
   {
-    $data = NULL;
-    
-    // TODO: implement overview data fetching here
-    if( '' == $this->title )
-    {
-    }
-
-    return $data;
+    return lib::create( sprintf( 'business\overview\%s', $this->name ), $this );
   }
 }

@@ -26,7 +26,7 @@ class get extends \cenozo\service\get
     if( !is_null( $db_overview ) )
     {
       $data = $db_overview->get_column_values( $this->select, $this->modifier );
-      $data['data'] = $db_overview->get_data();
+      $data['data'] = $db_overview->get_executer()->get_data();
     }
 
     $this->set_data( $data );

@@ -3,7 +3,7 @@ define( function() {
 
   try { var module = cenozoApp.module( 'overview', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
-    identifier: { column: 'title' },
+    identifier: { column: 'name' },
     name: {
       singular: 'overview',
       plural: 'overviews',
@@ -73,7 +73,7 @@ define( function() {
           
           // update immediately, then every minute
           update();
-          var promise = $interval( update, 60000 );
+          var promise = $interval( update, 600000 );
           element.on( '$destroy', function() { $interval.cancel( promise ); } );
         }
       };

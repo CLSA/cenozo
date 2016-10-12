@@ -11,7 +11,7 @@
     {{ model.viewModel.record.description }}
   </h4>
   <hr/>
-  <div ng-repeat="item1 in model.viewModel.record.data">
+  <div ng-repeat="item1 in model.viewModel.record.data.value">
     <!-- value is not an array -->
     <div ng-if="!(item1.value|cnIsArray)"
          class="container-fluid"
