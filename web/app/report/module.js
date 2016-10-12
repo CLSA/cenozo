@@ -142,9 +142,12 @@ define( function() {
             $scope.model.getMetadata().then( function() {
               var cnRecordAdd = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
               cnRecordAdd.dataArray = $scope.model.getDataArray( [], 'add' );
-              cnRecordAdd.dataArray.findByProperty( 'title', 'Parameters' ).inputArray.forEach( function( input ) {
-                if( cenozo.isDatetimeType( input.type ) ) cnRecordAdd.formattedRecord[input.key] = '(empty)';
-              } );
+              var parameters = cnRecordAdd.dataArray.findByProperty( 'title', 'Parameters' );
+              if( null != parameters && angular.isArray( parameters.inputArray ) ) {
+                parameters.inputArray.forEach( function( input ) {
+                  if( cenozo.isDatetimeType( input.type ) ) cnRecordAdd.formattedRecord[input.key] = '(empty)';
+                } );
+              }
             } );
           }, 200 );
 
