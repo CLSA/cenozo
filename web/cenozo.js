@@ -3583,7 +3583,7 @@ cenozo.factory( 'CnBaseViewFactory', [
               [response.data],
               { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
             );
-            self.reportFilename = response.headers( 'Content-Disposition' ).replace( /".*file=(.*)"/, '$1' );
+            self.reportFilename = response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1];
           } ).finally( function() { self.isReportLoading = false; } );
         } );
 
