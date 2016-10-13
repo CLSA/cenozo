@@ -2089,7 +2089,6 @@ cenozo.filter( 'cnUCWords', function() {
  */
 cenozo.filter( 'cnUnique', function() {
   return function( input ) {
-    console.log( input, input.getUnique() );
     return angular.isArray( input ) ? input.getUnique() : input;
   };
 } );
