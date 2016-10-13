@@ -100,6 +100,47 @@ class node
   /**
    * TODO: document
    */
+  public function remove_child( $index )
+  {
+    if( $this->is_leaf() )
+      throw lib::create( 'exception\runtime', 'Tried to remove a child from a leaf node.', __METHOD__ );
+
+    array_splice( $this->value, $index, 1 );
+  }
+
+  /**
+   * TODO: document
+   */
+  public function remove_child_by_label( $label )
+  {
+    if( $this->is_leaf() )
+      throw lib::create( 'exception\runtime', 'Tried to remove a child from a leaf node.', __METHOD__ );
+
+    $this->value = array_filter( $this->value, function( $node ) use ( $label ) {
+      return ( is_string( $label ) && $label != $node->label ) ||
+             ( is_array( $label ) && !in_array( $node->label, $label ) );
+    } );
+  }
+
+  /**
+   * TODO: document
+   */
+  public function remove_empty_children()
+  {
+    if( $this->is_leaf() )
+      throw lib::create( 'exception\runtime', 'Tried to remove empty children of a leaf node.', __METHOD__ );
+    $removed_label_list = array();
+    $this->value = array_filter( $this->value, function( $node ) use( &$removed_label_list ) {
+      $keep = (bool)$node->value;
+      if( !$keep ) $removed_label_list[] = $node->label;
+      return $keep;
+    } );
+    return $removed_label_list;
+  }
+
+  /**
+   * TODO: document
+   */
   public function find_node( $search_label )
   {
     if( !$this->is_leaf() ) 
@@ -122,6 +163,16 @@ class node
       throw lib::create( 'exception\runtime', 'Tried to sort children of a leaf node.', __METHOD__ );
     if( !usort( $this->value, $function ) )
       throw lib::create( 'exception\runtime', 'Node sort function failed.', __METHOD__ );
+  }
+
+  /**
+   * TODO: document
+   */
+  public function each( $function )
+  {
+    if( $this->is_leaf() )
+      throw lib::create( 'exception\runtime', 'Called each on leaf node.', __METHOD__ );
+    array_walk( $this->value, $function );
   }
 
   /**

@@ -57,9 +57,18 @@ define( function() {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
-        controller: function( $scope ) {
+        controller: function( $scope, $element ) {
           $scope.refresh = function() {
             if( !$scope.model.viewModel.isLoading ) $scope.model.viewModel.onView();
+          };
+          $scope.toggleReportTypeDropdown = function() {
+            $element.find( '.report-dropdown' ).find( '.dropdown-menu' ).toggle();
+          };
+          $scope.getReport = function( format ) {
+            $scope.model.viewModel.onReport( format ).then( function() {
+              saveAs( $scope.model.viewModel.reportBlob, $scope.model.viewModel.reportFilename );
+            } );
+            $scope.toggleReportTypeDropdown();
           };
         },
         link: function( scope, element ) {

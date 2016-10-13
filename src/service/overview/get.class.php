@@ -25,8 +25,17 @@ class get extends \cenozo\service\get
     $db_overview = $this->get_leaf_record();
     if( !is_null( $db_overview ) )
     {
-      $data = $db_overview->get_column_values( $this->select, $this->modifier );
-      $data['data'] = $db_overview->get_executer()->get_data();
+      if( 'application/json' == $this->get_mime_type() )
+      {
+        // add the overview data as an additional field to the existing data
+        $data = $db_overview->get_column_values( $this->select, $this->modifier );
+        $data['data'] = $db_overview->get_executer()->get_data();
+      }
+      else
+      {
+        // replace the existing data with a flat version of the overview data
+        $data = $db_overview->get_executer()->get_data( true );
+      }
     }
 
     $this->set_data( $data );
