@@ -749,7 +749,7 @@ angular.extend( cenozo, {
       } else if( 'enum' == type ) {
         input.enumList = angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
           function( list, name ) {
-            list.push( { value: name, name: name } );
+            list.push( null == name ? { value: '_NULL_', name: 'no value' } : { value: name, name: name } );
             return list;
           },
           [ {

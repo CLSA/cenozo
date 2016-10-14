@@ -279,7 +279,10 @@ abstract class base_report extends \cenozo\base_object
         }
         else // determine all other relationships directly
         {
-          $relationship = $subject_class_name::get_relationship( $restriction['subject'] );
+          $restriction_table_class_name =
+            lib::get_class_name( sprintf( 'database\%s', $restriction['subject'] ) );
+          $relationship = $restriction_table_class_name::get_relationship( $report_type_subject );
+          log::debug( $relationship );
           if( $relationship_class_name::ONE_TO_MANY == $relationship )
           {
             $column = sprintf( '%s_id', $restriction['subject'] );
@@ -313,9 +316,10 @@ abstract class base_report extends \cenozo\base_object
       else if( 'decimal' == $restriction['restriction_type'] )
       {
       }
-      else if( 'boolean' == $restriction['restriction_type'] )
+      else if( 'boolean' == $restriction['restriction_type'] || 'enum' == $restriction['restriction_type'] )
       {
-        $modifier->where( $restriction['subject'], '=', $restriction['value'] );
+        $value = '_NULL_' == $restriction['value'] ? NULL : $restriction['value'];
+        $modifier->where( $restriction['subject'], '=', $value );
       }
       else if( 'date' == $restriction['restriction_type'] ||
                'datetime' == $restriction['restriction_type'] ||
