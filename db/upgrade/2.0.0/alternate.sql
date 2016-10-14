@@ -26,6 +26,20 @@ CREATE PROCEDURE patch_alternate()
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
     END IF;
 
+    SELECT "Adding email columns to alternate table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "alternate"
+      AND COLUMN_NAME = "email" );
+    IF @test = 0 THEN
+      ALTER TABLE alternate ADD COLUMN email VARCHAR(255) NULL AFTER association;
+      ALTER TABLE alternate ADD COLUMN email_datetime DATETIME NULL AFTER email;
+      ALTER TABLE alternate ADD COLUMN email_old VARCHAR(255) NULL AFTER email_datetime;
+    END IF;
+
     SELECT "Adding global_note column to alternate table" AS "";
 
     SET @test = (

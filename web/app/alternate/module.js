@@ -80,6 +80,12 @@ define( function() {
             'DO NOT include phone numbers.',
       regex: '^[^0-9]*[0-9]?[^0-9]*$'
     },
+    email: {
+      title: 'Email',
+      type: 'string',
+      format: 'email',
+      help: 'Must be in the format "account@domain.name".'
+    },
     alternate: {
       title: 'Alternate Contact',
       type: 'boolean'
