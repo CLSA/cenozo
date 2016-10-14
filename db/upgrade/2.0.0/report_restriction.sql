@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS report_restriction (
   name VARCHAR(45) NOT NULL,
   title VARCHAR(45) NOT NULL,
   mandatory TINYINT(1) NOT NULL DEFAULT 0,
+  null_allowed TINYINT(1) NOT NULL DEFAULT 0,
   restriction_type ENUM('table', 'uid_list', 'string', 'integer', 'decimal', 'date', 'datetime', 'time', 'boolean', 'enum') NOT NULL,
   custom TINYINT(1) NOT NULL DEFAULT 0,
   subject VARCHAR(45) NULL,
