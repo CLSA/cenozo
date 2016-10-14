@@ -155,7 +155,7 @@ class modifier extends \cenozo\base_object
    */
   public function inner_join( $table, $modifier = NULL, $alias = NULL, $prepend = false )
   {
-    $this->join( $table, $modifier, 'inner', $alias, $prepend );
+    $this->join_modifier( $table, $modifier, 'inner', $alias, $prepend );
   }
 
   /**
@@ -847,7 +847,7 @@ class modifier extends \cenozo\base_object
       $prefix = $join['type'];
       if( 0 < strlen( $prefix ) ) $prefix .= 'STRAIGHT' == $prefix ? '_' : ' ';
       $type = sprintf( "\n%sJOIN", $prefix );
-      $on_clause = $join['modifier']->get_where();
+      $on_clause = is_null( $join['modifier'] ) ? NULL : $join['modifier']->get_where();
       $table = $join['table'];
       if( preg_match( '/\(.+\)/', str_replace( "\n", ' ', $table ) ) )
       { // table name is sql statement enclosed in (), reformat accordingly
@@ -866,7 +866,9 @@ class modifier extends \cenozo\base_object
         $table = implode( "\n", $lines );
       }
       if( $alias != $join['table'] ) $table .= ' AS '.$alias;
-      $sql .= sprintf( "%s %s\n  ON %s ", $type, $table, $on_clause );
+      $sql .= is_null( $on_clause )
+            ? sprintf( "%s %s ", $type, $table )
+            : sprintf( "%s %s\n  ON %s ", $type, $table, $on_clause );
     }
 
     return $sql;
