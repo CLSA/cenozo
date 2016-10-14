@@ -265,6 +265,17 @@ abstract class base_report extends \cenozo\base_object
 
     foreach( $this->get_restriction_list( false ) as $restriction )
     {
+      $value = $restriction['value'];
+      if( '_NULL_' == $value )
+      {
+        if( !$restriction['null_allowed'] )
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Report restriction value for %s is null but null values are not allowed.',
+                     $restriction['subject'] ),
+            __METHOD__ );
+        $value = '_NULL_' == $restriction['value'] ? NULL : $restriction['value'];
+      }
+
       if( 'table' == $restriction['restriction_type'] )
       {
         // define the participant-site relationship
@@ -275,19 +286,18 @@ abstract class base_report extends \cenozo\base_object
           $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
           $join_mod->where( 'participant_site.application_id', '=', $this->db_application->id );
           $modifier->join_modifier( 'participant_site', $join_mod );
-          $modifier->where( 'participant_site.site_id', '=', $restriction['value'] );
+          $modifier->where( 'participant_site.site_id', '=', $value );
         }
         else // determine all other relationships directly
         {
           $restriction_table_class_name =
             lib::get_class_name( sprintf( 'database\%s', $restriction['subject'] ) );
           $relationship = $restriction_table_class_name::get_relationship( $report_type_subject );
-          log::debug( $relationship );
           if( $relationship_class_name::ONE_TO_MANY == $relationship )
           {
             $column = sprintf( '%s_id', $restriction['subject'] );
             if( $subject_class_name::column_exists( $column ) )
-              $modifier->where( $column, '=', $restriction['value'] );
+              $modifier->where( $column, '=', $value );
           }
           else if( $relationship_class_name::MANY_TO_MANY == $relationship )
           {
@@ -296,15 +306,13 @@ abstract class base_report extends \cenozo\base_object
               $joining_table,
               sprintf( '%s.id', $report_type_subject ),
               sprintf( '%s.%s_id', $joining_table, $report_type_subject ) );
-            $modifier->where(
-              sprintf( '%s.%s_id', $joining_table, $restriction['subject'] ),
-              '=',
-              $restriction['value'] );
+            $modifier->where( sprintf( '%s.%s_id', $joining_table, $restriction['subject'] ), '=', $value );
           }
         }
       }
       else if( 'uid_list' == $restriction['restriction_type'] )
       {
+        // use the raw value since the uid list cannot be _NULL_
         $modifier->where( 'uid', 'IN', explode( ' ', $restriction['value'] ) );
       }
       else if( 'string' == $restriction['restriction_type'] )
@@ -318,14 +326,13 @@ abstract class base_report extends \cenozo\base_object
       }
       else if( 'boolean' == $restriction['restriction_type'] || 'enum' == $restriction['restriction_type'] )
       {
-        $value = '_NULL_' == $restriction['value'] ? NULL : $restriction['value'];
         $modifier->where( $restriction['subject'], '=', $value );
       }
       else if( 'date' == $restriction['restriction_type'] ||
                'datetime' == $restriction['restriction_type'] ||
                'time' == $restriction['restriction_type'] )
       {
-        $modifier->where( $restriction['subject'], $restriction['operator'], $restriction['value'] );
+        $modifier->where( $restriction['subject'], $restriction['operator'], $value );
       }
     }
   }
@@ -390,6 +397,7 @@ abstract class base_report extends \cenozo\base_object
     $select->add_column( 'name' );
     $select->add_column( 'subject' );
     $select->add_column( 'operator' );
+    $select->add_column( 'null_allowed' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'custom', '=', $custom );
     return $this->db_report->get_report_restriction_list( $select, $modifier );

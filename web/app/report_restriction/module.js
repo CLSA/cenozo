@@ -36,6 +36,10 @@ define( function() {
       mandatory: {
         title: 'Mandatory',
         type: 'boolean'
+      },
+      null_allowed: {
+        title: 'Null Allowed',
+        type: 'boolean'
       }
     },
     defaultOrder: {
@@ -75,6 +79,10 @@ define( function() {
     },
     mandatory: {
       title: 'Mandatory',
+      type: 'boolean'
+    },
+    null_allowed: {
+      title: 'Null Allowed',
       type: 'boolean'
     },
     description: {

@@ -702,7 +702,7 @@ angular.extend( cenozo, {
         // loop through the subject column data to determine the http data
         input.enumList = [ {
           value: undefined,
-          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(any)'
         } ];
 
         promiseList.push(
@@ -734,29 +734,32 @@ angular.extend( cenozo, {
               response.data.forEach( function( item ) {
                 input.enumList.push( { value: item.id, name: item.name } );
               } );
+              if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
             } );
           } )
         );
       } else if( 'boolean' == type ) {
         input.enumList = [ {
           value: undefined,
-          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(any)'
         }, {
           value: true, name: 'Yes'
         }, {
           value: false, name: 'No'
         } ];
+        if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
       } else if( 'enum' == type ) {
         input.enumList = angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
           function( list, name ) {
-            list.push( null == name ? { value: '_NULL_', name: 'no value' } : { value: name, name: name } );
+            list.push( { value: name, name: name } );
             return list;
           },
           [ {
             value: undefined,
-            name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(empty)'
+            name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(any)'
           } ]
         );
+        if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
       }
 
       this.inputFromRestrictionCache[restriction.id] = { input: input, promiseList: promiseList };
