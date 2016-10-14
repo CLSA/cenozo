@@ -134,12 +134,8 @@ abstract class base_report extends \cenozo\base_object
       $data = '';
       if( 'CSV' == $this->db_report->format )
       {
-        $data .= $db_report_type->title."\n";
-
         foreach( $this->report_tables as $table )
         {
-          $data .= "\n";
-
           // add the title
           if( !is_null( $table['title'] ) ) $data .= $table['title']."\n";
 
@@ -179,6 +175,8 @@ abstract class base_report extends \cenozo\base_object
             );
             $data .= implode( ',', $cells )."\n";
           }
+
+          $data .= "\n";
         }
       }
       else
