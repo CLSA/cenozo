@@ -2181,6 +2181,7 @@ cenozo.factory( 'CnSession', [
       this.breadcrumbTrail = [];
       this.alertHeader = undefined;
       this.onAlertHeader = function() {};
+      this.scriptWindowHandler = null;
 
       // handle watching of http requests that take a long time to return
       var workingPromise = null;
@@ -2448,7 +2449,9 @@ cenozo.factory( 'CnSession', [
             formattedValue = '"' + formattedValue + '"';
           var formattedUnit = angular.isDefined( unit ) ? ' ' + unit : '';
           return $filter( 'cnComparator' )( test ) + ' ' + formattedValue + formattedUnit;
-        }
+        },
+
+        closeScript: function() { if( null != this.scriptWindowHandler ) this.scriptWindowHandler.close(); }
 
       } );
 
@@ -4586,7 +4589,7 @@ cenozo.factory( 'CnBaseHistoryFactory', [
  */
 cenozo.factory( 'CnBaseNoteFactory', [
   'CnSession', 'CnHttpFactory', '$state',
-  function CnHttpFactory( CnSession, CnHttpFactory, $state ) {
+  function( CnSession, CnHttpFactory, $state ) {
     return {
       construct: function( object, module ) {
         // Note: methods are added to Object here, members below
@@ -4754,7 +4757,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
  */
 cenozo.factory( 'CnHttpFactory', [
   'CnModalMessageFactory', '$http', '$state', '$rootScope', '$timeout', '$window',
-  function CnHttpFactory( CnModalMessageFactory, $http, $state, $rootScope, $timeout, $window ) {
+  function( CnModalMessageFactory, $http, $state, $rootScope, $timeout, $window ) {
     function appendTransform( defaults, transform ) {
       defaults = angular.isArray(defaults) ? defaults : [defaults];
       return defaults.concat( transform );
@@ -5862,7 +5865,7 @@ cenozo.service( 'CnModalTimezoneFactory', [
  * Creates a pagination widget for paging through lists
  */
 cenozo.factory( 'CnPaginationFactory',
-  function CnPaginationFactory() {
+  function() {
     var object = function( params ) {
       this.currentPage = 1;
       this.showPageLimit = 5;
@@ -5881,10 +5884,12 @@ cenozo.factory( 'CnPaginationFactory',
 
 /**
  * Launches scripts in a separate tab
+ * 
+ * Note: use CnSession.closeScript() to close the tab opened by this factory's launch() function
  */
 cenozo.factory( 'CnScriptLauncherFactory', [
-  'CnHttpFactory', 'CnModalMessageFactory', '$q', '$window',
-  function CnHttpFactory( CnHttpFactory, CnModalMessageFactory, $q, $window ) {
+  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$q', '$window',
+  function( CnSession, CnHttpFactory, CnModalMessageFactory, $q, $window ) {
     var object = function( params ) {
       var self = this;
 
@@ -5950,12 +5955,14 @@ cenozo.factory( 'CnScriptLauncherFactory', [
                 self.token = { token: response.data.token, completed: 'N' };
 
                 // launch the script
-                $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
+                CnSession.scriptWindowHandler =
+                  $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
               } );
             } );
           } else {
             // launch the script
-            $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
+            CnSession.scriptWindowHandler =
+              $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
           }
         } );
       }
