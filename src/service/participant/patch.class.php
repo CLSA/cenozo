@@ -62,22 +62,30 @@ class patch extends \cenozo\service\patch
   {
     parent::execute();
 
-    $db_participant = $this->get_leaf_record();
-
     // process the preferred site, if it exists
-    if( $this->update_preferred_site )
-    {
-      $db_participant->set_preferred_site(
-        lib::create( 'business\session' )->get_application(),
-        $this->preferred_site_id );
-    }
+    if( $this->update_preferred_site ) $this->set_preferred_site();
 
     // reverse the participant's withdraw, if needed
-    if( $this->reverse_withdraw )
-    {
-      $survey_manager = lib::create( 'business\survey_manager' );
-      $survey_manager->reverse_withdraw( $db_participant );
-    }
+    if( $this->reverse_withdraw ) $this->reverse_withdraw();
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function set_preferred_site()
+  {
+    $this->get_leaf_record()->set_preferred_site(
+      lib::create( 'business\session' )->get_application(),
+      $this->preferred_site_id );
+  }
+
+  /**
+   * TODO: document
+   */
+  protected function reverse_withdraw()
+  {
+    $survey_manager = lib::create( 'business\survey_manager' );
+    $survey_manager->reverse_withdraw( $this->get_leaf_record() );
   }
 
   /**
