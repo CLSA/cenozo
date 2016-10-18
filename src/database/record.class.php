@@ -1365,7 +1365,8 @@ abstract class record extends \cenozo\base_object
     $record = NULL;
     if( $util_class_name::string_matches_int( $identifier ) )
     { // the identifier is an integer, so load the record directly
-      $record = new static( $identifier );
+      try { $record = new static( $identifier ); }
+      catch( \cenozo\exception\runtime $e ) {} // ignore runtime exceptions, it only means no record is found
     }
     else if( 1 == preg_match( '/^[^=;]+=[^=;]+(;[^=;]+=[^=;]+)*$/', $identifier ) )
     { // the identifier is a set of key=value pairs, load the record using unique keys
