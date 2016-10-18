@@ -51,8 +51,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnOverviewView', [
-    'CnOverviewModelFactory', 'CnSession', '$interval',
-    function( CnOverviewModelFactory, CnSession, $interval ) {
+    'CnOverviewModelFactory', 'CnSession', '$state', '$interval',
+    function( CnOverviewModelFactory, CnSession, $state, $interval ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
@@ -74,9 +74,19 @@ define( function() {
         link: function( scope, element ) {
           if( angular.isUndefined( scope.model ) ) scope.model = CnOverviewModelFactory.root;
           function update() {
-            CnSession.setBreadcrumbTrail( [ { title: 'Loading\u2026' } ] );
+            CnSession.setBreadcrumbTrail( [ {
+              title: scope.model.module.name.plural.ucWords(),
+              go: function() { return $state.go( '^.list' ); }
+            }, {
+              title: 'Loading\u2026'
+            } ] );
             scope.model.viewModel.onView().then( function() {
-              CnSession.setBreadcrumbTrail( [ { title: scope.model.viewModel.record.title + ' Overview' } ] );
+              CnSession.setBreadcrumbTrail( [ {
+                title: scope.model.module.name.plural.ucWords(),
+                go: function() { return $state.go( '^.list' ); }
+              }, {
+                title: scope.model.viewModel.record.title
+              } ] );
             } );
           }
           
