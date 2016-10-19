@@ -702,7 +702,7 @@ angular.extend( cenozo, {
         // loop through the subject column data to determine the http data
         input.enumList = [ {
           value: undefined,
-          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(any)'
+          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
         } ];
 
         promiseList.push(
@@ -741,7 +741,7 @@ angular.extend( cenozo, {
       } else if( 'boolean' == type ) {
         input.enumList = [ {
           value: undefined,
-          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(any)'
+          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
         }, {
           value: true, name: 'Yes'
         }, {
@@ -756,7 +756,7 @@ angular.extend( cenozo, {
           },
           [ {
             value: undefined,
-            name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(any)'
+            name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
           } ]
         );
         if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
