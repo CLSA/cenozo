@@ -121,6 +121,29 @@ class survey extends sid_record
   }
 
   /**
+   * Returns the total time in seconds spent on this survey (by all participants)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier
+   * @return double
+   * @static
+   */
+  public static function get_total_time( $modifier = NULL )
+  {
+    $table_name = static::get_table_name();
+    $timing_table_name = $table_name.'_timings';
+
+    $select = lib::create( 'database\select' );
+    $select->from( $table_name );
+    $select->add_column( 'SUM( IFNULL( interviewtime, 0 ) )', 'total', false );
+
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->join( $timing_table_name, $table_name.'.id', $timing_table_name.'.id' );
+
+    return static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+  }
+
+  /**
    * The name of the table's primary key column.
    * @var string
    * @access protected
