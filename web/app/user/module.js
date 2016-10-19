@@ -39,7 +39,7 @@ define( function() {
         help: 'The number of sites the user has access to for this application.'
       },
       last_access_datetime: {
-        title: 'Last User',
+        title: 'Last Used',
         type: 'datetime',
         help: 'The last time the user accessed this application.'
       }
