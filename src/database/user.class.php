@@ -83,7 +83,7 @@ class user extends record
    * @return boolean
    * @access public
    */
-  function has_open_assignment()
+  public function has_open_assignment()
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     if( !$setting_manager->get_setting( 'module', 'interview' ) )
@@ -109,7 +109,7 @@ class user extends record
    * @return database\assignment
    * @access public
    */
-  function get_open_assignment()
+  public function get_open_assignment()
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     if( !$setting_manager->get_setting( 'module', 'interview' ) )
@@ -139,7 +139,7 @@ class user extends record
    * @return boolean
    * @access public
    */
-  function has_open_phone_call()
+  public function has_open_phone_call()
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     if( !$setting_manager->get_setting( 'module', 'interview' ) )
@@ -166,7 +166,7 @@ class user extends record
    * @return database\phone_call
    * @access public
    */
-  function get_open_phone_call()
+  public function get_open_phone_call()
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     if( !$setting_manager->get_setting( 'module', 'interview' ) )
