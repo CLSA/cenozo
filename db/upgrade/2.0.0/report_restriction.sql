@@ -28,9 +28,9 @@ CREATE TABLE IF NOT EXISTS report_restriction (
 ENGINE = InnoDB;
 
 INSERT IGNORE INTO report_restriction (
-  report_type_id, rank, name, title, mandatory,
+  report_type_id, rank, name, title, mandatory, null_allowed,
   restriction_type, subject, operator, enum_list, description )
-SELECT report_type.id, rank, restriction.name, restriction.title, mandatory,
+SELECT report_type.id, rank, restriction.name, restriction.title, mandatory, null_allowed,
        type, restriction.subject, operator, enum_list, restriction.description
 FROM report_type, (
   SELECT
@@ -38,6 +38,7 @@ FROM report_type, (
     'uid_list' AS name,
     'Participant List' AS title,
     1 AS mandatory,
+    0 AS null_allowed,
     'uid_list' AS type,
     NULL AS subject,
     NULL AS operator,
@@ -48,6 +49,7 @@ FROM report_type, (
     'collection' AS name,
     'Collection' AS title,
     0 AS mandatory,
+    0 AS null_allowed,
     'table' AS type,
     'collection' AS subject,
     NULL AS operator,
@@ -57,9 +59,9 @@ FROM report_type, (
 WHERE report_type.name = 'contact';
 
 INSERT IGNORE INTO report_restriction (
-  report_type_id, rank, name, title, mandatory,
+  report_type_id, rank, name, title, mandatory, null_allowed,
   restriction_type, subject, operator, enum_list, description )
-SELECT report_type.id, rank, restriction.name, restriction.title, mandatory,
+SELECT report_type.id, rank, restriction.name, restriction.title, mandatory, null_allowed,
        type, restriction.subject, operator, enum_list, restriction.description
 FROM report_type, (
   SELECT
@@ -67,6 +69,7 @@ FROM report_type, (
     'collection' AS name,
     'Collection' AS title,
     0 AS mandatory,
+    0 AS null_allowed,
     'table' AS type,
     'collection' AS subject,
     NULL AS operator,
@@ -77,6 +80,7 @@ FROM report_type, (
     'language' AS name,
     'Language' AS title,
     0 AS mandatory,
+    0 AS null_allowed,
     'table' AS type,
     'language' AS subject,
     NULL AS operator,
@@ -87,6 +91,7 @@ FROM report_type, (
     'start_date' AS name,
     'Start Date' AS title,
     0 AS mandatory,
+    0 AS null_allowed,
     'date' AS type,
     'email_datetime' AS subject,
     '>=' AS operator,
@@ -97,6 +102,7 @@ FROM report_type, (
     'end_date' AS name,
     'End Date' AS title,
     0 AS mandatory,
+    0 AS null_allowed,
     'date' AS type,
     'email_datetime' AS subject,
     '<=' AS operator,
