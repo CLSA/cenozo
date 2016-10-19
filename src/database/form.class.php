@@ -147,8 +147,8 @@ class form extends record
     else
     {
       // replace any address and phone numbers
-      foreach( $db_alternate->get_address_list() as $db_address ) $db_address->delete();
-      foreach( $db_alternate->get_phone_list() as $db_phone ) $db_phone->delete();
+      foreach( $db_alternate->get_address_object_list() as $db_address ) $db_address->delete();
+      foreach( $db_alternate->get_phone_object_list() as $db_phone ) $db_phone->delete();
     }
 
     $db_alternate->participant_id = $this->participant_id;
@@ -235,8 +235,8 @@ class form extends record
     else
     {
       // replace any address and phone numbers
-      foreach( $db_alternate->get_address_list() as $db_address ) $db_address->delete();
-      foreach( $db_alternate->get_phone_list() as $db_phone ) $db_phone->delete();
+      foreach( $db_alternate->get_address_object_list() as $db_address ) $db_address->delete();
+      foreach( $db_alternate->get_phone_object_list() as $db_phone ) $db_phone->delete();
     }
 
     $db_alternate->participant_id = $this->participant_id;
