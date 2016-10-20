@@ -5498,8 +5498,10 @@ cenozo.service( 'CnModalPasswordFactory', [
     var object = function( params ) {
       var self = this;
       this.confirm = true;
+      this.showCancel = false;
       this.showPasswords = false;
       angular.extend( this, params );
+      if( this.confirm ) this.showCancel = true;
 
       this.show = function() {
         isOpen = true;
@@ -5510,6 +5512,7 @@ cenozo.service( 'CnModalPasswordFactory', [
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-password.tpl.html' ),
           controller: function( $scope, $modalInstance ) {
             $scope.confirm = self.confirm;
+            $scope.showCancel = self.showCancel;
             $scope.showPasswords = self.showPasswords;
             $scope.ok = function() {
               $modalInstance.close( {
@@ -5519,7 +5522,7 @@ cenozo.service( 'CnModalPasswordFactory', [
               isOpen = false;
             };
             $scope.cancel = function() {
-              if( this.confirm ) {
+              if( this.showCancel ) {
                 $modalInstance.close( false );
                 isOpen = false;
               }
