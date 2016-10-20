@@ -4027,6 +4027,9 @@ cenozo.factory( 'CnBaseModelFactory', [
 
             if( ( 'list' == type || 'report' == type ) &&
                 'hidden' != list[key].type && angular.isArray( columnRestrictLists[key] ) ) {
+              // add brackets around columns with multiple restrictions
+              if( 1 < columnRestrictLists[key].length ) whereList.push( { bracket: true, open: true } );
+
               columnRestrictLists[key].forEach( function( item ) {
                 var test = item.test;
                 var value = item.value;
@@ -4056,6 +4059,9 @@ cenozo.factory( 'CnBaseModelFactory', [
                 if( 'or' == item.logic ) where.or = true;
                 whereList.push( where );
               } );
+
+              // add brackets around columns with multiple restrictions
+              if( 1 < columnRestrictLists[key].length ) whereList.push( { bracket: true, open: false } );
             }
           }
 
