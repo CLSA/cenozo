@@ -70,7 +70,8 @@ DROP PROCEDURE IF EXISTS patch_consent;
       WHERE consent_type.name LIKE "HIN %" );
     IF @test = 0 THEN
       INSERT INTO consent( participant_id, consent_type_id, accept, written, datetime, note )
-      SELECT participant_id, consent_type.id, access, false, hin.update_timestamp,
+      SELECT participant_id, consent_type.id, access, false,
+        IF( hin.create_timestamp, hin.create_timestamp, hin.update_timestamp ),
              "Transferred from old HIN information."
       FROM hin, consent_type
       WHERE hin.access IS NOT NULL
