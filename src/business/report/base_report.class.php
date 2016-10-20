@@ -249,18 +249,33 @@ abstract class base_report extends \cenozo\base_object
       return;
     }
 
-    $report_type_subject = $this->db_report->get_report_type()->subject;
+    $db_report_type = $this->db_report->get_report_type();
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
-    $subject_class_name = lib::get_class_name( sprintf( 'database\%s', $report_type_subject ) );
+    $subject_class_name = lib::get_class_name( sprintf( 'database\%s', $db_report_type->subject ) );
 
     // if the report's subject is participant then restrict to this application's participants
-    if( 'participant' == $report_type_subject && $this->db_application->release_based )
+    if( 'participant' == $db_report_type->subject && $this->db_application->release_based )
     {
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );
       $join_mod->where( 'application_has_participant.application_id', '=', $this->db_application->id );
       $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
       $modifier->join_modifier( 'application_has_participant', $join_mod );
+    }
+
+    // join to the participant's site if there is a site restriction type (even if it isn't specified)
+    if( 'participant' == $db_report_type->subject || $modifier->has_join( 'participant' ) )
+    {
+      $report_restriction_mod = lib::create( 'database\modifier' );
+      $report_restriction_mod->where( 'report_restriction.subject', '=', 'site' );
+      if( 0 < $db_report_type->get_report_restriction_count( $report_restriction_mod ) )
+      {
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
+        $join_mod->where( 'participant_site.application_id', '=', $this->db_application->id );
+        $modifier->join_modifier( 'participant_site', $join_mod );
+        $modifier->join( 'site', 'participant_site.site_id', 'site.id' );
+      }
     }
 
     foreach( $this->get_restriction_list( false ) as $restriction )
@@ -279,20 +294,15 @@ abstract class base_report extends \cenozo\base_object
       if( 'table' == $restriction['restriction_type'] )
       {
         // define the participant-site relationship
-        if( 'site' == $restriction['subject'] && 
-            ( 'participant' == $report_type_subject || $modifier->has_join( 'participant' ) ) )
+        if( 'site' == $restriction['subject'] && $modifier->has_join( 'participant_site' ) )
         {
-          $join_mod = lib::create( 'database\modifier' );
-          $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
-          $join_mod->where( 'participant_site.application_id', '=', $this->db_application->id );
-          $modifier->join_modifier( 'participant_site', $join_mod );
           $modifier->where( 'participant_site.site_id', '=', $value );
         }
         else // determine all other relationships directly
         {
           $restriction_table_class_name =
             lib::get_class_name( sprintf( 'database\%s', $restriction['subject'] ) );
-          $relationship = $restriction_table_class_name::get_relationship( $report_type_subject );
+          $relationship = $restriction_table_class_name::get_relationship( $db_report_type->subject );
           if( $relationship_class_name::ONE_TO_MANY == $relationship )
           {
             $column = sprintf( '%s_id', $restriction['subject'] );
@@ -304,8 +314,8 @@ abstract class base_report extends \cenozo\base_object
             $joining_table = $subject_class_name::get_joining_table_name( $restriction['subject'] );
             $modifier->join(
               $joining_table,
-              sprintf( '%s.id', $report_type_subject ),
-              sprintf( '%s.%s_id', $joining_table, $report_type_subject ) );
+              sprintf( '%s.id', $db_report_type->subject ),
+              sprintf( '%s.%s_id', $joining_table, $db_report_type->subject ) );
             $modifier->where( sprintf( '%s.%s_id', $joining_table, $restriction['subject'] ), '=', $value );
           }
         }
