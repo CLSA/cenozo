@@ -129,11 +129,11 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
     'CnBaseViewFactory',
     'CnParticipantModelFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory', 'CnSiteModelFactory',
     'CnConsentModelFactory', 'CnEventModelFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalDatetimeFactory', '$q',
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalDatetimeFactory', '$q',
     function( CnBaseViewFactory,
               CnParticipantModelFactory, CnAddressModelFactory, CnPhoneModelFactory, CnSiteModelFactory,
               CnConsentModelFactory, CnEventModelFactory,
-              CnSession, CnHttpFactory, CnModalDatetimeFactory, $q ) {
+              CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory, $q ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
@@ -143,21 +143,27 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             return CnHttpFactory.instance( {
               path: 'export/' + self.record.getIdentifier() + '/export_column',
               data: {
-                select: { column: [ 'id', 'rank', 'table_name', 'column_name', 'subtype' ] },
+                select: { column: [ 'id', 'rank', 'table_name', 'subtype', 'column_name' ] },
                 modifier: { order: { rank: false } }
               }
             } ).query().then( function( response ) {
               self.columnList = [];
               var promiseList = [];
               response.data.forEach( function( item ) {
-                self.columnList.push( {
+                var columnObject = {
                   id: item.id,
-                  rank: item.rank,
-                  type: item.table_name,
-                  column: self.columnTypeList[item.table_name].list.findByProperty( 'key', item.column_name ),
+                  table_name: item.table_name,
                   subtype: null == item.subtype ? null : item.subtype.toString(),
+                  oldSubtype: null == item.subtype ? null : item.subtype.toString(),
+                  column: self.tableColumnList[item.table_name].list.findByProperty( 'key', item.column_name ),
+                  rank: item.rank,
                   isUpdating: false
-                } );
+                };
+                self.columnList.push( columnObject );
+
+                // mark that the table/subtype is in use
+                if( null != item.subtype )
+                  self.subtypeList[item.table_name].findByProperty( 'key', item.subtype ).inUse = true;
 
                 // load the restriction list
                 promiseList.push( self.loadRestrictionList( item.table_name ) );
@@ -168,11 +174,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   path: 'export/' + self.record.getIdentifier() + '/export_restriction',
                   data: {
                     select: {
-                      column: [ 'id', 'export_column_id', 'rank', 'column_name', 'logic', 'test', 'value', {
-                        table: 'export_column',
-                        column: 'table_name',
-                        alias: 'type'
-                      } ]
+                      column: [ 'id', 'table_name', 'subtype', 'column_name', 'rank', 'logic', 'test', 'value' ],
                     },
                     modifier: { order: { rank: false } }
                   }
@@ -181,16 +183,17 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   response.data.forEach( function( item ) {
                     var restriction = {
                       id: item.id,
-                      column: self.columnList.findByProperty( 'id', item.export_column_id ),
+                      table_name: item.table_name,
+                      subtype: item.subtype,
+                      column_name: item.column_name,
                       rank: item.rank,
                       restriction:
-                        self.restrictionTypeList[item.type].list.findByProperty( 'key', item.column_name ),
+                        self.tableRestrictionList[item.table_name].list.findByProperty( 'key', item.column_name ),
                       logic: item.logic,
                       value: isNaN( parseInt( item.value ) ) ? item.value : parseInt( item.value ),
                       test: item.test,
                       isUpdating: false
                     };
-                    restriction.columnId = restriction.column.id;
                     if( cenozo.isDatetimeType( restriction.restriction.type ) ) {
                       restriction.formattedValue = CnSession.formatValue(
                         restriction.value, restriction.restriction.type, true
@@ -222,7 +225,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           restrictionListIsLoading: true,
           participantCount: 0,
           restrictionList: [],
-          restrictionTypeList: {
+          tableRestrictionList: {
             participant: {
               isLoading: true,
               promise: null,
@@ -256,7 +259,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           },
           applicationRestrictionList: [],
           applicationRestrictionTypeList: [ { key: undefined, title: 'Loading...' } ],
-          columnTypeList: {
+          tableColumnList: {
             participant: {
               isLoading: true,
               list: [ { key: undefined, title: 'Loading...' } ]
@@ -284,37 +287,37 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           },
           newColumn: {},
           columnList: [],
-          columnSubtypeList: {
+          subtypeList: {
             site: [
-              { key: 'effective', name: 'Effective' },
-              { key: 'default', name: 'Default' },
-              { key: 'preferred', name: 'Preferred' }
+              { key: 'effective', name: 'Effective', inUse: false },
+              { key: 'default', name: 'Default', inUse: false },
+              { key: 'preferred', name: 'Preferred', inUse: false }
             ],
             address: [
-              { key: 'primary', name: 'Primary' },
-              { key: 'first', name: 'First' }
+              { key: 'primary', name: 'Primary', inUse: false },
+              { key: 'first', name: 'First', inUse: false }
             ],
             consent: [],
             event: []
           },
 
-          addRestriction: function( type, key ) {
+          addRestriction: function( tableName, key ) {
+            // get a list of all subtypes from columns for this table
+            var subtypeList = this.columnList.reduce( function( subtypeList, column ) {
+              if( column.table_name == tableName && 0 > subtypeList.indexOf( column.subtype ) )
+                subtypeList.push( column.subtype );
+              return subtypeList;
+            }, [] ).sort();
+
             var item = {
-              restriction: this.restrictionTypeList[type].list.findByProperty( 'key', key ),
+              table_name: tableName,
+              subtype: subtypeList[0],
+              restriction: this.tableRestrictionList[tableName].list.findByProperty( 'key', key ),
               value: null,
               logic: 'and',
               test: '<=>',
               isUpdating: false
             };
-
-            // we need to associate this restriction with a column of the same type
-            this.columnList.some( function( column ) {
-              if( type === column.type ) {
-                item.column = column;
-                item.columnId = column.id;
-                return true;
-              }
-            } );
 
             if( 'boolean' == item.restriction.type ) {
               item.value = true;
@@ -332,7 +335,8 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             CnHttpFactory.instance( {
               path: 'export/' + this.record.getIdentifier() + '/export_restriction',
               data: {
-                export_column_id: item.column.id,
+                table_name: item.table_name,
+                subtype: item.subtype,
                 rank: this.restrictionList.length + 1,
                 column_name: key,
                 logic: item.logic,
@@ -378,9 +382,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
 
           selectRestrictionColumn: function( index ) {
             var item = this.restrictionList[index];
-            item.column = this.columnList.findByProperty( 'id', item.columnId );
-            item.columnId = item.column.id;
-            return this.updateRestriction( item.id, 'export_column_id' );
+            return this.updateRestriction( item.id, 'subtype' );
           },
 
           selectDatetime: function( index ) {
@@ -392,7 +394,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 title: item.restriction.title,
                 date: item.value,
                 pickerType: item.restriction.type,
-                emptyAllowed: !item.restriction.required
+                emptyAllowed: true
               } ).show().then( function( response ) {
                 if( false !== response ) {
                   var key = 'value';
@@ -442,36 +444,38 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             } );
           },
 
-          addColumn: function( type, key ) {
-            var column = this.columnTypeList[type].list.findByProperty( 'key', key );
+          addColumn: function( tableName, key ) {
+            var column = this.tableColumnList[tableName].list.findByProperty( 'key', key );
             if( column ) {
-              var subtype = angular.isDefined( this.columnSubtypeList[type] )
-                          ? this.columnSubtypeList[type][0].key
+              var subtypeObject = angular.isDefined( this.subtypeList[tableName] )
+                          ? this.subtypeList[tableName][0]
                           : null;
 
               CnHttpFactory.instance( {
                 path: 'export/' + this.record.getIdentifier() + '/export_column',
                 data: {
-                  table_name: type,
+                  table_name: tableName,
                   column_name: column.key,
-                  subtype: subtype,
+                  subtype: null == subtypeObject ? null : subtypeObject.key,
                   rank: self.columnList.length + 1
                 }
               } ).post().then( function( response ) {
+                subtypeObject.inUse = true;
                 self.columnList.push( {
                   id: response.data,
-                  type: type,
+                  table_name: tableName,
+                  subtype: null == subtypeObject ? null : subtypeObject.key,
+                  oldSubtype: null == subtypeObject ? null : subtypeObject.key,
                   column: column,
-                  subtype: subtype,
                   isUpdating: false
                 } );
                 self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
               } );
             }
-            this.newColumn[type] = undefined;
+            this.newColumn[tableName] = undefined;
 
-            // now make sure the type's restriction list is loaded
-            this.loadRestrictionList( type );
+            // now make sure the table's restriction list is loaded
+            this.loadRestrictionList( tableName );
           },
 
           moveColumn: function( oldIndex, newIndex ) {
@@ -486,83 +490,97 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           },
 
           updateColumn: function( columnId, key ) {
-            var column = this.columnList.findByProperty( 'id', columnId );
+            var workingColumn = this.columnList.findByProperty( 'id', columnId );
+            var tableName = workingColumn.table_name;
+            var subtype = workingColumn.oldSubtype;
+
+            // if updating the subtype and the column had a unique table/subtype then get a list of all
+            // restrictions which have the same table/subtype so that the can also be updated
+            var updateRestrictionList = [];
+            if( 'subtype' == key ) {
+              // check if this column had a unique table/subtype
+              var hasUniqueTableSubtype = !this.columnList.some( function( column ) {
+                return column.id != workingColumn.id &&
+                       column.table_name == tableName &&
+                       column.subtype == subtype;
+              } );
+              if( hasUniqueTableSubtype ) {
+                updateRestrictionList = this.restrictionList.filter( function( restriction ) {
+                  return restriction.table_name == tableName && restriction.subtype == subtype;
+                } );
+              }
+
+              // also update the subtype list inUse property
+              this.subtypeList[tableName].findByProperty( 'key', workingColumn.subtype ).inUse = true;
+            }
+
             var data = {};
             if( angular.isArray( key ) ) {
-              key.forEach( function( k ) { data[k] = column[k]; } );
+              key.forEach( function( k ) { data[k] = workingColumn[k]; } );
             } else {
-              data[key] = column[key];
+              data[key] = workingColumn[key];
             }
-            column.isUpdating = true;
+            workingColumn.isUpdating = true;
             return CnHttpFactory.instance( {
-              path: 'export_column/' + column.id,
+              path: 'export_column/' + workingColumn.id,
               data: data
-            } ).patch().finally( function() {
-              column.isUpdating = false;
+            } ).patch().then( function() {
+              // update all restrictions and return when all promises from those operations have completed
+              var promiseList = [];
+              updateRestrictionList.forEach( function( restriction ) {
+                restriction.subtype = workingColumn.subtype;
+                promiseList.push( self.updateRestriction( restriction.id, 'subtype' ) );
+              } );
+              return $q.all( promiseList ).finally( function() {
+                // we don't need the old subtype anymore, so let it match the new one in preperation
+                // for the next time that it gets changed
+                workingColumn.oldSubtype = workingColumn.subtype;
+                workingColumn.isUpdating = false;
+              } );
             } );
           },
 
           removeColumn: function( index ) {
-            // first move restrictions to another column, or remove them
             var removeColumn = this.columnList[index];
+            var tableName = removeColumn.table_name;
+            var subtype = removeColumn.subtype;
 
-            // find a column with the same subtype to move the restrictions to
-            var switchColumn = null;
-            this.columnList.some( function( column ) {
-              if( column.id != removeColumn.id &&
-                  column.type == removeColumn.type &&
-                  column.subtype == removeColumn.subtype ) {
-                switchColumn = column;
-                return true;
-              }
+            // check if this column has a unique table/subtype
+            var hasUniqueTableSubtype = !this.columnList.some( function( column ) {
+              return column.id != removeColumn.id && column.table_name == tableName && column.subtype == subtype;
             } );
 
-            var promiseList = [];
-            if( null == switchColumn ) {
-              this.restrictionList = this.restrictionList.filter( function( restriction ) {
-                return restriction.columnId != removeColumn.id;
+            var proceed = true;
+            if( hasUniqueTableSubtype ) {
+              // if no longer in use then make sure there isn't a restriction using the table/subtype
+              var restricted = this.restrictionList.some( function( restriction ) {
+                return restriction.table_name == tableName && restriction.subtype == subtype;
               } );
-            } else {
-              this.restrictionList.forEach( function( restriction, innerIndex ) {
-                if( restriction.columnId == removeColumn.id ) {
-                  restriction.columnId = switchColumn.id;
-                  promiseList.push( self.selectRestrictionColumn( innerIndex ) );
-                }
-              } );
+              if( restricted ) {
+                proceed = false;
+                CnModalMessageFactory.instance( {
+                  title: 'Cannot Remove Column',
+                  message: 'You cannot remove this column as there is a restriction which depends on it.',
+                  error: true
+                } ).show();
+              } else {
+                this.subtypeList[tableName].findByProperty( 'key', subtype ).inUse = false;
+              }
             }
 
-            return $q.all( promiseList ).then( function() {
-              self.updateParticipantCount();
+            if( proceed ) {
               return CnHttpFactory.instance( {
                 path: 'export_column/' + self.columnList[index].id
               } ).delete().then( function() {
                 self.columnList.splice( index, 1 );
                 self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
               } );
-            } );
-          },
-
-          getSubtypeName: function( column, key ) {
-            var name = column.type.ucWords();
-            var subtypeList = this.columnSubtypeList[column.type];
-            if( subtypeList ) {
-              var subtype = subtypeList.findByProperty( 'key', key );
-              if( subtype ) name += ' - ' + subtype.name;
             }
-            return name;
           },
 
-          getSubtypeList: function( column ) {
-            var subtypeObj = {};
-            return this.columnList.filter( function( item ) {
-              return column.type == item.type;
-            } ).filter( function( item ) {
-              if( angular.isDefined( subtypeObj[item.subtype] ) ) {
-                return false;
-              } else {
-                subtypeObj[item.subtype] = true;
-                return true;
-              }
+          getSubtypeList: function( tableName ) {
+            return this.subtypeList[tableName].filter( function( subtypeObject ) {
+              return subtypeObject.inUse;
             } );
           },
 
@@ -573,7 +591,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             type = this.columnList.findByProperty( 'rank', columnRank ).type;
             var test = this.columnList.reduce( function( list, item ) {
               if( type === item.type && angular.isDefined( item.subtype ) ) {
-                list.push( self.columnSubtypeList[type].findByProperty( 'key', item.subtype ) );
+                list.push( self.subtypeList[type].findByProperty( 'key', item.subtype ) );
               }
               return list;
             }, [] );
@@ -582,20 +600,20 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           },
 
           // define functions which populate the restriction lists
-          loadRestrictionList: function( type ) {
+          loadRestrictionList: function( tableName ) {
             var ignoreColumnList = [
               'check_withdraw',
               'participant_id',
               'preferred_site_id'
             ];
-            var restrictionType = this.restrictionTypeList[type];
-            var metadata = this.modelList[type].metadata;
+            var restrictionType = this.tableRestrictionList[tableName];
+            var metadata = this.modelList[tableName].metadata;
 
-            // only load the restriction type list if we haven't already done so
+            // only load the restriction list if we haven't already done so
             if( null == restrictionType.promise ) {
               restrictionType.promise = metadata.getPromise().then( function() {
-                // add the site restriction type if not using extended site selection
-                if( 'participant' == type && !self.extendedSiteSelection )
+                // add the site restriction if not using extended site selection
+                if( 'participant' == tableName && !self.extendedSiteSelection )
                   restrictionType.list.push( { key: 'site', title: 'Site', type: 'enum', required: false } );
 
                 for( var column in metadata.columnList ) {
@@ -627,7 +645,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 }
 
                 var promiseList = [];
-                if( 'participant' == type ) {
+                if( 'participant' == tableName ) {
                   // add the site enum list if this site selection isn't extended
                   if( !self.extendedSiteSelection ) {
                     promiseList.push(
@@ -638,7 +656,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                           modifier: { order: ['name'] }
                         }
                       } ).query().then( function( response ) {
-                        var item = self.restrictionTypeList.participant.list.findByProperty( 'key', 'site' );
+                        var item = self.tableRestrictionList.participant.list.findByProperty( 'key', 'site' );
                         item.enumList = [ { value: '', name: '(empty)' } ];
                         response.data.forEach( function( site ) {
                           item.enumList.push( { value: site.id, name: site.name } );
@@ -685,7 +703,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 return $q.all( promiseList ).then( function() {
                   restrictionType.isLoading = false;
                   restrictionType.list.findByProperty( 'key', undefined ).title =
-                    'Select a new ' + type + ' restriction...';
+                    'Select a new ' + tableName + ' restriction...';
                 } );
               } );
             }
@@ -698,7 +716,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
         var promiseList = [
 
           this.modelList.participant.metadata.getPromise().then( function() {
-            var column = self.columnTypeList.participant;
+            var column = self.tableColumnList.participant;
             for( var key in self.modelList.participant.metadata.columnList ) {
               column.list.push( {
                 key: key,
@@ -715,7 +733,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           this.modelList.site.metadata.getPromise().then( function() {
             for( var column in self.modelList.site.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.columnTypeList.site.list.push( {
+                self.tableColumnList.site.list.push( {
                   key: column,
                   title: 'id' == column ?
                          column.toUpperCase() :
@@ -723,15 +741,15 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 } );
               }
             }
-            self.columnTypeList.site.list.findByProperty( 'key', undefined ).title =
+            self.tableColumnList.site.list.findByProperty( 'key', undefined ).title =
               'Add a Site column...';
-            self.columnTypeList.site.isLoading = false;
+            self.tableColumnList.site.isLoading = false;
           } ),
 
           this.modelList.address.metadata.getPromise().then( function() {
             for( var column in self.modelList.address.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.columnTypeList.address.list.push( {
+                self.tableColumnList.address.list.push( {
                   key: column,
                   title: 'id' == column ?
                          column.toUpperCase() :
@@ -739,15 +757,15 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 } );
               }
             }
-            self.columnTypeList.address.list.findByProperty( 'key', undefined ).title =
+            self.tableColumnList.address.list.findByProperty( 'key', undefined ).title =
               'Add an Address column...';
-            self.columnTypeList.address.isLoading = false;
+            self.tableColumnList.address.isLoading = false;
           } ),
 
           this.modelList.phone.metadata.getPromise().then( function() {
             for( var column in self.modelList.phone.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.columnTypeList.phone.list.push( {
+                self.tableColumnList.phone.list.push( {
                   key: column,
                   title: 'id' == column ?
                          column.toUpperCase() :
@@ -755,15 +773,15 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 } );
               }
             }
-            self.columnTypeList.phone.list.findByProperty( 'key', undefined ).title =
+            self.tableColumnList.phone.list.findByProperty( 'key', undefined ).title =
               'Add a Phone column...';
-            self.columnTypeList.phone.isLoading = false;
+            self.tableColumnList.phone.isLoading = false;
           } ),
 
           this.modelList.consent.metadata.getPromise().then( function() {
             for( var column in self.modelList.consent.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.columnTypeList.consent.list.push( {
+                self.tableColumnList.consent.list.push( {
                   key: column,
                   title: 'id' == column ?
                          column.toUpperCase() :
@@ -771,9 +789,9 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 } );
               }
             }
-            self.columnTypeList.consent.list.findByProperty( 'key', undefined ).title =
+            self.tableColumnList.consent.list.findByProperty( 'key', undefined ).title =
               'Add a Consent column...';
-            self.columnTypeList.consent.isLoading = false;
+            self.tableColumnList.consent.isLoading = false;
           } ),
 
           CnHttpFactory.instance( {
@@ -784,14 +802,14 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             }
           } ).query().then( function( response ) {
             response.data.forEach( function( item ) {
-              self.columnSubtypeList.consent.push( { key: item.id.toString(), name: item.name } );
+              self.subtypeList.consent.push( { key: item.id.toString(), name: item.name } );
             } );
           } ),
 
           this.modelList.event.metadata.getPromise().then( function() {
             for( var column in self.modelList.event.metadata.columnList ) {
               if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.columnTypeList.event.list.push( {
+                self.tableColumnList.event.list.push( {
                   key: column,
                   title: 'id' == column ?
                          column.toUpperCase() :
@@ -799,9 +817,9 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 } );
               }
             }
-            self.columnTypeList.event.list.findByProperty( 'key', undefined ).title =
+            self.tableColumnList.event.list.findByProperty( 'key', undefined ).title =
               'Add an Event column...';
-            self.columnTypeList.event.isLoading = false;
+            self.tableColumnList.event.isLoading = false;
           } ),
 
           CnHttpFactory.instance( {
@@ -812,7 +830,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             }
           } ).query().then( function( response ) {
             response.data.forEach( function( item ) {
-              self.columnSubtypeList.consent.push( { key: item.id.toString(), name: item.name } );
+              self.subtypeList.event.push( { key: item.id.toString(), name: item.name } );
             } );
           } )
 

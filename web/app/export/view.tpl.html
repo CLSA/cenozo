@@ -24,7 +24,7 @@
     <div ng-if="!model.viewModel.columnListIsLoading">
       <p class="text-info" style="margin-top: 1em;">
         Add columns to include in the participant export.<br>
-        Some columns will require you to define a type.  This means that there are multiple records for one
+        Some columns will require you to define a subtype.  This means that there are multiple records for one
         participant, so you must specify which record to include in the report.
       </p>
       <hr />
@@ -40,15 +40,15 @@
                   ng-options="rank for rank in [] | cnRange:1:model.viewModel.columnList.length">
           </select>
         </div>
-        <div class="col-sm-2 text-center"><strong>{{ item.type|cnUCWords }}</strong></div>
+        <div class="col-sm-2 text-center"><strong>{{ item.table_name|cnUCWords }}</strong></div>
         <div class="col-sm-2 text-center"><strong>{{ item.column.title }}</strong></div>
         <div class="col-sm-5">
           <select class="form-control"
-                  ng-if="model.viewModel.columnSubtypeList[item.type]"
+                  ng-if="model.viewModel.subtypeList[item.table_name]"
                   ng-model="item.subtype"
                   ng-change="model.viewModel.updateColumn( item.id, 'subtype' )"
                   ng-disabled="item.isUpdating"
-                  ng-options="obj.key as obj.name for obj in model.viewModel.columnSubtypeList[item.type]">
+                  ng-options="obj.key as obj.name for obj in model.viewModel.subtypeList[item.table_name]">
           </select>
         </div>
         <div class="col-sm-1">
@@ -59,11 +59,11 @@
       </div>
       <hr />
       <div class="vertical-spacer" style="margin-bottom: 1em;">
-        <span ng-repeat="(type, column) in model.viewModel.columnTypeList">
+        <span ng-repeat="(tableName, column) in model.viewModel.tableColumnList">
           <select class="form-control"
                   ng-disabled="column.isLoading"
-                  ng-model="model.viewModel.newColumn[type]"
-                  ng-change="model.viewModel.addColumn( type, model.viewModel.newColumn[type] )"
+                  ng-model="model.viewModel.newColumn[tableName]"
+                  ng-change="model.viewModel.addColumn( tableName, model.viewModel.newColumn[tableName] )"
                   ng-disabled="item.isUpdating"
                   ng-options="o.key as o.title for o in column.list">
           </select>
@@ -113,15 +113,14 @@
             <option value="or">OR</option>
           </select>
         </div>
-        <label class="col-sm-2 control-label text-center" ng-if="null == item.column.subtype">
-          {{ item.column.type|cnUCWords }}
+        <label class="col-sm-2 control-label text-center" ng-if="null == item.subtype">
+          {{ item.table_name|cnUCWords }}
         </label>
-        <div class="col-sm-2 col-slim" ng-if="null != item.column.subtype">
+        <div class="col-sm-2 col-slim" ng-if="null != item.subtype">
           <select class="form-control pull-right"
-                  ng-model="item.columnId"
+                  ng-model="item.subtype"
                   ng-change="model.viewModel.selectRestrictionColumn( $index )"
-                  ng-options="o.id as model.viewModel.getSubtypeName( item.column, o.subtype )
-                              for o in model.viewModel.getSubtypeList( item.column )">
+                  ng-options="o.key as o.name for o in model.viewModel.getSubtypeList( item.table_name )">
           </select>
         </div>
         <label class="col-sm-1 control-label text-center">{{ item.restriction.title }}</label>
@@ -173,12 +172,12 @@
       </div>
       <hr />
       <div class="vertical-spacer" style="margin-bottom: 1em;">
-        <div ng-repeat="(type, restriction) in model.viewModel.restrictionTypeList"
+        <div ng-repeat="(tableName, restriction) in model.viewModel.tableRestrictionList"
              ng-if="1 < restriction.list.length">
           <select class="form-control"
                   ng-disabled="restriction.isLoading"
                   ng-model="model.viewModel.newRestriction"
-                  ng-change="model.viewModel.addRestriction( type, model.viewModel.newRestriction )"
+                  ng-change="model.viewModel.addRestriction( tableName, model.viewModel.newRestriction )"
                   ng-options="o.key as o.title for o in restriction.list"></select>
         </div>
       </div>

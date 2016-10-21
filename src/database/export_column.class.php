@@ -25,12 +25,11 @@ class export_column extends has_rank
   {
     $application_id = lib::create( 'business\session' )->get_application()->id;
     
+    $table_name = $this->get_table_alias();
     if( 'site' == $this->table_name )
     {
-      $table_name = NULL;
       if( 'effective' == $this->subtype || 'default' == $this->subtype )
       {
-        $table_name = $this->subtype.'_site';
         $column = 'default' == $this->subtype ? 'default_site_id' : 'site_id';
         if( !$modifier->has_join( $table_name ) )
         {
@@ -46,7 +45,6 @@ class export_column extends has_rank
       }
       else if( 'preferred' == $this->subtype )
       {
-        $table_name = 'preferred_site';
         if( !$modifier->has_join( $table_name ) )
         {
           if( !$modifier->has_join( 'application_has_participant' ) )
@@ -63,15 +61,58 @@ class export_column extends has_rank
     }
     else if( 'address' == $this->table_name )
     {
-    }
-    else if( 'phone' == $this->table_name )
-    {
+      if( 'primary' == $this->subtype )
+      {
+        if( !$modifier->has_join( $table_name ) )
+        {
+          if( !$modifier->has_join( 'participant_primary_address' ) )
+            $modifier->join(
+              'participant_primary_address', 'participant.id', 'participant_primary_address.participant_id' );
+          $modifier->left_join(
+            'address', 'participant_primary_address.address_id', $table_name.'.id', $table_name );
+        }
+      }
+      else if( 'first' == $this->subtype )
+      {
+        if( !$modifier->has_join( $table_name ) )
+        {
+          if( !$modifier->has_join( 'participant_first_address' ) )
+            $modifier->join(
+              'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
+          $modifier->left_join(
+            'address', 'participant_first_address.address_id', $table_name.'.id', $table_name );
+        }
+      }
     }
     else if( 'consent' == $this->table_name )
     {
+      if( !$modifier->has_join( $table_name ) )
+      {
+        $joining_table_name = 'participant_last_consent_'.$this->subtype;
+        if( !$modifier->has_join( $joining_table_name ) )
+        {
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', $joining_table_name.'.participant_id', false );
+          $join_mod->where( $joining_table_name.'.consent_type_id', '=', $this->subtype );
+          $modifier->join_modifier( 'participant_last_consent', $join_mod, '', $joining_table_name );
+        }
+        $modifier->left_join( 'consent', $joining_table_name.'.consent_id', $table_name.'.id', $table_name );
+      }
     }
     else if( 'event' == $this->table_name )
     {
+      if( !$modifier->has_join( $table_name ) )
+      {
+        $joining_table_name = 'participant_last_event_'.$this->subtype;
+        if( !$modifier->has_join( $joining_table_name ) )
+        {
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', $joining_table_name.'.participant_id', false );
+          $join_mod->where( $joining_table_name.'.event_type_id', '=', $this->subtype );
+          $modifier->join_modifier( 'participant_last_event', $join_mod, '', $joining_table_name );
+        }
+        $modifier->left_join( 'event', $joining_table_name.'.event_id', $table_name.'.id', $table_name );
+      }
     }
   }
 

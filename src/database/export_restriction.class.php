@@ -23,7 +23,7 @@ class export_restriction extends has_rank
    */
   public function apply_modifier( $modifier )
   {
-    $table_name = $this->get_export_column()->get_table_alias();
+    $table_name = $this->get_table_alias();
     $test = $this->test;
     $value = $this->value;
     if( 'like' == $test || 'not like' == $test )
@@ -32,6 +32,20 @@ class export_restriction extends has_rank
       else if( false === strpos( $value, '%' ) ) $value = '%'.$value.'%';
     }
     $modifier->where( $table_name.'.'.$this->column_name, $test, $value, true, 'or' == $this->logic );
+  }
+
+  /**
+   * Returns the alias used when referencing this column's table
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function get_table_alias()
+  {
+    if( 'participant' == $this->table_name ) return 'participant';
+    else if( 'site' == $this->table_name || 'address' == $this->table_name )
+      return $this->subtype.'_'.$this->table_name;
+    return $this->table_name.'_'.$this->subtype;
   }
 
   /**
