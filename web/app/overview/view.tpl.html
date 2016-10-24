@@ -27,6 +27,9 @@
     {{ model.viewModel.record.description }}
   </h4>
   <hr/>
+  <div ng-if="!model.viewModel.record.data.value" class="alert alert-warning">
+    There is no data currently available.
+  </div>
   <div ng-repeat="item1 in model.viewModel.record.data.value">
     <!-- value is not an array -->
     <div ng-if="!(item1.value|cnIsArray)"

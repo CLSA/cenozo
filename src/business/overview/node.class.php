@@ -182,22 +182,23 @@ class node
   {
     if( $this->is_leaf() )
       throw lib::create( 'exception\runtime', 'Tried to get summary of leaf node.', __METHOD__ );
-    if( 0 == count( $this->value ) )
-      throw lib::create( 'exception\runtime', 'Tried to get summary but the node list is empty.', __METHOD__ );
 
     $summary_node = NULL;
-    foreach( $this->value as $node )
+    if( 0 < count( $this->value ) )
     {
-      if( is_null( $summary_node ) )
+      foreach( $this->value as $node )
       {
-        // clone the first item in the list
-        $summary_node = clone $node;
-        $summary_node->label = 'Summary';
-      }
-      else
-      {
-        // add values for this item to the summary node
-        $summary_node->add_values( $node );
+        if( is_null( $summary_node ) )
+        {
+          // clone the first item in the list
+          $summary_node = clone $node;
+          $summary_node->label = 'Summary';
+        }
+        else
+        {
+          // add values for this item to the summary node
+          $summary_node->add_values( $node );
+        }
       }
     }
 
