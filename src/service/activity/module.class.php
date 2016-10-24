@@ -23,12 +23,22 @@ class module extends \cenozo\service\site_restricted_module
 
     if( 300 > $this->get_status()->get_code() )
     {
-      // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) )
+      // restrict by application
+      $record = $this->get_resource();
+      if( $record && !is_null( $record->application_id ) &&
+          $record->application_id != lib::create( 'business\session' )->get_application()->id )
       {
-        $record = $this->get_resource();
-        if( $record && $record->site_id != $db_restrict_site->id ) $this->get_status()->set_code( 403 );
+        $this->get_status()->set_code( 404 );
+      }
+      else
+      {
+        // restrict by site
+        $db_restrict_site = $this->get_restricted_site();
+        if( !is_null( $db_restrict_site ) )
+        {
+          $record = $this->get_resource();
+          if( $record && $record->site_id != $db_restrict_site->id ) $this->get_status()->set_code( 403 );
+        }
       }
     }
   }

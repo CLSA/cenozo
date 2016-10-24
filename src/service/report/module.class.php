@@ -23,7 +23,14 @@ class module extends \cenozo\service\base_report_module
 
     if( 300 > $this->get_status()->get_code() )
     {
-      if( 'PATCH' == $this->get_method() )
+      // restrict by application
+      $record = $this->get_resource();
+      if( $record && !is_null( $record->application_id ) &&
+          $record->application_id != lib::create( 'business\session' )->get_application()->id )
+      {
+        $this->get_status()->set_code( 404 );
+      }
+      else if( 'PATCH' == $this->get_method() )
       {
         $session = lib::create( 'business\session' );
         $setting_manager = lib::create( 'business\setting_manager' );
