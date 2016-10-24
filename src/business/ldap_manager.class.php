@@ -292,6 +292,7 @@ class ldap_manager extends \cenozo\singleton
   {
     if( !$this->enabled ) return;
     $util_class_name = lib::get_class_name( 'util' );
+    $user_class_name = lib::get_class_name( 'database\user' );
 
     if( 'samba' == $this->type )
     {
@@ -316,6 +317,17 @@ class ldap_manager extends \cenozo\singleton
         // convert the timeout to an ldap error
         throw lib::create( 'exception\ldap',
           'The LDAP server failed to respond within the allowed time limit.', 3 );
+      }
+
+      if( 0 == strstr( $result['output'], 'Unable to find user' ) )
+      {
+        // user doesn't exist, try creating it
+        $db_user = $user_class_name::get_unique_record( 'name', $username );
+        if( !is_null( $db_user ) )
+        {
+          $this->new_user( $username, $db_user->first_name, $db_user->last_name, $password );
+          $result['exitcode'] = 0;
+        }
       }
 
       if( 0 != $result['exitcode'] && 'Changed password OK' != substr( $result['output'], 0, 19 ) )
