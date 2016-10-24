@@ -103,7 +103,7 @@ abstract class base_report extends \cenozo\base_object
     $util_class_name = lib::get_class_name( 'util' );
     $db_report_type = $this->db_report->get_report_type();
 
-    // set time limit (from here on out) to 2 minutes since some reports are big
+    // set report time limit
     set_time_limit( $setting_manager->get_setting( 'report', 'time_limit' ) );
 
     try
