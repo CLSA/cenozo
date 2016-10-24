@@ -539,14 +539,15 @@ class util
    *   convert datetime formats
    *   converts timezones
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\user $db_user Which user to use when determining datetime formats
    * @return string (with newlines)
    * @static
    * @access public
    */
-  public static function get_data_as_csv( $data )
+  public static function get_data_as_csv( $data, $db_user = NULL )
   {
     $session = lib::create( 'business\session' );
-    $db_user = $session->get_user();
+    if( is_null( $db_user ) ) $db_user = $session->get_user();
     $now = static::get_datetime_object();
     if( !is_null( $db_user ) ) $now->setTimezone( new \DateTimeZone( $db_user->timezone ) );
     $tz = $now->format( 'T' );
