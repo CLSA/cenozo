@@ -41,6 +41,10 @@ SOURCE system_message.sql
 SOURCE script.sql
 SOURCE application_has_script.sql
 SOURCE event_type.sql
+SOURCE export.sql
+SOURCE export_file.sql
+SOURCE export_column.sql
+SOURCE export_restriction.sql
 SOURCE report_type.sql
 SOURCE report_restriction.sql
 SOURCE report_schedule.sql

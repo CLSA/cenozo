@@ -117,7 +117,7 @@ class export_column extends has_rank
   }
 
   /**
-   * Returns the alias used when referencing this column's table
+   * Returns the alias used when referencing this object's table
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public

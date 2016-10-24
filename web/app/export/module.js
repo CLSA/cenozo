@@ -52,6 +52,14 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
     }
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'Download',
+    isDisabled: function( $state, model ) { return 0 == model.viewModel.participantCount; },
+    operation: function( $state, model ) {
+      model.viewModel.exportFileModel.listModel.transitionOnAdd();
+    }
+  } );
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnExportAdd', [
     'CnExportModelFactory',
@@ -460,7 +468,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   rank: self.columnList.length + 1
                 }
               } ).post().then( function( response ) {
-                subtypeObject.inUse = true;
+                if( null != subtypeObject ) subtypeObject.inUse = true;
                 self.columnList.push( {
                   id: response.data,
                   table_name: tableName,
@@ -511,7 +519,10 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               }
 
               // also update the subtype list inUse property
-              this.subtypeList[tableName].findByProperty( 'key', workingColumn.subtype ).inUse = true;
+              if( null != workingColumn.subtype ) {
+                var subtypeObject = this.subtypeList[tableName].findByProperty( 'key', workingColumn.subtype );
+                if( null != subtypeObject ) subtypeObject.inUse = true;
+              }
             }
 
             var data = {};
@@ -564,7 +575,10 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   error: true
                 } ).show();
               } else {
-                this.subtypeList[tableName].findByProperty( 'key', subtype ).inUse = false;
+                if( null != subtype ) {
+                  var subtypeObject = this.subtypeList[tableName].findByProperty( 'key', subtype )
+                  if( null != subtypeObject ) subtypeObject.inUse = false;
+                }
               }
             }
 
@@ -912,7 +926,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
         $q.all( promiseList );
       };
 
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 

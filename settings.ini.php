@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.0.1';
-$settings['general']['cenozo_build'] = '1d97941';
+$settings['general']['cenozo_build'] = '2aa66e4';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -70,6 +70,9 @@ $settings['path']['CENOZO'] = str_replace( '/settings.ini.php', '', __FILE__ );
 
 // the location of log files
 $settings['path']['LOG_FILE'] = '/var/local/cenozo/log';
+
+// the location of exports (defaults to cenozo/doc/export)
+$settings['path']['EXPORT'] = str_replace( 'settings.ini.php', 'doc/export', __FILE__ );
 
 // the location of reports (defaults to cenozo/doc/report)
 $settings['path']['REPORT'] = str_replace( 'settings.ini.php', 'doc/report', __FILE__ );

@@ -21,7 +21,9 @@ class export extends \cenozo\database\record
    */
   public function save()
   {
-    if( is_null( $this->user_id ) ) $this->user_id = lib::create( 'business\session' )->get_user()->id;
+    $session = lib::create( 'business\session' );
+    if( is_null( $this->application_id ) ) $this->application_id = $session->get_application()->id;
+    if( is_null( $this->user_id ) ) $this->user_id = $session->get_user()->id;
     parent::save();
   }
 }
