@@ -319,7 +319,7 @@ class ldap_manager extends \cenozo\singleton
           'The LDAP server failed to respond within the allowed time limit.', 3 );
       }
 
-      if( 0 == strstr( $result['output'], 'Unable to find user' ) )
+      if( 0 === strstr( $result['output'], 'Unable to find user' ) )
       {
         // user doesn't exist, try creating it
         $db_user = $user_class_name::get_unique_record( 'name', $username );
