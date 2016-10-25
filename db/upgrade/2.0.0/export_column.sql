@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS export_column (
   column_name VARCHAR(45) NOT NULL,
   rank INT UNSIGNED NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_export_id_rank (rank ASC),
+  UNIQUE INDEX uq_export_id_rank (export_id ASC, rank ASC),
   INDEX dk_table_name_subtype (table_name ASC, subtype ASC),
   INDEX fk_export_id (export_id ASC),
   CONSTRAINT fk_export_column_export_id

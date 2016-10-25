@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS export_restriction (
   test ENUM('<=>', '<>', '<', '>', 'like', 'not like') NOT NULL,
   value VARCHAR(255) NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_export_id_rank (rank ASC),
+  UNIQUE INDEX uq_export_id_rank (export_id ASC, rank ASC),
   INDEX dk_table_name_subtype (table_name ASC, subtype ASC),
   INDEX fk_export_id (export_id ASC),
   CONSTRAINT fk_export_restriction_export_id
