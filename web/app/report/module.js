@@ -381,38 +381,35 @@ define( function() {
 
           var promiseList = [
             reportTypePromise.then( function() {
-              if( lastReportTypeIdentifier != reportTypeIdentifier ||
-                  lastAction != self.getActionFromState() ) {
-                // remove the parameter group's input list and metadata
-                var parameterData = self.module.inputGroupList.findByProperty( 'title', 'Parameters' );
-                parameterData.inputList = {};
-                for( var column in self.metadata.columnList )
-                  if( 'restrict_' == column.substring( 0, 9 ) )
-                    delete self.metadata.columnList[column];
+              // remove the parameter group's input list and metadata
+              var parameterData = self.module.inputGroupList.findByProperty( 'title', 'Parameters' );
+              parameterData.inputList = {};
+              for( var column in self.metadata.columnList )
+                if( 'restrict_' == column.substring( 0, 9 ) )
+                  delete self.metadata.columnList[column];
 
-                lastAction = self.getActionFromState();
-                return CnHttpFactory.instance( {
-                  path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
-                  data: { modifier: { order: { rank: false } } }
-                } ).get().then( function( response ) {
-                  // replace all restrictions from the module and metadata
-                  var inputPromiseList = [];
-                  response.data.forEach( function( restriction ) {
-                    var key = 'restrict_' + restriction.name;
-                    var result = cenozo.getInputFromRestriction( restriction, CnHttpFactory );
-                    parameterData.inputList[key] = result.input;
-                    inputPromiseList = inputPromiseList.concat( result.promiseList );
-                    self.metadata.columnList[key] = {
-                      required: restriction.mandatory,
-                      restriction_type: restriction.restriction_type
-                    };
-                    if( angular.isDefined( result.input.enumList ) )
-                      self.metadata.columnList[key].enumList = result.input.enumList;
-                  } );
-
-                  return $q.all( inputPromiseList );
+              lastAction = self.getActionFromState();
+              return CnHttpFactory.instance( {
+                path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
+                data: { modifier: { order: { rank: false } } }
+              } ).get().then( function( response ) {
+                // replace all restrictions from the module and metadata
+                var inputPromiseList = [];
+                response.data.forEach( function( restriction ) {
+                  var key = 'restrict_' + restriction.name;
+                  var result = cenozo.getInputFromRestriction( restriction, CnHttpFactory );
+                  parameterData.inputList[key] = result.input;
+                  inputPromiseList = inputPromiseList.concat( result.promiseList );
+                  self.metadata.columnList[key] = {
+                    required: restriction.mandatory,
+                    restriction_type: restriction.restriction_type
+                  };
+                  if( angular.isDefined( result.input.enumList ) )
+                    self.metadata.columnList[key].enumList = result.input.enumList;
                 } );
-              }
+
+                return $q.all( inputPromiseList );
+              } );
             } )
           ];
           if( !hasBaseMetadata ) promiseList.push( this.$$getMetadata() );
