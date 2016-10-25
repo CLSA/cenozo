@@ -354,7 +354,11 @@ class ui extends \cenozo\base_object
     $this->add_listitem( 'Consent Types', 'consent_type' );
     $this->add_listitem( 'Event Types', 'event_type' );
     if( $extended ) $this->add_listitem( 'Form Types', 'form_type' );
-    if( $setting_manager->get_setting( 'module', 'interview' ) ) $this->add_listitem( 'Interviews', 'interview' );
+    if( $setting_manager->get_setting( 'module', 'interview' ) )
+    {
+      $this->add_listitem( 'Interviews', 'interview' );
+      $this->add_listitem( 'Assignments', 'assignment' );
+    }
     if( $extended && in_array( 'jurisdiction', $grouping_list ) )
     $this->add_listitem( 'Jurisdictions', 'jurisdiction' );
     if( $extended ) $this->add_listitem( 'Languages', 'language' );

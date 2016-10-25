@@ -126,31 +126,38 @@ class module extends \cenozo\service\site_restricted_module
     if( $select->has_column( 'phone_call_count' ) )
     {
       $join_sel = lib::create( 'database\select' );
-      $join_sel->from( 'phone_call' );
-      $join_sel->add_column( 'assignment_id' );
-      $join_sel->add_column( 'COUNT( * )', 'phone_call_count', false );
+      $join_sel->from( 'assignment' );
+      $join_sel->add_column( 'id', 'assignment_id' );
+      $join_sel->add_column( 'IF( phone_call.id IS NULL, 0, COUNT( * ) )', 'phone_call_count', false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->group( 'assignment_id' );
+      $join_mod->left_join( 'phone_call', 'assignment.id', 'phone_call.assignment_id' );
+      $join_mod->group( 'assignment.id' );
 
-      $modifier->left_join(
+      $modifier->join(
         sprintf( '( %s %s ) AS assignment_join_phone_call', $join_sel->get_sql(), $join_mod->get_sql() ),
         'assignment.id',
         'assignment_join_phone_call.assignment_id' );
-      $select->add_column( 'IFNULL( phone_call_count, 0 )', 'phone_call_count', false );
+      $select->add_table_column( 'assignment_join_phone_call', 'phone_call_count' );
     }
 
     // add the assignment's last call's status column
-    $modifier->left_join( 'assignment_last_phone_call',
-      'assignment.id', 'assignment_last_phone_call.assignment_id' );
-    $modifier->left_join( 'phone_call AS last_phone_call',
-      'assignment_last_phone_call.phone_call_id', 'last_phone_call.id' );
-    $select->add_table_column( 'last_phone_call', 'status' );
+    if( $select->has_table_columns( 'last_phone_call' ) ||
+        $select->has_column( 'call_active' ) ||
+        $select->has_column( 'status' ) )
+    {
+      $modifier->join( 'assignment_last_phone_call',
+        'assignment.id', 'assignment_last_phone_call.assignment_id' );
+      $modifier->left_join( 'phone_call AS last_phone_call',
+        'assignment_last_phone_call.phone_call_id', 'last_phone_call.id' );
 
-    if( $select->has_column( 'call_active' ) )
-      $select->add_table_column( 'last_phone_call',
-        'last_phone_call.id IS NOT NULL AND last_phone_call.end_datetime IS NULL',
-        'call_active', false, 'boolean' );
+      if( $select->has_column( 'status' ) ) $select->add_table_column( 'last_phone_call', 'status' );
+
+      if( $select->has_column( 'call_active' ) )
+        $select->add_table_column( 'last_phone_call',
+          'last_phone_call.id IS NOT NULL AND last_phone_call.end_datetime IS NULL',
+          'call_active', false, 'boolean' );
+    }
   }
 
   /**

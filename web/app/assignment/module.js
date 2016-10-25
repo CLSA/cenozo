@@ -16,6 +16,13 @@ define( [], function() {
       pluralPossessive: 'assignments\''
     },
     columnList: {
+      uid: {
+        column: 'participant.uid',
+        title: 'UID',
+        isIncluded: function( $state, model ) {
+          return 'assignment' == model.getSubjectFromState();
+        }
+      },
       user: {
         column: 'user.name',
         title: 'User'
@@ -27,6 +34,11 @@ define( [], function() {
       site: {
         column: 'site.name',
         title: 'Site'
+      },
+      phone_call_count: {
+        column: 'phone_call_count',
+        title: 'Calls',
+        type: 'number'
       },
       status: {
         column: 'status',
