@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS export (
   user_id INT UNSIGNED NOT NULL,
   description TEXT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_title (title ASC),
+  UNIQUE INDEX uq_application_id_title (application_id ASC, title ASC),
   INDEX fk_user_id (user_id ASC),
   INDEX fk_export_application_id (application_id ASC),
   CONSTRAINT fk_export_user_id
