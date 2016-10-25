@@ -15,6 +15,18 @@ use cenozo\lib, cenozo\log;
 class export_column extends has_rank
 {
   /**
+   * Applies this record's changes to the given select
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\select $select
+   * @access public
+   */
+  public function apply_select( $select )
+  {
+    $select->add_table_column( $this->get_table_alias(), $this->column_name, $this->get_column_alias() );
+  }
+
+  /**
    * Applies this record's changes to the given modifier
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -28,9 +40,18 @@ class export_column extends has_rank
     $table_name = $this->get_table_alias();
     if( 'site' == $this->table_name )
     {
-      if( 'effective' == $this->subtype || 'default' == $this->subtype )
+      // there may be an application id in the subtype
+      $subtype = $this->subtype;
+      $matches = array();
+      if( preg_match( '/^([a-z]+)_([0-9]+)$/', $this->subtype, $matches ) )
       {
-        $column = 'default' == $this->subtype ? 'default_site_id' : 'site_id';
+        $subtype = $matches[1];
+        $application_id = $matches[2];
+      }
+
+      if( 'effective' == $subtype || 'default' == $subtype )
+      {
+        $column = 'default' == $subtype ? 'default_site_id' : 'site_id';
         if( !$modifier->has_join( $table_name ) )
         {
           if( !$modifier->has_join( 'participant_site' ) )
@@ -43,7 +64,7 @@ class export_column extends has_rank
           $modifier->join( 'site', 'participant_site.'.$column, $table_name.'.id', '', $table_name );
         }
       }
-      else if( 'preferred' == $this->subtype )
+      else if( 'preferred' == $subtype )
       {
         if( !$modifier->has_join( $table_name ) )
         {
@@ -124,10 +145,47 @@ class export_column extends has_rank
    */
   public function get_table_alias()
   {
-    if( 'participant' == $this->table_name ) return 'participant';
+    if( is_null( $this->subtype ) ) return $this->table_name;
     else if( 'site' == $this->table_name || 'address' == $this->table_name )
       return $this->subtype.'_'.$this->table_name;
     return $this->table_name.'_'.$this->subtype;
+  }
+
+  /**
+   * Returns the alias used when referencing this object's table
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function get_column_alias()
+  {
+    $alias_parts = array( $this->table_name, $this->column_name );
+
+    if( 'site' == $this->table_name )
+    {
+      // there may be an application id in the subtype
+      $subtype = $this->subtype;
+      $matches = array();
+      if( preg_match( '/^([a-z]+)_([0-9]+)$/', $this->subtype, $matches ) )
+        $subtype = lib::create( 'database\application', $matches[2] )->title.': '.$matches[1];
+      array_unshift( $alias_parts, $subtype );
+    }
+    else if( 'address' == $this->table_name )
+    {
+      array_unshift( $alias_parts, $this->subtype );
+    }
+    else if( 'consent' == $this->table_name )
+    {
+      // get the consent type name
+      array_unshift( $alias_parts, lib::create( 'database\consent_type', $this->subtype )->name );
+    }
+    else if( 'event' == $this->table_name )
+    {
+      // get the event type name
+      array_unshift( $alias_parts, lib::create( 'database\event_type', $this->subtype )->name );
+    }
+
+    return ucWords( str_replace( '_', ' ', implode( ' ', $alias_parts ) ) );
   }
 
   /**

@@ -74,7 +74,7 @@ class export_file extends record
       $export_column_mod->order( 'rank' );
       foreach( $db_export->get_export_column_object_list( $export_column_mod ) as $db_export_column )
       {
-        $select->add_table_column( $db_export_column->get_table_alias(), $db_export_column->column_name );
+        $db_export_column->apply_select( $select );
         $db_export_column->apply_modifier( $modifier );
       }
 

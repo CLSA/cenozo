@@ -601,8 +601,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           getRestrictionColumnList: function( columnRank ) {
             if( angular.isUndefined( columnRank ) ) return [];
 
-            var type = 'event';//this.columnList.findByProperty( 'rank', columnRank ).type;
-            type = this.columnList.findByProperty( 'rank', columnRank ).type;
+            var type = this.columnList.findByProperty( 'rank', columnRank ).type;
             var test = this.columnList.reduce( function( list, item ) {
               if( type === item.type && angular.isDefined( item.subtype ) ) {
                 list.push( self.subtypeList[type].findByProperty( 'key', item.subtype ) );
@@ -627,7 +626,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             if( null == restrictionType.promise ) {
               restrictionType.promise = metadata.getPromise().then( function() {
                 // add the site restriction if not using extended site selection
-                if( 'participant' == tableName && !self.extendedSiteSelection )
+                if( 'participant' == tableName )
                   restrictionType.list.push( { key: 'site', title: 'Site', type: 'enum', required: false } );
 
                 for( var column in metadata.columnList ) {
@@ -661,23 +660,21 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 var promiseList = [];
                 if( 'participant' == tableName ) {
                   // add the site enum list if this site selection isn't extended
-                  if( !self.extendedSiteSelection ) {
-                    promiseList.push(
-                      CnHttpFactory.instance( {
-                        path: 'site',
-                        data: {
-                          select: { column: [ 'id', 'name' ] },
-                          modifier: { order: ['name'] }
-                        }
-                      } ).query().then( function( response ) {
-                        var item = self.tableRestrictionList.participant.list.findByProperty( 'key', 'site' );
-                        item.enumList = [ { value: '', name: '(empty)' } ];
-                        response.data.forEach( function( site ) {
-                          item.enumList.push( { value: site.id, name: site.name } );
-                        } );
-                      } )
-                    );
-                  }
+                  promiseList.push(
+                    CnHttpFactory.instance( {
+                      path: 'site',
+                      data: {
+                        select: { column: [ 'id', 'name' ] },
+                        modifier: { order: ['name'] }
+                      }
+                    } ).query().then( function( response ) {
+                      var item = self.tableRestrictionList.participant.list.findByProperty( 'key', 'site' );
+                      item.enumList = [ { value: '', name: '(empty)' } ];
+                      response.data.forEach( function( site ) {
+                        item.enumList.push( { value: site.id, name: site.name } );
+                      } );
+                    } )
+                  );
 
                   // participant.source_id is not filled in regularly, we must do it here
                   promiseList.push(
@@ -850,56 +847,74 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
 
         ];
 
-        /*
-        promiseList.push(
-          this.extendedSiteSelection ?
-          CnHttpFactory.instance( {
-            path: 'application',
-            data: {
-              select: {
-                column: [
-                  'id',
-                  'name',
-                  'title',
-                  'release_based',
-                  { table: 'application_type', column: 'name', alias: 'type' }
-                ]
-              },
-              modifier: {
-                join: [ {
-                  table: 'application_type',
-                  onleft: 'application_type.id',
-                  onright: 'application.application_type_id'
-                } ],
-                order: ['application.title']
+        if( this.extendedSiteSelection ) {
+          promiseList.push(
+            CnHttpFactory.instance( {
+              path: 'application',
+              data: {
+                select: {
+                  column: [
+                    'id',
+                    'name',
+                    'title',
+                    'release_based',
+                    { table: 'application_type', column: 'name', alias: 'type' }
+                  ]
+                },
+                modifier: {
+                  join: [ {
+                    table: 'application_type',
+                    onleft: 'application_type.id',
+                    onright: 'application.application_type_id'
+                  } ],
+                  where: [ {
+                    column: 'application_type.name',
+                    operator: '!=',
+                    value: 'mastodon'
+                  } ],
+                  order: ['application.title']
+                }
               }
-            }
-          } ).query().then( function( response ) {
-            var sitePromiseList = [];
-            response.data.forEach( function( item ) {
-              if( item.release_based ) {
-                self.applicationRestrictionTypeList.push( {
-                  key: item.name + '_released',
-                  application: item,
-                  title: item.title + ' Released',
-                  type: 'boolean',
-                  enumList: [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ],
-                  required: true
-                } );
-              }
+            } ).query().then( function( response ) {
+              var siteSubtypeList = self.subtypeList.site;
+              self.subtypeList.site = [];
+              var sitePromiseList = [];
+              response.data.forEach( function( application ) {
+                // extend site subtype list when we have extended site selection
+                self.subtypeList.site = self.subtypeList.site.concat(
+                  siteSubtypeList.reduce( function( list, subtype ) {
+                    list.push( {
+                      key: subtype.key + '_' + application.id,
+                      name: application.title + ': ' + subtype.name,
+                      inUse: subtype.inUse
+                    } );
+                    return list;
+                  }, [] )
+                );
 
-              if( 'mastodon' != item.type ) {
+                /*
+                if( application.release_based ) {
+                  self.applicationRestrictionTypeList.push( {
+                    key: application.name + '_released',
+                    application: application,
+                    title: application.title + ' Released',
+                    type: 'boolean',
+                    enumList: [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ],
+                    required: true
+                  } );
+                }
+
                 var applicationRestriction = {
-                  key: item.name + '_site',
-                  application: item,
-                  title: item.title + ' Site',
+                  key: application.name + '_site',
+                  application: application,
+                  title: application.title + ' Site',
                   type: 'enum',
                   enumList: [ { value: '', name: '(empty)' } ]
                 };
                 self.applicationRestrictionTypeList.push( applicationRestriction );
                 sitePromiseList.push(
                   CnHttpFactory.instance( {
-                    path: 'application/' + item.id + '/site',
+                    path: 'application/' + application.id + '/site',
                     data: {
                       select: { column: [ 'id', 'name' ] },
                       modifier: { order: ['name'] }
@@ -910,18 +925,17 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                     } );
                   } )
                 );
-              }
-            } );
+                */
+              } );
 
-            $q.all( sitePromiseList ).then( function() {
-              self.applicationRestrictionTypeList.findByProperty( 'key', undefined ).title =
-                'Add an application restriction...';
-              //self.isLoading.applicationRestriction = false; TODO
-            } );
-          } ) :
-
-        );
-        */
+              $q.all( sitePromiseList ).then( function() {
+                self.applicationRestrictionTypeList.findByProperty( 'key', undefined ).title =
+                  'Add an application restriction...';
+                //self.isLoading.applicationRestriction = false; TODO
+              } );
+            } )
+          );
+        }
 
         $q.all( promiseList );
       };
