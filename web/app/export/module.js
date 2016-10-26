@@ -172,8 +172,11 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 self.columnList.push( columnObject );
 
                 // mark that the table/subtype is in use
-                if( null != item.subtype )
-                  self.subtypeList[item.table_name].findByProperty( 'key', item.subtype ).inUse = true;
+                self.promise.then( function() {
+                  if( null != item.subtype ) {
+                    self.subtypeList[item.table_name].findByProperty( 'key', item.subtype ).inUse = true;
+                  }
+                } );
 
                 // load the restriction list
                 promiseList.push( self.loadRestrictionList( item.table_name ) );
@@ -222,6 +225,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
         };
 
         angular.extend( this, {
+          promise: null, // defined below
           modelList: {
             participant: CnParticipantModelFactory.root,
             site: CnSiteModelFactory.root,
@@ -649,6 +653,8 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                       }
                     } ).query().then( function( response ) {
                       var item = restrictionType.list.findByProperty( 'key', 'source_id' );
+                      item.type = 'enum';
+                      item.required = false;
                       item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
                       response.data.forEach( function( source ) {
                         item.enumList.push( { value: source.id, name: source.name } );
@@ -666,22 +672,14 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                       }
                     } ).query().then( function( response ) {
                       var item = restrictionType.list.findByProperty( 'key', 'cohort_id' );
+                      item.type = 'enum';
+                      item.required = true;
                       item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
                       response.data.forEach( function( cohort ) {
                         item.enumList.push( { value: cohort.id, name: cohort.name } );
                       } );
                     } )
                   );
-                } else if( 'site' == tableName ) {
-                  // add the release option for extended site selection
-                  if( self.extendedSiteSelection ) {
-                    restrictionType.list.unshift( {
-                      key: 'release_datetime',
-                      title: 'Release Datetime',
-                      type: 'boolean',
-                      required: false
-                    } );
-                  }
                 }
 
                 return $q.all( promiseList ).then( function() {
@@ -827,7 +825,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           );
         }
 
-        $q.all( promiseList );
+        this.promise = $q.all( promiseList );
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
