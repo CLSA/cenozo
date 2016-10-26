@@ -267,8 +267,6 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               list: [ { key: undefined, title: 'Loading...' } ]
             }
           },
-          applicationRestrictionList: [],
-          applicationRestrictionTypeList: [ { key: undefined, title: 'Loading...' } ],
           tableColumnList: {
             participant: {
               isLoading: true,
@@ -420,25 +418,6 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               } );
               this.updateParticipantCount();
             }
-          },
-
-          addApplicationRestriction: function( key ) {
-            var restriction = this.applicationRestrictionTypeList.findByProperty( 'key', key );
-            var item = {
-              restriction: restriction,
-              logic: 'and',
-              test: '<=>'
-            };
-
-            if( 'boolean' == item.restriction.type ) {
-              item.value = true;
-            } else if( 'enum' == item.restriction.type ) {
-              item.value = item.restriction.enumList[0].value;
-            }
-
-            this.restrictionList.push( item );
-            this.newApplicationRestriction = undefined;
-            this.updateParticipantCount();
           },
 
           updateParticipantCount: function() {
@@ -616,6 +595,9 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
 
           // define functions which populate the restriction lists
           loadRestrictionList: function( tableName ) {
+            // application restrictions are handled specially
+            if( 'application' == tableName ) return;
+
             var ignoreColumnList = [
               'check_withdraw',
               'participant_id',
@@ -627,10 +609,6 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             // only load the restriction list if we haven't already done so
             if( null == restrictionType.promise ) {
               restrictionType.promise = metadata.getPromise().then( function() {
-                // add the site restriction if not using extended site selection
-                if( 'participant' == tableName )
-                  restrictionType.list.push( { key: 'site', title: 'Site', type: 'enum', required: false } );
-
                 for( var column in metadata.columnList ) {
                   var item = metadata.columnList[column];
                   if( -1 == ignoreColumnList.indexOf( column ) ) {
@@ -661,23 +639,6 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
 
                 var promiseList = [];
                 if( 'participant' == tableName ) {
-                  // add the site enum list if this site selection isn't extended
-                  promiseList.push(
-                    CnHttpFactory.instance( {
-                      path: 'site',
-                      data: {
-                        select: { column: [ 'id', 'name' ] },
-                        modifier: { order: ['name'] }
-                      }
-                    } ).query().then( function( response ) {
-                      var item = self.tableRestrictionList.participant.list.findByProperty( 'key', 'site' );
-                      item.enumList = [ { value: '', name: '(empty)' } ];
-                      response.data.forEach( function( site ) {
-                        item.enumList.push( { value: site.id, name: site.name } );
-                      } );
-                    } )
-                  );
-
                   // participant.source_id is not filled in regularly, we must do it here
                   promiseList.push(
                     CnHttpFactory.instance( {
@@ -711,6 +672,16 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                       } );
                     } )
                   );
+                } else if( 'site' == tableName ) {
+                  // add the release option for extended site selection
+                  if( self.extendedSiteSelection ) {
+                    restrictionType.list.unshift( {
+                      key: 'release_datetime',
+                      title: 'Release Datetime',
+                      type: 'boolean',
+                      required: false
+                    } );
+                  }
                 }
 
                 return $q.all( promiseList ).then( function() {
@@ -725,87 +696,58 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           }
         } );
 
-        var ignoreColumnList = [ 'address_id', 'alternate_id', 'participant_id' ];
+        // add the application type if using extended site selection
+        if( this.extendedSiteSelection ) {
+          this.tableRestrictionList.application = {
+            isLoading: false,
+            promise: $q.all(),
+            list: [
+              { key: undefined, title: 'Select a new application restriction...' },
+              { key: 'datetime', title: 'Release Datetime', type: 'datetime', required: true }
+            ]
+          };
+
+          this.tableColumnList.application = {
+            isLoading: false,
+            list: [
+              { key: undefined, title: 'Add a new application column...' },
+              { key: 'datetime', title: 'Release Datetime' }
+            ]
+          };
+          this.subtypeList.application = [];
+        }
+
+        function processMetadata( subject ) {
+          return self.modelList[subject].metadata.getPromise().then( function() {
+            var ignoreColumnList = [ 'address_id', 'alternate_id', 'participant_id', 'preferred_site_id' ];
+            var columnList = self.tableColumnList[subject];
+            for( var column in self.modelList[subject].metadata.columnList ) {
+              // ignore certain columns
+              if( 0 > ignoreColumnList.indexOf( column ) ) {
+                columnList.list.push( {
+                  key: column,
+                  title: 'uid' == column ?
+                         column.toUpperCase() :
+                         'id' == column ?
+                         'Internal ID' :
+                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
+                } );
+              }
+            }
+            columnList.list.findByProperty( 'key', undefined ).title =
+              'Add a new ' + subject + ' column...';
+            columnList.isLoading = false;
+          } );
+        }
+
         var promiseList = [
 
-          this.modelList.participant.metadata.getPromise().then( function() {
-            var column = self.tableColumnList.participant;
-            for( var key in self.modelList.participant.metadata.columnList ) {
-              column.list.push( {
-                key: key,
-                title: 'id' == key || 'uid' == key ?
-                       key.toUpperCase() :
-                       key.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
-              } );
-            }
-            column.list.findByProperty( 'key', undefined ).title =
-              'Add a Participant column...';
-            column.isLoading = false;
-          } ),
-
-          this.modelList.site.metadata.getPromise().then( function() {
-            for( var column in self.modelList.site.metadata.columnList ) {
-              if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.tableColumnList.site.list.push( {
-                  key: column,
-                  title: 'id' == column ?
-                         column.toUpperCase() :
-                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
-                } );
-              }
-            }
-            self.tableColumnList.site.list.findByProperty( 'key', undefined ).title =
-              'Add a Site column...';
-            self.tableColumnList.site.isLoading = false;
-          } ),
-
-          this.modelList.address.metadata.getPromise().then( function() {
-            for( var column in self.modelList.address.metadata.columnList ) {
-              if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.tableColumnList.address.list.push( {
-                  key: column,
-                  title: 'id' == column ?
-                         column.toUpperCase() :
-                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
-                } );
-              }
-            }
-            self.tableColumnList.address.list.findByProperty( 'key', undefined ).title =
-              'Add an Address column...';
-            self.tableColumnList.address.isLoading = false;
-          } ),
-
-          this.modelList.phone.metadata.getPromise().then( function() {
-            for( var column in self.modelList.phone.metadata.columnList ) {
-              if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.tableColumnList.phone.list.push( {
-                  key: column,
-                  title: 'id' == column ?
-                         column.toUpperCase() :
-                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
-                } );
-              }
-            }
-            self.tableColumnList.phone.list.findByProperty( 'key', undefined ).title =
-              'Add a Phone column...';
-            self.tableColumnList.phone.isLoading = false;
-          } ),
-
-          this.modelList.consent.metadata.getPromise().then( function() {
-            for( var column in self.modelList.consent.metadata.columnList ) {
-              if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.tableColumnList.consent.list.push( {
-                  key: column,
-                  title: 'id' == column ?
-                         column.toUpperCase() :
-                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
-                } );
-              }
-            }
-            self.tableColumnList.consent.list.findByProperty( 'key', undefined ).title =
-              'Add a Consent column...';
-            self.tableColumnList.consent.isLoading = false;
-          } ),
+          processMetadata( 'participant' ),
+          processMetadata( 'site' ),
+          processMetadata( 'address' ),
+          processMetadata( 'phone' ),
+          processMetadata( 'consent' ),
+          processMetadata( 'event' ),
 
           CnHttpFactory.instance( {
             path: 'consent_type',
@@ -817,22 +759,6 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             response.data.forEach( function( item ) {
               self.subtypeList.consent.push( { key: item.id.toString(), name: item.name } );
             } );
-          } ),
-
-          this.modelList.event.metadata.getPromise().then( function() {
-            for( var column in self.modelList.event.metadata.columnList ) {
-              if( -1 == ignoreColumnList.indexOf( column ) ) {
-                self.tableColumnList.event.list.push( {
-                  key: column,
-                  title: 'id' == column ?
-                         column.toUpperCase() :
-                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
-                } );
-              }
-            }
-            self.tableColumnList.event.list.findByProperty( 'key', undefined ).title =
-              'Add an Event column...';
-            self.tableColumnList.event.isLoading = false;
           } ),
 
           CnHttpFactory.instance( {
@@ -894,46 +820,8 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   }, [] )
                 );
 
-                /*
-                if( application.release_based ) {
-                  self.applicationRestrictionTypeList.push( {
-                    key: application.name + '_released',
-                    application: application,
-                    title: application.title + ' Released',
-                    type: 'boolean',
-                    enumList: [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ],
-                    required: true
-                  } );
-                }
-
-                var applicationRestriction = {
-                  key: application.name + '_site',
-                  application: application,
-                  title: application.title + ' Site',
-                  type: 'enum',
-                  enumList: [ { value: '', name: '(empty)' } ]
-                };
-                self.applicationRestrictionTypeList.push( applicationRestriction );
-                sitePromiseList.push(
-                  CnHttpFactory.instance( {
-                    path: 'application/' + application.id + '/site',
-                    data: {
-                      select: { column: [ 'id', 'name' ] },
-                      modifier: { order: ['name'] }
-                    }
-                  } ).query().then( function( response ) {
-                    response.data.forEach( function( site ) {
-                      applicationRestriction.enumList.push( { value: site.id, name: site.name } );
-                    } );
-                  } )
-                );
-                */
-              } );
-
-              $q.all( sitePromiseList ).then( function() {
-                self.applicationRestrictionTypeList.findByProperty( 'key', undefined ).title =
-                  'Add an application restriction...';
-                //self.isLoading.applicationRestriction = false; TODO
+                // add a subtype to the application subtype list
+                self.subtypeList.application.push( { key: application.id.toString(), name: application.title } );
               } );
             } )
           );

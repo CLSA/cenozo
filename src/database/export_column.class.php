@@ -23,7 +23,11 @@ class export_column extends has_rank
    */
   public function apply_select( $select )
   {
-    $select->add_table_column( $this->get_table_alias(), $this->column_name, $this->get_column_alias() );
+    $table_name = $this->get_table_alias();
+    if( 'application' == $this->table_name )
+      $table_name = str_replace( 'application', 'application_has_participant', $table_name );
+
+    $select->add_table_column( $table_name, $this->column_name, $this->get_column_alias() );
   }
 
   /**
@@ -61,7 +65,7 @@ class export_column extends has_rank
             $join_mod->where( 'participant_site.application_id', '=', $application_id );
             $modifier->join_modifier( 'participant_site', $join_mod );
           }
-          $modifier->join( 'site', 'participant_site.'.$column, $table_name.'.id', '', $table_name );
+          $modifier->join( 'site', 'participant_site.'.$column, $table_name.'.id', 'left', $table_name );
         }
       }
       else if( 'preferred' == $subtype )
@@ -103,6 +107,22 @@ class export_column extends has_rank
           $modifier->left_join(
             'address', 'participant_first_address.address_id', $table_name.'.id', $table_name );
         }
+      }
+    }
+    else if( 'application' == $this->table_name )
+    {
+      if( !$modifier->has_join( $table_name ) )
+      {
+        $joining_table_name = 'application_has_participant_'.$this->subtype;
+        if( !$modifier->has_join( $joining_table_name ) )
+        {
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', $joining_table_name.'.participant_id', false );
+          $join_mod->where( $joining_table_name.'.application_id', '=', $this->subtype );
+          $modifier->join_modifier( 'application_has_participant', $join_mod, 'left', $joining_table_name );
+        }
+        $modifier->left_join(
+          'application', $joining_table_name.'.application_id', $table_name.'.id', $table_name );
       }
     }
     else if( 'consent' == $this->table_name )
@@ -173,6 +193,15 @@ class export_column extends has_rank
     else if( 'address' == $this->table_name )
     {
       array_unshift( $alias_parts, $this->subtype );
+    }
+    else if( 'application' == $this->table_name )
+    {
+      // remove the table name
+      array_shift( $alias_parts );
+      // add "release" if the column name is datetime
+      if( 'datetime' == $this->column_name ) array_unshift( $alias_parts, 'release' );
+      // add the application title
+      array_unshift( $alias_parts, lib::create( 'database\application', $this->subtype )->title );
     }
     else if( 'consent' == $this->table_name )
     {

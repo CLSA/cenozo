@@ -24,6 +24,8 @@ class export_restriction extends has_rank
   public function apply_modifier( $modifier )
   {
     $table_name = $this->get_table_alias();
+    if( 'application' == $this->table_name )
+      $table_name = str_replace( 'application', 'application_has_participant', $table_name );
     $test = $this->test;
     $value = $this->value;
     if( 'like' == $test || 'not like' == $test )
@@ -31,7 +33,8 @@ class export_restriction extends has_rank
       if( is_null( $value ) ) $test = '<>';
       else if( false === strpos( $value, '%' ) ) $value = '%'.$value.'%';
     }
-    $modifier->where( $table_name.'.'.$this->column_name, $test, $value, true, 'or' == $this->logic );
+
+    else $modifier->where( $table_name.'.'.$this->column_name, $test, $value, true, 'or' == $this->logic );
   }
 
   /**
