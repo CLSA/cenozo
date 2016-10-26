@@ -54,7 +54,9 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
 
   module.addExtraOperation( 'view', {
     title: 'Download',
-    isDisabled: function( $state, model ) { return 0 == model.viewModel.participantCount; },
+    isDisabled: function( $state, model ) {
+      return 0 == model.viewModel.participantCount || 0 == model.viewModel.columnList.length;
+    },
     operation: function( $state, model ) {
       model.viewModel.exportFileModel.listModel.transitionOnAdd();
     }
