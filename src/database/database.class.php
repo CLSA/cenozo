@@ -167,6 +167,7 @@ class database extends \cenozo\base_object
     {
       if( self::$debug ) log::debug( '(DB) starting transaction' );
       $this->connection->begin_transaction();
+      $this->transaction_state = 'started';
     }
   }
 
@@ -180,6 +181,7 @@ class database extends \cenozo\base_object
   {
     if( self::$debug ) log::debug( '(DB) completing transaction' );
     $this->connection->commit();
+    $this->transaction_state = 'committed';
   }
 
   /**
@@ -196,6 +198,19 @@ class database extends \cenozo\base_object
   {
     if( self::$debug ) log::debug( '(DB) failing transaction' );
     $this->connection->rollback();
+    $this->transaction_state = 'failed';
+  }
+
+  /**
+   * Returns the current transactional state
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string (one of 'started', 'committed', 'failed' or NULL
+   * @access public
+   */
+  public function get_transaction_state()
+  {
+    return $this->transaction_state;
   }
 
   /**
@@ -999,4 +1014,11 @@ class database extends \cenozo\base_object
    * @access private
    */
   private $name;
+
+  /**
+   * Keeps track of the transactional state
+   * @var string
+   * @access private
+   */
+  private $transaction_state = NULL;
 }
