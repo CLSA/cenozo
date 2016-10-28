@@ -28,6 +28,7 @@
         $scope.loginChanged = function() { $scope.state = 'ready'; };
 
         $scope.browser = null;
+        $scope.badVersion = false;
         var userAgent = navigator.userAgent;
         if( -1 != userAgent.indexOf( 'Edge/' ) ) {
           $scope.browser = null;
@@ -96,7 +97,7 @@
                onerror="this.style.display='none'"
                alt="" />
           <div class="record-view rounded vertical-spacer" ng-controller="LoginCtrl">
-            <div ng-if="null == browser || badVersion">
+            <div ng-show="null == browser || badVersion">
               <div class="container-fluid bg-primary rounded-top"><h4>
                 Incompatible Web Browser
               </h4></div>
@@ -118,7 +119,7 @@
               </div>
             </div>
             <form ng-submit="login()"
-                  ng-if="null != browser && !badVersion"
+                  ng-show="null != browser && !badVersion"
                   name="loginForm"
                   class="form-horizontal"
                   novalidate>
