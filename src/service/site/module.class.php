@@ -86,8 +86,8 @@ class module extends \cenozo\service\site_restricted_module
 
       // restrict to roles belonging to this application
       $sub_mod = lib::create( 'database\modifier' );
-      $join_mod->join( 'application_has_role', 'access.role_id', 'application_has_role.role_id' );
-      $join_mod->where( 'application_has_role.application_id', '=', $db_application->id );
+      $join_mod->join( 'application_type_has_role', 'access.role_id', 'application_type_has_role.role_id' );
+      $join_mod->where( 'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
 
       // override columns so that we can fake these columns being in the site table
       if( $select->has_column( 'role_count' ) )

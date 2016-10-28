@@ -108,6 +108,13 @@ define( function() {
       type: 'enum',
       help: 'Which role to assign the user to',
       exclude: 'view'
+    },
+    language_id: {
+      title: 'Restrict to Language',
+      type: 'enum',
+      help: 'If the user can only speak a single language you can define it here (this can be changed in the ' +
+            'user\'s record after they have been created)',
+      exclude: 'view'
     }
   } );
 
@@ -199,11 +206,18 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', '$state',
-    function( CnBaseAddFactory, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory, $state ) {
+    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', '$state',
+    function( CnBaseAddFactory, CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory, $state ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
+
+        // immediately view the user record after it has been created
+        this.transitionOnSave = function( record ) { 
+          CnSession.workingTransition( function() {
+            $state.go( 'user.view', { identifier: 'name=' + record.name } );
+          } );
+        };
 
         // keep a local copy of the record when it gets added (used in the error handler below)
         var newRecord = null;
@@ -390,7 +404,7 @@ define( function() {
           return this.$$getMetadata().then( function() {
             return $q.all( [
               CnHttpFactory.instance( {
-                path: 'role',
+                path: 'application_type/name=' + CnSession.application.type + '/role',
                 data: {
                   select: { column: [ 'id', 'name' ] },
                   modifier: { order: { name: false } },
@@ -420,6 +434,25 @@ define( function() {
                 };
                 response.data.forEach( function( item ) {
                   self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
+                } );
+              } ),
+
+              CnHttpFactory.instance( {
+                path: 'language',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: {
+                    where: [ { column: 'active', operator: '=', value: true } ],
+                    order: { name: false }
+                  }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.language_id = {
+                  required: false,
+                  enumList: []
+                };
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
                 } );
               } )
             ] );

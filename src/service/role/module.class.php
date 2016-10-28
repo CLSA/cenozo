@@ -31,8 +31,8 @@ class module extends \cenozo\service\site_restricted_module
     $modifier->where( 'role.special', '=', false );
 
     // only include roles which belong to this application
-    $modifier->join( 'application_has_role', 'role.id', 'application_has_role.role_id' );
-    $modifier->where( 'application_has_role.application_id', '=', $db_application->id );
+    $modifier->join( 'application_type_has_role', 'role.id', 'application_type_has_role.role_id' );
+    $modifier->where( 'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
 
     // add the total number of related records
     if( $select->has_column( 'site_count' ) ||

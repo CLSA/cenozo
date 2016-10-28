@@ -103,8 +103,9 @@ class module extends \cenozo\service\site_restricted_module
 
       // restrict to roles belonging to this application
       $sub_mod = lib::create( 'database\modifier' );
-      $join_mod->join( 'application_has_role', 'role_has_state.role_id', 'application_has_role.role_id' );
-      $join_mod->where( 'application_has_role.application_id', '=', $db_application->id );
+      $join_mod->join(
+        'application_type_has_role', 'role_has_state.role_id', 'application_type_has_role.role_id' );
+      $join_mod->where( 'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS state_join_role', $join_sel->get_sql(), $join_mod->get_sql() ),

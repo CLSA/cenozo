@@ -38,6 +38,12 @@ class post extends \cenozo\service\post
         $db_access->save();
       }
 
+      if( property_exists( $post_object, 'language_id' ) )
+      {
+        // add the language restriction to the user
+        $db_user->add_language( $post_object->language_id );
+      }
+
       // add the user to ldap
       $ldap_manager = lib::create( 'business\ldap_manager' );
       try

@@ -52,11 +52,17 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnRoleModelFactory', [
-    'CnBaseModelFactory', 'CnRoleListFactory',
-    function( CnBaseModelFactory, CnRoleListFactory ) {
+    'CnBaseModelFactory', 'CnRoleListFactory', 'CnSession',
+    function( CnBaseModelFactory, CnRoleListFactory, CnSession ) {
       var object = function( root ) {
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnRoleListFactory.instance( this );
+
+        this.getServiceCollectionPath = function( ignoreParent ) {
+          return !ignoreParent && 'application' == this.getSubjectFromState() ?
+            'application_type/name=' + CnSession.application.type + '/role' :
+            this.$$getServiceCollectionPath( ignoreParent );
+        };
       };
 
       return {
