@@ -48,6 +48,9 @@ class ui extends \cenozo\base_object
     else if( is_null( lib::create( 'business\session' )->get_user() ) )
     { // no user means we haven't logged in, so show the login interface
       ob_start();
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $chrome_minimum_version = $setting_manager->get_setting( 'general', 'chrome_minimum_version' );
+      $firefox_minimum_version = $setting_manager->get_setting( 'general', 'firefox_minimum_version' );
       include( dirname( __FILE__ ).'/login.php' );
       $interface = ob_get_clean();
     }

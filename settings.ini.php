@@ -22,6 +22,10 @@ $settings['general']['maintenance_mode'] = false;
 // always leave as false when running as production server
 $settings['general']['development_mode'] = false;
 
+// define the minimum version of all supported browsers
+$settings['general']['chrome_minimum_version'] = 40;
+$settings['general']['firefox_minimum_version'] = 36;
+
 // the default password given to all new users
 $settings['general']['default_password'] = 'password';
 

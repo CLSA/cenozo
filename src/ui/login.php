@@ -26,33 +26,50 @@
         $scope.processing = false;
         $scope.baseUrl = '<?php print ROOT_URL; ?>';
         $scope.loginChanged = function() { $scope.state = 'ready'; };
-        $scope.login = function() {
-          $scope.state = 'processing';
-          var form = $scope.loginForm;
-          form.username.$dirty = true;
-          form.password.$dirty = true;
 
-          if( !form.$invalid ) {
-            var auth = btoa( $scope.username + ':' + $scope.password );
-            $http( {
-              url: $scope.baseUrl + '/api/self/0',
-              method: 'POST',
-              headers: { Authorization: 'Basic ' + auth }
-            } ).then( function( response ) {
-              if( 201 == response.status ) {
-                // login successful, reload page
-                $window.location.reload();
-              } else {
-                // login unsuccessful
-                $scope.state = 'failed';
-              }
-            } ).catch( function( response ) {
-              $scope.state = 'error';
-            } );
-          } else {
-            $scope.state = 'ready';
-          }
-        };
+        $scope.browser = null;
+        var userAgent = navigator.userAgent;
+        if( -1 != userAgent.indexOf( 'Edge/' ) ) {
+          $scope.browser = null;
+        } else if( -1 != userAgent.indexOf( 'Chrome/' ) ) {
+          $scope.browser = 'Chrome';
+          var version = userAgent.match( /Chrome\/([^.]+)/ )[1];
+          if( <?php echo $chrome_minimum_version; ?> > version ) $scope.badVersion = true;
+        } else if( -1 != userAgent.indexOf( 'Firefox/' ) ) {
+          $scope.browser = 'Firefox';
+          var version = userAgent.match( /Firefox\/([^.]+)/ )[1];
+          if( <?php echo $firefox_minimum_version; ?> > version ) $scope.badVersion = true;
+        }
+
+        if( null != $scope.browser && !$scope.badVersion ) {
+          $scope.login = function() {
+            $scope.state = 'processing';
+            var form = $scope.loginForm;
+            form.username.$dirty = true;
+            form.password.$dirty = true;
+
+            if( !form.$invalid ) {
+              var auth = btoa( $scope.username + ':' + $scope.password );
+              $http( {
+                url: $scope.baseUrl + '/api/self/0',
+                method: 'POST',
+                headers: { Authorization: 'Basic ' + auth }
+              } ).then( function( response ) {
+                if( 201 == response.status ) {
+                  // login successful, reload page
+                  $window.location.reload();
+                } else {
+                  // login unsuccessful
+                  $scope.state = 'failed';
+                }
+              } ).catch( function( response ) {
+                $scope.state = 'error';
+              } );
+            } else {
+              $scope.state = 'ready';
+            }
+          };
+        }
       }
     ] );
   </script>
@@ -79,7 +96,32 @@
                onerror="this.style.display='none'"
                alt="" />
           <div class="record-view rounded vertical-spacer" ng-controller="LoginCtrl">
-            <form ng-submit="login()" novalidate name="loginForm" class="form-horizontal">
+            <div ng-if="null == browser || badVersion">
+              <div class="container-fluid bg-primary rounded-top"><h4>
+                Incompatible Web Browser
+              </h4></div>
+              <div class="container-fluid form-body">
+                <p class="text-warning">Your browser is not compatibile.</p>
+                <hr />
+                <p ng-if="null == browser">
+                  Your web browser is not compatible with this application.
+                  In order to log in you must use either Firefox or Chrome.
+                  If you are seeing this message despite using one of the
+                  supported browsers please contact support.
+                </p>
+                <p ng-if="badVersion">
+                  Your {{ browser }} web browser is out of date (version {{badVersion}} detected).
+                  In order to log in you must upgrade your web browser.
+                </p>
+              </div>
+              <div class="form-footer rounded-bottom">
+              </div>
+            </div>
+            <form ng-submit="login()"
+                  ng-if="null != browser && !badVersion"
+                  name="loginForm"
+                  class="form-horizontal"
+                  novalidate>
               <div class="container-fluid bg-primary rounded-top"><h4>
                 Login Required
                 {{ 'processing' == state ? '(please wait)' : '' }}
