@@ -77,8 +77,8 @@ class export_column extends has_rank
             $join_mod = lib::create( 'database\modifier' );
             $join_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
             $join_mod->where( 'application_has_participant.application_id', '=', $application_id );
+            $modifier->join_modifier( 'application_has_participant', $join_mod );
           }
-          $modifier->join_modifier( 'application_has_participant', $join_mod );
           $modifier->left_join(
             'site', 'application_has_participant.preferred_site_id', $table_name.'.id', $table_name );
         }
