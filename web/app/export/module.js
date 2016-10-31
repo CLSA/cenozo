@@ -583,6 +583,12 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             } );
           },
 
+          showRestrictionList: function( tableName ) {
+            return this.columnList.some( function( column ) {
+              return tableName == column.table_name;
+            } );
+          },
+
           getRestrictionColumnList: function( columnRank ) {
             if( angular.isUndefined( columnRank ) ) return [];
 

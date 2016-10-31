@@ -177,7 +177,7 @@
       <hr />
       <div class="vertical-spacer" style="margin-bottom: 1em;">
         <div ng-repeat="(tableName, restriction) in model.viewModel.tableRestrictionList"
-             ng-if="1 < restriction.list.length">
+             ng-if="model.viewModel.showRestrictionList( tableName )">
           <select class="form-control"
                   ng-disabled="restriction.isLoading"
                   ng-model="model.viewModel.newRestriction"
