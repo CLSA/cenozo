@@ -208,6 +208,10 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                       test: item.test,
                       isUpdating: false
                     };
+
+                    if( 'boolean' == restriction.restriction.type && null != restriction.value )
+                      restriction.value = Boolean( restriction.value );
+
                     if( cenozo.isDatetimeType( restriction.restriction.type ) ) {
                       restriction.formattedValue = CnSession.formatValue(
                         restriction.value, restriction.restriction.type, true
@@ -273,6 +277,15 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             }
           },
           tableColumnList: {
+            auxiliary: {
+              isLoading: false,
+              list: [
+                { key: undefined, title: 'Add a new auxiliary column...' },
+                { key: 'has_alternate', title: 'Has Alternate Contact' },
+                { key: 'has_informant', title: 'Has Information Provider' },
+                { key: 'has_proxy', title: 'Has Decision Maker' }
+              ]
+            },
             participant: {
               isLoading: true,
               list: [ { key: undefined, title: 'Loading...' } ]
@@ -461,7 +474,8 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   subtype: null == subtypeObject ? null : subtypeObject.key,
                   oldSubtype: null == subtypeObject ? null : subtypeObject.key,
                   column: column,
-                  isUpdating: false
+                  isUpdating: false,
+                  include: true
                 } );
                 self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
               } );
@@ -612,7 +626,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           // define functions which populate the restriction lists
           loadRestrictionList: function( tableName ) {
             // application restrictions are handled specially
-            if( 'application' == tableName ) return;
+            if( 0 <= [ 'application', 'auxiliary' ].indexOf( tableName ) ) return;
 
             var ignoreColumnList = [
               'check_withdraw',
