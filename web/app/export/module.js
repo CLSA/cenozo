@@ -153,7 +153,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             return CnHttpFactory.instance( {
               path: 'export/' + self.record.getIdentifier() + '/export_column',
               data: {
-                select: { column: [ 'id', 'rank', 'table_name', 'subtype', 'column_name' ] },
+                select: { column: [ 'id', 'rank', 'table_name', 'subtype', 'column_name', 'include' ] },
                 modifier: { order: { rank: false } }
               }
             } ).query().then( function( response ) {
@@ -167,6 +167,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                   oldSubtype: null == item.subtype ? null : item.subtype.toString(),
                   column: self.tableColumnList[item.table_name].list.findByProperty( 'key', item.column_name ),
                   rank: item.rank,
+                  include: item.include,
                   isUpdating: false
                 };
                 self.columnList.push( columnObject );
@@ -575,6 +576,11 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
               } );
             }
+          },
+
+          toggleInclude: function( index ) {
+            this.columnList[index].include = !this.columnList[index].include;
+            this.updateColumn( this.columnList[index].id, 'include' );
           },
 
           getSubtypeList: function( tableName ) {

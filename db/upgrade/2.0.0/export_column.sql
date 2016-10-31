@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS export_column (
   subtype VARCHAR(45) NULL DEFAULT NULL,
   column_name VARCHAR(45) NOT NULL,
   rank INT UNSIGNED NOT NULL,
+  include TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (id),
   UNIQUE INDEX uq_export_id_rank (export_id ASC, rank ASC),
   INDEX dk_table_name_subtype (table_name ASC, subtype ASC),

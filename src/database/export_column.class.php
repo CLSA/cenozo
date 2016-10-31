@@ -27,7 +27,7 @@ class export_column extends has_rank
     if( 'application' == $this->table_name )
       $table_name = str_replace( 'application', 'application_has_participant', $table_name );
 
-    $select->add_table_column( $table_name, $this->column_name, $this->get_column_alias() );
+    if( $this->include ) $select->add_table_column( $table_name, $this->column_name, $this->get_column_alias() );
   }
 
   /**
