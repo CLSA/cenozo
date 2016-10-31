@@ -53,7 +53,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
   } );
 
   module.addExtraOperation( 'view', {
-    title: 'Download',
+    title: 'Generate',
     isDisabled: function( $state, model ) {
       return 0 == model.viewModel.participantCount || 0 == model.viewModel.columnList.length;
     },
@@ -182,6 +182,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                 // load the restriction list
                 promiseList.push( self.loadRestrictionList( item.table_name ) );
               } );
+
               self.columnListIsLoading = false;
               return $q.all( promiseList ).then( function() {
                 return CnHttpFactory.instance( {
@@ -204,19 +205,21 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
                       restriction:
                         self.tableRestrictionList[item.table_name].list.findByProperty( 'key', item.column_name ),
                       logic: item.logic,
-                      value: isNaN( parseInt( item.value ) ) ? item.value : parseInt( item.value ),
+                      value: item.value,
                       test: item.test,
                       isUpdating: false
                     };
 
-                    if( 'boolean' == restriction.restriction.type && null != restriction.value )
+                    if( 'boolean' == restriction.restriction.type && null != restriction.value ) {
                       restriction.value = Boolean( restriction.value );
-
-                    if( cenozo.isDatetimeType( restriction.restriction.type ) ) {
+                    } else if( cenozo.isDatetimeType( restriction.restriction.type ) ) {
                       restriction.formattedValue = CnSession.formatValue(
                         restriction.value, restriction.restriction.type, true
                       );
                     } else {
+                      restriction.value = isNaN( parseInt( restriction.value ) )
+                                        ? restriction.value
+                                        : parseInt( restriction.value );
                       if( null == restriction.value ) restriction.value = '';
                     }
                     self.restrictionList.push( restriction );
@@ -325,6 +328,10 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             ],
             consent: [],
             event: []
+          },
+
+          getDataPointCount: function() {
+            return this.participantCount * this.columnList.filter( function( c ) { return c.include; } ).length;
           },
 
           addRestriction: function( tableName, key ) {

@@ -43,6 +43,17 @@ class export_column extends has_rank
         }
       }
 
+      // replace foreign key IDs with the name from the foreign table
+      if( '_id' == substr( $column_name, -3 ) )
+      {
+        $sub_table_name = substr( $column_name, 0, -3 );
+        $table_name .= '_'.$sub_table_name;
+        $column_name = 'age_group' == $sub_table_name
+                     ? sprintf( 'CONCAT( %s.lower, " to ", %s.upper )', $table_name, $table_name )
+                     : 'name';
+        $table_prefix = 'age_group' != $sub_table_name;
+      }
+
       $select->add_table_column( $table_name, $column_name, $column_alias, $table_prefix, $type );
     }
   }
@@ -198,6 +209,26 @@ class export_column extends has_rank
         }
       }
     }
+
+    if( $this->include )
+    {
+      // join to the foreign table when the column is a foreign key
+      if( '_id' == substr( $this->column_name, -3 ) )
+      {
+        $sub_table_name = substr( $this->column_name, 0, -3 );
+        $joining_table_name = $table_name.'_'.$sub_table_name;
+        if( !$modifier->has_join( $joining_table_name ) )
+        {
+          $modifier->join(
+            $sub_table_name, 
+            $table_name.'.'.$this->column_name,
+            $joining_table_name.'.id',
+            '',
+            $joining_table_name
+          );
+        }
+      }
+    }
   }
 
   /**
@@ -235,7 +266,7 @@ class export_column extends has_rank
    */
   public function get_column_alias()
   {
-    $alias_parts = array( $this->table_name, $this->column_name );
+    $alias_parts = array( $this->table_name, preg_replace( '/_id$/', '', $this->column_name ) );
 
     if( 'address' == $this->table_name )
     {

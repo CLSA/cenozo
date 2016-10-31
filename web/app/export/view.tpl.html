@@ -12,12 +12,13 @@
           working, please wait...
         </span>
         <span ng-if="!model.viewModel.columnListIsLoading && !model.viewModel.confirmInProgress">
-          {{ model.viewModel.participantCount*model.viewModel.columnList.length ?
-             (model.viewModel.participantCount*model.viewModel.columnList.length|cnCommaInteger) +
-               ' data points total' :
-             'no data points' }}
+          {{
+            model.viewModel.getDataPointCount()
+              ? (model.viewModel.getDataPointCount()|cnCommaInteger) + ' data points total'
+              : 'no data points'
+          }}
           <i class="glyphicon"
-             ng-class="model.viewModel.participantCount*model.viewModel.columnList.length ?
+             ng-class="model.viewModel.getDataPointCount() ?
                        'glyphicon-ok' : 'glyphicon-remove'"></i>
         </span>
       </span>
@@ -58,7 +59,7 @@
         <div class="col-sm-2 col-slim-left">
           <div class="btn-group pull-right" style="white-space: nowrap;">
             <button class="btn"
-                    tooltip="Whether to include the column in the downloaded file."
+                    tooltip="Whether to include the column in the generated file."
                     tooltip-placement="left"
                     ng-click="model.viewModel.toggleInclude( $index )">
               <i class="glyphicon"
