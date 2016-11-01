@@ -58,6 +58,8 @@ class module extends \cenozo\service\site_restricted_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
+    $modifier->left_join( 'state', 'participant.state_id', 'state.id' );
+
     // restrict to participants in this application
     if( $db_application->release_based || $select->has_table_columns( 'preferred_site' ) )
     {
