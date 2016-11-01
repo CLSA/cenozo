@@ -24,6 +24,58 @@ class activity extends record
   }
 
   /**
+   * Update's the current user's activity based on the current session.
+   * 
+   * If there are any activity records for the current application and user which do not match
+   * the current site and role they will be closed.  Also, a new activity record will be opened
+   * if there are no open activity records for the current application, user, site and role.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   * @static
+   */
+  public static function update_activity()
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_user = $session->get_user();
+    $db_site = $session->get_site();
+    $db_role = $session->get_role();
+
+    // close all open activity that doesn't match the session's current application/user/site/role
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'application_id', '=', $db_application->id );
+    $modifier->where( 'user_id', '=', $db_user->id );
+    $modifier->where( 'end_datetime', '=', NULL );
+    $modifier->where_bracket( true );
+    $modifier->where( 'site_id', '!=', $db_site->id );
+    $modifier->or_where( 'role_id', '!=', $db_role->id );
+    $modifier->where_bracket( false );
+
+    static::db()->execute( sprintf(
+      'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
+      $modifier->get_sql() ) );
+
+    // create a new activity if there isn't already one open
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'application_id', '=', $db_application->id );
+    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'role_id', '=', $db_role->id );
+    $modifier->where( 'end_datetime', '=', NULL );
+    if( 0 == $db_user->get_activity_count( $modifier ) )
+    {
+      $db_activity = new static();
+      $db_activity->application_id = $db_application->id;
+      $db_activity->user_id = $db_user->id;
+      $db_activity->site_id = $db_site->id;
+      $db_activity->role_id = $db_role->id;
+      $db_activity->start_datetime = $util_class_name::get_datetime_object();
+      $db_activity->save();
+    }
+  }
+
+  /**
    * Closes any record whose user has had no activity for longer than the activity timeout
    * 
    * If a user is provided then this method will also close the user's activity (whether timed

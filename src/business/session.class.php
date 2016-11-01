@@ -385,24 +385,6 @@ class session extends \cenozo\singleton
               $_SESSION['access.id'] = $db_access->id;
               $_SESSION['address'] = $_SERVER['REMOTE_ADDR'];
 
-              // create a new activity if there isn't already one open
-              $activity_mod = lib::create( 'database\modifier' );
-              $activity_mod->where( 'user_id', '=', $this->db_user->id );
-              $activity_mod->where( 'application_id', '=', $this->db_application->id );
-              $activity_mod->where( 'site_id', '=', $this->db_site->id );
-              $activity_mod->where( 'role_id', '=', $this->db_role->id );
-              $activity_mod->where( 'end_datetime', '=', NULL );
-              if( 0 == $this->db_user->get_activity_count( $activity_mod ) )
-              {
-                $db_activity = lib::create( 'database\activity' );
-                $db_activity->user_id = $this->db_user->id;
-                $db_activity->application_id = $this->db_application->id;
-                $db_activity->site_id = $this->db_site->id;
-                $db_activity->role_id = $this->db_role->id;
-                $db_activity->start_datetime = $util_class_name::get_datetime_object();
-                $db_activity->save();
-              }
-
               // update the access with the current time
               $this->mark_access_time();
 
@@ -498,9 +480,13 @@ class session extends \cenozo\singleton
    */
   public function mark_access_time()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+    $activity_class_name = lib::get_class_name( 'database\activity' );
+
+    $activity_class_name::update_activity();
+
     if( !is_null( $this->db_access ) )
     {
-      $util_class_name = lib::get_class_name( 'util' );
       $microtime = microtime();
       $this->db_access->datetime = $util_class_name::get_datetime_object();
       $this->db_access->microtime = substr( $microtime, 0, strpos( $microtime, ' ' ) );
