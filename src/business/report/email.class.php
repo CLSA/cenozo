@@ -25,7 +25,7 @@ class email extends \cenozo\business\report\base_report
 
     $select = lib::create( 'database\select' );
     $select->from( 'participant' );
-    $select->add_table_column( 'language', 'name', 'Language' );
+    $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'honorific', 'Honorific' );
     $select->add_column( 'first_name', 'First Name' );
     $select->add_column( 'other_name', 'Other Name' );

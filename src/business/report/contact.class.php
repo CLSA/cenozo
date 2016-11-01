@@ -25,19 +25,19 @@ class contact extends \cenozo\business\report\base_report
 
     $select = lib::create( 'database\select' );
     $select->from( 'participant' );
-    $select->add_table_column( 'cohort', 'name', 'Cohort' );
-    $select->add_table_column( 'language', 'name', 'Language' );
+    $select->add_column( 'cohort.name', 'Cohort', false );
+    $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
     $select->add_column( 'IFNULL( state.name, "None" )', 'Condition', false );
     $select->add_column( 'honorific', 'Honorific' );
     $select->add_column( 'first_name', 'First Name' );
     $select->add_column( 'last_name', 'Last Name' );
-    $select->add_table_column( 'address', 'address1', 'Address1' );
-    $select->add_table_column( 'address', 'address2', 'Address2' );
-    $select->add_table_column( 'address', 'city', 'City' );
-    $select->add_table_column( 'region', 'name', 'Province/State' );
-    $select->add_table_column( 'address', 'postcode', 'Postcode' );
-    $select->add_table_column( 'region', 'country', 'Country' );
+    $select->add_column( 'address.address1', 'Address1', false );
+    $select->add_column( 'address.address2', 'Address2', false );
+    $select->add_column( 'address.city', 'City', false );
+    $select->add_column( 'region.name', 'Province/State', false );
+    $select->add_column( 'address.postcode', 'Postcode', false );
+    $select->add_column( 'region.country', 'Country', false );
     $select->add_column( 'IFNULL( email, "" )', 'Email', false );
     $select->add_column(
       'IF( '.
