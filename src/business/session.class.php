@@ -58,8 +58,6 @@ class session extends \cenozo\singleton
       throw lib::create( 'exception\runtime', 'Session failed to start.', __METHOD__ );
 
     $application_class_name = lib::get_class_name( 'database\application' );
-    $activity_class_name = lib::get_class_name( 'database\activity' );
-    $util_class_name = lib::get_class_name( 'util' );
 
     $setting_manager = lib::create( 'business\setting_manager' );
 
