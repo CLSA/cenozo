@@ -108,13 +108,13 @@ define( function() {
             // start the timer
             if( null != self.timerValue && null == self.timerPromise ) {
               self.timerPromise = $interval( function() {
-                self.timerValue--;
+                self.timerValue++;
 
                 if( null == self.activeRecording.timer ) {
                   self.timerValue = null;
                   self.stopRecording();
-                } else if( 0 >= self.timerValue ) {
-                  self.timerValue = 0;
+                } else if( self.activeRecording.timer <= self.timerValue ) {
+                  self.timerValue = self.activeRecording.timer;
                   CnHttpFactory.instance( {
                     path: 'voip/0',
                     data: {
@@ -146,7 +146,7 @@ define( function() {
           }
 
           // stop the timer
-          this.timerValue = this.activeRecording.timer;
+          this.timerValue = 0;
           if( null != this.timerPromise ) {
             $interval.cancel( this.timerPromise );
             this.timerPromise = null;
