@@ -3258,23 +3258,7 @@ cenozo.factory( 'CnBaseListFactory', [
           this.isReportLoading = true;
           if( angular.isUndefined( format ) ) format = 'csv';
 
-          // set up the restrict, offset and sorting
-          if( this.parentModel.hasQueryParameter( 'restrict' ) ) {
-            var restrict = this.parentModel.getQueryParameter( 'restrict' );
-            if( angular.isDefined( restrict ) ) {
-              this.columnRestrictLists = angular.fromJson( restrict );
-              for( var name in this.columnRestrictLists ) {
-                this.columnRestrictLists[name].forEach( function( obj ) {
-                  obj.description = CnSession.describeRestriction(
-                    self.parentModel.module.columnList[name].type,
-                    obj.test,
-                    obj.value,
-                    obj.unit
-                  );
-                } );
-              }
-            }
-          }
+          // set up the sorting
           if( this.parentModel.hasQueryParameter( 'order' ) ) {
             var order = this.parentModel.getQueryParameter( 'order' );
             if( angular.isDefined( order ) ) this.order.column = order;
