@@ -39,6 +39,10 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         column: 'cohort.name',
         title: 'Cohort'
       },
+      state: {
+        column: 'state.name',
+        title: 'State'
+      },
       site: {
         column: 'site.name',
         title: 'Site'
