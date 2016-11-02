@@ -109,6 +109,17 @@ class patch extends \cenozo\service\service
           else
           {
             $modified = true;
+
+            // convert offset/dst timezones to a named timezone
+            if( 'timezone' == $column && is_object( $value ) )
+            {
+              if( property_exists( $value, 'address_id' ) )
+              {
+                $db_address = lib::create( 'database\address', $value->address_id );
+                $value = $db_address->get_timezone_name();
+              }
+            }
+
             $db_user->$column = $value;
           }
         }

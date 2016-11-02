@@ -120,6 +120,13 @@ define( function() {
     }
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'Use Timezone',
+    operation: function( $state, model ) {
+      model.viewModel.onViewPromise.then( function() { model.viewModel.useTimezone(); } );
+    }
+  } );
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAddressAdd', [
     'CnAddressModelFactory', '$timeout',
@@ -216,15 +223,22 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnSession', '$state', '$window',
+    function( CnBaseViewFactory, CnSession, $state, $window ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
+        this.onViewPromise = null;
+
+        this.useTimezone = function() {
+          CnSession.setTimezone( { 'address_id': this.record.id } ).then( function() {
+            $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
+          } );
+        };
 
         // once we have loaded the record show/hide the international inputs
         this.onView = function() {
-          return this.$$onView().then( function() {
+          this.onViewPromise = this.$$onView().then( function() {
             var mainInputGroup = parentModel.module.inputGroupList.findByProperty( 'title', '' );
             if( mainInputGroup ) {
               mainInputGroup.inputList.region_id.exclude = self.record.international;
@@ -232,6 +246,8 @@ define( function() {
               mainInputGroup.inputList.international_country.exclude = !self.record.international;
             }
           } );
+
+          return this.onViewPromise;
         };
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

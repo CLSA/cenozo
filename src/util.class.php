@@ -168,6 +168,35 @@ class util
   }
 
   /**
+   * Returns a timezone string given an offset and whether to observe daylight savings
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $offset
+   * @param boolean $daylight_savings
+   * @return string
+   * @access public
+   * @static
+   */
+  public static function get_timezone_name( $offset, $daylight_savings )
+  {
+    if( $daylight_savings )
+    {
+      if( -8 == $offset ) return 'Canada/Pacific';
+      if( -7 == $offset ) return 'Canada/Mountain';
+      if( -6 == $offset ) return 'Canada/Central';
+      if( -5 == $offset ) return 'Canada/Eastern';
+      if( -4 == $offset ) return 'Canada/Atlantic';
+      if( -3.5 == $offset ) return 'Canada/Newfoundland';
+    }
+
+    // north american timezone not found, return the Etc timezone instead
+    $offset = $offset;
+    if( $daylight_savings && 1 == date( 'I' ) ) $offset++;
+    if( 0 <= $offset ) $offset = '+'.$offset;
+    return 'Etc/GMT'.$offset;
+  }
+
+  /**
    * Returns a site's timezone offset for a particular datetime
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

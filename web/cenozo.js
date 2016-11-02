@@ -2420,6 +2420,8 @@ cenozo.factory( 'CnSession', [
         },
 
         setTimezone: function( timezone, use12hourClock ) {
+          if( angular.isUndefined( timezone ) ) timezone = self.user.timezone;
+          if( angular.isUndefined( use12hourClock ) ) use12hourClock = self.user.use12hourClock;
           return CnHttpFactory.instance( {
             path: 'self/0',
             data: { user: { timezone: timezone, use_12hour_clock: use12hourClock  } }

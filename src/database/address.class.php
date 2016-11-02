@@ -151,6 +151,18 @@ class address extends has_rank
   }
 
   /**
+   * Returns this address' timezone name
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_timezone_name()
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    return $util_class_name::get_timezone_name( $this->timezone_offset, $this->daylight_savings );
+  }
+
+  /**
    * The type of record which the record has a rank for.
    * @var string
    * @access protected
