@@ -375,7 +375,7 @@ class ui extends \cenozo\base_object
     if( $db_role->all_sites ) $this->add_listitem( 'Sites', 'site' );
     if( $extended ) $this->add_listitem( 'Sources', 'source' );
     $this->add_listitem( 'States', 'state' );
-    $this->add_listitem( 'System Messages', 'system_message' );
+    if( 2 <= $db_role->tier ) $this->add_listitem( 'System Messages', 'system_message' );
     $this->add_listitem( 'Users', 'user' );
   }
 
