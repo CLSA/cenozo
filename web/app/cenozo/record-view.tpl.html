@@ -449,7 +449,7 @@
                 cn-really-click="delete()">
           <i class="glyphicon glyphicon-remove-sign"></i> Delete
         </button>
-        <button ng-if="!hasParent()"
+        <button ng-if="!hasParent() && model.getListEnabled()"
                 type="button"
                 class="btn btn-primary"
                 ng-click="viewParent()">

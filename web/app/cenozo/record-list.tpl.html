@@ -45,7 +45,7 @@
   </div>
   <div class="collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}List">
     <table class="table table-striped rounded"
-           ng-class="{ 'table-hover':model.getViewEnabled() || model.getChooseEnabled() }">
+           ng-class="{ 'table-hover':model.getViewEnabled() || model.chooseMode }">
       <thead class="bg-info">
         <tr>
           <td ng-repeat="column in dataArray"

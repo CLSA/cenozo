@@ -4365,6 +4365,9 @@ cenozo.factory( 'CnBaseModelFactory', [
         cenozo.addExtendableFunction( self, 'getEditEnabled', function() {
           return angular.isDefined( self.module.actions.edit );
         } );
+        cenozo.addExtendableFunction( self, 'getListEnabled', function() {
+          return angular.isDefined( self.module.actions.list );
+        } );
         cenozo.addExtendableFunction( self, 'getViewEnabled', function() {
           return angular.isDefined( self.module.actions.view );
         } );
