@@ -22,7 +22,7 @@ iframe { padding: 0px; margin: 0px; border: 0px; }
 .form-body { padding-top: 1em; }
 .form-horizontal .form-group { margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
 .first-form-group { padding-top: 15px } /* has to be padding and not margin for header to work right */
-.form-footer { padding: 1em; }
+.form-footer { padding: 1em; line-height: 33px; }
 .footer-total { line-height: 32px; }
 .form-text { margin-top: 7px; }
 .spacer { margin: 0.5em; content: " " }
