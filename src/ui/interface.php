@@ -205,7 +205,12 @@
               <li class="navbar-item"
                   ng-repeat="breadcrumb in session.breadcrumbTrail"
                   ng-class="{'navbar-link':breadcrumb.go}"
-                  ng-click="breadcrumb.go()">{{ breadcrumb.title }}
+                  ng-click="breadcrumb.go()">
+                <span ng-class="{ 'navbar-alert': 'Home' == breadcrumb.title && 0 < session.unreadMessageCount }">
+                  <i class="glyphicon glyphicon-envelope"
+                     ng-if="'Home' == breadcrumb.title && 0 < session.unreadMessageCount"></i>
+                  {{ breadcrumb.title }}
+                </span>
               </li>
             </ul>
           </ul>

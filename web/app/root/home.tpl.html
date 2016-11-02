@@ -54,7 +54,17 @@
     </div>
     <h3 class="text-primary">System Messages</h3>
     <div class="container-fluid" ng-repeat="message in session.messageList">
-      <h4><i class="glyphicon glyphicon-envelope"></i> {{ message.title }}</h4>
+      <h4>
+        <button type="button"
+                class="btn"
+                ng-class="message.unread ? 'btn-warning' : 'btn-default'"
+                ng-click="markMessage( message.id )"
+                tooltip="Click to mark message as {{ message.unread ? 'read' : 'unread' }}"
+                tooltip-placement="right">
+          <i class="glyphicon" ng-class="message.unread ? 'glyphicon-envelope' : 'glyphicon-ok'"></i>
+        </button>
+        {{ message.title }}
+      </h4>
       <blockquote class="text-info" style="white-space: pre-wrap;">{{ message.note }}</blockquote>
     </div>
     <div ng-if="0 == session.messageList.length">

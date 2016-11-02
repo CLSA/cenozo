@@ -39,6 +39,7 @@ SOURCE participant.sql
 SOURCE person.sql
 SOURCE quota.sql
 SOURCE system_message.sql
+SOURCE user_has_system_message.sql
 SOURCE script.sql
 SOURCE application_has_script.sql
 SOURCE event_type.sql

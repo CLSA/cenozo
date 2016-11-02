@@ -33,7 +33,6 @@ class get extends \cenozo\service\service
   protected function create_resource( $index )
   {
     $activity_class_name = lib::get_class_name( 'database\activity' );
-    $system_message_class_name = lib::get_class_name( 'database\system_message' );
     $script_class_name = lib::get_class_name( 'database\script' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
@@ -154,32 +153,6 @@ class get extends \cenozo\service\service
     $activity_mod->where( 'end_datetime', '=', NULL );
     $activity_mod->where( 'site_id', '=', $db_site->id );
     $pseudo_record['site']['active_users'] = $activity_class_name::count( $activity_mod );
-
-    // include the appropriate system messages
-    $system_message_sel = lib::create( 'database\select' );
-    $system_message_sel->add_column( 'title' );
-    $system_message_sel->add_column( 'note' );
-    $system_message_mod = lib::create( 'database\modifier' );
-    $application_id = $db_application->id;
-    $column = sprintf( 'IFNULL( system_message.application_id, %d )', $application_id );
-    $system_message_mod->where( $column, '=', $application_id );
-    $site_id = $db_site->id;
-    $column = sprintf( 'IFNULL( system_message.site_id, %d )', $site_id );
-    $system_message_mod->where( $column, '=', $site_id );
-    $role_id = $db_role->id;
-    $column = sprintf( 'IFNULL( system_message.role_id, %d )', $role_id );
-    $system_message_mod->where( $column, '=', $role_id );
-    $system_message_mod->where_bracket( true );
-    $system_message_mod->where( 'expiry', '=', NULL );
-    $system_message_mod->or_where( 'expiry', '>=',
-      sprintf( 'DATE( CONVERT_TZ( UTC_TIMESTAMP(), "UTC", %s ) )',
-               $system_message_class_name::db()->format_string( $db_user->timezone ) ),
-      false
-    );
-    $system_message_mod->where_bracket( false );
-    $system_message_mod->order_desc( 'id' );
-    $pseudo_record['system_message_list'] =
-      $system_message_class_name::select( $system_message_sel, $system_message_mod );
 
     return $pseudo_record;
   }

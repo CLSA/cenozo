@@ -80,6 +80,7 @@ class module extends \cenozo\service\site_restricted_module
 
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
+    $db_user = $session->get_user();
     $db_role = $session->get_role();
 
     // left join to application, site and role since they may be null
@@ -100,6 +101,15 @@ class module extends \cenozo\service\site_restricted_module
     }
 
     $modifier->where( 'IFNULL( role.tier, 1 )', '<=', $db_role->tier );
+
+    if( $select->has_column( 'unread' ) )
+    {
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'system_message.id', '=', 'user_has_system_message.system_message_id', false );
+      $join_mod->where( 'user_has_system_message.user_id', '=', $db_user->id );
+      $modifier->join_modifier( 'user_has_system_message', $join_mod, 'left' );
+      $select->add_table_column( 'user_has_system_message', 'user_id IS NULL', 'unread', false );
+    }
   }
 
   /**

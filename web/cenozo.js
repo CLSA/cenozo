@@ -2159,9 +2159,9 @@ cenozo.factory( '$exceptionHandler', [
  * The session factory
  */
 cenozo.factory( 'CnSession', [
-  '$state', '$timeout', '$filter', '$window', 'CnHttpFactory',
+  '$state', '$timeout', '$filter', '$window', '$interval', 'CnHttpFactory',
   'CnModalMessageFactory', 'CnModalPasswordFactory', 'CnModalAccountFactory', 'CnModalSiteRoleFactory',
-  function( $state, $timeout, $filter, $window, CnHttpFactory,
+  function( $state, $timeout, $filter, $window, $interval, CnHttpFactory,
             CnModalMessageFactory, CnModalPasswordFactory, CnModalAccountFactory, CnModalSiteRoleFactory ) {
     return new ( function() {
       var self = this;
@@ -2178,6 +2178,7 @@ cenozo.factory( 'CnSession', [
       this.siteList = [];
       this.sessionList = [];
       this.messageList = [];
+      this.unreadMessageCount = 0;
       this.breadcrumbTrail = [];
       this.alertHeader = undefined;
       this.onAlertHeader = function() {};
@@ -2231,8 +2232,27 @@ cenozo.factory( 'CnSession', [
             crumbs.forEach( function( item ) { this.breadcrumbTrail.push( item ); }, this );
         },
 
+        countUnreadMessages: function() {
+          self.unreadMessageCount = this.messageList.filter( function( message ) {
+            return message.unread;
+          } ).length;
+        },
+
+        getSystemMessages: function() {
+          CnHttpFactory.instance( {
+            path: 'system_message',
+            data: { select: { column: [ 'id', 'title', 'note', 'unread' ] } }
+          } ).get().then( function( response ) {
+            // get message list and convert unread to boolean
+            self.messageList = angular.copy( response.data );
+            self.messageList.forEach( function( message ) { message.unread = "1" == message.unread; } );
+            self.countUnreadMessages();
+          } );
+        },
+
         // get the application, user, site and role details
         updateData: function() {
+          self.getSystemMessages();
           this.promise = CnHttpFactory.instance( {
             path: 'self/0',
             redirectOnError: true
@@ -2247,8 +2267,7 @@ cenozo.factory( 'CnSession', [
               self.setting[property.snakeToCamel()] = response.data.setting[property];
             for( var property in response.data.role )
               self.role[property.snakeToCamel()] = response.data.role[property];
-            self.messageList = angular.copy( response.data.system_message_list );
-
+            
             // initialize the http factory so that all future requests match the same credentials
             CnHttpFactory.initialize( self.site.name, self.user.name, self.role.name );
 
@@ -2456,6 +2475,16 @@ cenozo.factory( 'CnSession', [
       } );
 
       this.updateData();
+
+      // regularly check for new messages
+      $interval( function() {
+        CnHttpFactory.instance( {
+          path: 'system_message'
+        } ).count().then( function( response ) {
+          var total = parseInt( response.headers( 'Total' ) );
+          if( total != self.messageList.length ) self.getSystemMessages();
+        } );
+      }, 60000 );
     } );
   }
 ] );
