@@ -210,6 +210,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   module.addExtraOperation( 'view', {
     title: 'Use Timezone',
+    help: "Changes to the same timezone as the participant's first active address",
     operation: function( $state, model ) {
       model.viewModel.onViewPromise.then( function() { model.viewModel.useTimezone(); } );
     }
