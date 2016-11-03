@@ -118,6 +118,12 @@ class patch extends \cenozo\service\service
                 $db_address = lib::create( 'database\address', $value->address_id );
                 $value = $db_address->get_timezone_name();
               }
+              else if( property_exists( $value, 'participant_id' ) )
+              {
+                $db_participant = lib::create( 'database\participant', $value->participant_id );
+                $db_primary_address = $db_participant->get_primary_address();
+                if( !is_null( $db_primary_address ) ) $value = $db_primary_address->get_timezone_name();
+              }
             }
 
             $db_user->$column = $value;
