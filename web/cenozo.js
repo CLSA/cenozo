@@ -2243,9 +2243,8 @@ cenozo.factory( 'CnSession', [
             path: 'system_message',
             data: { select: { column: [ 'id', 'title', 'note', 'unread' ] } }
           } ).get().then( function( response ) {
-            // get message list and convert unread to boolean
+            // get message list and count how many unread messages there are
             self.messageList = angular.copy( response.data );
-            self.messageList.forEach( function( message ) { message.unread = "1" == message.unread; } );
             self.countUnreadMessages();
           } );
         },
