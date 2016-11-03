@@ -58,6 +58,7 @@ class session extends \cenozo\singleton
       throw lib::create( 'exception\runtime', 'Session failed to start.', __METHOD__ );
 
     $application_class_name = lib::get_class_name( 'database\application' );
+    $system_message_class_name = lib::get_class_name( 'database\system_message' );
 
     $setting_manager = lib::create( 'business\setting_manager' );
 
@@ -98,6 +99,9 @@ class session extends \cenozo\singleton
         $this->db_application->save();
       }
     }
+
+    // remove any expired system messages
+    $system_message_class_name::remove_expired();
 
     $this->login();
     $this->state = 'initialized';
