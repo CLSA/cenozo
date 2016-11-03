@@ -208,6 +208,13 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     } );
   }
 
+  module.addExtraOperation( 'view', {
+    title: 'Use Timezone',
+    operation: function( $state, model ) {
+      model.viewModel.onViewPromise.then( function() { model.viewModel.useTimezone(); } );
+    }
+  } );
+
   try {
     var tokenModule = cenozoApp.module( 'token' );
     if( tokenModule && angular.isDefined( tokenModule.actions.add ) ) {
@@ -758,6 +765,12 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         this.scriptLauncher = null;
         this.hasWithdrawn = null;
         this.allowReverseWithdraw = 3 <= CnSession.role.tier;
+
+        this.useTimezone = function() {
+          CnSession.setTimezone( { 'participant_id': this.record.id } ).then( function() {
+            $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
+          } );
+        };
 
         // track the promise returned by the onView function
         this.onView = function() {
