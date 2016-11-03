@@ -192,6 +192,7 @@ class util
     // north american timezone not found, return the Etc timezone instead
     $offset = $offset;
     if( $daylight_savings && 1 == date( 'I' ) ) $offset++;
+    $offset = -$offset; // Etc has +/- reversed, 'cause that's not confusing...
     if( 0 <= $offset ) $offset = '+'.$offset;
     return 'Etc/GMT'.$offset;
   }
