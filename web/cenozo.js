@@ -2240,7 +2240,7 @@ cenozo.factory( 'CnSession', [
 
         getSystemMessages: function() {
           CnHttpFactory.instance( {
-            path: 'system_message',
+            path: 'self/0/system_message',
             data: { select: { column: [ 'id', 'title', 'note', 'unread' ] } }
           } ).get().then( function( response ) {
             // get message list and count how many unread messages there are
@@ -2478,14 +2478,7 @@ cenozo.factory( 'CnSession', [
       this.updateData();
 
       // regularly check for new messages
-      $interval( function() {
-        CnHttpFactory.instance( {
-          path: 'system_message'
-        } ).count().then( function( response ) {
-          var total = parseInt( response.headers( 'Total' ) );
-          if( total != self.messageList.length ) self.getSystemMessages();
-        } );
-      }, 60000 );
+      $interval( self.getSystemMessages, 60000 );
     } );
   }
 ] );
