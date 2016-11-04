@@ -34,7 +34,7 @@ class export_restriction extends has_rank
       else if( false === strpos( $value, '%' ) ) $value = '%'.$value.'%';
     }
 
-    else $modifier->where( $table_name.'.'.$this->column_name, $test, $value, true, 'or' == $this->logic );
+    $modifier->where( $table_name.'.'.$this->column_name, $test, $value, true, 'or' == $this->logic );
   }
 
   /**
