@@ -407,8 +407,6 @@ define( function() {
                   if( angular.isDefined( result.input.enumList ) )
                     self.metadata.columnList[key].enumList = result.input.enumList;
                 } );
-
-                return $q.all( inputPromiseList );
               } );
             } )
           ];
