@@ -82,7 +82,7 @@
                     ng-model="note.note"
                     cn-change="model.noteChanged( note.id )"
                     class="form-control note"
-                    ng-disabled="!model.allowEdit"
+                    ng-readonly="!model.allowEdit"
                     cn-elastic></textarea>
           <button ng-if="note.note != note.noteBackup"
                   class="btn btn-warning bottom-right"
