@@ -187,6 +187,10 @@ final class bootstrap
       $this->session->initialize();
       $db = $this->session->get_database();
 
+      // if required then print the api address in the log
+      if( $this->settings['general']['show_api_calls'] )
+        log::info( sprintf( 'API call to %s:%s', $this->method, $this->path ) );
+
       // set up the identification headers
       if( !is_null( $this->session->get_site() ) )
         header( sprintf( 'Site: %s', $util_class_name::json_encode( $this->session->get_site()->name ) ) );
