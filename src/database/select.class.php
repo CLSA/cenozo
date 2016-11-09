@@ -461,12 +461,14 @@ class select extends \cenozo\base_object
         if( $alias != $item['column'] )
         {
           $column = $item['column'];
-          // add the table prefix
-          if( 0 == strlen( $table ) )
-            $table = is_null( $this->table_alias ) ? $this->table_name : $this->table_alias;
-
+          if( $item['table_prefix'] )
+          {
+            // add the table prefix
+            if( 0 == strlen( $table ) )
+              $table = is_null( $this->table_alias ) ? $this->table_name : $this->table_alias;
+            $column = $table.'.'.$column;
+          }
           $modifier->replace_column( $alias, $column );
-          if( 0 < strlen( $table ) ) $modifier->replace_column( $table.'.'.$alias, $column );
         }
       }
     }
