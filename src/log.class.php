@@ -222,23 +222,22 @@ final class log extends singleton
    * @static
    * @access private
    */
-  private static function backtrace()
+  public static function backtrace()
   {
     $backtrace = "";
     $first = true;
-    foreach( debug_backtrace( false ) as $index => $trace )
+    $index = 1;
+    foreach( debug_backtrace( false ) as $trace )
     {
-      if( 0 != $index && // first trace is this function
-          1 != $index && // second trace is the log function
-          2 != $index && // second trace is the public log function
-          'error_handler' != $trace['function'] &&
-          'fatal_error_handler' != $trace['function'] )
+      // remove traces from the log class
+      if( 'cenozo\log' != $trace['class'] )
       {
-        $backtrace .= sprintf( '%s#%d %s%s()',
+        $backtrace .= sprintf( '%s#%d %s%s() line %d',
                                $first ? '' : "\n",
-                               $index - 3,
+                               $index++,
                                isset( $trace['class'] ) ? $trace['class'].'::' : '',
-                               $trace['function'] );
+                               $trace['function'],
+                               $trace['line'] );
         $first = false;
       }
     }
