@@ -47,49 +47,57 @@ final class log extends singleton
         'log' => true,
         'convert' => false,
         'label' => true,
-        'backtrace' => true
+        'backtrace' => true,
+        'condensed' => false
       ),
       PEAR_LOG_ALERT => array(
         'log' => true,
         'convert' => false,
         'label' => true,
-        'backtrace' => true
+        'backtrace' => true,
+        'condensed' => false
       ),
       PEAR_LOG_CRIT => array(
         'log' => true,
         'convert' => false,
         'label' => true,
-        'backtrace' => true
+        'backtrace' => true,
+        'condensed' => false
       ),
       PEAR_LOG_ERR => array(
         'log' => true,
         'convert' => false,
         'label' => true,
-        'backtrace' => true
+        'backtrace' => true,
+        'condensed' => false
       ),
       PEAR_LOG_WARNING => array(
         'log' => true,
         'convert' => false,
         'label' => true,
-        'backtrace' => true
+        'backtrace' => true,
+        'condensed' => false
       ),
       PEAR_LOG_NOTICE => array(
         'log' => true,
         'convert' => false,
         'label' => true,
-        'backtrace' => false
+        'backtrace' => false,
+        'condensed' => false
       ),
       PEAR_LOG_DEBUG => array(
         'log' => true,
         'convert' => true,
         'label' => false,
-        'backtrace' => false
+        'backtrace' => false,
+        'condensed' => true
       ),
       PEAR_LOG_INFO => array(
-        'log' => false,
+        'log' => true,
         'convert' => true,
         'label' => false,
-        'backtrace' => false
+        'backtrace' => false,
+        'condensed' => true
       ),
     );
   }
@@ -285,7 +293,11 @@ final class log extends singleton
 
       // log major stuff to an error log
       $this->initialize_logger( 'file' );
-      $this->loggers[ 'file' ]->log( preg_replace( '/\'?\n\'?/', "\n", $message )."\n", $type );
+      $this->loggers[ 'file' ]->log( sprintf(
+        '%s%s',
+        preg_replace( '/\'?\n\'?/', "\n", $message ),
+        $this->policy_list[$type]['condensed'] ? '' : "\n"
+      ), $type );
     }
   }
 
