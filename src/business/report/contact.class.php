@@ -28,7 +28,6 @@ class contact extends \cenozo\business\report\base_report
     $select->add_column( 'cohort.name', 'Cohort', false );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
-    $select->add_column( 'IFNULL( state.name, "None" )', 'Condition', false );
     $select->add_column( 'honorific', 'Honorific' );
     $select->add_column( 'first_name', 'First Name' );
     $select->add_column( 'last_name', 'Last Name' );
@@ -39,6 +38,7 @@ class contact extends \cenozo\business\report\base_report
     $select->add_column( 'address.postcode', 'Postcode', false );
     $select->add_column( 'region.country', 'Country', false );
     $select->add_column( 'IFNULL( email, "" )', 'Email', false );
+    $select->add_column( 'IFNULL( state.name, "None" )', 'Condition', false );
     $select->add_column(
       'IF( '.
         'participant_last_consent.consent_id IS NULL, '.
