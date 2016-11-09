@@ -226,18 +226,15 @@ final class log extends singleton
   {
     $backtrace = "";
     $first = true;
-    $index = 1;
+    $index = 0;
     foreach( debug_backtrace( false ) as $trace )
     {
       // remove traces from the log class
-      if( 'cenozo\log' != $trace['class'] )
+      if( false === strpos( $trace['file'], 'log.class.php' ) )
       {
-        $backtrace .= sprintf( '%s#%d %s%s() line %d',
-                               $first ? '' : "\n",
-                               $index++,
-                               isset( $trace['class'] ) ? $trace['class'].'::' : '',
-                               $trace['function'],
-                               $trace['line'] );
+        $backtrace .= sprintf( '%s#%d %s(%d)', $first ? '' : "\n", $index++, $trace['file'], $trace['line'] );
+        if( isset( $trace['class'] ) )
+          $backtrace .= sprintf( ' calling %s%s%s()', $trace['class'], $trace['type'], $trace['function'] );
         $first = false;
       }
     }
