@@ -323,6 +323,13 @@ final class bootstrap
   private $settings = array();
 
   /**
+   * The method of the request
+   * @var string
+   * @access private
+   */
+  private $method = NULL;
+
+  /**
    * The path of the request
    * @var string
    * @access private
