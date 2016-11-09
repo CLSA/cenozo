@@ -454,11 +454,13 @@ class database extends \cenozo\base_object
    * statement.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
+   * @param boolean $add_database_names Whether to automatically add database names to the query
+   * @param boolean $ignore_deadlocks Whether to ignore deadlocks when they happen
    * @return ADORecordSet
    * @throws exception\database
    * @access public
    */
-  public function execute( $sql, $add_database_names = true )
+  public function execute( $sql, $add_database_names = true, $ignore_deadlocks = false )
   {
     $util_class_name = lib::get_class_name( 'util' );
 
@@ -475,10 +477,13 @@ class database extends \cenozo\base_object
       // if a deadlock or lock-wait timout has occurred then notify the user with a notice
       if( 1213 == $this->connection->errno || 1205 == $this->connection->errno )
       {
-        log::warning( "Deadlock has prevented the following query from completing:\n".$sql );
-        throw lib::create( 'exception\notice',
-          'The server was too busy to complete your request, please try again. '.
-          'If this error persists please contact support.' , __METHOD__ );
+        if( !$ignore_deadlocks )
+        {
+          log::warning( "Deadlock has prevented the following query from completing:\n".$sql );
+          throw lib::create( 'exception\notice',
+            'The server was too busy to complete your request, please try again. '.
+            'If this error persists please contact support.' , __METHOD__ );
+        }
       }
       else
       {
