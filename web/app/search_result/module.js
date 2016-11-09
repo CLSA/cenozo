@@ -24,7 +24,7 @@ define( function() {
         width: '10%',
       },
       full_name: {
-        column: 'participant.full_name',
+        column: 'full_name',
         title: 'Participant Name',
         width: '20%',
       },

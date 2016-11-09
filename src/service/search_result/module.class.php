@@ -77,7 +77,7 @@ class module extends \cenozo\service\site_restricted_module
     }
 
     // add the full name
-    if( $select->has_table_column( 'participant', 'full_name' ) )
+    if( $select->has_column( 'full_name' ) )
     {
       $select->add_table_column(
         'participant',
