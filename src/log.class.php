@@ -230,10 +230,12 @@ final class log extends singleton
     foreach( debug_backtrace( false ) as $trace )
     {
       // remove traces from the log class
-      if( false === strpos( $trace['file'], 'log.class.php' ) )
+      if( !array_key_exists( 'file', $trace ) || false === strpos( $trace['file'], 'log.class.php' ) )
       {
-        $backtrace .= sprintf( '%s#%d %s(%d)', $first ? '' : "\n", $index++, $trace['file'], $trace['line'] );
-        if( isset( $trace['class'] ) )
+        $backtrace .= sprintf( '%s#%d', $first ? '' : "\n", $index++ );
+        if( array_key_exists( 'file', $trace ) )
+          $backtrace .= sprintf( ' %s(%d)', $trace['file'], $trace['line'] );
+        if( array_key_exists( 'class', $trace ) )
           $backtrace .= sprintf( ' calling %s%s%s()', $trace['class'], $trace['type'], $trace['function'] );
         $first = false;
       }
