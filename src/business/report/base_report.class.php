@@ -249,6 +249,7 @@ abstract class base_report extends \cenozo\base_object
       return;
     }
 
+    $util_class_name = lib::get_class_name( 'util' );
     $db_report_type = $this->db_report->get_report_type();
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
     $subject_class_name = lib::get_class_name( sprintf( 'database\%s', $db_report_type->subject ) );
@@ -342,6 +343,16 @@ abstract class base_report extends \cenozo\base_object
                'datetime' == $restriction['restriction_type'] ||
                'time' == $restriction['restriction_type'] )
       {
+        // convert to the correct datetime format
+        if( !is_null( $value ) )
+        {
+          $datetime_obj = $util_class_name::get_datetime_object( $value );
+          if( 'date' == $restriction['restriction_type'] ) $format = 'Y-m-d';
+          elseif( 'time' == $restriction['restriction_type'] ) $format = 'H:i:s';
+          else $format = 'Y-m-d H:i:s';
+          $value = $datetime_obj->format( $format );
+        }
+
         $modifier->where( $restriction['subject'], $restriction['operator'], $value );
       }
     }
