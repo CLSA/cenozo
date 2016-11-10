@@ -78,15 +78,15 @@ class activity extends record
   /**
    * Closes any record whose user has had no activity for longer than the activity timeout
    * 
-   * If a user is provided then this method will also close the user's activity (whether timed
-   * out or not).  An access record may be provided which will be excluded from being closed.
+   * If a user is provided then this method will only close the user's activity (whether timed
+   * out or not).
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user $db_user Which user to close all activity
-   * @param database\access $db_access Which access to keep open when closing all user activity
+   * @return Returns the number of rows closed
    * @access public
    * @static
    */
-  public static function close_lapsed( $db_user = NULL, $db_access = NULL )
+  public static function close_lapsed( $db_user = NULL )
   {
     $db_application = lib::create( 'business\session' )->get_application();
 
@@ -94,38 +94,30 @@ class activity extends record
     $modifier->where( 'activity.application_id', '=', $db_application->id );
     $modifier->where( 'end_datetime', '=', NULL );
 
-    try
+    $affected_rows = 0;
+    if( is_null( $db_user ) )
     {
       // close all lapsed activity
-      static::db()->execute( sprintf(
+      $affected_rows = static::db()->execute( sprintf(
         'UPDATE activity'.
         "\n".'JOIN access USING( user_id, role_id, site_id )'.
         "\n".'SET end_datetime = datetime %s',
         $modifier->get_sql() ) );
-
-      if( !is_null( $db_user ) )
-      {
-        // close all open activity by this user NOT for the current site/role
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'end_datetime', '=', NULL );
-        $modifier->where( 'application_id', '=', $db_application->id );
-        $modifier->where( 'user_id', '=', $db_user->id );
-
-        if( !is_null( $db_access ) )
-        {
-          $modifier->where_bracket( true );
-          $modifier->where( 'site_id', '!=', $db_access->site_id );
-          $modifier->or_where( 'role_id', '!=', $db_access->role_id );
-          $modifier->where_bracket( false );
-        }
-
-        static::db()->execute( sprintf(
-          'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
-          $modifier->get_sql() ) );
-      }
     }
-    // catch any deadlock notices and ignore them
-    catch( \cenozo\exception\notice $e ) {}
+    else
+    {
+      // close all open activity by this user NOT for the current site/role
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'end_datetime', '=', NULL );
+      $modifier->where( 'application_id', '=', $db_application->id );
+      $modifier->where( 'user_id', '=', $db_user->id );
+
+      $affected_rows = static::db()->execute( sprintf(
+        'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
+        $modifier->get_sql() ) );
+    }
+
+    return $affected_rows;
   }
 
   /**

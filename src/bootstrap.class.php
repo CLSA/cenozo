@@ -28,6 +28,11 @@ final class bootstrap
     // set the method type, arguments and input file (if patching/posting)
     $this->method = array_key_exists( 'REQUEST_METHOD', $_SERVER ) ? $_SERVER['REQUEST_METHOD'] : NULL;
     $this->arguments = $_REQUEST;
+    if( array_key_exists( 'no_activity', $this->arguments ) )
+    {
+      $this->no_activity = (boolean) $this->arguments['no_activity'];
+      unset( $this->arguments['no_activity'] );
+    }
     if( 'PATCH' == $this->method || 'POST' == $this->method ) $this->file = file_get_contents( 'php://input' );
   }
 
@@ -184,7 +189,7 @@ final class bootstrap
           'Sorry, the system is currently offline for maintenance. '.
           'Please check with an administrator or try again at a later time.', __METHOD__ );
 
-      $this->session->initialize();
+      $this->session->initialize( $this->no_activity );
       $db = $this->session->get_database();
 
       // if required then print the api address in the log
@@ -325,6 +330,13 @@ final class bootstrap
    * @access private
    */
   private $settings = array();
+
+  /**
+   * Whether or not to note the user's access
+   * @var boolean
+   * @access private
+   */
+  private $no_activity = false;
 
   /**
    * The method of the request

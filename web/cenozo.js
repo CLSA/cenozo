@@ -2240,7 +2240,7 @@ cenozo.factory( 'CnSession', [
 
         getSystemMessages: function() {
           CnHttpFactory.instance( {
-            path: 'self/0/system_message',
+            path: 'self/0/system_message?no_activity=1',
             data: { select: { column: [ 'id', 'title', 'note', 'unread' ] } }
           } ).get().then( function( response ) {
             // get message list and count how many unread messages there are

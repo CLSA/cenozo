@@ -48,7 +48,7 @@ class session extends \cenozo\singleton
    * @throws exception\permission
    * @access public
    */
-  public function initialize()
+  public function initialize( $no_activity = false )
   {
     // only initialize once and after construction only
     if( 'created' != $this->state ) return;
@@ -61,6 +61,8 @@ class session extends \cenozo\singleton
     $system_message_class_name = lib::get_class_name( 'database\system_message' );
 
     $setting_manager = lib::create( 'business\setting_manager' );
+
+    $this->no_activity = $no_activity;
 
     $this->database = lib::create( 'database\database',
       $setting_manager->get_setting( 'db', 'server' ),
@@ -300,9 +302,6 @@ class session extends \cenozo\singleton
     // only perform if not shut down and user record is set
     if( !$this->is_shutdown() )
     {
-      // close all lapsed activity before we proceed
-      $activity_class_name::close_lapsed();
-
       if( !is_null( $username ) && !is_string( $username ) )
         throw lib::create( 'exception\argument', 'username', $username, __METHOD__ );
       if( !is_null( $db_site ) && !is_a( $db_site, $site_class_name ) )
@@ -484,17 +483,20 @@ class session extends \cenozo\singleton
    */
   public function mark_access_time()
   {
-    $util_class_name = lib::get_class_name( 'util' );
-    $activity_class_name = lib::get_class_name( 'database\activity' );
-
-    $activity_class_name::update_activity();
-
-    if( !is_null( $this->db_access ) )
+    if( !$this->no_activity )
     {
-      $microtime = microtime();
-      $this->db_access->datetime = $util_class_name::get_datetime_object();
-      $this->db_access->microtime = substr( $microtime, 0, strpos( $microtime, ' ' ) );
-      $this->db_access->save();
+      $util_class_name = lib::get_class_name( 'util' );
+      $activity_class_name = lib::get_class_name( 'database\activity' );
+
+      $activity_class_name::update_activity();
+
+      if( !is_null( $this->db_access ) )
+      {
+        $microtime = microtime();
+        $this->db_access->datetime = $util_class_name::get_datetime_object();
+        $this->db_access->microtime = substr( $microtime, 0, strpos( $microtime, ' ' ) );
+        $this->db_access->save();
+      }
     }
   }
 
@@ -608,4 +610,11 @@ class session extends \cenozo\singleton
    * @access private
    */
   private $db_application = NULL;
+
+  /**
+   * Whether or not to mark user access time
+   * @var boolean
+   * @access private
+   */
+  private $no_activity = false;
 }
