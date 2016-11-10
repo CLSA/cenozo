@@ -16,6 +16,7 @@ define( function() {
         title: 'Site'
       },
       postcode: {
+        column: 'jurisdiction.postcode',
         title: 'Postcode'
       },
       longitude: {
@@ -26,7 +27,7 @@ define( function() {
       }
     },
     defaultOrder: {
-      column: 'postcode',
+      column: 'jurisdiction.postcode',
       reverse: false
     }
   } );
