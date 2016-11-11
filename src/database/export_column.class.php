@@ -223,7 +223,7 @@ class export_column extends has_rank
             $sub_table_name, 
             $table_name.'.'.$this->column_name,
             $joining_table_name.'.id',
-            '',
+            'left',
             $joining_table_name
           );
         }

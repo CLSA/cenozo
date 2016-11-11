@@ -491,6 +491,8 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
 
             // now make sure the table's restriction list is loaded
             this.loadRestrictionList( tableName );
+
+            this.updateParticipantCount();
           },
 
           moveColumn: function( oldIndex, newIndex ) {
@@ -595,6 +597,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               } ).delete().then( function() {
                 self.columnList.splice( index, 1 );
                 self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+                self.updateParticipantCount();
               } );
             }
           },

@@ -32,6 +32,9 @@ class query extends \cenozo\service\query
   {
     parent::setup();
 
+    // ignore the regular modifier and start fresh
+    $this->modifier = lib::create( 'database\modifier' );
+
     // apply the export columns to the modifier
     $db_export = $this->get_parent_record();
     $export_column_mod = lib::create( 'database\modifier' );
