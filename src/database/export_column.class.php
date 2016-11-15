@@ -54,7 +54,8 @@ class export_column extends has_rank
         $table_prefix = 'age_group' != $sub_table_name;
       }
 
-      $select->add_table_column( $table_name, $column_name, $column_alias, $table_prefix, $type );
+      if( $table_prefix ) $column_name = $table_name.'.'.$column_name;
+      $select->add_column( $column_name, $column_alias, false, $type );
     }
   }
 
