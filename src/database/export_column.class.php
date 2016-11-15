@@ -38,7 +38,7 @@ class export_column extends has_rank
       {
         if( in_array( $this->column_name, array( 'has_alternate', 'has_informant', 'has_proxy' ) ) )
         {
-          $column_name = sprintf( 'IF( %s, "yes", "no" )', $this->column_name );
+          $column_name = sprintf( 'IF( %s.total, "yes", "no" )', $this->column_name );
           $table_prefix = false;
         }
       }
@@ -114,27 +114,29 @@ class export_column extends has_rank
     }
     else if( 'auxiliary' == $this->table_name )
     {
-      if( !$modifier->has_join( $table_name ) )
+      if( in_array( $this->column_name, array( 'has_alternate', 'has_informant', 'has_proxy' ) ) )
       {
-        if( in_array( $this->column_name, array( 'has_alternate', 'has_informant', 'has_proxy' ) ) )
+        $alternate_type = substr( $this->column_name, 4 );
+        $alternate_table_name = $this->column_name;
+        if( !$modifier->has_join( $alternate_table_name ) )
         {
-          $sub_table_sel = lib::create( 'database\select' );
-          $sub_table_sel->from( 'participant' );
-          $sub_table_sel->add_column( 'id', 'participant_id' );
-          $sub_table_sel->add_column( 'alternate.id IS NOT NULL', $this->column_name, false );
-          $sub_table_mod = lib::create( 'database\modifier' );
-          $join_mod = lib::create( 'database\modifier' );
-          $join_mod->where( 'participant.id', '=', 'alternate.participant_id', false );
-          $join_mod->where( substr( $this->column_name, 4 ), '=', true );
-          $sub_table_mod->join_modifier( 'alternate', $join_mod, 'left' );
-
-          $modifier->join(
-            sprintf( '(%s %s)', $sub_table_sel->get_sql(), $sub_table_mod->get_sql() ),
-            'participant.id',
-            $table_name.'.participant_id',
-            '',
-            $table_name
+          $sql = sprintf(
+            'CREATE TEMPORARY TABLE IF NOT EXISTS %s ('."\n".
+            '  participant_id INT UNSIGNED NOT NULL,'."\n".
+            '  total INT UNSIGNED NOT NULL,'."\n".
+            '  PRIMARY KEY( participant_id )'."\n".
+            ')'."\n".
+            'SELECT participant.id AS participant_id, COUNT(*) AS total'."\n".
+            'FROM participant'."\n".
+            'LEFT JOIN alternate ON participant.id = alternate.participant_id'."\n".
+            'WHERE alternate.%s = true'."\n".
+            'GROUP BY participant.id'."\n".
+            'ORDER BY participant.id',
+            $alternate_table_name,
+            $alternate_type
           );
+          static::db()->execute( $sql );
+          $modifier->join( $alternate_table_name, 'participant.id', $alternate_table_name.'.participant_id' );
         }
       }
     }
