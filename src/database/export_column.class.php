@@ -126,10 +126,10 @@ class export_column extends has_rank
             '  total INT UNSIGNED NOT NULL,'."\n".
             '  PRIMARY KEY( participant_id )'."\n".
             ')'."\n".
-            'SELECT participant.id AS participant_id, COUNT(*) AS total'."\n".
+            'SELECT participant.id AS participant_id, IF( alternate.id IS NULL, 0, COUNT(*) ) AS total'."\n".
             'FROM participant'."\n".
             'LEFT JOIN alternate ON participant.id = alternate.participant_id'."\n".
-            'WHERE alternate.%s = true'."\n".
+            '      AND alternate.%s = true'."\n".
             'GROUP BY participant.id'."\n".
             'ORDER BY participant.id',
             $alternate_table_name,
