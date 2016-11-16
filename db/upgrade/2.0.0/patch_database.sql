@@ -53,7 +53,7 @@ SOURCE report_schedule.sql
 SOURCE report_schedule_has_report_restriction.sql
 SOURCE report.sql
 SOURCE report_has_report_restriction.sql
-SOURCE application_has_report_type.sql
+SOURCE application_type_has_report_type.sql
 SOURCE role_has_report_type.sql
 SOURCE search.sql
 SOURCE search_result.sql

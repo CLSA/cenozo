@@ -1,4 +1,4 @@
-SELECT "Creating new application_has_report_type table" AS "";
+SELECT "Creating new application_type_has_report_type table" AS "";
 
 CREATE TABLE IF NOT EXISTS application_type_has_report_type (
   application_type_id INT UNSIGNED NOT NULL,
