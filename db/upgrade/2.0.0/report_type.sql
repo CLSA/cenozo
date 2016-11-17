@@ -15,4 +15,5 @@ ENGINE = InnoDB;
 
 INSERT IGNORE INTO report_type ( name, title, subject, description ) VALUES
 ( 'contact', 'Contact', 'participant', 'This report provides the current mailing and email address for a list of participants. The participant\'s current mailing address is defined as the highest ranking address which is not disabled on the current month.' ),
-( 'email', 'Email Changes', 'participant', 'This report provides a list of all participants who last changed their email address between the provided dates (inclusive). Note that participants who do not have an email address will not be included in the list provided.' );
+( 'email', 'Email Changes', 'participant', 'This report provides a list of all participants who last changed their email address between the provided dates (inclusive). Note that participants who do not have an email address will not be included in the list provided.' ),
+( 'withdraw_mailout', 'Withdraw Mailout', 'participant', 'This report provides a list of all participants who have withdrawn from the study but have not yet been mailed a letter.  Note that participants who do not have a mailing address will not be included in the list provided.' );
