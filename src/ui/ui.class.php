@@ -41,7 +41,7 @@ class ui extends \cenozo\base_object
 
       // build the error interface
       ob_start();
-      define( 'APP_TITLE', ' ' );
+      if( !defined( 'APP_TITLE' ) ) define( 'APP_TITLE', ' ' );
       include( dirname( __FILE__ ).'/error.php' );
       $interface = ob_get_clean();
     }
