@@ -10,3 +10,8 @@ CREATE TABLE IF NOT EXISTS overview (
   PRIMARY KEY (id),
   UNIQUE INDEX uq_name (name ASC))
 ENGINE = InnoDB;
+
+SELECT "Adding overviews" AS "";
+
+INSERT IGNORE INTO overview( name, title, description ) VALUES
+( 'withdraw', 'Withdraw', 'Overview of withdrawn participants.' );

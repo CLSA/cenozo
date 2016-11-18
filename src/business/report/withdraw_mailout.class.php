@@ -23,9 +23,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $event_type_class_name = lib::get_class_name( 'database\event_type' );
-    $script_class_name = lib::get_class_name( 'database\script' );
-    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_manager = lib::create( 'business\survey_manager' );
 
     $db_withdraw_mailed_event_type = $event_type_class_name::get_unique_record( 'name', 'withdraw mailed' );
 
@@ -63,109 +61,12 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->join_modifier( 'event', $join_mod, 'left' );
     $modifier->where( 'event.id', '=', NULL );
 
-    // link to the withdraw script if one is in use
-    $script_sel = lib::create( 'database\select' );
-    $script_sel->add_column( 'sid' );
-    $script_mod = lib::create( 'database\modifier' );
-    $script_mod->where( 'withdraw', '=', true );
-    $script_list = $script_class_name::select( $script_sel, $script_mod );
-    if( 0 < count( $script_list ) )
-    {
-      $sid = $script_list[0]['sid'];
-      $old_tokens_sid = $tokens_class_name::get_sid();
-      $old_survey_sid = $survey_class_name::get_sid();
-      $tokens_class_name::set_sid( $sid );
-      $survey_class_name::set_sid( $sid );
-      $database_name = lib::create( 'business\session' )->get_survey_database()->get_name();
-      
-      $modifier->join(
-        sprintf( '%s.%s', $database_name, $tokens_class_name::get_table_name() ),
-        'participant.uid',
-        'tokens.token',
-        '',
-        'tokens'
-      );
-      $modifier->join(
-        sprintf( '%s.%s', $database_name, $survey_class_name::get_table_name() ),
-        'participant.uid',
-        'survey.token',
-        '',
-        'survey'
-      );
-
-      // get the survey column names for various question codes
-      $start_column_name = $survey_class_name::get_column_name_for_question_code( 'WTD_START' );
-      $hin_samp_def_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_HIN_SAMP' );
-      $hin_no_samp_def_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_HIN_NO_SAMP' );
-      $no_hin_samp_def_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_NO_HIN_SAMP' );
-      $no_hin_no_samp_def_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_NO_HIN_NO_SAMP' );
-      $hin_samp_opt_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_HIN_SAMP' );
-      $hin_no_samp_opt_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_HIN_NO_SAMP' );
-      $no_hin_samp_opt_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_NO_HIN_SAMP' );
-      $no_hin_no_samp_opt_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_NO_HIN_NO_SAMP' );
-
-      $column = sprintf(
-        static::$option_sql,
-        $start_column_name,
-        $hin_samp_def_column_name,
-        $hin_samp_def_column_name,
-        $hin_samp_opt_column_name,
-        $hin_samp_opt_column_name,
-        $hin_no_samp_def_column_name,
-        $hin_no_samp_def_column_name,
-        $hin_no_samp_opt_column_name,
-        $hin_no_samp_opt_column_name,
-        $no_hin_samp_def_column_name,
-        $no_hin_samp_def_column_name,
-        $no_hin_samp_opt_column_name,
-        $no_hin_samp_opt_column_name,
-        $no_hin_no_samp_def_column_name,
-        $no_hin_no_samp_def_column_name,
-        $no_hin_no_samp_opt_column_name,
-        $no_hin_no_samp_opt_column_name
-      );
-
-      $select->add_column( $column, 'Option', false );
-
-      $tokens_class_name::set_sid( $old_tokens_sid );
-      $survey_class_name::set_sid( $old_survey_sid );
-    }
+    // add the special withdraw option column
+    $survey_manager->add_withdraw_option_column( $select, $modifier, 'Option' );
 
     // set up requirements
     $this->apply_restrictions( $modifier );
 
     $this->add_table_from_select( NULL, $participant_class_name::select( $select, $modifier ) );
   }
-
-  private static $option_sql = <<<'SQL'
-IF(
-  %s = "REFUSED", -- start
-  1,
-  IF(
-    tokens.attribute_1,
-    IF(
-      tokens.attribute_2,
-      -- hin-samp (def, def, opt, opt)
-      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) ),
-      -- hin-no-samp (def, def, opt, opt)
-      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) )
-    ),
-    IF(
-      tokens.attribute_2,
-      -- no-hin-samp (def, def, opt, opt)
-      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) ),
-      -- no-hin-no-samp (def, def, opt, opt)
-      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) )
-    )
-  )
-)
-SQL;
 }

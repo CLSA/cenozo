@@ -297,7 +297,7 @@ class survey_manager extends \cenozo\singleton
     return $this->withdraw_option_list[$db_participant->uid];
   }
 
-  /** 
+  /**
    * Returns the survey id of the withdraw script
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
@@ -318,6 +318,117 @@ class survey_manager extends \cenozo\singleton
     }
 
     return $this->withdraw_sid;
+  }
+
+  /**
+   * Adds the needed changes to a select and modifier object to get a participant's withdraw option
+   * 
+   * This method assumes that the participant table has already been made part of the select/modifier
+   * pair.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\select $select
+   * @param database\modifier $modifier
+   * @param string $alias What alias to use for the column
+   * @access public
+   */
+  public function add_withdraw_option_column( $select, $modifier, $alias = 'option', $group = false )
+  {
+    $script_class_name = lib::get_class_name( 'database\script' );
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+
+    // find the withdraw script's SID
+    $script_sel = lib::create( 'database\select' );
+    $script_sel->add_column( 'sid' );
+    $script_mod = lib::create( 'database\modifier' );
+    $script_mod->where( 'withdraw', '=', true );
+    $script_list = $script_class_name::select( $script_sel, $script_mod );
+    if( 0 < count( $script_list ) )
+    {
+      $sid = $script_list[0]['sid'];
+      $old_tokens_sid = $tokens_class_name::get_sid();
+      $old_survey_sid = $survey_class_name::get_sid();
+      $tokens_class_name::set_sid( $sid );
+      $survey_class_name::set_sid( $sid );
+      $database_name = lib::create( 'business\session' )->get_survey_database()->get_name();
+
+      $modifier->join(
+        sprintf( '%s.%s', $database_name, $tokens_class_name::get_table_name() ),
+        'participant.uid',
+        'tokens.token',
+        '',
+        'tokens'
+      );
+      $modifier->join(
+        sprintf( '%s.%s', $database_name, $survey_class_name::get_table_name() ),
+        'participant.uid',
+        'survey.token',
+        '',
+        'survey'
+      );
+
+      // get the survey column names for various question codes
+      $start_column_name = $survey_class_name::get_column_name_for_question_code( 'WTD_START' );
+      $hin_samp_def_column_name =
+        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_HIN_SAMP' );
+      $hin_no_samp_def_column_name =
+        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_HIN_NO_SAMP' );
+      $no_hin_samp_def_column_name =
+        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_NO_HIN_SAMP' );
+      $no_hin_no_samp_def_column_name =
+        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_NO_HIN_NO_SAMP' );
+      $hin_samp_opt_column_name =
+        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_HIN_SAMP' );
+      $hin_no_samp_opt_column_name =
+        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_HIN_NO_SAMP' );
+      $no_hin_samp_opt_column_name =
+        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_NO_HIN_SAMP' );
+      $no_hin_no_samp_opt_column_name =
+        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_NO_HIN_NO_SAMP' );
+
+      $column = sprintf(
+        'IF('."\n".
+        '  %s = "REFUSED",'."\n".
+        '  1,'."\n".
+        '  IF('."\n".
+        '    tokens.attribute_1,'."\n".
+        '    IF('."\n".
+        '      tokens.attribute_2,'."\n".
+        '      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) ),'."\n".
+        '      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) )'."\n".
+        '    ),'."\n".
+        '    IF('."\n".
+        '      tokens.attribute_2,'."\n".
+        '      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) ),'."\n".
+        '      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) )'."\n".
+        '    )'."\n".
+        '  )'."\n".
+        ')'."\n",
+        $start_column_name,
+        $hin_samp_def_column_name,
+        $hin_samp_def_column_name,
+        $hin_samp_opt_column_name,
+        $hin_samp_opt_column_name,
+        $hin_no_samp_def_column_name,
+        $hin_no_samp_def_column_name,
+        $hin_no_samp_opt_column_name,
+        $hin_no_samp_opt_column_name,
+        $no_hin_samp_def_column_name,
+        $no_hin_samp_def_column_name,
+        $no_hin_samp_opt_column_name,
+        $no_hin_samp_opt_column_name,
+        $no_hin_no_samp_def_column_name,
+        $no_hin_no_samp_def_column_name,
+        $no_hin_no_samp_opt_column_name,
+        $no_hin_no_samp_opt_column_name
+      );
+
+      $select->add_column( $column, $alias, false );
+      if( $group ) $modifier->group( $column );
+
+      $tokens_class_name::set_sid( $old_tokens_sid );
+      $survey_class_name::set_sid( $old_survey_sid );
+    }
   }
 
   /**

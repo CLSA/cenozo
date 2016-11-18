@@ -175,6 +175,13 @@ class node
     array_walk( $this->value, $function );
   }
 
+  public function reverse_child_order()
+  {
+    if( $this->is_leaf() )
+      throw lib::create( 'exception\runtime', 'Tried to reverse child order of a leaf node.', __METHOD__ );
+    $this->value = array_reverse( $this->value );
+  }
+
   /**
    * TODO: document
    */
