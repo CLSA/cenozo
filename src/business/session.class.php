@@ -524,7 +524,16 @@ class session extends \cenozo\singleton
   }
 
   /**
-   * Returns whether the session has been initialized or not.
+   * Returns whether the session is in the created state or not.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_created() { return 'created' == $this->state; }
+
+  /**
+   * Returns whether the session is in the initialized state or not.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
@@ -533,7 +542,7 @@ class session extends \cenozo\singleton
   public function is_initialized() { return 'initialized' == $this->state; }
 
   /**
-   * Returns whether the session has been shutdown or not.
+   * Returns whether the session is in the shutdown state or not.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
