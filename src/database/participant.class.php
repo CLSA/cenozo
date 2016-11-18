@@ -396,6 +396,35 @@ class participant extends record
   }
 
   /**
+   * Determines whether this participant is in an open assignment
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function in_open_assignment()
+  {
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( !$setting_manager->get_setting( 'module', 'interview' ) )
+    {
+      log::warning( 'Called in_open_assignment but interview module is not installed.' );
+      return false;
+    }
+    else if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to determine if participant with no primary key is in an open assignment.' );
+      return false;
+    }
+
+    $interview_mod = lib::create( 'database\modifier' );
+    $interview_mod->join( 'assignment', 'interview.id', 'assignment.interview_id' );
+    $interview_mod->where( 'interview.end_datetime', '=', NULL );
+    $interview_mod->where( 'assignment.end_datetime', '=', NULL );
+
+    return 0 < $this->get_interview_count( $interview_mod );
+  }
+
+  /**
    * Returns a list of UIDs which the application and current role has access to
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
