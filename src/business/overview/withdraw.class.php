@@ -29,9 +29,6 @@ class withdraw extends \cenozo\business\overview\base_overview
     $db_role = $session->get_role();
     $db_user = $session->get_user();
 
-    $data = array();
-
-
     // create generic select and modifier objects which can be re-used
     $select = lib::create( 'database\select' );
     $select->add_column( 'COUNT(*)', 'total', false );
@@ -46,12 +43,33 @@ class withdraw extends \cenozo\business\overview\base_overview
     $modifier->where( 'consent.accept', '=', false );
     $modifier->group( 'DATE_FORMAT( survey.submitdate, "%Y%m" )' );
 
+    if( 'mastodon' != $db_application->get_application_type()->name )
+    { // special consideration for non-mastodon applications
+      if( $db_application->release_based )
+      {
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
+        $join_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+        $modifier->join_modifier( 'application_has_participant', $join_mod );
+        $modifier->where( 'application_has_participant.datetime', '!=', NULL );
+      }
+
+      // restrict by site
+      if( !$db_role->all_sites && 'mastodon' != $db_application->get_application_type()->name )
+      {
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
+        $join_mod->where( 'participant_site.application_id', '=', $db_application->id );
+        $modifier->join_modifier( 'participant_site', $join_mod );
+        $modifier->where( 'participant_site.site_id', '=', $db_site->id );
+      }
+    }
+
     $survey_manager->add_withdraw_option_column( $select, $modifier, 'option', true );
 
     $node = NULL;
     foreach( $participant_class_name::select( $select, $modifier ) as $row )
     {
-      log::debug( $row );
       if( is_null( $node ) || $node->get_label() != $row['month'] )
       {
         if( !is_null( $node ) ) $node->find_node( 'Total' )->set_value( $total );
