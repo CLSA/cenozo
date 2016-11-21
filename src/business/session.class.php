@@ -81,7 +81,8 @@ class session extends \cenozo\singleton
     // check that the server and app urls match
     $app_url = $this->db_application->url;
     $server_name = $_SERVER['SERVER_NAME'];
-    if( 'localhost' != $server_name && false === strpos( $app_url, $server_name ) )
+    if( 'localhost' != $server_name &&
+        false === strpos( str_replace( '-', '_', $app_url ), str_replace( '-', '_', $server_name ) ) )
       throw lib::create( 'exception\runtime',
         sprintf( 'Server name, "%s", is not found in the application URL, "%s". '.
                  'Check the application URL name in the database and make sure they are correct.',
