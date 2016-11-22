@@ -248,6 +248,33 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           participantCount: 0,
           restrictionList: [],
           tableRestrictionList: {
+            auxiliary: {
+              isLoading: false,
+              promise: $q.all(),
+              list: [ {
+                key: undefined,
+                title: 'Selet a new auxiliary restriction...'
+              }, {
+                key: 'has_alternate',
+                title: 'Has Alternate Contact',
+                type: 'boolean',
+                enumList: [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ],
+                required: true
+              }, {
+                key: 'has_informant',
+                title: 'Has Information Provider',
+                type: 'boolean',
+                enumList: [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ],
+                required: true
+              }, {
+                key: 'has_proxy',
+                title: 'Has Decision Maker',
+                type: 'boolean',
+                enumList: [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ],
+                required: true
+              }
+              ]
+            },
             participant: {
               isLoading: true,
               promise: null,
@@ -636,7 +663,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           // define functions which populate the restriction lists
           loadRestrictionList: function( tableName ) {
             // application restrictions are handled specially
-            if( 0 <= [ 'application', 'auxiliary' ].indexOf( tableName ) ) return;
+            if( 0 <= [ 'application' ].indexOf( tableName ) ) return;
 
             var ignoreColumnList = [
               'check_withdraw',
@@ -644,10 +671,10 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               'preferred_site_id'
             ];
             var restrictionType = this.tableRestrictionList[tableName];
-            var metadata = this.modelList[tableName].metadata;
 
             // only load the restriction list if we haven't already done so
             if( null == restrictionType.promise ) {
+              var metadata = this.modelList[tableName].metadata;
               restrictionType.promise = metadata.getPromise().then( function() {
                 for( var column in metadata.columnList ) {
                   var item = metadata.columnList[column];

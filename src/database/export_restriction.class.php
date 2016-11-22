@@ -34,7 +34,10 @@ class export_restriction extends has_rank
       else if( false === strpos( $value, '%' ) ) $value = '%'.$value.'%';
     }
 
-    $modifier->where( $table_name.'.'.$this->column_name, $test, $value, true, 'or' == $this->logic );
+    $column = 'auxiliary' == $this->table_name
+            ? sprintf( '%s.total > 0', $table_name )
+            : sprintf( '%s.%s', $table_name, $this->column_name );
+    $modifier->where( $column, $test, $value, true, 'or' == $this->logic );
   }
 
   /**
@@ -46,6 +49,7 @@ class export_restriction extends has_rank
   public function get_table_alias()
   {
     if( 'participant' == $this->table_name ) return 'participant';
+    else if( 'auxiliary' == $this->table_name ) return $this->column_name;
     else if( 'site' == $this->table_name || 'address' == $this->table_name )
       return $this->subtype.'_'.$this->table_name;
     return $this->table_name.'_'.$this->subtype;
