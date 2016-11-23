@@ -64,6 +64,10 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     // add the special withdraw option column
     $survey_manager->add_withdraw_option_column( $select, $modifier, 'Option' );
 
+    // add the hin and samples withdraw option columns
+    $select->add_column( '0 < tokens.attribute_1', 'hin', false );
+    $select->add_column( '0 < tokens.attribute_2', 'sample', false );
+
     // set up requirements
     $this->apply_restrictions( $modifier );
 
