@@ -440,7 +440,7 @@ class survey_manager extends \cenozo\singleton
       {
         $modifier->join(
           sprintf( '%s.%s', $database_name, $survey_class_name::get_table_name() ),
-          'participant.uid',
+          'tokens.token',
           'survey.token',
           '',
           'survey'
