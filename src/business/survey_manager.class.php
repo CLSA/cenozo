@@ -97,16 +97,22 @@ class survey_manager extends \cenozo\singleton
   public function reverse_withdraw( $db_participant )
   {
     $util_class_name = lib::get_class_name( 'util' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
 
     $withdraw_sid = $this->get_withdraw_sid();
     if( $withdraw_sid )
     {
-      // the withdraw option will be null if the survey hasn't been submitted
-      $option = $this->get_withdraw_option( $db_participant );
-      if( !is_null( $option['choice'] ) )
+      $withdraw_sel = lib::create( 'database\select' );
+      $withdraw_sel->from( 'participant' );
+      $withdraw_mod = lib::create( 'database\modifier' );
+      $withdraw_mod->where( 'participant.id', '=', $db_participant->id );
+      static::add_withdraw_option_column( $withdraw_sel, $withdraw_mod );
+      $list = $participant_class_name::select( $withdraw_sel, $withdraw_mod );
+      if( 0 < count( $list ) )
       {
+        $withdraw = current( $list );
         $old_tokens_sid = $tokens_class_name::get_sid();
         $tokens_class_name::set_sid( $withdraw_sid );
 
@@ -136,7 +142,7 @@ class survey_manager extends \cenozo\singleton
           $db_consent->save();
         }
 
-        if( 1 < $option['choice'] )
+        if( 1 != $withdraw['option'] )
         {
           // make sure the most recent HIN access consent is not negative
           $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
@@ -169,14 +175,23 @@ class survey_manager extends \cenozo\singleton
    */
   public function process_withdraw( $db_participant )
   {
+    $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
 
     if( $this->get_withdraw_sid() )
     {
-      // the withdraw option will be null if the survey hasn't been submitted
-      $option = $this->get_withdraw_option( $db_participant );
-      if( !is_null( $option['choice'] ) )
+      $withdraw_sel = lib::create( 'database\select' );
+      $withdraw_sel->from( 'participant' );
+      $withdraw_sel->add_column( 'CONVERT_TZ( survey.submitdate, "Canada/Eastern", "UTC" )', 'datetime', false );
+      $withdraw_mod = lib::create( 'database\modifier' );
+      $withdraw_mod->where( 'participant.id', '=', $db_participant->id );
+      static::add_withdraw_option_column( $withdraw_sel, $withdraw_mod );
+      static::add_withdraw_delink_column( $withdraw_sel, $withdraw_mod );
+      $list = $participant_class_name::select( $withdraw_sel, $withdraw_mod );
+      if( 0 < count( $list ) )
       {
+        $withdraw = current( $list );
+
         // Add consent participation verbal deny
         $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'participation' );
         $db_consent = lib::create( 'database\consent' );
@@ -184,11 +199,11 @@ class survey_manager extends \cenozo\singleton
         $db_consent->consent_type_id = $db_consent_type->id;
         $db_consent->accept = false;
         $db_consent->written = false;
-        $db_consent->datetime = $option['datetime'];
+        $db_consent->datetime = $withdraw['datetime'];
         $db_consent->note = 'Added as part of the withdraw process.';
         $db_consent->save();
 
-        if( 1 < $option['choice'] )
+        if( 1 != $withdraw['option'] )
         {
           // Add consent HIN access verbal deny
           $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
@@ -197,104 +212,17 @@ class survey_manager extends \cenozo\singleton
           $db_consent->consent_type_id = $db_consent_type->id;
           $db_consent->accept = false;
           $db_consent->written = false;
-          $db_consent->datetime = $option['datetime'];
+          $db_consent->datetime = $withdraw['datetime'];
           $db_consent->note = 'Added as part of the withdraw process.';
           $db_consent->save();
-
-          if( 2 < $option['choice'] ) $db_participant->delink = true;
         }
+
+        if( $withdraw['delink'] ) $db_participant->delink = true;
 
         $db_participant->check_withdraw = NULL;
         $db_participant->save();
       }
     }
-  }
-
-  /**
-   * Gets the participant's withdraw option (may be null if the participant hasn't withdrawn)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\participant $db_participant
-   * @access protected
-   */
-  protected function get_withdraw_option( $db_participant )
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-
-    if( !array_key_exists( $db_participant->uid, $this->withdraw_option_list ) )
-    {
-      $option = array( 'choice' => NULL, 'datetime' => NULL );
-
-      $withdraw_sid = $this->get_withdraw_sid();
-      if( $withdraw_sid )
-      {
-        // set the SID for the the survey and tokens records
-        $old_tokens_sid = $tokens_class_name::get_sid();
-        $tokens_class_name::set_sid( $withdraw_sid );
-
-        $db_tokens = NULL;
-        $db_survey = NULL;
-        $tokens_mod = lib::create( 'database\modifier' );
-        $tokens_class_name::where_token( $tokens_mod, $db_participant, false );
-        $tokens_mod->order_desc( 'tid' );
-        foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens )
-        {
-          $survey_list = $db_tokens->get_survey_list();
-          if( 0 < count( $survey_list ) ) $db_survey = current( $survey_list );
-          if( !is_null( $survey_list ) ) break;
-        }
-
-        if( !is_null( $db_tokens ) && !is_null( $db_survey ) )
-        {
-          if( !is_null( $db_survey->submitdate ) )
-          {
-            // determine the UTC survey submit datetime
-            $datetime_obj = $util_class_name::get_datetime_object( $db_survey->submitdate );
-            $tz = new \DateTimeZone( date_default_timezone_get() );
-            $offset = $tz->getOffset( $datetime_obj );
-            $interval = new \DateInterval( sprintf( 'PT%dS', abs( $offset ) ) );
-            if( 0 > $offset ) $datetime_obj->add( $interval );
-            else $datetime_obj->sub( $interval );
-            $option['datetime'] = $datetime_obj;
-
-            // figure out which token attributes are which
-            $attributes = array();
-            $db_surveys = lib::create( 'database\limesurvey\surveys', $withdraw_sid );
-            foreach( $db_surveys->get_token_attribute_names() as $key => $value )
-              $attributes[$key] = $db_tokens->$key;
-
-            // get the code for the def and opt responses
-            $code = 0 < $attributes['attribute_1'] ? 'HIN' : 'NO_HIN';
-            $code .= 0 < $attributes['attribute_2'] ? '_SAMP' : '_NO_SAMP';
-
-            $response = array();
-            $response['start'] = $db_survey->get_response( 'WTD_START' );
-            $response['def'] = $db_survey->get_response( 'WTD_DEF_'.$code );
-            $response['opt'] = $db_survey->get_response( 'WTD_OPT_'.$code );
-
-            // the default option was applied if...
-            if( 'REFUSED' == $response['start'] ||
-                'YES' == $response['def'] ||
-                'REFUSED' == $response['def'] ||
-                'REFUSED' == $response['opt'] )
-            {
-              $option['choice'] = 1;
-            }
-            else
-            {
-              $option['choice'] = 1 === preg_match( '/^OPTION([123])$/', $response['opt'], $matches )
-                                ? $matches[1] : NULL;
-            }
-          }
-        }
-
-        $tokens_class_name::set_sid( $old_tokens_sid );
-      }
-
-      $this->withdraw_option_list[$db_participant->uid] = $option;
-    }
-
-    return $this->withdraw_option_list[$db_participant->uid];
   }
 
   /**
@@ -333,58 +261,10 @@ class survey_manager extends \cenozo\singleton
    */
   public function add_withdraw_option_column( $select, $modifier, $alias = 'option', $group = false )
   {
-    $script_class_name = lib::get_class_name( 'database\script' );
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-
-    // find the withdraw script's SID
-    $script_sel = lib::create( 'database\select' );
-    $script_sel->add_column( 'sid' );
-    $script_mod = lib::create( 'database\modifier' );
-    $script_mod->where( 'withdraw', '=', true );
-    $script_list = $script_class_name::select( $script_sel, $script_mod );
-    if( 0 < count( $script_list ) )
+    $withdraw_sid = $this->get_withdraw_sid();
+    if( $withdraw_sid )
     {
-      $sid = $script_list[0]['sid'];
-      $old_tokens_sid = $tokens_class_name::get_sid();
-      $old_survey_sid = $survey_class_name::get_sid();
-      $tokens_class_name::set_sid( $sid );
-      $survey_class_name::set_sid( $sid );
-      $database_name = lib::create( 'business\session' )->get_survey_database()->get_name();
-
-      $modifier->join(
-        sprintf( '%s.%s', $database_name, $tokens_class_name::get_table_name() ),
-        'participant.uid',
-        'tokens.token',
-        '',
-        'tokens'
-      );
-      $modifier->join(
-        sprintf( '%s.%s', $database_name, $survey_class_name::get_table_name() ),
-        'participant.uid',
-        'survey.token',
-        '',
-        'survey'
-      );
-
-      // get the survey column names for various question codes
-      $start_column_name = $survey_class_name::get_column_name_for_question_code( 'WTD_START' );
-      $hin_samp_def_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_HIN_SAMP' );
-      $hin_no_samp_def_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_HIN_NO_SAMP' );
-      $no_hin_samp_def_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_NO_HIN_SAMP' );
-      $no_hin_no_samp_def_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_NO_HIN_NO_SAMP' );
-      $hin_samp_opt_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_HIN_SAMP' );
-      $hin_no_samp_opt_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_HIN_NO_SAMP' );
-      $no_hin_samp_opt_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_NO_HIN_SAMP' );
-      $no_hin_no_samp_opt_column_name =
-        $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_NO_HIN_NO_SAMP' );
+      $this->prepare_for_withdraw_columns( $select, $modifier );
 
       $column = sprintf(
         'IF('."\n".
@@ -407,31 +287,183 @@ class survey_manager extends \cenozo\singleton
         '    )'."\n".
         '  )'."\n".
         ')',
-        $start_column_name,
+        $this->withdraw_column_name_list['start'],
 
-        $hin_samp_def_column_name,
-        $hin_no_samp_def_column_name,
-        $no_hin_samp_def_column_name,
-        $no_hin_no_samp_def_column_name,
+        $this->withdraw_column_name_list['hin_samp_def'],
+        $this->withdraw_column_name_list['hin_no_samp_def'],
+        $this->withdraw_column_name_list['no_hin_samp_def'],
+        $this->withdraw_column_name_list['no_hin_no_samp_def'],
 
-        $hin_samp_opt_column_name,
-        $hin_no_samp_opt_column_name,
-        $no_hin_samp_opt_column_name,
-        $no_hin_no_samp_opt_column_name,
+        $this->withdraw_column_name_list['hin_samp_opt'],
+        $this->withdraw_column_name_list['hin_no_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_no_samp_opt'],
 
-        $hin_samp_def_column_name,
-        $hin_no_samp_def_column_name,
-        $no_hin_samp_def_column_name,
-        $no_hin_no_samp_def_column_name,
+        $this->withdraw_column_name_list['hin_samp_def'],
+        $this->withdraw_column_name_list['hin_no_samp_def'],
+        $this->withdraw_column_name_list['no_hin_samp_def'],
+        $this->withdraw_column_name_list['no_hin_no_samp_def'],
 
-        $hin_samp_opt_column_name,
-        $hin_no_samp_opt_column_name,
-        $no_hin_samp_opt_column_name,
-        $no_hin_no_samp_opt_column_name
+        $this->withdraw_column_name_list['hin_samp_opt'],
+        $this->withdraw_column_name_list['hin_no_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_no_samp_opt']
       );
 
       $select->add_column( $column, $alias, false );
       if( $group ) $modifier->group( $column );
+    }
+  }
+
+  /**
+   * Adds the needed changes to a select and modifier object to get a participant's withdraw delink state
+   * 
+   * This method assumes that the participant table has already been made part of the select/modifier
+   * pair.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\select $select
+   * @param database\modifier $modifier
+   * @param string $alias What alias to use for the column
+   * @access public
+   */
+  public function add_withdraw_delink_column( $select, $modifier, $alias = 'delink', $group = false )
+  {
+    $withdraw_sid = $this->get_withdraw_sid();
+    if( $withdraw_sid )
+    {
+      $this->prepare_for_withdraw_columns( $select, $modifier );
+
+      $column = sprintf(
+        'IF('."\n".
+        '  %s = "REFUSED" OR'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED",'."\n".
+        '  true,'."\n".
+        '  IF('."\n".
+        '    %s = "YES" OR %s = "YES" OR %s = "YES" OR %s = "YES",'."\n".
+        '    false,'."\n".
+        '    IF('."\n".
+        '      COALESCE('."\n".
+        '        SUBSTRING('."\n".
+        '          IF( 0 < tokens.attribute_1,'."\n".
+        '            IF( 0 < tokens.attribute_2, %s, %s ),'."\n".
+        '            IF( 0 < tokens.attribute_2, %s, %s )'."\n".
+        '          ), 7'."\n".
+        '        ), 1'."\n".
+        '      ) = 1 OR ('."\n".
+        '        COALESCE('."\n".
+        '          SUBSTRING('."\n".
+        '            IF( 0 < tokens.attribute_1,'."\n".
+        '              IF( 0 < tokens.attribute_2, %s, %s ),'."\n".
+        '              IF( 0 < tokens.attribute_2, %s, %s )'."\n".
+        '            ), 7'."\n".
+        '          ), 1'."\n".
+        '        ) = 2 AND 0 < tokens.attribute_1'."\n".
+        '      ),'."\n".
+        '      false,'."\n".
+        '      true'."\n".
+        '    )'."\n".
+        '  )'."\n".
+        ')',
+        $this->withdraw_column_name_list['start'],
+
+        $this->withdraw_column_name_list['hin_samp_def'],
+        $this->withdraw_column_name_list['hin_no_samp_def'],
+        $this->withdraw_column_name_list['no_hin_samp_def'],
+        $this->withdraw_column_name_list['no_hin_no_samp_def'],
+
+        $this->withdraw_column_name_list['hin_samp_opt'],
+        $this->withdraw_column_name_list['hin_no_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_no_samp_opt'],
+
+        $this->withdraw_column_name_list['hin_samp_def'],
+        $this->withdraw_column_name_list['hin_no_samp_def'],
+        $this->withdraw_column_name_list['no_hin_samp_def'],
+        $this->withdraw_column_name_list['no_hin_no_samp_def'],
+
+        $this->withdraw_column_name_list['hin_samp_opt'],
+        $this->withdraw_column_name_list['hin_no_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_no_samp_opt'],
+
+        $this->withdraw_column_name_list['hin_samp_opt'],
+        $this->withdraw_column_name_list['hin_no_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_samp_opt'],
+        $this->withdraw_column_name_list['no_hin_no_samp_opt']
+      );
+
+      $select->add_column( $column, $alias, false );
+      if( $group ) $modifier->group( $column );
+    }
+  }
+
+  /**
+   * Adds the needed changes to a select and modifier object to get a participant's withdraw option
+   * 
+   * This method assumes that the participant table has already been made part of the select/modifier
+   * pair.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\select $select
+   * @param database\modifier $modifier
+   * @param string $alias What alias to use for the column
+   * @access public
+   */
+  protected function prepare_for_withdraw_columns( $select, $modifier )
+  {
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+
+    $withdraw_sid = $this->get_withdraw_sid();
+    if( $withdraw_sid )
+    {
+      $old_tokens_sid = $tokens_class_name::get_sid();
+      $old_survey_sid = $survey_class_name::get_sid();
+      $tokens_class_name::set_sid( $withdraw_sid );
+      $survey_class_name::set_sid( $withdraw_sid );
+      $database_name = lib::create( 'business\session' )->get_survey_database()->get_name();
+
+      if( !$modifier->has_join( 'tokens' ) )
+      {
+        $modifier->join(
+          sprintf( '%s.%s', $database_name, $tokens_class_name::get_table_name() ),
+          'participant.uid',
+          'tokens.token',
+          '',
+          'tokens'
+        );
+      }
+
+      if( !$modifier->has_join( 'survey' ) )
+      {
+        $modifier->join(
+          sprintf( '%s.%s', $database_name, $survey_class_name::get_table_name() ),
+          'participant.uid',
+          'survey.token',
+          '',
+          'survey'
+        );
+      }
+
+      // get the survey column names for various question codes
+      if( is_null( $this->withdraw_column_name_list ) )
+      {
+        $this->withdraw_column_name_list = array(
+          'start' => $survey_class_name::get_column_name_for_question_code( 'WTD_START' ),
+          'hin_samp_def' => $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_HIN_SAMP' ),
+          'hin_no_samp_def' => $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_HIN_NO_SAMP' ),
+          'no_hin_samp_def' => $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_NO_HIN_SAMP' ),
+          'no_hin_no_samp_def' =>
+            $survey_class_name::get_column_name_for_question_code( 'WTD_DEF_NO_HIN_NO_SAMP' ),
+          'hin_samp_opt' => $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_HIN_SAMP' ),
+          'hin_no_samp_opt' => $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_HIN_NO_SAMP' ),
+          'no_hin_samp_opt' => $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_NO_HIN_SAMP' ),
+          'no_hin_no_samp_opt' =>
+            $survey_class_name::get_column_name_for_question_code( 'WTD_OPT_NO_HIN_NO_SAMP' )
+        );
+      }
 
       $tokens_class_name::set_sid( $old_tokens_sid );
       $survey_class_name::set_sid( $old_survey_sid );
@@ -446,9 +478,9 @@ class survey_manager extends \cenozo\singleton
   private $withdraw_sid = NULL;
 
   /**
-   * A cache of participant withdraw options
-   * @var array( uid => array( option => int, datetime => DateTime ) )
+   * A cache of withdraw survey column names
+   * @var array( code => name )
    * @access private
    */
-  private $withdraw_option_list = array();
+  private $withdraw_column_name_list = NULL;
 }
