@@ -75,13 +75,15 @@ class withdraw extends \cenozo\business\overview\base_overview
         if( !is_null( $node ) ) $node->find_node( 'Total' )->set_value( $total );
         $node = $this->add_root_item( $row['month'] );
         $this->add_item( $node, 'Total', 0 );
+        $this->add_item( $node, 'Default', 0 );
         $this->add_item( $node, 'Option #1', 0 );
         $this->add_item( $node, 'Option #2', 0 );
         $this->add_item( $node, 'Option #3', 0 );
         $total = 0;
       }
 
-      $node->find_node( 'Option #'.$row['option'] )->set_value( $row['total'] );
+      $name = 'default' == $row['option'] ? 'Default' : 'Option #'.$row['option'];
+      $node->find_node( $name )->set_value( $row['total'] );
       $total += $row['total'];
     }
 
