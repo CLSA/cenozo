@@ -34,6 +34,7 @@ class withdraw extends \cenozo\business\overview\base_overview
     $select->add_column( 'COUNT(*)', 'total', false );
     $select->add_column(
       'CONCAT( MONTHNAME( survey.submitdate ), ", ", YEAR( survey.submitdate ) )', 'month', false );
+    $select->add_column( 'participant.first_name = "(censored)"', 'delinked', false );
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
@@ -42,6 +43,7 @@ class withdraw extends \cenozo\business\overview\base_overview
     $modifier->where( 'consent_type.name', '=', 'participation' );
     $modifier->where( 'consent.accept', '=', false );
     $modifier->group( 'DATE_FORMAT( survey.submitdate, "%Y%m" )' );
+    $modifier->group( 'participant.first_name', '=', '(censored)' );
 
     if( 'mastodon' != $db_application->get_application_type()->name )
     { // special consideration for non-mastodon applications
@@ -66,6 +68,7 @@ class withdraw extends \cenozo\business\overview\base_overview
     }
 
     $survey_manager->add_withdraw_option_column( $select, $modifier, 'option', true );
+    $survey_manager->add_withdraw_delink_column( $select, $modifier, 'delink', true );
 
     $node = NULL;
     foreach( $participant_class_name::select( $select, $modifier ) as $row )
@@ -75,17 +78,33 @@ class withdraw extends \cenozo\business\overview\base_overview
         if( !is_null( $node ) ) $node->find_node( 'Total' )->set_value( $total );
         $node = $this->add_root_item( $row['month'] );
         $this->add_item( $node, 'Total', 0 );
-        $this->add_item( $node, 'Default', 0 );
-        $this->add_item( $node, 'Option #1', 0 );
-        $this->add_item( $node, 'Option #2', 0 );
-        $this->add_item( $node, 'Option #3', 0 );
+        $this->add_item( $node, 'Delink', 0 );
+        $this->add_item( $node, 'Have been delinked', 0 );
+        $option_node = $this->add_item( $node, 'Withdraw Option' );
+        $this->add_item( $option_node, 'Option #1', 0 );
+        $this->add_item( $option_node, 'Option #2', 0 );
+        $this->add_item( $option_node, 'Option #3', 0 );
+        $this->add_item( $option_node, 'Default (no option selected)', 0 );
         $total = 0;
       }
 
-      $name = 'default' == $row['option'] ? 'Default' : 'Option #'.$row['option'];
-      $node->find_node( $name )->set_value( $row['total'] );
+      if( $row['delink'] )
+      {
+        $child_node = $node->find_node( 'Delink' );
+        $child_node->set_value( $child_node->get_value() + $row['total'] );
+        if( $row['delinked'] )
+        {
+          $child_node = $node->find_node( 'Have been delinked' );
+          $child_node->set_value( $child_node->get_value() + $row['total'] );
+        }
+      }
+
+      $name = 'default' == $row['option'] ? 'Default (no option selected)' : 'Option #'.$row['option'];
+      $child_node = $node->find_node( 'Withdraw Option' )->find_node( $name );
+      $child_node->set_value( $child_node->get_value() + $row['total'] );
       $total += $row['total'];
     }
+    if( !is_null( $node ) ) $node->find_node( 'Total' )->set_value( $total );
 
     $this->root_node->reverse_child_order();
     $this->root_node->add_child( $this->root_node->get_summary_node(), true );
