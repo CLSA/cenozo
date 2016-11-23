@@ -388,38 +388,45 @@ class survey_manager extends \cenozo\singleton
 
       $column = sprintf(
         'IF('."\n".
-        '  %s = "REFUSED",'."\n".
-        '  1,'."\n".
+        '  %s = "REFUSED" OR'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED",'."\n".
+        '  "default",'."\n".
         '  IF('."\n".
-        '    tokens.attribute_1,'."\n".
-        '    IF('."\n".
-        '      tokens.attribute_2,'."\n".
-        '      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) ),'."\n".
-        '      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) )'."\n".
-        '    ),'."\n".
-        '    IF('."\n".
-        '      tokens.attribute_2,'."\n".
-        '      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) ),'."\n".
-        '      IF( %s = "YES" OR %s = "REFUSED" OR %s = "REFUSED", 1, COALESCE( SUBSTRING( %s, 7 ), 1 ) )'."\n".
+        '    %s = "YES" OR %s = "YES" OR %s = "YES" OR %s = "YES",'."\n".
+        '    1,'."\n".
+        '    COALESCE('."\n".
+        '      SUBSTRING('."\n".
+        '        IF( 0 < tokens.attribute_1,'."\n".
+        '          IF( 0 < tokens.attribute_2, %s, %s ),'."\n".
+        '          IF( 0 < tokens.attribute_2, %s, %s )'."\n".
+        '        ), 7'."\n".
+        '      ), 1'."\n".
         '    )'."\n".
         '  )'."\n".
-        ')'."\n",
+        ')',
         $start_column_name,
+
         $hin_samp_def_column_name,
-        $hin_samp_def_column_name,
-        $hin_samp_opt_column_name,
-        $hin_samp_opt_column_name,
         $hin_no_samp_def_column_name,
-        $hin_no_samp_def_column_name,
-        $hin_no_samp_opt_column_name,
-        $hin_no_samp_opt_column_name,
         $no_hin_samp_def_column_name,
-        $no_hin_samp_def_column_name,
-        $no_hin_samp_opt_column_name,
-        $no_hin_samp_opt_column_name,
         $no_hin_no_samp_def_column_name,
-        $no_hin_no_samp_def_column_name,
+
+        $hin_samp_opt_column_name,
+        $hin_no_samp_opt_column_name,
+        $no_hin_samp_opt_column_name,
         $no_hin_no_samp_opt_column_name,
+
+        $hin_samp_def_column_name,
+        $hin_no_samp_def_column_name,
+        $no_hin_samp_def_column_name,
+        $no_hin_no_samp_def_column_name,
+
+        $hin_samp_opt_column_name,
+        $hin_no_samp_opt_column_name,
+        $no_hin_samp_opt_column_name,
         $no_hin_no_samp_opt_column_name
       );
 
