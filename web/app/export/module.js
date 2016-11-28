@@ -1,4 +1,6 @@
-define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce( function( list, name ) {
+define( [
+  'address', 'collection', 'consent', 'event', 'participant', 'phone', 'site'
+].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -138,11 +140,11 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
   cenozo.providers.factory( 'CnExportViewFactory', [
     'CnBaseViewFactory',
     'CnParticipantModelFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory', 'CnSiteModelFactory',
-    'CnConsentModelFactory', 'CnEventModelFactory',
+    'CnCollectionModelFactory', 'CnConsentModelFactory', 'CnEventModelFactory',
     'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalDatetimeFactory', '$q',
     function( CnBaseViewFactory,
               CnParticipantModelFactory, CnAddressModelFactory, CnPhoneModelFactory, CnSiteModelFactory,
-              CnConsentModelFactory, CnEventModelFactory,
+              CnCollectionModelFactory, CnConsentModelFactory, CnEventModelFactory,
               CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory, $q ) {
       var object = function( parentModel, root ) {
         var self = this;
@@ -239,6 +241,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
             site: CnSiteModelFactory.root,
             address: CnAddressModelFactory.root,
             phone: CnPhoneModelFactory.root,
+            collection: CnCollectionModelFactory.root,
             consent: CnConsentModelFactory.root,
             event: CnEventModelFactory.root
           },
@@ -295,6 +298,11 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
             },
+            collection: {
+              isLoading: true,
+              promise: null,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
             consent: {
               isLoading: true,
               promise: null,
@@ -332,6 +340,10 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               isLoading: true,
               list: [ { key: undefined, title: 'Loading...' } ]
             },
+            collection: {
+              isLoading: true,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
             consent: {
               isLoading: true,
               list: [ { key: undefined, title: 'Loading...' } ]
@@ -353,6 +365,7 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
               { key: 'primary', name: 'Primary', inUse: false },
               { key: 'first', name: 'First', inUse: false }
             ],
+            collection: [],
             consent: [],
             event: []
           },
@@ -807,8 +820,21 @@ define( [ 'address', 'consent', 'event', 'participant', 'phone', 'site' ].reduce
           processMetadata( 'site' ),
           processMetadata( 'address' ),
           processMetadata( 'phone' ),
+          processMetadata( 'collection' ),
           processMetadata( 'consent' ),
           processMetadata( 'event' ),
+
+          CnHttpFactory.instance( {
+            path: 'collection',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: ['name'] }
+            }
+          } ).query().then( function( response ) {
+            response.data.forEach( function( item ) {
+              self.subtypeList.collection.push( { key: item.id.toString(), name: item.name } );
+            } );
+          } ),
 
           CnHttpFactory.instance( {
             path: 'consent_type',

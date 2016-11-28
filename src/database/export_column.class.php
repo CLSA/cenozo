@@ -140,6 +140,21 @@ class export_column extends has_rank
         }
       }
     }
+    else if( 'collection' == $this->table_name )
+    {
+      if( !$modifier->has_join( $table_name ) )
+      {
+        $joining_table_name = 'collection_has_participant_'.$this->subtype;
+        if( !$modifier->has_join( $joining_table_name ) )
+        {
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', $joining_table_name.'.participant_id', false );
+          $join_mod->where( $joining_table_name.'.collection_id', '=', $this->subtype );
+          $modifier->join_modifier( 'collection_has_participant', $join_mod, '', $joining_table_name );
+        }
+        $modifier->left_join( 'collection', $joining_table_name.'.collection_id', $table_name.'.id', $table_name );
+      }
+    }
     else if( 'consent' == $this->table_name )
     {
       if( !$modifier->has_join( $table_name ) )
@@ -287,6 +302,11 @@ class export_column extends has_rank
     else if( 'auxiliary' == $this->table_name )
     {
       $alias_parts = explode( '_', $this->column_name );
+    }
+    else if( 'collection' == $this->table_name )
+    {
+      // get the collection name
+      array_unshift( $alias_parts, lib::create( 'database\collection', $this->subtype )->name );
     }
     else if( 'consent' == $this->table_name )
     {
