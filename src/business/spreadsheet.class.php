@@ -42,6 +42,19 @@ class spreadsheet extends \cenozo\base_object
   }
 
   /**
+   * Defines which user to use when determining timezones for time-based data.
+   * 
+   * Defaults to the current session's user if NULL
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\user $db_user
+   * @access public
+   */
+  public function set_user( $db_user = NULL )
+  {
+    $this->db_user = $db_user;
+  }
+
+  /**
    * Loads database data into the spreadsheet
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -49,16 +62,17 @@ class spreadsheet extends \cenozo\base_object
    * @param string $title The title of the data (may be NULL)
    * @access public
    */
-  public function load_data( $data, $title = NULL )
+  public function load_data( $data, $title = NULL, $worksheet = NULL )
   {
     if( is_string( $data ) )
     {
-      $this->load_data_from_string( $data, $title );
+      $this->load_data_from_string( $data, $title, $worksheet );
     }
     else if( is_array( $data ) )
     {
-      if( array_key_exists( 'contents', current( $data ) ) ) $this->load_data_from_table_list( $data, $title );
-      else $this->load_data_from_array( $data, $title );
+      if( array_key_exists( 'contents', current( $data ) ) )
+        $this->load_data_from_table_list( $data, $title, $worksheet );
+      else $this->load_data_from_array( $data, $title, $worksheet );
     }
     else throw lib::create( 'exception\runtime',
       'Tried to load spreadsheet data using unrecognized input data type.',
@@ -73,8 +87,15 @@ class spreadsheet extends \cenozo\base_object
    * @param string $title The data's title
    * @access protected
    */
-  protected function load_data_from_string( $string, $title )
+  protected function load_data_from_string( $string, $title, $worksheet = NULL )
   {
+    if( !is_null( $worksheet ) )
+    {
+      $sheet = $this->php_excel->createSheet();
+      $sheet->setTitle( $worksheet );
+      $this->php_excel->setActiveSheetIndexByName( $worksheet );
+    }
+
     $row = 1;
     if( !is_null( $title ) )
     {
@@ -89,6 +110,8 @@ class spreadsheet extends \cenozo\base_object
     }
 
     $this->set_cell( 'A'.$row, $string );
+
+    $this->php_excel->setActiveSheetIndex( 0 );
   }
 
   /**
@@ -99,11 +122,18 @@ class spreadsheet extends \cenozo\base_object
    * @param string $title The data's title
    * @access protected
    */
-  protected function load_data_from_array( $array, $title )
+  protected function load_data_from_array( $array, $title, $worksheet = NULL )
   {
+    if( !is_null( $worksheet ) )
+    {
+      $sheet = $this->php_excel->createSheet();
+      $sheet->setTitle( $worksheet );
+      $this->php_excel->setActiveSheetIndexByName( $worksheet );
+    }
+
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
-    $db_user = $session->get_user();
+    $db_user = is_null( $this->db_user ) ? $session->get_user() : $this->db_user;
     $now = $util_class_name::get_datetime_object();
     if( !is_null( $db_user ) ) $now->setTimezone( new \DateTimeZone( $db_user->timezone ) );
     $tz = $now->format( 'T' );
@@ -160,7 +190,7 @@ class spreadsheet extends \cenozo\base_object
             if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
             {
               $datetime_obj = $util_class_name::get_datetime_object( $sub_value );
-              $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+              if( !is_null( $db_user ) ) $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
               $sub_value = $datetime_obj->format( 'Y-m-d '.$time_format );
 
               // and add the timezone to the header
@@ -183,7 +213,7 @@ class spreadsheet extends \cenozo\base_object
           if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
           {
             $datetime_obj = $util_class_name::get_datetime_object( $value );
-            $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+            if( !is_null( $db_user ) ) $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
             $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
           }
           else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';
@@ -196,6 +226,8 @@ class spreadsheet extends \cenozo\base_object
       }
       $row++;
     }
+
+    $this->php_excel->setActiveSheetIndex( 0 );
   }
 
   /**
@@ -206,8 +238,15 @@ class spreadsheet extends \cenozo\base_object
    * @param string $title The data's title
    * @access protected
    */
-  protected function load_data_from_table_list( $table_list, $title )
+  protected function load_data_from_table_list( $table_list, $title, $worksheet = NULL )
   {
+    if( !is_null( $worksheet ) )
+    {
+      $sheet = $this->php_excel->createSheet();
+      $sheet->setTitle( $worksheet );
+      $this->php_excel->setActiveSheetIndexByName( $worksheet );
+    }
+
     $setting_manager = lib::create( 'business\setting_manager' );
     $max_cells = $setting_manager->get_setting( 'report', 'max_cells' );
 
@@ -378,6 +417,8 @@ class spreadsheet extends \cenozo\base_object
         $row++;
       }
     }
+
+    $this->php_excel->setActiveSheetIndex( 0 );
   }
 
   /**
@@ -608,4 +649,11 @@ class spreadsheet extends \cenozo\base_object
    * @access protected
    */
   protected $php_excel = NULL;
+
+  /**
+   * Defines which user to use when determining timezones for time-based data.
+   * @var database\user
+   * @access protected
+   */
+  protected $db_user = NULL;
 }

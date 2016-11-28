@@ -181,9 +181,68 @@ abstract class base_report extends \cenozo\base_object
       }
       else
       {
+        // define the spreadsheet data
         $max_cells = $setting_manager->get_setting( 'report', 'max_cells' );
         $spreadsheet = lib::create( 'business\spreadsheet' );
+        $spreadsheet->set_user( $this->db_user );
         $spreadsheet->load_data( $this->report_tables, $db_report_type->title.' Report' );
+
+        // put the report settings in a separate worksheet
+        $select = lib::create( 'database\select' );
+        $select->add_table_column( 'report_restriction', 'title' );
+        $select->add_table_column( 'report_restriction', 'restriction_type', 'type' );
+        $select->add_table_column( 'report_restriction', 'subject' );
+        $select->add_column( 'IF( "_NULL_" = value, "(empty)", value )', 'Value', false );
+        $modifier = lib::create( 'database\modifier' );
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where(
+          'report_restriction.id',
+          '=',
+          'report_has_report_restriction.report_restriction_id',
+          false
+        );
+        $join_mod->where( 'report_has_report_restriction.report_id', '=', $this->db_report->id );
+        $modifier->join_modifier( 'report_has_report_restriction', $join_mod, 'left' );
+        $modifier->where( 'report_restriction.restriction_type', '!=', 'uid_list' );
+        $modifier->order( 'report_restriction.rank' );
+        $rows = $this->db_report->get_report_type()->get_report_restriction_list( $select, $modifier );
+        $settings = array();
+        foreach( $rows as $index => $setting )
+        {
+          $value = $setting['Value'];
+          if( '(empty)' != $value )
+          {
+            if( 'table' == $setting['type'] )
+            {
+              if( is_null( $value ) ) $value = '(all)';
+              else
+              {
+                $record = lib::create( sprintf( 'database\%s', $setting['subject'] ), $value );
+                $value = $record->name;
+              }
+            }
+            else if( 'date' == $setting['type'] )
+            {
+              $value = is_null( $value ) ? '(empty)' : preg_replace( '/T.*/', '', $value );
+            }
+            else if( 'time' == $setting['type'] )
+            {
+              $value = is_null( $value ) ? '(empty)' : preg_replace( '/.*T/', '', $value );
+            }
+            else if( 'boolean' == $setting['type'] )
+            {
+              $value = is_null( $value ) ? '(all)' : $value ? 'Yes' : 'No';
+            }
+            else
+            {
+              $value = is_null( $value ) ? '(all)' : $value;
+            }
+          }
+          $settings[] = array( 'Parameter' => $setting['title'], 'Value' => $value );
+        }
+
+        $spreadsheet->load_data( $settings, NULL, 'Parameters' );
+
         $data = $spreadsheet->get_file( $this->get_mime_type() );
       }
 
