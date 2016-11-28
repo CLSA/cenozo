@@ -90,6 +90,11 @@ angular.extend( String.prototype, {
   }
 } );
 
+// Older browsers named the string's "includes" function "contains" instead
+if( !String.prototype.includes ) {
+  String.prototype.includes = function( string ) { return String.prototype.contains( string ); };
+}
+
 // extend the application object
 var cenozoApp = angular.module( 'cenozoApp', [
   'ui.bootstrap',
