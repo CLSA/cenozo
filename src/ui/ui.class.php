@@ -123,13 +123,15 @@ class ui extends \cenozo\base_object
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export', 'export_file', 'form',
       'form_association', 'form_type', 'hin', 'jurisdiction', 'language', 'overview', 'participant', 'phone',
-      'quota', 'recording', 'recording_file', 'region', 'region_site', 'role', 'report', 'report_restriction',
-      'report_schedule', 'report_type', 'script', 'search_result', 'site', 'source', 'state', 'system_message',
-      'user', 'webphone'
+      'quota', 'region', 'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type',
+      'script', 'search_result', 'site', 'source', 'state', 'system_message', 'user', 'webphone'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
       $list = array_merge( $list, array( 'assignment', 'interview', 'phone_call' ) );
+
+    if( $setting_manager->get_setting( 'module', 'recording' ) )
+      $list = array_merge( $list, array( 'recording', 'recording_file' ) );
 
     return $list;
   }
@@ -146,6 +148,7 @@ class ui extends \cenozo\base_object
     $service_class_name = lib::get_class_name( 'database\service' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $use_interview_module = $setting_manager->get_setting( 'module', 'interview' );
+    $use_recording_module = $setting_manager->get_setting( 'module', 'recording' );
     $db_role = lib::create( 'business\session' )->get_role();
 
     $select = lib::create( 'database\select' );
@@ -175,6 +178,13 @@ class ui extends \cenozo\base_object
         if( !$use_interview_module )
           throw lib::create( 'exception\runtime',
             'Application has %s service but it\'s parent module, interview, is not activated.',
+            __METHOD__ );
+      }
+      if( in_array( $module->get_subject(), array( 'recording', 'recording_file' ) ) )
+      {
+        if( !$use_recording_module )
+          throw lib::create( 'exception\runtime',
+            'Application has %s service but it\'s parent module, recording, is not activated.',
             __METHOD__ );
       }
 
@@ -368,7 +378,10 @@ class ui extends \cenozo\base_object
     if( 2 <= $db_role->tier ) $this->add_listitem( 'Overviews', 'overview' );
     $this->add_listitem( 'Participants', 'participant' );
     $this->add_listitem( 'Quotas', 'quota' );
-    if( 3 <= $db_role->tier ) $this->add_listitem( 'Recordings', 'recording' );
+    if( $setting_manager->get_setting( 'module', 'recording' ) )
+    {
+      if( 3 <= $db_role->tier ) $this->add_listitem( 'Recordings', 'recording' );
+    }
     if( $extended && in_array( 'region', $grouping_list ) ) $this->add_listitem( 'Region Sites', 'region_site' );
     if( 3 <= $db_role->tier ) $this->add_listitem( 'Scripts', 'script' );
     $this->add_listitem( 'Settings', 'setting' );

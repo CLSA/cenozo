@@ -23,7 +23,8 @@
         <div class="col-sm-6">
           <ul class="nav nav-tabs">
             <li ng-class="{'active':'server'==tab}"><a ng-click="tab='server'">Server</a></li>
-            <li ng-class="{'active':'recordings'==tab}"><a ng-click="tab='recordings'">Recordings</a></li>
+            <li ng-show="model.useRecording"
+                ng-class="{'active':'recordings'==tab}"><a ng-click="tab='recordings'">Recordings</a></li>
           </ul>
           <div ng-if="'server'==tab" class="form-body well allow-select" style="border-top-left-radius: 0px;">
             <div class="row">

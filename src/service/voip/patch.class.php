@@ -49,7 +49,15 @@ class patch extends \cenozo\service\service
     $error_code = NULL;
     $data = $this->get_file_as_array();
     $operation = array_key_exists( 'operation', $data ) ? $data['operation'] : NULL;
-    if( 'dtmf' == $operation )
+
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( !$setting_manager->get_setting( 'module', 'recording' ) &&
+        in_array( $operation, array( 'play_sound', 'start_monitoring', 'stop_monitoring' ) ) )
+    {
+      log::warning( sprintf( 'Sending %s command to voip but recording module is not installed.', $operation ) );
+      $error_code = 500;
+    }
+    else if( 'dtmf' == $operation )
     {
       // make sure we have a tone
       if( !array_key_exists( 'tone', $data ) ) $error_code = 412;

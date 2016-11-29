@@ -175,7 +175,13 @@ class voip_call extends \cenozo\base_object
    */
   public function start_monitoring( $filename )
   {
-    if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( !$setting_manager->get_setting( 'module', 'recording' ) )
+    {
+      log::warning( 'Called start_monitoring but recording module is not installed.' );
+      return;
+    }
+    else if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
 
     $setting_manager = lib::create( 'business\setting_manager' );
     $filename = sprintf( '%s/%s', $setting_manager->get_setting( 'voip', 'monitor' ), $filename );
@@ -192,7 +198,13 @@ class voip_call extends \cenozo\base_object
    */
   public function stop_monitoring()
   {
-    if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( !$setting_manager->get_setting( 'module', 'recording' ) )
+    {
+      log::warning( 'Called stop_monitoring but recording module is not installed.' );
+      return;
+    }
+    else if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
 
     if( false == $this->manager->stopMonitor( $this->get_channel() ) )
       throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );

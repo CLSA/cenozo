@@ -93,6 +93,11 @@ class get extends \cenozo\service\service
     $access_mod->order( 'site.name' );
     $access_mod->order( 'role.name' );
 
+    // get a list of all activated modules
+    $module_list = array();
+    if( $setting_manager->get_setting( 'module', 'interview' ) ) $module_list[] = 'interview';
+    if( $setting_manager->get_setting( 'module', 'recording' ) ) $module_list[] = 'recording';
+
     // determine the withdraw script id
     $script_sel = lib::create( 'database\select' );
     $script_sel->from( 'script' );
@@ -109,6 +114,7 @@ class get extends \cenozo\service\service
       'site' => $db_site->get_column_values( $site_sel ),
       'user' => $db_user->get_column_values( $user_sel ),
       'access' => $db_user->get_access_list( $access_sel, $access_mod ),
+      'module_list' => $module_list,
       'withdraw_script' => $withdraw_script,
       'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
       'session_list' => $session->get_session_list(),

@@ -90,11 +90,6 @@ angular.extend( String.prototype, {
   }
 } );
 
-// Older browsers named the string's "includes" function "contains" instead
-if( !String.prototype.includes ) {
-  String.prototype.includes = function( string ) { return String.prototype.contains( string ); };
-}
-
 // extend the application object
 var cenozoApp = angular.module( 'cenozoApp', [
   'ui.bootstrap',
@@ -2181,6 +2176,7 @@ cenozo.factory( 'CnSession', [
       this.role = {};
       this.setting = {};
       this.siteList = [];
+      this.moduleList = [];
       this.sessionList = [];
       this.messageList = [];
       this.unreadMessageCount = 0;
@@ -2271,7 +2267,7 @@ cenozo.factory( 'CnSession', [
               self.setting[property.snakeToCamel()] = response.data.setting[property];
             for( var property in response.data.role )
               self.role[property.snakeToCamel()] = response.data.role[property];
-            
+
             // initialize the http factory so that all future requests match the same credentials
             CnHttpFactory.initialize( self.site.name, self.user.name, self.role.name );
 
@@ -2283,6 +2279,9 @@ cenozo.factory( 'CnSession', [
             self.siteList.forEach( function( site ) {
               site.getIdentifier = function() { return 'name=' + this.name; };
             } );
+
+            // process module list
+            self.moduleList = response.data.module_list;
 
             // add the withdraw script id
             self.withdrawScript = response.data.withdraw_script;
