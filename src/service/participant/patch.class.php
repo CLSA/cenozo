@@ -52,13 +52,6 @@ class patch extends \cenozo\service\patch
 
       // make sure that only tier 2+ roles can reverse a withdraw
       if( $this->reverse_withdraw && 2 > $db_role->tier ) $this->status->set_code( 403 );
-
-      // when changing the preferred site make sure the participant isn't in an open assignment
-      if( $this->update_preferred_site && $this->get_leaf_record()->in_open_assignment() )
-      {
-        $this->set_data( 'You cannot change this participant\'s preferred site since they are in an assignment.' );
-        $this->status->set_code( 306 );
-      }
     }
   }
 
