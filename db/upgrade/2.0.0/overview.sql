@@ -14,4 +14,5 @@ ENGINE = InnoDB;
 SELECT "Adding overviews" AS "";
 
 INSERT IGNORE INTO overview( name, title, description ) VALUES
+( 'state', 'State', 'Overview of states (participants in conditions).' ),
 ( 'withdraw', 'Withdraw', 'Overview of withdrawn participants.' );
