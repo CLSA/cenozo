@@ -39,7 +39,7 @@ abstract class site_restricted_participant_module extends site_restricted_module
       else if( is_a( $record, lib::get_class_name( 'database\assignment' ) ) )
       {
         $db_interview = $record->get_interview();
-        if( !is_null( $db_interview ) ) $db_participant = $record->get_interview()->get_participant();
+        if( !is_null( $db_interview ) ) $db_participant = $db_interview->get_participant();
       }
       else if( is_a( $record, lib::get_class_name( 'database\form_association' ) ) )
       {
@@ -47,7 +47,12 @@ abstract class site_restricted_participant_module extends site_restricted_module
       }
       else if( is_a( $record, lib::get_class_name( 'database\phone_call' ) ) )
       {
-        $db_participant = $record->get_assignment()->get_interview()->get_participant();
+        $db_assignment = $record->get_assignment();
+        if( !is_null( $db_assignment ) )
+        {
+          $db_interview = $db_assignment->get_interview();
+          if( !is_null( $db_interview ) ) $db_participant = $db_interview->get_participant();
+        }
       }
       else if( $record->column_exists( 'participant_id' ) )
       {
@@ -61,13 +66,17 @@ abstract class site_restricted_participant_module extends site_restricted_module
           __METHOD__ );
       }
 
-      // check if we are in an assignment with the participant
-      $setting_manager = lib::create( 'business\setting_manager' );
-      if( $setting_manager->get_setting( 'module', 'interview' ) )
+      if( !is_null( $db_participant ) )
       {
-        $db_assignment = lib::create( 'business\session' )->get_user()->get_open_assignment();
-        if( !is_null( $db_assignment ) && $db_assignment->get_interview()->participant_id == $db_participant->id )
-          $db_restricted_site = NULL;
+        // check if we are in an assignment with the participant
+        $setting_manager = lib::create( 'business\setting_manager' );
+        if( $setting_manager->get_setting( 'module', 'interview' ) )
+        {
+          $db_assignment = lib::create( 'business\session' )->get_user()->get_open_assignment();
+          if( !is_null( $db_assignment ) &&
+              $db_assignment->get_interview()->participant_id == $db_participant->id )
+            $db_restricted_site = NULL;
+        }
       }
     }
 
