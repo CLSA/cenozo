@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\site_restricted_module
+class module extends \cenozo\service\site_restricted_participant_module
 {
   /**
    * Extend parent method
@@ -25,13 +25,13 @@ class module extends \cenozo\service\site_restricted_module
     {
       // make sure the application has access to the participant
       $db_application = lib::create( 'business\session' )->get_application();
-      $record = $this->get_resource();
-      if( !is_null( $record ) )
+      $db_alternate = $this->get_resource();
+      if( !is_null( $db_alternate ) )
       {
         if( $db_application->release_based )
         {
           $modifier = lib::create( 'database\modifier' );
-          $modifier->where( 'participant_id', '=', $record->participant_id );
+          $modifier->where( 'participant_id', '=', $db_alternate->participant_id );
           if( 0 == $db_application->get_participant_count( $modifier ) )
           {
             $this->get_status()->set_code( 404 );
@@ -43,7 +43,7 @@ class module extends \cenozo\service\site_restricted_module
         $db_restrict_site = $this->get_restricted_site();
         if( !is_null( $db_restrict_site ) )
         {
-          $db_participant = $record->get_participant();
+          $db_participant = $db_alternate->get_participant();
           if( !is_null( $db_participant ) && $db_participant->get_effective_site()->id != $db_restrict_site->id )
             $this->get_status()->set_code( 403 );
         }

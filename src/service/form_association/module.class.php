@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * Perform_associations operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\site_restricted_module
+class module extends \cenozo\service\site_restricted_participant_module
 {
   /**
    * Extend parent method

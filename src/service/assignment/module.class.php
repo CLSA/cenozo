@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\site_restricted_module
+class module extends \cenozo\service\site_restricted_participant_module
 {
   /**
    * Extend parent method
@@ -31,13 +31,15 @@ class module extends \cenozo\service\site_restricted_module
       $method = $this->get_method();
       $operation = $this->get_argument( 'operation', false );
       $data_array = $this->get_file_as_array();
+      $db_assignment = $this->get_resource();
 
       // restrict by site
       $db_restrict_site = $this->get_restricted_site();
       if( !is_null( $db_restrict_site ) )
       {
-        $record = $this->get_resource();
-        if( $record && $record->site_id && $record->site_id != $db_restrict_site->id )
+        if( !is_null( $db_assignment ) &&
+            $db_assignment->site_id &&
+            $db_assignment->site_id != $db_restrict_site->id )
         {
           $this->get_status()->set_code( 403 );
           return;
@@ -46,30 +48,28 @@ class module extends \cenozo\service\site_restricted_module
 
       if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
           3 > $db_role->tier &&
-          $this->get_resource()->user_id != $db_user->id )
+          $db_assignment->user_id != $db_user->id )
       {
         // only admins can delete or modify assignments other than their own
           $this->get_status()->set_code( 403 );
       }
       else if( 'PATCH' == $method && ( 'close' == $operation || 'force_close' == $operation ) )
       {
-        $record = $this->get_resource();
-
         if( 0 < count( $data_array ) )
         {
           $this->set_data( 'Patch data must be empty when advancing or closing an assignment.' );
           $this->get_status()->set_code( 400 );
         }
-        else if( !is_null( $record->end_datetime ) )
+        else if( !is_null( $db_assignment->end_datetime ) )
         {
           $this->set_data( 'Cannot close the assignment since it is already closed.' );
           $this->get_status()->set_code( 409 );
         }
         else
         {
-          $this->db_participant = $record->get_interview()->get_participant();
+          $this->db_participant = $db_assignment->get_interview()->get_participant();
 
-          $has_open_phone_call = $record->has_open_phone_call();
+          $has_open_phone_call = $db_assignment->has_open_phone_call();
           if( 'close' == $operation )
           {
             if( 0 < $has_open_phone_call )

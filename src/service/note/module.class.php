@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\site_restricted_module
+class module extends \cenozo\service\site_restricted_participant_module
 {
   /**
    * Extend parent method
@@ -29,12 +29,12 @@ class module extends \cenozo\service\site_restricted_module
 
       // make sure the application has access to the participant or alternate
       $db_application = lib::create( 'business\session' )->get_application();
-      $record = $this->get_resource();
-      if( !is_null( $record ) )
+      $db_note = $this->get_resource();
+      if( !is_null( $db_note ) )
       {
-        $db_participant = is_null( $record->participant_id )
-                        ? $record->get_alternate()->get_participant()
-                        : $record->get_participant();
+        $db_participant = is_null( $db_note->participant_id )
+                        ? $db_note->get_alternate()->get_participant()
+                        : $db_note->get_participant();
         if( $db_application->release_based )
         {
           $modifier = lib::create( 'database\modifier' );

@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\site_restricted_module
+class module extends \cenozo\service\site_restricted_participant_module
 {
   /**
    * Extend parent method
@@ -27,14 +27,14 @@ class module extends \cenozo\service\site_restricted_module
       $db_user = lib::create( 'business\session' )->get_user();
       $db_role = lib::create( 'business\session' )->get_role();
 
-      $record = $this->get_resource();
-      if( !is_null( $record ) )
+      $db_phone_call = $this->get_resource();
+      if( !is_null( $db_phone_call ) )
       {
         // restrict by site
         $db_restrict_site = $this->get_restricted_site();
         if( !is_null( $db_restrict_site ) )
         {
-          $db_assignment = $record->get_assignment();
+          $db_assignment = $db_phone_call->get_assignment();
           if( !is_null( $db_assignment ) )
           {
             $db_participant = $db_assignment->get_interview()->get_participant();
@@ -59,7 +59,7 @@ class module extends \cenozo\service\site_restricted_module
       }
       else if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
                3 > $db_role->tier &&
-               $record->get_assignment()->user_id != $db_user->id )
+               $db_phone_call->get_assignment()->user_id != $db_user->id )
       {
         // only admins can delete or modify phone calls other than their own
         $this->get_status()->set_code( 403 );
