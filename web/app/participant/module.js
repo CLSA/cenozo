@@ -798,14 +798,22 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           if( angular.isDefined( data.preferred_site_id ) && !CnSession.role.allSites ) {
             if( ( "" === data.preferred_site_id && this.record.default_site != CnSession.site.name ) ||
                 ( "" !== data.preferred_site_id && data.preferred_site_id != CnSession.site.id ) ) {
+              var assignedParticipant = null != CnSession.user.assignment &&
+                                        self.record.id == CnSession.user.assignment.participant_id;
+              var message = 'Are you sure you wish to change this participant\'s preferred site?\n\n';
+              message += assignedParticipant
+                       ? 'By selecting yes you will continue to have access to this participant until your ' +
+                         'assignment is complete, after which you will no longer have access to this participant.'
+                       : 'By selecting yes you will no longer have access to this participant and will be ' +
+                         'sent back to your home screen.';
               return CnModalConfirmFactory.instance( {
                 title: 'Change Preferred Site',
-                message: 'Are you sure you wish to change this participant\'s preferred site?\n\n' +
-                         'By selecting yes you will no longer have access to this participant and will be ' +
-                         'sent back to your home screen.'
+                message: message
               } ).show().then( function( response ) {
                 if( response ) {
-                  return self.$$onPatch( data ).then( function() { $state.go( 'root.home' ); } );
+                  return self.$$onPatch( data ).then( function() {
+                    if( !assignedParticipant ) $state.go( 'root.home' );
+                  } );
                 } else self.record.preferred_site_id = self.backupRecord.preferred_site_id;
               } );
             }
