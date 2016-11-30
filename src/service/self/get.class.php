@@ -139,6 +139,21 @@ class get extends \cenozo\service\service
     $last_activity = current( $activity_list );
     $pseudo_record['user']['last_activity'] = $last_activity ? $last_activity : NULL;
 
+    // if the interview module is on then indicate whether the user is in an open assignment
+    if( $setting_manager->get_setting( 'module', 'interview' ) )
+    {
+      $pseudo_record['user']['assignment'] = NULL;
+      $db_assignment = $db_user->get_open_assignment();
+      if( !is_null( $db_assignment ) )
+      {
+        $db_interview = $db_assignment->get_interview();
+        $pseudo_record['user']['assignment'] = array(
+          'id' => $db_assignment->id,
+          'participant_id' => is_null( $db_interview ) ? NULL : $db_interview->participant_id
+        );
+      }
+    }
+
     // include the number of active users for the application and whether it is in development mode
     $activity_mod = lib::create( 'database\modifier' );
     $activity_mod->where( 'end_datetime', '=', NULL );
