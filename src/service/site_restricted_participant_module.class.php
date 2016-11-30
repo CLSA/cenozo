@@ -38,7 +38,8 @@ abstract class site_restricted_participant_module extends site_restricted_module
       }
       else if( is_a( $record, lib::get_class_name( 'database\assignment' ) ) )
       {
-        $db_participant = $record->get_interview()->get_participant();
+        $db_interview = $record->get_interview();
+        if( !is_null( $db_interview ) ) $db_participant = $record->get_interview()->get_participant();
       }
       else if( is_a( $record, lib::get_class_name( 'database\form_association' ) ) )
       {
