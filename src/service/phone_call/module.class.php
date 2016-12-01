@@ -154,6 +154,26 @@ class module extends \cenozo\service\site_restricted_participant_module
     else if( 'PATCH' == $this->get_method() && 'close' == $operation )
     {
       $record->process_events();
+
+      // if the phone call status was marked as disconnected or wrong number then disable the phone record
+      if( 'disconnected' == $record->status || 'wrong number' == $record->status )
+      {
+        $db_phone = $record->get_phone();
+        $note = sprintf(
+          'This phone number has been disabled because a call was made to it on %s '.
+          'by user %s with the result of "%s".',
+          $record->start_datetime->format( 'F j, Y' ),
+          lib::create( 'business\session' )->get_user()->name,
+          $record->status
+        );
+
+        // keep the old note if there is one
+        if( !is_null( $db_phone->note ) ) $note = $db_phone->note."\n\n".$note;
+
+        $db_phone->active = false;
+        $db_phone->note = $note;
+        $db_phone->save();
+      }
     }
   }
 }
