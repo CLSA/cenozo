@@ -121,10 +121,11 @@ class ui extends \cenozo\base_object
     $setting_manager = lib::create( 'business\setting_manager' );
     $list = array(
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
-      'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export', 'export_file', 'form',
-      'form_association', 'form_type', 'hin', 'jurisdiction', 'language', 'overview', 'participant', 'phone',
-      'quota', 'region', 'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type',
-      'script', 'search_result', 'site', 'source', 'state', 'system_message', 'user', 'webphone'
+      'callback', 'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export',
+      'export_file', 'form', 'form_association', 'form_type', 'hin', 'jurisdiction', 'language', 'overview',
+      'participant', 'phone', 'quota', 'region', 'region_site', 'role', 'report', 'report_restriction',
+      'report_schedule', 'report_type', 'script', 'search_result', 'site', 'source', 'state', 'system_message',
+      'user', 'webphone'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -403,6 +404,7 @@ class ui extends \cenozo\base_object
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     $db_role = lib::create( 'business\session' )->get_role();
+    $db_site = lib::create( 'business\session' )->get_site();
 
     $list = array();
 
@@ -423,6 +425,14 @@ class ui extends \cenozo\base_object
         'subject' => 'webphone',
         'action' => 'status',
         'target' => 'webphone' );
+    if( array_key_exists( 'callback', $this->module_list ) )
+    {
+      $list['Callback Calendar'] = array(
+        'subject' => 'callback',
+        'action' => 'calendar',
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+    }
 
     return $list;
   }
