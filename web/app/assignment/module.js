@@ -23,6 +23,12 @@ define( [], function() {
           return 'assignment' == model.getSubjectFromState();
         }
       },
+      qnaire_name: {
+        title: 'Questionnaire',
+        isIncluded: function( $state, model ) {
+          return 'assignment' == model.getSubjectFromState();
+        }
+      },
       user: {
         column: 'user.name',
         title: 'User'
