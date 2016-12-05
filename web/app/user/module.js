@@ -478,7 +478,8 @@ define( function() {
       delete overviewModule.columnList.role_count;
       delete overviewModule.columnList.site_count;
       delete overviewModule.columnList.last_access_datetime;
-      angular.extend( overviewModule.columnList, {
+
+      var columnList = {
         site: {
           column: 'site.name',
           title: 'Site',
@@ -500,7 +501,13 @@ define( function() {
           title: 'Last Activity',
           type: 'time'
         }
-      } );
+      };
+
+      // add the user's assignment uid (if the interview module is turned on)
+      if( 0 <= CnSession.moduleList.indexOf( 'interview' ) )
+        cenozo.insertPropertyAfter( columnList, 'role', 'assignment_uid', { title: 'Assignment' } );
+
+      angular.extend( overviewModule.columnList, columnList );
 
       // remove some columns based on the voip and role details
       CnSession.promise.then( function() {

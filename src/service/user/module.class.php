@@ -166,6 +166,19 @@ class module extends \cenozo\service\site_restricted_module
 
     }
 
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( $setting_manager->get_setting( 'module', 'interview' ) )
+    {
+      // add the current assignment
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'user.id', '=', 'assignment.user_id', false );
+      $join_mod->where( 'assignment.end_datetime', '=', NULL );
+      $modifier->join_modifier( 'assignment', $join_mod, 'left' );
+      $modifier->left_join( 'interview', 'assignment.interview_id', 'interview.id' );
+      $modifier->left_join( 'participant', 'interview.participant_id', 'participant.id' );
+      $select->add_column( 'IFNULL( participant.uid, "none" )', 'assignment_uid', false );
+    }
+
     // add the webphone column from voip information
     if( $select->has_column( 'in_call' ) || $select->has_column( 'webphone' ) )
     {
