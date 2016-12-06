@@ -214,6 +214,9 @@ define( [], function() {
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnAssignmentListFactory.instance( this );
         this.viewModel = CnAssignmentViewFactory.instance( this, root );
+
+        // by default don't allow assignments to be manually added
+        this.getAddEnabled = function() { return false; };
       };
 
       return {
