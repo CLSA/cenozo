@@ -28,7 +28,7 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
       return {
         getIdentifier: function() { return participant.getIdentifier(); },
         title: participant.uid,
-        start: moment( participant.callback )
+        start: moment( participant.callback ).subtract( offset, 'minutes' )
       };
     }
   }
