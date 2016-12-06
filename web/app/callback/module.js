@@ -25,13 +25,11 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
       // adjust the appointment for daylight savings time
       if( date.tz( timezone ).isDST() ) offset += -60;
 
-      event = {
+      return {
         getIdentifier: function() { return participant.getIdentifier(); },
         title: participant.uid,
         start: moment( participant.callback )
       };
-
-      return event;
     }
   }
 
