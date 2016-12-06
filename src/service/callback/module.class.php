@@ -49,7 +49,10 @@ class module extends \cenozo\service\base_calendar_module
     $db_restricted_site = $this->get_restricted_site();
     if( !is_null( $db_restricted_site ) )
     {
-      $modifier->join( 'participant_site', 'participant.id', 'participant_site.participant_id' );
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
+      $join_mod->where( 'participant_site.application_id', '=', $db_application->id );
+      $modifier->join_modifier( 'participant_site', $join_mod );
       $modifier->where( 'participant_site.site_id', '=', $db_restricted_site->id );
     }
 
