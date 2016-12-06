@@ -178,14 +178,16 @@ class ui extends \cenozo\base_object
       {
         if( !$use_interview_module )
           throw lib::create( 'exception\runtime',
-            'Application has %s service but it\'s parent module, interview, is not activated.',
+            sprintf( 'Application has %s service but it\'s parent module, interview, is not activated.',
+                     $module->get_subject() ),
             __METHOD__ );
       }
       if( in_array( $module->get_subject(), array( 'recording', 'recording_file' ) ) )
       {
         if( !$use_recording_module )
           throw lib::create( 'exception\runtime',
-            'Application has %s service but it\'s parent module, recording, is not activated.',
+            sprintf( 'Application has %s service but it\'s parent module, recording, is not activated.',
+                     $module->get_subject() ),
             __METHOD__ );
       }
 
