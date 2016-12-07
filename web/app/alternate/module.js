@@ -59,8 +59,8 @@ define( function() {
       type: 'lookup-typeahead',
       typeahead: {
         table: 'participant',
-        select: 'CONCAT( first_name, " ", last_name, " (", uid, ")" )',
-        where: [ 'first_name', 'last_name', 'uid' ]
+        select: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
+        where: [ 'participant.first_name', 'participant.last_name', 'uid' ]
       }
     },
     first_name: {

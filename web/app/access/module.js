@@ -56,8 +56,8 @@ define( function() {
       type: 'lookup-typeahead',
       typeahead: {
         table: 'user',
-        select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
-        where: [ 'first_name', 'last_name', 'name' ]
+        select: 'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
+        where: [ 'user.first_name', 'user.last_name', 'user.name' ]
       }
     },
     role_id: {
@@ -173,7 +173,7 @@ define( function() {
           if( 'user' == input.typeahead.table ) {
             data.modifier.where.unshift( { bracket: true, open: true } );
             data.modifier.where.push( { bracket: true, open: false } );
-            data.modifier.where.push( { column: 'active', operator: '=', value: true } );
+            data.modifier.where.push( { column: 'user.active', operator: '=', value: true } );
           }
 
           return data;

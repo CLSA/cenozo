@@ -43,8 +43,8 @@ define( [
       type: 'lookup-typeahead',
       typeahead: {
         table: 'user',
-        select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
-        where: [ 'first_name', 'last_name', 'name' ]
+        select: 'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
+        where: [ 'user.first_name', 'user.last_name', 'user.name' ]
       },
       exclude: 'add'
     },
