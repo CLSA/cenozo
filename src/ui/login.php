@@ -35,11 +35,11 @@
         } else if( -1 != userAgent.indexOf( 'Chrome/' ) ) {
           $scope.browser = 'Chrome';
           var version = userAgent.match( /Chrome\/([^.]+)/ )[1];
-          if( <?php echo $chrome_minimum_version; ?> > version ) $scope.badVersion = true;
+          if( <?php echo $chrome_minimum_version; ?> > version ) $scope.badVersion = version;
         } else if( -1 != userAgent.indexOf( 'Firefox/' ) ) {
           $scope.browser = 'Firefox';
           var version = userAgent.match( /Firefox\/([^.]+)/ )[1];
-          if( <?php echo $firefox_minimum_version; ?> > version ) $scope.badVersion = true;
+          if( <?php echo $firefox_minimum_version; ?> > version ) $scope.badVersion = version;
         }
 
         if( null != $scope.browser && !$scope.badVersion ) {
