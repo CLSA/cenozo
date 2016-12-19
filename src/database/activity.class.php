@@ -90,14 +90,14 @@ class activity extends record
   {
     $db_application = lib::create( 'business\session' )->get_application();
 
-    $modifier = static::get_expired_modifier();
-    $modifier->where( 'activity.application_id', '=', $db_application->id );
-    $modifier->where( 'end_datetime', '=', NULL );
-
     $affected_rows = 0;
     if( is_null( $db_user ) )
     {
       // close all lapsed activity
+      $modifier = static::get_expired_modifier();
+      $modifier->where( 'activity.application_id', '=', $db_application->id );
+      $modifier->where( 'end_datetime', '=', NULL );
+
       $affected_rows = static::db()->execute( sprintf(
         'UPDATE activity'.
         "\n".'JOIN access USING( user_id, role_id, site_id )'.
@@ -106,7 +106,7 @@ class activity extends record
     }
     else
     {
-      // close all open activity by this user NOT for the current site/role
+      // close all open activity by this user
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'end_datetime', '=', NULL );
       $modifier->where( 'application_id', '=', $db_application->id );
