@@ -107,7 +107,6 @@ class activity extends record
     else
     {
       // close all open activity by this user NOT for the current site/role
-      $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'user_id', '=', $db_user->id );
       $affected_rows = static::db()->execute( sprintf(
         'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
