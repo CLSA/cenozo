@@ -2482,7 +2482,7 @@ cenozo.factory( 'CnSession', [
       this.updateData();
 
       // regularly check for new messages
-      $interval( self.getSystemMessages, 60000 );
+      $interval( self.getSystemMessages, 300000 );
     } );
   }
 ] );
