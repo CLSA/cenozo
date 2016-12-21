@@ -269,10 +269,9 @@ class survey_manager extends \cenozo\singleton
       $column = sprintf(
         'IF('."\n".
         '  %s = "REFUSED" OR'."\n".
-        '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
-        '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
-        '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
-        '  %s = "REFUSED" OR %s = "REFUSED",'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
+        '  %s = "YES" OR %s = "YES" OR %s = "YES" OR %s = "YES" OR'."\n".
+        '  %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED",'."\n".
         '  "default",'."\n".
         '  IF('."\n".
         '    %s = "YES" OR %s = "YES" OR %s = "YES" OR %s = "YES",'."\n".
@@ -288,6 +287,11 @@ class survey_manager extends \cenozo\singleton
         '  )'."\n".
         ')',
         $this->withdraw_column_name_list['start'],
+
+        $this->withdraw_column_name_list['hin_samp_def'],
+        $this->withdraw_column_name_list['hin_no_samp_def'],
+        $this->withdraw_column_name_list['no_hin_samp_def'],
+        $this->withdraw_column_name_list['no_hin_no_samp_def'],
 
         $this->withdraw_column_name_list['hin_samp_def'],
         $this->withdraw_column_name_list['hin_no_samp_def'],
