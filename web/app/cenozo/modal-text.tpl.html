@@ -1,0 +1,28 @@
+<form ng-submit="ok()" novalidate name="form" class="noselect">
+  <div class="modal-header bg-primary">
+    <h4 class="modal-title">{{ title }}</h4>
+  </div>
+  <div class="modal-body">
+    <p class="text-info">{{ message }}</p>
+    <div class="row container-fluid vertical-spacer">
+      <textarea id="text"
+                name="text"
+                ng-model="text"
+                ng-minlength="{{ minLength }}"
+                ng-required="0 < minLength"
+                class="form-control note" cn-elastic></textarea>
+      <span ng-if="form.text.$invalid && form.text.$dirty">
+        <span class="help-block" ng-if="form.text.$error.required">
+          You cannot leave this field empty.
+        </span>
+        <span class="help-block" ng-if="form.text.$error.minlength">
+          Entry is too short.
+        </span>
+      </span>
+    </div>
+  </div>
+  <div class="modal-footer bg-info">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary" ng-disabled="form.text.$invalid">OK</button>
+  </div>
+</form>

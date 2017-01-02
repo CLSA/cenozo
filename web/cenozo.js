@@ -5831,6 +5831,46 @@ cenozo.service( 'CnModalSiteRoleFactory', [
 /* ######################################################################################################## */
 
 /**
+ * A factory for showing a modal window with a textarea input
+ */
+cenozo.service( 'CnModalTextFactory', [
+  '$modal',
+  function( $modal ) {
+    var object = function( params ) {
+      var self = this;
+      this.title = 'Provide Text';
+      this.message = 'Please provide details:';
+      this.text = '';
+      this.minLength = 0;
+      angular.extend( this, params );
+
+      this.show = function() {
+        return $modal.open( {
+          backdrop: 'static',
+          keyboard: true,
+          modalFade: true,
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-text.tpl.html' ),
+          controller: function( $scope, $modalInstance ) {
+            $scope.title = self.title;
+            $scope.message = self.message;
+            $scope.text = self.text;
+            $scope.minLength = self.minLength;
+            $scope.ok = function() {
+              $modalInstance.close( angular.isUndefined( $scope.text ) ? '' : $scope.text );
+            };
+            $scope.cancel = function() { $modalInstance.close( false ); };
+          }
+        } ).result;
+      };
+    };
+
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * A factory for changing the current timezone in a modal window
  */
 cenozo.service( 'CnModalTimezoneFactory', [
