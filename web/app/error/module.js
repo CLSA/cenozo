@@ -30,7 +30,7 @@ define( function() {
           var self = this;
           self.data = $state.params.data;
           this.setupBreadcrumbTrail = function() {
-            CnSession.setBreadcrumbTrail( [ { title: $state.current.name.replace( '.', ' ' ).ucWords() } ] );
+            CnSession.setBreadcrumbTrail( [ { title: $state.current.name.replace( /\./g, ' ' ).ucWords() } ] );
           };
           self.role = CnSession.role;
         }

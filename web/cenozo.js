@@ -568,7 +568,7 @@ angular.extend( cenozo, {
         if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
           // the action's path is the action and the action's value which contains any variable parameters
           var url = '/' + action + module.actions[action];
-          var directive = 'cn-' + module.subject.snake.replace( '_', '-' ) + '-' + action;
+          var directive = 'cn-' + module.subject.snake.replace( /_/g, '-' ) + '-' + action;
           stateProvider.state( name + '.' + action, {
             url: url,
             template: '<' + directive + '></' + directive + '>',
@@ -600,7 +600,7 @@ angular.extend( cenozo, {
       module.children.forEach( function( child ) {
         var childModule = cenozoApp.module( child.subject.snake );
         if( angular.isDefined( childModule.actions.add ) ) {
-          var directive = 'cn-' + child.subject.snake.replace( '_', '-' ) + '-add';
+          var directive = 'cn-' + child.subject.snake.replace( /_/g, '-' ) + '-add';
           stateProvider.state( name + '.add_' + child.subject.snake, {
             url: baseAddUrl + '/' + child.subject.snake + childModule.actions.add,
             template: '<' + directive + '></' + directive + '>',
@@ -1537,7 +1537,11 @@ cenozo.directive( 'cnRecordView', [
           var parent = $scope.model.module.identifier.parent.findByProperty( 'subject', subject );
           if( null === parent ) return false;
           return $scope.model.viewModel.record[parent.alias];
-        }
+        };
+
+        $scope.parentName = function( subject ) {
+          return subject.replace( /_/g, ' ' ).ucWords();
+        };
 
         $scope.viewParent = function( subject ) {
           $scope.model.viewModel.transitionOnViewParent( subject );
@@ -4178,7 +4182,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           // check the module for parents
           if( angular.isDefined( parent.subject ) ) {
             trail = trail.concat( [ {
-              title: parent.subject.replace( '_', ' ' ).ucWords(),
+              title: parent.subject.replace( /_/g, ' ' ).ucWords(),
               go: function() { return self.transitionToParentListState( parent.subject ); }
             }, {
               title: self.getBreadcrumbParentTitle(),
