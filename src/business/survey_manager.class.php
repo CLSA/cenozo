@@ -185,6 +185,7 @@ class survey_manager extends \cenozo\singleton
       $withdraw_sel->add_column( 'CONVERT_TZ( survey.submitdate, "Canada/Eastern", "UTC" )', 'datetime', false );
       $withdraw_mod = lib::create( 'database\modifier' );
       $withdraw_mod->where( 'participant.id', '=', $db_participant->id );
+      $withdraw_mod->where( 'survey.submitdate', '!=', NULL );
       static::add_withdraw_option_column( $withdraw_sel, $withdraw_mod );
       static::add_withdraw_delink_column( $withdraw_sel, $withdraw_mod );
       $list = $participant_class_name::select( $withdraw_sel, $withdraw_mod );
