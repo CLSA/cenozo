@@ -33,7 +33,7 @@ $settings['general']['firefox_minimum_version'] = 40;
 $settings['general']['default_password'] = 'password';
 
 // the maximum number of login failures before deactivating a user
-$settings['general']['login_failure_limit'] = 15;
+$settings['general']['login_failure_limit'] = 7;
 
 // how long before a search result is considered out of date (in minutes)
 $settings['general']['search_timeout'] = 10;
