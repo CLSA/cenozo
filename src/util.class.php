@@ -305,16 +305,25 @@ class util
         $valid = self::encrypt( $password ) === self::encrypt( $db_user->password );
     }
 
-    // if invalid then check if user exists and increment their login failure count
-    // also, deactivate them if they go over the login failure limit
-    if( !$valid && $count_failure )
+    if( $count_failure )
     {
       $db_user = $user_class_name::get_unique_record( 'name', $username );
       if( !is_null( $db_user ) )
       {
-        $db_user->login_failures++;
-        if( $setting_manager->get_setting( 'general', 'login_failure_limit' ) <= $db_user->login_failures )
-          $db_user->active = false;
+        // if valid then reset the user's login failure count
+        if( $valid )
+        {
+          $db_user->login_failures = 0;
+        }
+        else
+        // if invalid then increment the user's login failure count and deactivate them if they go
+        // over the login failure limit
+        {
+          $db_user->login_failures++;
+          if( $setting_manager->get_setting( 'general', 'login_failure_limit' ) <= $db_user->login_failures )
+            $db_user->active = false;
+        }
+
         $db_user->save();
       }
     }
