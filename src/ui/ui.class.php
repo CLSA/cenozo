@@ -125,7 +125,7 @@ class ui extends \cenozo\base_object
       'export_file', 'form', 'form_association', 'form_type', 'hin', 'jurisdiction', 'language', 'overview',
       'participant', 'phone', 'quota', 'region', 'region_site', 'role', 'report', 'report_restriction',
       'report_schedule', 'report_type', 'script', 'search_result', 'site', 'source', 'state', 'system_message',
-      'user', 'webphone'
+      'user', 'webphone', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
