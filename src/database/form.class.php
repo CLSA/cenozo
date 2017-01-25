@@ -50,7 +50,7 @@ class form extends record
    * @return database\consent The consent record created by this method
    * @access public
    */
-  public function add_consent( $type, $consent )
+  public function add_consent( $type, $consent, $note = NULL )
   {
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
 
@@ -73,7 +73,7 @@ class form extends record
       $db_consent->accept = $consent['accept'];
       $db_consent->written = true;
       $db_consent->datetime = $datetime;
-      $db_consent->note = 'Provided by Onyx.';
+      $db_consent->note = $note;
       $db_consent->save();
     }
 
