@@ -112,9 +112,11 @@ class activity extends record
       $modifier->where( 'application_id', '=', $db_application->id );
       $modifier->where( 'user_id', '=', $db_user->id );
 
-      $affected_rows = static::db()->execute( sprintf(
-        'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
-        $modifier->get_sql() ) );
+      $affected_rows = static::db()->execute(
+        sprintf( 'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s', $modifier->get_sql() ),
+        true,
+        true // ignore deadlocks
+      );
     }
 
     return $affected_rows;
