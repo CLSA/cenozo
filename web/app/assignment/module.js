@@ -4,10 +4,13 @@ define( [], function() {
   try { var module = cenozoApp.module( 'assignment', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
-      parent: {
+      parent: [ {
         subject: 'interview',
         column: 'interview_id'
-      }
+      }, {
+        subject: 'participant',
+        column: 'participant.uid'
+      } ]
     },
     name: {
       singular: 'assignment',
