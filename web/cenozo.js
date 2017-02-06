@@ -2937,6 +2937,16 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               );
             } );
           },
+          eventAfterRender: function( event, element, view ) {
+            // add help as a popover
+            if( null != event.help ) {
+              element.popover( {
+                trigger: 'hover',
+                content: event.help,
+                placement: 'top'
+              } );
+            }
+          },
           eventAfterAllRender: function( view ) {
             // track the current view
             object.currentDate = this.calendar.getDate();

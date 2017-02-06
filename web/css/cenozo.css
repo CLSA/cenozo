@@ -72,7 +72,12 @@ iframe { padding: 0px; margin: 0px; border: 0px; }
 .col-slim-left { padding-left: 0px; }
 .col-slim-right { padding-right: 0px; }
 .nopadding { padding: 0px; }
-.tooltip-inner { width: 350px; }
+.tooltip-inner { max-width:350px; }
+.popover {
+  max-width:none;
+  white-space:pre;
+  text-align:initial;
+}
 .top-left { position: absolute; top: 0px; left: 0px; }
 .top-right { position: absolute; top: 0px; right: 0px; }
 .bottom-left { position: absolute; bottom: 0px; left: 0px; }
