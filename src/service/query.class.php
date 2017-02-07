@@ -95,7 +95,6 @@ class query extends read
       $this->headers['Offset'] = $this->modifier->get_offset();
       $this->headers['Total'] = $this->get_record_count();
       if( !$this->get_argument( 'count', false ) ) $this->set_data( $this->get_record_list() );
-      log::debug( $this->headers['Offset'], $this->headers['Limit'] );
     }
   }
 
