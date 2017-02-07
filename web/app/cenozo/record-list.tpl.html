@@ -125,8 +125,8 @@
         <tr ng-if="!model.listModel.isLoading"
             ng-repeat="record in model.listModel.cache
                        | orderBy: model.listModel.order.column:model.listModel.order.reverse
-                       | limitTo: ( model.listModel.paginationModel.currentPage - 1 ) *
-                                  model.listModel.paginationModel.itemsPerPage - model.listModel.cache.length
+                       | limitTo: model.listModel.paginationModel.getLimitTo(
+                                    model.listModel.minOffset, model.listModel.cache.length )
                        | limitTo: model.listModel.paginationModel.itemsPerPage"
             ng-click="model.listModel.chooseMode ? chooseRecord( record ) : selectRecord( record )"
             ng-class="{ success:model.listModel.chooseMode && record.chosen }">
@@ -164,7 +164,7 @@
             <pagination class="pagination pull-left"
                         ng-model="model.listModel.paginationModel.currentPage"
                         ng-show="model.listModel.cache.length > model.listModel.paginationModel.itemsPerPage"
-                        ng-change="model.listModel.checkCache()"
+                        ng-change="model.listModel.onPagination()"
                         max-size="model.listModel.paginationModel.showPageLimit"
                         items-per-page="model.listModel.paginationModel.itemsPerPage"
                         total-items="model.listModel.total"

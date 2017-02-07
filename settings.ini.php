@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.0.1';
-$settings['general']['cenozo_build'] = '1cf1adf';
+$settings['general']['cenozo_build'] = '80d373a';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -111,7 +111,6 @@ $settings['utility']['password'] = '';
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
 $settings['db']['prefix'] = '';
-$settings['db']['query_limit'] = 100;
 
 // ldap settings
 $settings['ldap']['enabled'] = true;

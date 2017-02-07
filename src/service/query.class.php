@@ -68,7 +68,15 @@ class query extends read
     }
 
     if( is_null( $this->modifier->get_limit() ) )
-      $this->modifier->limit( $setting_manager->get_setting( 'db', 'query_limit' ) );
+    {
+      // query limit of 100 needs to be hard-coded (really, it needs to be evenly divided by the number of
+      // items per page shown by the web UI)
+      $this->modifier->limit( 100 );
+      $assert_offset = $this->get_argument( 'assert_offset', NULL );
+      // Set the offset such that the assert-offset will fall inside the query-limit
+      if( !is_null( $assert_offset ) )
+        $this->modifier->offset( 100 * ( ceil( $assert_offset / 100 ) - 1 ) );
+    }
   }
 
   /**
@@ -87,6 +95,7 @@ class query extends read
       $this->headers['Offset'] = $this->modifier->get_offset();
       $this->headers['Total'] = $this->get_record_count();
       if( !$this->get_argument( 'count', false ) ) $this->set_data( $this->get_record_list() );
+      log::debug( $this->headers['Offset'], $this->headers['Limit'] );
     }
   }
 
