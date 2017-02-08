@@ -3245,6 +3245,15 @@ cenozo.factory( 'CnBaseListFactory', [
             this.minOffset = null;
           }
 
+          // determine if there is a row highlight condition
+          var highlightCondition = {};
+          for( var column in this.parentModel.columnList ) {
+            var highlight = this.parentModel.columnList[column].highlight;
+            if( angular.isDefined( highlight ) ) {
+              highlightCondition[column] = highlight;
+            }
+          };
+
           // set up the restrict, offset and sorting
           if( this.parentModel.hasQueryParameter( 'restrict' ) ) {
             var restrict = this.parentModel.getQueryParameter( 'restrict' );
@@ -3308,6 +3317,13 @@ cenozo.factory( 'CnBaseListFactory', [
             // add the getIdentifier() method to each row before adding it to the cache
             response.data.forEach( function( item ) {
               item.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
+
+              // check if we should highlight the row (by default no)
+              item.$highlight = false;
+              for( var name in highlightCondition ) {
+                item.$highlight = item[name] == highlightCondition[name];
+                if( !item.$highlight ) break; // don't highlight if any condition doesn't match
+              }
             } );
             self.cache = self.cache.concat( response.data );
             self.total = parseInt( response.headers( 'Total' ) );
