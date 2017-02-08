@@ -1112,27 +1112,36 @@ cenozo.directive( 'cnRecordAdd', [
                   if( 1 == enumList.length ) $scope.record[input.key] = enumList[0].value;
                   input.enumList = enumList;
                 } else if( 'lookup-typeahead' == input.type ) {
-                  // apply parent values to lookup-typeaheads
-                  var parent = $scope.model.getParentIdentifier();
-                  if( angular.isDefined( parent.subject ) &&
-                      angular.isDefined( parent.identifier ) &&
-                      angular.isDefined( input.typeahead ) &&
-                      parent.subject == input.typeahead.table ) {
-                    CnHttpFactory.instance( {
-                      path: input.typeahead.table + '/' + parent.identifier,
-                      data: {
-                        select: {
-                          column: [ 'id', {
-                            column: input.typeahead.select,
-                            alias: 'value',
-                            table_prefix: false
-                          } ]
+                  // use the default value if one is provided
+                  var defaultValue = $scope.model.module.getInput( input.key ).default;
+                  if( angular.isObject( defaultValue ) &&
+                      angular.isDefined( defaultValue.id ) &&
+                      angular.isDefined( defaultValue.formatted ) ) {
+                    $scope.record[input.key] = defaultValue.id;
+                    $scope.formattedRecord[input.key] = defaultValue.formatted;
+                  } else {
+                    // apply parent values to lookup-typeaheads
+                    var parent = $scope.model.getParentIdentifier();
+                    if( angular.isDefined( parent.subject ) &&
+                        angular.isDefined( parent.identifier ) &&
+                        angular.isDefined( input.typeahead ) &&
+                        parent.subject == input.typeahead.table ) {
+                      CnHttpFactory.instance( {
+                        path: input.typeahead.table + '/' + parent.identifier,
+                        data: {
+                          select: {
+                            column: [ 'id', {
+                              column: input.typeahead.select,
+                              alias: 'value',
+                              table_prefix: false
+                            } ]
+                          }
                         }
-                      }
-                    } ).get().then( function( response ) {
-                      $scope.record[input.key] = response.data.id;
-                      $scope.formattedRecord[input.key] = response.data.value;
-                    } );
+                      } ).get().then( function( response ) {
+                        $scope.record[input.key] = response.data.id;
+                        $scope.formattedRecord[input.key] = response.data.value;
+                      } );
+                    }
                   }
                 } else if( 'size' == input.type ) {
                   $scope.formattedRecord[input.key] = [ '', 'Bytes' ];
