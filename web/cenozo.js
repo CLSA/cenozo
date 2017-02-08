@@ -2951,7 +2951,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               element.popover( {
                 trigger: 'hover',
                 content: event.help,
-                placement: 'top'
+                placement: 'top',
+                container: 'body'
               } );
             }
           },
