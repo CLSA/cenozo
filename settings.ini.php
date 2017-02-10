@@ -111,7 +111,6 @@ $settings['utility']['password'] = '';
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
 $settings['db']['prefix'] = '';
-$settings['db']['query_limit'] = 100;
 
 // ldap settings
 $settings['ldap']['enabled'] = true;

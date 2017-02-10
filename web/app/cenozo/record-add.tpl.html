@@ -68,13 +68,13 @@
                           class="form-control"
                           ng-disabled="true === input.constant || 'add' == input.constanta"
                           ng-required="model.metadata.columnList[input.key].required">
-                    <option ng-disabled="null === model.viewModel.record[input.key]" value="Bytes">Bytes</option>
-                    <option ng-disabled="null === model.viewModel.record[input.key]" value="KB">KB</option>
-                    <option ng-disabled="null === model.viewModel.record[input.key]" value="MB">MB</option>
-                    <option ng-disabled="null === model.viewModel.record[input.key]" value="GB">GB</option>
-                    <option ng-disabled="null === model.viewModel.record[input.key]" value="TB">TB</option>
-                    <option ng-disabled="null === model.viewModel.record[input.key]" value="PB">PB</option>
-                    <option ng-disabled="null === model.viewModel.record[input.key]" value="EB">EB</option>
+                    <option ng-disabled="null === record[input.key]" value="Bytes">Bytes</option>
+                    <option ng-disabled="null === record[input.key]" value="KB">KB</option>
+                    <option ng-disabled="null === record[input.key]" value="MB">MB</option>
+                    <option ng-disabled="null === record[input.key]" value="GB">GB</option>
+                    <option ng-disabled="null === record[input.key]" value="TB">TB</option>
+                    <option ng-disabled="null === record[input.key]" value="PB">PB</option>
+                    <option ng-disabled="null === record[input.key]" value="EB">EB</option>
                   </select>
                   </div>
                 </div>

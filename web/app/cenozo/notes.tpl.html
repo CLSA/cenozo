@@ -57,36 +57,42 @@
         <span ng-if="0 < search.length">There are no notes which have all of the words in your search.</span>
       </p>
       <div class="panel"
+           style="margin-bottom: 6px;"
            ng-class="note.sticky ? 'panel-warning' : 'panel-default'"
            ng-repeat="note in model.noteList | orderBy:['-sticky','-datetime']">
-        <div class="panel-heading">
-          <span class="allow-select">{{ note.userFirst }} {{ note.userLast }}</span>
-          <span class="pull-right">
-            <span class="allow-select">{{ note.datetime | cnDatetime:'datetimesecond' }}</span>
-            <button ng-if="model.allowEdit"
-                    class="btn btn-xs btn-default"
-                    ng-class="{'btn-warning':note.sticky}"
-                    ng-click="model.stickyChanged( note.id )">
-              <i class="glyphicon glyphicon-pushpin"></i>
-            </button>
-            <button ng-if="model.allowDelete"
-                    class="btn btn-xs btn-danger"
-                    cn-really-message="Are you sure you want to delete the note by {{ note.userFirst }} {{ note.userLast }}?"
-                    cn-really-click="model.deleteNote( note.id )">
-              <i class="glyphicon glyphicon-remove"></i>
-            </button>
-          </span>
-        </div>
-        <div style="position:relative;">
-          <textarea id="note{{ note.id }}"
-                    ng-model="note.note"
-                    cn-change="model.noteChanged( note.id )"
-                    class="form-control note"
-                    ng-readonly="!model.allowEdit"
-                    cn-elastic></textarea>
-          <button ng-if="note.note != note.noteBackup"
-                  class="btn btn-warning bottom-right"
-                  ng-click="undo( note.id )">undo</button>
+        <div class="row allow-select">
+          <div class="col-sm-4" ng-class="{ 'text-warning':note.sticky }" style="padding-top: 4px;">
+            <div class="col-xs-2" ng-if="model.allowEdit || model.allowDelete">
+              <button ng-if="model.allowEdit"
+                      class="btn btn-xs btn-default"
+                      ng-class="{'btn-warning':note.sticky}"
+                      ng-click="model.stickyChanged( note.id )">
+                <i class="glyphicon glyphicon-pushpin"></i>
+              </button><br>
+              <button ng-if="model.allowDelete"
+                      class="btn btn-xs btn-danger"
+                      cn-really-message="Are you sure you want to delete the note by {{ note.userFirst }} {{ note.userLast }}?"
+                      cn-really-click="model.deleteNote( note.id )">
+                <i class="glyphicon glyphicon-remove"></i>
+              </button>
+            </div>
+            <div ng-class="model.allowEdit || model.allowDelete ? 'col-xs-10 col-slim' : 'col-xs-12'">
+              {{ note.userFirst }} {{ note.userLast }}<br>
+              {{ note.datetime | cnDatetime:'datetimesecond' }}
+            </div>
+          </div>
+          <div class="col-sm-8">
+            <textarea id="note{{ note.id }}"
+                      ng-model="note.note"
+                      cn-change="model.noteChanged( note.id )"
+                      class="form-control note"
+                      ng-readonly="!model.allowEdit"
+                      cn-elastic></textarea>
+            <button ng-if="note.note != note.noteBackup"
+                    class="btn btn-warning bottom-right"
+                    style="right: 15px;"
+                    ng-click="undo( note.id )">undo</button>
+          </div>
         </div>
       </div>
     </div>

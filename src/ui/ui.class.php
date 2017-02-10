@@ -199,7 +199,7 @@ class ui extends \cenozo\base_object
       else if( 'GET' == $service['method'] )
       {
         if( $service['resource'] ) $module->add_action( 'view', '/{identifier}' );
-        else $module->add_action( 'list', '?{restrict}&{order}&{reverse}' );
+        else $module->add_action( 'list', '?{page}&{restrict}&{order}&{reverse}' );
       }
       else if( 'PATCH' == $service['method'] )
       {
@@ -417,11 +417,11 @@ class ui extends \cenozo\base_object
     $list['Participant Search'] = array(
       'subject' => 'search_result',
       'action' => 'list',
-      'query' => '?{q}&{restrict}&{order}&{reverse}' );
+      'query' => '?{q}&{page}&{restrict}&{order}&{reverse}' );
     $list['User Overview'] = array(
       'subject' => 'user',
       'action' => 'overview',
-      'query' => '?{restrict}&{order}&{reverse}' );
+      'query' => '?{page}&{restrict}&{order}&{reverse}' );
     if( $setting_manager->get_setting( 'voip', 'enabled' ) )
       $list['Webphone'] = array(
         'subject' => 'webphone',

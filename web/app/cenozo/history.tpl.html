@@ -58,15 +58,17 @@
         </div>
       </div>
       <hr />
-      <div class="panel panel-default" ng-repeat="history in model.getVisibleHistoryList()">
-        <div class="panel-heading">
-          <span class="allow-select">
-            <strong>{{ history.category }}</strong>: {{ history.title }}
-          </span>
-          <span class="allow-select pull-right">{{ history.datetime | cnDatetime:'datetimesecond' }}</span>
-        </div>
-        <div class="panel-body">
-          <span style="white-space: pre-wrap;">{{ history.description }}</span>
+      <div class="panel panel-default container-fluid"
+           style="margin-bottom: 6px"
+           ng-repeat="history in model.getVisibleHistoryList()">
+        <div class="row allow-select" style="padding: 6px 0;">
+          <div class="col-sm-4">
+            <strong>{{ history.category }}</strong>: {{ history.title }}<br>
+            {{ history.datetime | cnDatetime:'datetimesecond' }}
+          </div>
+          <div class="col-sm-8">
+            <span style="white-space: pre-wrap;">{{ history.description }}</span>
+          </div>
         </div>
       </div>
     </div>

@@ -1112,27 +1112,36 @@ cenozo.directive( 'cnRecordAdd', [
                   if( 1 == enumList.length ) $scope.record[input.key] = enumList[0].value;
                   input.enumList = enumList;
                 } else if( 'lookup-typeahead' == input.type ) {
-                  // apply parent values to lookup-typeaheads
-                  var parent = $scope.model.getParentIdentifier();
-                  if( angular.isDefined( parent.subject ) &&
-                      angular.isDefined( parent.identifier ) &&
-                      angular.isDefined( input.typeahead ) &&
-                      parent.subject == input.typeahead.table ) {
-                    CnHttpFactory.instance( {
-                      path: input.typeahead.table + '/' + parent.identifier,
-                      data: {
-                        select: {
-                          column: [ 'id', {
-                            column: input.typeahead.select,
-                            alias: 'value',
-                            table_prefix: false
-                          } ]
+                  // use the default value if one is provided
+                  var defaultValue = $scope.model.module.getInput( input.key ).default;
+                  if( angular.isObject( defaultValue ) &&
+                      angular.isDefined( defaultValue.id ) &&
+                      angular.isDefined( defaultValue.formatted ) ) {
+                    $scope.record[input.key] = defaultValue.id;
+                    $scope.formattedRecord[input.key] = defaultValue.formatted;
+                  } else {
+                    // apply parent values to lookup-typeaheads
+                    var parent = $scope.model.getParentIdentifier();
+                    if( angular.isDefined( parent.subject ) &&
+                        angular.isDefined( parent.identifier ) &&
+                        angular.isDefined( input.typeahead ) &&
+                        parent.subject == input.typeahead.table ) {
+                      CnHttpFactory.instance( {
+                        path: input.typeahead.table + '/' + parent.identifier,
+                        data: {
+                          select: {
+                            column: [ 'id', {
+                              column: input.typeahead.select,
+                              alias: 'value',
+                              table_prefix: false
+                            } ]
+                          }
                         }
-                      }
-                    } ).get().then( function( response ) {
-                      $scope.record[input.key] = response.data.id;
-                      $scope.formattedRecord[input.key] = response.data.value;
-                    } );
+                      } ).get().then( function( response ) {
+                        $scope.record[input.key] = response.data.id;
+                        $scope.formattedRecord[input.key] = response.data.value;
+                      } );
+                    }
                   }
                 } else if( 'size' == input.type ) {
                   $scope.formattedRecord[input.key] = [ '', 'Bytes' ];
@@ -1365,15 +1374,14 @@ cenozo.directive( 'cnRecordList', [
         $scope.directive = 'cnRecordList';
         $scope.reportTypeListOpen = false;
         $scope.applyingChoose = false;
+
         $scope.model.listModel.onList( true ).then( function() {
           if( 'list' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
         } );
 
         $scope.refresh = function() {
           if( !$scope.model.listModel.isLoading ) {
-            $scope.model.listModel.onList( true ).then( function() {
-              $scope.model.listModel.paginationModel.currentPage = 1;
-            } );
+            $scope.model.listModel.onList( true );
           }
         };
 
@@ -2884,7 +2892,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
                 item.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( item ); };
               } );
               self.cache = self.cache.concat( response.data );
-              var total = response.headers( 'Total' );
+              var total = parseInt( response.headers( 'Total' ) );
               self.isReportAllowed = CnSession.application.maxBigReport >= total;
               self.isReportBig = CnSession.application.maxSmallReport < total;
             } ).finally( function() { self.isLoading = false; } ) );
@@ -2937,6 +2945,17 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               );
             } );
           },
+          eventAfterRender: function( event, element, view ) {
+            // add help as a popover
+            if( null != event.help ) {
+              element.popover( {
+                trigger: 'hover',
+                content: event.help,
+                placement: 'top',
+                container: 'body'
+              } );
+            }
+          },
           eventAfterAllRender: function( view ) {
             // track the current view
             object.currentDate = this.calendar.getDate();
@@ -2971,14 +2990,15 @@ cenozo.factory( 'CnBaseCalendarFactory', [
  * The base factory for all module List factories
  */
 cenozo.factory( 'CnBaseListFactory', [
-  'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
-  function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory, $q ) {
+  'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory', '$q', '$state',
+  function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory, $q, $state ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
         object.heading = parentModel.module.name.singular.ucWords() + ' List';
         object.order = object.parentModel.module.defaultOrder;
         object.total = 0;
+        object.minOffset = null;
         object.cache = [];
         object.enableReports = 1 < CnSession.role.tier;
         object.isReportLoading = false;
@@ -3008,12 +3028,13 @@ cenozo.factory( 'CnBaseListFactory', [
               // do state-based sorting
               this.parentModel.setQueryParameter( 'order', column );
               this.parentModel.setQueryParameter( 'reverse', reverse );
+              this.parentModel.setQueryParameter( 'page', 1 );
               this.parentModel.reloadState();
             } else {
               // do model-based sorting
               var promiseList = [];
               this.order = { column: column, reverse: reverse };
-              if( this.cache.length < this.total ) promiseList.push( this.onList( true ) );
+              if( this.cache.length < this.total ) { promiseList.push( this.onList( true ) ); }
               $q.all( promiseList ).then( function() { self.paginationModel.currentPage = 1; } );
             }
           }
@@ -3057,6 +3078,7 @@ cenozo.factory( 'CnBaseListFactory', [
                 'restrict',
                 angular.equals( restrict, {} ) ? undefined : angular.toJson( restrict )
               );
+              this.parentModel.setQueryParameter( 'page', 1 );
               this.parentModel.reloadState( true );
             } else {
               // do model-based restricting
@@ -3066,10 +3088,18 @@ cenozo.factory( 'CnBaseListFactory', [
           }
         } );
 
-        // should be called by pagination when the page is changed
-        cenozo.addExtendableFunction( object, 'checkCache', function() {
-          if( this.cache.length < this.total && this.paginationModel.getMaxIndex() >= this.cache.length )
-            this.onList();
+        // called when the pagination widget is used
+        cenozo.addExtendableFunction( object, 'onPagination', function() {
+          if( angular.isUndefined( this.paginationModel.ignore ) ) {
+            // set the page as a query parameter
+            this.parentModel.setQueryParameter( 'page', this.paginationModel.currentPage );
+            this.parentModel.reloadState( false );
+
+            // get more records if the max index is past the last record or the min index is before the first one
+            if( this.cache.length < this.total &&
+                ( this.paginationModel.getMaxIndex() >= this.cache.length + this.minOffset ) ||
+                ( this.paginationModel.getMinIndex() < this.minOffset ) ) this.onList();
+          }
         } );
 
         /**
@@ -3211,7 +3241,19 @@ cenozo.factory( 'CnBaseListFactory', [
           this.parentModel.listingState = 'list';
 
           if( angular.isUndefined( replace ) ) replace = false;
-          if( replace ) this.cache = [];
+          if( replace ) {
+            this.cache = [];
+            this.minOffset = null;
+          }
+
+          // determine if there is a row highlight condition
+          var highlightCondition = {};
+          for( var column in this.parentModel.columnList ) {
+            var highlight = this.parentModel.columnList[column].highlight;
+            if( angular.isDefined( highlight ) ) {
+              highlightCondition[column] = highlight;
+            }
+          };
 
           // set up the restrict, offset and sorting
           if( this.parentModel.hasQueryParameter( 'restrict' ) ) {
@@ -3238,10 +3280,19 @@ cenozo.factory( 'CnBaseListFactory', [
             if( angular.isDefined( reverse ) ) this.order.reverse = reverse;
           }
 
+          // Calling query() below will reset the pagination model's currentPage to 1, so we'll store
+          // the page value (from query parameters) if it exists, or the pagination model's currentPage
+          // if not, and we'll also mark the paginationModel to ignore (so that the state's page param
+          // isn't set to 1)
+          var currentPage = replace ? 1 : this.paginationModel.currentPage;
+          var queryCurrentPage = self.parentModel.getQueryParameter( 'page' );
+          if( angular.isDefined( queryCurrentPage ) ) currentPage = queryCurrentPage;
+          self.paginationModel.ignore = true;
+
           // start by getting the data from the parent model using the column restrict lists
           var data = this.parentModel.getServiceData( 'list', this.columnRestrictLists );
           if( angular.isUndefined( data.modifier ) ) data.modifier = {};
-          data.modifier.offset = replace ? 0 : this.cache.length;
+          data.assert_offset = (currentPage-1) * this.paginationModel.itemsPerPage + 1;
           if( this.parentModel.getChooseEnabled() && this.chooseMode ) data.choosing = 1;
 
           // add the table prefix to the column if there isn't already a prefix
@@ -3254,16 +3305,29 @@ cenozo.factory( 'CnBaseListFactory', [
 
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
           httpObj.onError = function( response ) { self.onListError( response ); }
-          var currentPage = replace ? 1 : this.paginationModel.currentPage;
+
           return CnHttpFactory.instance( httpObj ).query().then( function( response ) {
-            // the query call will reset the page to 1, so it is saved before the call and set back now
+            // Now that the query is done we can restore the pagination model's currentPage and remove
+            // the "ignore" parameter
+            delete self.paginationModel.ignore;
+            
             self.paginationModel.currentPage = currentPage;
+            var offset = parseInt( response.headers( 'Offset' ) );
+            if( null == self.minOffset || offset < self.minOffset ) self.minOffset = offset;
+
             // add the getIdentifier() method to each row before adding it to the cache
             response.data.forEach( function( item ) {
               item.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
+
+              // check if we should highlight the row (by default no)
+              item.$highlight = false;
+              for( var name in highlightCondition ) {
+                item.$highlight = item[name] == highlightCondition[name];
+                if( !item.$highlight ) break; // don't highlight if any condition doesn't match
+              }
             } );
             self.cache = self.cache.concat( response.data );
-            self.total = response.headers( 'Total' );
+            self.total = parseInt( response.headers( 'Total' ) );
             self.isReportAllowed = CnSession.application.maxBigReport >= self.total;
             self.isReportBig = CnSession.application.maxSmallReport < self.total;
             self.afterListFunctions.forEach( function( fn ) { fn(); } );
@@ -5940,7 +6004,11 @@ cenozo.factory( 'CnPaginationFactory',
       this.changePage = function() {};
       angular.extend( this, params );
 
-      this.getMaxIndex = function() { return this.currentPage * this.itemsPerPage - 1; }
+      this.getLimitTo = function( minOffset, cacheLength ) {
+        return ( this.currentPage - 1 ) * this.itemsPerPage - minOffset - cacheLength;
+      };
+      this.getMinIndex = function() { return ( this.currentPage - 1 ) * this.itemsPerPage; };
+      this.getMaxIndex = function() { return this.currentPage * this.itemsPerPage - 1; };
     };
 
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };

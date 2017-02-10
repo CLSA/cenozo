@@ -201,7 +201,6 @@ define( function() {
           return this.$$onNew( record ).then( function() {
             var mainInputGroup = parentModel.module.inputGroupList.findByProperty( 'title', '' );
             if( mainInputGroup ) {
-              mainInputGroup.inputList.region_id.exclude = false;
               mainInputGroup.inputList.international_region.exclude = true;
               mainInputGroup.inputList.international_country.exclude = true;
             }
@@ -241,7 +240,7 @@ define( function() {
           this.onViewPromise = this.$$onView().then( function() {
             var mainInputGroup = parentModel.module.inputGroupList.findByProperty( 'title', '' );
             if( mainInputGroup ) {
-              mainInputGroup.inputList.region_id.exclude = self.record.international;
+              mainInputGroup.inputList.region_id.exclude = self.record.international ? true : 'add';
               mainInputGroup.inputList.international_region.exclude = !self.record.international;
               mainInputGroup.inputList.international_country.exclude = !self.record.international;
             }

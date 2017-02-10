@@ -412,7 +412,11 @@ abstract class base_report extends \cenozo\base_object
           $value = $datetime_obj->format( $format );
         }
 
-        $modifier->where( $restriction['subject'], $restriction['operator'], $value );
+        $modifier->where(
+          $this->get_datetime_column( $restriction['subject'], $restriction['restriction_type'] ),
+          $restriction['operator'],
+          $value
+        );
       }
     }
   }
