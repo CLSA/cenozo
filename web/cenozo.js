@@ -2968,6 +2968,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             return object.parentModel.transitionToAddState();
           },
           eventClick: function( record ) {
+            angular.element( this ).popover( 'hide' );
             if( object.parentModel.getViewEnabled() )
               return object.parentModel.transitionToViewState( record );
           }
