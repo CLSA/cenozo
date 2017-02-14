@@ -202,7 +202,8 @@ class module extends \cenozo\service\site_restricted_module
           return $list;
         }, array() );
         sort( $user_list );
-        $select->add_column( sprintf( 'user.id IN ( %s )', implode( ',', $user_list ) ), 'webphone', false );
+        $webphone_list = 0 < count( $user_list ) ? implode( ',', $user_list ) : '0';
+        $select->add_column( sprintf( 'user.id IN ( %s )', implode( ',', $webphone_list ) ), 'webphone', false );
       }
     }
   }
