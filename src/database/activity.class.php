@@ -53,6 +53,10 @@ class activity extends record
     $modifier->or_where( 'role_id', '!=', $db_role->id );
     $modifier->where_bracket( false );
 
+    // block with a semaphore
+    $semaphore = lib::create( 'business\semaphore', __METHOD__ );
+    $semaphore->acquire();
+
     static::db()->execute( sprintf(
       'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
       $modifier->get_sql() ) );
@@ -73,6 +77,8 @@ class activity extends record
       $db_activity->start_datetime = $util_class_name::get_datetime_object();
       $db_activity->save();
     }
+
+    $semaphore->release();
   }
 
   /**
