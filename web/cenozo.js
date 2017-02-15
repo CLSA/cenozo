@@ -4684,6 +4684,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
         // Note: methods are added to Object here, members below
         angular.extend( object, {
           module: module,
+          noteSubject: 'note',
           uid: String( $state.params.identifier ).split( '=' ).pop(),
           search: angular.isDefined( $state.params.search ) ? $state.params.search : '',
           newNote: '',
@@ -4691,14 +4692,6 @@ cenozo.factory( 'CnBaseNoteFactory', [
           noteList: [],
           allowDelete: module.allowNoteDelete,
           allowEdit: module.allowNoteEdit,
-
-          viewHistory: function() {
-            $state.go( module.subject.snake + '.history', { identifier: $state.params.identifier } );
-          },
-
-          viewRecord: function() {
-            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } );
-          },
 
           updateSearch: function() {
             var self = this;
@@ -4725,7 +4718,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
             };
 
             CnHttpFactory.instance( {
-              path: module.subject.snake + '/' + $state.params.identifier + '/note',
+              path: [ module.subject.snake, $state.params.identifier, this.noteSubject ].join( '/' ),
               data: note
             } ).post().then( function( response ) {
               note.id = response.data;
@@ -4747,8 +4740,12 @@ cenozo.factory( 'CnBaseNoteFactory', [
             var index = this.noteListCache.findIndexByProperty( 'id', id );
             if( null !== index ) {
               CnHttpFactory.instance( {
-                path: module.subject.snake + '/' + $state.params.identifier +
-                      '/note/' + this.noteListCache[index].id
+                path: [
+                  module.subject.snake,
+                  $state.params.identifier,
+                  this.noteSubject,
+                  this.noteListCache[index].id
+                ].join( '/' )
               } ).delete().then( function() {
                 self.noteListCache.splice( index, 1 );
                 self.updateSearch( self.search );
@@ -4760,7 +4757,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
             var note = this.noteList.findByProperty( 'id', id );
             if( note ) {
               CnHttpFactory.instance( {
-                path: module.subject.snake + '/' + $state.params.identifier + '/note/' + note.id,
+                path: [ module.subject.snake, $state.params.identifier, this.noteSubject, note.id ].join( '/' ),
                 data: { note: note.note }
               } ).patch();
             }
@@ -4771,7 +4768,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
             if( note ) {
               note.sticky = !note.sticky;
               CnHttpFactory.instance( {
-                path: module.subject.snake + '/' + $state.params.identifier + '/note/' + note.id,
+                path: [ module.subject.snake, $state.params.identifier, this.noteSubject, note.id ].join( '/' ),
                 data: { sticky: note.sticky }
               } ).patch();
             }
@@ -4782,7 +4779,7 @@ cenozo.factory( 'CnBaseNoteFactory', [
             if( note && note.note != note.noteBackup ) {
               note.note = note.noteBackup;
               CnHttpFactory.instance( {
-                path: module.subject.snake + '/' + $state.params.identifier + '/note/' + note.id,
+                path: [ module.subject.snake, $state.params.identifier, this.noteSubject, note.id ].join( '/' ),
                 data: { note: note.note }
               } ).patch();
             }
@@ -4792,12 +4789,12 @@ cenozo.factory( 'CnBaseNoteFactory', [
             var self = this;
             this.isLoading = true;
             return CnHttpFactory.instance( {
-              path: module.subject.snake + '/' + $state.params.identifier + '/note',
+              path: [ module.subject.snake, $state.params.identifier, this.noteSubject ].join( '/' ),
               data: {
                 modifier: {
                   join: {
                     table: 'user',
-                    onleft: 'note.user_id',
+                    onleft: this.noteSubject + '.user_id',
                     onright: 'user.id'
                   },
                   order: { 'datetime': true }
@@ -4832,6 +4829,18 @@ cenozo.factory( 'CnBaseNoteFactory', [
             } ).finally( function() { self.isLoading = false; } );
           }
         } );
+
+        if( angular.isDefined( module.actions.history ) ) {
+          object.viewHistory = function() {
+            $state.go( module.subject.snake + '.history', { identifier: $state.params.identifier } );
+          };
+        }
+
+        if( angular.isDefined( module.actions.view ) ) {
+          object.viewRecord = function() {
+            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } );
+          };
+        }
       }
     };
   }
