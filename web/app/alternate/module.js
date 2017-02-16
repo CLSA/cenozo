@@ -590,7 +590,7 @@ define( function() {
               title: 'Alternates',
               go: function() { $state.go( 'alternate.list' ); }
             }, {
-              title: self.uid,
+              title: String( $state.params.identifier ).split( '=' ).pop(),
               go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
             }, {
               title: 'History'
@@ -617,7 +617,7 @@ define( function() {
               title: 'Alternates',
               go: function() { $state.go( 'alternate.list' ); }
             }, {
-              title: self.uid,
+              title: String( $state.params.identifier ).split( '=' ).pop(),
               go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
             }, {
               title: 'Notes'

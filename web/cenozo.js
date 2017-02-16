@@ -4686,7 +4686,6 @@ cenozo.factory( 'CnBaseNoteFactory', [
         angular.extend( object, {
           module: module,
           noteSubject: 'note',
-          uid: String( $state.params.identifier ).split( '=' ).pop(),
           search: angular.isDefined( $state.params.search ) ? $state.params.search : '',
           newNote: '',
           noteListCache: [],

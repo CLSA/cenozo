@@ -1328,7 +1328,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               title: 'Participants',
               go: function() { $state.go( 'participant.list' ); }
             }, {
-              title: self.uid,
+              title: String( $state.params.identifier ).split( '=' ).pop(),
               go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
             }, {
               title: 'Notes'
