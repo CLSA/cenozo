@@ -104,7 +104,7 @@ class session extends \cenozo\singleton
     }
 
     // remove any expired system messages
-    $system_message_class_name::remove_expired();
+    if( !$this->no_activity ) $system_message_class_name::remove_expired();
 
     $this->login();
     $this->state = 'initialized';

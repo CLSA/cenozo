@@ -3711,7 +3711,8 @@ cenozo.factory( 'CnBaseViewFactory', [
           return CnHttpFactory.instance( {
             path: this.parentModel.getServiceResourcePath(),
             data: this.parentModel.getServiceData( 'view' ),
-            redirectOnError: true
+            redirectOnError: true,
+            noActivity: false
           } ).get().then( function( response ) {
             if( '' === response.data )
               throw new Error( 'Request for record responded with an empty string (should be 403 or 404).' );
@@ -4881,6 +4882,7 @@ cenozo.factory( 'CnHttpFactory', [
       this.onError = CnModalMessageFactory.httpError;
       this.guid = cenozo.generateGUID();
       this.format = 'json';
+      this.noActivity = true;
       angular.extend( this, params );
 
       var self = this;
@@ -4960,7 +4962,11 @@ cenozo.factory( 'CnHttpFactory', [
           object.headers = {
             Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'
           };
+        } else {
+          object.headers = {};
         }
+
+        if( 'GET' == method || 'HEAD' == method ) object.headers['No-Activity'] = self.noActivity;
 
         var promise = $http( object )
         promise.catch( function( response ) {
