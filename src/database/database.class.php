@@ -165,7 +165,7 @@ class database extends \cenozo\base_object
       '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE );
     if( $database == $this->name )
     {
-      if( self::$debug ) log::debug( '(DB) starting transaction' );
+      if( true === self::$debug ) log::debug( '(DB) starting transaction' );
       $this->connection->begin_transaction();
       $this->transaction_state = 'started';
     }
@@ -179,7 +179,7 @@ class database extends \cenozo\base_object
    */
   public function complete_transaction()
   {
-    if( self::$debug ) log::debug( '(DB) completing transaction' );
+    if( true === self::$debug ) log::debug( '(DB) completing transaction' );
     $this->connection->commit();
     $this->transaction_state = 'committed';
   }
@@ -196,7 +196,7 @@ class database extends \cenozo\base_object
    */
   public function fail_transaction()
   {
-    if( self::$debug ) log::debug( '(DB) failing transaction' );
+    if( true === self::$debug ) log::debug( '(DB) failing transaction' );
     $this->connection->rollback();
     $this->transaction_state = 'failed';
   }
@@ -516,7 +516,7 @@ class database extends \cenozo\base_object
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
-    if( self::$debug )
+    if( true === self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
       log::debug( "(DB) getting one:\n".$sql );
@@ -532,7 +532,7 @@ class database extends \cenozo\base_object
     $array = $result->fetch_array( MYSQLI_NUM );
     $result->free();
     $value = is_null( $array ) ? NULL : current( $array );
-    if( self::$debug ) log::debug( sprintf( '(DB) result "%s" [%0.2fs]',
+    if( true === self::$debug ) log::debug( sprintf( '(DB) result "%s" [%0.2fs]',
                                             $value,
                                             $util_class_name::get_elapsed_time() - $time ) );
     return $value;
@@ -554,7 +554,7 @@ class database extends \cenozo\base_object
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
-    if( self::$debug )
+    if( true === self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
       log::debug( "(DB) getting row:\n".$sql );
@@ -569,7 +569,7 @@ class database extends \cenozo\base_object
 
     $row = $result->fetch_assoc();
     $result->free();
-    if( self::$debug )
+    if( true === self::$debug )
       log::debug( is_null( $row )
         ? sprintf( '(DB) did not return a row [%0.2fs]',
                    $util_class_name::get_elapsed_time() - $time )
@@ -596,7 +596,7 @@ class database extends \cenozo\base_object
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
-    if( self::$debug )
+    if( true === self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
       log::debug( "(DB) getting all:\n".$sql );
@@ -613,7 +613,7 @@ class database extends \cenozo\base_object
     while( $row = $result->fetch_assoc() ) $rows[] = $row;
     $result->free();
 
-    if( self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
+    if( true === self::$debug ) log::debug( sprintf( '(DB) returned %d rows [%0.2fs]',
                                             $rows ? count( $rows ) : 0,
                                             $util_class_name::get_elapsed_time() - $time ) );
     return $rows;
@@ -635,7 +635,7 @@ class database extends \cenozo\base_object
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
-    if( self::$debug )
+    if( true === self::$debug )
     {
       $time = $util_class_name::get_elapsed_time();
       log::debug( "(DB) getting col:\n".$sql );
@@ -651,7 +651,7 @@ class database extends \cenozo\base_object
     $cols = array();
     while( $row = $result->fetch_array( MYSQLI_NUM ) ) $cols[] = current( $row );
     $result->free();
-    if( self::$debug ) log::debug( sprintf( '(DB) returned %d values [%0.2fs]',
+    if( true === self::$debug ) log::debug( sprintf( '(DB) returned %d values [%0.2fs]',
                                             count( $cols ),
                                             $util_class_name::get_elapsed_time() - $time ) );
 
@@ -669,7 +669,7 @@ class database extends \cenozo\base_object
   public function insert_id()
   {
     $id = $this->connection->insert_id;
-    if( self::$debug ) log::debug( '(DB) insert ID = '.$id );
+    if( true === self::$debug ) log::debug( '(DB) insert ID = '.$id );
     return $id;
   }
 
@@ -684,7 +684,7 @@ class database extends \cenozo\base_object
   public function affected_rows()
   {
     $num = $this->connection->affected_rows;
-    if( self::$debug ) log::debug( '(DB) affected rows = '.$num );
+    if( true === self::$debug ) log::debug( '(DB) affected rows = '.$num );
     return $num;
   }
 
