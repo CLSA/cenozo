@@ -2991,8 +2991,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
  * The base factory for all module List factories
  */
 cenozo.factory( 'CnBaseListFactory', [
-  'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory', '$q', '$state',
-  function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory, $q, $state ) {
+  'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
+  function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory, $q ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
