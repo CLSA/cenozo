@@ -1843,6 +1843,27 @@ cenozo.directive( 'cnTreeBranch', [
 /* ######################################################################################################## */
 
 /**
+ * Adds an item to a list
+ * Usage: myList|cnAddItem:"hello"
+ *   This will add a value to the front or end of a list
+ *   Note, for adding objects use ng-init, for example: ng-init="obj={'value':10,'name':'hello'}"
+ * 
+ * @param mixed item The item to add to the list
+ * @param boolean front Whether to add the item to the front or end of the list (default end)
+ */
+cenozo.filter( 'cnAddItem', function() {
+  return function( input, item, front ) {
+    if( angular.isArray( input ) ) {
+      if( angular.isUndefined( front ) ) front = false;
+      if( front ) input.unshift( item ); else input.push( item );
+    }
+    return input;
+  };
+} );
+
+/* ######################################################################################################## */
+
+/**
  * Filters a listof objects based on a property's value
  * Usage: myList|cnByObjectProperty:'active':true
  *   This will only show objects in myList which have a property "active" equal to true
