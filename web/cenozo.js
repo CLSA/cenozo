@@ -568,7 +568,7 @@ angular.extend( cenozo, {
         if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
           // the action's path is the action and the action's value which contains any variable parameters
           var url = '/' + action + module.actions[action];
-          var directive = 'cn-' + module.subject.snake.replace( /_/g, '-' ) + '-' + action;
+          var directive = 'cn-' + module.subject.snake.replace( /_/g, '-' ) + '-' + action.replace( /_/g, '-' );
           stateProvider.state( name + '.' + action, {
             url: url,
             template: '<' + directive + '></' + directive + '>',
