@@ -16,7 +16,7 @@ CREATE PROCEDURE patch_table_character_sets()
     SELECT TABLE_NAME
     FROM information_schema.TABLES
     WHERE TABLE_SCHEMA = DATABASE()
-    AND IFNULL( TABLE_COLLATION, "utf8_general_ci" ) != "utf8_general_ci";
+    AND IFNULL( TABLE_COLLATION, "utf8_bin" ) != "utf8_bin";
 
     -- Declare 'handlers' for exceptions
     DECLARE CONTINUE HANDLER FOR NOT FOUND
@@ -45,7 +45,7 @@ CREATE PROCEDURE patch_table_character_sets()
       -- convert the table to utf8
       SET @sql = CONCAT(
         "ALTER TABLE ", name_val, " ",
-        "CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci" );
+        "CONVERT TO CHARACTER SET utf8 COLLATE utf8_bin" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -60,13 +60,13 @@ CREATE PROCEDURE patch_table_character_sets()
       SELECT COUNT(*)
       FROM information_schema.SCHEMATA
       WHERE SCHEMA_NAME = DATABASE()
-      AND ( DEFAULT_CHARACTER_SET_NAME != "utf8" OR DEFAULT_COLLATION_NAME != "utf8_general_ci" ) );
+      AND ( DEFAULT_CHARACTER_SET_NAME != "utf8" OR DEFAULT_COLLATION_NAME != "utf8_bin" ) );
     IF @test = 1 THEN
       SELECT CONCAT(
         "*** ATTENTION ***  The database is not set to use the UTF8 character set by default.  ",
         "Please run the following statement: ",
         "\"",
-        "ALTER DATABASE ", DATABASE(), " CHARACTER SET utf8 COLLATE utf8_general_ci",
+        "ALTER DATABASE ", DATABASE(), " CHARACTER SET utf8 COLLATE utf8_bin",
         "\"" ) AS "";
     END IF;
 
