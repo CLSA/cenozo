@@ -378,9 +378,12 @@ abstract class record extends \cenozo\base_object
     else
     {
       // if the column is an enum, make sure the new value is valid
-      $enum_values = $this->get_enum_values( $column_name );
-      if( !is_null( $enum_values ) && !in_array( $value, $enum_values ) )
-        throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
+      if( is_string( $value ) && 0 < strlen( $value ) )
+      {
+        $enum_values = $this->get_enum_values( $column_name );
+        if( !is_null( $enum_values ) && !in_array( $value, $enum_values ) )
+          throw lib::create( 'exception\argument', 'value', $value, __METHOD__ );
+      }
 
       // if the column is a datetime or timestamp
       $type = static::db()->get_column_data_type( static::get_table_name(), $column_name );
@@ -853,7 +856,7 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * 
+   * Convenience method for get_record_list with return_alternate set to 'object'
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
@@ -867,7 +870,7 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * 
+   * Convenience method for get_record_list with return_alternate set to 'count'
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
@@ -876,7 +879,7 @@ abstract class record extends \cenozo\base_object
    * @return associative array
    * @access protected
    */
-  public function get_record_count( $record_type, $modifier = NULL, $distinct  = false )
+  public function get_record_count( $record_type, $modifier = NULL, $distinct = false )
   {
     return $this->get_record_list( $record_type, NULL, $modifier, 'count', $distinct );
   }
