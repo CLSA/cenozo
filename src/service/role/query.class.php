@@ -23,6 +23,10 @@ class query extends \cenozo\service\query
 
     // if the request is for granting roles then restrict based on the user's role
     if( $this->get_argument( 'granting', false ) )
-      $this->modifier->where( 'tier', '<=', lib::create( 'business\session' )->get_role()->tier );
+    {
+      $db_role = lib::create( 'business\session' )->get_role();
+      $this->modifier->where( 'tier', '<=', $db_role->tier );
+      if( !$db_role->all_sites ) $this->modifier->where( 'all_sites', '=', false );
+    }
   }
 }

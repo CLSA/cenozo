@@ -25,7 +25,10 @@ class access extends record
   {
     if( is_null( $this->id ) )
     {
-      if( $this->get_role()->tier > lib::create( 'business\session' )->get_role()->tier )
+      // do not allow access to a higher tier or all-site (if the user doesn't have all-site access)
+      $db_role = lib::create( 'business\session' )->get_role();
+      $db_access_role = $this->get_role();
+      if( $db_access_role->tier > $db_role->tier || ( !$db_role->all_sites && $db_access_role->all_sites ) )
         throw lib::create( 'exception\permission', 'Access creation', __METHOD__ );
     }
 
@@ -41,7 +44,9 @@ class access extends record
    */
   public function delete()
   {
-    if( $this->get_role()->tier > lib::create( 'business\session' )->get_role()->tier )
+    $db_role = lib::create( 'business\session' )->get_role();
+    $db_access_role = $this->get_role();
+    if( $db_access_role->tier > $db_role->tier || ( !$db_role->all_sites && $db_access_role->all_sites ) )
       throw lib::create( 'exception\permission', 'Access removal', __METHOD__ );
 
     parent::delete();
