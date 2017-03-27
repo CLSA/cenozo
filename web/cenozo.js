@@ -981,6 +981,23 @@ cenozo.directive( 'cnElastic', [
 /* ######################################################################################################## */
 
 /**
+ * Passes keyboard events to the given function
+ */
+cenozo.directive( 'cnKeyboardShortcut',
+  function() {
+    return {
+      restrict: 'A',
+      scope: { cnKeyboardShortcut: '=' },
+      link: function( scope, element, attrs ) {
+        element.bind( 'keydown', function( event ) { scope.cnKeyboardShortcut( event ); } );
+      }
+    };
+  }
+);
+
+/* ######################################################################################################## */
+
+/**
  * Shows a loading component
  */
 cenozo.directive( 'cnLoading',
