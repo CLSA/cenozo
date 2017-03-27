@@ -963,10 +963,10 @@ cenozo.directive( 'cnElastic', [
     return {
       restrict: 'A',
       controller: function( $scope ) { $scope.directive = 'cnElastic'; },
-      link: function( $scope, element ) {
-        $scope.initialHeight = $scope.initialHeight || element[0].style.height;
+      link: function( scope, element ) {
+        scope.initialHeight = scope.initialHeight || element[0].style.height;
         var resize = function() {
-          element[0].style.height = $scope.initialHeight; // affects scrollHeight
+          element[0].style.height = scope.initialHeight; // affects scrollHeight
           var height = element[0].scrollHeight + 2;
           if( height > 700 ) height = 700; // maximum height of 700 pixels
           element[0].style.height = height + 'px';
