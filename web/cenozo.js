@@ -899,6 +899,23 @@ cenozo.service( 'CnRecursionHelper', [
 /* ######################################################################################################## */
 
 /**
+ * Allows elements to be autofocused even if they are loaded after page load (useful for modals)
+ */
+cenozo.directive( 'cnAutofocus', [
+  '$timeout',
+  function( $timeout ) {
+    return {
+      restrict: 'A',
+      link: function( scope, element ) {
+        $timeout( function() { element[0].focus(); }, 100 );
+      }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * Like ngChange but will only trigger after loosing focus of the element (instead of any change)
  * if the parent element is an INPUT of type other than checkbox or radio, otherwise it is identical
  * to the standard ngChange directive.
