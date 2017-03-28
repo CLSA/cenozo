@@ -6280,6 +6280,17 @@ cenozo.run( [
   }
 ] );
 
+// customize the typeahead match template to not highlight matches (in case they have markup)
+angular.module( 'template/typeahead/typeahead-match.html', [] ).run( [
+  '$templateCache',
+  function( $templateCache ) {
+    $templateCache.put(
+      'template/typeahead/typeahead-match.html',
+      '<a tabindex="-1" bind-html-unsafe="match.label"></a>'
+    );
+  }
+] );
+
 window.cenozo = cenozo;
 window.cenozoApp = cenozoApp;
 
