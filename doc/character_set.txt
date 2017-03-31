@@ -1,0 +1,43 @@
+To find utf8 encoded strings:
+
+SELECT uid, last_name
+FROM participant
+WHERE
+CHAR_LENGTH(
+  CONVERT(
+    CONVERT( last_name USING LATIN1 )
+    USING BINARY
+  )
+)
+!=
+CHAR_LENGTH(
+  CONVERT(
+    CONVERT(
+      CONVERT(
+        CONVERT( last_name USING LATIN1 )
+        USING BINARY
+      )
+      USING UTF8
+    )
+    USING BINARY
+  )
+);
+
+-----------------------------
+
+To convert latin1 encoded strings into utf8:
+
+ALTER TABLE participant MODIFY last_name VARCHAR(45) CHARACTER SET 'latin1' NOT NULL;
+ALTER TABLE participant MODIFY last_name VARBINARY(45) NOT NULL;
+ALTER TABLE participant MODIFY last_name VARCHAR(45) CHARACTER SET 'utf8' NOT NULL;
+
+-----------------------------
+
+Using the following non-binary to binary conversions:
+
+CHAR -> BINARY
+TEXT -> BLOB
+TINYTEXT -> TINYBLOB
+MEDIUMTEXT -> MEDIUMBLOB
+LONGTEXT -> LONGBLOB
+VARCHAR -> VARBINARY

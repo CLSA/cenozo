@@ -36,6 +36,7 @@ class database extends \cenozo\base_object
 
     // set up the database connection
     $this->connection = new \mysqli( $this->server, $this->username, $this->password, $this->name );
+    $this->connection->set_charset( 'utf8' );
 
     if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
 

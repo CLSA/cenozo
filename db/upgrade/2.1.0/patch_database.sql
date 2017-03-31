@@ -5,6 +5,8 @@ SET AUTOCOMMIT=0;
 SOURCE consent_type.sql
 SOURCE form_type.sql
 
+SOURCE column_character_sets.sql
+
 SOURCE update_version_number.sql
 
 COMMIT;
