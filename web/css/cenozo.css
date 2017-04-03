@@ -53,6 +53,13 @@ iframe { padding: 0px; margin: 0px; border: 0px; }
   50% { color: yellow; }
   100% { color: white; }
 }
+.language-code {
+  display: inline-block;
+  min-width: 22px;
+  padding: 2px;
+  text-align: center;
+}
+.form-control > .language-code { height: 24px; }
 .rounded, .rounded-top, .rounded-bottom, .rounded-left, .rounded-right {
   border-radius: 6px !important;
 }
