@@ -14,9 +14,9 @@
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.min.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="<?php print LIB_URL; ?>/moment/min/moment.min.js"></script>
-  <script src="<?php print LIB_URL; ?>/moment-timezone/builds/moment-timezone-with-data-2010-2020.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/moment-timezone/builds/moment-timezone-with-data-2012-2022.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular/angular.min.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-animate/angular-animate.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-sanitize/angular-sanitize.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.min.js"></script>

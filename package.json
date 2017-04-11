@@ -1,7 +1,7 @@
 {
   "name": "cenozo",
   "description": "An Angular+PHP framework used to build logistics web applications for scientific studies.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": {
     "name": "Patrick Emond",
     "email": "emondpd@mcmaster.ca"
@@ -13,18 +13,19 @@
     "url": "https://github.com/patrickdemond/cenozo"
   },
   "dependencies": {
-    "angular": "1.2.*",
-    "angular-bootstrap": "0.12.x",
-    "angular-ui-router": "0.2.x",
-    "jquery": "~2.1.1",
-    "bootstrap": "~3.x",
-    "moment": "2.x.x",
+    "angular": "1.5.*",
+    "angular-ui-bootstrap": "latest",
+    "angular-ui-router": "latest",
+    "jquery": "2.x",
+    "bootstrap": "3.x",
+    "moment": "latest",
     "moment-timezone": "latest",
-    "requirejs": "2.1.x",
-    "angular-animate": "1.2.x",
-    "angular-sanitize": "1.2.x",
+    "requirejs": "latest",
+    "angular-animate": "1.5.x",
+    "angular-sanitize": "1.5.x",
     "angular-bootstrap-colorpicker": "latest",
-    "fullcalendar": "2.6.0",
+    "angular-slider": "latest",
+    "fullcalendar": "latest",
     "file-saver": "latest"
   },
   "scripts": {

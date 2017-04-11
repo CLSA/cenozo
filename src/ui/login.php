@@ -11,7 +11,7 @@
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.min.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular/angular.min.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
 
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="-1">

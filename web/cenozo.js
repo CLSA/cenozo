@@ -5116,8 +5116,8 @@ cenozo.factory( 'CnHttpFactory', [
  * A factory for showing account details in a modal window
  */
 cenozo.service( 'CnModalAccountFactory', [
-  '$modal',
-  function( $modal ) {
+  '$uibModal',
+  function( $uibModal ) {
     // track if the modal is already open
     var isOpen = false;
 
@@ -5131,21 +5131,21 @@ cenozo.service( 'CnModalAccountFactory', [
 
       this.show = function() {
         isOpen = true;
-        return $modal.open( {
+        return $uibModal.open( {
           backdrop: 'static',
           keyboard: this.allowCancel,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-account.tpl.html' ),
-          controller: function( $scope, $modalInstance ) {
+          controller: function( $scope, $uibModalInstance ) {
             $scope.allowCancel = self.allowCancel;
             $scope.user = self.user;
             $scope.ok = function() {
-              $modalInstance.close( true );
+              $uibModalInstance.close( true );
               isOpen = false;
             };
             $scope.cancel = function() {
               if( self.allowCancel ) {
-                $modalInstance.close( false );
+                $uibModalInstance.close( false );
                 isOpen = false;
               }
             };
@@ -5171,8 +5171,8 @@ cenozo.service( 'CnModalAccountFactory', [
  * A factory for showing a yes/no confirmation dialog in a modal window
  */
 cenozo.service( 'CnModalConfirmFactory', [
-  '$modal',
-  function( $modal ) {
+  '$uibModal',
+  function( $uibModal ) {
     var object = function( params ) {
       var self = this;
       this.title = 'Confirm';
@@ -5180,16 +5180,16 @@ cenozo.service( 'CnModalConfirmFactory', [
       angular.extend( this, params );
 
       this.show = function() {
-        return $modal.open( {
+        return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-confirm.tpl.html' ),
-          controller: function( $scope, $modalInstance ) {
+          controller: function( $scope, $uibModalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
-            $scope.yes = function() { $modalInstance.close( true ); };
-            $scope.no = function() { $modalInstance.close( false ); };
+            $scope.yes = function() { $uibModalInstance.close( true ); };
+            $scope.no = function() { $uibModalInstance.close( false ); };
           }
         } ).result;
       };
@@ -5205,8 +5205,8 @@ cenozo.service( 'CnModalConfirmFactory', [
  * A factory for showing a datetime picker in a modal window
  */
 cenozo.service( 'CnModalDatetimeFactory', [
-  '$modal', '$window', 'CnSession',
-  function( $modal, $window, CnSession ) {
+  '$uibModal', '$window', 'CnSession',
+  function( $uibModal, $window, CnSession ) {
     var object = function( params ) {
       var self = this;
 
@@ -5448,12 +5448,12 @@ cenozo.service( 'CnModalDatetimeFactory', [
           $window.dispatchEvent( new Event( 'resize' ) );
         },
         show: function() {
-          return $modal.open( {
+          return $uibModal.open( {
             backdrop: 'static',
             keyboard: true,
             modalFade: true,
             templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-datetime.tpl.html' ),
-            controller: function( $scope, $modalInstance ) {
+            controller: function( $scope, $uibModalInstance ) {
               $scope.local = self;
               $scope.nowDisabled = !self.isDateAllowed( moment(), 'second' );
               $scope.todayDisabled = !self.isDateAllowed( moment(), 'day' );
@@ -5468,9 +5468,9 @@ cenozo.service( 'CnModalDatetimeFactory', [
                            ? $scope.local.date.tz( 'utc' ).format( format )
                            : $scope.local.date.format( format );
                 }
-                $modalInstance.close( response );
+                $uibModalInstance.close( response );
               };
-              $scope.cancel = function() { $modalInstance.close( false ); };
+              $scope.cancel = function() { $uibModalInstance.close( false ); };
 
               $scope.$watch( 'local.hourSliderValue', function( hour ) {
                 if( 'moment' == cenozo.getType( $scope.local.date ) ) {
@@ -5563,8 +5563,8 @@ cenozo.service( 'CnModalDatetimeFactory', [
  * A factory for showing a message dialog in a modal window
  */
 cenozo.service( 'CnModalMessageFactory', [
-  '$modal',
-  function( $modal ) {
+  '$uibModal',
+  function( $uibModal ) {
     var object = function( params ) {
       var self = this;
       this.title = 'Title';
@@ -5574,17 +5574,17 @@ cenozo.service( 'CnModalMessageFactory', [
       angular.extend( this, params );
 
       this.show = function() {
-        self.modal = $modal.open( {
+        self.modal = $uibModal.open( {
           backdrop: 'static',
           keyboard: !self.block,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-message.tpl.html' ),
-          controller: function( $scope, $modalInstance ) {
+          controller: function( $scope, $uibModalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
             $scope.error = self.error;
             $scope.block = self.block;
-            $scope.close = function() { $modalInstance.close( false ); };
+            $scope.close = function() { $uibModalInstance.close( false ); };
           }
         } );
 
@@ -5648,8 +5648,8 @@ cenozo.service( 'CnModalMessageFactory', [
  * A factory for showing a message password changing dialog in a modal window
  */
 cenozo.service( 'CnModalPasswordFactory', [
-  '$modal',
-  function( $modal ) {
+  '$uibModal',
+  function( $uibModal ) {
     // track if the modal is already open
     var isOpen = false;
 
@@ -5663,17 +5663,17 @@ cenozo.service( 'CnModalPasswordFactory', [
 
       this.show = function() {
         isOpen = true;
-        return $modal.open( {
+        return $uibModal.open( {
           backdrop: 'static',
           keyboard: this.confirm,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-password.tpl.html' ),
-          controller: function( $scope, $modalInstance ) {
+          controller: function( $scope, $uibModalInstance ) {
             $scope.confirm = self.confirm;
             $scope.showCancel = self.showCancel;
             $scope.showPasswords = self.showPasswords;
             $scope.ok = function() {
-              $modalInstance.close( {
+              $uibModalInstance.close( {
                 currentPass: $scope.currentPass,
                 requestedPass: $scope.newPass1
               } );
@@ -5681,7 +5681,7 @@ cenozo.service( 'CnModalPasswordFactory', [
             };
             $scope.cancel = function() {
               if( this.showCancel ) {
-                $modalInstance.close( false );
+                $uibModalInstance.close( false );
                 isOpen = false;
               }
             };
@@ -5723,8 +5723,8 @@ cenozo.service( 'CnModalPasswordFactory', [
  * A factory for showing a column restriction dialog in a modal window
  */
 cenozo.service( 'CnModalRestrictFactory', [
-  '$modal', 'CnModalDatetimeFactory', 'CnSession',
-  function( $modal, CnModalDatetimeFactory, CnSession ) {
+  '$uibModal', 'CnModalDatetimeFactory', 'CnSession',
+  function( $uibModal, CnModalDatetimeFactory, CnSession ) {
     var object = function( params ) {
       var self = this;
       if( angular.isUndefined( params.column ) )
@@ -5805,12 +5805,12 @@ cenozo.service( 'CnModalRestrictFactory', [
       }, this );
 
       this.show = function() {
-        return $modal.open( {
+        return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-restrict.tpl.html' ),
-          controller: function( $scope, $modalInstance ) {
+          controller: function( $scope, $uibModalInstance ) {
             $scope.local = self;
             $scope.ok = function( restrictList ) {
               // remove restrictions with no values before returning the list
@@ -5820,10 +5820,10 @@ cenozo.service( 'CnModalRestrictFactory', [
               if( 0 < restrictList.length && angular.isDefined( restrictList[0].logic ) )
                 delete restrictList[0].logic;
 
-              $modalInstance.close( restrictList );
+              $uibModalInstance.close( restrictList );
             };
-            $scope.remove = function() { $modalInstance.close( [] ); };
-            $scope.cancel = function() { $modalInstance.dismiss( 'cancel' ); };
+            $scope.remove = function() { $uibModalInstance.close( [] ); };
+            $scope.cancel = function() { $uibModalInstance.dismiss( 'cancel' ); };
 
             if( cenozo.isDatetimeType( $scope.local.type ) ) {
               $scope.selectDatetime = function( index ) {
@@ -5868,24 +5868,24 @@ cenozo.service( 'CnModalRestrictFactory', [
  * A factory for showing a list of sites in a modal window
  */
 cenozo.service( 'CnModalSiteFactory', [
-  '$modal', 'CnSession',
-  function( $modal, CnSession ) {
+  '$uibModal', 'CnSession',
+  function( $uibModal, CnSession ) {
     var object = function( params ) {
       var self = this;
       angular.extend( this, params );
       this.show = function() {
-        return $modal.open( {
+        return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-site.tpl.html' ),
-          controller: function( $scope, $modalInstance ) {
+          controller: function( $scope, $uibModalInstance ) {
             // load the data from the session once it is available
             $scope.siteList = CnSession.siteList;
             $scope.siteId = self.id;
 
-            $scope.ok = function() { $modalInstance.close( $scope.siteId ); };
-            $scope.cancel = function() { $modalInstance.close( false ); };
+            $scope.ok = function() { $uibModalInstance.close( $scope.siteId ); };
+            $scope.cancel = function() { $uibModalInstance.close( false ); };
           }
         } ).result;
       };
@@ -5901,19 +5901,19 @@ cenozo.service( 'CnModalSiteFactory', [
  * A factory for changing the current site and role in a modal window
  */
 cenozo.service( 'CnModalSiteRoleFactory', [
-  '$modal', 'CnHttpFactory',
-  function( $modal, CnHttpFactory ) {
+  '$uibModal', 'CnHttpFactory',
+  function( $uibModal, CnHttpFactory ) {
     var object = function( params ) {
       var self = this;
       angular.extend( this, params );
 
       this.show = function() {
-        return $modal.open( {
+        return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-site-role.tpl.html' ),
-          controller: function( $scope, $modalInstance ) {
+          controller: function( $scope, $uibModalInstance ) {
             $scope.refreshRoleList = function() {
               this.siteList.forEach( function( item, index ) {
                 if( this.siteId == item.id ) this.roleList = item.roleList;
@@ -5922,12 +5922,12 @@ cenozo.service( 'CnModalSiteRoleFactory', [
             };
 
             $scope.ok = function() {
-              $modalInstance.close( {
+              $uibModalInstance.close( {
                 siteId: $scope.siteId,
                 roleId: $scope.roleId
               } );
             };
-            $scope.cancel = function() { $modalInstance.close( false ); };
+            $scope.cancel = function() { $uibModalInstance.close( false ); };
 
             $scope.siteList = [];
             $scope.loading = true;
@@ -5972,8 +5972,8 @@ cenozo.service( 'CnModalSiteRoleFactory', [
  * A factory for showing a modal window with a textarea input
  */
 cenozo.service( 'CnModalTextFactory', [
-  '$modal',
-  function( $modal ) {
+  '$uibModal',
+  function( $uibModal ) {
     var object = function( params ) {
       var self = this;
       this.title = 'Provide Text';
@@ -5983,20 +5983,20 @@ cenozo.service( 'CnModalTextFactory', [
       angular.extend( this, params );
 
       this.show = function() {
-        return $modal.open( {
+        return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-text.tpl.html' ),
-          controller: function( $scope, $modalInstance ) {
+          controller: function( $scope, $uibModalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
             $scope.text = self.text;
             $scope.minLength = self.minLength;
             $scope.ok = function() {
-              $modalInstance.close( angular.isUndefined( $scope.text ) ? '' : $scope.text );
+              $uibModalInstance.close( angular.isUndefined( $scope.text ) ? '' : $scope.text );
             };
-            $scope.cancel = function() { $modalInstance.close( false ); };
+            $scope.cancel = function() { $uibModalInstance.close( false ); };
           }
         } ).result;
       };
@@ -6012,8 +6012,8 @@ cenozo.service( 'CnModalTextFactory', [
  * A factory for changing the current timezone in a modal window
  */
 cenozo.service( 'CnModalTimezoneFactory', [
-  '$modal', 'CnSession',
-  function( $modal, CnSession ) {
+  '$uibModal', 'CnSession',
+  function( $uibModal, CnSession ) {
     var object = function( params ) {
       var self = this;
 
@@ -6022,12 +6022,12 @@ cenozo.service( 'CnModalTimezoneFactory', [
       angular.extend( this, params );
 
       this.show = function() {
-        return $modal.open( {
+        return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-timezone.tpl.html' ),
-          controller: function( $scope, $modalInstance ) {
+          controller: function( $scope, $uibModalInstance ) {
             $scope.timezone = self.timezone;
             $scope.use12hourClock = self.use12hourClock ? 1 : 0;
             $scope.timezoneList = moment.tz.names();
@@ -6044,13 +6044,13 @@ cenozo.service( 'CnModalTimezoneFactory', [
             };
 
             $scope.ok = function() {
-              $modalInstance.close( {
+              $uibModalInstance.close( {
                 timezone: $scope.timezone,
                 // need to convert boolean to integer for select dropdown
                 use12hourClock: 1 == parseInt( $scope.use12hourClock )
               } );
             };
-            $scope.cancel = function() { $modalInstance.close( false ); };
+            $scope.cancel = function() { $uibModalInstance.close( false ); };
           }
         } ).result;
       };
@@ -6184,9 +6184,9 @@ cenozo.factory( 'CnScriptLauncherFactory', [
  */
 cenozo.config( [
   '$controllerProvider', '$compileProvider', '$filterProvider', '$locationProvider',
-  '$provide', '$tooltipProvider', '$urlRouterProvider', '$httpProvider',
+  '$provide', '$uibTooltipProvider', '$urlRouterProvider', '$httpProvider',
   function( $controllerProvider, $compileProvider, $filterProvider, $locationProvider,
-            $provide, $tooltipProvider, $urlRouterProvider, $httpProvider ) {
+            $provide, $uibTooltipProvider, $urlRouterProvider, $httpProvider ) {
     // create an object containing all providers
     cenozo.providers.controller = $controllerProvider.register;
     cenozo.providers.directive = $compileProvider.directive;
@@ -6205,10 +6205,10 @@ cenozo.config( [
     } );
 
     // set the default tooltip delay
-    $tooltipProvider.options( { popupDelay: 500 } );
+    $uibTooltipProvider.options( { popupDelay: 500 } );
 
     // turn on html5 mode
-    $locationProvider.html5Mode( true );
+    $locationProvider.html5Mode( { enabled: true, requireBase: false } );
 
     $httpProvider.defaults.headers.common.Accept = 'application/json;charset=utf-8';
   }
