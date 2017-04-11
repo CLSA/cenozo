@@ -1562,7 +1562,14 @@ cenozo.directive( 'cnRecordView', [
         $scope.refresh = function() {
           if( $scope.isComplete ) {
             $scope.isComplete = false;
-            $scope.model.viewModel.onView().finally( function() { $scope.isComplete = true } );
+            $scope.model.viewModel.onView().finally( function() {
+              // reset the error status
+              cenozo.forEachFormElement( 'form', function( element ) {
+                element.$error = {};
+                cenozo.updateFormElement( element, true );
+              } );
+              $scope.isComplete = true;
+            } );
           }
         };
 
@@ -3778,12 +3785,6 @@ cenozo.factory( 'CnBaseViewFactory', [
 
             // create the backup record
             self.backupRecord = angular.copy( self.record );
-
-            // reset the error status
-            cenozo.forEachFormElement( 'form', function( element ) {
-              element.$error = {};
-              cenozo.updateFormElement( element, true );
-            } );
 
             return self.parentModel.metadata.getPromise();
           } ).then( function() {
