@@ -94,7 +94,6 @@ angular.extend( String.prototype, {
 var cenozoApp = angular.module( 'cenozoApp', [
   'ui.bootstrap',
   'ui.router',
-  'ui.slider',
   'cenozo'
 ] );
 
@@ -927,7 +926,7 @@ cenozo.directive( 'cnChange', [
     return {
       restrict: 'A',
       require: 'ngModel',
-      controller: function( $scope ) { $scope.directive = 'cnChange'; },
+      controller: [ '$scope', function( $scope ) { $scope.directive = 'cnChange'; } ],
       link: function( scope, element, attrs ) {
         var oldValue = null;
         element.bind( 'focus', function() {
@@ -962,7 +961,7 @@ cenozo.directive( 'cnElastic', [
   function( $timeout ) {
     return {
       restrict: 'A',
-      controller: function( $scope ) { $scope.directive = 'cnElastic'; },
+      controller: [ '$scope', function( $scope ) { $scope.directive = 'cnElastic'; } ],
       link: function( scope, element ) {
         scope.initialHeight = scope.initialHeight || element[0].style.height;
         var resize = function() {
@@ -1006,9 +1005,7 @@ cenozo.directive( 'cnLoading',
       templateUrl: cenozo.getFileUrl( 'cenozo', 'loading.tpl.html' ),
       restrict: 'E',
       scope: false,
-      controller: function( $scope ) {
-        $scope.directive = 'cnLoading';
-      },
+      controller: [ '$scope', function( $scope ) { $scope.directive = 'cnLoading'; } ],
       link: function( scope, element, attrs ) {
         scope.message = angular.isDefined( attrs.message )
                       ? attrs.message
@@ -1044,7 +1041,7 @@ cenozo.directive( 'cnOptionsDisabled', [
     return {
       priority: 0,
       require: 'ngModel',
-      controller: function( $scope ) { $scope.directive = 'cnOptionsDisabled'; },
+      controller: [ '$scope', function( $scope ) { $scope.directive = 'cnOptionsDisabled'; } ],
       link: function( scope, element, attrs, ctrl ) {
         // parse expression and build array of disabled options
         var expElements = attrs.cnOptionsDisabled.match( /^\s*(.+)\s+for\s+(.+)\s+in\s+(.+)?\s*/ );
@@ -1076,7 +1073,7 @@ cenozo.directive( 'cnReallyClick', [
   function( CnModalConfirmFactory ) {
     return {
       restrict: 'A',
-      controller: function( $scope ) { $scope.directive = 'cnReallyClick'; },
+      controller: [ '$scope', function( $scope ) { $scope.directive = 'cnReallyClick'; } ],
       link: function( scope, element, attrs ) {
         element.bind( 'click', function() {
           var message = attrs.cnReallyMessage;
@@ -1114,7 +1111,7 @@ cenozo.directive( 'cnRecordAdd', [
         footerAtTop: '@',
         removeInputs: '@'
       },
-      controller: function( $scope ) {
+      controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnRecordAdd';
         $scope.record = {};
         $scope.isComplete = false;
@@ -1251,7 +1248,7 @@ cenozo.directive( 'cnRecordAdd', [
             } );
           } );
         };
-      },
+      } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-add, no model provided.' );
@@ -1301,7 +1298,7 @@ cenozo.directive( 'cnRecordCalendar', [
         model: '=',
         preventSiteChange: '@?'
       },
-      controller: function( $scope, $element ) {
+      controller: [ '$scope', '$element', function( $scope, $element ) {
         $scope.directive = 'cnRecordCalendar';
         $scope.reportTypeListOpen = false;
         $scope.refresh = function() {
@@ -1341,7 +1338,7 @@ cenozo.directive( 'cnRecordCalendar', [
             return true; // stop processing
           }
         } );
-      },
+      } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-calendar, no model provided.' );
@@ -1404,7 +1401,7 @@ cenozo.directive( 'cnRecordList', [
         removeColumns: '@',
         initCollapsed: '@'
       },
-      controller: function( $scope, $element ) {
+      controller: [ '$scope', '$element', function( $scope, $element ) {
         $scope.directive = 'cnRecordList';
         $scope.reportTypeListOpen = false;
         $scope.applyingChoose = false;
@@ -1469,7 +1466,7 @@ cenozo.directive( 'cnRecordList', [
             }
           }
         };
-      },
+      } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-list, no model provided.' );
@@ -1532,7 +1529,7 @@ cenozo.directive( 'cnRecordView', [
         removeInputs: '@',
         initCollapsed: '@'
       },
-      controller: function( $scope ) {
+      controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnRecordView';
         $scope.isComplete = false;
         $scope.model.viewModel.onView().then( function() {
@@ -1721,7 +1718,7 @@ cenozo.directive( 'cnRecordView', [
           // trigger all elastic directives
           if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'change' )
         };
-      },
+      } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-view, no model provided.' );
@@ -1772,6 +1769,239 @@ cenozo.directive( 'cnRecordView', [
 /* ######################################################################################################## */
 
 /**
+ * Slider directive
+ */
+cenozo.directive( 'cnSlider', [
+  '$timeout',
+  function( $timeout ) {
+    function pixelize( pixels ) { return "" + pixels + "px"; }
+    function offset( element, position ) { return element.css( { left: position } ); }
+    function contain( value ) { return isNaN( value ) ? value : Math.min( Math.max( 0, value ), 100 ); }
+    function roundStep( value, precision, step, floor ) {
+      if( floor == null ) floor = 0;
+      if( step == null ) step = 1 / Math.pow( 10, precision );
+      var remainder = ( value - floor ) % step;
+      var steppedValue = remainder > ( step/2 ) ? value + step - remainder : value - remainder;
+      var decimals = Math.pow( 10, precision );
+      var roundedValue = steppedValue * decimals / decimals;
+      return parseFloat( roundedValue.toFixed( precision ) );
+    }
+
+    return {
+      restrict: 'E',
+      scope: {
+        floor: '@',
+        ceiling: '@',
+        values: '=?',
+        step: '@',
+        highlight: '@',
+        precision: '@',
+        buffer: '@',
+        dragstop: '@',
+        ngModel: '=?',
+        ngModelLow: '=?',
+        ngModelHigh: '=?',
+        change: '&'
+      },
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'slider.tpl.html' ),
+      compile: function( element, attributes ) {
+        var range = attributes.ngModel == null && attributes.ngModelLow != null && attributes.ngModelHigh != null;
+        var low = range ? 'ngModelLow' : 'ngModel';
+        var high = 'ngModelHigh';
+        var watchables = [ 'floor', 'ceiling', 'values', low ];
+        if( range ) watchables.push( high );
+        return {
+          post: function( scope, element, attributes ) {
+            var handleHalfWidth, barWidth, minOffset, maxOffset, minValue, maxValue, valueRange, offsetRange;
+            var ngDocument = angular.element( document );
+            var bound = false;
+            var children = element.children();
+            var bar = angular.element( children[0] );
+            var minPtr = angular.element( children[1] );
+            var maxPtr = angular.element( children[2] );
+            var ceilBubble = angular.element( children[4] );
+            var lowBubble = angular.element( children[5] );
+            var highBubble = angular.element( children[6] );
+            var selection = angular.element( bar.children()[0] );
+            if( !range ) {
+              maxPtr.remove();
+              highBubble.remove();
+              if( !attributes.highlight ) selection.remove();
+            }
+            scope.local = {};
+            scope.local[low] = scope[low];
+            scope.local[high] = scope[high];
+            function dimensions() {
+              if( scope.step == null ) scope.step = 1;
+              if( scope.floor == null ) scope.floor = 0;
+              if( scope.precision == null ) scope.precision = 0;
+              if( !range ) scope.ngModelLow = scope.ngModel;
+              if( null != scope.values && scope.values.length && scope.ceiling == null )
+                scope.ceiling = scope.values.length - 1;
+              scope.local[low] = scope[low];
+              scope.local[high] = scope[high];
+              for( var i = 0; i < watchables.length; i++ ) {
+                var value = watchables[i];
+                if( typeof value === 'number' ) {
+                  scope[value] = roundStep(
+                    parseFloat( scope[value] ),
+                    parseInt( scope.precision ),
+                    parseFloat( scope.step ),
+                    parseFloat( scope.floor )
+                  );
+                }
+              }
+              handleHalfWidth = minPtr[0].offsetWidth/2;
+              barWidth = bar[0].offsetWidth;
+              minOffset = 0;
+              maxOffset = barWidth - minPtr[0].offsetWidth;
+              minValue = parseFloat( scope.floor );
+              maxValue = parseFloat( scope.ceiling );
+              valueRange = maxValue - minValue;
+              return offsetRange = maxOffset - minOffset;
+            };
+
+            var updateDOM = function() {
+              function percentValue( value ) { return contain( ( ( value - minValue ) / valueRange ) * 100 ); };
+              function pixelsToOffset( percent ) { return pixelize( percent * offsetRange / 100 ); };
+
+              function setPointers() {
+                var newHighValue, newLowValue;
+                offset( ceilBubble, pixelize( barWidth - ceilBubble[0].offsetWidth ) );
+                newLowValue = percentValue( scope.local[low] );
+                offset( minPtr, pixelsToOffset( newLowValue ) );
+                offset(
+                  lowBubble,
+                  pixelize( minPtr[0].offsetLeft - ( lowBubble[0].offsetWidth/2 ) + handleHalfWidth )
+                );
+                offset( selection, pixelize( minPtr[0].offsetLeft + handleHalfWidth ) );
+
+                if( range ) {
+                  newHighValue = percentValue( scope.local[high] );
+                  offset( maxPtr, pixelsToOffset( newHighValue ) );
+                  offset(
+                    highBubble,
+                    pixelize( maxPtr[0].offsetLeft - ( highBubble[0].offsetWidth/2 ) + handleHalfWidth )
+                  );
+                  return selection.css( { width: pixelsToOffset( newHighValue - newLowValue ) } );
+                }
+
+                if( attributes.highlight === 'right' )
+                  return selection.css( { width: pixelsToOffset( 110 - newLowValue ) } );
+
+                if( attributes.highlight === 'left' ) {
+                  selection.css( { width: pixelsToOffset( newLowValue ) } );
+                  return offset( selection, 0 );
+                }
+              }
+
+              function bind( handle, bubble, ref, events ) {
+                var changed, currentRef, onEnd, onMove, onStart;
+                currentRef = ref;
+                changed = false;
+                onEnd = function() {
+                  bubble.removeClass( 'active' );
+                  handle.removeClass( 'active' );
+                  ngDocument.unbind( events.move );
+                  ngDocument.unbind( events.end );
+                  if( scope.dragstop ) {
+                    scope[high] = scope.local[high];
+                    scope[low] = scope.local[low];
+                  }
+                  currentRef = ref;
+                  scope.$apply();
+                  if( changed ) return scope.$eval( scope.change );
+                };
+                onMove = function( event ) {
+                  var eventX, newOffset, newPercent, newValue;
+                  eventX = event.clientX || (
+                             null != event.touches &&
+                             event.touches[0].clientX
+                           ) || (
+                             null != event.originalEvent &&
+                             null != event.originalEvent.changedTouches &&
+                             event.originalEvent.changedTouches[0].clientX
+                           );
+                  newOffset = eventX - element[0].getBoundingClientRect().left - handleHalfWidth;
+                  newOffset = Math.max( Math.min( newOffset, maxOffset ), minOffset );
+                  newPercent = contain( ( ( newOffset - minOffset ) / offsetRange ) * 100 );
+                  newValue = minValue + ( valueRange * newPercent / 100.0 );
+                  if( range ) {
+                    if( currentRef == low ) {
+                      if( newValue > scope.local[high] ) {
+                        currentRef = high;
+                        minPtr.removeClass( 'active' );
+                        lowBubble.removeClass( 'active' );
+                        maxPtr.addClass( 'active' );
+                        highBubble.addClass( 'active' );
+                        setPointers();
+                      } else if( scope.buffer > 0 ) {
+                        newValue = Math.min( newValue, scope.local[high] - scope.buffer );
+                      }
+                    } else if( currentRef == high ) {
+                      if( newValue < scope.local[low] ) {
+                        currentRef = low;
+                        maxPtr.removeClass( 'active' );
+                        highBubble.removeClass( 'active' );
+                        minPtr.addClass( 'active' );
+                        lowBubble.addClass( 'active' );
+                        setPointers();
+                      } else if( scope.buffer > 0 ) {
+                        newValue = Math.max( newValue, parseInt( scope.local[low] ) + parseInt( scope.buffer ) );
+                      }
+                    }
+                  }
+                  newValue = roundStep(
+                    newValue,
+                    parseInt( scope.precision ),
+                    parseFloat( scope.step ),
+                    parseFloat( scope.floor )
+                  );
+                  changed = scope.dragstop && changed || scope.local[currentRef] !== newValue;
+                  scope.local[currentRef] = newValue;
+                  scope.$apply();
+                  setPointers();
+                  if( !scope.dragstop ) {
+                    scope[currentRef] = newValue;
+                    if( changed ) return scope.$eval( scope.change );
+                  }
+                };
+                onStart = function( event ) {
+                  dimensions();
+                  bubble.addClass( 'active' );
+                  handle.addClass( 'active' );
+                  setPointers();
+                  event.stopPropagation();
+                  event.preventDefault();
+                  ngDocument.bind( events.move, onMove );
+                  return ngDocument.bind( events.end, onEnd );
+                };
+                return handle.bind( events.start, onStart );
+              }
+
+              dimensions();
+              if( !bound ) {
+                bind( minPtr, lowBubble, low, { start: 'touchstart', move: 'touchmove', end: 'touchend' } );
+                bind( maxPtr, highBubble, high, { start: 'touchstart', move: 'touchmove', end: 'touchend' } );
+                bind( minPtr, lowBubble, low, { start: 'mousedown', move: 'mousemove', end: 'mouseup' } );
+                bind( maxPtr, highBubble, high, { start: 'mousedown', move: 'mousemove', end: 'mouseup' } );
+                bound = true;
+              };
+              return setPointers();
+            };
+            $timeout( updateDOM );
+            for( var i = 0; i < watchables.length; i++ ) scope.$watch( watchables[i], updateDOM, true );
+            return window.addEventListener( 'resize', updateDOM );
+          }
+        };
+      }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * Optional target attribute added to element
  */
 cenozo.directive( 'cnTarget',
@@ -1804,7 +2034,7 @@ cenozo.directive( 'cnTimer', [
         since: '@',
         allowNegative: '='
       },
-      controller: function( $scope ) { $scope.directive = 'cnTimer'; },
+      controller: [ '$scope', function( $scope ) { $scope.directive = 'cnTimer'; } ],
       link: function( scope, element ) {
         function tick() {
           scope.duration.add( 1, 'second' );
@@ -1851,7 +2081,7 @@ cenozo.directive( 'cnTree',
       templateUrl: cenozo.getFileUrl( 'cenozo', 'tree.tpl.html' ),
       restrict: 'E',
       scope: { model: '=' },
-      controller: function( $scope ) { $scope.directive = 'cnTree'; }
+      controller: [ '$scope', function( $scope ) { $scope.directive = 'cnTree'; } ]
     };
   }
 );
@@ -1868,10 +2098,10 @@ cenozo.directive( 'cnTreeBranch', [
       templateUrl: cenozo.getFileUrl( 'cenozo', 'tree-branch.tpl.html' ),
       restrict: 'E',
       scope: { model: '=', last: '=' },
-      controller: function( $scope ) {
+      controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnTreeBranch';
         $scope.toggleBranch = function( id ) { $scope.model.open = !$scope.model.open; };
-      },
+      } ],
       compile: function( element ) {
         // Use the compile function from the CnRecursionHelper,
         // And return the linking function(s) which it returns
@@ -5137,7 +5367,7 @@ cenozo.service( 'CnModalAccountFactory', [
           keyboard: this.allowCancel,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-account.tpl.html' ),
-          controller: function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.allowCancel = self.allowCancel;
             $scope.user = self.user;
             $scope.ok = function() {
@@ -5154,7 +5384,7 @@ cenozo.service( 'CnModalAccountFactory', [
               $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]{2,}$/.test( $scope.user.email );
               cenozo.updateFormElement( $scope.form.email, true );
             };
-          }
+          } ]
         } ).result;
       };
     };
@@ -5186,12 +5416,12 @@ cenozo.service( 'CnModalConfirmFactory', [
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-confirm.tpl.html' ),
-          controller: function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uidModalInstance', function( $scope, $uibModalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
             $scope.yes = function() { $uibModalInstance.close( true ); };
             $scope.no = function() { $uibModalInstance.close( false ); };
-          }
+          } ]
         } ).result;
       };
     };
@@ -5454,7 +5684,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
             keyboard: true,
             modalFade: true,
             templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-datetime.tpl.html' ),
-            controller: function( $scope, $uibModalInstance ) {
+            controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
               $scope.local = self;
               $scope.nowDisabled = !self.isDateAllowed( moment(), 'second' );
               $scope.todayDisabled = !self.isDateAllowed( moment(), 'day' );
@@ -5491,7 +5721,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
                   $scope.local.updateDisplayTime();
                 }
               } );
-            }
+            } ]
           } ).result;
         }
       } );
@@ -5580,13 +5810,13 @@ cenozo.service( 'CnModalMessageFactory', [
           keyboard: !self.block,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-message.tpl.html' ),
-          controller: function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
             $scope.error = self.error;
             $scope.block = self.block;
             $scope.close = function() { $uibModalInstance.close( false ); };
-          }
+          } ]
         } );
 
         return self.modal.result;
@@ -5669,7 +5899,7 @@ cenozo.service( 'CnModalPasswordFactory', [
           keyboard: this.confirm,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-password.tpl.html' ),
-          controller: function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.confirm = self.confirm;
             $scope.showCancel = self.showCancel;
             $scope.showPasswords = self.showPasswords;
@@ -5706,7 +5936,7 @@ cenozo.service( 'CnModalPasswordFactory', [
             $scope.toggleShowPasswords = function() {
               $scope.showPasswords = !$scope.showPasswords;
             };
-          }
+          } ]
         } ).result;
       };
     };
@@ -5811,7 +6041,7 @@ cenozo.service( 'CnModalRestrictFactory', [
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-restrict.tpl.html' ),
-          controller: function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.local = self;
             $scope.ok = function( restrictList ) {
               // remove restrictions with no values before returning the list
@@ -5854,7 +6084,7 @@ cenozo.service( 'CnModalRestrictFactory', [
                 } );
               };
             }
-          }
+          } ]
         } ).result;
       };
     };
@@ -5880,14 +6110,14 @@ cenozo.service( 'CnModalSiteFactory', [
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-site.tpl.html' ),
-          controller: function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             // load the data from the session once it is available
             $scope.siteList = CnSession.siteList;
             $scope.siteId = self.id;
 
             $scope.ok = function() { $uibModalInstance.close( $scope.siteId ); };
             $scope.cancel = function() { $uibModalInstance.close( false ); };
-          }
+          } ]
         } ).result;
       };
     };
@@ -5914,7 +6144,7 @@ cenozo.service( 'CnModalSiteRoleFactory', [
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-site-role.tpl.html' ),
-          controller: function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.refreshRoleList = function() {
               this.siteList.forEach( function( item, index ) {
                 if( this.siteId == item.id ) this.roleList = item.roleList;
@@ -5958,7 +6188,7 @@ cenozo.service( 'CnModalSiteRoleFactory', [
               if( self.roleId ) $scope.roleId = self.roleId;
               $scope.loading = false;
             } );
-          }
+          } ]
         } ).result;
       };
     };
@@ -5989,7 +6219,7 @@ cenozo.service( 'CnModalTextFactory', [
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-text.tpl.html' ),
-          controller: function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
             $scope.text = self.text;
@@ -5998,7 +6228,7 @@ cenozo.service( 'CnModalTextFactory', [
               $uibModalInstance.close( angular.isUndefined( $scope.text ) ? '' : $scope.text );
             };
             $scope.cancel = function() { $uibModalInstance.close( false ); };
-          }
+          } ]
         } ).result;
       };
     };
@@ -6028,7 +6258,7 @@ cenozo.service( 'CnModalTimezoneFactory', [
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-timezone.tpl.html' ),
-          controller: function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.timezone = self.timezone;
             $scope.use12hourClock = self.use12hourClock ? 1 : 0;
             $scope.timezoneList = moment.tz.names();
@@ -6052,7 +6282,7 @@ cenozo.service( 'CnModalTimezoneFactory', [
               } );
             };
             $scope.cancel = function() { $uibModalInstance.close( false ); };
-          }
+          } ]
         } ).result;
       };
     };

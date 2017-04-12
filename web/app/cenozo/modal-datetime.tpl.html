@@ -62,21 +62,21 @@
         <div class="row timepicker-row">
           <div class="col-xs-2"><strong>Hour:</strong></div>
           <div class="col-xs-10">
-            <slider ng-model="local.hourSliderValue" floor="0" ceiling="23" step="1"></slider>
+            <cn-slider ng-model="local.hourSliderValue" floor="0" ceiling="23" step="1"></cn-slider>
           </div>
         </div>
         <div class="vertical-spacer"></div>
         <div class="row timepicker-row">
           <div class="col-xs-2"><strong>Minute:</strong></div>
           <div class="col-xs-10">
-            <slider ng-model="local.minuteSliderValue" floor="0" ceiling="59" step="1"></slider>
+            <cn-slider ng-model="local.minuteSliderValue" floor="0" ceiling="59" step="1"></cn-slider>
           </div>
         </div>
         <div ng-if="'datetimesecond' == local.pickerType" class="vertical-spacer"></div>
         <div ng-if="'datetimesecond' == local.pickerType" class="row timepicker-row">
           <div class="col-xs-2"><strong>Second:</strong></div>
           <div class="col-xs-10">
-            <slider ng-model="local.secondSliderValue" floor="0" ceiling="59" step="1"></slider>
+            <cn-slider ng-model="local.secondSliderValue" floor="0" ceiling="59" step="1"></cn-slider>
           </div>
         </div>
       </div>

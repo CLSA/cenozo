@@ -24,7 +24,6 @@
     "angular-animate": "1.5.x",
     "angular-sanitize": "1.5.x",
     "angular-bootstrap-colorpicker": "latest",
-    "angular-slider": "latest",
     "fullcalendar": "latest",
     "file-saver": "latest"
   },

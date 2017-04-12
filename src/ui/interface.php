@@ -5,7 +5,6 @@
   <title><?php echo APP_TITLE; ?>{{ getPageTitle() }}</title>
   <link rel="shortcut icon" href="<?php print ROOT_URL; ?>/img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-slider/slider.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.min.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/css/colorpicker.min.css">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css?build=<?php print CENOZO_BUILD; ?>">
@@ -20,7 +19,6 @@
   <script src="<?php print LIB_URL; ?>/angular-animate/angular-animate.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-sanitize/angular-sanitize.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.min.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-slider/slider.js"></script>
   <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
   <script src="<?php print LIB_URL; ?>/file-saver/FileSaver.min.js"></script>
