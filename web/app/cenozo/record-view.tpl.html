@@ -219,6 +219,7 @@
                     ng-model="model.viewModel.record[input.key]"
                     cn-change="patch( input.key )"
                     class="form-control"
+                    cols="3"
                     ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                     ng-required="model.metadata.columnList[input.key].required"></textarea>
                   <div ng-switch-when="days" class="row">

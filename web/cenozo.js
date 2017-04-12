@@ -5416,7 +5416,7 @@ cenozo.service( 'CnModalConfirmFactory', [
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-confirm.tpl.html' ),
-          controller: [ '$scope', '$uidModalInstance', function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
             $scope.yes = function() { $uibModalInstance.close( true ); };
