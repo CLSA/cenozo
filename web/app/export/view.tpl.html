@@ -59,14 +59,14 @@
         <div class="col-sm-2 col-slim-left">
           <div class="btn-group pull-right" style="white-space: nowrap;">
             <button class="btn"
-                    tooltip="Whether to include the column in the generated file."
+                    uib-tooltip="Whether to include the column in the generated file."
                     tooltip-placement="left"
                     ng-click="model.viewModel.toggleInclude( $index )">
               <i class="glyphicon"
                  ng-class="item.include ? 'glyphicon-eye-open' : 'glyphicon-eye-close'"></i>
             </button>
             <button class="btn btn-danger"
-                    tooltip="Remove Column"
+                    uib-tooltip="Remove Column"
                     tooltip-placement="left"
                     ng-click="model.viewModel.removeColumn( $index )">
               <i class="glyphicon glyphicon-remove"></i>
@@ -183,7 +183,7 @@
         </div>
         <div class="col-sm-1">
           <button class="btn btn-danger pull-right"
-                  tooltip="Remove Restriction"
+                  uib-tooltip="Remove Restriction"
                   tooltip-placement="left"
                   ng-click="model.viewModel.removeRestriction( $index )">
             <i class="glyphicon glyphicon-remove"></i>

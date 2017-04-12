@@ -9,7 +9,7 @@
               ng-if="op.isIncluded( $state, model )"
               ng-disabled="op.isDisabled( $state, model )"
               ng-class="op.classes"
-              tooltip="{{ op.help }}"
+              uib-tooltip="{{ op.help }}"
               tooltip-placement="right"
               ng-click="op.operation( $state, model )">{{ op.title }}</button>
     </div>
@@ -33,7 +33,7 @@
                         'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
           <label for="{{ input.key }}"
                  class="col-sm-3 control-label"
-                 tooltip="{{ input.help }}">{{ input.title }}</label>
+                 uib-tooltip="{{ input.help }}">{{ input.title }}</label>
           <div class="col-sm-9">
             <div class="input-group"
                  ng-switch="input.type|cnViewType"
@@ -287,7 +287,7 @@
               ng-if="op.isIncluded( $state, model )"
               ng-disabled="op.isDisabled( $state, model )"
               ng-class="op.classes"
-              tooltip="{{ op.help }}"
+              uib-tooltip="{{ op.help }}"
               tooltip-placement="right"
               ng-click="op.operation( $state, model )">{{ op.title }}</button>
     </div>

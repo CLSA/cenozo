@@ -59,7 +59,7 @@
                 class="btn"
                 ng-class="message.unread ? 'btn-warning' : 'btn-default'"
                 ng-click="markMessage( message.id )"
-                tooltip="Click to mark message as {{ message.unread ? 'read' : 'unread' }}"
+                uib-tooltip="Click to mark message as {{ message.unread ? 'read' : 'unread' }}"
                 tooltip-placement="right">
           <i class="glyphicon" ng-class="message.unread ? 'glyphicon-envelope' : 'glyphicon-ok'"></i>
         </button>

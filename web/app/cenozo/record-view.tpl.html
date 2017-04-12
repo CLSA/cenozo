@@ -9,11 +9,11 @@
         <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
            ng-if="isComplete"
            ng-click="refresh(); $event.stopPropagation()"
-           tooltip="Click to refresh data"
+           uib-tooltip="Click to refresh data"
            tooltip-placement="left"></i>
         <i class="glyphicon glyph-hover btn-primary btn-header"
            ng-class="collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
-           tooltip="Click to expand {{ model.module.name.singular }} details"
+           uib-tooltip="Click to expand {{ model.module.name.singular }} details"
            tooltip-placement="left"></i>
       </div>
       {{ model.viewModel.heading }}
@@ -31,7 +31,7 @@
                 ng-if="op.isIncluded( $state, model )"
                 ng-disabled="op.isDisabled( $state, model )"
                 ng-class="op.classes"
-                tooltip="{{ op.help }}"
+                uib-tooltip="{{ op.help }}"
                 tooltip-placement="right"
                 ng-click="op.operation( $state, model )">{{ op.title }}</button>
       </div>
@@ -71,7 +71,7 @@
             <div class="pull-right">
               <i class="glyphicon glyph-hover btn-header"
                  ng-class="group.collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
-                 tooltip="Click to expand section details"
+                 uib-tooltip="Click to expand section details"
                  tooltip-placement="left"></i>
             </div>
             {{ group.title }}
@@ -86,7 +86,7 @@
                             'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
               <label for="{{ input.key }}"
                      class="col-sm-3 control-label"
-                     tooltip="{{ input.help }}">
+                     uib-tooltip="{{ input.help }}">
                 {{ input.title }}
               </label>
               <div ng-class="model.getEditEnabled() &&
@@ -436,7 +436,7 @@
                 ng-if="op.isIncluded( $state, model )"
                 ng-disabled="op.isDisabled( $state, model )"
                 ng-class="op.classes"
-                tooltip="{{ op.help }}"
+                uib-tooltip="{{ op.help }}"
                 tooltip-placement="right"
                 ng-click="op.operation( $state, model )">{{ op.title }}</button>
       </div>

@@ -9,7 +9,7 @@
         <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
            ng-if="!model.listModel.isLoading"
            ng-click="refresh(); $event.stopPropagation()"
-           tooltip="Click to refresh data"
+           uib-tooltip="Click to refresh data"
            tooltip-placement="left"></i>
         <span class="dropdown report-dropdown" ng-if="model.listModel.enableReports">
           <i class="glyphicon glyphicon-file glyph-hover btn-header"
@@ -19,7 +19,7 @@
              id="reportTypeList"
              ng-click="toggleReportTypeDropdown(); $event.stopPropagation()"
              data-toggle="dropdown"
-             tooltip="{{ model.listModel.isReportAllowed
+             uib-tooltip="{{ model.listModel.isReportAllowed
                ? 'Click to download list as a report'
                : 'The list is either empty, too large or reporting is disabled' }}"
              tooltip-placement="left"></i>
@@ -37,7 +37,7 @@
         </span>
         <i class="glyphicon glyph-hover btn-primary btn-header"
            ng-class="collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
-           tooltip="Click to expand {{ model.module.name.singular }} list"
+           uib-tooltip="Click to expand {{ model.module.name.singular }} list"
            tooltip-placement="left"></i>
       </div>
       {{ model.listModel.heading }}
@@ -50,7 +50,7 @@
         <tr>
           <td ng-repeat="column in dataArray"
               ng-if="undefined === column.isIncluded || column.isIncluded( $state, model )">
-            <div class="btn-group" tooltip="{{ column.help }}">
+            <div class="btn-group" uib-tooltip="{{ column.help }}">
               <button class="btn btn-narrow btn-info dropdown-toggle"
                       data-toggle="dropdown"
                       type="button">
@@ -76,7 +76,7 @@
                 <li>
                   <a href="#"
                      ng-click="setRestrictList( column.key )"
-                     tooltip="{{ 0 < model.listModel.columnRestrictLists[column.key].length ?
+                     uib-tooltip="{{ 0 < model.listModel.columnRestrictLists[column.key].length ?
                        'Click to modify existing restriction applied to the ' + column.title + ' column' :
                        'Click to restrict this list based on the ' + column.title + ' column' }}"
                      tooltip-placement="bottom"
@@ -88,7 +88,7 @@
                 <li ng-if="0 < model.listModel.columnRestrictLists[column.key].length">
                   <a href="#"
                      ng-click="removeRestrictList( column.key )"
-                     tooltip="
+                     uib-tooltip="
                        {{ 'Click to remove the existing restriction applied to the ' + column.title + ' column' }}"
                      tooltip-placement="bottom"
                      tooltip-popup-delay="1000">Remove Restriction</a>
@@ -114,7 +114,7 @@
       <tbody>
         <tr ng-if="model.listModel.isLoading">
           <td colspan="{{ numColumns + ( model.getDeleteEnabled() ? 1 : 0 ) }}" class="bg-white">
-            <div class="loading" tooltip="Loading&hellip;"></div>
+            <div class="loading" uib-tooltip="Loading&hellip;"></div>
           </td>
         </tr>
         <tr ng-if="!model.listModel.isLoading && 0 == model.listModel.cache.length">
@@ -142,7 +142,7 @@
             <td class="tiny" ng-if="model.getDeleteEnabled()">
               <button class="btn btn-xs btn-danger"
                       ng-disabled="0 <= isDeleting.indexOf( record.id )"
-                      tooltip="Delete {{ model.module.name.singular }}"
+                      uib-tooltip="Delete {{ model.module.name.singular }}"
                       tooltip-placement="left"
                       cn-really-message="Are you sure you want to delete the {{ $index + 1 | cnOrdinal }} item in the {{ model.module.name.singular }} list?"
                       cn-really-click="deleteRecord( record )"
@@ -153,7 +153,7 @@
             <td class="tiny" ng-if="model.listModel.chooseMode">
               <button ng-if="record.chosen"
                       class="btn btn-xs btn-danger"
-                      tooltip="Remove {{ model.module.name.singular }}"
+                      uib-tooltip="Remove {{ model.module.name.singular }}"
                       tooltip-placement="left">
                 <i class="glyphicon glyphicon-remove"></i>
               </button>
@@ -164,16 +164,16 @@
         <tr>
           <td colspan="{{ numColumns + ( model.getDeleteEnabled() ? 1 : 0 ) + ( model.listModel.chooseMode ? 1 : 0 ) }}"
               class="rounded-bottom">
-            <pagination class="pagination pull-left"
-                        ng-model="model.listModel.paginationModel.currentPage"
-                        ng-show="model.listModel.cache.length > model.listModel.paginationModel.itemsPerPage"
-                        ng-change="model.listModel.onPagination()"
-                        max-size="model.listModel.paginationModel.showPageLimit"
-                        items-per-page="model.listModel.paginationModel.itemsPerPage"
-                        total-items="model.listModel.total"
-                        previous-text="&lsaquo;"
-                        next-text="&rsaquo;"></pagination>
-            <span class="footer-total">
+            <ul uib-pagination class="pagination pull-left"
+                ng-model="model.listModel.paginationModel.currentPage"
+                ng-show="!model.listModel.isLoading && model.listModel.cache.length > model.listModel.paginationModel.itemsPerPage"
+                ng-change="model.listModel.onPagination()"
+                max-size="model.listModel.paginationModel.showPageLimit"
+                items-per-page="model.listModel.paginationModel.itemsPerPage"
+                total-items="model.listModel.total"
+                previous-text="&lsaquo;"
+                next-text="&rsaquo;"></ul>
+            <span class="footer-total" ng-show="!model.listModel.isLoading">
               {{ model.listModel.total }}
               {{ 1 == model.listModel.total ? model.module.name.singular : model.module.name.plural }} total
             </span>
@@ -227,7 +227,7 @@
               id="{{ op.id }}"
               ng-disabled="op.disabled"
               ng-class="op.classes"
-              tooltip="{{ op.help }}"
+              uib-tooltip="{{ op.help }}"
               tooltip-placement="right"
               ng-click="op.operation( $state, model )">{{ op.title }}</button>
       <button class="btn btn-default"

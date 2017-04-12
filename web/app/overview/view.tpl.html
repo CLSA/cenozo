@@ -8,7 +8,7 @@
            id="reportTypeList"
            ng-click="toggleReportTypeDropdown(); $event.stopPropagation()"
            data-toggle="dropdown"
-           tooltip="Click to download list as a report"
+           uib-tooltip="Click to download list as a report"
            tooltip-placement="left"></i>
         <ul ng-if="!model.viewModel.isReportLoading"
             class="dropdown-menu dropdown-menu-right"
@@ -21,7 +21,7 @@
       <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
          style="cursor: pointer;"
          ng-click="refresh()"
-         tooltip="Click to refresh data"
+         uib-tooltip="Click to refresh data"
          tooltip-placement="left"></i>
     </div>
     {{ model.viewModel.record.description }}
