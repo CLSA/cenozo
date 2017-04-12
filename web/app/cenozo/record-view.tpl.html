@@ -144,7 +144,7 @@
                     ng-attr-id="{{ input.key }}"
                     name="name"
                     ng-model="model.viewModel.record[input.key]"
-                    typeahead="item for item in getTypeaheadValues( input, $viewValue )"
+                    uib-typeahead="item for item in getTypeaheadValues( input, $viewValue )"
                     typeahead-editable="false"
                     typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
                     typeahead-min-length="2"
@@ -160,7 +160,7 @@
                     ng-attr-id="{{ input.key }}"
                     name="name"
                     ng-model="model.viewModel.formattedRecord[input.key]"
-                    typeahead="item.id as item.value for item in getTypeaheadValues( input, $viewValue )"
+                    uib-typeahead="item.id as item.value for item in getTypeaheadValues( input, $viewValue )"
                     typeahead-editable="false"
                     typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
                     typeahead-min-length="2"
@@ -219,7 +219,6 @@
                     ng-model="model.viewModel.record[input.key]"
                     cn-change="patch( input.key )"
                     class="form-control"
-                    cols="3"
                     ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                     ng-required="model.metadata.columnList[input.key].required"></textarea>
                   <div ng-switch-when="days" class="row">
