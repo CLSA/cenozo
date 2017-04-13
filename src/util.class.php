@@ -328,7 +328,6 @@ class util
               log::notice( sprintf(
                 'Deactivating user "%s" since they have passed the login failure limit of %d.',
                 $db_user->name,
-                $db_user->id,
                 $login_failure_limit
               ) );
               $db_user->active = false;
