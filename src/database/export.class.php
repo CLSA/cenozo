@@ -32,8 +32,11 @@ class export extends \cenozo\database\record
    */
   public static function get_record_from_identifier( $identifier )
   {
-    if( false === strpos( 'application_id=', $identifier ) )
+    $util_class_name = lib::get_class_name( 'util' );
+    if( !$util_class_name::string_matches_int( $identifier ) &&
+        false === strpos( 'application_id=', $identifier ) )
       $identifier .= ';application_id='.lib::create( 'business\session' )->get_application()->id;
+
     return parent::get_record_from_identifier( $identifier );
   }
 }
