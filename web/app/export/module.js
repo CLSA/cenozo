@@ -64,6 +64,14 @@ define( [
     }
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'Duplicate',
+    operation: function( $state, model ) {
+      model.viewModel.createDuplicateExport();
+    },
+    help: 'Create a copy of this export'
+  } );
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnExportAdd', [
     'CnExportModelFactory',
@@ -150,91 +158,98 @@ define( [
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        this.onView = function() {
-          return this.$$onView().then( function() {
+        angular.extend( this, {
+          createDuplicateExport: function() {
             return CnHttpFactory.instance( {
-              path: 'export/' + self.record.getIdentifier() + '/export_column',
-              data: {
-                select: { column: [ 'id', 'rank', 'table_name', 'subtype', 'column_name', 'include' ] },
-                modifier: { order: { rank: false } }
-              }
-            } ).query().then( function( response ) {
-              self.columnList = [];
-              var promiseList = [];
-              response.data.forEach( function( item ) {
-                var columnObject = {
-                  id: item.id,
-                  table_name: item.table_name,
-                  subtype: null == item.subtype ? null : item.subtype.toString(),
-                  oldSubtype: null == item.subtype ? null : item.subtype.toString(),
-                  column: self.tableColumnList[item.table_name].list.findByProperty( 'key', item.column_name ),
-                  rank: item.rank,
-                  include: item.include,
-                  isUpdating: false
-                };
-                self.columnList.push( columnObject );
+              path: 'export?duplicate_export_id=' + self.record.id
+            } ).post().then( function( response ) {
+              var record = { getIdentifier: function() { return response.data; } };
+              return self.parentModel.transitionToViewState( record );
+            } );
+          },
+          onView: function() {
+            return this.$$onView().then( function() {
+              return CnHttpFactory.instance( {
+                path: 'export/' + self.record.getIdentifier() + '/export_column',
+                data: {
+                  select: { column: [ 'id', 'rank', 'table_name', 'subtype', 'column_name', 'include' ] },
+                  modifier: { order: { rank: false } }
+                }
+              } ).query().then( function( response ) {
+                self.columnList = [];
+                var promiseList = [];
+                response.data.forEach( function( item ) {
+                  var columnObject = {
+                    id: item.id,
+                    table_name: item.table_name,
+                    subtype: null == item.subtype ? null : item.subtype.toString(),
+                    oldSubtype: null == item.subtype ? null : item.subtype.toString(),
+                    column: self.tableColumnList[item.table_name].list.findByProperty( 'key', item.column_name ),
+                    rank: item.rank,
+                    include: item.include,
+                    isUpdating: false
+                  };
+                  self.columnList.push( columnObject );
 
-                // mark that the table/subtype is in use
-                self.promise.then( function() {
-                  if( null != item.subtype ) {
-                    self.subtypeList[item.table_name].findByProperty( 'key', item.subtype ).inUse = true;
-                  }
+                  // mark that the table/subtype is in use
+                  self.promise.then( function() {
+                    if( null != item.subtype ) {
+                      self.subtypeList[item.table_name].findByProperty( 'key', item.subtype ).inUse = true;
+                    }
+                  } );
+
+                  // load the restriction list
+                  promiseList.push( self.loadRestrictionList( item.table_name ) );
                 } );
 
-                // load the restriction list
-                promiseList.push( self.loadRestrictionList( item.table_name ) );
-              } );
-
-              self.columnListIsLoading = false;
-              return $q.all( promiseList ).then( function() {
-                return CnHttpFactory.instance( {
-                  path: 'export/' + self.record.getIdentifier() + '/export_restriction',
-                  data: {
-                    select: {
-                      column: [ 'id', 'table_name', 'subtype', 'column_name', 'rank', 'logic', 'test', 'value' ],
-                    },
-                    modifier: { order: { rank: false } }
-                  }
-                } ).query().then( function( response ) {
-                  self.restrictionList = [];
-                  response.data.forEach( function( item ) {
-                    var restriction = {
-                      id: item.id,
-                      table_name: item.table_name,
-                      subtype: item.subtype,
-                      column_name: item.column_name,
-                      rank: item.rank,
-                      restriction:
-                        self.tableRestrictionList[item.table_name].list.findByProperty( 'key', item.column_name ),
-                      logic: item.logic,
-                      value: item.value,
-                      test: item.test,
-                      isUpdating: false
-                    };
-
-                    if( 'boolean' == restriction.restriction.type && null != restriction.value ) {
-                      restriction.value = Boolean( restriction.value );
-                    } else if( cenozo.isDatetimeType( restriction.restriction.type ) ) {
-                      restriction.formattedValue = CnSession.formatValue(
-                        restriction.value, restriction.restriction.type, true
-                      );
-                    } else {
-                      restriction.value = isNaN( parseInt( restriction.value ) )
-                                        ? restriction.value
-                                        : parseInt( restriction.value );
-                      if( null == restriction.value ) restriction.value = '';
+                self.columnListIsLoading = false;
+                return $q.all( promiseList ).then( function() {
+                  return CnHttpFactory.instance( {
+                    path: 'export/' + self.record.getIdentifier() + '/export_restriction',
+                    data: {
+                      select: {
+                        column: [ 'id', 'table_name', 'subtype', 'column_name', 'rank', 'logic', 'test', 'value' ],
+                      },
+                      modifier: { order: { rank: false } }
                     }
-                    self.restrictionList.push( restriction );
-                  } );
-                  self.restrictionListIsLoading = false;
-                  self.updateParticipantCount();
-                } )
+                  } ).query().then( function( response ) {
+                    self.restrictionList = [];
+                    response.data.forEach( function( item ) {
+                      var restriction = {
+                        id: item.id,
+                        table_name: item.table_name,
+                        subtype: item.subtype,
+                        column_name: item.column_name,
+                        rank: item.rank,
+                        restriction:
+                          self.tableRestrictionList[item.table_name].list.findByProperty( 'key', item.column_name ),
+                        logic: item.logic,
+                        value: item.value,
+                        test: item.test,
+                        isUpdating: false
+                      };
+
+                      if( 'boolean' == restriction.restriction.type && null != restriction.value ) {
+                        restriction.value = Boolean( restriction.value );
+                      } else if( cenozo.isDatetimeType( restriction.restriction.type ) ) {
+                        restriction.formattedValue = CnSession.formatValue(
+                          restriction.value, restriction.restriction.type, true
+                        );
+                      } else {
+                        restriction.value = isNaN( parseInt( restriction.value ) )
+                                          ? restriction.value
+                                          : parseInt( restriction.value );
+                        if( null == restriction.value ) restriction.value = '';
+                      }
+                      self.restrictionList.push( restriction );
+                    } );
+                    self.restrictionListIsLoading = false;
+                    self.updateParticipantCount();
+                  } )
+                } );
               } );
             } );
-          } );
-        };
-
-        angular.extend( this, {
+          },
           promise: null, // defined below
           modelList: {
             participant: CnParticipantModelFactory.root,
