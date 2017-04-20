@@ -4807,6 +4807,23 @@ cenozo.factory( 'CnBaseModelFactory', [
          * This function adds a column to the model which is used by the list model.
          * A separate copy of the column list is kept from the module as columns may need to
          * be added or removed at run-time
+         * column object parameters: {
+         *   title: the column's heading
+         *   type: one of the following
+         *     boolean: yes/no
+         *     date: date (with no time)
+         *     datetime: date and time (with no seconds)
+         *     datetimesecond: date, time and seconds
+         *     rank: a ranked value (1st, 2nd, 3rd, etc)
+         *     string: any string (use format for numbers, etc)
+         *     text: any long string
+         *     size: a data size (will be formated as KB, MB, GB, etc)
+         *   column: the database column to reference
+         *   width: a CSS style width to set on the column
+         *   align: a CSS style alignment to set on the column
+         *   isIncluded: function( $state, model ) a function which returns whether to include the column
+         *   help: help text that pops up when mousing over an input
+         * }
          */
         cenozo.addExtendableFunction( self, 'addColumn', function( key, column, index ) {
           column.key = key;
