@@ -159,6 +159,23 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Puts brackets around the entire where statement
+   * 
+   * This is useful when wanting to add a where statement without affecting any existing OR statements.
+   * If there are less than two existing where statements then this does nothing
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function wrap_where()
+  {
+    if( 1 < count( $this->where_list ) )
+    {
+      array_unshift( $this->where_list, array( 'bracket' => true, 'or' => false, 'not' => false ) );
+      array_push( $this->where_list, array( 'bracket' => false, 'or' => false, 'not' => false ) );
+    }
+  }
+
+  /**
    * Add a where statement to the modifier.
    * 
    * This method appends where clauses onto the end of already existing where clauses.

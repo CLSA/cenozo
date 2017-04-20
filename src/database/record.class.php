@@ -813,6 +813,9 @@ abstract class record extends \cenozo\base_object
     else if( $relationship_class_name::ONE_TO_MANY == $relationship ||
              $relationship_class_name::MANY_TO_MANY == $relationship )
     {
+      // wrap the existing modifier's where statements to avoid logic errors
+      $modifier->wrap_where();
+
       if( $relationship_class_name::ONE_TO_MANY == $relationship )
       {
         $column_name = sprintf( '%s.%s_id', $record_type, $table_name );
