@@ -67,7 +67,8 @@
                    class="form-control"
                    type="text"
                    placeholder="{{ null === restrict.value ? '(empty)' : '' }}"
-                   ng-disabled="null === restrict.value" />
+                   ng-disabled="null === restrict.value"
+                   cn-autofocus />
           </div>
           <div class="col-sm-2">
             <label class="btn btn-default pull-right"
@@ -100,7 +101,8 @@
                     ng-model="restrict.value"
                     ng-change="local.describeRestriction( $index )"
                     class="form-control"
-                    ng-disabled="null === restrict.value">
+                    ng-disabled="null === restrict.value"
+                    cn-autofocus>
               <option value="1">Yes</option>
               <option value="0">No</option>
             </select>
@@ -141,7 +143,8 @@
                    ng-change="local.describeRestriction( $index )"
                    class="form-control"
                    type="number"
-                   placeholder="{{ null === restrict.value ? '(empty)' : 'restriction number' }}" />
+                   placeholder="{{ null === restrict.value ? '(empty)' : 'restriction number' }}"
+                   cn-autofocus />
           </div>
           <div class="col-sm-2">
             <label class="btn btn-default pull-right"
@@ -180,7 +183,8 @@
                    class="form-control"
                    type="number"
                    step="0.001"
-                   placeholder="{{ null === restrict.value ? '(empty)' : 'restriction size' }}" />
+                   placeholder="{{ null === restrict.value ? '(empty)' : 'restriction size' }}"
+                   cn-autofocus />
           </div>
           <div class="col-sm-2 col-slim">
             <select id="{{ 'unit' + $index }}"
@@ -236,7 +240,8 @@
                    type="number"
                    min="1"
                    placeholder="{{ null === restrict.value ? '(empty)' : 'restriction rank' }}"
-                   ng-disabled="null === restrict.value" />
+                   ng-disabled="null === restrict.value"
+                   cn-autofocus />
           </div>
           <div class="col-sm-2">
             <label class="btn btn-default pull-right"
@@ -313,6 +318,6 @@
             ng-click="local.preExisting ? remove() : cancel()">
       {{ local.preExisting ? 'Remove' : 'Cancel' }}
     </button>
-    <button type="submit" class="btn btn-primary" cn-autofocus>OK</button>
+    <button type="submit" class="btn btn-primary">OK</button>
   </div>
 </form>
