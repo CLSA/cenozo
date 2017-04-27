@@ -185,6 +185,25 @@ class export_column extends has_rank
         $modifier->left_join( 'event', $joining_table_name.'.event_id', $table_name.'.id', $table_name );
       }
     }
+    else if( 'hin' == $this->table_name )
+    {
+      if( !$modifier->has_join( 'hin' ) )
+      {
+        if( !$modifier->has_join( 'participant_last_hin' ) )
+          $modifier->join( 'participant_last_hin', 'participant.id', 'participant_last_hin.participant_id' );
+        $modifier->left_join( 'hin', 'participant_last_hin'.'.hin_id', 'hin.id' );
+      }
+    }
+    else if( 'phone' == $this->table_name )
+    {
+      if( !$modifier->has_join( 'phone' ) )
+      {
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', 'phone.participant_id', false );
+        $join_mod->where( 'phone.rank', '=', 1 );
+        $modifier->join_modifier( 'phone', $join_mod, 'left' );
+      }
+    }
     else if( 'site' == $this->table_name )
     {
       // there may be an application id in the subtype

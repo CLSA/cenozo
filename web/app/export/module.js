@@ -1,5 +1,5 @@
 define( [
-  'address', 'collection', 'consent', 'event', 'participant', 'phone', 'site'
+  'address', 'collection', 'consent', 'event', 'hin', 'participant', 'phone', 'site'
 ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
@@ -148,11 +148,11 @@ define( [
   cenozo.providers.factory( 'CnExportViewFactory', [
     'CnBaseViewFactory',
     'CnParticipantModelFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory', 'CnSiteModelFactory',
-    'CnCollectionModelFactory', 'CnConsentModelFactory', 'CnEventModelFactory',
+    'CnCollectionModelFactory', 'CnConsentModelFactory', 'CnEventModelFactory', 'CnHinModelFactory',
     'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalDatetimeFactory', '$q',
     function( CnBaseViewFactory,
               CnParticipantModelFactory, CnAddressModelFactory, CnPhoneModelFactory, CnSiteModelFactory,
-              CnCollectionModelFactory, CnConsentModelFactory, CnEventModelFactory,
+              CnCollectionModelFactory, CnConsentModelFactory, CnEventModelFactory, CnHinModelFactory,
               CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory, $q ) {
       var object = function( parentModel, root ) {
         var self = this;
@@ -258,7 +258,8 @@ define( [
             phone: CnPhoneModelFactory.root,
             collection: CnCollectionModelFactory.root,
             consent: CnConsentModelFactory.root,
-            event: CnEventModelFactory.root
+            event: CnEventModelFactory.root,
+            hin: CnHinModelFactory.root
           },
           extendedSiteSelection: 'mastodon' == CnSession.application.type,
           columnListIsLoading: true,
@@ -327,6 +328,11 @@ define( [
               isLoading: true,
               promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
+            },
+            hin: {
+              isLoading: true,
+              promise: null,
+              list: [ { key: undefined, title: 'Loading...' } ]
             }
           },
           tableColumnList: {
@@ -364,6 +370,10 @@ define( [
               list: [ { key: undefined, title: 'Loading...' } ]
             },
             event: {
+              isLoading: true,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
+            hin: {
               isLoading: true,
               list: [ { key: undefined, title: 'Loading...' } ]
             }
@@ -838,6 +848,7 @@ define( [
           processMetadata( 'collection' ),
           processMetadata( 'consent' ),
           processMetadata( 'event' ),
+          processMetadata( 'hin' ),
 
           CnHttpFactory.instance( {
             path: 'collection',
