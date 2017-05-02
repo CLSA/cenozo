@@ -432,7 +432,7 @@ class participant extends record
    * @static
    * @access public
    */
-  public static function get_valid_uid_list( $uid_list )
+  public static function get_valid_uid_list( $uid_list, $modifier = NULL )
   {
     $output_uid_list = array();
 
@@ -465,7 +465,7 @@ class participant extends record
       $select = lib::create( 'database\select' );
       $select->add_column( 'uid' );
       $select->from( 'participant' );
-      $modifier = lib::create( 'database\modifier' );
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'uid', 'IN', $uid_list );
       $modifier->order( 'uid' );
 
