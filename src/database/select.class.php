@@ -555,6 +555,7 @@ class select extends \cenozo\base_object
    *       table_prefix: true|false (optional)
    *     },
    *   ],
+   *   distinct: <true|false>
    * }
    */
   public static function from_json( $json_string )
@@ -604,6 +605,10 @@ class select extends \cenozo\base_object
             else if( is_string( $column ) ) $select->add_column( $column );
             else throw lib::create( 'exception\runtime', 'Invalid column sub-statement', __METHOD__ );
           }
+        }
+        else if( 'distinct' == $key )
+        {
+          $select->set_distinct( $value );
         }
         else throw lib::create( 'exception\runtime', sprintf( 'Invalid object property "%s"', $key ), __METHOD__ );
       }
