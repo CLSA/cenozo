@@ -66,7 +66,7 @@ class module extends \cenozo\service\site_restricted_participant_module
       $sub_mod = lib::create( 'database\modifier' );
       $sub_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
       $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
-      $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
+      if( $db_application->release_based ) $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
       $modifier->join_modifier(
         'application_has_participant', $sub_mod, $db_application->release_based ? '' : 'left' );
 
