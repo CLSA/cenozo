@@ -80,9 +80,10 @@ class module extends \cenozo\service\site_restricted_module
       $join_mod->group( 'site_id' );
 
       $modifier->left_join(
-        sprintf( '( %s %s ) AS site_join_access', $join_sel->get_sql(), $join_mod->get_sql() ),
+        sprintf( '( %s %s )', $join_sel->get_sql(), $join_mod->get_sql() ),
         'site.id',
-        'site_join_access.site_id' );
+        'site_join_access.site_id',
+        'site_join_access' );
 
       // restrict to roles belonging to this application
       $sub_mod = lib::create( 'database\modifier' );
@@ -121,9 +122,10 @@ class module extends \cenozo\service\site_restricted_module
       $join_mod->group( 'site_id' );
 
       $modifier->left_join(
-        sprintf( '( %s %s ) AS site_join_participant_site', $join_sel->get_sql(), $join_mod->get_sql() ),
+        sprintf( '( %s %s )', $join_sel->get_sql(), $join_mod->get_sql() ),
         'site.id',
-        'site_join_participant_site.site_id' );
+        'site_join_participant_site.site_id',
+        'site_join_participant_site' );
 
       // override columns so that we can fake these columns being in the site table
       $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
