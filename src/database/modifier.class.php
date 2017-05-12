@@ -263,6 +263,30 @@ class modifier extends \cenozo\base_object
   }
 
   /**
+   * Returns whether or not to rollup grouped data
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_rollup()
+  {
+    return $this->rollup;
+  }
+
+  /**
+   * Sets whether or not to rollup grouped data
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $rollup
+   * @access public
+   */
+  public function set_rollup( $rollup )
+  {
+    $this->rollup = $rollup;
+  }
+
+  /**
    * Add a having statement to the modifier.
    * 
    * This method appends having clauses onto the end of already existing having clauses.
@@ -1040,6 +1064,8 @@ class modifier extends \cenozo\base_object
       $first = false;
     }
 
+    if( 0 < strlen( $sql ) && $this->rollup ) $sql .= ' WITH ROLLUP';
+
     return $sql;
   }
 
@@ -1326,4 +1352,11 @@ class modifier extends \cenozo\base_object
    * @access protected
    */
   protected $offset = 0;
+
+  /**
+   * Whether or not to rollup grouped data
+   * @var boolean
+   * @access protected
+   */
+  protected $rollup = false;
 }
