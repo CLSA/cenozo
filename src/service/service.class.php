@@ -848,6 +848,12 @@ abstract class service extends \cenozo\base_object
         {
           $mime_type = 'application/json';
           if( is_null( $this->encoded_data ) ) $this->encoded_data = '';
+          else if( is_string( $this->encoded_data ) )
+          {
+            // make sure strings are enclosed by double-quotes
+            if( !preg_match( '/^".+"$/', $this->encoded_data ) )
+              $this->encoded_data = sprintf( '"%s"', $this->encoded_data );
+          }
           else if( !is_string( $this->encoded_data ) )
           {
             $util_class_name = lib::get_class_name( 'util' );
