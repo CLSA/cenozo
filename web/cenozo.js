@@ -2621,7 +2621,8 @@ cenozo.factory( 'CnSession', [
         // get the application, user, site and role details
         updateVoip: function() {
           return CnHttpFactory.instance( {
-            path: 'voip/0'
+            path: 'voip/0',
+            onError: function( response ) { self.voip = { enabled: true, info: null, call: null }; }
           } ).get().then( function( response ) {
             self.voip = response.data;
           } );

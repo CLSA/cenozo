@@ -59,11 +59,12 @@ define( function() {
         this.timerPromise = null;
 
         this.updateInformation = function() {
+          console.log( self.voip );
           if( !self.updating ) {
             self.updating = true;
             CnSession.updateVoip().then( function() {
               self.voip = CnSession.voip;
-              if( self.voip.enabled && '(disabled)' == self.webphone ) {
+              if( self.voip.enabled && null != self.voip.info && '(disabled)' == self.webphone ) {
                 // loading webphone from server which isn't part of the API, so use $http
                 $http.get( CnSession.application.webphoneUrl ).then( function( response ) {
                   self.webphone = response.data;

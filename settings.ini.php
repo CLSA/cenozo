@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.1.0';
-$settings['general']['cenozo_build'] = '7a20af0';
+$settings['general']['cenozo_build'] = '0990d18';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -131,7 +131,8 @@ $settings['opal']['password'] = '';
 
 // voip settings
 $settings['voip']['enabled'] = false;
-$settings['voip']['url'] = 'http://localhost:8088/mxml';
+$settings['voip']['domain'] = 'localhost';
+$settings['voip']['mxml_port'] = 8088;
 $settings['voip']['username'] = '';
 $settings['voip']['password'] = '';
 $settings['voip']['prefix'] = '';

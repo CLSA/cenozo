@@ -494,7 +494,8 @@ define( function() {
         },
         in_call: {
           title: 'In Call',
-          type: 'boolean'
+          type: 'boolean',
+          help: 'This will show as empty if there is a problem connecting to the VoIP service'
         },
         last_datetime: {
           column: 'access.datetime',

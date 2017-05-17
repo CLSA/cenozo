@@ -52,7 +52,8 @@ $settings['opal']['password'] = '';
 
 // the Asterisk AJAM url, username and password
 $settings['voip']['enabled'] = false;
-$settings['voip']['url'] = 'localhost';
+$settings['voip']['domain'] = 'localhost';
+$settings['voip']['mxml_port'] = 8088;
 $settings['voip']['username'] = '';
 $settings['voip']['password'] = '';
 $settings['voip']['prefix'] = '';

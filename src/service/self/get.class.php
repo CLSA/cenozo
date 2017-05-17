@@ -167,7 +167,11 @@ class get extends \cenozo\service\service
     $pseudo_record['application']['max_small_report'] =
       $setting_manager->get_setting( 'report', 'max_small_rows' );
     $pseudo_record['application']['voip_enabled'] = $setting_manager->get_setting( 'voip', 'enabled' );
-    $pseudo_record['application']['webphone_url'] = '/webphone/?id='.( 10000000 + $db_user->id );
+    $pseudo_record['application']['webphone_url'] = sprintf(
+      '/webphone/?domain=%s&id=%d',
+      $setting_manager->get_setting( 'voip', 'domain' ),
+      10000000 + $db_user->id
+    );
 
     // include the number of active users for the site
     $activity_mod = lib::create( 'database\modifier' );

@@ -26,7 +26,11 @@ class voip_manager extends \cenozo\singleton
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     $this->enabled = true === $setting_manager->get_setting( 'voip', 'enabled' );
-    $this->url = $setting_manager->get_setting( 'voip', 'url' );
+    $this->url = sprintf(
+      'http://%s:%d/mxml',
+      $setting_manager->get_setting( 'voip', 'domain' ),
+      $setting_manager->get_setting( 'voip', 'mxml_port' )
+    );
     $this->username = $setting_manager->get_setting( 'voip', 'username' );
     $this->password = $setting_manager->get_setting( 'voip', 'password' );
     $this->prefix = $setting_manager->get_setting( 'voip', 'prefix' );
@@ -118,7 +122,7 @@ class voip_manager extends \cenozo\singleton
     $s8_event_list = $this->manager->getSipPeers();
 
     $sip_info_list = array();
-    foreach( $s8_event_list as $s8_event )
+    if( is_array( $s8_event_list ) ) foreach( $s8_event_list as $s8_event )
     {
       $peer = $s8_event->get( 'objectname' );
       array_push( $sip_info_list, array(
