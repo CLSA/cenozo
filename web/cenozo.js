@@ -748,16 +748,36 @@ angular.extend( cenozo, {
         } ];
         if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
       } else if( 'enum' == type ) {
-        input.enumList = angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
-          function( list, name ) {
-            list.push( { value: name, name: name } );
-            return list;
-          },
-          [ {
-            value: undefined,
-            name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
-          } ]
-        );
+        input.enumList = [ {
+          value: undefined,
+          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
+        } ];
+        if( null == restriction.enum_list ) {
+          promiseList.push(
+            CnHttpFactory.instance( {
+              path: restriction.base_table
+            } ).head().then( function( response ) {
+              var columnList = angular.fromJson( response.headers( 'Columns' ) );
+              if( 'enum' == columnList[restriction.subject].data_type ) { // parse out the enum values
+                cenozo.parseEnumList( columnList[restriction.subject] ).forEach( function( item ) {
+                  input.enumList.push( { value: item, name: item } );
+                } );
+              }
+            } )
+          );
+        } else {
+          input.enumList = input.enumList.concat( angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
+            function( list, name ) {
+              list.push( { value: name, name: name } );
+              return list;
+            },
+            [ {
+              value: undefined,
+              name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
+            } ]
+          ) );
+        }
+
         if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
       }
 
