@@ -250,6 +250,17 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Returns an array of all table names.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array( string )
+   * @access public
+   */
+  public function get_table_names()
+  {
+    return array_keys( $this->tables );
+  }
+
+  /**
    * Returns an array of column names for the given table.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name A table name.
