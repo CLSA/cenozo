@@ -22,6 +22,17 @@ class get extends read
     parent::__construct( 'GET', $path, $args );
   }
 
+  /** 
+   * Extends parent method
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
+    $this->select->add_column( 'create_timestamp' );
+    $this->select->add_column( 'update_timestamp' );
+  }
+
   /**
    * Extends parent method
    */

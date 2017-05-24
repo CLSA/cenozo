@@ -3,6 +3,11 @@
            data-toggle="collapse"
            data-target="#{{ model.module.subject.camel }}View"
            ng-click="collapsed = !collapsed"
+           uib-tooltip-html="
+             '<div>Created on ' +
+             ( model.viewModel.record.create_timestamp | cnDatetime:'datetimesecond' ) + '<br/>' +
+             'Last edit on ' +
+             ( model.viewModel.record.update_timestamp | cnDatetime:'datetimesecond' ) + '</div>'"
            style="cursor:pointer;">
     <h4>
       <div class="pull-right">
