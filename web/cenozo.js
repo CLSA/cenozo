@@ -758,7 +758,9 @@ angular.extend( cenozo, {
               path: restriction.base_table
             } ).head().then( function( response ) {
               var columnList = angular.fromJson( response.headers( 'Columns' ) );
-              if( 'enum' == columnList[restriction.subject].data_type ) { // parse out the enum values
+              if( angular.isDefined( columnList[restriction.subject] ) &&
+                  'enum' == columnList[restriction.subject].data_type ) {
+                // parse out the enum values
                 cenozo.parseEnumList( columnList[restriction.subject] ).forEach( function( item ) {
                   input.enumList.push( { value: item, name: item } );
                 } );
