@@ -1554,6 +1554,7 @@ cenozo.directive( 'cnRecordView', [
       controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnRecordView';
         $scope.isComplete = false;
+        $scope.showTimestamps = 2 < CnSession.role.tier;
         $scope.model.viewModel.onView().then( function() {
           if( 'view' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
 

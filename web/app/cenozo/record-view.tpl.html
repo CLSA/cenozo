@@ -8,6 +8,7 @@
              ( model.viewModel.record.create_timestamp | cnDatetime:'datetimesecond' ) + '<br/>' +
              'Last edit on ' +
              ( model.viewModel.record.update_timestamp | cnDatetime:'datetimesecond' ) + '</div>'"
+           tooltip-enable="{{ showTimestamps }}"
            style="cursor:pointer;">
     <h4>
       <div class="pull-right">
