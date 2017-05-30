@@ -82,5 +82,12 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     if( $select->has_table_columns( 'site' ) )
       $modifier->left_join( 'site', 'interview.site_id', 'site.id' );
+
+    if( $select->has_table_columns( 'user' ) )
+    {
+      $modifier->join( 'interview_last_assignment', 'interview.id', 'interview_last_assignment.interview_id' );
+      $modifier->left_join( 'assignment', 'interview_last_assignment.assignment_id', 'assignment.id' );
+      $modifier->left_join( 'user', 'assignment.user_id', 'user.id' );
+    }
   }
 }
