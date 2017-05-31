@@ -558,7 +558,7 @@ abstract class record extends \cenozo\base_object
             // convert timestamps to server time
             if( 'timestamp' == $type )
               $columns[$column]->setTimezone( new \DateTimeZone( 'UTC' ) );
-            $columns[$column] = $columns[$column]->format( 'Y-m-d H:i:s' );
+            $columns[$column] = $columns[$column]->format( \DateTime::ATOM );
           }
           else if( 'date' == $type ) $columns[$column] = $columns[$column]->format( 'Y-m-d' );
           else if( 'time' == $type ) $columns[$column] = $columns[$column]->format( 'H:i:s' );
