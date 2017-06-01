@@ -1800,11 +1800,13 @@ cenozo.directive( 'cnSlider', [
     function pixelize( pixels ) { return "" + pixels + "px"; }
     function offset( element, position ) { return element.css( { left: position } ); }
     function contain( value ) { return isNaN( value ) ? value : Math.min( Math.max( 0, value ), 100 ); }
-    function roundStep( value, precision, step, floor ) {
+    function roundStep( value, precision, step, floor, ceiling ) {
       if( floor == null ) floor = 0;
+      if( ceiling == null ) ceiling = 100;
       if( step == null ) step = 1 / Math.pow( 10, precision );
       var remainder = ( value - floor ) % step;
       var steppedValue = remainder > ( step/2 ) ? value + step - remainder : value - remainder;
+      if( steppedValue > ceiling ) steppedValue = value - remainder;
       var decimals = Math.pow( 10, precision );
       var roundedValue = steppedValue * decimals / decimals;
       return parseFloat( roundedValue.toFixed( precision ) );
@@ -1870,7 +1872,8 @@ cenozo.directive( 'cnSlider', [
                     parseFloat( scope[value] ),
                     parseInt( scope.precision ),
                     parseFloat( scope.step ),
-                    parseFloat( scope.floor )
+                    parseFloat( scope.floor ),
+                    parseFloat( scope.ceiling )
                   );
                 }
               }
@@ -1978,7 +1981,8 @@ cenozo.directive( 'cnSlider', [
                     newValue,
                     parseInt( scope.precision ),
                     parseFloat( scope.step ),
-                    parseFloat( scope.floor )
+                    parseFloat( scope.floor ),
+                    parseFloat( scope.ceiling )
                   );
                   changed = scope.dragstop && changed || scope.local[currentRef] !== newValue;
                   scope.local[currentRef] = newValue;
