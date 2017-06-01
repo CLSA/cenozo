@@ -214,6 +214,9 @@ angular.extend( cenozoApp, {
            *     table: the table to lookup values from
            *     select: what is shown when selected (may be a CONCAT statement)
            *     where: an array of all columns in the table which can be matched
+           *   hourStep: when using the datetime type this can be used to define the hour step value
+           *   minuteStep: when using the datetime type this can be used to define the minute step value
+           *   secondStep: when using the datetime type this can be used to define the second step value
            *   }
            * }
            */
@@ -1261,7 +1264,10 @@ cenozo.directive( 'cnRecordAdd', [
               minDate: angular.isDefined( $scope.record[input.min] ) ? $scope.record[input.min] : input.min,
               maxDate: angular.isDefined( $scope.record[input.max] ) ? $scope.record[input.max] : input.max,
               pickerType: input.type,
-              emptyAllowed: !$scope.model.metadata.columnList[input.key].required
+              emptyAllowed: !$scope.model.metadata.columnList[input.key].required,
+              hourStep: angular.isDefined( input.hourStep ) ? input.hourStep : 1,
+              minuteStep: angular.isDefined( input.minuteStep ) ? input.minuteStep : 1,
+              secondStep: angular.isDefined( input.secondStep ) ? input.secondStep : 1
             } ).show().then( function( response ) {
               if( false !== response ) {
                 $scope.record[input.key] = response;
@@ -1724,7 +1730,10 @@ cenozo.directive( 'cnRecordView', [
                 maxDate: angular.isDefined( $scope.model.viewModel.record[input.max] ) ?
                          $scope.model.viewModel.record[input.max] : input.max,
                 pickerType: input.type,
-                emptyAllowed: !$scope.model.metadata.columnList[input.key].required
+                emptyAllowed: !$scope.model.metadata.columnList[input.key].required,
+                hourStep: angular.isDefined( input.hourStep ) ? input.hourStep : 1,
+                minuteStep: angular.isDefined( input.minuteStep ) ? input.minuteStep : 1,
+                secondStep: angular.isDefined( input.secondStep ) ? input.secondStep : 1
               } ).show().then( function( response ) {
                 if( false !== response ) {
                   $scope.model.viewModel.record[input.key] = response;
@@ -5507,6 +5516,9 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.emptyAllowed = true;
       this.minDate = null;
       this.maxDate = null;
+      this.hourStep = 1;
+      this.minuteStep = 1;
+      this.secondStep = 1;
       angular.extend( this, params );
 
       // service vars/functions which cannot be defined by the constructor's params
