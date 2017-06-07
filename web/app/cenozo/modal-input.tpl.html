@@ -1,0 +1,24 @@
+<form ng-submit="ok()" novalidate name="form" class="noselect">
+  <div class="modal-header bg-primary">
+    <h4 class="modal-title">{{ title }}</h4>
+  </div>
+  <div class="modal-body">
+    <span class="allow-select" style="white-space: pre-wrap;">{{ message }}</span>
+    <div class="row container-fluid vertical-spacer">
+      <input id="value"
+             name="value"
+             ng-model="value"
+             ng-required="required"
+             ng-change="check()"
+             class="form-control"></input>
+      <span ng-if="form.value.$invalid && form.value.$dirty">
+        <span class="help-block" ng-if="form.value.$error.required">You cannot leave this field empty.</span>
+        <span class="help-block" ng-if="form.value.$error.format">Invalid format</span>
+      </span>
+    </div>
+  </div>
+  <div class="modal-footer bg-info">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary" ng-disabled="form.value.$invalid" cn-autofocus>OK</button>
+  </div>
+</form>

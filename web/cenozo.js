@@ -5933,6 +5933,83 @@ cenozo.service( 'CnModalMessageFactory', [
 /* ######################################################################################################## */
 
 /**
+ * A factory for showing a modal window with an input
+ * 
+ * @param required: empty responses are not allowed
+ * @param minValue: The minimum possible value
+ * @param maxValue: The maximum possible value
+ * @param format: one of the following (optional)
+ *   integer: will only accept integers
+ *   float: will only accept float and integers
+ *   alphanum: will only accept numbers and letters
+ *   alpha_num: will only accept numbers, letters and underscores
+ *   email: requires a valid email address (<name>@<domain>.<type>)
+ */
+cenozo.service( 'CnModalInputFactory', [
+  '$uibModal',
+  function( $uibModal ) {
+    var object = function( params ) {
+      var self = this;
+      this.title = 'Provide Input';
+      this.message = 'Please provide input:';
+      this.value = '';
+      this.format = undefined
+      this.minValue = undefined;
+      this.maxValue = undefined;
+      this.required = false;
+      angular.extend( this, params );
+
+      this.show = function() {
+        return $uibModal.open( {
+          backdrop: 'static',
+          keyboard: true,
+          modalFade: true,
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-input.tpl.html' ),
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
+            angular.extend( $scope, {
+              title: self.title,
+              message: self.message,
+              value: self.value,
+              format: self.format,
+              minValue: self.minValue,
+              maxValue: self.maxValue,
+              required: self.required,
+              check: function() {
+                // determine the regex
+                var re = undefined;
+                if( 'integer' == $scope.format ) re = /^-?[0-9]+$/;
+                else if( 'float' == $scope.format ) re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
+                else if( 'alphanum' == $scope.format ) re = /^[a-zA-Z0-9]+$/;
+                else if( 'alpha_num' == $scope.format ) re = /^[a-zA-Z0-9_]+$/;
+                else if( 'email' == $scope.format ) re = /^[^ ,]+@[^ ,]+\.[^ ,]+$/;
+
+                // test the regex, min and max values
+                var valid = true;
+                if( angular.isDefined( re ) && !re.test( $scope.value ) ) valid = false;
+                else if( angular.isDefined( $scope.minValue ) && $scope.minValue > $scope.value ) valid = false;
+                else if( angular.isDefined( $scope.maxValue ) && $scope.maxValue < $scope.value ) valid = false;
+
+                var form = cenozo.getScopeByQuerySelector( 'form' ).form;
+                form.value.$error.format = !valid;
+                form.value.$invalid = !valid || angular.isDefined( form.value.$error.required );
+              },
+              ok: function() {
+                $uibModalInstance.close( angular.isUndefined( $scope.value ) ? '' : $scope.value );
+              },
+              cancel: function() { $uibModalInstance.close( false ); }
+            } );
+          } ]
+        } ).result;
+      };
+    };
+
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * A factory for showing a message password changing dialog in a modal window
  */
 cenozo.service( 'CnModalPasswordFactory', [
