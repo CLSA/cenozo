@@ -39,8 +39,8 @@
         <div ng-repeat="category in historyCategoryArray | filter:{ framework: true }" class="btn-group">
           <button class="btn btn-default"
                   ng-model="category.active"
-                  ng-change="model.toggleCategory( category.name )"
-                  btn-checkbox>
+                  ng-click="model.toggleCategory( category.name )"
+                  uib-btn-checkbox>
             {{ category.name }}
             <i class="glyphicon" ng-class="category.active ? 'glyphicon-check' : 'glyphicon-unchecked'"></i>
           </button>
@@ -50,8 +50,8 @@
         <div ng-repeat="category in historyCategoryArray | filter:{ framework: false }" class="btn-group">
           <button class="btn btn-default"
                   ng-model="category.active"
-                  ng-change="model.toggleCategory( category.name )"
-                  btn-checkbox>
+                  ng-click="model.toggleCategory( category.name )"
+                  uib-btn-checkbox>
             {{ category.name }}
             <i class="glyphicon" ng-class="category.active ? 'glyphicon-check' : 'glyphicon-unchecked'"></i>
           </button>
