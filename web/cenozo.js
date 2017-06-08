@@ -6114,7 +6114,7 @@ cenozo.service( 'CnModalRestrictFactory', [
         if( 'size' == this.type ) restriction.unit = 'Bytes';
         if( 0 < this.restrictList.length ) restriction.logic = 'and';
         this.restrictList.push( restriction );
-        this.emptyList.push( { isEmpty: false } );
+        this.emptyList.push( { isEmpty: true } );
         this.describeRestriction( this.restrictList.length - 1 );
       };
 
@@ -6139,6 +6139,12 @@ cenozo.service( 'CnModalRestrictFactory', [
 
       this.toggleEmpty = function( index ) {
         if( this.emptyList[index].isEmpty ) {
+          this.emptyList[index].oldValue = this.restrictList[index].value;
+          this.restrictList[index].value = null;
+          // make sure to select <=> or <>
+          if( 0 > ['<=>','<>'].indexOf( this.restrictList[index].test ) )
+            this.restrictList[index].test = '<=>';
+        } else {
           this.restrictList[index].value = angular.isUndefined( this.emptyList[index].oldValue )
                                          ? this.getInitialValue()
                                          : this.emptyList[index].oldValue;
@@ -6147,12 +6153,6 @@ cenozo.service( 'CnModalRestrictFactory', [
             if( !cenozo.isDatetimeType( this.type, 'second' ) ) date.second( 0 );
             this.restrictList[index].value = date.format();
           }
-        } else {
-          this.emptyList[index].oldValue = this.restrictList[index].value;
-          this.restrictList[index].value = null;
-          // make sure to select <=> or <>
-          if( 0 > ['<=>','<>'].indexOf( this.restrictList[index].test ) )
-            this.restrictList[index].test = '<=>';
         }
 
         this.formattedValueList[index] =
