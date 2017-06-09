@@ -978,6 +978,23 @@ cenozo.directive( 'cnChange', [
 /**
  * Changes element height based on scroll height
  */
+cenozo.directive( 'cnToNumber',
+  function() {
+    return {
+      require: 'ngModel',
+      link: function( scope, element, attrs, ngModel ) {
+        ngModel.$parsers.push( function( val ) { return val != null ? parseInt( val, 10 ) : null; } );
+        ngModel.$formatters.push( function( val ) { return val != null ? '' + val : null; } );
+      }
+    };
+  }
+);
+
+/* ######################################################################################################## */
+
+/**
+ * Changes element height based on scroll height
+ */
 cenozo.directive( 'cnElastic', [
   '$timeout',
   function( $timeout ) {
