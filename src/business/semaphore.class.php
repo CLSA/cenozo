@@ -46,7 +46,7 @@ class semaphore extends \cenozo\base_object
    * @throws exception\notice
    * @access public
    */
-  public function acquire( $name = NULL )
+  public function acquire()
   {
     // acquire the semaphore if it doesn't yet exist
     if( is_null( $this->resource ) )
