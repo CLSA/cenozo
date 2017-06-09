@@ -119,7 +119,8 @@
                 cn-change="check( input.key )"
                 class="form-control"
                 type="text"
-                ng-click="selectDatetime( input )"
+                ng-click="true === input.constant || 'add' == input.constant ? null : selectDatetime( input )"
+                ng-readonly="true === input.constant || 'add' == input.constant"
                 onkeydown="return false"></input>
               <input ng-switch-when="color"
                 ng-attr-id="{{ input.key }}"
