@@ -149,7 +149,7 @@ define( function() {
                 } );
               }
             } );
-          }, 200 );
+          }, 500 );
 
           // change the heading to the form's title
           CnHttpFactory.instance( {

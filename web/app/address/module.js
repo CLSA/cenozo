@@ -153,7 +153,7 @@ define( function() {
                 mainInputGroup.inputList.international_country.exclude = !cnRecordAdd.record.international;
               }
             };
-          }, 200 );
+          }, 500 );
         }
       };
     }
