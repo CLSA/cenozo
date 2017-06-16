@@ -676,6 +676,6 @@ class util
       $encoded_data .= implode( ',', $row )."\n";
     }
 
-    return $encoded_data;
+    return iconv( 'UTF-8', 'Windows-1252', $encoded_data );
   }
 }

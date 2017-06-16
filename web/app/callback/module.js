@@ -28,7 +28,8 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
       return {
         getIdentifier: function() { return participant.getIdentifier(); },
         title: participant.uid,
-        start: moment( participant.callback ).subtract( offset, 'minutes' )
+        start: moment( participant.callback ).subtract( offset, 'minutes' ),
+        end: moment( participant.callback ).subtract( offset - 60, 'minutes' )
       };
     }
   }
@@ -47,6 +48,12 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnCallbackModelFactory.instance();
           $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Callback Calendar';
+
+          // never show the callback list (there is no such thing)
+          $scope.model.calendarModel.afterCalendar( function() {
+            var cnRecordCalendarScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordCalendar' );
+            cnRecordCalendarScope.viewList = false;
+          } );
         }
       };
     }
