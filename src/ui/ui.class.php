@@ -122,8 +122,8 @@ class ui extends \cenozo\base_object
     $list = array(
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'callback', 'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export',
-      'export_file', 'form', 'form_association', 'form_type', 'hin', 'jurisdiction', 'language', 'overview',
-      'participant', 'phone', 'quota', 'region', 'region_site', 'role', 'report', 'report_restriction',
+      'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'jurisdiction', 'language',
+      'overview', 'participant', 'phone', 'quota', 'region', 'region_site', 'role', 'report', 'report_restriction',
       'report_schedule', 'report_type', 'script', 'search_result', 'site', 'source', 'state', 'system_message',
       'user', 'webphone', 'writelog'
     );
@@ -341,6 +341,7 @@ class ui extends \cenozo\base_object
         {
           $module->add_child( 'access' );
           $module->add_child( 'activity' );
+          $module->add_child( 'failed_login' );
           $module->add_choose( 'language' );
         }
       }

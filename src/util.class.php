@@ -319,6 +319,13 @@ class util
         // if invalid then increment the user's login failure count and deactivate them if they go
         // over the login failure limit
         {
+          $db_failed_login = lib::create( 'database\failed_login' );
+          $db_failed_login->user_id = $db_user->id;
+          $db_failed_login->application_id = lib::create( 'business\session' )->get_application()->id;
+          $db_failed_login->address = $_SERVER['REMOTE_ADDR'];
+          $db_failed_login->datetime = static::get_datetime_object();
+          $db_failed_login->save();
+
           $db_user->login_failures++;
           if( $db_user->active )
           {

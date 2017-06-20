@@ -1,6 +1,6 @@
 <?php
 /**
- * state.class.php
+ * failed_login.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,6 +10,6 @@ namespace cenozo\database;
 use cenozo\lib, cenozo\log;
 
 /**
- * state: record
+ * failed_login: record
  */
-class state extends has_rank {}
+class failed_login extends record {}
