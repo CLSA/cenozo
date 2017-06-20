@@ -1009,8 +1009,8 @@ cenozo.directive( 'cnElastic', [
           if( height > 700 ) height = 700; // maximum height of 700 pixels
           element[0].style.height = height + 'px';
         };
-        element.on( 'blur focus keyup mouseup change', function() { $timeout( resize, 200 ) } );
-        $timeout( resize, 200 );
+        element.on( 'blur focus keyup mouseup change', function() { $timeout( resize, 400 ) } );
+        $timeout( resize, 400 );
       }
     };
   }
@@ -2558,7 +2558,7 @@ cenozo.factory( 'CnSession', [
             this.working = false;
             // reset the transitionWhileWorking property after a short wait so that any pending
             // transitions can be ignored before the property is reset
-            $timeout( function() { self.transitionWhileWorking = false; }, 200 );
+            $timeout( function() { self.transitionWhileWorking = false; }, 400 );
             if( null !== workingPromise ) {
               $timeout.cancel( workingPromise );
               workingPromise = null;
@@ -5347,7 +5347,7 @@ cenozo.factory( 'CnHttpFactory', [
             } else {
               // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
               // don't want to bother showing a non-redirecting error message
-              $timeout( function() { if( !hasRedirectedOnError ) self.onError( response ); }, 200 );
+              $timeout( function() { if( !hasRedirectedOnError ) self.onError( response ); }, 400 );
             }
           }
         } );
