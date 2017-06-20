@@ -46,7 +46,7 @@ class module extends \cenozo\service\site_restricted_participant_module
         }
       }
 
-      if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
+      if( ( 'DELETE' == $method || ( 'PATCH' == $method && 'force_close' != $operation ) ) &&
           3 > $db_role->tier &&
           $db_assignment->user_id != $db_user->id )
       {
