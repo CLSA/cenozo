@@ -47,7 +47,7 @@ class get extends \cenozo\service\get
       $record = $tokens_class_name::get_record_from_identifier( $resource_value );
 
       // the withdraw script may be deleted if it is incomplete
-      if( $db_script->withdraw && !is_null( $record ) && 'N' == $record->completed )
+      if( $db_script->is_withdraw_type() && !is_null( $record ) && 'N' == $record->completed )
       {
         $db_participant = $record->get_participant();
 
@@ -96,7 +96,7 @@ class get extends \cenozo\service\get
     // if this is a completed withdraw token then process it required
     $db_script = $this->get_resource( 0 );
     $db_tokens = $this->get_resource( 1 );
-    if( $db_script->withdraw )
+    if( $db_script->is_withdraw_type() )
     {
       $db_participant = $db_tokens->get_participant();
       if( !is_null( $db_participant->check_withdraw ) )

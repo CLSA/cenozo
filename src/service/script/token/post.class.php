@@ -96,7 +96,7 @@ class post extends \cenozo\service\post
     }
 
     // if this is the withdraw script the mark the participant for withdraw processing
-    if( $this->db_script->withdraw )
+    if( $this->db_script->is_withdraw_type() )
     {
       $this->db_participant->check_withdraw = $util_class_name::get_datetime_object();
       $this->db_participant->save();

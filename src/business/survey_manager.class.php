@@ -238,7 +238,7 @@ class survey_manager extends \cenozo\singleton
     if( is_null( $this->withdraw_sid ) )
     {
       $script_mod = lib::create( 'database\modifier' );
-      $script_mod->where( 'withdraw', '=', true );
+      $script_mod->where( 'name', 'LIKE', '%withdraw%' );
       $script_sel = lib::create( 'database\select' );
       $script_sel->from( 'script' );
       $script_sel->add_column( 'sid' );

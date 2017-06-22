@@ -98,15 +98,17 @@ class get extends \cenozo\service\service
     if( $setting_manager->get_setting( 'module', 'interview' ) ) $module_list[] = 'interview';
     if( $setting_manager->get_setting( 'module', 'recording' ) ) $module_list[] = 'recording';
 
-    // determine the withdraw script id
+    // get a list of all special scripts
     $script_sel = lib::create( 'database\select' );
     $script_sel->from( 'script' );
     $script_sel->add_column( 'id' );
+    $script_sel->add_column( 'name' );
+    $script_sel->add_column( 'repeated' );
     $script_sel->add_column(
       sprintf( 'CONCAT( "%s/index.php?sid=", script.sid )', LIMESURVEY_URL ), 'url', false );
     $script_mod = lib::create( 'database\modifier' );
-    $script_mod->where( 'withdraw', '=', true );
-    $withdraw_script = current( $script_class_name::select( $script_sel, $script_mod ) );
+    $script_mod->where( 'special', '=', true );
+    $script_list = $script_class_name::select( $script_sel, $script_mod );
 
     $pseudo_record = array(
       'application' => $db_application->get_column_values( $application_sel ),
@@ -115,7 +117,7 @@ class get extends \cenozo\service\service
       'user' => $db_user->get_column_values( $user_sel ),
       'access' => $db_user->get_access_list( $access_sel, $access_mod ),
       'module_list' => $module_list,
-      'withdraw_script' => $withdraw_script,
+      'special_script_list' => $script_list,
       'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
       'session_list' => $session->get_session_list(),
       'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false );

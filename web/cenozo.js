@@ -324,6 +324,43 @@ angular.extend( cenozoApp, {
           },
 
           /**
+           * Add a list of extra operations to show under a group title
+           * 
+           * @var type: one of "add", "calendar", "list or "view"
+           * @var extraGroup: an object containing the following properties:
+           *        id: The id to give the group's html button
+           *        title: The group button's title
+           *        isIncluded: A function to determine if the group shound be shown
+           *          The function must return a boolean (default function returns true)
+           *          This function will be passed two arguments: $state and model
+           *        isDisabled: A function to determine if the group is disabled
+           *          The function must return a boolean (default function returns false)
+           *          This function will be passed two arguments: $state and model
+           *        classes: A space-separated list of css classes to apply to the group button
+           *        operations: an array of objects identical to what is described in addExtraOperation
+           *          which is to be included in a drop-down list when the group button is clicked
+           */
+          addExtraOperationGroup: function( type, extraGroup ) {
+            if( 0 > ['add','calendar','list','view'].indexOf( type ) )
+              throw new Error( 'Adding extra operation group with invalid type "' + type + '".' );
+            if( angular.isUndefined( extraGroup.id ) ) extraGroup.id = extraGroup.title;
+            if( angular.isUndefined( extraGroup.isIncluded ) )
+              extraGroup.isIncluded = function() { return true; }
+            if( angular.isUndefined( extraGroup.isDisabled ) )
+              extraGroup.isDisabled = function() { return false; }
+            if( angular.isUndefined( extraGroup.classes ) ) extraGroup.classes = '';
+            extraGroup.classes += ' dropdown-toggle';
+            extraGroup.operations.forEach( function( extraObject ) {
+              if( angular.isUndefined( extraObject.isIncluded ) )
+                extraObject.isIncluded = function() { return true; }
+              if( angular.isUndefined( extraObject.isDisabled ) )
+                extraObject.isDisabled = function() { return false; }
+            } );
+            this.removeExtraOperation( type, extraGroup.title ); // remove first, so we replace
+            this.extraOperationList[type].push( extraGroup );
+          },
+
+          /**
            * Remove an extra operation by its title
            */
           removeExtraOperation: function( type, title ) {
@@ -978,23 +1015,6 @@ cenozo.directive( 'cnChange', [
 /**
  * Changes element height based on scroll height
  */
-cenozo.directive( 'cnToNumber',
-  function() {
-    return {
-      require: 'ngModel',
-      link: function( scope, element, attrs, ngModel ) {
-        ngModel.$parsers.push( function( val ) { return val != null ? parseInt( val, 10 ) : null; } );
-        ngModel.$formatters.push( function( val ) { return val != null ? '' + val : null; } );
-      }
-    };
-  }
-);
-
-/* ######################################################################################################## */
-
-/**
- * Changes element height based on scroll height
- */
 cenozo.directive( 'cnElastic', [
   '$timeout',
   function( $timeout ) {
@@ -1012,6 +1032,22 @@ cenozo.directive( 'cnElastic', [
         element.on( 'blur focus keyup mouseup change', function() { $timeout( resize, 400 ) } );
         $timeout( resize, 400 );
       }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * Adds a group of buttons as defined by add/view/calendar/list extra operations
+ */
+cenozo.directive( 'cnExtraOperationButtonGroup', [
+  function() {
+    return {
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'extra-operation-button-group.tpl.html' ),
+      restrict: 'E',
+      scope: { model: '=', type: '@' },
+      controller: [ '$scope', function( $scope ) { $scope.directive = 'cnExtraOperationButtonGroup'; } ]
     };
   }
 ] );
@@ -2117,6 +2153,23 @@ cenozo.directive( 'cnTimer', [
 /* ######################################################################################################## */
 
 /**
+ * Changes element height based on scroll height
+ */
+cenozo.directive( 'cnToNumber',
+  function() {
+    return {
+      require: 'ngModel',
+      link: function( scope, element, attrs, ngModel ) {
+        ngModel.$parsers.push( function( val ) { return val != null ? parseInt( val, 10 ) : null; } );
+        ngModel.$formatters.push( function( val ) { return val != null ? '' + val : null; } );
+      }
+    };
+  }
+);
+
+/* ######################################################################################################## */
+
+/**
  * A tree directive
  */
 cenozo.directive( 'cnTree',
@@ -2631,8 +2684,8 @@ cenozo.factory( 'CnSession', [
             // process module list
             self.moduleList = response.data.module_list;
 
-            // add the withdraw script id
-            self.withdrawScript = response.data.withdraw_script;
+            // add the special script list
+            self.specialScriptList = response.data.special_script_list;
 
             // process session records
             self.sessionList = response.data.session_list;
@@ -6402,25 +6455,31 @@ cenozo.factory( 'CnScriptLauncherFactory', [
       this.token = undefined;
       this.deferred = $q.defer();
 
-      CnHttpFactory.instance( {
-        path: 'script/' + self.script.id + '/token/' + self.identifier,
-        data: { select: { column: [ 'token', 'completed' ] } },
-        onError: function( response ) {
-          // ignore 404
-          if( 404 == response.status ) {
-            console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
-            self.token = null;
-            if( angular.isDefined( self.onReady ) ) self.onReady();
-            self.deferred.resolve();
-          } else {
-            CnModalMessageFactory.httpError( response );
+      // if the script is not repeated determine the token
+      if( self.script.repeated ) {
+        if( angular.isDefined( this.onReady ) ) this.onReady();
+        this.deferred.resolve();
+      } else {
+        CnHttpFactory.instance( {
+          path: 'script/' + self.script.id + '/token/' + self.identifier,
+          data: { select: { column: [ 'token', 'completed' ] } },
+          onError: function( response ) {
+            // ignore 404
+            if( 404 == response.status ) {
+              console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
+              self.token = null;
+              if( angular.isDefined( self.onReady ) ) self.onReady();
+              self.deferred.resolve();
+            } else {
+              CnModalMessageFactory.httpError( response );
+            }
           }
-        }
-      } ).get().then( function( response ) {
-        self.token = response.data;
-        if( angular.isDefined( self.onReady ) ) self.onReady();
-        self.deferred.resolve();
-      } );
+        } ).get().then( function( response ) {
+          self.token = response.data;
+          if( angular.isDefined( self.onReady ) ) self.onReady();
+          self.deferred.resolve();
+        } );
+      }
 
       this.launch = function() {
         var url = self.script.url + '&lang=' + self.lang + '&newtest=Y';
