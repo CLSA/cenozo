@@ -2,27 +2,27 @@
   <button class="btn btn-default"
           type="button"
           id="{{ op.id }}"
-          ng-if="op.isIncluded( $state, model )"
-          ng-disabled="op.isDisabled( $state, model )"
+          ng-if="op.isIncluded( state, model )"
+          ng-disabled="op.isDisabled( state, model )"
           ng-class="op.classes"
           uib-tooltip="{{ op.help }}"
           tooltip-placement="right"
           data-toggle="dropdown"
           airea-haspopup="true"
           aria-expanded="false"
-          ng-click="op.operation( $state, model )">
+          ng-click="op.operation( state, model )">
     {{ op.title }}
     <span class="caret" ng-if="op.operations"></span>
   </button>
   <ul class="dropdown-menu full-width" ng-if="op.operations" aria-labelledby="{{ op.id }}">
     <li ng-repeat="subOp in op.operations">
       <a id="{{ subOp.id }}"
-         ng-if="subOp.isIncluded( $state, model )"
-         ng-disabled="subOp.isDisabled( $state, model )"
+         ng-if="subOp.isIncluded( state, model )"
+         ng-disabled="subOp.isDisabled( state, model )"
          ng-class="subOp.classes"
          uib-tooltip="{{ subOp.help }}"
          tooltip-placement="right"
-         ng-click="subOp.operation( $state, model )">{{ subOp.title }}</a>
+         ng-click="subOp.operation( state, model )">{{ subOp.title }}</a>
     </li>
   </ul>
 </div>

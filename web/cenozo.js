@@ -1046,7 +1046,7 @@ cenozo.directive( 'cnExtraOperationButtonGroup', [
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'extra-operation-button-group.tpl.html' ),
       restrict: 'E',
-      scope: { model: '=', type: '@' },
+      scope: { model: '=', state: '=', type: '@' },
       controller: [ '$scope', function( $scope ) { $scope.directive = 'cnExtraOperationButtonGroup'; } ]
     };
   }

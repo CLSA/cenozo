@@ -178,7 +178,8 @@
               {{ 1 == model.listModel.total ? model.module.name.singular : model.module.name.plural }} total
             </span>
             <div class="btn-group pull-right" ng-if="!model.getChooseEnabled()">
-              <cn-extra-operation-button-group model="list" type="add"></cn-extra-operation-button-group>
+              <cn-extra-operation-button-group model="model" state="$state" type="list">
+              </cn-extra-operation-button-group>
               <button class="btn btn-default pull-right"
                       ng-if="model.getAddEnabled()"
                       ng-click="addRecord()">
@@ -212,7 +213,7 @@
       {{ 1 == model.listModel.total ? model.module.name.singular : model.module.name.plural }} total
     </span>
     <div class="btn-group pull-right" ng-if="!model.getChooseEnabled()">
-      <cn-extra-operation-button-group model="list" type="add"></cn-extra-operation-button-group>
+      <cn-extra-operation-button-group model="model" state="$state" type="list"></cn-extra-operation-button-group>
       <button class="btn btn-default"
               ng-if="model.getAddEnabled()"
               ng-click="addRecord()">

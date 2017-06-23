@@ -53,7 +53,8 @@
   </div>
   <div class="form-footer text-right rounded-bottom bg-info">
     <div class="btn-group pull-left">
-      <cn-extra-operation-button-group model="calendar" type="add"></cn-extra-operation-button-group>
+      <cn-extra-operation-button-group model="model" state="$state" type="calendar">
+      </cn-extra-operation-button-group>
     </div>
     <div class="btn-group" ng-if="viewList">
       <button class="btn btn-primary"
