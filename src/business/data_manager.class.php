@@ -417,9 +417,7 @@ class data_manager extends \cenozo\singleton
       $table = $parts[2];
       $variable = $parts[3];
 
-      $setting_manager = lib::create( 'business\setting_manager' );
-      $opal_url = $setting_manager->get_setting( 'opal', 'server' );
-      $opal_manager = lib::create( 'business\opal_manager', $opal_url );
+      $opal_manager = lib::create( 'business\opal_manager' );
 
       if( $opal_manager->get_enabled() )
       {

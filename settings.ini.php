@@ -128,6 +128,15 @@ $settings['opal']['server'] = 'localhost';
 $settings['opal']['port'] = 8843;
 $settings['opal']['username'] = '';
 $settings['opal']['password'] = '';
+$settings['opal']['timeout'] = 5;
+
+// failover opal settings (used if opal times out)
+$settings['failover_opal']['enabled'] = false;
+$settings['failover_opal']['server'] = 'localhost';
+$settings['failover_opal']['port'] = 8843;
+$settings['failover_opal']['username'] = '';
+$settings['failover_opal']['password'] = '';
+$settings['failover_opal']['timeout'] = 5;
 
 // voip settings
 $settings['voip']['enabled'] = false;

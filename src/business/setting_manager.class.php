@@ -32,6 +32,7 @@ class setting_manager extends \cenozo\singleton
     $this->read_settings( 'module', $args );
     $this->read_settings( 'ldap', $args );
     $this->read_settings( 'opal', $args );
+    $this->read_settings( 'failover_opal', $args );
     $this->read_settings( 'path', $args );
     $this->read_settings( 'report', $args );
     $this->read_settings( 'url', $args );
