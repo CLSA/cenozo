@@ -29,10 +29,8 @@
   </div>
   <form name="form" class="form-horizontal" novalidate>
     <div class="form-footer text-right bg-info" ng-if="footerAtTop">
-      <div class="btn-group pull-left">
-        <cn-extra-operation-button-group model="model" state="$state" type="view">
-        </cn-extra-operation-button-group>
-      </div>
+      <cn-extra-operation-button-group class="pull-left" model="model" state="$state" type="view">
+      </cn-extra-operation-button-group>
       <div class="btn-group">
         <button ng-if="model.getDeleteEnabled()"
                 type="button"
@@ -426,10 +424,8 @@
       </div>
     </div>
     <div class="form-footer text-right rounded-bottom bg-info">
-      <div class="btn-group pull-left">
-        <cn-extra-operation-button-group model="model" state="$state" type="view">
-        </cn-extra-operation-button-group>
-      </div>
+      <cn-extra-operation-button-group class="pull-left" model="model" state="$state" type="view">
+      </cn-extra-operation-button-group>
       <div class="btn-group">
         <button ng-if="model.getDeleteEnabled()"
                 type="button"
