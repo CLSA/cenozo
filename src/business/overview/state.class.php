@@ -10,7 +10,7 @@ namespace cenozo\business\overview;
 use cenozo\lib, cenozo\log;
 
 /**
- * overview: withdraw
+ * overview: state
  */
 class state extends \cenozo\business\overview\base_overview
 {

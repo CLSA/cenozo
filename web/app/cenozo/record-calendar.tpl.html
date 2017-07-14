@@ -52,18 +52,8 @@
     <div class="container-fluid spacer calendar"></div>
   </div>
   <div class="form-footer text-right rounded-bottom bg-info">
-    <div class="btn-group pull-left">
-      <button class="btn btn-default"
-              type="button"
-              ng-repeat="op in model.module.extraOperationList.calendar"
-              id="{{ op.id }}"
-              ng-if="op.isIncluded( $state, model )"
-              ng-disabled="op.isDisabled( $state, model )"
-              ng-class="op.classes"
-              uib-tooltip="{{ op.help }}"
-              tooltip-placement="right"
-              ng-click="op.operation( $state, model )">{{ op.title }}</button>
-    </div>
+    <cn-extra-operation-button-group class="pull-left" model="model" state="$state" type="calendar">
+    </cn-extra-operation-button-group>
     <div class="btn-group" ng-if="viewList">
       <button class="btn btn-primary"
               type="button"

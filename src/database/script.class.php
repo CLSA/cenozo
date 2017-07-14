@@ -15,22 +15,15 @@ use cenozo\lib, cenozo\log;
 class script extends record
 {
   /**
-   * Override parent save method by making sure that only one script is the withdraw script
+   * Determines whether the script is a withdraw type (has "withdraw" somewhere in the name)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\permission
+   * @return boolean
    * @access public
    */
-  public function save()
+  public function is_withdraw_type()
   {
-    if( $this->withdraw )
-    {
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'withdraw', '=', true );
-      if( 0 < static::count( $modifier ) ) static::db()->execute( 'UPDATE script SET withdraw = 0' );
-    }
-
-    parent::save();
+    return 1 == preg_match( '/withdraw/i', $this->name );
   }
 
   /**
@@ -39,7 +32,6 @@ class script extends record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @access public
-   * @static
    */
   public function add_started_event_types( $db_participant )
   {
@@ -66,7 +58,6 @@ class script extends record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @access public
-   * @static
    */
   public function add_finished_event_types( $db_participant )
   {

@@ -29,18 +29,8 @@
   </div>
   <form name="form" class="form-horizontal" novalidate>
     <div class="form-footer text-right bg-info" ng-if="footerAtTop">
-      <div class="btn-group pull-left">
-        <button class="btn btn-default"
-                type="button"
-                ng-repeat="op in model.module.extraOperationList.view"
-                id="{{ op.id }}"
-                ng-if="op.isIncluded( $state, model )"
-                ng-disabled="op.isDisabled( $state, model )"
-                ng-class="op.classes"
-                uib-tooltip="{{ op.help }}"
-                tooltip-placement="right"
-                ng-click="op.operation( $state, model )">{{ op.title }}</button>
-      </div>
+      <cn-extra-operation-button-group class="pull-left" model="model" state="$state" type="view">
+      </cn-extra-operation-button-group>
       <div class="btn-group">
         <button ng-if="model.getDeleteEnabled()"
                 type="button"
@@ -434,18 +424,8 @@
       </div>
     </div>
     <div class="form-footer text-right rounded-bottom bg-info">
-      <div class="btn-group pull-left">
-        <button class="btn btn-default"
-                type="button"
-                ng-repeat="op in model.module.extraOperationList.view"
-                id="{{ op.id }}"
-                ng-if="op.isIncluded( $state, model )"
-                ng-disabled="op.isDisabled( $state, model )"
-                ng-class="op.classes"
-                uib-tooltip="{{ op.help }}"
-                tooltip-placement="right"
-                ng-click="op.operation( $state, model )">{{ op.title }}</button>
-      </div>
+      <cn-extra-operation-button-group class="pull-left" model="model" state="$state" type="view">
+      </cn-extra-operation-button-group>
       <div class="btn-group">
         <button ng-if="model.getDeleteEnabled()"
                 type="button"

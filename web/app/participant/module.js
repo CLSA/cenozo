@@ -219,18 +219,23 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   try {
     var tokenModule = cenozoApp.module( 'token' );
     if( tokenModule && angular.isDefined( tokenModule.actions.add ) ) {
-      module.addExtraOperation( 'view', {
-        title: 'Withdraw',
-        operation: function( $state, model ) { model.viewModel.launchWithdraw(); },
-        isIncluded: function( $state, model ) { return false === model.viewModel.hasWithdrawn; }
-      } );
-      module.addExtraOperation( 'view', {
-        title: 'Reverse Withdraw',
-        operation: function( $state, model ) { model.viewModel.reverseWithdraw(); },
-        isIncluded: function( $state, model ) {
-          return true === model.viewModel.hasWithdrawn && model.viewModel.allowReverseWithdraw;
-        },
-        isDisabled: function( $state, model ) { return model.viewModel.reverseWithdrawDisabled; }
+      module.addExtraOperationGroup( 'view', {
+        title: 'Scripts',
+        operations: [ {
+          title: 'Proxy Initiation',
+          operation: function( $state, model ) { model.viewModel.launchProxy(); }
+        }, {
+          title: 'Withdraw',
+          operation: function( $state, model ) { model.viewModel.launchWithdraw(); },
+          isIncluded: function( $state, model ) { return false === model.viewModel.hasWithdrawn; }
+        }, {
+          title: 'Reverse Withdraw',
+          operation: function( $state, model ) { model.viewModel.reverseWithdraw(); },
+          isIncluded: function( $state, model ) {
+            return true === model.viewModel.hasWithdrawn && model.viewModel.allowReverseWithdraw;
+          },
+          isDisabled: function( $state, model ) { return model.viewModel.reverseWithdrawDisabled; }
+        } ]
       } );
     }
   } catch( err ) {}
@@ -763,7 +768,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
         this.onViewPromise = null;
-        this.scriptLauncher = null;
+        this.scriptLaunchers = {};
         this.hasWithdrawn = null;
         this.allowReverseWithdraw = 3 <= CnSession.role.tier;
 
@@ -773,17 +778,44 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           } );
         };
 
-        // track the promise returned by the onView function
-        this.onView = function() {
-          this.scriptLauncher = CnScriptLauncherFactory.instance( {
-            script: CnSession.withdrawScript,
-            identifier: this.parentModel.getQueryParameter( 'identifier' ),
-            onReady: function() {
-              self.hasWithdrawn = null != self.scriptLauncher.token &&
-                                  null != self.scriptLauncher.token.completed.match(
-                                    /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
+        this.launchSpecialScript = function( type, language ) {
+          var foundLauncher = null;
+          Object.keys( self.scriptLaunchers ).some( function( name ) {
+            var re = new RegExp( type, 'i' );
+            if( name.match( re ) ) {
+              foundLauncher = self.scriptLaunchers[name];
+              return true;
             }
           } );
+
+          if( null == foundLauncher )
+            throw new Error( 'Cannot launch special script type "' + type + '", script type not found.' );
+
+          if( language ) foundLauncher.lang = language.code;
+          foundLauncher.launch();
+        };
+
+        // track the promise returned by the onView function
+        this.onView = function() {
+          // create launchers for each special script
+          CnSession.specialScriptList.forEach( function( script ) {
+            var data = {
+              script: script,
+              identifier: self.parentModel.getQueryParameter( 'identifier' ),
+            };
+            if( null != script.name.match( /withdraw/i ) ) {
+              data.onReady = function() {
+                self.hasWithdrawn =
+                  null != self.scriptLaunchers[script.name].token &&
+                  null != self.scriptLaunchers[script.name].token.completed.match(
+                    /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
+                  );
+              };
+            }
+            self.scriptLaunchers[script.name] = CnScriptLauncherFactory.instance( data );
+          } );
+
+          // set a special heading
           this.onViewPromise = this.$$onView().then( function() {
             var nameList = [ self.record.first_name, self.record.last_name ];
             if( self.record.other_name ) nameList.splice( 1, 0, '(' + self.record.other_name + ')' );
@@ -822,13 +854,27 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
           return this.$$onPatch( data );
         };
 
+        // launches the proxy initiation script for the current participant
+        this.launchProxy = function() {
+          this.onViewPromise.then( function() {
+            var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
+              'value', self.record.language_id );
+            self.launchSpecialScript( 'proxy', language );
+
+            // check for when the window gets focus back and update the participant details
+            var win = angular.element( $window ).on( 'focus', function() {
+              self.onView();
+              win.off( 'focus' );
+            } );
+          } );
+        };
+
         // launches the withdraw script for the current participant
         this.launchWithdraw = function() {
           this.onViewPromise.then( function() {
             var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
               'value', self.record.language_id );
-            if( language ) self.scriptLauncher.lang = language.code;
-            self.scriptLauncher.launch();
+            self.launchSpecialScript( 'withdraw', language );
 
             // check for when the window gets focus back and update the participant details
             var win = angular.element( $window ).on( 'focus', function() {

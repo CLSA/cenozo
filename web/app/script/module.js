@@ -18,6 +18,10 @@ define( function() {
       survey_title: {
         title: 'Name'
       },
+      special: {
+        title: 'Special',
+        type: 'boolean'
+      },
       repeated: {
         title: 'Repeated',
         type: 'boolean'
@@ -46,10 +50,10 @@ define( function() {
       title: 'Repeated',
       type: 'boolean'
     },
-    withdraw: {
-      title: 'Withdraw',
+    special: {
+      title: 'Special',
       type: 'boolean',
-      help: 'Only one script can be identified as the withdraw script'
+      help: 'Identifies the script as special (launched in the "Scripts" dropdown when viewing a participant)'
     },
     description: {
       title: 'Description',
