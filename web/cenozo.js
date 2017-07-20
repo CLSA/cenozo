@@ -676,7 +676,7 @@ angular.extend( cenozo, {
     var childScope = scope.$$childHead;
     while( null != childScope && directiveName != childScope.directive )
       childScope = childScope.$$nextSibling;
-    if( directiveName != childScope.directive ) childScope = null;
+    if( null != childScope && directiveName != childScope.directive ) childScope = null;
     return childScope;
   },
 
