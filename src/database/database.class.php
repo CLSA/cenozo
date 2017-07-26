@@ -720,7 +720,7 @@ class database extends \cenozo\base_object
     if( is_bool( $string ) ) return $string ? 'true' : 'false';
 
     // trim whitespace from the begining and end of the string
-    if( is_string( $string ) ) $string = trim( $string );
+    if( is_string( $string ) ) $string = trim( str_replace( '`', "'", $string ) );
 
     return 0 == strlen( $string ) ?
       'NULL' : sprintf( '"%s"', $this->connection->real_escape_string( $string ) );
