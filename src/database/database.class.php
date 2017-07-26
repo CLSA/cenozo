@@ -719,8 +719,12 @@ class database extends \cenozo\base_object
     // boolean values must be converted to strings (without double-quotes)
     if( is_bool( $string ) ) return $string ? 'true' : 'false';
 
-    // trim whitespace from the begining and end of the string
-    if( is_string( $string ) ) $string = trim( str_replace( '`', "'", $string ) );
+    // trim whitespace from the begining and end of the string and replace unusual characters
+    if( is_string( $string ) ) $string = trim( str_replace(
+      array( ' ', '`', '“', "’'", '¸', '–' ),
+      array( ' ', "'", '"', '"', ',', '-' ),
+      $string
+    ) );
 
     return 0 == strlen( $string ) ?
       'NULL' : sprintf( '"%s"', $this->connection->real_escape_string( $string ) );
