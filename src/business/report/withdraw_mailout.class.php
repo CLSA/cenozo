@@ -29,6 +29,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
 
     $select = lib::create( 'database\select' );
     $select->from( 'participant' );
+    $select->add_column( 'uid', 'UID' );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'IFNULL( state.name, "" )', 'State', false );
     $select->add_column( 'honorific', 'Honorific' );
