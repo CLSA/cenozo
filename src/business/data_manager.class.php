@@ -138,11 +138,12 @@ class data_manager extends \cenozo\singleton
     $value = NULL;
     if( 'alternate' == $subject ||
         'informant' == $subject ||
+        'decedent' == $subject ||
         'proxy' == $subject )
     {
       if( 'count()' == $parts[1] )
       {
-        // participant.<alternate|informant|proxy>.count() or <alternate|informant|proxy>.count()
+        // participant.<alternate|decedent|informant|proxy>.count() or <alternate|decedent|informant|proxy>.count()
         $alternate_mod = lib::create( 'database\modifier' );
         $alternate_mod->where( $subject, '=', true );
         $value = $db_participant->get_alternate_count( $alternate_mod );

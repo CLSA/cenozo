@@ -329,7 +329,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         return CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/alternate',
           data: {
-            select: { column: [ 'create_timestamp', 'association', 'alternate', 'informant', 'proxy',
+            select: { column: [ 'create_timestamp', 'association', 'alternate', 'decedent', 'informant', 'proxy',
                                 'first_name', 'last_name' ] }
           }
         } ).query().then( function( response ) {
@@ -337,6 +337,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             var description = ' (' + ( item.association ? item.association : 'unknown association' ) + ')\n';
             var list = [];
             if( item.alternate ) list.push( 'alternate contact' );
+            if( item.decedent ) list.push( 'decedent responder' );
             if( item.informant ) list.push( 'information provider' );
             if( item.proxy ) list.push( 'proxy decision maker' );
             if( 0 == list.length ) {

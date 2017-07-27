@@ -90,6 +90,10 @@ define( function() {
       title: 'Alternate Contact',
       type: 'boolean'
     },
+    decedent: {
+      title: 'Decedent Responder',
+      type: 'boolean'
+    },
     informant: {
       title: 'Information Provider',
       type: 'boolean'

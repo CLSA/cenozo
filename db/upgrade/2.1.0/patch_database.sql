@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE alternate.sql
 SOURCE consent_type.sql
 SOURCE form_type.sql
 SOURCE failed_login.sql

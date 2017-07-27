@@ -95,8 +95,9 @@ class module extends \cenozo\service\site_restricted_participant_module
     // add the "types" column if needed
     if( $select->has_column( 'types' ) )
     {
-      $column = sprintf( 'REPLACE( TRIM( CONCAT( %s, %s, %s ) ), "  ", ", " )',
+      $column = sprintf( 'REPLACE( TRIM( CONCAT( %s, %s, %s, %s ) ), "  ", ", " )',
                   'IF( alternate, " alternate ", "" )',
+                  'IF( decedent, " decedent ", "" )',
                   'IF( informant, " informant ", "" )',
                   'IF( proxy, " proxy ", "" )' );
       $select->add_column( $column, 'types', false );

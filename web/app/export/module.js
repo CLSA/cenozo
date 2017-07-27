@@ -280,6 +280,12 @@ define( [
                 enumList: [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ],
                 required: true
               }, {
+                key: 'has_decedent',
+                title: 'Has Decedent Responder',
+                type: 'boolean',
+                enumList: [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ],
+                required: true
+              }, {
                 key: 'has_informant',
                 title: 'Has Information Provider',
                 type: 'boolean',
@@ -341,6 +347,7 @@ define( [
               list: [
                 { key: undefined, title: 'Add a new auxiliary column...' },
                 { key: 'has_alternate', title: 'Has Alternate Contact' },
+                { key: 'has_decedent', title: 'Has Decedent Responder' },
                 { key: 'has_informant', title: 'Has Information Provider' },
                 { key: 'has_proxy', title: 'Has Decision Maker' }
               ]
