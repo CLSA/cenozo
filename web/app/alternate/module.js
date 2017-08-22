@@ -92,7 +92,8 @@ define( function() {
     },
     decedent: {
       title: 'Decedent Responder',
-      type: 'boolean'
+      type: 'boolean',
+      constant: true
     },
     informant: {
       title: 'Information Provider',
@@ -478,15 +479,18 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateModelFactory', [
     'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
-    'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory,
-              CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnAlternateAddFactory.instance( this );
         this.listModel = CnAlternateListFactory.instance( this );
         this.viewModel = CnAlternateViewFactory.instance( this, root );
+
+        var mainInputGroup = module.inputGroupList.findByProperty( 'title', '' );
+        if( 2 < CnSession.role.tier ) mainInputGroup.inputList.decedent.constant = false;
 
         // extend getMetadata
         this.getMetadata = function() {
