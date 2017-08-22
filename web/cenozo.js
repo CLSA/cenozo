@@ -214,6 +214,7 @@ angular.extend( cenozoApp, {
            *     table: the table to lookup values from
            *     select: what is shown when selected (may be a CONCAT statement)
            *     where: an array of all columns in the table which can be matched
+           *     forceEmptyOnNew: if set to true then the typeahead won't automatically pre-populate
            *   hourStep: when using the datetime type this can be used to define the hour step value
            *   minuteStep: when using the datetime type this can be used to define the minute step value
            *   secondStep: when using the datetime type this can be used to define the second step value
@@ -1003,7 +1004,7 @@ cenozo.directive( 'cnChange', [
               if( 13 == event.which ) {
                 scope.$eval( attrs.cnChange );
                 oldValue = element.val(); // update the old value, otherwise the blur event will fire
-                event.target.blur();
+                $timeout( function() { event.target.blur() }, 0, false );
               }
             } );
           } );
@@ -1222,34 +1223,40 @@ cenozo.directive( 'cnRecordAdd', [
                   input.enumList = enumList;
                 } else if( 'lookup-typeahead' == input.type ) {
                   // use the default value if one is provided
-                  var defaultValue = $scope.model.module.getInput( input.key ).default;
-                  if( angular.isObject( defaultValue ) &&
-                      angular.isDefined( defaultValue.id ) &&
-                      angular.isDefined( defaultValue.formatted ) ) {
-                    $scope.record[input.key] = defaultValue.id;
-                    $scope.formattedRecord[input.key] = defaultValue.formatted;
+                  if( angular.isDefined( input.typeahead ) &&
+                      angular.isDefined( input.typeahead.forceEmptyOnNew ) &&
+                      input.typeahead.forceEmptyOnNew ) {
+                    // do nothing (the typeahead has requested to start empty)
                   } else {
-                    // apply parent values to lookup-typeaheads
-                    var parent = $scope.model.getParentIdentifier();
-                    if( angular.isDefined( parent.subject ) &&
-                        angular.isDefined( parent.identifier ) &&
-                        angular.isDefined( input.typeahead ) &&
-                        parent.subject == input.typeahead.table ) {
-                      CnHttpFactory.instance( {
-                        path: input.typeahead.table + '/' + parent.identifier,
-                        data: {
-                          select: {
-                            column: [ 'id', {
-                              column: input.typeahead.select,
-                              alias: 'value',
-                              table_prefix: false
-                            } ]
+                    var defaultValue = $scope.model.module.getInput( input.key ).default;
+                    if( angular.isObject( defaultValue ) &&
+                        angular.isDefined( defaultValue.id ) &&
+                        angular.isDefined( defaultValue.formatted ) ) {
+                      $scope.record[input.key] = defaultValue.id;
+                      $scope.formattedRecord[input.key] = defaultValue.formatted;
+                    } else {
+                      // apply parent values to lookup-typeaheads
+                      var parent = $scope.model.getParentIdentifier();
+                      if( angular.isDefined( parent.subject ) &&
+                          angular.isDefined( parent.identifier ) &&
+                          angular.isDefined( input.typeahead ) &&
+                          parent.subject == input.typeahead.table ) {
+                        CnHttpFactory.instance( {
+                          path: input.typeahead.table + '/' + parent.identifier,
+                          data: {
+                            select: {
+                              column: [ 'id', {
+                                column: input.typeahead.select,
+                                alias: 'value',
+                                table_prefix: false
+                              } ]
+                            }
                           }
-                        }
-                      } ).get().then( function( response ) {
-                        $scope.record[input.key] = response.data.id;
-                        $scope.formattedRecord[input.key] = response.data.value;
-                      } );
+                        } ).get().then( function( response ) {
+                          $scope.record[input.key] = response.data.id;
+                          $scope.formattedRecord[input.key] = response.data.value;
+                        } );
+                      }
                     }
                   }
                 } else if( 'size' == input.type ) {
