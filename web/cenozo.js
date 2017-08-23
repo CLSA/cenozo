@@ -215,6 +215,7 @@ angular.extend( cenozoApp, {
            *     select: what is shown when selected (may be a CONCAT statement)
            *     where: an array of all columns in the table which can be matched
            *     forceEmptyOnNew: if set to true then the typeahead won't automatically pre-populate
+           *     minLength: the minimum length before a search is performed (default 2)
            *   hourStep: when using the datetime type this can be used to define the hour step value
            *   minuteStep: when using the datetime type this can be used to define the minute step value
            *   secondStep: when using the datetime type this can be used to define the second step value
@@ -1202,6 +1203,12 @@ cenozo.directive( 'cnRecordAdd', [
             $scope.dataArray.forEach( function( group ) {
               group.inputArray.forEach( function( input ) {
                 var meta = $scope.model.metadata.columnList[input.key];
+
+                // make the default typeahead min-length 2
+                if( angular.isDefined( input.typeahead ) ) {
+                  if( angular.isUndefined( input.typeahead.minLength ) ) input.typeahead.minLength = 2;
+                }
+
                 if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
                   // process the input's enum-list
                   var enumList = angular.copy( meta.enumList );
