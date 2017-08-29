@@ -34,6 +34,7 @@ class get extends \cenozo\service\service
   {
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $script_class_name = lib::get_class_name( 'database\script' );
+    $webphone_class_name = lib::get_class_name( 'database\webphone' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
@@ -169,8 +170,16 @@ class get extends \cenozo\service\service
     $pseudo_record['application']['max_small_report'] =
       $setting_manager->get_setting( 'report', 'max_small_rows' );
     $pseudo_record['application']['voip_enabled'] = $setting_manager->get_setting( 'voip', 'enabled' );
+
+    // see if our ip/site has a special webphone
+    $db_webphone = $webphone_class_name::get_unique_record(
+      array( 'ip', 'site_id' ),
+      array( $_SERVER['REMOTE_ADDR'], $db_site->id )
+    );
+
     $pseudo_record['application']['webphone_url'] = sprintf(
-      '/webphone/?domain=%s&id=%d',
+      '/%s/?domain=%s&id=%d',
+      is_null( $db_webphone ) ? 'webphone' : $db_webphone->webphone,
       $setting_manager->get_setting( 'voip', 'domain' ),
       10000000 + $db_user->id
     );
