@@ -1,7 +1,7 @@
 table, .collapsed-footer { margin-bottom: 0px !important; }
 thead, tfoot, .collapsed-footer { font-weight: bold; }
 thead td, tbody td, tfoot, .collapsed-footer { text-align: center; }
-td { border: 0px !important; }
+.table > tbody > tr > td { border: 0px !important; }
 td.tiny { width: 1px; white-space: nowrap; }
 option[disabled="disabled"] { color: #ccc; }
 blockquote { font-size: 100%; }
