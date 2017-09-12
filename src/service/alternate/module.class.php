@@ -98,6 +98,7 @@ class module extends \cenozo\service\site_restricted_participant_module
       $column = sprintf( 'REPLACE( TRIM( CONCAT( %s, %s, %s, %s ) ), "  ", ", " )',
                   'IF( alternate, " alternate ", "" )',
                   'IF( decedent, " decedent ", "" )',
+                  'IF( emergency, " emergency ", "" )',
                   'IF( informant, " informant ", "" )',
                   'IF( proxy, " proxy ", "" )' );
       $select->add_column( $column, 'types', false );

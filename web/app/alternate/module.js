@@ -95,6 +95,10 @@ define( function() {
       type: 'boolean',
       constant: true
     },
+    emergency: {
+      title: 'Emergency Contact',
+      type: 'boolean'
+    },
     informant: {
       title: 'Information Provider',
       type: 'boolean'

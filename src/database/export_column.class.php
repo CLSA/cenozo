@@ -36,8 +36,8 @@ class export_column extends has_rank
       }
       else if( 'auxiliary' == $this->table_name )
       {
-        if( in_array( $this->column_name,
-                      array( 'has_alternate', 'has_decedent', 'has_informant', 'has_proxy' ) ) )
+        $check_array = array( 'has_alternate', 'has_decedent', 'has_emergency', 'has_informant', 'has_proxy' );
+        if( in_array( $this->column_name, $check_array ) )
         {
           $column_name = sprintf( 'IF( %s.total, "yes", "no" )', $this->column_name );
           $table_prefix = false;
@@ -115,7 +115,8 @@ class export_column extends has_rank
     }
     else if( 'auxiliary' == $this->table_name )
     {
-      if( in_array( $this->column_name, array( 'has_alternate', 'has_decedent', 'has_informant', 'has_proxy' ) ) )
+      $check_array = array( 'has_alternate', 'has_decedent', 'has_emergency', 'has_informant', 'has_proxy' );
+      if( in_array( $this->column_name, $check_array ) )
       {
         $alternate_type = substr( $this->column_name, 4 );
         $alternate_table_name = $this->column_name;
@@ -279,7 +280,8 @@ class export_column extends has_rank
   {
     if( 'auxiliary' == $this->table_name )
     {
-      if( in_array( $this->column_name, array( 'has_alternate', 'has_decedent', 'has_informant', 'has_proxy' ) ) )
+      $check_array = array( 'has_alternate', 'has_decedent', 'has_emergency', 'has_informant', 'has_proxy' );
+      if( in_array( $this->column_name, $check_array ) )
       {
         return 'participant_'.$this->column_name;
       }

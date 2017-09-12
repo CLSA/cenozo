@@ -27,7 +27,8 @@ class export_restriction extends has_rank
     $table_name = $this->get_table_alias();
     if( 'auxiliary' == $this->table_name )
     {
-      if( in_array( $this->column_name, array( 'has_alternate', 'has_decedent', 'has_informant', 'has_proxy' ) ) )
+      $check_array = array( 'has_alternate', 'has_decedent', 'has_emergency', 'has_informant', 'has_proxy' );
+      if( in_array( $this->column_name, $check_array ) )
       {
         // specify a special column
         $column = sprintf( '%s.total > 0', $table_name );
