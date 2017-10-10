@@ -6,6 +6,7 @@ SOURCE alternate.sql
 SOURCE consent_type.sql
 SOURCE form_type.sql
 SOURCE failed_login.sql
+SOURCE opal_form_template.sql
 SOURCE script.sql
 SOURCE jurisdiction.sql
 SOURCE webphone.sql

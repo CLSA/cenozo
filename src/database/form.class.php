@@ -116,6 +116,32 @@ class form extends record
   }
 
   /**
+   * Adds opal form data and associates it to this form
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\opal_form_template $db_opal_form_template Which Opal form template
+   * @param array $form_data The data to inject into the opal form
+   * @access public
+   */
+  public function add_opal_form( $db_opal_form_template, $db_participant )
+  {
+    // note that the form is written by the opal_form_template class
+
+    // if the participant has an event whose event-type matches the form's name then associated it
+    $event_sel = lib::create( 'database\select' );
+    $event_sel->add_column( 'id' );
+    $event_mod = lib::create( 'database\modifier' );
+    $event_mod->join( 'event_type', 'event.event_type_id', 'event_type.id' );
+    $event_mod->where(
+      'event_type.name',
+      '=',
+      str_replace( 'Participant Report', 'completed', $db_opal_form_template->name )
+    );
+    foreach( $db_participant->get_event_list( $event_sel, $event_mod ) as $event )
+      $this->add_association( 'event', $event['id'] );
+  }
+
+  /**
    * Adds proxy data and associates it to this form
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

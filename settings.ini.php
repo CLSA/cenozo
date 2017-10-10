@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.1.0';
-$settings['general']['cenozo_build'] = '362bad0';
+$settings['general']['cenozo_build'] = 'f17848d';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -88,6 +88,9 @@ $settings['path']['REPORT'] = str_replace( 'settings.ini.php', 'doc/report', __F
 // the location of forms (defaults to cenozo/doc/form)
 $settings['path']['FORM'] = str_replace( 'settings.ini.php', 'doc/form', __FILE__ );
 
+// the location of opal form templates
+$settings['path']['OPAL_FORM_TEMPLATE'] = str_replace( 'settings.ini.php', 'doc/opal_form_template', __FILE__ );
+
 // the location of the temporary files
 $settings['path']['TEMP'] =
   '/tmp/'.$this->settings['general']['framework_name'].$this->settings['path']['APPLICATION'];
@@ -99,6 +102,9 @@ $settings['url']['LIMESURVEY'] = '../limesurvey';
 
 // the url of PHPExcel
 $settings['path']['PHPEXCEL'] = str_replace( 'settings.ini.php', '../PHPExcel', __FILE__ );
+
+// the location of the mikehaertl libraries (for writing PDF files)
+$settings['path']['MIKEHAERTL'] = str_replace( 'settings.ini.php', '../mikehaertl', __FILE__ );
 
 // the location of the Shift8 Asterisk library
 $settings['path']['SHIFT8'] = str_replace( 'settings.ini.php', '../shift8', __FILE__ );
