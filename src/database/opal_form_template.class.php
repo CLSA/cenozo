@@ -47,7 +47,6 @@ class opal_form_template extends record
         // (silently caught below effectively preventing the form from being created)
         $form_data = $opal_manager->get_values( 'mastodon', $this->name, $db_participant );
         $form_data['NAME'] = $db_participant->get_full_name( true );
-        if( 'Participant Report (Baseline Site)' == $this->name ) log::debug( $form_data );
 
         // either create the form or get it if it already exists
         $db_form = $form_class_name::get_unique_record(
