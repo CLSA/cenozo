@@ -279,6 +279,14 @@ abstract class service extends \cenozo\base_object
       $this->headers['Pragma'] = 'no-cache';
       $this->headers['Expires'] = '0';
     }
+    else if( 'application/zip' == $this->get_mime_type() )
+    {
+      $this->headers['Content-type'] = 'application/octet-stream';
+      $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
+      $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+      $this->headers['Pragma'] = 'no-cache';
+      $this->headers['Expires'] = '0';
+    }
 
     if( $this->temporary_login ) lib::create( 'business\session' )->logout();
   }

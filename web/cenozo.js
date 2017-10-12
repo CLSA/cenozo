@@ -5385,6 +5385,9 @@ cenozo.factory( 'CnHttpFactory', [
           object.headers = {
             Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'
           };
+        } else if( 'zip' == self.format ) {
+          object.responseType = 'arraybuffer';
+          object.headers = { Accept: 'application/zip' };
         } else {
           object.headers = {};
         }

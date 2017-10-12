@@ -388,9 +388,9 @@ class participant extends record
    * @return string
    * @access public
    */
-  public function get_full_name( $ignore_other_name = false )
+  public function get_full_name()
   {
-    return 0 < strlen( $this->other_name ) && !$ignore_other_name ?
+    return 0 < strlen( $this->other_name ) ?
       sprintf( '%s %s (%s) %s', $this->honorific, $this->first_name, $this->other_name, $this->last_name ) :
       sprintf( '%s %s %s', $this->honorific, $this->first_name, $this->last_name );
   }

@@ -47,16 +47,6 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'list', {
-    title: 'Generate Opal Forms',
-    isIncluded: function( $state, model ) {
-      return model.allowGenerateOpalForms && 'participant' == model.getSubjectFromState();
-    },
-    operation: function( $state, model ) {
-      return model.generateOpalForms().then( function() { model.listModel.onList( true ); } );
-    }
-  } );
-
   module.addExtraOperation( 'view', {
     title: 'Download',
     isDisabled: function( $state, model ) { return angular.isUndefined( model.viewModel.downloadFile ); },
@@ -131,13 +121,6 @@ define( function() {
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnFormListFactory.instance( this );
         this.viewModel = CnFormViewFactory.instance( this, root );
-
-        this.allowGenerateOpalForms = 3 <= CnSession.role.tier;
-        this.generateOpalForms = function() {
-          return CnHttpFactory.instance( {
-            path: this.getServiceCollectionPath() + '?generate=1'
-          } ).query();
-        };
 
         // extend getBreadcrumbTitle
         // (metadata's promise will have already returned so we don't have to wait for it)

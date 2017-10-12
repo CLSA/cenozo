@@ -61,7 +61,6 @@ class module extends \cenozo\service\site_restricted_participant_module
   {
     parent::prepare_read( $select, $modifier );
 
-    $opal_form_template_class_name = lib::get_class_name( 'database\opal_form_template' );
     $db_application = lib::create( 'business\session' )->get_application();
 
     // restrict to participants in this application
@@ -84,10 +83,5 @@ class module extends \cenozo\service\site_restricted_participant_module
       $sub_mod->where( 'participant_site.site_id', '=', $db_restrict_site->id );
       $modifier->join_modifier( 'participant_site', $sub_mod );
     }
-
-    // if a generate argument is provided then generate this participant's opal forms before proceeding
-    if( $this->get_argument( 'generate', false ) && 'participant' == $this->get_parent_subject() )
-      foreach( $opal_form_template_class_name::select_objects() as $db_opal_form_template )
-        $db_opal_form_template->generate( $this->get_parent_resource() );
   }
 }

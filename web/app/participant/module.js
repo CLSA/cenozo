@@ -216,6 +216,16 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
     }
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'Download Opal Forms',
+    isIncluded: function( $state, model ) {
+      return angular.isDefined( model.viewModel.downloadOpalForms );
+    },
+    operation: function( $state, model ) {
+      return model.viewModel.downloadOpalForms();
+    }
+  } );
+
   try {
     var tokenModule = cenozoApp.module( 'token' );
     if( tokenModule && angular.isDefined( tokenModule.actions.add ) ) {
@@ -770,10 +780,10 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantViewFactory', [
     'CnBaseViewFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnScriptLauncherFactory',
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalConfirmFactory', 'CnScriptLauncherFactory',
     '$window', '$q', '$state',
     function( CnBaseViewFactory,
-              CnSession, CnHttpFactory, CnModalConfirmFactory, CnScriptLauncherFactory,
+              CnSession, CnHttpFactory, CnModalMessageFactory, CnModalConfirmFactory, CnScriptLauncherFactory,
               $window, $q, $state ) {
       var object = function( parentModel, root ) {
         var self = this;
@@ -788,6 +798,22 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
           } );
         };
+
+        if( 3 <= CnSession.role.tier ) {
+          this.downloadOpalForms = function() {
+            var modal = CnModalMessageFactory.instance( {
+              title: 'Please Wait',
+              message: 'Please wait while the participant\'s data is retrieved from Opal.',
+              block: true
+            } );
+            modal.show();
+
+            return CnHttpFactory.instance( {
+              path: 'participant/' + self.record.getIdentifier() + '?opal_forms=1',
+              format: 'zip'
+            } ).file().finally( function() { modal.close(); } );
+          };
+        }
 
         this.launchSpecialScript = function( type, language ) {
           var foundLauncher = null;
