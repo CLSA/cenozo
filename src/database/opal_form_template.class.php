@@ -53,7 +53,8 @@ class opal_form_template extends record
           '%s/%s.%s.pdf',
           OPAL_FORM_TEMPLATE_PATH,
           $this->name,
-          $db_participant->get_language()->code
+          array_key_exists( 'LANGUAGE', $form_data ) ?
+            $form_data['LANGUAGE'] : $db_participant->get_language()->code
         );
 
         if( !file_exists( $pdf_template ) )
