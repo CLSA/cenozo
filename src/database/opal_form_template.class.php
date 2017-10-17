@@ -46,6 +46,9 @@ class opal_form_template extends record
         // if the participant has no data then an argument exception is thrown
         // (silently caught below effectively preventing the form from being created)
         $form_data = $opal_manager->get_values( 'mastodon', $this->name, $db_participant );
+
+        array_walk( $form_data, function( &$item, $key ) { $item = '' == $item ? 'NA' : $item; } );
+
         $form_data['NAME'] = sprintf( '%s %s', $db_participant->first_name, $db_participant->last_name );
 
         $filename = sprintf( '%s/%s.pdf', TEMP_PATH, rand( 1000000000, 9999999999 ) );
