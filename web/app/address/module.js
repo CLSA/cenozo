@@ -248,6 +248,10 @@ define( function() {
 
           return this.onViewPromise;
         };
+
+        this.onPatch = function( data ) {
+          return this.$$onPatch( data ).then( function() { return self.onView(); } );
+        };
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

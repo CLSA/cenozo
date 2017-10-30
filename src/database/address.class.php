@@ -19,8 +19,11 @@ class address extends has_rank
    */
   public function save()
   {
+    $db_role = lib::create( 'business\session' )->get_role();
+
     // if this is a new address and the region isn't set, source it
-    if( is_null( $this->id ) && is_null( $this->region_id ) ) $this->source_postcode();
+    // OR -- allow administrators to redefine an address by setting the postcode
+    if( ( is_null( $this->id ) && is_null( $this->region_id ) ) || 3 <= $db_role->tier ) $this->source_postcode();
 
     // make sure the address is valid
     if( !$this->is_valid() )
