@@ -810,7 +810,7 @@ angular.extend( cenozo, {
             } )
           );
         } else {
-          input.enumList = input.enumList.concat( angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
+          input.enumList = angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
             function( list, name ) {
               list.push( { value: name, name: name } );
               return list;
@@ -819,7 +819,7 @@ angular.extend( cenozo, {
               value: undefined,
               name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
             } ]
-          ) );
+          );
         }
 
         if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
