@@ -53,15 +53,18 @@ define( function() {
     },
     site_id: {
       title: 'Site',
-      type: 'enum'
+      type: 'enum',
+      help: 'Which site to run the report under'
     },
     role_id: {
       title: 'Role',
-      type: 'enum'
+      type: 'enum',
+      help: 'Which role to run the report under'
     },
     schedule: {
       title: 'Schedule',
-      type: 'enum'
+      type: 'enum',
+      help: 'How often to run the report'
     },
     format: {
       title: 'Format',
