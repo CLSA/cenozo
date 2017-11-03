@@ -51,14 +51,28 @@ class report extends base_report
     $select->from( 'report' );
     $select->add_constant( NULL, 'create_timestamp' );
     $select->add_column( 'id' );
-    $select->add_table_column( 'report_schedule_has_report_restriction', 'report_restriction_id' );
-    $select->add_table_column( 'report_schedule_has_report_restriction', 'value' );
+    $select->add_column( 'report_schedule_has_report_restriction.report_restriction_id', NULL, false );
+    $select->add_column(
+      'IF( '."\n".
+      '    "date" = restriction_type,'."\n".
+           // convert relative date values
+      '    DATE_ADD( DATE( UTC_TIMESTAMP() ), INTERVAL report_schedule_has_report_restriction.value DAY ),'."\n".
+      '    report_schedule_has_report_restriction.value'."\n".
+      '  )',
+      'value',
+      false
+    );
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'report_schedule', 'report.report_schedule_id', 'report_schedule.id' );
     $modifier->join(
       'report_schedule_has_report_restriction',
       'report_schedule.id',
       'report_schedule_has_report_restriction.report_schedule_id' );
+    $modifier->join(
+      'report_restriction',
+      'report_schedule_has_report_restriction.report_restriction_id',
+      'report_restriction.id'
+    );
     $modifier->where( 'report.id', '=', $this->id );
 
     static::db()->execute( sprintf(

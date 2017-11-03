@@ -90,7 +90,8 @@ define( function() {
             $scope.model.metadata.getPromise().then( function() {
               cnRecordAdd.dataArray = $scope.model.getDataArray( [], 'add' );
               cnRecordAdd.dataArray.findByProperty( 'title', 'Parameters' ).inputArray.forEach( function( input ) {
-                if( cenozo.isDatetimeType( input.type ) ) cnRecordAdd.formattedRecord[input.key] = '(empty)';
+                if( 'date' != input.type && cenozo.isDatetimeType( input.type ) )
+                  cnRecordAdd.formattedRecord[input.key] = '(empty)';
               } );
               $scope.loading = false;
             } );
@@ -168,8 +169,11 @@ define( function() {
             for( var column in self.parentModel.metadata.columnList ) {
               var meta = self.parentModel.metadata.columnList[column];
               if( angular.isDefined( meta.restriction_type ) ) {
-                if( cenozo.isDatetimeType( meta.restriction_type ) ) record[column] = null;
-                else if( 'boolean' == meta.restriction_type && meta.required ) record[column] = true;
+                if( 'date' != meta.restriction_type && cenozo.isDatetimeType( meta.restriction_type ) ) {
+                  record[column] = null;
+                } else if( 'boolean' == meta.restriction_type && meta.required ) {
+                  record[column] = true;
+                }
               }
             }
           } );
@@ -221,6 +225,11 @@ define( function() {
                   } else {
                     self.record[key] = restriction.value;
                   }
+
+                  // date types must be treated as enums
+                  if( 'date' == restriction.restriction_type )
+                    restriction.restriction_type = 'enum';
+
                   self.updateFormattedRecord( key, cenozo.getTypeFromRestriction( restriction ) );
                 } );
               } );
@@ -241,7 +250,7 @@ define( function() {
                 var type = parameterData.inputList[column].type;
                 if( angular.isDefined( self.record[column] ) ) {
                   self.updateFormattedRecord( column, type );
-                } else if( cenozo.isDatetimeType( type ) ) {
+                } else if( 'date' != type && cenozo.isDatetimeType( type ) ) {
                   self.formattedRecord[column] = '(empty)';
                 } else if( 'boolean' == type ) {
                   self.record[column] = '';
@@ -343,7 +352,37 @@ define( function() {
                     var inputPromiseList = [];
                     response.data.forEach( function( restriction ) {
                       var key = 'restrict_' + restriction.name;
+
+                      var dateType = 'date' == restriction.restriction_type;
+                      if( dateType ) {
+                        // add before/after values for date
+                        restriction.restriction_type = 'enum';
+                        restriction.enum_list = [
+                          '7 days before',
+                          '3 days before',
+                          '2 days before',
+                          '1 day before',
+                          'same day',
+                          '1 day after',
+                          '2 days after',
+                          '3 days after',
+                          '7 days after'
+                        ].map( name => '"'+name+'"' ).join( ',' );
+                      }
+
                       var result = cenozo.getInputFromRestriction( restriction, CnHttpFactory );
+
+                      if( dateType ) {
+                        // convert enum values to integers (with string types)
+                        result.input.enumList
+                          .filter( e => angular.isString( e.value ) )
+                          .forEach( function( e ) {
+                            if( 'same day' == e.value ) e.value = '0';
+                            else if( e.value.match( /before/ ) ) e.value = String( -parseInt( e.value ) );
+                            else if( e.value.match( /after/ ) ) e.value = String( parseInt( e.value ) );
+                          } );
+                      }
+
                       parameterData.inputList[key] = result.input;
                       inputPromiseList = inputPromiseList.concat( result.promiseList );
                       self.metadata.columnList[key] = {
