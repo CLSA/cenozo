@@ -725,106 +725,101 @@ angular.extend( cenozo, {
   },
 
   // returns an input object from a restriction (used by report* modules)
-  inputFromRestrictionCache: {},
   getInputFromRestriction: function( restriction, CnHttpFactory ) {
-    if( angular.isUndefined( this.inputFromRestrictionCache[restriction.id] ) ) {
-      var key = 'restrict_' + restriction.name;
-      var type = restriction.restriction_type;
-      var promiseList = [];
-      var input = {
-        key: key,
-        title: restriction.title,
-        type: this.getTypeFromRestriction( restriction ),
-        constant: 'view',
-        help: restriction.description
-      };
+    var key = 'restrict_' + restriction.name;
+    var type = restriction.restriction_type;
+    var promiseList = [];
+    var input = {
+      key: key,
+      title: restriction.title,
+      type: this.getTypeFromRestriction( restriction ),
+      constant: 'view',
+      help: restriction.description
+    };
 
-      if( 'table' == type ) {
-        // loop through the subject column data to determine the http data
-        input.enumList = [ {
-          value: undefined,
-          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
-        } ];
+    if( 'table' == type ) {
+      // loop through the subject column data to determine the http data
+      input.enumList = [ {
+        value: undefined,
+        name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
+      } ];
 
+      promiseList.push(
+        CnHttpFactory.instance( {
+          path: restriction.subject
+        } ).head().then( function( response ) {
+          var data = {
+            modifier: {
+              where: [],
+              order: undefined
+            },
+            select: { column: [ 'id' ] }
+          };
+          var columnList = angular.fromJson( response.headers( 'Columns' ) );
+          for( var column in columnList ) {
+            if( 'active' == column )
+              data.modifier.where.push( { column: 'active', operator: '=', value: true } );
+            else if( 'name' == column ) {
+              data.modifier.order = { name: false };
+              data.select.column.push( 'name' );
+            }
+          };
+
+          // query the table for the enum list
+          return CnHttpFactory.instance( {
+            path: restriction.subject,
+            data: data
+          } ).get().then( function( response ) {
+            response.data.forEach( function( item ) {
+              input.enumList.push( { value: item.id, name: item.name } );
+            } );
+            if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
+          } );
+        } )
+      );
+    } else if( 'boolean' == type ) {
+      input.enumList = [ {
+        value: undefined,
+        name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
+      }, {
+        value: true, name: 'Yes'
+      }, {
+        value: false, name: 'No'
+      } ];
+      if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
+    } else if( 'enum' == type ) {
+      input.enumList = [ {
+        value: undefined,
+        name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
+      } ];
+      if( null == restriction.enum_list ) {
         promiseList.push(
           CnHttpFactory.instance( {
-            path: restriction.subject
+            path: restriction.base_table
           } ).head().then( function( response ) {
-            var data = {
-              modifier: {
-                where: [],
-                order: undefined
-              },
-              select: { column: [ 'id' ] }
-            };
             var columnList = angular.fromJson( response.headers( 'Columns' ) );
-            for( var column in columnList ) {
-              if( 'active' == column )
-                data.modifier.where.push( { column: 'active', operator: '=', value: true } );
-              else if( 'name' == column ) {
-                data.modifier.order = { name: false };
-                data.select.column.push( 'name' );
-              }
-            };
-
-            // query the table for the enum list
-            return CnHttpFactory.instance( {
-              path: restriction.subject,
-              data: data
-            } ).get().then( function( response ) {
-              response.data.forEach( function( item ) {
-                input.enumList.push( { value: item.id, name: item.name } );
+            if( angular.isDefined( columnList[restriction.subject] ) &&
+                'enum' == columnList[restriction.subject].data_type ) {
+              // parse out the enum values
+              cenozo.parseEnumList( columnList[restriction.subject] ).forEach( function( item ) {
+                input.enumList.push( { value: item, name: item } );
               } );
-              if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
-            } );
+            }
           } )
         );
-      } else if( 'boolean' == type ) {
-        input.enumList = [ {
-          value: undefined,
-          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
-        }, {
-          value: true, name: 'Yes'
-        }, {
-          value: false, name: 'No'
-        } ];
-        if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
-      } else if( 'enum' == type ) {
-        input.enumList = [ {
-          value: undefined,
-          name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
-        } ];
-        if( null == restriction.enum_list ) {
-          promiseList.push(
-            CnHttpFactory.instance( {
-              path: restriction.base_table
-            } ).head().then( function( response ) {
-              var columnList = angular.fromJson( response.headers( 'Columns' ) );
-              if( angular.isDefined( columnList[restriction.subject] ) &&
-                  'enum' == columnList[restriction.subject].data_type ) {
-                // parse out the enum values
-                cenozo.parseEnumList( columnList[restriction.subject] ).forEach( function( item ) {
-                  input.enumList.push( { value: item, name: item } );
-                } );
-              }
-            } )
-          );
-        } else {
-          input.enumList = input.enumList.concat( angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
-            function( list, name ) {
-              list.push( { value: name, name: name } );
-              return list;
-            }, []
-          ) );
-        }
-
-        if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
+      } else {
+        input.enumList = input.enumList.concat( angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
+          function( list, name ) {
+            list.push( { value: name, name: name } );
+            return list;
+          }, []
+        ) );
       }
 
-      this.inputFromRestrictionCache[restriction.id] = { input: input, promiseList: promiseList };
+      if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
     }
 
-    return this.inputFromRestrictionCache[restriction.id];
+    return { input: input, promiseList: promiseList };
   }
 
 } );
