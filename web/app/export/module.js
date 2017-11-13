@@ -433,10 +433,10 @@ define( [
 
             if( 'boolean' == item.restriction.type ) {
               item.value = true;
-            } else if( 'dob' == item.restriction.type || 'datetime' == item.restriction.type ) {
+            } else if( 0 <= ['dob','dod','datetime'].indexOf( item.restriction.type ) ) {
               var datetime = moment();
               if( 'dob' == item.restriction.type ) datetime.subtract( 50, 'years' );
-              item.value = datetime.format( 'dob' == item.restriction.type ? 'YYYY-MM-DD' : null );
+              item.value = datetime.format( 'datetime' != item.restriction.type ? 'YYYY-MM-DD' : null );
               item.formattedValue = CnSession.formatValue( item.value, item.restriction.type, true );
             } else if( 'enum' == item.restriction.type ) {
               item.value = item.restriction.enumList[0].value;
@@ -499,7 +499,7 @@ define( [
 
           selectDatetime: function( index ) {
             var item = this.restrictionList[index];
-            if( 'dob' != item.restriction.type && 'datetime' != item.restriction.type ) {
+            if( -1 == ['dob','dod','datetime'].indexOf( item.restriction.type ) ) {
               console.error( 'Tried to select datetime for restriction type "' + item.restriction.type + '".' );
             } else {
               CnModalDatetimeFactory.instance( {
@@ -740,6 +740,7 @@ define( [
                             angular.isDefined( item.enumList ) ? 'enum' :
                             'datetime' == item.type | 'timestamp' == item.type ? 'datetime' :
                             'date_of_birth' == column ? 'dob' :
+                            'date_of_death' == column ? 'dod' :
                             'varchar' ? 'string' : 'unknown',
                       required: item.required
                     };

@@ -165,7 +165,9 @@
                  ng-disabled="item.isUpdating"
                  cn-change="model.viewModel.updateRestriction( item.id, 'value' )"
                  maxlength="255"></input>
-          <input ng-if="'dob' == item.restriction.type || 'datetime' == item.restriction.type"
+          <input ng-if="'dob' == item.restriction.type ||
+                        'dod' == item.restriction.type ||
+                        'datetime' == item.restriction.type"
                  class="form-control"
                  type="text"
                  ng-click="model.viewModel.selectDatetime( $index )"

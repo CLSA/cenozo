@@ -523,7 +523,7 @@ angular.extend( cenozo, {
   isDatetimeType: function( type, subtype ) {
     var typeList = [];
     if( 'date' == subtype ) {
-      typeList = [ 'datetimesecond', 'datetime', 'date', 'dob' ];
+      typeList = [ 'datetimesecond', 'datetime', 'date', 'dob', 'dod' ];
     } else if( 'time' == subtype ) {
       typeList = [ 'timesecond', 'timesecond_notz', 'time', 'time_notz' ];
     } else if( 'second' == subtype ) {
@@ -532,7 +532,7 @@ angular.extend( cenozo, {
       typeList = [ 'datetimesecond', 'datetime', 'timesecond', 'time' ];
     } else {
       typeList = [
-        'datetimesecond', 'datetime', 'date', 'dob',
+        'datetimesecond', 'datetime', 'date', 'dob', 'dod',
         'timesecond', 'timesecond_notz', 'time', 'time_notz'
       ];
     }
@@ -2820,7 +2820,7 @@ cenozo.factory( 'CnSession', [
         getDatetimeFormat: function( format, longForm ) {
           if( angular.isUndefined( longForm ) ) longForm = false;
           var resolvedFormat = format;
-          if( 'dob' == format ) {
+          if( 'dob' == format || 'dod' == format ) {
             resolvedFormat = 'MMM D, YYYY';
           } else if( cenozo.isDatetimeType( format, 'date' ) ) {
             resolvedFormat = ( longForm ? 'dddd, MMMM Do' : 'MMM D' ) + ', YYYY';

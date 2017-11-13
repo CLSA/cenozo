@@ -34,6 +34,23 @@ class participant extends record
       $this->email_datetime = $util_class_name::get_datetime_object();
       $this->email_old = $old_email;
     }
+    else if( 'date_of_death' == $column_name )
+    {
+      // if date of death is null then accuracy must also be null
+      if( is_null( $value ) ) $this->date_of_death_accuracy = NULL;
+      // if date of death is not null then accuracy must be set
+      else $this->date_of_death_accuracy = 'full date known';
+    }
+    else if( 'date_of_death_accuracy' == $column_name && !is_null( $value ) )
+    {
+      if( !is_null( $this->date_of_death ) )
+      {
+        if( 'day unknown' == $value )
+          $this->date_of_death = $this->date_of_death->format( 'Y-m-01' );
+        else if( 'month and day unknown' == $value )
+          $this->date_of_death = $this->date_of_death->format( 'Y-01-01' );
+      }
+    }
   }
 
   /**

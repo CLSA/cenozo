@@ -6,6 +6,7 @@
     <div>
       <div ng-if="'date' == local.pickerType ||
                   'dob' == local.pickerType ||
+                  'dod' == local.pickerType ||
                   'datetime' == local.pickerType ||
                   'datetimesecond' == local.pickerType"
            class="container-fluid">
@@ -53,7 +54,9 @@
       </div>
       <div ng-if="'datetime' == local.pickerType || 'datetimesecond' == local.pickerType"
            class="vertical-spacer"></div>
-      <div ng-if="'dob' != local.pickerType && 'date' != local.pickerType" class="container-fluid timepicker">
+      <div ng-if="'dob' != local.pickerType &&
+                  'dod' != local.pickerType &&
+                  'date' != local.pickerType" class="container-fluid timepicker">
         <div class="row timepicker-row">
           <div class="col-xs-2"><strong>Time:</strong></div>
           <div class="col-xs-10">{{ local.displayTime }}</div>
@@ -96,7 +99,9 @@
   </div>
   <div class="modal-footer bg-info">
     <div class="btn-group pull-left">
-      <button ng-if="'dob' != local.pickerType && 'date' != local.pickerType"
+      <button ng-if="'dob' != local.pickerType &&
+                     'dod' != local.pickerType &&
+                     'date' != local.pickerType"
               type="button"
               class="btn btn-info"
               ng-click="local.select('now')"

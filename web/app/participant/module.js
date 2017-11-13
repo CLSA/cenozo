@@ -125,6 +125,17 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       type: 'dob',
       max: 'now'
     },
+    date_of_death: {
+      title: 'Date of Death',
+      type: 'dod',
+      min: 'date_of_birth',
+      max: 'now'
+    },
+    date_of_death_accuracy: {
+      title: 'Date of Death Accuracy',
+      type: 'enum',
+      help: 'Defines how accurate the date of death is.'
+    },
     age_group_id: {
       title: 'Age Group',
       type: 'enum',
@@ -828,16 +839,37 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
           // set a special heading
           this.onViewPromise = this.$$onView().then( function() {
+            // put the participant's full name in the heading
             var nameList = [ self.record.first_name, self.record.last_name ];
             if( self.record.other_name ) nameList.splice( 1, 0, '(' + self.record.other_name + ')' );
             if( self.record.honorific ) nameList.unshift( self.record.honorific );
             self.heading = 'Participant Details for ' + nameList.join( ' ' );
+
+            // don't allow date-of-death-accuracy to be set unless the date-of-death is defined
+            var dodInput = self.parentModel.module.inputGroupList.findByProperty( 'title', 'Defining Details' )
+              .inputList.date_of_death_accuracy.constant = null == self.record.date_of_death;
+
+            if( null != self.record.date_of_death ) {
+              // only display the accurate parts of the date-of-death
+              if( 'day unknown' == self.record.date_of_death_accuracy ) {
+                self.formattedRecord.date_of_death =
+                  self.formattedRecord.date_of_death.replace( / [0-9]+,/, ',' );
+              } else if( 'month and day unknown' == self.record.date_of_death_accuracy ) {
+                self.formattedRecord.date_of_death =
+                  self.formattedRecord.date_of_death.replace( /[A-Za-z]+ [0-9]+,/, '' );
+              }
+
+              // if the date of death is defined then show age a death instead of current age
+              var age = moment( self.record.date_of_death ).diff( self.record.date_of_birth, 'years' );
+              self.formattedRecord.date_of_birth = self.formattedRecord.date_of_birth.replace( / \(.*\)/, '' );
+              self.formattedRecord.date_of_death += ' (' + age + ' year' + ( 1 == age ? '' : 's' ) + ' old)';
+            }
           } );
           return this.onViewPromise;
         };
 
-        // warn non all-sites users when changing the preferred site
         this.onPatch = function( data ) {
+          // warn non all-sites users when changing the preferred site
           if( angular.isDefined( data.preferred_site_id ) && !CnSession.role.allSites ) {
             if( ( "" === data.preferred_site_id && this.record.default_site != CnSession.site.name ) ||
                 ( "" !== data.preferred_site_id && data.preferred_site_id != CnSession.site.id ) ) {
@@ -862,7 +894,11 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             }
           }
 
-          return this.$$onPatch( data );
+          return this.$$onPatch( data ).then( function() {
+            // refresh the data if date-of-death information has changed
+            return angular.isDefined( data.date_of_death ) || angular.isDefined( data.date_of_death_accuracy ) ?
+              self.onView() : $q.all();
+          } );
         };
 
         // launches the proxy initiation script for the current participant

@@ -10,6 +10,7 @@ SOURCE opal_form_template.sql
 SOURCE script.sql
 SOURCE jurisdiction.sql
 SOURCE webphone.sql
+SOURCE participant.sql
 
 SOURCE column_character_sets.sql
 
