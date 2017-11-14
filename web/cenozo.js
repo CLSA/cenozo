@@ -4106,13 +4106,14 @@ cenozo.factory( 'CnBaseViewFactory', [
          * error to show the usual user interface.
          * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onView', function() {
+        cenozo.addExtendableFunction( object, 'onView', function( force ) {
+          if( angular.isUndefined( force ) ) force = false;
           this.isLoading = true;
           var self = this;
           if( !this.parentModel.getViewEnabled() ) throw new Error( 'Calling onView() but view is not enabled.' );
 
           // get the record's data and metadata
-          return this.parentModel.module.subject.snake != this.parentModel.getSubjectFromState() ?
+          return !force && this.parentModel.module.subject.snake != this.parentModel.getSubjectFromState() ?
             $q.all() : // don't view when the state's subject doesn't match the model's subject
             CnHttpFactory.instance( {
               path: this.parentModel.getServiceResourcePath(),
