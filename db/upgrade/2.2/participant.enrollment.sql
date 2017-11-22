@@ -41,9 +41,8 @@ CREATE PROCEDURE patch_participant()
       LEFT JOIN collection_has_participant ON participant.id = collection_has_participant.participant_id
         AND collection_has_participant.collection_id = ( SELECT id FROM collection WHERE name = "baseline" )
       JOIN state ON participant.state_id = state.id
-      JOIN enrollment ON state.name = enrollment.name OR (
-        state.name = "Out of DCS Area" AND enrollment.name = "out of study area"
-      )
+      JOIN enrollment ON LOWER( state.name ) = LOWER( enrollment.name )
+        OR state.name = "Out of DCS Area" AND enrollment.name = "out of study area"
       SET participant.enrollment_id = enrollment.id, participant.state_id = NULL
       WHERE collection_id IS NULL;
 
