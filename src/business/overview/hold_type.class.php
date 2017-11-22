@@ -10,9 +10,9 @@ namespace cenozo\business\overview;
 use cenozo\lib, cenozo\log;
 
 /**
- * overview: state
+ * overview: hold
  */
-class state extends \cenozo\business\overview\base_overview
+class hold extends \cenozo\business\overview\base_overview
 {
   /**
    * Implements abstract method
@@ -56,21 +56,24 @@ class state extends \cenozo\business\overview\base_overview
     $participant_mod->merge( $base_mod );
     $total = $participant_class_name::count( $participant_mod );
 
-    $state_class_name = lib::get_class_name( 'database\state' );
+    $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
     
-    $state_sel = lib::create( 'database\select' );
-    $state_sel->add_column( 'name' );
-    $state_sel->add_column( 'COUNT(*)', 'total', false );
-    $state_mod = lib::create( 'database\modifier' );
-    $state_mod->join( 'participant', 'state.id', 'participant.state_id' );
-    $state_mod->merge( $base_mod );
-    $state_mod->group( 'state.id' );
-    $state_mod->order( 'rank' );
-    foreach( $state_class_name::select( $state_sel, $state_mod ) as $state )
+    $hold_type_sel = lib::create( 'database\select' );
+    $hold_type_sel->add_column( 'type' );
+    $hold_type_sel->add_column( 'name' );
+    $hold_type_sel->add_column( 'COUNT(*)', 'total', false );
+    $hold_type_mod = lib::create( 'database\modifier' );
+    $hold_type_mod->join( 'hold', 'hold_type.id', 'hold.hold_type_id' );
+    $hold_type_mod->join( 'participant_last_hold', 'hold.participant_id', 'participant_last_hold.participant_id' );
+    $hold_type_mod->merge( $base_mod );
+    $hold_type_mod->group( 'hold_type.id' );
+    $hold_type_mod->order( 'hold_type.type' );
+    $hold_type_mod->order( 'hold_type.name' );
+    foreach( $hold_type_class_name::select( $hold_type_sel, $hold_type_mod ) as $hold_type )
     {
       $this->add_root_item(
-        $state['name'],
-        sprintf( '%d (%0.2f%%)', $state['total'], 100 * $state['total'] / $total )
+        $hold_type['name'],
+        sprintf( '%d (%0.2f%%)', $hold_type['total'], 100 * $hold_type['total'] / $total )
       );
     }
   }

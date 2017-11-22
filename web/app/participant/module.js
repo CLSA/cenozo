@@ -31,17 +31,15 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         title: 'Active',
         type: 'boolean'
       },
-      source: {
-        column: 'source.name',
-        title: 'Source'
-      },
       cohort: {
         column: 'cohort.name',
         title: 'Cohort'
       },
-      state: {
-        column: 'state.name',
-        title: 'State'
+      enrollment: {
+        title: 'Enrollment'
+      },
+      last_hold: {
+        title: 'Hold'
       },
       site: {
         column: 'site.name',
@@ -116,6 +114,10 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   } );
 
   module.addInputGroup( 'Defining Details', {
+    source: {
+      column: 'source.name',
+      title: 'Source'
+    },
     sex: {
       title: 'Sex',
       type: 'enum'
@@ -142,12 +144,11 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       help: 'The age group that the participant belonged to when first recruited into the study. ' +
             'Note that this won\'t necessarily reflect the participant\'s current age.'
     },
-    state_id: {
-      title: 'Condition',
-      type: 'enum',
-      help: 'A condition defines the reason that a participant should no longer be contacted. ' +
-            'If this value is not empty then the participant will no longer be contacted for interviews. ' +
-            'Note that some roles do not have access to all conditions.'
+    enrollment: {
+      title: 'Enrollment',
+      type: 'string',
+      help: 'Whether the participant has been enrolled into the study, and if not then the reason they are ' +
+            'not enrolled.'
     },
     language_id: {
       title: 'Preferred Language',
@@ -1078,23 +1079,6 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
                 response.data.forEach( function( item ) {
                   self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
                 } );
-              } ),
-
-              CnHttpFactory.instance( {
-                path: 'state',
-                data: {
-                  select: { column: [ 'id', 'name', 'access' ] },
-                  modifier: { order: 'rank' }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.state_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.state_id.enumList.push( {
-                    value: item.id,
-                    name: item.name,
-                    disabled: !item.access
-                  } );
-                } );
               } )
             ] );
           } );
@@ -1200,7 +1184,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         // populate the participant input list once the participant's metadata has been loaded
         CnParticipantModelFactory.root.metadata.getPromise().then( function() {
           self.participantInputList = processInputList( [
-              'active', 'honorific', 'sex', 'state_id', 'language_id', 'availability_type_id',
+              'active', 'honorific', 'sex', 'language_id', 'availability_type_id',
               'preferred_site_id', 'out_of_area', 'email', 'mass_email', 'note'
             ],
             self.module,

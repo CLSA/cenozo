@@ -38,7 +38,11 @@ class contact extends \cenozo\business\report\base_report
     $select->add_column( 'address.postcode', 'Postcode', false );
     $select->add_column( 'region.country', 'Country', false );
     $select->add_column( 'IFNULL( email, "" )', 'Email', false );
-    $select->add_column( 'IFNULL( state.name, "None" )', 'Condition', false );
+    $select->add_column(
+      'IF( hold_type.type IS NULL, "None", CONCAT( hold_type.type, ": ", hold_type.name ) )',
+      'Hold',
+      false
+    );
     $select->add_column(
       'IF( '.
         'participant_last_consent.consent_id IS NULL, '.
@@ -49,7 +53,9 @@ class contact extends \cenozo\business\report\base_report
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'cohort', 'participant.cohort_id', 'cohort.id' );
-    $modifier->left_join( 'state', 'participant.state_id', 'state.id' );
+    $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
+    $modifier->join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+    $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
     $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
     $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
     $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );

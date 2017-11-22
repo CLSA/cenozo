@@ -1,6 +1,6 @@
 <?php
 /**
- * state.class.php
+ * hold_type.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,6 +10,6 @@ namespace cenozo\database;
 use cenozo\lib, cenozo\log;
 
 /**
- * state: record
+ * hold_type: record
  */
-class state extends has_rank {}
+class hold_type extends record {}

@@ -1,20 +1,17 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'state', true ); } catch( err ) { console.warn( err ); return; }
+  try { var module = cenozoApp.module( 'hold_type', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
-    identifier: { column: 'name' },
+    identifier: { column: ['type','name'] },
     name: {
-      singular: 'state',
-      plural: 'states',
-      possessive: 'state\'s',
-      pluralPossessive: 'states\''
+      singular: 'hold type',
+      plural: 'hold types',
+      possessive: 'hold type\'s',
+      pluralPossessive: 'hold types\''
     },
     columnList: {
-      rank: {
-        title: 'Rank',
-        type: 'rank'
-      },
+      type: { title: 'Type' },
       name: { title: 'Name' },
       participant_count: {
         title: 'Participants',
@@ -26,19 +23,19 @@ define( function() {
       }
     },
     defaultOrder: {
-      column: 'rank',
+      column: 'CONCAT( type, " ", name )',
       reverse: false
     }
   } );
 
   module.addInputGroup( '', {
+    type: {
+      title: 'Type',
+      type: 'string'
+    },
     name: {
       title: 'Name',
       type: 'string'
-    },
-    rank: {
-      title: 'Rank',
-      type: 'rank'
     },
     description: {
       title: 'Description',
@@ -47,52 +44,52 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnStateAdd', [
-    'CnStateModelFactory',
-    function( CnStateModelFactory ) {
+  cenozo.providers.directive( 'cnHoldTypeAdd', [
+    'CnHoldTypeModelFactory',
+    function( CnHoldTypeModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnStateModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHoldTypeModelFactory.root;
         }
       };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnStateList', [
-    'CnStateModelFactory',
-    function( CnStateModelFactory ) {
+  cenozo.providers.directive( 'cnHoldTypeList', [
+    'CnHoldTypeModelFactory',
+    function( CnHoldTypeModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnStateModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHoldTypeModelFactory.root;
         }
       };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnStateView', [
-    'CnStateModelFactory',
-    function( CnStateModelFactory ) {
+  cenozo.providers.directive( 'cnHoldTypeView', [
+    'CnHoldTypeModelFactory',
+    function( CnHoldTypeModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnStateModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHoldTypeModelFactory.root;
         }
       };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnStateAddFactory', [
+  cenozo.providers.factory( 'CnHoldTypeAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
@@ -101,7 +98,7 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnStateListFactory', [
+  cenozo.providers.factory( 'CnHoldTypeListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -110,7 +107,7 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnStateViewFactory', [
+  cenozo.providers.factory( 'CnHoldTypeViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel, root ) {
@@ -128,14 +125,14 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnStateModelFactory', [
-    'CnBaseModelFactory', 'CnStateListFactory', 'CnStateAddFactory', 'CnStateViewFactory',
-    function( CnBaseModelFactory, CnStateListFactory, CnStateAddFactory, CnStateViewFactory ) {
+  cenozo.providers.factory( 'CnHoldTypeModelFactory', [
+    'CnBaseModelFactory', 'CnHoldTypeListFactory', 'CnHoldTypeAddFactory', 'CnHoldTypeViewFactory',
+    function( CnBaseModelFactory, CnHoldTypeListFactory, CnHoldTypeAddFactory, CnHoldTypeViewFactory ) {
       var object = function( root ) {
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnStateAddFactory.instance( this );
-        this.listModel = CnStateListFactory.instance( this );
-        this.viewModel = CnStateViewFactory.instance( this, root );
+        this.addModel = CnHoldTypeAddFactory.instance( this );
+        this.listModel = CnHoldTypeListFactory.instance( this );
+        this.viewModel = CnHoldTypeViewFactory.instance( this, root );
       };
 
       return {

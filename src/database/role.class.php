@@ -66,22 +66,22 @@ class role extends record
   }
 
   /**
-   * Returns whether the role has access to a state
+   * Returns whether the role has access to a hold_type
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\state $db_state
+   * @param database\hold $db_hold
    * @return bool
    */
-  public function has_state( $db_state )
+  public function has_hold_type( $db_hold_type )
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine whether role has state for role with no primary key.' );
+      log::warning( 'Tried to determine whether role has hold_type for role with no primary key.' );
       return false;
     }
 
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'state_id', '=', $db_state->id );
-    return 0 < $this->get_state_count( $modifier );
+    $modifier->where( 'hold_type_id', '=', $db_hold_type->id );
+    return 0 < $this->get_hold_type_count( $modifier );
   }
 }

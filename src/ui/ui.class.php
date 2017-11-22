@@ -122,10 +122,10 @@ class ui extends \cenozo\base_object
     $list = array(
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'callback', 'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export',
-      'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'jurisdiction', 'language',
-      'opal_form_template', 'overview', 'participant', 'phone', 'quota', 'region', 'region_site', 'role',
-      'report', 'report_restriction', 'report_schedule', 'report_type', 'script', 'search_result', 'site',
-      'source', 'state', 'system_message', 'user', 'webphone', 'writelog'
+      'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold_type', 'jurisdiction',
+      'language', 'opal_form_template', 'overview', 'participant', 'phone', 'quota', 'region', 'region_site',
+      'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'script', 'search_result', 'site',
+      'source', 'system_message', 'user', 'webphone', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -280,6 +280,11 @@ class ui extends \cenozo\base_object
       {
         $module->add_child( 'form' );
       }
+      else if( 'hold_type' == $module->get_subject() )
+      {
+        $module->add_child( 'role' );
+        $module->add_child( 'participant' );
+      }
       else if( 'interview' == $module->get_subject() )
       {
         $module->add_child( 'assignment' );
@@ -330,11 +335,6 @@ class ui extends \cenozo\base_object
       {
         $module->add_child( 'participant' );
       }
-      else if( 'state' == $module->get_subject() )
-      {
-        $module->add_child( 'role' );
-        $module->add_child( 'participant' );
-      }
       else if( 'user' == $module->get_subject() )
       {
         if( 1 < $db_role->tier )
@@ -371,6 +371,7 @@ class ui extends \cenozo\base_object
     $this->add_listitem( 'Consent Types', 'consent_type' );
     $this->add_listitem( 'Event Types', 'event_type' );
     if( $extended ) $this->add_listitem( 'Form Types', 'form_type' );
+    $this->add_listitem( 'Hold Types', 'hold_type' );
     if( $setting_manager->get_setting( 'module', 'interview' ) )
     {
       $this->add_listitem( 'Interviews', 'interview' );
@@ -392,7 +393,6 @@ class ui extends \cenozo\base_object
     $this->add_listitem( 'Settings', 'setting' );
     if( $db_role->all_sites ) $this->add_listitem( 'Sites', 'site' );
     if( $extended ) $this->add_listitem( 'Sources', 'source' );
-    $this->add_listitem( 'States', 'state' );
     if( 2 <= $db_role->tier ) $this->add_listitem( 'System Messages', 'system_message' );
     $this->add_listitem( 'Users', 'user' );
   }

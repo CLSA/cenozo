@@ -4245,7 +4245,19 @@ cenozo.factory( 'CnBaseModelFactory', [
         cenozo.addExtendableFunction( self, 'getIdentifierFromRecord', function( record, valueOnly ) {
           var valueOnly = angular.isUndefined( valueOnly ) ? false : valueOnly;
           var column = angular.isDefined( self.module.identifier.column ) ? self.module.identifier.column : 'id';
-          return valueOnly || 'id' == column ? String( record[column] ) : column + '=' + record[column];
+
+          var identifier = null;
+          if( 'id' == column ) {
+            // if the column is simply "id" then the identifier is the record's id as a string
+            identifier = String( record.id );
+          } else {
+            var columns = angular.isArray( column ) ? column : [column];
+            // for each column 
+            identifier = columns
+              .map( col => valueOnly ? String( record[col] ) : ( col + '=' + record[col] ) )
+              .join( ';' );
+          }
+          return identifier;
         } );
 
         /**
@@ -4433,9 +4445,11 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
 
           // add identifier data if it is missing
-          if( angular.isDefined( self.module.identifier.column ) &&
-              angular.isUndefined( list[self.module.identifier.column] ) )
-            list[self.module.identifier.column] = { type: 'hidden' };
+          var column = angular.isDefined( self.module.identifier.column ) ? self.module.identifier.column : 'id';
+          var columns = angular.isArray( column ) ? column : [column];
+          columns.forEach( function( col ) {
+            if( angular.isUndefined( list[col] ) ) list[col] = { type: 'hidden' };
+          } );
 
           if( 'view' == type && angular.isDefined( self.module.identifier.parent ) ) {
             self.module.identifier.parent.forEach( function( item ) {

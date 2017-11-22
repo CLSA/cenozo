@@ -58,7 +58,36 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
-    $modifier->left_join( 'state', 'participant.state_id', 'state.id' );
+    $modifier->left_join( 'enrollment', 'participant.enrollment_id', 'enrollment.id' );
+    if( $select->has_column( 'enrollment' ) )
+    {
+      $select->add_column(
+        'IF( participant.enrollment_id IS NULL, "Yes", CONCAT( "No: ", enrollment.name ) )',
+        'enrollment',
+        false
+      );
+    }
+
+    if( $select->has_column( 'enrollment' ) )
+    {
+      $select->add_column(
+        'IF( participant.enrollment_id IS NULL, "Yes", CONCAT( "No: ", enrollment.name ) )',
+        'enrollment',
+        false
+      );
+    }
+
+    if( $select->has_column( 'last_hold' ) )
+    {
+      $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
+      $modifier->join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+      $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+      $select->add_column(
+        'CONCAT( hold_type.type, ": ", hold_type.name )',
+        'last_hold',
+        false
+      );
+    }
 
     // restrict to participants in this application
     if( $db_application->release_based || $select->has_table_columns( 'preferred_site' ) )
