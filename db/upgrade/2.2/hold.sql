@@ -65,11 +65,33 @@ CREATE PROCEDURE patch_hold()
 
       SELECT "Populating new hold table" AS "";
 
+      -- add in withdrawn holds
+      INSERT INTO hold( participant_id, hold_type_id, datetime )
+      SELECT DISTINCT participant.id, hold_type.id, consent.datetime
+      FROM participant
+      JOIN consent ON participant.id = consent.participant_id
+      JOIN consent_type ON consent.consent_type_id = consent_type.id
+      LEFT JOIN hold_type ON consent.accept = 0 AND hold_type.type = "final" AND hold_type.name = "withdrawn"
+      WHERE participant.enrollment_id IS NULL
+      AND consent_type.name = "participation";
+
+      -- add in holds based on states
       INSERT INTO hold( participant_id, hold_type_id, datetime )
       SELECT participant.id, hold_type.id, UTC_TIMESTAMP()
       FROM participant
-      LEFT JOIN state ON participant.state_id = state.id
-      LEFT JOIN hold_type ON state.name = hold_type.name;
+      JOIN state ON participant.state_id = state.id
+      JOIN hold_type ON state.name = hold_type.name;
+
+      -- make sure all participants have at least one empty hold
+      CREATE TEMPORARY TABLE has_hold
+      SELECT DISTINCT participant_id FROM hold;
+      ALTER TABLE has_hold ADD INDEX dk_participant_id( participant_id );
+
+      INSERT INTO hold( participant_id, hold_type_id, datetime )
+      SELECT participant.id, NULL, UTC_TIMESTAMP()
+      FROM participant
+      LEFT JOIN has_hold ON participant.id = has_hold.participant_id
+      WHERE has_hold.participant_id IS NULL;
 
     END IF;
 

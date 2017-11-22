@@ -8,6 +8,7 @@ SOURCE rename_states.sql
 
 SOURCE hold_type.sql
 SOURCE hold.sql
+SOURCE remove_duplicate_holds.sql
 SOURCE participant.state.sql
 
 SOURCE role_has_hold_type.sql
