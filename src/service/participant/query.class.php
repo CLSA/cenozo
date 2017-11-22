@@ -41,11 +41,7 @@ class query extends \cenozo\service\query
       $this->select->add_column( 'uid' );
       $this->select->add_table_column( 'region', 'name', 'region' );
       $this->select->add_table_column(
-        'hold',
-        'IF( hold_type.type IS NULL, "", CONCAT( hold_type.type, ": ", hold_type.name ) )',
-        'hold',
-        false
-      );
+        'hold', 'IFNULL( CONCAT( hold_type.type, ": ", hold_type.name ), "" )', 'hold', false );
 
       $this->select->add_table_column(
         'last_consent', 'IFNULL( last_consent.accept, "" )', 'last_consent', false );

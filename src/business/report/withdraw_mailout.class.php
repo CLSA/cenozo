@@ -32,7 +32,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
     $select->add_column(
-      'IF( hold_type.type IS NULL, "None", CONCAT( hold_type.type, ": ", hold_type.name ) )',
+      'CONCAT( hold_type.type, ": ", hold_type.name )',
       'Hold',
       false
     );

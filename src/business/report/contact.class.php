@@ -39,7 +39,7 @@ class contact extends \cenozo\business\report\base_report
     $select->add_column( 'region.country', 'Country', false );
     $select->add_column( 'IFNULL( email, "" )', 'Email', false );
     $select->add_column(
-      'IF( hold_type.type IS NULL, "None", CONCAT( hold_type.type, ": ", hold_type.name ) )',
+      'CONCAT( hold_type.type, ": ", hold_type.name )',
       'Hold',
       false
     );
