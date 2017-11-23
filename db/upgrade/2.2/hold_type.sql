@@ -57,6 +57,9 @@ CREATE PROCEDURE patch_hold_type()
       WHERE name NOT IN ( SELECT name FROM temp_hold_type )
       GROUP BY state.name;
 
+      INSERT INTO hold_type( type, name, description )
+      VALUES ( "temporary", "deactivated", "The participant was deactivated for an unknown reason." );
+
     END IF;
 
   END //

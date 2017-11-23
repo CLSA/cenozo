@@ -82,6 +82,14 @@ CREATE PROCEDURE patch_hold()
       JOIN state ON participant.state_id = state.id
       JOIN hold_type ON state.name = hold_type.name;
 
+      -- add in holds based on active bit
+      INSERT IGNORE INTO hold( participant_id, hold_type_id, datetime )
+      SELECT participant.id, hold_type.id, UTC_TIMESTAMP()
+      FROM hold_type, participant
+      WHERE hold_type.type = "temporary" AND hold_type.name = "deactivated"
+      AND participant.active = 0
+      AND participant.enrollment_id IS NULL;
+
       -- make sure all participants have at least one empty hold
       CREATE TEMPORARY TABLE has_hold
       SELECT DISTINCT participant_id FROM hold;
@@ -91,7 +99,7 @@ CREATE PROCEDURE patch_hold()
       SELECT participant.id, NULL, UTC_TIMESTAMP()
       FROM participant
       LEFT JOIN has_hold ON participant.id = has_hold.participant_id
-      WHERE has_hold.participant_id IS NULL;
+      WHERE has_hold.participant_id IS NULL; -- doesn't already have a hold
 
     END IF;
 

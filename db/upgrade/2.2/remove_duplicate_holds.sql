@@ -20,6 +20,8 @@ CREATE PROCEDURE _remove_duplicate_holds()
     DECLARE id_val INT UNSIGNED;
     DECLARE participant_id_val INT UNSIGNED;
     DECLARE hold_type_id_val INT UNSIGNED;
+    DECLARE first_id_val INT UNSIGNED;
+    DECLARE first_hold_type_id_val INT UNSIGNED;
     DECLARE last_participant_id_val INT UNSIGNED;
     DECLARE last_hold_type_id_val INT UNSIGNED;
 
@@ -41,6 +43,8 @@ CREATE PROCEDURE _remove_duplicate_holds()
     OPEN the_cursor;
     select FOUND_ROWS() into num_rows;
 
+    SET first_id_val = NULL;
+    SET first_hold_type_id_val = NULL;
     SET last_participant_id_val = NULL;
     SET last_hold_type_id_val = NULL;
 
@@ -57,12 +61,29 @@ CREATE PROCEDURE _remove_duplicate_holds()
         LEAVE the_loop;
       END IF;
 
-      IF participant_id_val = last_participant_id_val AND hold_type_id_val <=> last_hold_type_id_val THEN
-        DELETE FROM hold WHERE id = id_val;
+      IF NOT (participant_id_val <=> last_participant_id_val ) THEN
+        -- new participant found
+        SET first_id_val = id_val;
+        SET first_hold_type_id_val = hold_type_id_val;
       ELSE
-        SET last_participant_id_val = participant_id_val;
-        SET last_hold_type_id_val = hold_type_id_val;
+        -- same participant as last time
+
+        -- when a participant has more than one hold and the first's hold-type is null, remove it
+        IF first_hold_type_id_val IS NULL THEN
+          -- remove the first record and mark this one as the first instead
+          DELETE FROM hold WHERE id = first_id_val;
+          SET first_id_val = id_val;
+        ELSE
+          -- check to make sure this hold isn't a duplicate of the last
+          IF hold_type_id_val <=> last_hold_type_id_val THEN
+            -- delete the duplicate hold
+            DELETE FROM hold WHERE id = id_val;
+          END IF;
+        END IF;
       END IF;
+
+      SET last_participant_id_val = participant_id_val;
+      SET last_hold_type_id_val = hold_type_id_val;
 
       -- count the number of times looped
       SET loop_cntr = loop_cntr + 1;

@@ -18,6 +18,18 @@ CREATE PROCEDURE patch_participant()
       DROP COLUMN state_id;
     END IF;
 
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "active" );
+    IF @test = 1 THEN
+      SELECT "Removing active column from participant table" AS "";
+
+      ALTER TABLE participant DROP COLUMN active;
+    END IF;
+
   END //
 DELIMITER ;
 
