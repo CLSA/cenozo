@@ -3,7 +3,6 @@
  * argument.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\exception;
@@ -19,7 +18,6 @@ class argument extends base_exception
 {
   /**
    * Constructor
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $argument_name The name of the argument which is invalid.
    * @param mixed $value The value of the argument which is invalid.
    * @param string|int $context The exceptions context, either a function name or error code.

@@ -3,7 +3,6 @@
  * ldap_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -17,7 +16,6 @@ class ldap_manager extends \cenozo\singleton
   /**
    * Constructor.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function __construct()
@@ -36,7 +34,6 @@ class ldap_manager extends \cenozo\singleton
   /**
    * Destructor which unbinds the LDAP connection, if one exists
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function __destruct()
@@ -49,7 +46,6 @@ class ldap_manager extends \cenozo\singleton
    * Initializes the ldap manager.
    * This method is called internally by the class whenever necessary.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\ldap
    * @access protected
    */
@@ -74,7 +70,6 @@ class ldap_manager extends \cenozo\singleton
   /**
    * Creates a new user.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $username The new username to create
    * @param string $first_name The user's first name
    * @param string $last_name The user's last name
@@ -149,7 +144,6 @@ class ldap_manager extends \cenozo\singleton
   /**
    * Deletes a user.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $username The username to delete
    * @throws exception\ldap
    * @access public
@@ -208,7 +202,6 @@ class ldap_manager extends \cenozo\singleton
   /**
    * Validate's a user/password pair, returning true if the password is a match and false if not
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $username
    * @param string $password
    * @throws exception\ldap, exception\runtime
@@ -282,7 +275,6 @@ class ldap_manager extends \cenozo\singleton
   /**
    * Sets a user's password
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $username Which user to affect
    * @param string $password The new password for the account
    * @throws exception\ldap, exception\runtime
@@ -363,7 +355,6 @@ class ldap_manager extends \cenozo\singleton
   /** 
    * Whether LDAP is enabled.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */

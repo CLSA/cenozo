@@ -3,7 +3,6 @@
  * voip_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -19,7 +18,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Constructor.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function __construct()
@@ -40,7 +38,6 @@ class voip_manager extends \cenozo\singleton
    * Initializes the voip manager.
    * 
    * This method should be called immediately after initial construction of the manager
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\runtime, exception\voip
    * @access public
    */
@@ -65,7 +62,6 @@ class voip_manager extends \cenozo\singleton
 
   /**
    * Performs all shutdown actions
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function shutdown()
@@ -75,7 +71,6 @@ class voip_manager extends \cenozo\singleton
 
   /**
    * Returns sip info for the given user (or current user if null)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user or integer $user
    * @return array
    * @access public
@@ -109,7 +104,6 @@ class voip_manager extends \cenozo\singleton
 
   /**
    * Returns sip info for all users
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( array )
    * @access public
    */
@@ -142,7 +136,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Reads the list of active calls from the server.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\voip
    * @access public
    */
@@ -165,7 +158,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Returns an array of all SIP calls
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -182,7 +174,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Gets a user's active call.  If the user isn't currently on a call then null is returned.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user or integer $user Which user's call to retrieve.
    *        If this parameter is null then the current user's call is returned.
    * @return voip_call
@@ -208,7 +199,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Attempts to connect to a phone.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $phone May be a database phone record or an explicit number
    * @return voip_call
    * @access public
@@ -264,7 +254,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Opens a listen-only connection to an existing call
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param voip_call $voip_call The call to spy on
    * @access public
    */
@@ -299,7 +288,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Whether VOIP is enabled.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -308,7 +296,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Gets the dialing prefix to use when placing external calls
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -317,7 +304,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Gets the "peer" from a user record
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user $user Use NULL for the current session's user
    * @return integer
    * @access public
@@ -335,7 +321,6 @@ class voip_manager extends \cenozo\singleton
   /**
    * Gets the user record from the "peer"
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $peer
    * @return database\user
    * @access public

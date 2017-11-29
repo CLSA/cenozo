@@ -3,7 +3,6 @@
  * status.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\service;
@@ -17,7 +16,6 @@ class status extends \cenozo\base_object
   /**
    * Constructor
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $code The HTTP response code
    * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
    * @access public
@@ -30,7 +28,6 @@ class status extends \cenozo\base_object
   /**
    * Returns the status' current code
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
    * @return integer
    * @access public
@@ -43,7 +40,6 @@ class status extends \cenozo\base_object
   /**
    * Sets the status' response code
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $code
    * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
    * @access public
@@ -65,7 +61,6 @@ class status extends \cenozo\base_object
   /**
    * Sets the value to send as the location header
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $location
    * @access public
    */
@@ -77,7 +72,6 @@ class status extends \cenozo\base_object
   /**
    * Returns the status message (code + code description)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -89,7 +83,6 @@ class status extends \cenozo\base_object
   /**
    * Sends http headers using the status' message (code + code description) and the location header, if set
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function send_headers()

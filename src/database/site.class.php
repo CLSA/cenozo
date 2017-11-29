@@ -3,7 +3,6 @@
  * site.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -58,7 +57,6 @@ class site extends record
 
   /**
    * Add space in postcodes if needed by overriding the magic __set method
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
    * @throws exception\argument
@@ -78,7 +76,6 @@ class site extends record
   /**
    * Gives a complete name for the site.
    * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @access public
    */
   public function get_full_name()
@@ -89,7 +86,6 @@ class site extends record
   /**
    * Adds a list of users to the site with the given role.
    * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @param int $user_id_list The users to add.
    * @param int $role_id The role to add them under.
    * @throws exeception\argument
@@ -129,7 +125,6 @@ class site extends record
   /**
    * Removes a list of users to the site who have the given role.
    * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @param int $access_id The access record to remove.
    * @access public
    */
@@ -148,7 +143,6 @@ class site extends record
   /**
    * Convenience method which returns the setting record for this site
    * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @return database\setting
    * @access public
    */
@@ -167,7 +161,6 @@ class site extends record
   /**
    * Determines if the site is valid by making sure all site-based manditory fields
    * are filled and checking for postcode-region mismatches.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -194,7 +187,6 @@ class site extends record
 
   /**
    * Sets the region column based on the postcode.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function source_postcode()

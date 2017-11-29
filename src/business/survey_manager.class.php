@@ -3,7 +3,6 @@
  * survey_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -19,7 +18,6 @@ class survey_manager extends \cenozo\singleton
    * 
    * Since this class uses the singleton pattern the constructor is never called directly.  Instead
    * use the {@link singleton} method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function __construct() {}
@@ -29,7 +27,6 @@ class survey_manager extends \cenozo\singleton
    * 
    * This method will try and fill in all columns of a token row, with the exception of the token
    * column.  To set the token use database\limesurvey\tokens::determine_token_string() static method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\script $db_script The script that the token belongs to
    * @param database\participant $db_participant The participant that the token belongs to
    * @param database\tokens $db_tokens The token to populate (if null a new one will be created)
@@ -90,7 +87,6 @@ class survey_manager extends \cenozo\singleton
   /**
    * Removes the participant's withdraw script token and survey
    * Note that this method does nothing if the participant has not completed the withdraw script
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @access public
    */
@@ -169,7 +165,6 @@ class survey_manager extends \cenozo\singleton
   /**
    * Processes the withdraw script of a participant who has been fully withdrawn
    * Note that this method does nothing if the participant has not completed the withdraw script
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @access public
    */
@@ -228,7 +223,6 @@ class survey_manager extends \cenozo\singleton
 
   /**
    * Returns the survey id of the withdraw script
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_withdraw_sid()
@@ -254,7 +248,6 @@ class survey_manager extends \cenozo\singleton
    * 
    * This method assumes that the participant table has already been made part of the select/modifier
    * pair.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select $select
    * @param database\modifier $modifier
    * @param string $alias What alias to use for the column
@@ -325,7 +318,6 @@ class survey_manager extends \cenozo\singleton
    * 
    * This method assumes that the participant table has already been made part of the select/modifier
    * pair.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select $select
    * @param database\modifier $modifier
    * @param string $alias What alias to use for the column
@@ -410,7 +402,6 @@ class survey_manager extends \cenozo\singleton
    * 
    * This method assumes that the participant table has already been made part of the select/modifier
    * pair.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select $select
    * @param database\modifier $modifier
    * @param string $alias What alias to use for the column

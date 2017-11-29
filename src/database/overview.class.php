@@ -3,7 +3,6 @@
  * overview.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class overview extends record
   /**
    * Gets the overview's business class (which generates the overview)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return business\overview\*
    * @access public
    */

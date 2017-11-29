@@ -3,7 +3,6 @@
  * variable_cache.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class variable_cache extends record
   /**
    * Removes expired variable values
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
    * @access public
    */
@@ -30,7 +28,6 @@ class variable_cache extends record
    * Replaces an array of variable=>value pairs for a participant
    * 
    * All values are always set to expiry in 1 day
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @param array( variable=>value ) $values
    * @return int (the number of affected rows)

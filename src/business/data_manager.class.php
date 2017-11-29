@@ -3,7 +3,6 @@
  * data_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -17,7 +16,6 @@ class data_manager extends \cenozo\singleton
   /**
    * Constructor.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\argument
    * @access protected
    */
@@ -31,7 +29,6 @@ class data_manager extends \cenozo\singleton
    * 
    * This is a way of testing whether the get_value() method will return a value for the
    * given key.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $key The key string defining which data to test
    * @return boolean
    * @access public
@@ -46,7 +43,6 @@ class data_manager extends \cenozo\singleton
   /**
    * Get generic data
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $key The key string defining which data to return
    * @return string
    * @access public
@@ -116,7 +112,6 @@ class data_manager extends \cenozo\singleton
   /**
    * Get participant-based data
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant
    * @param string $key The key string defining which data to return
    * @return string
@@ -548,7 +543,6 @@ class data_manager extends \cenozo\singleton
   /**
    * Parse the key used to identify which data value to return
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $key The key string defining which data to return
    * @return array
    * @access protected

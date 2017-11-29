@@ -3,7 +3,6 @@
  * address.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -59,7 +58,6 @@ class address extends has_rank
 
   /**
    * Add space in postcodes if needed by overriding the magic __set method
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
    * @throws exception\argument
@@ -107,7 +105,6 @@ class address extends has_rank
 
   /**
    * Sets the region, timezone offset and daylight savings columns based on the postcode.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function source_postcode()
@@ -128,7 +125,6 @@ class address extends has_rank
   /**
    * Determines if the address is valid by making sure all address-based manditory fields
    * are filled and checking for postcode-region mismatches.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -155,7 +151,6 @@ class address extends has_rank
 
   /**
    * Returns this address' timezone name
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */

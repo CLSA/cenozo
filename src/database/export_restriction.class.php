@@ -3,7 +3,6 @@
  * export_restriction.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class export_restriction extends has_rank
   /**
    * Applies this record's changes to the given modifier
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier
    * @access public
    */
@@ -79,7 +77,6 @@ class export_restriction extends has_rank
   /**
    * Returns the alias used when referencing this column's table
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_table_alias()

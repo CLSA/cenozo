@@ -3,7 +3,6 @@
  * base_overview.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business\overview;
@@ -17,7 +16,6 @@ class node
   /**
    * Constructor
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function __construct( $label, $value = NULL )
@@ -29,7 +27,6 @@ class node
   /**
    * Clone method
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function __clone()

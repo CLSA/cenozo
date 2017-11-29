@@ -3,7 +3,6 @@
  * base_object.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo;
@@ -18,7 +17,6 @@ abstract class base_object
   /**
    * Returns the name of the class without namespaces
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */

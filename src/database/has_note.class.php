@@ -3,7 +3,6 @@
  * note.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ abstract class has_note extends record
 {
   /**
    * Gets the number of notes associated with this record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param modifier $modifier
    * @return int
    * @access public
@@ -34,7 +32,6 @@ abstract class has_note extends record
 
   /**
    * Gets the list of notes associated with this record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param modifier $modifier
    * @return array( record )
    * @access public
@@ -54,7 +51,6 @@ abstract class has_note extends record
 
   /**
    * Gets the list of notes associated with this record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param modifier $modifier
    * @return array( record )
    * @access public
@@ -74,7 +70,6 @@ abstract class has_note extends record
 
   /**
    * Adds a new note to the record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user $db_user
    * @param string $note
    * @access public
@@ -94,7 +89,6 @@ abstract class has_note extends record
 
   /**
    * Adds a new note to multiple records.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier
    * @param database\user $db_user
    * @param string $note

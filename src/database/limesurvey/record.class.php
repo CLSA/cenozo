@@ -3,7 +3,6 @@
  * record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database\limesurvey;
@@ -18,7 +17,6 @@ abstract class record extends \cenozo\database\record
    * Constructor
    * 
    * See parent class's constructor.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $id The primary key for this object.
    * @access public
    */
@@ -32,7 +30,6 @@ abstract class record extends \cenozo\database\record
    * Magic call method.
    * 
    * Disables the parent method so that it is compatible with limesurvey tables.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\runtime
    * @access public
    */
@@ -46,7 +43,6 @@ abstract class record extends \cenozo\database\record
 
   /**
    * Returns the record's database.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database
    * @static
    * @access protected

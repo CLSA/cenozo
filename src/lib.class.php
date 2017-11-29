@@ -3,7 +3,6 @@
  * lib.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo;
@@ -17,7 +16,6 @@ final class lib
    * Constructor (or not)
    * 
    * This method is kept private so that no one ever tries to instantiate it.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access private
    */
   private function __construct() {}
@@ -25,7 +23,6 @@ final class lib
   /**
    * Registers this class with PHP as an autoloader.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $operation_type The type of operation being performed
    * @param boolean $development_mode Whether the system is in development mode
    * @static
@@ -46,7 +43,6 @@ final class lib
   /**
    * Object factory building method.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $class_name The type of object to create, including all but the base
    *        (framework or application) namespace.
    * @param mixed $arg1 The first argument to pass to the constructor
@@ -112,7 +108,6 @@ final class lib
    * This method is called by PHP whenever an undefined class is used.
    * It searches for an appropriate file in the application's src directory and loads it,
    * or if no file is found then it searches in the cenozo src directory.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
    * @throws exception\runtime
    * @access public
@@ -160,7 +155,6 @@ final class lib
    * NOTE: This method is final because it is called explicitely by the autoloader (ie: extended
    * versions of this class cannot override this method)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $class_name The name of the class including the namespace but without the base
    *               (application) name (so src\database\user and not cenozo\src\database\user)
    * @param boolean $force_framework_namespace Whether to force the class file to be loaded from
@@ -189,7 +183,6 @@ final class lib
    * where the class resides and returns the full namespace name (includeing application/framework)
    * name.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $class_name The name of the class including the namespace but without the
    *               application/framework name.
    * @param boolean $reverse If true then this method removes the application/framework name instead
@@ -232,7 +225,6 @@ final class lib
   /**
    * Returns whether or not a class exists in either the application or framework
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $class_name The name of the class including namespace
    * @return boolean
    * @access public
@@ -248,7 +240,6 @@ final class lib
    * If the application has a file corresponding to the given class name then this method
    * will return the path to that class, or NULL if no such file exists.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access private
    * @static
@@ -283,7 +274,6 @@ final class lib
    * If the framework has a file corresponding to the given class name then this method
    * will return the path to that class, or NULL if no such file exists.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access private
    * @static
@@ -314,7 +304,6 @@ final class lib
   /**
    * Returns the type of operation being performed.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
    * @return string
    * @access public
@@ -327,7 +316,6 @@ final class lib
   /**
    * Returns whether the application is in development mode.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
    * @return boolean
    * @access public

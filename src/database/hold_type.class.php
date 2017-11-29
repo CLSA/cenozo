@@ -3,7 +3,6 @@
  * hold_type.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class hold_type extends record
 {
   /**
    * Returns a string representation of the hold_type (eg: type: name)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */

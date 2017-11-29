@@ -3,7 +3,6 @@
  * export_column.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class export_column extends has_rank
   /**
    * Applies this record's changes to the given select
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select $select
    * @access public
    */
@@ -63,7 +61,6 @@ class export_column extends has_rank
   /**
    * Applies this record's changes to the given modifier
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier
    * @access public
    */
@@ -273,7 +270,6 @@ class export_column extends has_rank
   /**
    * Returns the alias used when referencing this object's table
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_table_alias()
@@ -301,7 +297,6 @@ class export_column extends has_rank
   /**
    * Returns the alias used when referencing this object's table
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_column_alias()

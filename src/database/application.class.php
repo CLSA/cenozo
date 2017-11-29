@@ -3,7 +3,6 @@
  * application.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -28,7 +27,6 @@ class application extends record
   /**
    * Override parent save method to mark the theme as changed when the colors change
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function save()
@@ -43,7 +41,6 @@ class application extends record
   /**
    * Determine whether the current application has access to the participant
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @return boolean
    * @access public
@@ -65,7 +62,6 @@ class application extends record
    * Adds one or more cohorts so a application.
    * This method effectively overrides the parent add_records() method so that grouping can also
    * be included.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param int|array(int) $cohort_ids A single or array of cohort ids
    * @param string $grouping How to group participants to determine their default site.
    * @access public
@@ -93,7 +89,6 @@ class application extends record
   /**
    * Returns the url for this application as defined in the local settings file
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_url()
@@ -112,7 +107,6 @@ class application extends record
   /**
    * Returns an array of all types of grouping used by this application
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -139,7 +133,6 @@ class application extends record
   /**
    * Returns the type of grouping that this application has for a particular cohort.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\cohort $db_cohort
    * @return string
    * @access public
@@ -165,7 +158,6 @@ class application extends record
    * 
    * Note that only applications which are release-based will have an event-type associated with it.
    * If no event-type exists this method will return NULL.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\event_type
    * @access public
    */
@@ -177,7 +169,6 @@ class application extends record
 
   /**
    * Set the preferred site for this application for a batch of participants
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier A modifier identifying which participants to release
    * @param database\site $db_site May be null
    * @access public

@@ -3,7 +3,6 @@
  * base_exception.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\exception;
@@ -18,7 +17,6 @@ class base_exception extends \Exception
 {
   /**
    * Constructor
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message A message describing the exception.
    * @param string|int $context The exceptions context, either a function name or error code.
    * @param exception $previous The previous exception used for the exception chaining.
@@ -59,7 +57,6 @@ class base_exception extends \Exception
 
   /**
    * Returns the type of exception as a string.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -67,7 +64,6 @@ class base_exception extends \Exception
 
   /**
    * Get the exception as a string.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -75,7 +71,6 @@ class base_exception extends \Exception
 
   /**
    * Returns the exception's error number.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -83,7 +78,6 @@ class base_exception extends \Exception
 
   /**
    * Returns the exception's error code (the error number as an encoded string)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -95,7 +89,6 @@ class base_exception extends \Exception
 
   /**
    * Get the previous exception.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return \Exception
    * @access public
    */
@@ -103,7 +96,6 @@ class base_exception extends \Exception
 
   /**
    * Get the exception message.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -111,7 +103,6 @@ class base_exception extends \Exception
 
   /**
    * Get the exception raw message (sub-string of message)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -119,7 +110,6 @@ class base_exception extends \Exception
 
   /**
    * Get the exception backtrace.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */

@@ -3,7 +3,6 @@
  * system_message.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class system_message extends record
 {
   /**
    * Deletes all expired system messages
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    * @static
    */

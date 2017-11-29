@@ -3,7 +3,6 @@
  * query.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\service\participant;

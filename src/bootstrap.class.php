@@ -4,7 +4,6 @@
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package cenozo\business
- * @filesource
  */
 
 namespace cenozo;
@@ -18,7 +17,6 @@ final class bootstrap
   /**
    * Constructor.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function __construct()
@@ -38,7 +36,6 @@ final class bootstrap
   /**
    * Initialization
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $launch Either "ui" or "api"
    * @access public
    */
@@ -104,7 +101,6 @@ final class bootstrap
   /**
    * Executes the request.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access private
    */
   private function launch_ui()
@@ -170,7 +166,6 @@ final class bootstrap
   /**
    * Executes the request.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access private
    */
   private function launch_api()
@@ -291,7 +286,6 @@ final class bootstrap
   /**
    * Returns the name of the service class based on the request path
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access protected
    */

@@ -3,7 +3,6 @@
  * export_file.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class export_file extends record
   /**
    * Returns where the export file is saved on the file system
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */

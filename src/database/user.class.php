@@ -3,7 +3,6 @@
  * user.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -28,7 +27,6 @@ class user extends record
   /**
    * Adds a list of sites to the user with the given role.
    * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @param int $site_id_list The sites to add.
    * @param int $role_id The role to add them under.
    * @throws exeception\argument
@@ -60,7 +58,6 @@ class user extends record
   /**
    * Removes a list of sites to the user who have the given role.
    * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @param int $access_id The access record to remove.
    * @access public
    */
@@ -79,7 +76,6 @@ class user extends record
   /**
    * Determines whether this user has an open assignment
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -105,7 +101,6 @@ class user extends record
   /**
    * Returns this user's open assignment, or NULL if there is no open assignment
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\assignment
    * @access public
    */
@@ -135,7 +130,6 @@ class user extends record
   /**
    * Determines whether this user has an open phone call
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -162,7 +156,6 @@ class user extends record
   /**
    * Returns this user's open phone call, or NULL if there is no open phone call
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\phone_call
    * @access public
    */

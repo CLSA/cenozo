@@ -3,7 +3,6 @@
  * postcode.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -19,7 +18,6 @@ class postcode extends record
 {
   /**
    * Returns the postcode entry given a full postcode.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\postcode
    * @access public
    * @static

@@ -3,7 +3,6 @@
  * interview.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class interview extends \cenozo\database\record
 {
   /**
    * Get the interview's last (most recent) assignment.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment
    * @access public
    */
@@ -45,7 +43,6 @@ class interview extends \cenozo\database\record
    * This method encapsulates all processing required when an interview is completed.
    * If you wish to "force" the completion or uncompletion of an interview please use
    * the force_complete() and force_uncomplete() methods intead.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\site $db_credit_site If null then the session's site is credited
    * @access public
    */

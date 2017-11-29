@@ -3,7 +3,6 @@
  * modifier.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -21,7 +20,6 @@ class modifier extends \cenozo\base_object
    * Add a join statement to the modifier.
    * 
    * This method appends join clauses onto the end of already existing join clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to join to.
    * @param modifier $modifier The modifier containing a where statement that defines how the
    *        join is made.
@@ -163,7 +161,6 @@ class modifier extends \cenozo\base_object
    * 
    * This is useful when wanting to add a where statement without affecting any existing OR statements.
    * If there are less than two existing where statements then this does nothing
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function wrap_where()
@@ -179,7 +176,6 @@ class modifier extends \cenozo\base_object
    * Add a where statement to the modifier.
    * 
    * This method appends where clauses onto the end of already existing where clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to restrict.
    * @param string $operator Specify which comparison operator to use.  Examples include 'in',
    *                         for the SQL IN() function, 'like' for the SQL LIKE() function, '=',
@@ -210,7 +206,6 @@ class modifier extends \cenozo\base_object
    * Add where statement which will be "or" combined to the modifier.
    * 
    * This is a convenience method which makes where() calls more readable.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to restrict.
    * @param string $operator Specify which comparison operator to use.  Examples include 'in',
    *                         for the SQL IN() function, 'like' for the SQL LIKE() function, '=',
@@ -230,7 +225,6 @@ class modifier extends \cenozo\base_object
   /**
    * Add a bracket to a where statement
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $open Whether to open or close a bracket
    * @param boolean $or Whether to logically "or" the contents of the bracket
    *        (default is false, which means "and").  This is ignored when closing brackets.
@@ -249,7 +243,6 @@ class modifier extends \cenozo\base_object
    * Add a group by statement to the modifier.
    * 
    * This method appends group by clauses onto the end of already existing group by clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to group by.
    * @throws exception\argument
    * @access public
@@ -265,7 +258,6 @@ class modifier extends \cenozo\base_object
   /**
    * Returns whether or not to rollup grouped data
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -277,7 +269,6 @@ class modifier extends \cenozo\base_object
   /**
    * Sets whether or not to rollup grouped data
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $rollup
    * @access public
    */
@@ -290,7 +281,6 @@ class modifier extends \cenozo\base_object
    * Add a having statement to the modifier.
    * 
    * This method appends having clauses onto the end of already existing having clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to restrict.
    * @param string $operator Specify which comparison operator to use.  Examples include 'in',
    *                         for the SQL IN() function, 'like' for the SQL LIKE() function, '=',
@@ -324,7 +314,6 @@ class modifier extends \cenozo\base_object
    * Add having statement which will be "or" combined to the modifier.
    * 
    * This is a convenience method which makes having() calls more readable.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to restrict.
    * @param string $operator Specify which comparison operator to use.  Examples include 'in',
    *                         for the SQL IN() function, 'like' for the SQL LIKE() function, '=',
@@ -344,7 +333,6 @@ class modifier extends \cenozo\base_object
   /**
    * Add a bracket to a having statement
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $open Whether to open or close a bracket
    * @param boolean $or Whether to logically "or" the contents of the bracket
    *        (default is false, which means "and").  This is ignored when closing brackets.
@@ -363,7 +351,6 @@ class modifier extends \cenozo\base_object
    * Adds an order statement to the modifier.
    * 
    * This method appends order clauses onto the end of already existing order clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to order by.
    * @param boolean $desc Whether to sort in descending order.
    * @throws exception\argument
@@ -381,7 +368,6 @@ class modifier extends \cenozo\base_object
    * Add order descending statement to the modifier.
    * 
    * This is a convenience method which makes order() calls more readable.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to order descending by.
    * @throws exception\argument
    * @access public
@@ -394,7 +380,6 @@ class modifier extends \cenozo\base_object
   /**
    * Sets a limit to how many rows are returned (set to NULL for no limit).
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param int $limit The number of rows to limit by.
    * @throws exception\argument
    * @access public
@@ -410,7 +395,6 @@ class modifier extends \cenozo\base_object
   /**
    * Sets the offset to use when returning rows.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param int $offset The offset to begin the selection.
    * @throws exception\argument
    * @access public
@@ -425,7 +409,6 @@ class modifier extends \cenozo\base_object
   /**
    * Returns the modifier's limit count value (NULL if there is no limit)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -437,7 +420,6 @@ class modifier extends \cenozo\base_object
   /**
    * Returns the modifier's limit offset value (0 if there is no offset)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -449,7 +431,6 @@ class modifier extends \cenozo\base_object
   /**
    * Returns the number of where statements in the modifier
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -461,7 +442,6 @@ class modifier extends \cenozo\base_object
   /**
    * Returns the number of join statements in the modifier
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -473,7 +453,6 @@ class modifier extends \cenozo\base_object
   /**
    * Returns the number of group statements in the modifier
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -485,7 +464,6 @@ class modifier extends \cenozo\base_object
   /**
    * Returns the number of having statements in the modifier
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -497,7 +475,6 @@ class modifier extends \cenozo\base_object
   /**
    * Returns the number of order statements in the modifier
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -508,7 +485,6 @@ class modifier extends \cenozo\base_object
 
   /**
    * Returns whether the modifier has a certain table (or alias) in its join clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to search for.
    * @return boolean
    * @access public
@@ -520,7 +496,6 @@ class modifier extends \cenozo\base_object
 
   /**
    * Returns whether the modifier has a certain column in its where clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for.
    * @return boolean
    * @access public
@@ -535,7 +510,6 @@ class modifier extends \cenozo\base_object
 
   /**
    * Returns whether the modifier has a certain column in its group clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for.
    * @return boolean
    * @access public
@@ -547,7 +521,6 @@ class modifier extends \cenozo\base_object
 
   /**
    * Returns whether the modifier has a certain column in its having clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for.
    * @return boolean
    * @access public
@@ -562,7 +535,6 @@ class modifier extends \cenozo\base_object
 
   /**
    * Returns whether the modifier has a certain column in its order clauses.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for.
    * @return boolean
    * @access public
@@ -577,7 +549,6 @@ class modifier extends \cenozo\base_object
    * 
    * Any join may be aliased.  This method will return the table name that the alias refers to,
    * or simply the table name if there is no alias (ie: the table name matches the alias name)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -596,7 +567,6 @@ class modifier extends \cenozo\base_object
    * 
    * Each element contains an associative array where the indeces 'value' and 'format' contain
    * the column's value and whether to format the value, respectively.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -621,7 +591,6 @@ class modifier extends \cenozo\base_object
    * Get an array of group clauses.
    * 
    * The returned array is an array of table names.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -644,7 +613,6 @@ class modifier extends \cenozo\base_object
    * 
    * Each element contains an associative array having the indeces 'value' and 'format' contain
    * the column's value and whether to format the value, respectively.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -669,7 +637,6 @@ class modifier extends \cenozo\base_object
    * Get an array of order clauses.
    * 
    * The returned array is an associative array of "column name" => "descending" values.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -690,7 +657,6 @@ class modifier extends \cenozo\base_object
   /**
    * Replaces a column in all where, group, having and order statements
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column Which column to replace
    * @param string $replace What to replace the column with
    * @access public
@@ -706,7 +672,6 @@ class modifier extends \cenozo\base_object
   /**
    * Replaces a where column with something else (useful for aliases)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column Which column to replace
    * @param string $replace What to replace the column with
    * @access public
@@ -721,7 +686,6 @@ class modifier extends \cenozo\base_object
   /**
    * Replaces a where column with something else (useful for aliases)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column Which column to replace
    * @param string $replace What to replace the column with
    * @access public
@@ -744,7 +708,6 @@ class modifier extends \cenozo\base_object
   /**
    * Replaces a where column with something else (useful for aliases)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column Which column to replace
    * @param string $replace What to replace the column with
    * @access public
@@ -759,7 +722,6 @@ class modifier extends \cenozo\base_object
   /**
    * Replaces a where column with something else (useful for aliases)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column Which column to replace
    * @param string $replace What to replace the column with
    * @access public
@@ -782,7 +744,6 @@ class modifier extends \cenozo\base_object
   /**
    * Removes all join statements to a particular table (or alias)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table Which table to remove all joins to
    * @access public
    */
@@ -794,7 +755,6 @@ class modifier extends \cenozo\base_object
   /**
    * Removes all where statements affecting a particular column
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $remove Which column to remove all where statements from the modifier
    * @access public
    */
@@ -808,7 +768,6 @@ class modifier extends \cenozo\base_object
   /**
    * Removes all group statements affecting a particular column
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $remove Which column to remove all where statements from the modifier
    * @access public
    */
@@ -822,7 +781,6 @@ class modifier extends \cenozo\base_object
   /**
    * Removes all having statements affecting a particular column
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $remove Which column to remove all where statements from the modifier
    * @access public
    */
@@ -836,7 +794,6 @@ class modifier extends \cenozo\base_object
   /**
    * Removes all order statements affecting a particular column
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $remove Which column to remove all where statements from the modifier
    * @access public
    */
@@ -850,7 +807,6 @@ class modifier extends \cenozo\base_object
   /**
    * Returns the modifier as an SQL statement (same as calling each individual get_*() method.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $count Whether the modifier is to be used for a single-value COUNT query
    * @return string
    * @access public
@@ -876,7 +832,6 @@ class modifier extends \cenozo\base_object
    * 
    * This method should only be called by a record class and only after all modifications
    * have been set.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -918,7 +873,6 @@ class modifier extends \cenozo\base_object
   /**
    * Internally generates where/having sql statements
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $having Whether to return having or where statement.
    * @return string
    * @access private
@@ -1048,7 +1002,6 @@ class modifier extends \cenozo\base_object
    * 
    * This method should only be called by a record class and only after all modifications
    * have been set.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -1074,7 +1027,6 @@ class modifier extends \cenozo\base_object
    * 
    * This method should only be called by a record class and only after all modifications
    * have been set.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -1088,7 +1040,6 @@ class modifier extends \cenozo\base_object
    * 
    * This method should only be called by a record class and only after all modifications
    * have been set.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -1102,7 +1053,6 @@ class modifier extends \cenozo\base_object
    * 
    * This method should only be called by a record class and only after all modifications
    * have been set.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -1128,7 +1078,6 @@ class modifier extends \cenozo\base_object
    * Merging only includes join, where, group, having and order items.  Where and having
    * statements are enclosed by brackets.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param modifier $modifier
    * @access public
    */

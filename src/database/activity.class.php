@@ -3,7 +3,6 @@
  * activity.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -29,7 +28,6 @@ class activity extends record
    * If there are any activity records for the current application and user which do not match
    * the current site and role they will be closed.  Also, a new activity record will be opened
    * if there are no open activity records for the current application, user, site and role.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    * @static
    */
@@ -80,7 +78,6 @@ class activity extends record
    * 
    * If a user is provided then this method will only close the user's activity (whether timed
    * out or not).
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user $db_user Which user to close all activity
    * @return Returns the number of rows closed
    * @access public
@@ -125,7 +122,6 @@ class activity extends record
   /**
    * Returns a modifier which restricts to expired activity
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\modifier
    * @access public
    * @static

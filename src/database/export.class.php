@@ -3,7 +3,6 @@
  * export.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class export extends \cenozo\database\record
 {
   /**
    * Overrides the parent save method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    */
   public function save()
   {
@@ -28,7 +26,6 @@ class export extends \cenozo\database\record
 
   /**
    * Overrides the parent method to add the application_id
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    */
   public static function get_record_from_identifier( $identifier )
   {

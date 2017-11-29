@@ -24,7 +24,6 @@ class opal_form_template extends record
   /**
    * Creates the opal form for the given participant
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant @db_participant The participant to generate all forms for
    * @return string The raw contents of the PDF file (NULL if no form is created)
    * @access public

@@ -3,7 +3,6 @@
  * participant.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class participant extends record
 {
   /**
    * Audit changs to email address by overriding the magic __set method
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
    * @throws exception\argument
@@ -55,7 +53,6 @@ class participant extends record
 
   /**
    * Get this participant's next_of_kin record
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return next_of_kin
    * @access public
    */
@@ -67,7 +64,6 @@ class participant extends record
 
   /**
    * Get this participant's last hin record
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return hin
    * @access public
    */
@@ -92,7 +88,6 @@ class participant extends record
 
   /**
    * Get the participant's last event by event type
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\event_type $db_event_type
    * @return event
    * @access public
@@ -119,7 +114,6 @@ class participant extends record
 
   /**
    * Get the participant's last hold
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return hold
    * @access public
    */
@@ -144,7 +138,6 @@ class participant extends record
 
   /**
    * Get the participant's last consent by consent type
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\consent_type $db_consent_type
    * @return consent
    * @access public
@@ -171,7 +164,6 @@ class participant extends record
 
   /**
    * Get the participant's last written consent by consent type
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\consent_type $db_consent_type
    * @return consent
    * @access public
@@ -198,7 +190,6 @@ class participant extends record
 
   /**
    * Get the participant's "primary" address.  This is the highest ranking canadian address.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return address
    * @access public
    */
@@ -225,7 +216,6 @@ class participant extends record
    * Get the participant's "first" address.  This is the highest ranking, active, available
    * address.
    * Note: this address may be in the United States
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return address
    * @access public
    */
@@ -252,7 +242,6 @@ class participant extends record
   /**
    * Get the preferred site that the participant belongs to for a given application.
    * If the participant does not have a preferred site NULL is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\application $db_application If null then the application's application is used.
    * @return site
    * @access public
@@ -277,7 +266,6 @@ class participant extends record
 
   /**
    * Sets the preferred site for a particular application.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\application $db_application
    * @param database\site|int $site
    * @access public
@@ -341,7 +329,6 @@ class participant extends record
    * Get the default site that the participant belongs to for a given application.
    * This depends on the type of grouping that the participant's cohort uses for each application
    * (region or jurisdition)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\application $db_application If null then the application's application is used.
    * @return site
    * @access public
@@ -368,7 +355,6 @@ class participant extends record
    * Get the effective site that the participant belongs for a given application.
    * This method returns the participant's preferred site, or if they have no preferred site
    * then it returns their default site.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\application $db_application If null then the application's application is used.
    * @return site
    * @access public
@@ -393,7 +379,6 @@ class participant extends record
 
   /**
    * Returns the quota that this participant belongs to (NULL if none)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\quota $db_quota
    * @access public
    */
@@ -426,7 +411,6 @@ class participant extends record
   /**
    * Returns the full name of the participant, including other/nicknames in parenthesis
    * between the first and last name.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -440,7 +424,6 @@ class participant extends record
   /**
    * Determines whether this participant is in an open assignment
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -469,7 +452,6 @@ class participant extends record
   /**
    * Returns a list of UIDs which the application and current role has access to
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array|string $uid_list An array or string of UIDs
    * @static
    * @access public
@@ -539,7 +521,6 @@ class participant extends record
   /**
    * Edits multiple participants at once
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Defines which participants are to be edited.
    * @param array $columns An associative array of column name => value, where each column
    *              name must be a column in the participant table
@@ -606,7 +587,6 @@ class participant extends record
 
   /**
    * Get a random UID from the pool of unassigned UIDs.  If the pool is empty this returns NULL.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @static
    * @access public
@@ -624,7 +604,6 @@ class participant extends record
 
   /**
    * Get the number of UIDs available in the pool of unassigned UIDs.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @static
    * @access public

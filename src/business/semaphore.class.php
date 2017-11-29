@@ -3,7 +3,6 @@
  * semaphore.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -25,7 +24,6 @@ class semaphore extends \cenozo\base_object
    * reference the same semaphore).  An optional name parameter can be provided to distinguish
    * multiple semaphores within a single file.  This is only necessary if more than one semaphore
    * is used by a single file.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name A reference name for the semaphore
    * @access protected
    */
@@ -42,7 +40,6 @@ class semaphore extends \cenozo\base_object
    * This will block other semaphores from proceeding until it is released by using the
    * release() method.  Note: the semaphore will be indexed based on the file name
    * of the code that calls this method so IT MUST be released in the same file.
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @throws exception\notice
    * @access public
    */
@@ -96,7 +93,6 @@ class semaphore extends \cenozo\base_object
    * This will release a semaphore and allow blocked processes to proceed Note: semaphores are
    * indexed based on the file name of the code that calls this method so this method must be
    * called by the same file that acquired the semaphore.
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @throws exception\runtime
    * @access public
    */
@@ -143,7 +139,6 @@ class semaphore extends \cenozo\base_object
    * 
    * This will return the number of semaphores for the given file name.  This will include
    * a semaphore which is currently processing in addition to all blocked processes.
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @param string $filename The full path of the filename index of the semaphore
    * @param string $name A reference name for the semaphore (may be NULL)
    * @return int
@@ -184,7 +179,6 @@ class semaphore extends \cenozo\base_object
    * 
    * This will return the value of a variable from shared memory based on its numerical index.
    * If the variable doesn't exit then NULL is returned.
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @param int $index The index of the variable in shared memory to access
    * @throws exception\runtime
    * @throws exception\notice
@@ -223,7 +217,6 @@ class semaphore extends \cenozo\base_object
    * Set the value of a variable in shared memory
    * 
    * This will set the value of a variable in shared memory based on its numerical index.
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @param int $index The index of the variable in shared memory to access
    * @param mixed $value The value to set the variable to (anything serializable)
    * @throws exception\runtime
@@ -254,7 +247,6 @@ class semaphore extends \cenozo\base_object
 
   /**
    * Returns an integer key based on a filename and semaphore name.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $filename The full path of a filename
    * @param string $name An optional name for the semaphore
    * @return int

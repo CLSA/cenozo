@@ -3,7 +3,6 @@
  * session.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -22,7 +21,6 @@ class session extends \cenozo\singleton
    * 
    * Since this class uses the singleton pattern the constructor is never called directly.  Instead
    * use the {@link singleton} method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function __construct( $arguments )
@@ -44,7 +42,6 @@ class session extends \cenozo\singleton
    * Initializes the session.
    * 
    * This method should be called immediately after initial construct of the session.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\permission
    * @access public
    */
@@ -114,7 +111,6 @@ class session extends \cenozo\singleton
    * Ends the session.
    * 
    * This method should be called after the operation is performed
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function shutdown()
@@ -133,7 +129,6 @@ class session extends \cenozo\singleton
   /**
    * Get the database object
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database
    * @access public
    */
@@ -145,7 +140,6 @@ class session extends \cenozo\singleton
   /**
    * Get the survey database.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database
    * @access public
    */
@@ -168,7 +162,6 @@ class session extends \cenozo\singleton
   /**
    * Get the current application.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\application
    * @access public
    */
@@ -177,7 +170,6 @@ class session extends \cenozo\singleton
   /**
    * Get the current role.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\role
    * @access public
    */
@@ -186,7 +178,6 @@ class session extends \cenozo\singleton
   /**
    * Get the current user.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\user
    * @access public
    */
@@ -195,7 +186,6 @@ class session extends \cenozo\singleton
   /**
    * Get the current site.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\site
    * @access public
    */
@@ -204,7 +194,6 @@ class session extends \cenozo\singleton
   /**
    * Get the current site's setting.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\setting
    * @access public
    */
@@ -213,7 +202,6 @@ class session extends \cenozo\singleton
   /**
    * Returns a list of all active sessions belonging to the current user
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -281,7 +269,6 @@ class session extends \cenozo\singleton
    * Log a user into the application
    * 
    * Will return whether the user has access to the site/role pair
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $username Should only be provided when processing the login box/service
    * @param database\site $db_site Should only be provided when changing the current site
    * @param database\role $db_role Should only be provided when changing the current role
@@ -405,7 +392,6 @@ class session extends \cenozo\singleton
   /**
    * Logs a user out of the application
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $username
    * @access public
    */
@@ -424,7 +410,6 @@ class session extends \cenozo\singleton
   /**
    * Check request headers for authorization
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string &$username Will be set to the auth header's username, if successful
    * @param string &$password Will be set tot he auth header's password, if successful
    * @return boolean
@@ -465,7 +450,6 @@ class session extends \cenozo\singleton
   /**
    * Store in the session whether the user must change their password (given an input password)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $password
    * @access public
    */
@@ -479,7 +463,6 @@ class session extends \cenozo\singleton
   /**
    * Updates the access record with the current time
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function mark_access_time()
@@ -504,7 +487,6 @@ class session extends \cenozo\singleton
   /**
    * Return whether the session has permission to perform the given service.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\service $db_service If null this method returns false.
    * @return boolean
    * @access public
@@ -527,7 +509,6 @@ class session extends \cenozo\singleton
   /**
    * Returns whether the session is in the created state or not.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -536,7 +517,6 @@ class session extends \cenozo\singleton
   /**
    * Returns whether the session is in the initialized state or not.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -545,7 +525,6 @@ class session extends \cenozo\singleton
   /**
    * Returns whether the session is in the shutdown state or not.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */

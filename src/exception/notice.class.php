@@ -3,7 +3,6 @@
  * notice.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\exception;
@@ -20,7 +19,6 @@ class notice extends base_exception
 {
   /**
    * Constructor
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|exception $message A message describing the exception or, if an exception,
                              the raw message from that exception will be used instead.
    * @param string|int $context The exceptions context, either a function name or error code.
@@ -39,7 +37,6 @@ class notice extends base_exception
   /**
    * Get the notice meant for the end-user.
    * Alias for get_raw_message
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */

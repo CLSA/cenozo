@@ -3,7 +3,6 @@
  * phone_call.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -27,7 +26,6 @@ class phone_call extends \cenozo\database\record
 
   /**
    * Overrides the parent save method.
-   * @author Patrick Emond
    * @access public
    */
   public function save()
@@ -49,7 +47,6 @@ class phone_call extends \cenozo\database\record
   /**
    * Processes application-based events based on this phone call
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function process_events()

@@ -3,7 +3,6 @@
  * surveys.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database\limesurvey;
@@ -16,7 +15,6 @@ class surveys extends record
 {
   /**
    * Gets the survey's title in the base language.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -36,7 +34,6 @@ class surveys extends record
 
   /**
    * Returns an associative array describing this survey's token attributes
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string => string )
    * @access public
    */
@@ -78,7 +75,6 @@ class surveys extends record
 
   /**
    * Returns an associative array of surveys where keys are sids and values are titles
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return associative array
    * @access public
    * @static

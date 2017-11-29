@@ -3,7 +3,6 @@
  * age_group.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class age_group extends record
 {
   /**
    * Returns a string representation of the age group (eg: X to Y)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */

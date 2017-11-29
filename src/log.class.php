@@ -3,7 +3,6 @@
  * log.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo;
@@ -31,7 +30,6 @@ final class log extends singleton
    * 
    * Since this class uses the singleton pattern the constructor is never called directly.  Instead
    * use the {@link self} method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function __construct()
@@ -107,7 +105,6 @@ final class log extends singleton
    * 
    * This is the highest severity log.  It should be used to describe a major problem which needs
    * to be brought to administrators' attention ASAP (ie: use it sparingly).
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
    * @static
    * @access public
@@ -119,7 +116,6 @@ final class log extends singleton
    * 
    * This is the second highest severity log.  It should be used to describe a major problem which
    * needs to be brought to administrators' attention in the near future (ie: use it sparingly).
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
    * @static
    * @access public
@@ -131,7 +127,6 @@ final class log extends singleton
    * 
    * Use this type of log when there is a problem that is more severe than a usual error, but not
    * severe enough to notify administrators.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
    * @static
    * @access public
@@ -143,7 +138,6 @@ final class log extends singleton
    * 
    * Use this type of log when there is an error.  For very severe errors see {@link crit},
    * {@link alert} and {@link emerg}
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
    * @static
    * @access public
@@ -154,7 +148,6 @@ final class log extends singleton
    * Logging method
    * 
    * Use this type of log for warnings.  Something that could be an error, but may not be.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
    * @static
    * @access public
@@ -166,7 +159,6 @@ final class log extends singleton
    * 
    * Use this type of log to make note of complicated procedures.  Similar to {@link debug} but
    * these should remain in the code after implementation is finished.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
    * @static
    * @access public
@@ -179,7 +171,6 @@ final class log extends singleton
    * Use this type of log to help debug a procedure.  After implementation is finished they should
    * be removed from the code.  For complicated procedures where it is helpful to keep debug logs
    * use {@link notice} instead.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
    * @static
    * @access public
@@ -196,7 +187,6 @@ final class log extends singleton
    * 
    * This type of log is special.  It is used to track activity performed by the application so
    * it can be audited at a later date.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
    * @static
    * @access public
@@ -208,7 +198,6 @@ final class log extends singleton
    * 
    * This is a special convenience method that sends the results of a print_r call on the provided
    * variable as a debug log.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $variable The variable to expand.
    * @param string $label The variable's label (leave false for no label)
    * @static
@@ -225,7 +214,6 @@ final class log extends singleton
   /**
    * Returns the backtrace as a log-friendly string.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @static
    * @access private
@@ -254,7 +242,6 @@ final class log extends singleton
   /**
    * Master logging function.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
    * @param int $type The PEAR Log type (PEAR_LOG_ERR, PEAR_LOG_WARNING, etc)
    * @access private
@@ -303,7 +290,6 @@ final class log extends singleton
 
   /**
    * Converts a non-string message into a string.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $message
    * @return string
    * @static
@@ -317,7 +303,6 @@ final class log extends singleton
   /**
    * Labels a message with the user, role and site, automatically converting a non string message
    * to a string.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $message
    * @return string
    * @static
@@ -340,7 +325,6 @@ final class log extends singleton
 
   /**
    * Adds a backtrace to a message, automatically converting a non string message to a string.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $message
    * @return string
    * @static
@@ -364,7 +348,6 @@ final class log extends singleton
   /**
    * Initialize loggers if and when they are needed.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $type The type of log ('err', 'warning', etc)
    * @throws exception\runtime
    * @access private
@@ -410,7 +393,6 @@ final class log extends singleton
   /**
    * Returns a string representation of a pear log level constant
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param int $constant a PEAR_LOG_* constant
    * @static
    * @access private
@@ -434,7 +416,6 @@ final class log extends singleton
 
   /**
    * A error handling function that uses the log class as the error handler
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\base_exception
    * @ignore
    */
@@ -505,7 +486,6 @@ final class log extends singleton
 
   /**
    * A error handling function that uses the log class as the error handler
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @ignore
    */
   public static function fatal_error_handler()

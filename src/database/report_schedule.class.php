@@ -3,7 +3,6 @@
  * report_schedule.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class report_schedule extends base_report
   /**
    * Runs any scheduled report who's schedule indicates a new report must be generated.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public static function update_all()

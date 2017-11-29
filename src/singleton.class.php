@@ -3,7 +3,6 @@
  * singleton.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo;
@@ -26,7 +25,6 @@ abstract class singleton
    * If the constructor of a singleton class requires arguments then pass them to this method,
    * if not then do not pass arguments (doing so will be caught by the child class' constructor
    * as a logic/fatal error).
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $arg1 used by the parent constructor, if needed
    * @param mixed $arg2 used by the parent constructor, if needed
    * @param mixed $arg3 used by the parent constructor, if needed, etc...

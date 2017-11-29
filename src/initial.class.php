@@ -4,7 +4,6 @@
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package cenozo\business
- * @filesource
  */
 
 namespace cenozo;
@@ -18,7 +17,6 @@ final class initial
   /**
    * Constructor
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function __construct()
@@ -76,7 +74,6 @@ final class initial
   /**
    * Provides an associative array of all framework and application settings
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return associative array
    * @access public
    */
@@ -85,7 +82,6 @@ final class initial
   /**
    * Adds a list of key/value pairs to the settings
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $settings
    * @param boolean $replace Whether to replace the existing settings array
    * @access private

@@ -3,7 +3,6 @@
  * base_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business\report;
@@ -18,7 +17,6 @@ abstract class base_report extends \cenozo\base_object
   /**
    * Constructor
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $subject The subject to retrieve the primary information from.
    * @param array $args Pull arguments.
    * @access public
@@ -42,7 +40,6 @@ abstract class base_report extends \cenozo\base_object
   /**
    * Returns where the report is saved on the file system
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -54,7 +51,6 @@ abstract class base_report extends \cenozo\base_object
   /**
    * Returns the report's extension (csv, xlsx or ods)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -70,7 +66,6 @@ abstract class base_report extends \cenozo\base_object
   /**
    * Returns the report's mime type
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -87,7 +82,6 @@ abstract class base_report extends \cenozo\base_object
 
   /**
    * Converts a report's tables into a spreadsheet or CSV data
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   public function generate()
@@ -286,7 +280,6 @@ abstract class base_report extends \cenozo\base_object
   /**
    * This method is used to build the report (see add_table(), set_title(), etc)
    * Must be implemented by all reports which extend this class
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    * @abstract
    */
@@ -298,7 +291,6 @@ abstract class base_report extends \cenozo\base_object
    * This method is usually called in the extending class' build() method.
    * Note that restrictions marked as "default" will be ignored, and it assumed that extending
    * report classes will handle them.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function apply_restrictions( &$modifier )
@@ -426,7 +418,6 @@ abstract class base_report extends \cenozo\base_object
   /**
    * Adds a table to the report
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $title The title of the report.
    * @param array $header The header row naming each column.
    * @param array $contents The contents of the table.
@@ -447,7 +438,6 @@ abstract class base_report extends \cenozo\base_object
   /**
    * Convenience method
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $title The title of the report.
    * @param array $rows The result set returned from calling an active record's select command
    * @access public
@@ -469,7 +459,6 @@ abstract class base_report extends \cenozo\base_object
 
   /**
    * Returns an array of this report's restrictions
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $custom Whether to return custom or non-custom parameters (extending classes should 
    *                        only use custom restrictions)
    * @return array
@@ -492,7 +481,6 @@ abstract class base_report extends \cenozo\base_object
   /**
    * Used by implementing classes to get the SQL for fetching formatted datetime column data
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The database column to format (may include a table prefix)
    * @param string $type Can be "datetime", "date" or "time
    * @return string

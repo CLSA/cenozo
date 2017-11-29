@@ -3,7 +3,6 @@
  * setting_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -17,7 +16,6 @@ class setting_manager extends \cenozo\singleton
   /**
    * Constructor.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\argument
    * @access protected
    */
@@ -69,7 +67,6 @@ class setting_manager extends \cenozo\singleton
   /**
    * Read settings into the manager (should be called in the constructor only)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $category The category the setting belongs to.
    * @param array $arguments The associative array containing all settings
    * @throws exception\argument
@@ -87,7 +84,6 @@ class setting_manager extends \cenozo\singleton
   /**
    * Get a setting's value
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $category The category the setting belongs to.
    * @param string $name The name of the setting.
    * @access public

@@ -3,7 +3,6 @@
  * theme_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -17,7 +16,6 @@ class theme_manager extends \cenozo\singleton
   /**
    * Constructor.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\argument
    * @access protected
    */
@@ -50,7 +48,6 @@ class theme_manager extends \cenozo\singleton
   /**
    * Used internally to return RGB-HEX color codes
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $type Which color type to return (primary or secondary)
    * @param float $fraction What fraction to show the color at (0.0 to 1.0)
    * @return string
@@ -84,7 +81,6 @@ class theme_manager extends \cenozo\singleton
   /**
    * Writes the theme.css file to disk
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function generate_theme_css()
@@ -118,7 +114,6 @@ class theme_manager extends \cenozo\singleton
 
   /**
    * The base theme colors.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access private
    */
   private $base_theme_color = array();

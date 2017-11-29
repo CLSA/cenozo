@@ -4,7 +4,6 @@
  * For now see {@link connect} for the current hack/solution.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -19,7 +18,6 @@ class database extends \cenozo\base_object
    * Constructor
    * 
    * The constructor either creates a new connection to a database.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $server The name of the database's server
    * @param string $username The username to connect with.
    * @param string $password The password to connect with.
@@ -46,7 +44,6 @@ class database extends \cenozo\base_object
   /**
    * Reads the database schema into memory
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function read_schema()
@@ -154,7 +151,6 @@ class database extends \cenozo\base_object
    * Transactions are automatically completed in the destructor.  To force-fail (rollback)
    * a transaction call fail_transaction()
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function start_transaction()
@@ -176,7 +172,6 @@ class database extends \cenozo\base_object
   /**
    * Complete the database transaction.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function complete_transaction()
@@ -193,7 +188,6 @@ class database extends \cenozo\base_object
    * database to be rolled back when the transaction completes.
    * The transaction will automatically fail if there is a database error, this method should
    * only be used when a transaction should fail because of a non-database error.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function fail_transaction()
@@ -206,7 +200,6 @@ class database extends \cenozo\base_object
   /**
    * Returns the current transactional state
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string (one of 'started', 'committed', 'failed' or NULL
    * @access public
    */
@@ -217,7 +210,6 @@ class database extends \cenozo\base_object
 
   /**
    * Get's the name of the database.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -225,7 +217,6 @@ class database extends \cenozo\base_object
 
   /**
    * Determines whether a particular table exists.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @return boolean
    * @access public
@@ -237,7 +228,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns whether the record's associated table has a specific column name.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name A table name.
    * @param string $column_name A column name
    * @return boolean
@@ -251,7 +241,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns an array of all table names.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @access public
    */
@@ -262,7 +251,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns an array of column names for the given table.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name A table name.
    * @return array( string )
    * @access public
@@ -279,7 +267,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns a column's type (int(10) unsigned, varchar(45), enum( 'a', 'b', 'c' ), etc)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
    * @return string
@@ -298,7 +285,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns a column's data type (int, varchar, enum, etc)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
    * @return string
@@ -317,7 +303,6 @@ class database extends \cenozo\base_object
 
   /**
    * Convertns a column's data type into a native PHP variable type (int, string, boolean, etc)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
    * @return string
@@ -348,7 +333,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns a column's key type.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
    * @return string
@@ -367,7 +351,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns an associative list of metadata for all columns
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @return string
    * @access public
@@ -384,7 +367,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns a column's max_length.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
    * @return string
@@ -403,7 +385,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns a column's default.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
    * @return string
@@ -423,7 +404,6 @@ class database extends \cenozo\base_object
   /**
    * This method returns an array of unique keys with the key-value pair being the key's name
    * and an array of column names belonging to that key, respectively.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @return associative array.
    * @access public
@@ -442,7 +422,6 @@ class database extends \cenozo\base_object
 
   /**
    * Gets the primary key names for a given table.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @param string $table_name A table name.
    * @access public
@@ -465,7 +444,6 @@ class database extends \cenozo\base_object
    * Execute SQL statement $sql and return derived class of ADORecordSet if successful. Note that a
    * record set is always returned on success, even if we are executing an insert or update
    * statement.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @param boolean $add_database_names Whether to automatically add database names to the query
    * @param boolean $ignore_deadlocks Whether to ignore deadlocks when they happen
@@ -517,7 +495,6 @@ class database extends \cenozo\base_object
    * Database convenience method.
    * 
    * Executes the SQL and returns the first field of the first row.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @return native or NULL if no records were found.
    * @throws exception\database
@@ -555,7 +532,6 @@ class database extends \cenozo\base_object
    * Database convenience method.
    * 
    * Executes the SQL and returns the first row as an array.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @return array (empty if no records are found)
    * @throws exception\database
@@ -597,7 +573,6 @@ class database extends \cenozo\base_object
    * Database convenience method.
    * 
    * Executes the SQL and returns the all the rows as a 2-dimensional array.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @return array (empty if no records are found)
    * @throws exception\database
@@ -636,7 +611,6 @@ class database extends \cenozo\base_object
    * Database convenience method.
    * 
    * Executes the SQL and returns all elements of the first column as a 1-dimensional array.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @return array (empty if no records are found)
    * @throws exception\database
@@ -675,7 +649,6 @@ class database extends \cenozo\base_object
    * Database convenience method.
    * 
    * Returns the last autonumbering ID inserted.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -690,7 +663,6 @@ class database extends \cenozo\base_object
    * Database convenience method.
    * 
    * Returns the number of rows affected by a update or delete statement.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */
@@ -706,7 +678,6 @@ class database extends \cenozo\base_object
    * 
    * The returned value will be put in double quotes unless the input is null in which case NULL
    * is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The string to format for use in a query.
    * @return string
    * @access public
@@ -735,7 +706,6 @@ class database extends \cenozo\base_object
    * 
    * The returned value will be put in double quotes unless the input is null in which case NULL
    * is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|DateTime $datetime The string or DateTime object to format for use in a query.
    * @return string
    * @access public
@@ -755,7 +725,6 @@ class database extends \cenozo\base_object
    * 
    * The returned value will be put in double quotes unless the input is null in which case NULL
    * is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|DateTime $date The string or DateTime object to format for use in a query.
    * @return string
    * @access public
@@ -775,7 +744,6 @@ class database extends \cenozo\base_object
    * 
    * The returned value will be put in double quotes unless the input is null in which case NULL
    * is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|DateTime $time The string or DateTime object to format for use in a query.
    * @return string
    * @access public
@@ -793,7 +761,6 @@ class database extends \cenozo\base_object
   /**
    * Returns a version of the string with all framework and application table names prefixed
    * with their database name.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $input An sql string
    * @return string
    * @access protected
@@ -936,7 +903,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns whether the column name is of type "date"
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name Any (generic) column name
    * @return boolean
    * @static
@@ -951,7 +917,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns whether the column name is of type "time"
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name Any (generic) column name
    * @return boolean
    * @static
@@ -966,7 +931,6 @@ class database extends \cenozo\base_object
 
   /**
    * Returns whether the column name is of type "datetime"
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name Any (generic) column name
    * @return boolean
    * @static

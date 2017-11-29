@@ -3,7 +3,6 @@
  * alternate.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class alternate extends has_note
 {
   /**
    * Audit changs to email address by overriding the magic __set method
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
    * @throws exception\argument

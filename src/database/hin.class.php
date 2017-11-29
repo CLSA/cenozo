@@ -3,7 +3,6 @@
  * hin.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class hin extends record
 {
   /**
    * Returns the format of the HIN code based on the province of issue.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string NULL if no format is available
    * @access public
    */
@@ -47,7 +45,6 @@ class hin extends record
 
   /**
    * Validates the alpha-numeric pattern of an HIN code based on the province of issue.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean If there is no way to validate this method returns NULL.
    * @access public
    */

@@ -3,7 +3,6 @@
  * search_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -19,7 +18,6 @@ class search_manager extends \cenozo\singleton
    * 
    * Since this class uses the singleton pattern the constructor is never called directly.  Instead
    * use the {@link singleton} method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function __construct() {}
@@ -27,7 +25,6 @@ class search_manager extends \cenozo\singleton
   /**
    * Returns a list of distinct keywords from a query string
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $query A raw query string
    * @return array A list of keywords (may be double-quote delimited)
    * @access public
@@ -65,7 +62,6 @@ class search_manager extends \cenozo\singleton
   /**
    * Creates search results in the database
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $query A raw query string
    * @access public
    */

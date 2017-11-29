@@ -3,7 +3,6 @@
  * sid_record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 namespace cenozo\database\limesurvey;
 use cenozo\lib, cenozo\log;
@@ -18,7 +17,6 @@ abstract class sid_record extends record
 {
   /**
    * Returns the current SID for all records of this class type.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    * @static
@@ -33,7 +31,6 @@ abstract class sid_record extends record
   /**
    * Sets the current SID for all records of this class type.
    * Make sure to call this method BEFORE using any normal or static methods.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param int $sid
    * @access public
    * @static
@@ -46,7 +43,6 @@ abstract class sid_record extends record
 
   /**
    * Returns the name of the table associated with this record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    * @static

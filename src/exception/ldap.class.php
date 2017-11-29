@@ -3,7 +3,6 @@
  * ldap.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\exception;
@@ -18,7 +17,6 @@ class ldap extends base_exception
 {
   /**
    * Constructor
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $file the ldap file.
    * @param string|int $context The exceptions context, either a function name or error code.
    * @param exception $previous The previous exception used for the exception chaining.
@@ -35,7 +33,6 @@ class ldap extends base_exception
    * Returns whether the exception was thrown because of trying to create a user that already
    * exists.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -48,7 +45,6 @@ class ldap extends base_exception
   /**
    * Returns whether the exception was thrown because of refering to a user which doesn't exist.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -62,7 +58,6 @@ class ldap extends base_exception
    * Converts the context to an error number.
    * This is necessary because some native LDAP errors are negative.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return integer
    * @access protected
    */

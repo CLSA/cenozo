@@ -3,7 +3,6 @@
  * factory.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo;
@@ -27,7 +26,6 @@ abstract class factory
    * an instance of the parent class and stores it.
    * All arguments will be passed to the constructor, but the first argument is special in that it
    * must be of a native type so that it can be used to identify the singleton.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param native $arg1 An argument which identifies the singleton.
                         MUST be provided and MUST be native (or NULL)!
    * @param mixed $arg2 used by the parent constructor, if needed

@@ -3,7 +3,6 @@
  * role.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -28,7 +27,6 @@ class role extends record
   /**
    * Returns whether the role has access to an operation
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\operation $db_operation
    * @return bool
    */
@@ -48,7 +46,6 @@ class role extends record
   /**
    * Returns whether the role has access to a service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\operation $db_operation
    * @return bool
    */
@@ -68,7 +65,6 @@ class role extends record
   /**
    * Returns whether the role has access to a hold_type
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\hold $db_hold
    * @return bool
    */

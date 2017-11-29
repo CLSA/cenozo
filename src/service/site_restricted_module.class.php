@@ -3,7 +3,6 @@
  * module.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\service;
@@ -16,7 +15,6 @@ abstract class site_restricted_module extends module
 {
   /**
    * Determines whether to restrict records to a particular site
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\site
    * @access public
    */

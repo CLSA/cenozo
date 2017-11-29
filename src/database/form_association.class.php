@@ -3,7 +3,6 @@
  * form_association.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class form_association extends record
   /**
    * Gets the record linked by this association
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\record
    * @access public
    */

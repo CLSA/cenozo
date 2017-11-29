@@ -3,7 +3,6 @@
  * access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class access extends record
   /**
    * Override parent save method by making sure that higher tiers cannot be created
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\permission
    * @access public
    */
@@ -38,7 +36,6 @@ class access extends record
   /**
    * Override parent delete method by making sure that higher tiers cannot be deleted
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\permission
    * @access public
    */
@@ -55,7 +52,6 @@ class access extends record
   /**
    * Determines whether the access has expired (timed-out)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */

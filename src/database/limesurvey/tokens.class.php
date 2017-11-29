@@ -3,7 +3,6 @@
  * tokens.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database\limesurvey;
@@ -19,7 +18,6 @@ class tokens extends sid_record
   /**
    * Returns a list of all survey records which match the token column
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -48,7 +46,6 @@ class tokens extends sid_record
   /**
    * Returns the script this token was created for
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\script
    * @access public
    */
@@ -61,7 +58,6 @@ class tokens extends sid_record
   /**
    * Returns the participant this token was created for
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\participant
    * @access public
    */
@@ -84,7 +80,6 @@ class tokens extends sid_record
   /**
    * Adds where statements to a modifier to restrict it to participant's token
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier The modifier which will be changed by this function
    * @param database\participant $db_participant
    * @param boolean $repeated Whether the token is for a repeating script
@@ -114,7 +109,6 @@ class tokens extends sid_record
    * will be found and incremented, or if this is the participant's first token then a postfix of 1 will
    * be added. Postfixes are delimited by a period (.)
    * Note: postfixes are always padded with zeros (0)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @param boolean $repeated
    * @static

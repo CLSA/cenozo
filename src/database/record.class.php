@@ -3,7 +3,6 @@
  * record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -23,7 +22,6 @@ abstract class record extends \cenozo\base_object
    * The constructor either creates a new object which can then be insert into the database by
    * calling the {@link save} method, or, if an primary key is provided then the row with the
    * requested primary id will be loaded.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $id The primary key for this object.
    * @throws exception\runtime
    * @access public
@@ -96,7 +94,6 @@ abstract class record extends \cenozo\base_object
    * 
    * If this is a new record then this method does nothing, if the record's primary key is set then
    * the data from the corresponding row is loaded.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\runtime
    * @access public
    */
@@ -159,7 +156,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Used internally when saving records to the database
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $new Whether we are creating a new record or not
    * @access private
    */
@@ -206,7 +202,6 @@ abstract class record extends \cenozo\base_object
    * 
    * If this is a new record then a new row will be inserted, if not then the row with the
    * corresponding id will be updated.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\runtime
    * @access public
    */
@@ -258,7 +253,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Saves multiple records at once (using INSERT SELECT syntax)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select $select A selection of column values
    * @param database\modifier $modifier A modifier defining which rows to insert
    * @return integer The number of rows saved
@@ -295,7 +289,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Deletes the record.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function delete()
@@ -328,7 +321,6 @@ abstract class record extends \cenozo\base_object
    * Magic get method.
    *
    * Magic get method which returns the column value from the record's table.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column or table being fetched from the database
    * @return mixed
    * @throws exception\argument
@@ -350,7 +342,6 @@ abstract class record extends \cenozo\base_object
    *
    * Magic set method which sets the column value to a record's table.
    * For this change to be writen to the database see the {@link save} method
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
    * @throws exception\argument
@@ -435,7 +426,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Returns whether a column has been modified from the value in the database
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string/array $search The name of the column (or an array of column names)
    * @return boolean
    * @access public
@@ -450,7 +440,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Returns all column values in the record as an associative array
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select $select Defines which columns to return
    * @param database\modifier $modifier Modifications used to access columns
    * @return array
@@ -578,7 +567,6 @@ abstract class record extends \cenozo\base_object
    * 
    * Magic call method which allows for several methods which get information about records in
    * tables linked to by this table by either a foreign key or joining table.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name The name of the called function (should be get_<record>,
    *                     get_<record>_count() or get_<record>_list(), where <record> is the name
    *                     of an record class related to this record.
@@ -721,7 +709,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Returns the record with foreign keys referencing the record table.
    * This method is used to select a record's parent record in many-to-one relationships.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @return record
    * @access protected
@@ -756,7 +743,6 @@ abstract class record extends \cenozo\base_object
    * This method is used to select a record's child records in one-to-many or many-to-many
    * relationships.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param database\select $select Which columns to select
    * @param database\modifier $modifier A modifier to apply to the list
@@ -863,7 +849,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Convenience method for get_record_list with return_alternate set to 'object'
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param database\modifier $modifier A modifier to apply to the list
    * @return array( record )
@@ -877,7 +862,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Convenience method for get_record_list with return_alternate set to 'count'
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param database\modifier $modifier A modifier to apply to the list or count.
    * @param bool $distinct Whether to count only distinct primary keys for the joining table
@@ -893,7 +877,6 @@ abstract class record extends \cenozo\base_object
    * Given an array of ids, this method adds associations between the current and foreign record
    * by adding rows into the joining "has" table.
    * This method is used to add child records for many-to-many relationships.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param int|array(int) $ids A single or array of primary key values for the record(s) being added.
    * @access protected
@@ -964,7 +947,6 @@ abstract class record extends \cenozo\base_object
    * Given an id, this method removes the association between the current and record by removing
    * the corresponding row from the joining "has" table.
    * This method is used to remove child records from one-to-many or many-to-many relationships.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param int|array(int) $ids A single or array of primary key values for the record(s) being added.
    *                       If NULL then all records will be removed.
@@ -1056,7 +1038,6 @@ abstract class record extends \cenozo\base_object
    * Given an array of ids, this method replaces all associations between the current and foreign record
    * with the given ids into the joining "has" table.
    * This method is used to replace child records for many-to-many relationships.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @param int|array(int) $ids A single or array of primary key values for the record(s) being added.
    * @access protected
@@ -1079,7 +1060,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Gets the name of the joining table between this record and another.
    * If no such table exists then an empty string is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @static
    * @access public
@@ -1107,7 +1087,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Gets the type of relationship this record has to another record.
    * See the relationship class for return values.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
    * @return int (relationship::const)
    * @static
@@ -1135,7 +1114,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Selects a number of records as array data
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select $select Defines which columns to select
    * @param database\modifier $modifier Modifications to the selection
    * @return associative array
@@ -1252,7 +1230,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Selects a number of records and returns them as an array of active record objects
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @return array( record )
    * @static
@@ -1266,7 +1243,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Count the total number of rows in the table
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param bool $distinct Whether to count only distinct primary keys for this table
    * @return int
@@ -1292,7 +1268,6 @@ abstract class record extends \cenozo\base_object
    * 
    * This method returns an instance of the record using the name(s) and value(s) of a unique key.
    * If the unique key has multiple columns then the $column and $value arguments should be arrays.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $column A column with the unique key property (or array of columns)
    * @param string|array $value The value of the column to match (or array of values)
    * @return database\record
@@ -1360,7 +1335,6 @@ abstract class record extends \cenozo\base_object
    * 
    * This method returns an instance of the record using an identifier.  Identifiers are used by the
    * web API and are either an ID or a list of key=value pairs delimited by semicolons.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer|string $identifier String is in the format: key1=value1;key2=value2;etc
    * @return database\record
    * @static
@@ -1398,7 +1372,6 @@ abstract class record extends \cenozo\base_object
 
   /**
    * Returns the name of the table associated with this record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @static
    * @access public
@@ -1412,7 +1385,6 @@ abstract class record extends \cenozo\base_object
   /**
    * Returns an array of column names for this table.  Any columns in the database by the name
    * 'update_timestamp' or 'create_timestamp' are always ignored and left out of the active record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @access public
    */
@@ -1425,7 +1397,6 @@ abstract class record extends \cenozo\base_object
    * Returns the name of this record's primary key.
    * The schema does not currently support multiple-column primary keys, so this method always
    * returns a single column name.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @static
    * @access public
@@ -1437,7 +1408,6 @@ abstract class record extends \cenozo\base_object
 
   /**
    * Returns an array of all enum values for a particular column.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name A column name in the record's corresponding table.
    * @return array( string )
    * @static
@@ -1461,7 +1431,6 @@ abstract class record extends \cenozo\base_object
 
   /**
    * Returns an array of all distinct values for a particular column.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name A column name in the record's corresponding table.
    * @return array( string )
    * @static
@@ -1482,7 +1451,6 @@ abstract class record extends \cenozo\base_object
 
   /**
    * Convenience method for database::column_exists(), but for this record
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name A column name.
    * @return string
    * @static
@@ -1495,7 +1463,6 @@ abstract class record extends \cenozo\base_object
 
   /**
    * Returns the record's database.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database
    * @static
    * @access public

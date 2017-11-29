@@ -3,7 +3,6 @@
  * spreadsheet.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -21,7 +20,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Constructor.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $filename A template file to load (may be NULL)
    * @access public
    */
@@ -45,7 +43,6 @@ class spreadsheet extends \cenozo\base_object
    * Defines which user to use when determining timezones for time-based data.
    * 
    * Defaults to the current session's user if NULL
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user $db_user
    * @access public
    */
@@ -57,7 +54,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Loads database data into the spreadsheet
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|array $data Data to load into the spreadsheet (may be a table list)
    * @param string $title The title of the data (may be NULL)
    * @access public
@@ -82,7 +78,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Used internally to load data in the form of a string
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The data
    * @param string $title The data's title
    * @access protected
@@ -117,7 +112,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Used internally to load data in the form of an array
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $array The data
    * @param string $title The data's title
    * @access protected
@@ -233,7 +227,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Used internally to load data in the form of a table list (array of arrays)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $table_list The data
    * @param string $title The data's title
    * @access protected
@@ -431,7 +424,6 @@ class spreadsheet extends \cenozo\base_object
    *               value has been set the value will be NULL.
    * @method null set_<format_type>() Sets the the current value for the <format_type>.  If set to
    *              NULL then the default format value will be used.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function __call( $name, $args )
@@ -471,7 +463,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Get a cell's value
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $coordinate A cell in "A1" format
    * @return string
    * @access public
@@ -484,7 +475,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Set the value of a cell.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $coordinate A cell in "A1" format
    * @param string $value The value of the cell.  This can either be a string, number, date or time
    *               (which will be displayed as is) or an equation which should always start with =
@@ -544,7 +534,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Merges a range of cells into a single cell.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $range Two cells separated by a colon: "A1:B2" format
    * @access public
    */
@@ -563,7 +552,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Removes one or more columns.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to remove.
    * @param integer $number The number of columns to remove.
    */
@@ -575,7 +563,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Removes one or more rows.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $row The row to remove.
    * @param integer $number The number of rows to remove.
    */
@@ -587,7 +574,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Renders the spreadsheet in the given format.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $mime_type The mime type identifying which file type to create
    * @return string
    * @access public
@@ -614,7 +600,6 @@ class spreadsheet extends \cenozo\base_object
   /**
    * Sets the orientation of the spreadsheet
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @var string $orientation One of portrait, landscape or default
    * @access public
    */

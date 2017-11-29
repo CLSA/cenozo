@@ -3,7 +3,6 @@
  * query.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\service\self\access;
@@ -25,7 +24,6 @@ class query extends \cenozo\service\query
   /**
    * Processes arguments, preparing them for the service.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function prepare()

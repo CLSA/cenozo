@@ -3,7 +3,6 @@
  * service.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\service;
@@ -22,7 +21,6 @@ abstract class service extends \cenozo\base_object
    * 
    * In addition to constructing the service object, the service is also validated against the
    * user's current role's access.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $method The request's method (DELETE, GET, HEAD, PATCH, POST)
    * @param string $path The URL of the service (not including the base)
    * @param array $args An associative array of arguments included in the request
@@ -51,7 +49,6 @@ abstract class service extends \cenozo\base_object
    * 4. execute:  execution of the service, completing the task
    * 5. finish:   a post-execution phase that finishes extra tasks after execution
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function process()
@@ -102,7 +99,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Processes arguments, preparing them for the service.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function prepare()
@@ -169,7 +165,6 @@ abstract class service extends \cenozo\base_object
    * Validation works by checking each collection/resource pair and making sure the current role
    * has access to it.  For non-leaf pairs the method "GET" is checked.  For the leaf pair the
    * service's method is used instead.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function validate()
@@ -228,7 +223,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Sets up the service with any pre-execution instructions that may be necessary.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function setup() {}
@@ -236,7 +230,6 @@ abstract class service extends \cenozo\base_object
   /**
    * This method executes the service's purpose.  All services must implement this method.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function execute() {}
@@ -244,7 +237,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Finishes the service with any post-execution instructions that may be necessary.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function finish()
@@ -294,7 +286,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Closes the writelog created by the service by adding the elapsed time and status
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function close_writelog()
@@ -312,7 +303,6 @@ abstract class service extends \cenozo\base_object
    * Converts the service's path into a a list of collection and resource names.
    * 
    * This method will return false if there was a problem processing the path
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $path
    * @return http status code
    * @access protected
@@ -383,7 +373,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the service's method
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -392,7 +381,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the number of collections in the service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return integer
    * @access public
    */
@@ -409,7 +397,6 @@ abstract class service extends \cenozo\base_object
    * the first subject is "collection" and the second is "participant".  Null is returned
    * if there is no subject for the given index.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $index
    * @return string
    * @access public
@@ -422,7 +409,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the resource value for a particular index
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $index
    * @return string
    * @access protected
@@ -435,7 +421,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the record's class name by index
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $index
    * @param boolean $relative Whether to return the relative class name (without full path)
    * @return string
@@ -462,7 +447,6 @@ abstract class service extends \cenozo\base_object
    * and the second a participant for ID 2.  Null is returned if there is no resource for
    * the given index.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $index
    * @return database\record
    * @access public
@@ -478,7 +462,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Creates the resource for a given index (almost always a database record)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $index
    * @return database\record|mixed The created resource
    * @access protected
@@ -525,7 +508,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the resource of the second-to-last collection (based on the service's path)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string If there is no parent subject then NULL is returned
    * @access protected
    */
@@ -538,7 +520,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the subject of the last collection (based on the service's path)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string If there is no leaf subject then NULL is returned
    * @access public
    */
@@ -550,7 +531,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the subject of the second-to-last collection (based on the service's path)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string If there is no parent subject then NULL is returned
    * @access public
    */
@@ -562,7 +542,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the leaf record's class name
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -574,7 +553,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the resource of the last collection (based on the service's path)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string If there is no leaf subject then NULL is returned
    * @access public
    */
@@ -587,7 +565,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the module of the last collection (based on the service's path)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return module If there is no leaf subject then NULL is returned
    * @access protected
    */
@@ -600,7 +577,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the database relationship between the leaf and its parent
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int See database\relationship for list of possible values
    * @access public
    */
@@ -613,7 +589,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the file provided to the service (unchanged)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_file_as_raw()
@@ -624,7 +599,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the file provided to the service decoded as an object
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_file_as_object()
@@ -641,7 +615,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Returns the file provided to the service decoded as an associate array
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_file_as_array()
@@ -658,7 +631,6 @@ abstract class service extends \cenozo\base_object
   /**
    * Get a query argument passed to the service.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name The name of the argument.
    * @param mixed $default The value to return if no argument exists.  If the default is null then
    *                       it is assumed that the argument must exist, throwing an argument
@@ -689,7 +661,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Returns the http status
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return service\status
    * @access public
    */
@@ -697,7 +668,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Returns any headers generated by the service.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( mixed )
    * @access public
    */
@@ -705,7 +675,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Returns a list of mime types supported by the service
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -723,7 +692,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Returns the most preferred valid mime type from the request headers
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -785,7 +753,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Returns the filename to be used when the service sets the content disposition header
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return mixed
    * @access public
    */
@@ -811,7 +778,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Returns any data generated by the service encoded according to the Accept header
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return mixed
    * @access public
    */
@@ -876,7 +842,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Sets the data returned by the service.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $data
    * @access public
    */
@@ -888,7 +853,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Gets whether to check if the user has access to the service
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access protected
    */
@@ -899,7 +863,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Sets whether to check if the user has access to the service
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $access
    * @access protected
    */
@@ -910,7 +873,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Returns whether or not a method is valid
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param $method string
    * @return boolean
    * @access public
@@ -924,7 +886,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Returns whether or not a method is valid and read-based
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param $method string
    * @return boolean
    * @access public
@@ -938,7 +899,6 @@ abstract class service extends \cenozo\base_object
 
   /**
    * Returns whether or not a method is valid and write-based
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param $method string
    * @return boolean
    * @access public

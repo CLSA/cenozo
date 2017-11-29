@@ -3,7 +3,6 @@
  * util.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo;
@@ -22,7 +21,6 @@ class util
    * Constructor (or not)
    * 
    * This method is kept private so that no one ever tries to instantiate it.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access private
    */
   private final function __construct() {}
@@ -30,7 +28,6 @@ class util
   /**
    * Returns the elapsed time in seconds since the script began.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return float
    * @static
    * @access public
@@ -43,7 +40,6 @@ class util
   /**
    * Returns the result of var_dump()
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $data The data to dump.
    * @static
    * @access public
@@ -59,7 +55,6 @@ class util
   /**
    * An html-enhanced var_dump
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $data The data to display.
    * @static
    * @access public
@@ -138,7 +133,6 @@ class util
    * exact same as only converting the variable to a string.
    * Example: values "1", 123, -15 and "-141" will all return true
    *          values "00", 1.1, "one", "11one" and NULL will all return false
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $var The variable to test
    * @return boolean
    * @static
@@ -156,7 +150,6 @@ class util
    * exact same as only converting the variable to a string.
    * Example: values "1", 123, -15, "-141", 1.1 and "1.154" will all return true
    *          values "00", "one", "11one" and NULL will all return false
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $var The variable to test
    * @return boolean
    * @static
@@ -170,7 +163,6 @@ class util
   /**
    * Returns a timezone string given an offset and whether to observe daylight savings
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $offset
    * @param boolean $daylight_savings
    * @return string
@@ -200,7 +192,6 @@ class util
   /**
    * Returns a site's timezone offset for a particular datetime
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string|DateTime The default is the current datetime
    * @param database\site $db_site The default is the user's current site
    * @return float
@@ -217,7 +208,6 @@ class util
   /**
    * Returns a DateTime object
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $datetime A date string in any valid PHP date time format.
    * @return DateTime
    * @access public
@@ -246,7 +236,6 @@ class util
   /**
    * Returns the interval between the date and "now"
    * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
    * @param string $date A date string in any valid PHP date time format.
    * @param string $date2 A second string to compare to instead of "now"
    * @return \DateInterval
@@ -264,7 +253,6 @@ class util
   /**
    * Encrypts a string (one-way) using the whirlpool algorithm
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string
    * @return string
    * @access public
@@ -278,7 +266,6 @@ class util
   /**
    * Validate's a user/password pair, returning true if the password is a match and false if not
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $username
    * @param string $password
    * @param boolean $count_failure Whether or not to increment the user's login failures on an invalid password
@@ -351,7 +338,6 @@ class util
 
   /**
    * Converts an error number into an easier-to-read error code.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param int $number The error number.
    * @return string
    * @static
@@ -365,7 +351,6 @@ class util
   /**
    * Encodes a string using a SHA1 hash.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The string to encode
    * @return string
    * @static
@@ -379,7 +364,6 @@ class util
   /**
    * Encodes a string using a MD5 hash.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The string to encode
    * @return string
    * @static
@@ -393,7 +377,6 @@ class util
   /**
    * Encodes a string using a NTLM hash.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The string to encode
    * @return string
    * @static
@@ -409,7 +392,6 @@ class util
   /**
    * Encodes a string using a LM hash.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The string to encode
    * @return string
    * @static
@@ -428,7 +410,6 @@ class util
   /**
    * Encrypts a string using the DES standard
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The string to encode
    * @return string
    * @static
@@ -463,7 +444,6 @@ class util
 
   /**
    * Validates whether a date is in YYYY-MM-DD format.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $date
    * @return boolean
    * @static
@@ -478,7 +458,6 @@ class util
 
   /**
    * Validates a north-american phone number in XXX-XXX-XXXX format.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $number
    * @param boolean $numeric_only Whether to ignore all non-numeric characters during check
    * @return boolean
@@ -504,7 +483,6 @@ class util
    * Note, this function does not thoroughly check email addresses.  It only checks to make
    * sure that there are no spaces or commas, there is exactly one @ symbol and at least one
    * period (.) which comes after the @ symbol.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $email
    * @return boolean
    * @static
@@ -534,7 +512,6 @@ class util
 
   /**
    * Encodes any variable/object/array into a json string
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $arg
    * @return string
    * @static
@@ -547,7 +524,6 @@ class util
 
   /**
    * Decodes a json string and converts it into the corresponding variable/object/array
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $arg
    * @return mixed
    * @static
@@ -560,7 +536,6 @@ class util
 
   /**
    * Encodes all strings in a variable, object or array to utf8 and removes all byte-order-marks.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $arg
    * @return mixed
    * @static
@@ -595,7 +570,6 @@ class util
    * This method will alter the data including:
    *   convert datetime formats
    *   converts timezones
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\user $db_user Which user to use when determining datetime formats
    * @return string (with newlines)
    * @static

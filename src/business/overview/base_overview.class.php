@@ -3,7 +3,6 @@
  * base_overview.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business\overview;
@@ -18,7 +17,6 @@ abstract class base_overview
   /**
    * Constructor
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $subject The subject to retrieve the primary information from.
    * @param array $args Pull arguments.
    * @access public
@@ -97,7 +95,6 @@ abstract class base_overview
 
   /**
    * Abstract function which generates the overview's data
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   abstract protected function build();

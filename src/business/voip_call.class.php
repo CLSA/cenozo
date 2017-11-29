@@ -3,7 +3,6 @@
  * voip_call.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -19,7 +18,6 @@ class voip_call extends \cenozo\base_object
   /**
    * Constructor.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param Shift8_Event $event The event from a Shift8::getStatus() call
    * @access public
    */
@@ -56,7 +54,6 @@ class voip_call extends \cenozo\base_object
   /**
    * Play a DTMF tone (ie: dial a number)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $tone Which tone to play (one of 0123456789abcdgs)
    * @throws exception\voip
    * @access public
@@ -87,7 +84,6 @@ class voip_call extends \cenozo\base_object
   /**
    * Disconnects a call (does nothing if already disconnected).
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function hang_up()
@@ -103,7 +99,6 @@ class voip_call extends \cenozo\base_object
   /**
    * Plays a sound file located in asterisk's sound directory.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sound The name of the sound file to play, without file extension.  For custom
    *               sounds (those that are not included with asterisk) make sure to specify the
    *               custom directory, ie: custom/dtmf0
@@ -169,7 +164,6 @@ class voip_call extends \cenozo\base_object
   /**
    * Starts recording (monitoring) the call.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $filename The file name the recorded call is to be saved under.
    * @access public
    */
@@ -193,7 +187,6 @@ class voip_call extends \cenozo\base_object
   /**
    * Stops recording (monitoring) the call.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function stop_monitoring()
@@ -212,7 +205,6 @@ class voip_call extends \cenozo\base_object
 
   /**
    * Get the call's peer
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -220,7 +212,6 @@ class voip_call extends \cenozo\base_object
 
   /**
    * Get the call's user
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return integer
    * @access public
    */
@@ -232,7 +223,6 @@ class voip_call extends \cenozo\base_object
 
   /**
    * Get the call's channel
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -240,7 +230,6 @@ class voip_call extends \cenozo\base_object
 
   /**
    * Get the call's bridged channel
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -248,7 +237,6 @@ class voip_call extends \cenozo\base_object
 
   /**
    * Get the call's state (Up, Ring, etc)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -256,7 +244,6 @@ class voip_call extends \cenozo\base_object
 
   /**
    * Get the number called (the extension without dialing prefix)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -264,7 +251,6 @@ class voip_call extends \cenozo\base_object
 
   /**
    * Get the call's time in seconds
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
    */

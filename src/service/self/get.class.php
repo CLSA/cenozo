@@ -3,7 +3,6 @@
  * get.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\service\self;
@@ -17,7 +16,6 @@ class get extends \cenozo\service\service
   /**
    * Constructor
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $path The URL of the service (not including the base)
    * @param array $args An associative array of arguments to be processed by the get operation.
    * @access public

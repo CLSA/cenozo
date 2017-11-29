@@ -3,7 +3,6 @@
  * database.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\exception;
@@ -19,7 +18,6 @@ class database extends base_exception
 {
   /**
    * Constructor
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message A message describing the exception.
    * @param string $sql The SQL statement which caused the exception.
    * @param string|int $context The exceptions context, either a function name or error code.
@@ -36,7 +34,6 @@ class database extends base_exception
   /**
    * Returns whether the exception was thrown because of a duplicate entry error.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -48,7 +45,6 @@ class database extends base_exception
   /**
    * Returns whether the exception was thrown because of a failed constrained key.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -60,7 +56,6 @@ class database extends base_exception
   /**
    * Returns whether the exception was thrown because a column which cannot be null is not set.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -72,7 +67,6 @@ class database extends base_exception
   /**
    * If the exception is a duplicate entry this returns the columns in the unique key
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name: The table name must be provided
    * @return array( string )
    * @access public
@@ -100,7 +94,6 @@ class database extends base_exception
   /**
    * Used to identify which table failed the foreign key constraint
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */

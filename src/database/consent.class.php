@@ -3,7 +3,6 @@
  * consent.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class consent extends record
 {
   /**
    * Overrides the parent save method.
-   * @author Patrick Emond
    * @access public
    */
   public function save()
@@ -39,7 +37,6 @@ class consent extends record
 
   /**
    * Returns a string representation of the consent (eg: verbal deny, written accept, etc)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */

@@ -3,7 +3,6 @@
  * module.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\service;
@@ -17,7 +16,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Constructor
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer The module's index
    * @param service\service The module's service
    * @access public
@@ -31,7 +29,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Prepares the read parameters for the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select The select used by the read service
    * @param database\modifier The modifier used by the read service
    * @access public
@@ -41,7 +38,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Performs operations on all rows after reading
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function post_read( &$row ) {}
@@ -49,7 +45,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Performs operations on the leaf record before writing
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\record The leaf record being written to
    * @access public
    */
@@ -58,7 +53,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Performs operations on the leaf record after writing
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\record The leaf record being written to
    * @access public
    */
@@ -69,7 +63,6 @@ abstract class module extends \cenozo\base_object
    * 
    * This method should be extended whenever checking for the validity of the service.
    * When invalid the module should set the status code to something appropriate (ex: 403, 404, etc)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -78,7 +71,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function is_leaf_module()
@@ -89,7 +81,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function get_method()
@@ -100,7 +91,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function get_subject()
@@ -111,7 +101,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function get_parent_subject()
@@ -122,7 +111,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function get_resource()
@@ -133,7 +121,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function get_parent_resource()
@@ -144,7 +131,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function set_data( $data )
@@ -155,7 +141,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function get_status()
@@ -166,7 +151,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   public function get_file_as_raw()
@@ -177,7 +161,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   public function get_file_as_object()
@@ -188,7 +171,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   public function get_file_as_array()
@@ -199,7 +181,6 @@ abstract class module extends \cenozo\base_object
   /**
    * Returns information about the parent service
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function get_argument( $name, $default = NULL )

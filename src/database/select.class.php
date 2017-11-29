@@ -3,7 +3,6 @@
  * select.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -20,7 +19,6 @@ class select extends \cenozo\base_object
    * Only one table name should be provided.  Joining tables must be defined using a modifier object
    * @param string $table
    * @param string $alias An optional alias for the table
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function from( $table, $alias = NULL )
@@ -32,7 +30,6 @@ class select extends \cenozo\base_object
   /**
    * Returns whether or not to use the distinct keyword before the first selected column
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -44,7 +41,6 @@ class select extends \cenozo\base_object
   /**
    * Whether or not to use the distinct keyword before the first selected column
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $distinct
    * @access public
    */
@@ -84,7 +80,6 @@ class select extends \cenozo\base_object
    * @param string $alias The optional alias for the column (must be unique)
    * @param boolean $table_prefix Whether to prefix the column with the table name
    * @param string $type A hint at what type the column is (doesn't have to be provided)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function add_table_column( $table, $column, $alias = NULL, $table_prefix = true, $type = NULL )
@@ -117,7 +112,6 @@ class select extends \cenozo\base_object
    * @param string $alias The optional alias for the column (must be unique)
    * @param string $type A hint at what type the column is (doesn't have to be provided)
    * @param string $format Whether to format the constant
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function add_constant( $constant, $alias = NULL, $type = NULL, $format = true )
@@ -135,7 +129,6 @@ class select extends \cenozo\base_object
    * 
    * @param string $table The table to select * on.  If no table is provided then the base table
    *               defined by the from() method will be used.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function add_all_table_columns( $table = NULL )
@@ -149,7 +142,6 @@ class select extends \cenozo\base_object
    * @param string $column The column to select
    * @param string $alias The optional alias for the column
    * @param boolean $table_prefix Whether to prefix the column with the table name
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function add_column( $column, $alias = NULL, $table_prefix = true, $type = NULL )
@@ -164,7 +156,6 @@ class select extends \cenozo\base_object
    *               If a table has an alias then the alias must be used
    * @param string $column Restricts removal to a particular column
    * @param string $alias Restricts removal to a particular alias
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function remove_column( $table = NULL, $column = NULL, $alias = NULL )
@@ -198,7 +189,6 @@ class select extends \cenozo\base_object
    * Removes all columns which are from a particular table
    * 
    * @param string $table The table to remove
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function remove_column_by_table( $table )
@@ -210,7 +200,6 @@ class select extends \cenozo\base_object
    * Removes all columns with a particular name
    * 
    * @param string $column The column to remove
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function remove_column_by_column( $column )
@@ -222,7 +211,6 @@ class select extends \cenozo\base_object
    * Restricts removal to a particular alias
    * 
    * @param string $alias The column alias to remove
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function remove_column_by_alias( $alias )
@@ -233,7 +221,6 @@ class select extends \cenozo\base_object
   /**
    * Returns whether columns have been added to the select or not
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -245,7 +232,6 @@ class select extends \cenozo\base_object
   /**
    * Returns whether a column from a particular table has been added to the select or not
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to search for
    * @param string $column The column to search for (optional)
    * @param boolean $alias Whether to test for the alias name or column name
@@ -289,7 +275,6 @@ class select extends \cenozo\base_object
   /**
    * Convenience method
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to search for
    * @param string $column The alias to search for
    * @return boolean
@@ -303,7 +288,6 @@ class select extends \cenozo\base_object
   /**
    * Returns whether a column from the base table has been added to the select or not
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for
    * @param boolean $alias Whether to test for the alias name or column name
    * @return boolean
@@ -317,7 +301,6 @@ class select extends \cenozo\base_object
   /**
    * Convenience method
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to search for
    * @param boolean $alias Whether to test for the alias name or column name
    * @return boolean
@@ -331,7 +314,6 @@ class select extends \cenozo\base_object
   /**
    * Returns whether any columns from a particular table have been added to the select or not
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table The table to search for
    * @return boolean
    * @access public
@@ -344,7 +326,6 @@ class select extends \cenozo\base_object
   /**
    * Returns whether the select statement has columns outside of the "from" table
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -359,7 +340,6 @@ class select extends \cenozo\base_object
   /**
    * Returns the full column details associated with an alias
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $alias The name of the alias (may be identical to the column name)
    * @return array
    * @access public
@@ -388,7 +368,6 @@ class select extends \cenozo\base_object
    * This resolves the "from" table, meaning if an alias was added without a table name then
    * internally the table name is set to an empty string, but this method will return the
    * "from" table instead, if it is set.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $alias The name of the alias (may be identical to the column name)
    * @return string
    * @access public
@@ -402,7 +381,6 @@ class select extends \cenozo\base_object
   /**
    * Returns the column name associated with an alias
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $alias The name of the alias (may be identical to the column name)
    * @return string
    * @access public
@@ -416,7 +394,6 @@ class select extends \cenozo\base_object
   /**
    * Returns the column type associated with an alias
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $alias The name of the alias (may be identical to the column name)
    * @return string
    * @access public
@@ -430,7 +407,6 @@ class select extends \cenozo\base_object
   /**
    * Returns a list of all aliases in the select
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -445,7 +421,6 @@ class select extends \cenozo\base_object
   /**
    * Replaces all of this select's aliases in a modifier with the column name instead.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier
    * @access public
    */
@@ -477,7 +452,6 @@ class select extends \cenozo\base_object
   /**
    * Returns the select statement based on this object
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function get_sql()

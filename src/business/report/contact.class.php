@@ -3,7 +3,6 @@
  * contact.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business\report;
@@ -16,7 +15,6 @@ class contact extends \cenozo\business\report\base_report
 {
   /**
    * Build the report
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function build()

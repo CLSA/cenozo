@@ -3,7 +3,6 @@
  * survey.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database\limesurvey;
@@ -17,7 +16,6 @@ class survey extends sid_record
   /**
    * Returns a list of all tokens records which match the survey's token column
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -46,7 +44,6 @@ class survey extends sid_record
   /**
    * Returns a response to this survey
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $question_code
    * @return string
    * @access public
@@ -63,7 +60,6 @@ class survey extends sid_record
   /**
    * Returns a participant's response to a particular question.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $question_code
    * @param database\modifier $modifier A modifier applied to the survey selection
    * @return string
@@ -87,7 +83,6 @@ class survey extends sid_record
   /**
    * Returns the total time in seconds spent on this survey (by all participants)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier
    * @return double
    * @static
@@ -110,7 +105,6 @@ class survey extends sid_record
   /**
    * Returns the table's column name for the given question code
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $question_code
    * @return string
    * @access public

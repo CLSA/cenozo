@@ -3,7 +3,6 @@
  * opal_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\business;
@@ -17,7 +16,6 @@ class opal_manager extends \cenozo\singleton
   /**
    * Constructor.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function __construct()
@@ -40,7 +38,6 @@ class opal_manager extends \cenozo\singleton
   /**
    * Get a participant's value for a particular variable
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $datasource The datasource to get a value from
    * @param string $table The table to get a value from
    * @param database\participant $db_participant The participant to get a value from
@@ -73,7 +70,6 @@ class opal_manager extends \cenozo\singleton
   /**
    * Get a participant's set of values for a particular table
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $datasource The datasource to get a value from
    * @param string $table The table to get the values from
    * @param database\participant $db_participant The participant to get a value from
@@ -130,7 +126,6 @@ class opal_manager extends \cenozo\singleton
   /**
    * Get a label for a particular variable's value
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $datasource The datasource to get a value from
    * @param string $table The table to get a value from
    * @param string $variable The name of the variable to get the label for
@@ -191,7 +186,6 @@ class opal_manager extends \cenozo\singleton
   /**
    * Sends a curl request to the opal server(s)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array(key->value) $arguments The url arguments as key->value pairs (value may be null)
    * @param database\participant $db_participant The participant record when
    * @return curl resource
@@ -282,7 +276,6 @@ class opal_manager extends \cenozo\singleton
   /**
    * Whether Opal is enabled.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */

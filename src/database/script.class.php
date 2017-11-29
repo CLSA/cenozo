@@ -3,7 +3,6 @@
  * script.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class script extends record
   /**
    * Determines whether the script is a withdraw type (has "withdraw" somewhere in the name)
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -29,7 +27,6 @@ class script extends record
   /**
    * Adds all missing started events for this script
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @access public
    */
@@ -41,7 +38,6 @@ class script extends record
   /**
    * Adds all missing started events for all of this application's scripts
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @param database\script $db_script
    * @access public
@@ -55,7 +51,6 @@ class script extends record
   /**
    * Adds all missing finished events for this script
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @access public
    */
@@ -67,7 +62,6 @@ class script extends record
   /**
    * Adds all missing finished events for all of this application's scripts
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @param database\script $db_script
    * @access public
@@ -81,7 +75,6 @@ class script extends record
   /**
    * Adds a script's missing events to a participant.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @param database\script $db_script
    * @param boolean $started_events Whether to include started_events
@@ -225,7 +218,6 @@ class script extends record
    * 
    * Returns the event-type associated with when this script was started.
    * If no event-type exists this method will return NULL.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\event_type
    * @access public
    */
@@ -240,7 +232,6 @@ class script extends record
    * 
    * Returns the event-type associated with when this script was finished.
    * If no event-type exists this method will return NULL.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\event_type
    * @access public
    */

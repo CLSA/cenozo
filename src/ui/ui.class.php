@@ -1,9 +1,7 @@
 <?php
 /**
  * ui.class.php
- * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\ui;
@@ -20,7 +18,6 @@ class ui extends \cenozo\base_object
   /**
    * Returns the interface
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $error An associative array containing the error "title", "message" and "code", or
                          NULL if there is no error.
    * @return string
@@ -112,7 +109,6 @@ class ui extends \cenozo\base_object
   /**
    * Returns a list of all modules provided by the framework
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @access protected
    */
@@ -140,7 +136,6 @@ class ui extends \cenozo\base_object
   /**
    * Returns an array of all modules the current role has access to
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( title, add )
    * @access protected
    */
@@ -352,7 +347,6 @@ class ui extends \cenozo\base_object
   /**
    * Returns an array of all states to include in the menu
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( title, add )
    * @access protected
    */
@@ -401,7 +395,6 @@ class ui extends \cenozo\base_object
   /**
    * Returns an array of all utility modules
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access protected
    */
@@ -445,7 +438,6 @@ class ui extends \cenozo\base_object
   /**
    * Returns an array of all report modules
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access protected
    */

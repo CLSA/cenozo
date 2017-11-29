@@ -3,7 +3,6 @@
  * permission.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\exception;
@@ -18,7 +17,6 @@ class permission extends base_exception
 {
   /**
    * Constructor
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\service $db_service The associated service.
    * @param string|int $context The exceptions context, either a function name or error code.
    * @param exception $previous The previous exception used for the exception chaining.

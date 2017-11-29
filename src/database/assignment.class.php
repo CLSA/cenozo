@@ -3,7 +3,6 @@
  * assignment.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -56,7 +55,6 @@ class assignment extends \cenozo\database\record
   /**
    * Determines whether this assignment has an open phone call
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -77,7 +75,6 @@ class assignment extends \cenozo\database\record
   /**
    * Returns this assignment's open phone call, or NULL if it has no open phone calls
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\phone_call
    * @access public
    */
@@ -102,7 +99,6 @@ class assignment extends \cenozo\database\record
   /**
    * Processes changes callbacks based on this assignment
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $completed Whether the assignment is being closed
    * @access public
    */

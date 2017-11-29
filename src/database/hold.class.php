@@ -3,7 +3,6 @@
  * hold.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -16,7 +15,6 @@ class hold extends record
 {
   /**
    * Overrides the parent save method.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function save()
@@ -41,7 +39,6 @@ class hold extends record
 
   /**
    * Adds a new hold based on a new participation consent record
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public static function add_withdrawn_hold( $db_consent )

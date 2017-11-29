@@ -3,7 +3,6 @@
  * has_rank.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -19,7 +18,6 @@ abstract class has_rank extends record
    * 
    * If the record has a rank which already exists it will push the current record and all that
    * come after it down by one rank to make room for this one.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function save()
@@ -103,7 +101,6 @@ abstract class has_rank extends record
    * 
    * If there are other records after this one then we will fill up the gap caused by deleting this
    * record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function delete()

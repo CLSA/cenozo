@@ -3,7 +3,6 @@
  * form.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ class form extends record
   /**
    * Returns the filesystem location of the form
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
@@ -44,7 +42,6 @@ class form extends record
   /**
    * Adds consent data and associates it to this form
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $type The type of consent (see consent_type.name)
    * @param array $consent An associative array containing "datetime" and "accept" keys
    * @return database\consent The consent record created by this method
@@ -85,7 +82,6 @@ class form extends record
   /**
    * Adds hin data and associates it to this form
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $type The type of hin (see hin_type.name)
    * @param array $hin An associative array containing "datetime", "code" and "region_id" keys
    * @return database\hin The hin record created by this method
@@ -118,7 +114,6 @@ class form extends record
   /**
    * Adds proxy data and associates it to this form
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $type The type of proxy (see proxy_type.name)
    * @param array $proxy An associative array containing all proxy data
    * @return database\proxy The proxy record created by this method
@@ -206,7 +201,6 @@ class form extends record
   /**
    * Adds informant data and associates it to this form
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $type The type of informant (see informant_type.name)
    * @param array $informant An associative array containing all informant data
    * @return database\informant The informant record created by this method
@@ -293,7 +287,6 @@ class form extends record
   /**
    * Save the form to disk
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param binary $data The form's raw file data
    * @return boolean Whether the operation is successful
    * @access public
@@ -308,7 +301,6 @@ class form extends record
   /**
    * Copy the form from the disk
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $filename A local file to copy as this form's file
    * @return boolean Whether the operation is successful
    * @access public
@@ -323,7 +315,6 @@ class form extends record
   /**
    * Used internall to add associated records to this form
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $subject The table name of the associated record
    * @param integer $id The primary ID of the associated record
    * @access private

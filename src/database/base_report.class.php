@@ -3,7 +3,6 @@
  * base_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace cenozo\database;
@@ -17,7 +16,6 @@ abstract class base_report extends \cenozo\database\record
   /**
    * Returns an array of all report restrictions
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
    * @access public
    */
@@ -51,7 +49,6 @@ abstract class base_report extends \cenozo\database\record
   /**
    * Set's a report's restriction value
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer|string|database\report_restriction $restriction
    * @param string $value
    * @access public
