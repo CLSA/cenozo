@@ -59,7 +59,6 @@ define( function() {
         this.timerPromise = null;
 
         this.updateInformation = function() {
-          console.log( self.voip );
           if( !self.updating ) {
             self.updating = true;
             CnSession.updateVoip().then( function() {
