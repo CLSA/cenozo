@@ -54,7 +54,7 @@ class contact extends \cenozo\business\report\base_report
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'cohort', 'participant.cohort_id', 'cohort.id' );
     $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
-    $modifier->join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+    $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
     $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
     $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
     $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );

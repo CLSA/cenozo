@@ -1,4 +1,4 @@
-define( [ 'consent', 'event' ].reduce( function( list, name ) {
+define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -26,17 +26,12 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         column: 'participant.last_name',
         title: 'Last'
       },
-      active: {
-        column: 'participant.active',
-        title: 'Active',
-        type: 'boolean'
-      },
       cohort: {
         column: 'cohort.name',
         title: 'Cohort'
       },
       enrollment: {
-        title: 'Enrollment'
+        title: 'Enrolled'
       },
       last_hold: {
         title: 'Hold'
@@ -60,28 +55,19 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
 
   // define inputs
   module.addInputGroup( '', {
-    active: {
-      title: 'Active',
-      type: 'boolean',
-      help: 'Participants can be deactivated so that they are not included in reports, interviews, etc. ' +
-            'Deactivating a participant should only ever be used on a temporary basis. If a participant ' +
-            'is to be permanently discontinued from the interview process then select a condition (below) ' +
-            'instead.'
-    },
     uid: {
       title: 'Unique ID',
-      type: 'string',
-      constant: true
-    },
-    source: {
-      column: 'source.name',
-      title: 'Source',
       type: 'string',
       constant: true
     },
     cohort: {
       column: 'cohort.name',
       title: 'Cohort',
+      type: 'string',
+      constant: true
+    },
+    status: {
+      title: 'Status',
       type: 'string',
       constant: true
     },
@@ -114,9 +100,18 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   } );
 
   module.addInputGroup( 'Defining Details', {
+    enrollment: {
+      title: 'Enrolled',
+      type: 'string',
+      constant: true,
+      help: 'Whether the participant has been enrolled into the study, and if not then the reason they are ' +
+            'not enrolled.'
+    },
     source: {
       column: 'source.name',
-      title: 'Source'
+      title: 'Source',
+      type: 'string',
+      constant: true
     },
     sex: {
       title: 'Sex',
@@ -143,12 +138,6 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
       type: 'enum',
       help: 'The age group that the participant belonged to when first recruited into the study. ' +
             'Note that this won\'t necessarily reflect the participant\'s current age.'
-    },
-    enrollment: {
-      title: 'Enrollment',
-      type: 'string',
-      help: 'Whether the participant has been enrolled into the study, and if not then the reason they are ' +
-            'not enrolled.'
     },
     language_id: {
       title: 'Preferred Language',
@@ -490,6 +479,45 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               category: 'Form',
               title: 'added "' + item.name + '"',
               description: item.description
+            } );
+          } );
+        } );
+      }
+    },
+
+    Hold: {
+      active: true,
+      framework: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/hold',
+          data: {
+            modifier: {
+              join: {
+                table: 'hold_type',
+                onleft: 'hold.hold_type_id',
+                onright: 'hold_type.id',
+                type: 'left'
+              },
+              order: { datetime: true }
+            },
+            select: {
+              column: [ 'datetime', {
+                table: 'hold_type',
+                column: 'name'
+              }, {
+                table: 'hold_type',
+                column: 'description'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.datetime,
+              category: 'Hold',
+              title: null == item.name ? 'removed hold' : 'added "' + item.name + '"',
+              description: null == item.name ? '' : item.description
             } );
           } );
         } );
@@ -982,6 +1010,11 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               );
               self.applicationModel.listModel.heading = 'Release List';
             }
+
+            // only allow adding new holds if the participant is enrolled
+            self.holdModel.getAddEnabled = function() {
+              return self.holdModel.$$getAddEnabled && 'Yes' == self.record.enrollment;
+            };
           } );
         }
       };
@@ -1005,8 +1038,6 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             definingInputGroup.inputList.sex.constant = true;
             definingInputGroup.inputList.age_group_id.constant = true;
           }
-          if( 2 > CnSession.role.tier )
-            module.inputGroupList.findByProperty( 'title', '' ).inputList.active.constant = true;
         }
 
         CnBaseModelFactory.construct( this, module );
@@ -1108,10 +1139,10 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
   cenozo.providers.factory( 'CnParticipantMultieditFactory', [
     'CnSession', 'CnHttpFactory',
     'CnModalDatetimeFactory', 'CnModalMessageFactory',
-    'CnConsentModelFactory', 'CnEventModelFactory', 'CnParticipantModelFactory',
+    'CnConsentModelFactory', 'CnEventModelFactory', 'CnHoldModelFactory', 'CnParticipantModelFactory',
     function( CnSession, CnHttpFactory,
               CnModalDatetimeFactory, CnModalMessageFactory,
-              CnConsentModelFactory, CnEventModelFactory, CnParticipantModelFactory ) {
+              CnConsentModelFactory, CnEventModelFactory, CnHoldModelFactory, CnParticipantModelFactory ) {
       var object = function() {
         var self = this;
         this.module = module;
@@ -1126,6 +1157,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         this.collectionOperation = 'add';
         this.collectionId = undefined;
         this.eventInputList = null;
+        this.holdInputList = null;
         this.note = { sticky: 0, note: '' };
 
         // given a module and metadata this function will build an input list
@@ -1151,7 +1183,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
                 min: input.min,
                 max: input.max,
                 active: false,
-                value: metadata[column].default,
+                value: null == metadata[column].default ? null : String( metadata[column].default ),
                 required: metadata[column].required,
                 max_length: metadata[column].max_length,
                 enumList: angular.copy( metadata[column].enumList )
@@ -1160,7 +1192,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               // Inputs with enum types need to do a bit of extra work with the enumList and default value
               if( 'boolean' == array[index].type ) {
                 // set not as the default value
-                if( null == array[index].value ) array[index].value = 0;
+                if( null == array[index].value ) array[index].value = '0';
               } else if( 'enum' == array[index].type ) {
                 if( !array[index].required ) {
                   // enums which are not required should have an empty value
@@ -1184,7 +1216,7 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         // populate the participant input list once the participant's metadata has been loaded
         CnParticipantModelFactory.root.metadata.getPromise().then( function() {
           self.participantInputList = processInputList( [
-              'active', 'honorific', 'sex', 'language_id', 'availability_type_id',
+              'honorific', 'sex', 'language_id', 'availability_type_id',
               'preferred_site_id', 'out_of_area', 'email', 'mass_email', 'note'
             ],
             self.module,
@@ -1231,6 +1263,15 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
             [ 'event_type_id', 'datetime' ],
             cenozoApp.module( 'event' ),
             CnEventModelFactory.root.metadata.columnList
+          );
+        } );
+
+        // populate the hold input list once the hold's metadata has been loaded
+        CnHoldModelFactory.root.metadata.getPromise().then( function() {
+          self.holdInputList = processInputList(
+            [ 'hold_type_id', 'datetime' ],
+            cenozoApp.module( 'hold' ),
+            CnHoldModelFactory.root.metadata.columnList
           );
         } );
 
@@ -1305,49 +1346,45 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
         this.applyMultiedit = function( type ) {
           // test the formats of all columns
           var error = false;
+          var messageObj = { title: null, message: null };
           var uidList = this.uidListString.split( ' ' );
           if( 'consent' == type ) {
             var inputList = this.consentInputList;
             var model = CnConsentModelFactory.root;
-            var messageModal = CnModalMessageFactory.instance( {
-              title: 'Consent Records Added',
-              message: 'The consent record has been successfully added to ' + uidList.length + ' participants.'
-            } );
+            messageObj.title = 'Consent Records Added';
+            messageObj.message = 'The consent record has been successfully added to <TOTAL> participant(s).'
           } else if( 'collection' == type ) {
             // handle the collection id specially
             var element = cenozo.getScopeByQuerySelector( '#collectionId' ).innerForm.name;
             element.$error.format = false;
             cenozo.updateFormElement( element, true );
             error = error || element.$invalid;
-            var messageModal = CnModalMessageFactory.instance( {
-              title: 'Collection Updated',
-              message: 'The participant list has been ' +
-                       ( 'add' == this.collectionOperation ? 'added to ' : 'removed from ' ) +
-                       'the "' + this.collectionList.findByProperty( 'id', this.collectionId ).name + '" ' +
-                       'collection'
-            } );
+            messageObj.title = 'Collection Updated';
+            messageObj.message = 'The participant list has been ' +
+              ( 'add' == this.collectionOperation ? 'added to ' : 'removed from ' ) +
+              'the "' + this.collectionList.findByProperty( 'id', this.collectionId ).name + '" ' +
+              'collection'
           } else if( 'event' == type ) {
             var inputList = this.eventInputList;
             var model = CnEventModelFactory.root;
-            var messageModal = CnModalMessageFactory.instance( {
-              title: 'Event Records Added',
-              message: 'The event record has been successfully added to ' + uidList.length + ' participants.'
-            } );
+            messageObj.title = 'Event Records Added';
+            messageObj.message = 'The event record has been successfully added to <TOTAL> participant(s).'
+          } else if( 'hold' == type ) {
+            var inputList = this.holdInputList;
+            var model = CnHoldModelFactory.root;
+            messageObj.title = 'Hold Records Added';
+            messageObj.message = 'The hold record has been successfully added to <TOTAL> participant(s).'
           } else if( 'note' == type ) {
             var inputList = this.noteInputList;
             var model = null;
-            var messageModal = CnModalMessageFactory.instance( {
-              title: 'Note Records Added',
-              message: 'The note record has been successfully added to ' + uidList.length + ' participants.'
-            } );
+            messageObj.title = 'Note Records Added';
+            messageObj.message = 'The note record has been successfully added to <TOTAL> participant(s).'
           } else if( 'participant' == type ) {
             var inputList = this.participantInputList.filter( function( input ) { return input.active; } );
             var model = CnParticipantModelFactory.root;
-            var messageModal = CnModalMessageFactory.instance( {
-              title: 'Participant Details Updated',
-              message: 'The listed details have been successfully updated on ' + uidList.length +
-                       ' participant records.'
-            } );
+            messageObj.title = 'Participant Details Updated';
+            messageObj.message = 'The listed details have been successfully updated on ' + uidList.length +
+              ' participant records.'
           } else throw new Error( 'Called addRecords() with invalid type "' + type + '".' );
 
           if( inputList ) {
@@ -1382,7 +1419,12 @@ define( [ 'consent', 'event' ].reduce( function( list, name ) {
               path: 'participant',
               data: data,
               onError: CnModalMessageFactory.httpError
-            } ).post().then( function() { messageModal.show(); } );
+            } ).post().then( function( response ) {
+              // some messages have a <TOTAL> in them, so fill it in (the number of records created)
+              messageObj.message.replace( '<TOTAL>', response );
+              var messageModal = CnModalMessageFactory.instance( messageObj );
+              messageModal.show();
+            } );
           }
         };
       };

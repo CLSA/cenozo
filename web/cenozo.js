@@ -462,7 +462,10 @@ angular.extend( cenozo, {
       );
       return;
     } else if( angular.isDefined( object[newProperty] ) ) {
-      console.error( 'Tried to insert object new property "%s" which already exists in the object.', newProperty );
+      console.error(
+        'Tried to insert object new property "%s" which already exists in the object.',
+        newProperty
+      );
       return;
     }
 
@@ -2989,6 +2992,11 @@ cenozo.factory( 'CnBaseAddFactory', [
         cenozo.addExtendableFunction( object, 'onNew', function( record ) {
           var self = this;
 
+          // first clear the record
+          for( var column in record )
+            if( record.hasOwnProperty( column ) )
+              record[column] = null;
+
           // load the metadata and use it to apply default values to the record
           return this.parentModel.metadata.getPromise().then( function() {
             var promiseList = [];
@@ -4015,7 +4023,8 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onPatch', function( data ) {
           var self = this;
-          if( !this.parentModel.getEditEnabled() ) throw new Error( 'Calling onPatch() but edit is not enabled.' );
+          if( !this.parentModel.getEditEnabled() )
+            throw new Error( 'Calling onPatch() but edit is not enabled.' );
 
           var httpObj = {
             path: this.parentModel.getServiceResourcePath(),
@@ -4111,6 +4120,11 @@ cenozo.factory( 'CnBaseViewFactory', [
           var self = this;
           if( !this.parentModel.getViewEnabled() ) throw new Error( 'Calling onView() but view is not enabled.' );
 
+          // first clear the record
+          for( var column in this.record )
+            if( this.record.hasOwnProperty( column ) )
+              this.record[column] = null;
+
           // get the record's data and metadata
           return this.parentModel.module.subject.snake != this.parentModel.getSubjectFromState() ?
             $q.all() : // don't view when the state's subject doesn't match the model's subject
@@ -4121,7 +4135,8 @@ cenozo.factory( 'CnBaseViewFactory', [
               noActivity: false
             } ).get().then( function( response ) {
               if( '' === response.data )
-                throw new Error( 'Request for record responded with an empty string (should be 403 or 404).' );
+                throw new Error( 'Request for record "' + self.parentModel.getServiceResourcePath() +
+                                 '" responded with an empty string (should be 403 or 404).' );
 
               // create the record
               self.record = angular.copy( response.data );
@@ -4134,7 +4149,9 @@ cenozo.factory( 'CnBaseViewFactory', [
             } ).then( function() {
               var promiseList = [];
 
-              if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
+              if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) {
+                // create enum for rank columns
+
                 // add the parent subject and identifier to the service
                 var path = self.parentModel.getServiceCollectionPath();
                 var parent = self.parentModel.getParentIdentifier();
@@ -4861,15 +4878,6 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         cenozo.addExtendableFunction( self, 'getMetadata', function() {
           self.metadata.columnList = {};
-
-          /* TODO: this is likely unnecessary, so remove it if no problems occur
-          // Pre-build empty objects for every colum in all input groups
-          // We do this so that if getMetadata is extended it can call this function and its own
-          // in parallel instead of having to wait for this function's promise to resolve
-          for( var group in self.module.inputGroupList )
-            for( var column in self.module.inputGroupList[group].inputList )
-              self.metadata.columnList[column] = {};
-          */
 
           return CnHttpFactory.instance( {
             path: self.module.subject.snake
@@ -5951,6 +5959,7 @@ cenozo.service( 'CnModalMessageFactory', [
       var self = this;
       this.title = 'Title';
       this.message = 'Message';
+      this.small = null;
       this.error = false;
       this.block = false;
       angular.extend( this, params );
@@ -5964,6 +5973,7 @@ cenozo.service( 'CnModalMessageFactory', [
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.title = self.title;
             $scope.message = self.message;
+            $scope.small = self.small;
             $scope.error = self.error;
             $scope.block = self.block;
             $scope.close = function() { $uibModalInstance.close( false ); };
@@ -6003,21 +6013,24 @@ cenozo.service( 'CnModalMessageFactory', [
           title = 'Server Error';
           message += 'due to a server-based error. Please provide the resource and error code to support.';
         }
+        if( type ) title += ' (' + type + ')';
         message += '\n';
 
+        var small = '';
         if( angular.isDefined( response.config ) ) {
-          // add the url to the message
+          // add the url as a small message
           var re = new RegExp( '^' + cenozoApp.baseUrl + '/(api/?)?' );
-          message += '\n    Resource: "' + response.config.method + ':'
-                   + response.config.url.replace( re, '' ) + '"';
+          small = '    Resource: "' + response.config.method + ':'
+                + response.config.url.replace( re, '' ) + '"';
 
           if( angular.isDefined( response.config.params ) )
-            message += '\n    Parameters: ' + angular.toJson( response.config.params );
+            small += '\n    Parameters: ' + angular.toJson( response.config.params );
         }
         if( 'string' == cenozo.getType( response.data ) &&
             0 < response.data.length &&
-            306 != type && 406 != type ) message += '\n    Error Code: ' + response.data;
-        var modal = new object( { title: title, message: message, error: true } );
+            20 > response.data.length &&
+            306 != type && 406 != type ) small += '\n    Error Code: ' + response.data;
+        var modal = new object( { title: title, message: message, small: small, error: true } );
         return modal.show();
       }
     };

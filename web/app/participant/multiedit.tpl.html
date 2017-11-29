@@ -52,6 +52,7 @@
           <li ng-class="{'active':'consent'==tab}"><a ng-click="tab='consent'">Consent</a></li>
           <li ng-class="{'active':'collection'==tab}"><a ng-click="tab='collection'">Collection</a></li>
           <li ng-class="{'active':'event'==tab}"><a ng-click="tab='event'">Event</a></li>
+          <li ng-class="{'active':'hold'==tab}"><a ng-click="tab='hold'">Hold</a></li>
           <li ng-class="{'active':'note'==tab}"><a ng-click="tab='note'">Note</a></li>
         </ul>
         <div ng-if="'participant'==tab" class="panel panel-default" style="border-top-left-radius: 0px;">
@@ -347,6 +348,86 @@
                     class="btn btn-primary"
                     ng-disabled="!model.confirmedCount"
                     ng-click="model.applyMultiedit( 'event' )">Add Events</button>
+          </div>
+        </div>
+        <div ng-if="'hold'==tab" class="panel panel-default">
+          <div class="panel-body">
+            <form name="holdForm" class="form-horizontal" novalidate>
+              <div class="col-sm-12 vertical-spacer text-info">
+                Select the hold details to be added to all participants:
+                <hr />
+              </div>
+              <ng-form ng-repeat="input in model.holdInputList" name="innerForm">
+                <div class="form-group">
+                  <label for="{{ input.column }}" class="col-sm-3 control-label">{{ input.title }}</label>
+                  <div class="col-sm-9">
+                    <div class="input-group"
+                         ng-switch="input.type"
+                         ng-class="{ 'has-feedback has-error': innerForm.name.$dirty &&
+                                                               innerForm.name.$invalid }">
+                      <input ng-switch-when="string"
+                             ng-attr-id="{{ input.column }}"
+                             name="name"
+                             class="form-control"
+                             ng-model="input.value"
+                             autocomplete="off"
+                             maxlength="{{ input.max_length }}"
+                             ng-required="input.required"></input>
+                      <select ng-switch-when="boolean"
+                              ng-attr-id="{{ input.column }}"
+                              name="name"
+                              class="form-control"
+                              ng-model="input.value"
+                              ng-required="input.required">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                      </select>
+                      <select ng-switch-when="enum"
+                              ng-attr-id="{{ input.column }}"
+                              name="name"
+                              ng-options="item.value as item.name for item in input.enumList"
+                              cn-options-disabled="item.disabled for item in input.enumList"
+                              ng-model="input.value"
+                              class="form-control"
+                              ng-required="input.required"></select>
+                      <input ng-switch-when="datetimesecond"
+                             ng-attr-id="{{ input.column }}"
+                             name="name"
+                             ng-model="input.value"
+                             type="hidden"
+                             ng-required="input.required"></input>
+                      <input ng-switch-when="datetimesecond"
+                             ng-model="input.formattedValue"
+                             class="form-control"
+                             type="text"
+                             ng-click="model.selectDatetime( input )"
+                             onkeydown="return false"></input>
+                      <textarea ng-switch-when="text"
+                                ng-attr-id="{{ input.column }}"
+                                name="name"
+                                ng-model="input.value"
+                                class="form-control"
+                                cn-elastic
+                                ng-required="input.required"></textarea>
+                      <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+                        <span class="help-block" ng-if="innerForm.name.$error.required">
+                          Cannot be blank
+                        </span>
+                        <span class="help-block" ng-if="innerForm.name.$error.format">
+                          Invalid format
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </ng-form>
+            </form>
+          </div>
+          <div class="form-footer text-right rounded-bottom bg-info">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-disabled="!model.confirmedCount"
+                    ng-click="model.applyMultiedit( 'hold' )">Add Holds</button>
           </div>
         </div>
         <div ng-if="'note'==tab" class="panel panel-default">

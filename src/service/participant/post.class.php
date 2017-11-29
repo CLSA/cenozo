@@ -54,10 +54,10 @@ class post extends \cenozo\service\service
         $this->set_data( $participant_class_name::multiedit( $modifier, (array) $file['input_list'] ) );
       }
       else if( array_key_exists( 'consent', $file ) )
-      { // add the given consent record all participants in th
+      { // add the given consent record to all participants in the uid_list
         $db_consent = lib::create( 'database\consent' );
         foreach( $file['consent'] as $column => $value ) $db_consent->$column = $value;
-        $db_consent->save_list( $select, $modifier );
+        $this->set_data( $db_consent->save_list( $select, $modifier ) );
       }
       else if( array_key_exists( 'collection', $file ) )
       { // add/remove participants from the given collection
@@ -98,7 +98,14 @@ class post extends \cenozo\service\service
       { // add the given event record
         $db_event = lib::create( 'database\event' );
         foreach( $file['event'] as $column => $value ) $db_event->$column = $value;
-        $db_event->save_list( $select, $modifier );
+        $this->set_data( $db_event->save_list( $select, $modifier ) );
+      }
+      else if( array_key_exists( 'hold', $file ) )
+      { // add the given hold record
+        $db_hold = lib::create( 'database\hold' );
+        foreach( $file['hold'] as $column => $value ) $db_hold->$column = $value;
+        $modifier->where( 'participant.enrollment_id', '=', NULL ); // only add holds to enrolled participants
+        $this->set_data( $db_hold->save_list( $select, $modifier ) );
       }
       else if( array_key_exists( 'note', $file ) )
       { // add the given event record
@@ -106,7 +113,7 @@ class post extends \cenozo\service\service
         foreach( $file['note'] as $column => $value ) $db_note->$column = $value;
         $db_note->user_id = $db_user->id;
         $db_note->datetime = $util_class_name::get_datetime_object();
-        $db_note->save_list( $select, $modifier );
+        $this->set_data( $db_note->save_list( $select, $modifier ) );
       }
       else // return a list of all valid uids
       {

@@ -122,10 +122,10 @@ class ui extends \cenozo\base_object
     $list = array(
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'callback', 'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export',
-      'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold_type', 'jurisdiction',
-      'language', 'opal_form_template', 'overview', 'participant', 'phone', 'quota', 'region', 'region_site',
-      'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'script', 'search_result', 'site',
-      'source', 'system_message', 'user', 'webphone', 'writelog'
+      'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
+      'jurisdiction', 'language', 'opal_form_template', 'overview', 'participant', 'phone', 'quota', 'region',
+      'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'script',
+      'search_result', 'site', 'source', 'system_message', 'user', 'webphone', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -292,6 +292,7 @@ class ui extends \cenozo\base_object
       else if( 'participant' == $module->get_subject() )
       {
         if( $use_interview_module ) $module->add_child( 'interview' );
+        $module->add_child( 'hold' );
         $module->add_child( 'address' );
         $module->add_child( 'phone' );
         $module->add_child( 'consent' );
@@ -301,8 +302,8 @@ class ui extends \cenozo\base_object
         $module->add_child( 'form' );
         $module->add_choose( 'collection' );
         $module->add_action( 'history', $use_interview_module ?
-          '/{identifier}?{address}&{alternate}&{assignment}&{consent}&{event}&{form}&{note}&{phone}' :
-          '/{identifier}?{address}&{alternate}&{consent}&{event}&{form}&{note}&{phone}' );
+          '/{identifier}?{address}&{alternate}&{assignment}&{consent}&{event}&{form}&{hold}&{note}&{phone}' :
+          '/{identifier}?{address}&{alternate}&{consent}&{event}&{form}&{hold}&{note}&{phone}' );
         $module->add_action( 'notes', '/{identifier}?{search}' );
         // remove the add action it is used for utility purposes only
         $module->remove_action( 'add' );

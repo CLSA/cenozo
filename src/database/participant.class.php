@@ -118,6 +118,31 @@ class participant extends record
   }
 
   /**
+   * Get the participant's last hold
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return hold
+   * @access public
+   */
+  public function get_last_hold()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no primary key.' );
+      return NULL;
+    }
+
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_last_hold' );
+    $select->add_column( 'hold_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_id', '=', $this->id );
+
+    $hold_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    return $hold_id ? lib::create( 'database\hold', $hold_id ) : NULL;
+  }
+
+  /**
    * Get the participant's last consent by consent type
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\consent_type $db_consent_type
@@ -162,10 +187,10 @@ class participant extends record
 
     $select = lib::create( 'database\select' );
     $select->from( 'participant_last_written_consent' );
-    $select->add_column( 'event_id' );
+    $select->add_column( 'consent_id' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'participant_id', '=', $this->id );
-    $modifier->where( 'event_type_id', '=', $db_consent_type->id );
+    $modifier->where( 'consent_type_id', '=', $db_consent_type->id );
 
     $consent_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;

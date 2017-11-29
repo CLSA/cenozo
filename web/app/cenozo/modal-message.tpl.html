@@ -4,6 +4,7 @@
   </div>
   <div class="modal-body allow-select" ng-class="{ 'text-danger': error }">
     <span style="white-space: pre-wrap;">{{ message }}</span>
+    <small ng-if="small" style="white-space: pre-wrap;"><br>{{ small }}</small>
   </div>
   <div class="modal-footer bg-info" ng-if="!block">
     <button type="submit" cn-autofocus class="btn btn-primary">Close</button>

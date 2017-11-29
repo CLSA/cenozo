@@ -261,6 +261,7 @@ abstract class record extends \cenozo\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\select $select A selection of column values
    * @param database\modifier $modifier A modifier defining which rows to insert
+   * @return integer The number of rows saved
    * @access public
    */
   public function save_list( $select, $modifier )
@@ -286,8 +287,9 @@ abstract class record extends \cenozo\base_object
                     implode( ",\n  ", $columns ),
                     $select->get_sql(),
                     $modifier->get_sql() );
-
     static::db()->execute( $sql );
+
+    return static::db()->affected_rows();
   }
 
   /**

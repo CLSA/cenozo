@@ -90,17 +90,6 @@ CREATE PROCEDURE patch_hold()
       AND participant.active = 0
       AND participant.enrollment_id IS NULL;
 
-      -- make sure all participants have at least one empty hold
-      CREATE TEMPORARY TABLE has_hold
-      SELECT DISTINCT participant_id FROM hold;
-      ALTER TABLE has_hold ADD INDEX dk_participant_id( participant_id );
-
-      INSERT INTO hold( participant_id, hold_type_id, datetime )
-      SELECT participant.id, NULL, UTC_TIMESTAMP()
-      FROM participant
-      LEFT JOIN has_hold ON participant.id = has_hold.participant_id
-      WHERE has_hold.participant_id IS NULL; -- doesn't already have a hold
-
     END IF;
 
   END //

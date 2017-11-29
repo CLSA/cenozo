@@ -14,7 +14,7 @@ CREATE PROCEDURE patch_participant_last_hold()
 
       CREATE TABLE IF NOT EXISTS participant_last_hold (
         participant_id INT UNSIGNED NOT NULL,
-        hold_id INT UNSIGNED NOT NULL,
+        hold_id INT UNSIGNED NULL,
         update_timestamp TIMESTAMP NOT NULL,
         create_timestamp TIMESTAMP NOT NULL,
         PRIMARY KEY (participant_id),
@@ -27,8 +27,8 @@ CREATE PROCEDURE patch_participant_last_hold()
         CONSTRAINT fk_participant_last_hold_hold_id
           FOREIGN KEY (hold_id)
           REFERENCES hold (id)
-          ON DELETE NO ACTION
-          ON UPDATE NO ACTION)
+          ON DELETE SET NULL
+          ON UPDATE CASCADE)
       ENGINE = InnoDB;
 
       SELECT "Populating participant_last_hold table" AS "";

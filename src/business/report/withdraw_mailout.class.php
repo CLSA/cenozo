@@ -49,7 +49,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
-    $modifier->join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+    $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
     $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
     $modifier->join( 'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
     $modifier->join( 'address', 'participant_first_address.address_id', 'address.id' );
