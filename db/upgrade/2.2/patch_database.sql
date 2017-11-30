@@ -11,6 +11,7 @@ SOURCE hold.sql
 SOURCE get_hold_from_consent.sql
 SOURCE remove_duplicate_holds.sql
 SOURCE participant.state.sql
+SOURCE overview.sql
 
 SOURCE role_has_hold_type.sql
 SOURCE role_has_state.sql

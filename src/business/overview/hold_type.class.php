@@ -9,9 +9,9 @@ namespace cenozo\business\overview;
 use cenozo\lib, cenozo\log;
 
 /**
- * overview: hold
+ * overview: hold_type
  */
-class hold extends \cenozo\business\overview\base_overview
+class hold_type extends \cenozo\business\overview\base_overview
 {
   /**
    * Implements abstract method
@@ -25,6 +25,7 @@ class hold extends \cenozo\business\overview\base_overview
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     $base_mod = lib::create( 'database\modifier' );
+    $base_mod->where( 'participant.enrollment_id', '=', NULL );
     if( $db_application->release_based )
     {
       $base_mod->join(
@@ -64,6 +65,7 @@ class hold extends \cenozo\business\overview\base_overview
     $hold_type_mod = lib::create( 'database\modifier' );
     $hold_type_mod->join( 'hold', 'hold_type.id', 'hold.hold_type_id' );
     $hold_type_mod->join( 'participant_last_hold', 'hold.participant_id', 'participant_last_hold.participant_id' );
+    $hold_type_mod->join( 'participant', 'participant_last_hold.participant_id', 'participant.id' );
     $hold_type_mod->merge( $base_mod );
     $hold_type_mod->group( 'hold_type.id' );
     $hold_type_mod->order( 'hold_type.type' );
@@ -71,7 +73,7 @@ class hold extends \cenozo\business\overview\base_overview
     foreach( $hold_type_class_name::select( $hold_type_sel, $hold_type_mod ) as $hold_type )
     {
       $this->add_root_item(
-        $hold_type['name'],
+        $hold_type['type'].': '.$hold_type['name'],
         sprintf( '%d (%0.2f%%)', $hold_type['total'], 100 * $hold_type['total'] / $total )
       );
     }
