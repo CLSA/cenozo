@@ -93,15 +93,23 @@ class module extends \cenozo\service\site_restricted_participant_module
     {
       $select->add_column(
          "IF(\n".
-         "   IFNULL( hold.datetime, 0 ) >= IFNULL( proxy.datetime, 0 ) AND\n".
-         "   IFNULL( hold.datetime, 0 ) >= IFNULL( trace.datetime, 0 ),\n".
-         "   CONCAT( hold_type.type, ': ', hold_type.name ),\n".
-         "   IF(\n".
-         "     IFNULL( proxy.datetime, 0 ) >= IFNULL( trace.datetime, 0 ),\n".
-         "     CONCAT( 'proxy: ', proxy_type.name ),\n".
-         "     CONCAT( 'trace: ', trace_type.name )\n".
-         "   )\n".
-         " )",
+         "  enrollment.name IS NOT NULL,\n".
+         "  'Not Enrolled',\n".
+         "  IF(\n".
+         "    hold.datetime >= IFNULL( proxy.datetime, 0 ) AND\n".
+         "    hold.datetime >= IFNULL( trace.datetime, 0 ),\n".
+         "    CONCAT( hold_type.type, ': ', hold_type.name ),\n".
+         "    IF(\n".
+         "      proxy.datetime >= IFNULL( trace.datetime, 0 ),\n".
+         "      CONCAT( 'proxy: ', proxy_type.name ),\n".
+         "      IF(\n".
+         "        trace_type.name IS NOT NULL,\n".
+         "        CONCAT( 'trace: ', trace_type.name ),\n".
+         "        'Active'\n".
+         "      )\n".
+         "    )\n".
+         "  )\n".
+         ")",
         'status',
         false
       );
