@@ -52,6 +52,23 @@ class participant extends record
   }
 
   /**
+   * Returns the participant's effective status based on enrollment, hold, trace and proxy
+   * @return string
+   * @access public
+   */
+  public function get_status()
+  {
+    if( !is_null( $this->enrollment_id ) ) return 'not enrolled';
+    $db_hold_type = $this->get_last_hold()->get_hold_type();
+    if( !is_null( $db_hold_type ) && 'final' == $db_hold_type->type ) return $db_hold_type->to_string();
+    $db_trace_type = $this->get_last_trace_type();
+    if( !is_null( $db_trace_type ) ) return 'trace: '.$db_trace_type->name;
+    if( !is_null( $db_hold_type ) ) return $db_hold_type->to_string();
+    if( !is_null( $db_proxy_type ) ) return 'proxy: '.$db_proxy_type->name;
+    return 'active';
+  }
+
+  /**
    * Get this participant's next_of_kin record
    * @return next_of_kin
    * @access public

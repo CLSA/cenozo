@@ -91,25 +91,13 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     if( $select->has_column( 'status' ) )
     {
+      // this should be identical to what is returned by database\participant::get_status()
       $select->add_column(
-         "IF(\n".
-         "  enrollment.name IS NOT NULL,\n".
-         "  'Not Enrolled',\n".
-         "  IF(\n".
-         "    hold.datetime >= IFNULL( proxy.datetime, 0 ) AND\n".
-         "    hold.datetime >= IFNULL( trace.datetime, 0 ),\n".
-         "    CONCAT( hold_type.type, ': ', hold_type.name ),\n".
-         "    IF(\n".
-         "      proxy.datetime >= IFNULL( trace.datetime, 0 ),\n".
-         "      CONCAT( 'proxy: ', proxy_type.name ),\n".
-         "      IF(\n".
-         "        trace_type.name IS NOT NULL,\n".
-         "        CONCAT( 'trace: ', trace_type.name ),\n".
-         "        'Active'\n".
-         "      )\n".
-         "    )\n".
-         "  )\n".
-         ")",
+        "IF( enrollment.name IS NOT NULL, 'not enrolled',\n".
+        "IF( hold_type.type = 'final', CONCAT( 'final: ', hold_type.name ),\n".
+        "IF( trace_type.name IS NOT NULL, CONCAT( 'trace: ', trace_type.name ),\n".
+        "IF( hold_type.type IS NOT NULL, CONCAT( hold_type.type, ': ', hold_type.name ),\n".
+        "IF( proxy_type.name IS NOT NULL, CONCAT( 'proxy: ', proxy_type.name ), 'active' )))))",
         'status',
         false
       );

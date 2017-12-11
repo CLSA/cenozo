@@ -185,15 +185,13 @@ define( function() {
             return CnHttpFactory.instance( {
               path: 'proxy_type',
               data: {
-                select: { column: [ 'id', 'type', 'name', 'access', 'system' ] },
-                modifier: { order: [ 'type', 'name' ] }
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name' }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.proxy_type_id.enumList = [];
               response.data.forEach( function( item ) {
-                self.metadata.columnList.proxy_type_id.enumList.push( {
-                  value: item.id, name: item.type + ': ' + item.name, disabled: !item.access || item.system
-                } );
+                self.metadata.columnList.proxy_type_id.enumList.push( { value: item.id, name: item.name } );
               } );
             } );
           } );

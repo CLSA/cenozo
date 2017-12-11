@@ -78,10 +78,18 @@ class module extends \cenozo\service\site_restricted_participant_module
         // make sure the role has access to the hold_type
         $hold_type_mod = lib::create( 'database\modifier' );
         $hold_type_mod->where( 'role_id', '=', $db_role->id );
-        if( 0 == $db_hold_type->get_role_count( $hold_type_mod ) )
+        if( !is_null( $db_hold_type ) && 0 == $db_hold_type->get_role_count( $hold_type_mod ) )
         {
           $this->set_data( sprintf( 'You do not have access to the "%s" hold type.',
                                     $db_hold_type->to_string() ) );
+          $this->get_status()->set_code( 306 );
+          return;
+        }
+
+        // make sure the participant is enrolled
+        if( !is_null( $db_participant->enrollment_id ) )
+        {
+          $this->set_data( 'Cannot change a non-enrolled participant\'s hold.' );
           $this->get_status()->set_code( 306 );
           return;
         }
@@ -93,15 +101,36 @@ class module extends \cenozo\service\site_restricted_participant_module
           $this->get_status()->set_code( 306 );
           return;
         }
+
         // do not write system holds
-        else if( !is_null( $db_hold_type ) && $db_hold_type->system )
+        if( !is_null( $db_hold_type ) && $db_hold_type->system )
         {
           $this->set_data( 'This hold type can only be set internally.' );
           $this->get_status()->set_code( 306 );
           return;
         }
-        // make sure the last hold's type is not empty
-        else if( is_null( $db_last_hold_type ) && is_null( $db_hold_type ) )
+
+        // when the participant is already in a final hold
+        if( !is_null( $db_last_hold_type ) && 'final' == $db_last_hold_type->type )
+        {
+          // final holds cannot be replaced with non-final holds
+          if( 'final' != $db_hold_type->type )
+          {
+            $this->set_data( 'The participant must be removed from their final hold before you can proceed.' );
+            $this->get_status()->set_code( 306 );
+            return;
+          }
+          
+          // only tier-3 roles can override an existing final hold
+          if( 3 > $db_role->tier )
+          {
+            $this->get_status()->set_code( 403 );
+            return;
+          }
+        }
+
+        // when adding empty holds make sure the last hold's type is not empty
+        if( is_null( $db_last_hold_type ) && is_null( $db_hold_type ) )
         {
           $this->set_data( 'The participant is not in a hold so there is no need to create an empty hold.' );
           $this->get_status()->set_code( 306 );

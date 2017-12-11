@@ -1,0 +1,14 @@
+Participant status is determined by 4 entities: exclusion, hold, trace and proxy.  A participant may belong to a hold, trace and proxy simultaneously, but participant status is determined by evaluating all of these entities in the following order:
+
+  If the participant is excluded from enrollment their status is "not enrolled",
+  otherwise, if the participant is in a final hold their status is determined by the hold,
+  otherwise, if the participant is in a trace their status is determined by the trace,
+  otherwise, if the participant is in any other type of hold their status is determined by the hold,
+  otherwise, if the participant is in a proxy their status is determined by the proxy
+  otherwise, the participant's status is "active"
+
+1) When a participant's status is "not enrolled", holds and proxies may not be changed.
+2) When a participant's status is a "final hold", only final and empty holds may be used and only by tier 3 roles.
+3) When a participant's status is any "trace", holds and proxies may be changed.
+4) When a participant's status is any other type of "hold", holds and proxies may be changed.
+5) When a participant's status is any "proxy", holds and proxies may be changed.
