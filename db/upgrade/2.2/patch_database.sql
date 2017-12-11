@@ -2,8 +2,8 @@
 
 SET AUTOCOMMIT=0;
 
-SOURCE enrollment.sql
-SOURCE participant.enrollment.sql
+SOURCE exclusion.sql
+SOURCE participant.exclusion.sql
 SOURCE rename_states.sql
 
 SOURCE hold_type.sql

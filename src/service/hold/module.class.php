@@ -87,7 +87,7 @@ class module extends \cenozo\service\site_restricted_participant_module
         }
 
         // make sure the participant is enrolled
-        if( !is_null( $db_participant->enrollment_id ) )
+        if( !is_null( $db_participant->exclusion_id ) )
         {
           $this->set_data( 'Cannot change a non-enrolled participant\'s hold.' );
           $this->get_status()->set_code( 306 );

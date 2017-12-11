@@ -103,7 +103,7 @@ class post extends \cenozo\service\service
       { // add the given hold record
         $db_hold = lib::create( 'database\hold' );
         foreach( $file['hold'] as $column => $value ) $db_hold->$column = $value;
-        $modifier->where( 'participant.enrollment_id', '=', NULL ); // only add holds to enrolled participants
+        $modifier->where( 'participant.exclusion_id', '=', NULL ); // only add holds to enrolled participants
         $this->set_data( $db_hold->save_list( $select, $modifier ) );
       }
       else if( array_key_exists( 'note', $file ) )

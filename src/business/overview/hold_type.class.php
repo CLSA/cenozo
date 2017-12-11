@@ -25,7 +25,7 @@ class hold_type extends \cenozo\business\overview\base_overview
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     $base_mod = lib::create( 'database\modifier' );
-    $base_mod->where( 'participant.enrollment_id', '=', NULL );
+    $base_mod->where( 'participant.exclusion_id', '=', NULL );
     if( $db_application->release_based )
     {
       $base_mod->join(

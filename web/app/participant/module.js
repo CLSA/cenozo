@@ -30,7 +30,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
         column: 'cohort.name',
         title: 'Cohort'
       },
-      enrollment: {
+      exclusion: {
         title: 'Enrolled'
       },
       status: {
@@ -100,12 +100,12 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
   } );
 
   module.addInputGroup( 'Defining Details', {
-    enrollment: {
+    exclusion: {
       title: 'Enrolled',
       type: 'string',
       constant: true,
-      help: 'Whether the participant has been enrolled into the study, and if not then the reason they are ' +
-            'not enrolled.'
+      help: 'Whether the participant has been enrolled into the study, and if not then the reason they have ' +
+            'been excluded.'
     },
     source: {
       column: 'source.name',
@@ -1098,10 +1098,10 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
 
             // only allow adding a hold or proxy if the participant is enrolled
             self.holdModel.getAddEnabled = function() {
-              return self.holdModel.$$getAddEnabled && 'Yes' == self.record.enrollment;
+              return self.holdModel.$$getAddEnabled && 'Yes' == self.record.exclusion;
             };
             self.proxyModel.getAddEnabled = function() {
-              return self.proxyModel.$$getAddEnabled && 'Yes' == self.record.enrollment;
+              return self.proxyModel.$$getAddEnabled && 'Yes' == self.record.exclusion;
             };
           } );
         }

@@ -57,7 +57,7 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
-    $modifier->left_join( 'enrollment', 'participant.enrollment_id', 'enrollment.id' );
+    $modifier->left_join( 'exclusion', 'participant.exclusion_id', 'exclusion.id' );
 
     $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
     $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
@@ -71,20 +71,20 @@ class module extends \cenozo\service\site_restricted_participant_module
     $modifier->left_join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
     $modifier->left_join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
 
-    if( $select->has_column( 'enrollment' ) )
+    if( $select->has_column( 'exclusion' ) )
     {
       $select->add_column(
-        'IF( participant.enrollment_id IS NULL, "Yes", CONCAT( "No: ", enrollment.name ) )',
-        'enrollment',
+        'IF( participant.exclusion_id IS NULL, "Yes", CONCAT( "No: ", exclusion.name ) )',
+        'exclusion',
         false
       );
     }
 
-    if( $select->has_column( 'enrollment' ) )
+    if( $select->has_column( 'exclusion' ) )
     {
       $select->add_column(
-        'IF( participant.enrollment_id IS NULL, "Yes", CONCAT( "No: ", enrollment.name ) )',
-        'enrollment',
+        'IF( participant.exclusion_id IS NULL, "Yes", CONCAT( "No: ", exclusion.name ) )',
+        'exclusion',
         false
       );
     }
@@ -93,7 +93,7 @@ class module extends \cenozo\service\site_restricted_participant_module
     {
       // this should be identical to what is returned by database\participant::get_status()
       $select->add_column(
-        "IF( enrollment.name IS NOT NULL, 'not enrolled',\n".
+        "IF( exclusion.name IS NOT NULL, 'not enrolled',\n".
         "IF( hold_type.type = 'final', CONCAT( 'final: ', hold_type.name ),\n".
         "IF( trace_type.name IS NOT NULL, CONCAT( 'trace: ', trace_type.name ),\n".
         "IF( hold_type.type IS NOT NULL, CONCAT( hold_type.type, ': ', hold_type.name ),\n".

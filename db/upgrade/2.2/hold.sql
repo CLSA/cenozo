@@ -73,7 +73,7 @@ CREATE PROCEDURE patch_hold()
       JOIN consent ON participant.id = consent.participant_id
       JOIN consent_type ON consent.consent_type_id = consent_type.id
       LEFT JOIN hold_type ON consent.accept = 0 AND hold_type.type = "final" AND hold_type.name = "withdrawn"
-      WHERE participant.enrollment_id IS NULL
+      WHERE participant.exclusion_id IS NULL
       AND consent_type.name = "participation";
 
       -- add in holds based on states
@@ -89,7 +89,7 @@ CREATE PROCEDURE patch_hold()
       FROM hold_type, participant
       WHERE hold_type.type = "temporary" AND hold_type.name = "deactivated"
       AND participant.active = 0
-      AND participant.enrollment_id IS NULL;
+      AND participant.exclusion_id IS NULL;
 
     END IF;
 

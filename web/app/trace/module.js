@@ -93,7 +93,7 @@ define( function() {
               value: null
             } );
             data.modifier.where.push( {
-              column: 'participant.enrollment_id',
+              column: 'participant.exclusion_id',
               operator: '=',
               value: null
             } );
