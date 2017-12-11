@@ -1,3 +1,5 @@
+SELECT "Adding new triggers to consent table" AS "";
+
 DELIMITER $$
     
 DROP TRIGGER IF EXISTS consent_BEFORE_UPDATE $$
@@ -18,7 +20,7 @@ BEGIN
         WHERE hold.id = @hold_id
         AND hold_type.type = "final"
         AND hold_type.name = "withdrawn";
-        CALL remove_duplicate_holds( NEW.participant_id );
+        CALL remove_duplicate_hold( NEW.participant_id );
       END IF;
     END IF;
   END IF;
@@ -36,7 +38,7 @@ BEGIN
     CALL get_hold_from_consent( OLD.id, @hold_id );
     IF @hold_id IS NOT NULL THEN
       DELETE FROM hold WHERE id = @hold_id;
-      CALL remove_duplicate_holds( OLD.participant_id );
+      CALL remove_duplicate_hold( OLD.participant_id );
     END IF;
   END IF;
 END$$

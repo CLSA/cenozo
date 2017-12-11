@@ -9,7 +9,16 @@ SOURCE rename_states.sql
 SOURCE hold_type.sql
 SOURCE hold.sql
 SOURCE get_hold_from_consent.sql
-SOURCE remove_duplicate_holds.sql
+SOURCE remove_duplicate_hold.sql
+
+SOURCE proxy_type.sql
+SOURCE proxy.sql
+SOURCE remove_duplicate_proxy.sql
+
+SOURCE trace_type.sql
+SOURCE trace.sql
+SOURCE remove_duplicate_trace.sql
+
 SOURCE participant.state.sql
 SOURCE overview.sql
 
@@ -19,8 +28,18 @@ SOURCE state.sql
 
 SOURCE participant_last_hold.sql
 SOURCE update_participant_last_hold.sql
+SOURCE participant_last_proxy.sql
+SOURCE update_participant_last_proxy.sql
+SOURCE participant_last_trace.sql
+SOURCE update_participant_last_trace.sql
+SOURCE contact_changed.sql
 SOURCE consent.sql
+SOURCE address.sql
+SOURCE phone.sql
+
 SOURCE hold.post.sql
+SOURCE proxy.post.sql
+SOURCE trace.post.sql
 
 SOURCE update_version_number.sql
 

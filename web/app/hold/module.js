@@ -70,6 +70,10 @@ define( function() {
       title: 'Application',
       type: 'string',
       exclude: 'add'
+    },
+    note: {
+      title: 'Note',
+      type: 'text'
     }
   } );
 
@@ -185,17 +189,14 @@ define( function() {
             return CnHttpFactory.instance( {
               path: 'hold_type',
               data: {
-                select: { column: [ 'id', 'type', 'name', 'access' ] },
-                modifier: {
-                  where: [ { column: 'system', operator: '=', value: 0 } ],
-                  order: [ 'type', 'name' ]
-                }
+                select: { column: [ 'id', 'type', 'name', 'access', 'system' ] },
+                modifier: { order: [ 'type', 'name' ] }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.hold_type_id.enumList = [];
               response.data.forEach( function( item ) {
                 self.metadata.columnList.hold_type_id.enumList.push( {
-                  value: item.id, name: item.type + ': ' + item.name, disabled: !item.access
+                  value: item.id, name: item.type + ': ' + item.name, disabled: !item.access || item.system
                 } );
               } );
             } );

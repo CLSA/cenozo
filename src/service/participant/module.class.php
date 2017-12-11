@@ -58,9 +58,27 @@ class module extends \cenozo\service\site_restricted_participant_module
     $db_application = lib::create( 'business\session' )->get_application();
 
     $modifier->left_join( 'enrollment', 'participant.enrollment_id', 'enrollment.id' );
+
     $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
     $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
     $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+
+    $modifier->join( 'participant_last_proxy', 'participant.id', 'participant_last_proxy.participant_id' );
+    $modifier->left_join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
+    $modifier->left_join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
+
+    $modifier->join( 'participant_last_trace', 'participant.id', 'participant_last_trace.participant_id' );
+    $modifier->left_join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
+    $modifier->left_join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
+
+    if( $select->has_column( 'enrollment' ) )
+    {
+      $select->add_column(
+        'IF( participant.enrollment_id IS NULL, "Yes", CONCAT( "No: ", enrollment.name ) )',
+        'enrollment',
+        false
+      );
+    }
 
     if( $select->has_column( 'enrollment' ) )
     {
@@ -74,33 +92,58 @@ class module extends \cenozo\service\site_restricted_participant_module
     if( $select->has_column( 'status' ) )
     {
       $select->add_column(
-        'IF( '.
-          'participant.enrollment_id IS NULL, '.
-          'IFNULL( CONCAT( hold_type.type, " hold (", hold_type.name, ")" ), "Active" ), '.
-          '"Not Enrolled" '.
-        ')',
+         "IF(\n".
+         "   IFNULL( hold.datetime, 0 ) >= IFNULL( proxy.datetime, 0 ) AND\n".
+         "   IFNULL( hold.datetime, 0 ) >= IFNULL( trace.datetime, 0 ),\n".
+         "   CONCAT( hold_type.type, ': ', hold_type.name ),\n".
+         "   IF(\n".
+         "     IFNULL( proxy.datetime, 0 ) >= IFNULL( trace.datetime, 0 ),\n".
+         "     CONCAT( 'proxy: ', proxy_type.name ),\n".
+         "     CONCAT( 'trace: ', trace_type.name )\n".
+         "   )\n".
+         " )",
         'status',
         false
       );
     }
 
-    if( $select->has_column( 'enrollment' ) )
-    {
-      $select->add_column(
-        'IF( participant.enrollment_id IS NULL, "Yes", CONCAT( "No: ", enrollment.name ) )',
-        'enrollment',
-        false
-      );
-    }
+    // add the total number of addresss
+    if( $select->has_column( 'active_address_count' ) ) 
+    {   
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'address' );
+      $join_sel->add_column( 'participant_id' );
+      $join_sel->add_column( 'COUNT(*)', 'active_address_count', false );
 
-    if( $select->has_column( 'last_hold' ) )
-    {
-      $select->add_column(
-        'CONCAT( hold_type.type, ": ", hold_type.name )',
-        'last_hold',
-        false
-      );
-    }
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'active', '=', true );
+      $join_mod->group( 'participant_id' );
+
+      $modifier->left_join(
+        sprintf( '( %s %s ) AS participant_join_address', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'participant.id',
+        'participant_join_address.participant_id' );
+      $select->add_column( 'IFNULL( active_address_count, 0 )', 'active_address_count', false );
+    }   
+
+    // add the total number of phones
+    if( $select->has_column( 'active_phone_count' ) ) 
+    {   
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'phone' );
+      $join_sel->add_column( 'participant_id' );
+      $join_sel->add_column( 'COUNT(*)', 'active_phone_count', false );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'active', '=', true );
+      $join_mod->group( 'participant_id' );
+
+      $modifier->left_join(
+        sprintf( '( %s %s ) AS participant_join_phone', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'participant.id',
+        'participant_join_phone.participant_id' );
+      $select->add_column( 'IFNULL( active_phone_count, 0 )', 'active_phone_count', false );
+    }   
 
     // restrict to participants in this application
     if( $db_application->release_based || $select->has_table_columns( 'preferred_site' ) )

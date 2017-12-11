@@ -1,4 +1,6 @@
-define( function() {
+define( [ 'trace' ].reduce( function( list, name ) {
+  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
+}, [] ), function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'address', true ); } catch( err ) { console.warn( err ); return; }
@@ -191,10 +193,12 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
+    'CnBaseAddFactory', 'CnTraceModelFactory', '$q',
+    function( CnBaseAddFactory, CnTraceModelFactory, $q ) {
       var object = function( parentModel ) {
+        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
+        var traceModel = CnTraceModelFactory.root;
 
         // make sure that columns are showing as they should when we first create a new address record
         this.onNew = function( record ) {
@@ -206,6 +210,20 @@ define( function() {
             }
           } );
         };
+
+        this.onAdd = function( record ) {
+          var id = this.parentModel.getParentIdentifier().identifier;
+          return traceModel.checkForTraceResolvedAfterAddressAdded( id ).then( function( response ) {
+            if( response ) {
+              return self.$$onAdd( record ).then( function() {
+                // end tracing with reason "response"
+                if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+              } );
+            } else {
+              return $q.reject();
+            }
+          } );
+        };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
@@ -213,20 +231,39 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+    'CnBaseListFactory', 'CnTraceModelFactory', '$q',
+    function( CnBaseListFactory, CnTraceModelFactory, $q ) {
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseListFactory.construct( this, parentModel );
+        var traceModel = CnTraceModelFactory.root;
+
+        this.onDelete = function( record ) {
+          var id = this.parentModel.getParentIdentifier().identifier;
+          return traceModel.checkForTraceRequiredAfterAddressRemoved( id ).then( function( response ) {
+            if( response ) {
+              return self.$$onDelete( record ).then( function() {
+                // start tracing with reason "response"
+                if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+              } );
+            } else {
+              return $q.reject();
+            }
+          } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressViewFactory', [
-    'CnBaseViewFactory', 'CnSession', '$state', '$window',
-    function( CnBaseViewFactory, CnSession, $state, $window ) {
+    'CnBaseViewFactory', 'CnTraceModelFactory', 'CnSession', '$state', '$window', '$q',
+    function( CnBaseViewFactory, CnTraceModelFactory, CnSession, $state, $window, $q ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
+        var traceModel = CnTraceModelFactory.root;
         this.onViewPromise = null;
 
         this.useTimezone = function() {
@@ -250,7 +287,50 @@ define( function() {
         };
 
         this.onPatch = function( data ) {
-          return this.$$onPatch( data ).then( function() { return self.onView(); } );
+          var id = this.parentModel.getParentIdentifier().identifier;
+          if( angular.isDefined( data.active ) ) {
+            if( data.active ) {
+              return traceModel.checkForTraceResolvedAfterAddressAdded( id ).then( function( response ) {
+                if( response ) {
+                  return self.$$onPatch( data ).then( function() {
+                    // end tracing with reason "response"
+                    if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+                  } );
+                } else {
+                  return $q.reject();
+                }
+              } );
+            } else {
+              return traceModel.checkForTraceRequiredAfterAddressRemoved( id ).then( function( response ) {
+                if( response ) {
+                  return self.$$onPatch( data ).then( function() {
+                    // start tracing with reason "response"
+                    if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+                  } );
+                } else {
+                  return $q.reject();
+                }
+              } );
+            }
+          }
+
+          return this.$$onPatch( data ).then( function() {
+            if( angular.isDefined( data.postcode ) ) return self.onView();
+          } );
+        };
+
+        this.onDelete = function() {
+          var id = this.parentModel.getParentIdentifier().identifier;
+          return traceModel.checkForTraceRequiredAfterAddressRemoved().then( function( id, response ) {
+            if( response ) {
+              return self.$$onDelete().then( function() {
+                // start tracing with reason "response"
+                if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+              } );
+            } else {
+              return $q.reject();
+            }
+          } );
         };
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

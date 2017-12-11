@@ -21,17 +21,12 @@ class hold extends record
   {
     $db_participant = lib::create( 'database\participant', $this->participant_id );
 
-    // make sure the participant is enrolled
-    if( !is_null( $db_participant->enrollment_id ) )
-      throw lib::create( 'exception\notice', 'Only enrolled participants can be put on hold.', __METHOD__ );
-
-    if( is_null( $this->hold_type_id ) )
+    // when adding new holds, make sure the last hold's type is not empty
+    if( is_null( $this->id ) && is_null( $this->hold_type_id ) )
     {
-      // make sure the last hold's type is not empty
       $db_hold = $db_participant->get_last_hold();
       if( is_null( $db_hold ) || is_null( $db_hold->hold_type_id ) )
-        throw lib::create( 'exception\runtime',
-          'Tried to cancel a hold but the participant is not in a hold.', __METHOD__ );
+        throw lib::create( 'exception\runtime', 'Tried to unnecessarily cancel a hold.', __METHOD__ );
     }
 
     parent::save();

@@ -1,26 +1,28 @@
-DROP PROCEDURE IF EXISTS remove_duplicate_holds_now;
+DROP PROCEDURE IF EXISTS remove_duplicate_trace_now;
 DELIMITER //
-CREATE PROCEDURE remove_duplicate_holds_now()
+CREATE PROCEDURE remove_duplicate_trace_now()
   BEGIN
     SET @test = ( SELECT cenozo FROM application LIMIT 1 );
     IF @test != "2.2" THEN
-      SELECT "Removing duplicate holds" AS "";
-      CALL remove_duplicate_holds( NULL );
+      SELECT "Removing duplicate traces" AS "";
+      CALL remove_duplicate_trace( NULL );
     END IF;
   END //
 DELIMITER ;
 
 
-DROP PROCEDURE IF EXISTS remove_duplicate_holds;
+SELECT "Creating new remove_duplicate_trace procedure" AS "";
+
+DROP PROCEDURE IF EXISTS remove_duplicate_trace;
 DELIMITER //
-CREATE PROCEDURE remove_duplicate_holds(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE remove_duplicate_trace(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
   -- Declare '_val' variables to read in each record from the cursor
   DECLARE id_val INT UNSIGNED;
   DECLARE participant_id_val INT UNSIGNED;
-  DECLARE hold_type_id_val INT UNSIGNED;
+  DECLARE trace_type_id_val INT UNSIGNED;
   DECLARE last_participant_id_val INT UNSIGNED;
-  DECLARE last_hold_type_id_val INT UNSIGNED;
+  DECLARE last_trace_type_id_val INT UNSIGNED;
 
   -- Declare variables used just for cursor and loop control
   DECLARE no_more_rows BOOLEAN;
@@ -29,8 +31,8 @@ BEGIN
 
   -- Declare the cursor
   DECLARE the_cursor CURSOR FOR
-  SELECT id, participant_id, hold_type_id
-  FROM hold
+  SELECT id, participant_id, trace_type_id
+  FROM trace
   WHERE participant_id = IFNULL( proc_participant_id, participant_id )
   ORDER BY participant_id, datetime;
 
@@ -44,12 +46,12 @@ BEGIN
   select FOUND_ROWS() into num_rows;
 
   SET last_participant_id_val = NULL;
-  SET last_hold_type_id_val = NULL;
+  SET last_trace_type_id_val = NULL;
 
   the_loop: LOOP
 
     FETCH the_cursor
-    INTO id_val, participant_id_val, hold_type_id_val;
+    INTO id_val, participant_id_val, trace_type_id_val;
 
     -- break out of the loop if
       -- 1) there were no records, or
@@ -60,29 +62,29 @@ BEGIN
     END IF;
 
     IF NOT (participant_id_val <=> last_participant_id_val ) THEN
-      -- new participant's hold
+      -- new participant's trace
 
-      IF hold_type_id_val IS NULL THEN
-        -- always remove the first hold if the hold-type is null
-        DELETE FROM hold WHERE id = id_val;
+      IF trace_type_id_val IS NULL THEN
+        -- always remove the first trace if the trace-type is null
+        DELETE FROM trace WHERE id = id_val;
         SET last_participant_id_val = NULL;
-        SET last_hold_type_id_val = NULL;
+        SET last_trace_type_id_val = NULL;
       ELSE
-        -- not deleting the hold, so mark it as the last
+        -- not deleting the trace, so mark it as the last
         SET last_participant_id_val = participant_id_val;
-        SET last_hold_type_id_val = hold_type_id_val;
+        SET last_trace_type_id_val = trace_type_id_val;
       END IF;
     ELSE
       -- same participant as last time
 
-      -- check to make sure this hold isn't a duplicate of the last
-      IF hold_type_id_val <=> last_hold_type_id_val THEN
-        -- delete the duplicate hold
-        DELETE FROM hold WHERE id = id_val;
+      -- check to make sure this trace isn't a duplicate of the last
+      IF trace_type_id_val <=> last_trace_type_id_val THEN
+        -- delete the duplicate trace
+        DELETE FROM trace WHERE id = id_val;
       ELSE
-        -- not deleting the hold, so mark it as the last
+        -- not deleting the trace, so mark it as the last
         SET last_participant_id_val = participant_id_val;
-        SET last_hold_type_id_val = hold_type_id_val;
+        SET last_trace_type_id_val = trace_type_id_val;
       END IF;
     END IF;
 
@@ -94,5 +96,5 @@ BEGIN
 END //
 DELIMITER ;
 
-CALL remove_duplicate_holds_now();
-DROP PROCEDURE IF EXISTS remove_duplicate_holds_now;
+CALL remove_duplicate_trace_now();
+DROP PROCEDURE IF EXISTS remove_duplicate_trace_now;

@@ -24,16 +24,6 @@ class module extends \cenozo\service\site_restricted_module
     $db_application = $session->get_application();
     $db_role = $session->get_role();
 
-    // add the access column (whether the role has access)
-    if( $select->has_column( 'access' ) )
-    {
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'hold_type.id', '=', 'role_has_hold_type.hold_type_id', false );
-      $join_mod->where( 'role_has_hold_type.role_id', '=', $db_role->id );
-      $modifier->join_modifier( 'role_has_hold_type', $join_mod, 'left' );
-      $select->add_column( 'role_has_hold_type.hold_type_id IS NOT NULL', 'access', false, 'boolean' );
-    }
-
     // add the access column (wether the role has access)
     if( $select->has_column( 'access' ) )
     {
@@ -104,7 +94,8 @@ class module extends \cenozo\service\site_restricted_module
       $sub_mod = lib::create( 'database\modifier' );
       $join_mod->join(
         'application_type_has_role', 'role_has_hold_type.role_id', 'application_type_has_role.role_id' );
-      $join_mod->where( 'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
+      $join_mod->where(
+        'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS hold_type_join_role', $join_sel->get_sql(), $join_mod->get_sql() ),

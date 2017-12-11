@@ -119,9 +119,10 @@ class ui extends \cenozo\base_object
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'callback', 'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export',
       'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
-      'jurisdiction', 'language', 'opal_form_template', 'overview', 'participant', 'phone', 'quota', 'region',
-      'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'script',
-      'search_result', 'site', 'source', 'system_message', 'user', 'webphone', 'writelog'
+      'jurisdiction', 'language', 'opal_form_template', 'overview', 'participant', 'phone', 'proxy',
+      'proxy_type','quota', 'region', 'region_site', 'role', 'report', 'report_restriction', 'report_schedule',
+      'report_type', 'script', 'search_result', 'site', 'source', 'system_message', 'trace', 'trace_type',
+      'user', 'webphone', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -290,18 +291,24 @@ class ui extends \cenozo\base_object
         $module->add_child( 'hold' );
         $module->add_child( 'address' );
         $module->add_child( 'phone' );
+        $module->add_child( 'trace' );
+        $module->add_child( 'proxy' );
         $module->add_child( 'consent' );
         $module->add_child( 'hin' );
         $module->add_child( 'alternate' );
         $module->add_child( 'event' );
         $module->add_child( 'form' );
         $module->add_choose( 'collection' );
-        $module->add_action( 'history', $use_interview_module ?
-          '/{identifier}?{address}&{alternate}&{assignment}&{consent}&{event}&{form}&{hold}&{note}&{phone}' :
-          '/{identifier}?{address}&{alternate}&{consent}&{event}&{form}&{hold}&{note}&{phone}' );
-        $module->add_action( 'notes', '/{identifier}?{search}' );
+        $module->add_action( 'history',
+          '/{identifier}?{address}&{alternate}'.
+          ( $use_interview_module ? '&{assignment}' : '' ).
+          '&{consent}&{event}&{form}&{hold}&{note}&{phone}&{proxy}&{trace}' );
         // remove the add action it is used for utility purposes only
         $module->remove_action( 'add' );
+      }
+      else if( 'proxy_type' == $module->get_subject() )
+      {
+        $module->add_child( 'participant' );
       }
       else if( 'recording' == $module->get_subject() )
       {
@@ -328,6 +335,10 @@ class ui extends \cenozo\base_object
         $module->add_child( 'activity' );
       }
       else if( 'source' == $module->get_subject() )
+      {
+        $module->add_child( 'participant' );
+      }
+      else if( 'trace_type' == $module->get_subject() )
       {
         $module->add_child( 'participant' );
       }
@@ -378,6 +389,7 @@ class ui extends \cenozo\base_object
     if( 3 <= $db_role->tier ) $this->add_listitem( 'Opal Form Template', 'opal_form_template' );
     if( 2 <= $db_role->tier ) $this->add_listitem( 'Overviews', 'overview' );
     $this->add_listitem( 'Participants', 'participant' );
+    $this->add_listitem( 'Proxy Types', 'proxy_type' );
     $this->add_listitem( 'Quotas', 'quota' );
     if( $setting_manager->get_setting( 'module', 'recording' ) )
     {
@@ -430,6 +442,13 @@ class ui extends \cenozo\base_object
         'action' => 'calendar',
         'query' => '/{identifier}',
         'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+    }
+    if( 2 <= $db_role->tier )
+    {
+      $list['Tracing'] = array(
+        'subject' => 'trace',
+        'action' => 'list',
+        'query' => '?{page}&{restrict}&{order}&{reverse}' );
     }
 
     return $list;

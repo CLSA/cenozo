@@ -1,4 +1,4 @@
-define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
+define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -33,8 +33,8 @@ define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
       enrollment: {
         title: 'Enrolled'
       },
-      last_hold: {
-        title: 'Hold'
+      status: {
+        title: 'Status'
       },
       site: {
         column: 'site.name',
@@ -507,6 +507,9 @@ define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
                 column: 'name'
               }, {
                 table: 'hold_type',
+                column: 'type'
+              }, {
+                table: 'hold_type',
                 column: 'description'
               } ]
             }
@@ -516,8 +519,8 @@ define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
             historyList.push( {
               datetime: item.datetime,
               category: 'Hold',
-              title: null == item.name ? 'removed hold' : 'added "' + item.name + '"',
-              description: null == item.name ? '' : item.description
+              title: null == item.type ? 'removed hold' : 'added "' + item.type + ' ' + item.name + '"',
+              description: null == item.type ? '' : item.description
             } );
           } );
         } );
@@ -580,6 +583,88 @@ define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
               category: 'Phone',
               title: 'added rank ' + item.rank,
               description: item.type + ': ' + item.number + ( item.international ? ' (international)' : '' )
+            } );
+          } );
+        } );
+      }
+    },
+
+    Proxy: {
+      active: true,
+      framework: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/proxy',
+          data: {
+            modifier: {
+              join: {
+                table: 'proxy_type',
+                onleft: 'proxy.proxy_type_id',
+                onright: 'proxy_type.id',
+                type: 'left'
+              },
+              order: { datetime: true }
+            },
+            select: {
+              column: [ 'datetime', {
+                table: 'proxy_type',
+                column: 'name'
+              }, {
+                table: 'proxy_type',
+                column: 'description'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.datetime,
+              category: 'Proxy',
+              title: null == item.name ? 'removed proxy' : 'added proxy: "' + item.name + '"',
+              description: null == item.name ? '' : item.description
+            } );
+          } );
+        } );
+      }
+    },
+
+    Trace: {
+      active: true,
+      framework: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/trace',
+          data: {
+            modifier: {
+              join: {
+                table: 'trace_type',
+                onleft: 'trace.trace_type_id',
+                onright: 'trace_type.id',
+                type: 'left'
+              },
+              order: { datetime: true }
+            },
+            select: {
+              column: [ 'datetime', 'note', {
+                table: 'trace_type',
+                column: 'name'
+              }, {
+                table: 'user',
+                column: 'first_name'
+              }, {
+                table: 'user',
+                column: 'last_name'
+              } ]
+            }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.datetime,
+              category: 'Trace',
+              title: ( null == item.name ? 'removed trace' : 'added to "' + item.name + '"' ) +
+                     ' by ' + item.first_name + ' ' + item.last_name,
+              description: item.note
             } );
           } );
         } );
@@ -1011,9 +1096,12 @@ define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
               self.applicationModel.listModel.heading = 'Release List';
             }
 
-            // only allow adding new holds if the participant is enrolled
+            // only allow adding a hold or proxy if the participant is enrolled
             self.holdModel.getAddEnabled = function() {
               return self.holdModel.$$getAddEnabled && 'Yes' == self.record.enrollment;
+            };
+            self.proxyModel.getAddEnabled = function() {
+              return self.proxyModel.$$getAddEnabled && 'Yes' == self.record.enrollment;
             };
           } );
         }
@@ -1140,9 +1228,11 @@ define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
     'CnSession', 'CnHttpFactory',
     'CnModalDatetimeFactory', 'CnModalMessageFactory',
     'CnConsentModelFactory', 'CnEventModelFactory', 'CnHoldModelFactory', 'CnParticipantModelFactory',
+    'CnProxyModelFactory',
     function( CnSession, CnHttpFactory,
               CnModalDatetimeFactory, CnModalMessageFactory,
-              CnConsentModelFactory, CnEventModelFactory, CnHoldModelFactory, CnParticipantModelFactory ) {
+              CnConsentModelFactory, CnEventModelFactory, CnHoldModelFactory, CnParticipantModelFactory,
+              CnProxyModelFactory ) {
       var object = function() {
         var self = this;
         this.module = module;
@@ -1158,6 +1248,7 @@ define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
         this.collectionId = undefined;
         this.eventInputList = null;
         this.holdInputList = null;
+        this.proxyInputList = null;
         this.note = { sticky: 0, note: '' };
 
         // given a module and metadata this function will build an input list
@@ -1275,6 +1366,15 @@ define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
           );
         } );
 
+        // populate the proxy input list once the proxy's metadata has been loaded
+        CnProxyModelFactory.root.metadata.getPromise().then( function() {
+          self.proxyInputList = processInputList(
+            [ 'proxy_type_id', 'datetime' ],
+            cenozoApp.module( 'proxy' ),
+            CnProxyModelFactory.root.metadata.columnList
+          );
+        } );
+
         this.uidListStringChanged = function() {
           this.confirmedCount = null;
         };
@@ -1385,6 +1485,11 @@ define( [ 'consent', 'event', 'hold' ].reduce( function( list, name ) {
             messageObj.title = 'Participant Details Updated';
             messageObj.message = 'The listed details have been successfully updated on ' + uidList.length +
               ' participant records.'
+          } else if( 'proxy' == type ) {
+            var inputList = this.proxyInputList;
+            var model = CnProxyModelFactory.root;
+            messageObj.title = 'Proxy Records Added';
+            messageObj.message = 'The proxy record has been successfully added to <TOTAL> participant(s).'
           } else throw new Error( 'Called addRecords() with invalid type "' + type + '".' );
 
           if( inputList ) {

@@ -1,3 +1,5 @@
+SELECT "Creating new get_hold_from_consent procedure" AS "";
+
 DROP procedure IF EXISTS get_hold_from_consent;
 
 DELIMITER $$

@@ -28,7 +28,6 @@ class module extends \cenozo\service\site_restricted_participant_module
       $db_application = $session->get_application();
       $db_role = $session->get_role();
 
-
       // make sure the application has access to the participant
       $db_hold = $this->get_resource();
       if( !is_null( $db_hold ) )
@@ -76,7 +75,7 @@ class module extends \cenozo\service\site_restricted_participant_module
                            ? NULL
                            : $db_last_hold->get_hold_type();
 
-        // make sure the role has access to the state_type
+        // make sure the role has access to the hold_type
         $hold_type_mod = lib::create( 'database\modifier' );
         $hold_type_mod->where( 'role_id', '=', $db_role->id );
         if( 0 == $db_hold_type->get_role_count( $hold_type_mod ) )

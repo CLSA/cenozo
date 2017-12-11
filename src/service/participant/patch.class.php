@@ -33,6 +33,12 @@ class patch extends \cenozo\service\patch
       unset( $patch_array['reverse_withdraw'] );
     }
 
+    if( array_key_exists( 'explain_last_trace', $patch_array ) )
+    {
+      $this->explain_last_trace = $patch_array['explain_last_trace'];
+      unset( $patch_array['explain_last_trace'] );
+    }
+
     return $patch_array;
   }
 
@@ -66,6 +72,9 @@ class patch extends \cenozo\service\patch
 
     // reverse the participant's withdraw, if needed
     if( $this->reverse_withdraw ) $this->reverse_withdraw();
+
+    // explain the participant's last trace, if needed
+    if( $this->explain_last_trace ) $this->explain_last_trace();
   }
 
   /**
@@ -88,6 +97,17 @@ class patch extends \cenozo\service\patch
   }
 
   /**
+   * TODO: document
+   */
+  protected function explain_last_trace()
+  {
+    $db_trace = $this->get_leaf_record()->get_last_trace();
+    foreach( $this->explain_last_trace as $column => $value )
+      $db_trace->$column = $value;
+    $db_trace->save();
+  }
+
+  /**
    * Whether to update the participant's preferred site
    * @var boolean
    * @access protected
@@ -107,4 +127,11 @@ class patch extends \cenozo\service\patch
    * @access protected
    */
   protected $reverse_withdraw;
+
+  /**
+   * Used to define the reason for this participant's last trace
+   * @var object
+   * @access protected
+   */
+  protected $explain_last_trace;
 }

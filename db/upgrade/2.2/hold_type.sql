@@ -16,7 +16,7 @@ CREATE PROCEDURE patch_hold_type()
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         update_timestamp TIMESTAMP NOT NULL,
         create_timestamp TIMESTAMP NOT NULL,
-        type ENUM('final', 'proxy', 'temporary', 'trace') NOT NULL,
+        type ENUM('final', 'temporary') NOT NULL,
         name VARCHAR(100) NOT NULL,
         system TINYINT(1) NOT NULL DEFAULT 0,
         description VARCHAR(512) NOT NULL,
@@ -31,19 +31,6 @@ CREATE PROCEDURE patch_hold_type()
       ( "final", "incarcerated", 0, "People who are incarcerated indefinitely." ),
       ( "final", "noncompliant", 0, "People who are unable to comply with the study's policies." ),
       ( "final", "withdrawn", 1, "People who have withdrawn from the study." );
-
-      -- proxy holds
-      INSERT INTO hold_type( type, name, system, description ) VALUES
-      ( "proxy", "requires initiation", 0, "The proxy initiation script must be completed before the participant can proceed using a proxy." ),
-      ( "proxy", "requires form", 0, "A signed proxy consent form must be provided before the participant can proceed using a proxy." ),
-      ( "proxy", "ready", 0, "The participant may proceed using a proxy." ),
-      ( "proxy", "ready, information provider only", 0, "The participant may proceed using a proxy information provider only." );
-
-      -- trace holds
-      INSERT INTO hold_type( type, name, system, description ) VALUES
-      ( "trace", "local", 1, "People who are being traced by the local site." ),
-      ( "trace", "global", 1, "People who are being traced by the head office." ),
-      ( "trace", "unreachable", 1, "People who failed to be traced." );
 
       -- temporary holds (all remaining states not already defined
       CREATE TEMPORARY TABLE temp_hold_type (

@@ -1,4 +1,6 @@
-define( function() {
+define( [ 'trace' ].reduce( function( list, name ) {
+  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
+}, [] ), function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'phone', true ); } catch( err ) { console.warn( err ); return; }
@@ -124,16 +126,31 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
+    'CnBaseAddFactory', 'CnTraceModelFactory', '$q',
+    function( CnBaseAddFactory, CnTraceModelFactory, $q ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
+        var traceModel = CnTraceModelFactory.root;
 
         // extend onNew
         this.onNew = function( record ) {
           return this.$$onNew( record ).then( function() {
             return self.parentModel.updateAssociatedAddressList();
+          } );
+        };
+
+        this.onAdd = function( record ) {
+          var id = this.parentModel.getParentIdentifier().identifier;
+          return traceModel.checkForTraceResolvedAfterPhoneAdded( id ).then( function( response ) {
+            if( response ) {
+              return self.$$onAdd( record ).then( function() {
+                // end tracing with reason "response"
+                if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+              } );
+            } else {
+              return $q.reject();
+            }
           } );
         };
       };
@@ -143,25 +160,89 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+    'CnBaseListFactory', 'CnTraceModelFactory', '$q',
+    function( CnBaseListFactory, CnTraceModelFactory, $q ) {
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseListFactory.construct( this, parentModel );
+        var traceModel = CnTraceModelFactory.root;
+
+        this.onDelete = function( record ) {
+          var id = this.parentModel.getParentIdentifier().identifier;
+          return traceModel.checkForTraceRequiredAfterPhoneRemoved( id ).then( function( response ) {
+            if( response ) {
+              return self.$$onDelete( record ).then( function() {
+                // start tracing with reason "response"
+                if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+              } );
+            } else {
+              return $q.reject();
+            }
+          } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnTraceModelFactory', '$q',
+    function( CnBaseViewFactory, CnTraceModelFactory, $q ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
+        var traceModel = CnTraceModelFactory.root;
 
         // extend onView
         this.onView = function() {
           return this.$$onView().then( function() {
             return self.parentModel.updateAssociatedAddressList();
+          } );
+        };
+
+        this.onPatch = function( data ) {
+          var id = this.parentModel.getParentIdentifier().identifier;
+          if( angular.isDefined( data.active ) ) {
+            if( data.active ) {
+              return traceModel.checkForTraceResolvedAfterPhoneAdded( id ).then( function( response ) {
+                if( response ) {
+                  return self.$$onPatch( data ).then( function() {
+                    // end tracing with reason "response"
+                    if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+                  } );
+                } else {
+                  return $q.reject();
+                }
+              } );
+            } else {
+              return traceModel.checkForTraceRequiredAfterPhoneRemoved( id ).then( function( response ) {
+                if( response ) {
+                  return self.$$onPatch( data ).then( function() {
+                    // start tracing with reason "response"
+                    if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+                  } );
+                } else {
+                  return $q.reject();
+                }
+              } );
+            }
+          }
+
+          return this.$$onPatch( data );
+        };
+
+        this.onDelete = function() {
+          var id = this.parentModel.getParentIdentifier().identifier;
+          return traceModel.checkForTraceRequiredAfterPhoneRemoved( id ).then( function( response ) {
+            if( response ) {
+              return self.$$onDelete().then( function() {
+                // start tracing with reason "response"
+                if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+              } );
+            } else {
+              return $q.reject();
+            }
           } );
         };
       };

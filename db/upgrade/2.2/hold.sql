@@ -23,6 +23,7 @@ CREATE PROCEDURE patch_hold()
         site_id INT UNSIGNED NULL,
         role_id INT UNSIGNED NULL,
         application_id INT UNSIGNED NULL,
+        note TEXT NULL,
         PRIMARY KEY (id),
         INDEX fk_participant_id (participant_id ASC),
         INDEX fk_hold_type_id (hold_type_id ASC),
@@ -66,8 +67,8 @@ CREATE PROCEDURE patch_hold()
       SELECT "Populating new hold table" AS "";
 
       -- add in withdrawn holds
-      INSERT INTO hold( participant_id, hold_type_id, datetime )
-      SELECT DISTINCT participant.id, hold_type.id, consent.datetime
+      INSERT INTO hold( participant_id, hold_type_id, datetime, note )
+      SELECT DISTINCT participant.id, hold_type.id, consent.datetime, "Created when the hold module was installed."
       FROM participant
       JOIN consent ON participant.id = consent.participant_id
       JOIN consent_type ON consent.consent_type_id = consent_type.id
@@ -76,15 +77,15 @@ CREATE PROCEDURE patch_hold()
       AND consent_type.name = "participation";
 
       -- add in holds based on states
-      INSERT INTO hold( participant_id, hold_type_id, datetime )
-      SELECT participant.id, hold_type.id, UTC_TIMESTAMP()
+      INSERT INTO hold( participant_id, hold_type_id, datetime, note )
+      SELECT participant.id, hold_type.id, UTC_TIMESTAMP(), "Created when the hold module was installed."
       FROM participant
       JOIN state ON participant.state_id = state.id
       JOIN hold_type ON state.name = hold_type.name;
 
       -- add in holds based on active bit
-      INSERT IGNORE INTO hold( participant_id, hold_type_id, datetime )
-      SELECT participant.id, hold_type.id, UTC_TIMESTAMP()
+      INSERT IGNORE INTO hold( participant_id, hold_type_id, datetime, note )
+      SELECT participant.id, hold_type.id, UTC_TIMESTAMP(), "Created when the hold module was installed."
       FROM hold_type, participant
       WHERE hold_type.type = "temporary" AND hold_type.name = "deactivated"
       AND participant.active = 0

@@ -137,6 +137,54 @@ class participant extends record
   }
 
   /**
+   * Get the participant's last proxy
+   * @return proxy
+   * @access public
+   */
+  public function get_last_proxy()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no primary key.' );
+      return NULL;
+    }
+
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_last_proxy' );
+    $select->add_column( 'proxy_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_id', '=', $this->id );
+
+    $proxy_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    return $proxy_id ? lib::create( 'database\proxy', $proxy_id ) : NULL;
+  }
+
+  /**
+   * Get the participant's last trace
+   * @return trace
+   * @access public
+   */
+  public function get_last_trace()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no primary key.' );
+      return NULL;
+    }
+
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant_last_trace' );
+    $select->add_column( 'trace_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_id', '=', $this->id );
+
+    $trace_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    return $trace_id ? lib::create( 'database\trace', $trace_id ) : NULL;
+  }
+
+  /**
    * Get the participant's last consent by consent type
    * @param database\consent_type $db_consent_type
    * @return consent

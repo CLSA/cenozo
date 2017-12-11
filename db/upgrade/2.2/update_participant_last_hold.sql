@@ -1,3 +1,5 @@
+SELECT "Creating new update_participant_last_hold procedure" AS "";
+
 DROP procedure IF EXISTS update_participant_last_hold;
 
 DELIMITER $$
