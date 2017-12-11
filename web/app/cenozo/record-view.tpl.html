@@ -27,7 +27,7 @@
       <span ng-if="!isComplete">(Loading&hellip;)</span>
     </h4>
   </div>
-  <form name="form" class="form-horizontal" novalidate>
+  <form name="form" class="form-horizontal" novalidate><fieldset ng-disabled="!isComplete">
     <div class="form-footer text-right bg-info" ng-if="footerAtTop">
       <cn-extra-operation-button-group class="pull-left" model="model" state="$state" type="view">
       </cn-extra-operation-button-group>
@@ -450,5 +450,5 @@
         </button>
       </div>
     </div>
-  </form>
+  </fieldset></form>
 </div>
