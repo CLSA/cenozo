@@ -30,9 +30,6 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
         column: 'cohort.name',
         title: 'Cohort'
       },
-      exclusion: {
-        title: 'Enrolled'
-      },
       status: {
         title: 'Status'
       },
