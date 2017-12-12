@@ -37,6 +37,8 @@ class query extends \cenozo\service\query
     $modifier->join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
     $modifier->join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
     $modifier->where( 'proxy.proxy_type_id', '=', $db_proxy_type->id );
+    $modifier->where( 'exclusion_id', '=', NULL );
+    $modifier->where( 'IFNULL( hold_type.type, "" )', '!=', 'final' );
     $this->select->apply_aliases_to_modifier( $modifier );
 
     return $participant_class_name::count( $modifier );
@@ -56,6 +58,8 @@ class query extends \cenozo\service\query
     $modifier->join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
     $modifier->join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
     $modifier->where( 'proxy.proxy_type_id', '=', $db_proxy_type->id );
+    $modifier->where( 'exclusion_id', '=', NULL );
+    $modifier->where( 'IFNULL( hold_type.type, "" )', '!=', 'final' );
     $this->select->apply_aliases_to_modifier( $modifier );
 
     return $participant_class_name::select( $select, $modifier );

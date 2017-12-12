@@ -66,9 +66,13 @@ class module extends \cenozo\service\site_restricted_participant_module
       if( $service_class_name::is_write_method( $this->get_method() ) )
       {
         $db_participant = lib::create( 'database\participant', $db_proxy->participant_id );
-        $proxy_empty = is_null( $db_proxy ) || is_null( $db_proxy->proxy_type_id );
+        $proxy_type_id = is_null( $db_proxy ) || is_null( $db_proxy->proxy_type_id )
+                       ? NULL
+                       : $db_proxy->proxy_type_id;
         $db_last_proxy = $db_participant->get_last_proxy();
-        $last_proxy_empty = is_null( $db_last_proxy ) || is_null( $db_last_proxy->proxy_type_id );
+        $last_proxy_type_id = is_null( $db_last_proxy ) || is_null( $db_last_proxy->proxy_type_id )
+                            ? NULL
+                            : $db_last_proxy->proxy_type_id;
 
         // make sure the participant is enrolled
         if( !is_null( $db_participant->exclusion_id ) ) 
@@ -78,6 +82,14 @@ class module extends \cenozo\service\site_restricted_participant_module
           return;
         }
 
+        // do not write a proxy which the participant is already in
+        if( $proxy_type_id == $last_proxy_type_id )
+        {
+          $this->set_data( 'The participant is already in the requested proxy.' );
+          $this->get_status()->set_code( 306 );
+          return;
+        }   
+
         // make sure the participant is not in a final hold
         $db_last_hold = $db_participant->get_last_hold();
         $db_last_hold_type = is_null( $db_last_hold ) || is_null( $db_last_hold->hold_type_id )
@@ -86,14 +98,6 @@ class module extends \cenozo\service\site_restricted_participant_module
         if( !is_null( $db_last_hold_type ) && 'final' == $db_last_hold_type->type )
         {
           $this->set_data( 'Cannot change a participant\'s proxy when they are in a final hold.' );
-          $this->get_status()->set_code( 306 );
-          return;
-        }
-
-        // make sure the last proxy's type is not empty
-        if( $last_proxy_empty && $proxy_empty )
-        {
-          $this->set_data( 'The participant is not in a proxy so there is no need to create an empty proxy.' );
           $this->get_status()->set_code( 306 );
           return;
         }

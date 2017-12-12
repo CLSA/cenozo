@@ -41,6 +41,8 @@ class query extends \cenozo\service\query
       $this->select->add_table_column( 'region', 'name', 'region' );
       $this->select->add_table_column(
         'hold', 'IFNULL( CONCAT( hold_type.type, ": ", hold_type.name ), "" )', 'hold', false );
+      $this->select->add_table_column(
+        'proxy', 'IFNULL( proxy_type.name, "" )', 'proxy', false );
 
       $this->select->add_table_column(
         'last_consent', 'IFNULL( last_consent.accept, "" )', 'last_consent', false );
@@ -55,7 +57,14 @@ class query extends \cenozo\service\query
       $this->select->add_table_column(
         'collection', 'IFNULL( GROUP_CONCAT( collection.name ), "" )', 'collections', false );
 
+      $this->modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
+      $this->modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
       $this->modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+
+      $this->modifier->join( 'participant_last_proxy', 'participant.id', 'participant_last_proxy.participant_id' );
+      $this->modifier->left_join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
+      $this->modifier->left_join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
+
       $this->modifier->join(
         'participant_primary_address', 'participant.id', 'participant_primary_address.participant_id' );
       $this->modifier->left_join( 'address', 'participant_primary_address.address_id', 'address.id' );

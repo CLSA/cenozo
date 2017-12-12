@@ -3,7 +3,7 @@ define( function() {
 
   try { var module = cenozoApp.module( 'trace_type', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
-    identifier: { column: ['type','name'] },
+    identifier: { column: 'name' },
     name: {
       singular: 'trace type',
       plural: 'trace types',

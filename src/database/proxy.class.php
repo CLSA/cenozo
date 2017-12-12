@@ -21,7 +21,7 @@ class proxy extends record
   {
     $db_participant = lib::create( 'database\participant', $this->participant_id );
 
-    // when adding new proxys, make sure the last proxy's type is not empty
+    // when adding new proxies, make sure the last proxy's type is not empty
     if( is_null( $this->id ) && is_null( $this->proxy_type_id ) )
     {
       $db_proxy = $db_participant->get_last_proxy();

@@ -42,6 +42,11 @@ class contact extends \cenozo\business\report\base_report
       false
     );
     $select->add_column(
+      'proxy_type.name',
+      'Proxy',
+      false
+    );
+    $select->add_column(
       'IF( '.
         'participant_last_consent.consent_id IS NULL, '.
         '"None", '.
@@ -54,6 +59,9 @@ class contact extends \cenozo\business\report\base_report
     $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
     $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
     $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+    $modifier->join( 'participant_last_proxy', 'participant.id', 'participant_last_proxy.participant_id' );
+    $modifier->left_join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
+    $modifier->left_join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
     $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
     $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
     $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );

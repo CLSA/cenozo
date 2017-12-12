@@ -110,6 +110,14 @@ class module extends \cenozo\service\site_restricted_participant_module
           return;
         }
 
+        // do not write a hold which the participant is already in
+        if( $db_hold_type == $db_last_hold_type )
+        {
+          $this->set_data( 'The participant is already in the requested hold.' );
+          $this->get_status()->set_code( 306 );
+          return;
+        }
+
         // when the participant is already in a final hold
         if( !is_null( $db_last_hold_type ) && 'final' == $db_last_hold_type->type )
         {
@@ -127,14 +135,6 @@ class module extends \cenozo\service\site_restricted_participant_module
             $this->get_status()->set_code( 403 );
             return;
           }
-        }
-
-        // when adding empty holds make sure the last hold's type is not empty
-        if( is_null( $db_last_hold_type ) && is_null( $db_hold_type ) )
-        {
-          $this->set_data( 'The participant is not in a hold so there is no need to create an empty hold.' );
-          $this->get_status()->set_code( 306 );
-          return;
         }
       }
     }

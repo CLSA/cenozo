@@ -29,11 +29,6 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $select->from( 'participant' );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
-    $select->add_column(
-      'CONCAT( hold_type.type, ": ", hold_type.name )',
-      'Hold',
-      false
-    );
     $select->add_column( 'honorific', 'Honorific' );
     $select->add_column( 'first_name', 'First Name' );
     $select->add_column( 'last_name', 'Last Name' );
@@ -46,9 +41,6 @@ class withdraw_mailout extends \cenozo\business\report\base_report
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
-    $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
-    $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
-    $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
     $modifier->join( 'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
     $modifier->join( 'address', 'participant_first_address.address_id', 'address.id' );
     $modifier->join( 'region', 'address.region_id', 'region.id' );

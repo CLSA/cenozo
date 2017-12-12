@@ -4,7 +4,7 @@ CREATE PROCEDURE remove_duplicate_proxy_now()
   BEGIN
     SET @test = ( SELECT cenozo FROM application LIMIT 1 );
     IF @test != "2.2" THEN
-      SELECT "Removing duplicate proxys" AS "";
+      SELECT "Removing duplicate proxies" AS "";
       CALL remove_duplicate_proxy( NULL );
     END IF;
   END //
