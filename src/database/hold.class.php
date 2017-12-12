@@ -21,12 +21,13 @@ class hold extends record
   {
     $db_participant = lib::create( 'database\participant', $this->participant_id );
 
-    // when adding new holds, make sure the last hold's type is not empty
-    if( is_null( $this->id ) && is_null( $this->hold_type_id ) )
+    // make sure not to add duplicate holds
+    if( is_null( $this->id ) )
     {
-      $db_hold = $db_participant->get_last_hold();
-      if( is_null( $db_hold ) || is_null( $db_hold->hold_type_id ) )
-        throw lib::create( 'exception\runtime', 'Tried to unnecessarily cancel a hold.', __METHOD__ );
+      $db_last_hold = $db_particiapnt->get_last_hold();
+      $last_hold_type_id = is_null( $db_last_hold ) ? NULL : $db_last_hold->hold_type_id;
+      if( $last_hold_type_id == $this->hold_type_id )
+        throw lib::create( 'exception\runtime', 'Tried to add duplicate hold.', __METHOD__ );
     }
 
     parent::save();

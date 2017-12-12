@@ -66,13 +66,9 @@ class module extends \cenozo\service\site_restricted_participant_module
       if( $service_class_name::is_write_method( $this->get_method() ) )
       {
         $db_participant = lib::create( 'database\participant', $db_proxy->participant_id );
-        $proxy_type_id = is_null( $db_proxy ) || is_null( $db_proxy->proxy_type_id )
-                       ? NULL
-                       : $db_proxy->proxy_type_id;
+        $proxy_type_id = is_null( $db_proxy ) ? NULL : $db_proxy->proxy_type_id;
         $db_last_proxy = $db_participant->get_last_proxy();
-        $last_proxy_type_id = is_null( $db_last_proxy ) || is_null( $db_last_proxy->proxy_type_id )
-                            ? NULL
-                            : $db_last_proxy->proxy_type_id;
+        $last_proxy_type_id = is_null( $db_last_proxy ) ? NULL : $db_last_proxy->proxy_type_id;
 
         // make sure the participant is enrolled
         if( !is_null( $db_participant->exclusion_id ) ) 

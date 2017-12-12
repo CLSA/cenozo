@@ -21,12 +21,13 @@ class trace extends record
   {
     $db_participant = lib::create( 'database\participant', $this->participant_id );
 
-    // when adding new traces, make sure the last trace's type is not empty
-    if( is_null( $this->id ) && is_null( $this->trace_type_id ) )
+    // make sure not to add duplicate traces
+    if( is_null( $this->id ) )
     {
-      $db_trace = $db_participant->get_last_trace();
-      if( is_null( $db_trace ) || is_null( $db_trace->trace_type_id ) )
-        throw lib::create( 'exception\runtime', 'Tried to unnecessarily cancel a trace.', __METHOD__ );
+      $db_last_trace = $db_particiapnt->get_last_trace();
+      $last_trace_type_id = is_null( $db_last_trace ) ? NULL : $db_last_trace->trace_type_id;
+      if( $last_trace_type_id == $this->trace_type_id )
+        throw lib::create( 'exception\runtime', 'Tried to add duplicate trace.', __METHOD__ );
     }
 
     parent::save();
