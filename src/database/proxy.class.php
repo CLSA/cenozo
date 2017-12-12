@@ -24,7 +24,7 @@ class proxy extends record
     // make sure not to add duplicate proxys
     if( is_null( $this->id ) )
     {
-      $db_last_proxy = $db_particiapnt->get_last_proxy();
+      $db_last_proxy = $db_participant->get_last_proxy();
       $last_proxy_type_id = is_null( $db_last_proxy ) ? NULL : $db_last_proxy->proxy_type_id;
       if( $last_proxy_type_id == $this->proxy_type_id )
         throw lib::create( 'exception\runtime', 'Tried to add duplicate proxy.', __METHOD__ );

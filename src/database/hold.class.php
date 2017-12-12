@@ -24,7 +24,7 @@ class hold extends record
     // make sure not to add duplicate holds
     if( is_null( $this->id ) )
     {
-      $db_last_hold = $db_particiapnt->get_last_hold();
+      $db_last_hold = $db_participant->get_last_hold();
       $last_hold_type_id = is_null( $db_last_hold ) ? NULL : $db_last_hold->hold_type_id;
       if( $last_hold_type_id == $this->hold_type_id )
         throw lib::create( 'exception\runtime', 'Tried to add duplicate hold.', __METHOD__ );

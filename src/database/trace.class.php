@@ -24,7 +24,7 @@ class trace extends record
     // make sure not to add duplicate traces
     if( is_null( $this->id ) )
     {
-      $db_last_trace = $db_particiapnt->get_last_trace();
+      $db_last_trace = $db_participant->get_last_trace();
       $last_trace_type_id = is_null( $db_last_trace ) ? NULL : $db_last_trace->trace_type_id;
       if( $last_trace_type_id == $this->trace_type_id )
         throw lib::create( 'exception\runtime', 'Tried to add duplicate trace.', __METHOD__ );
