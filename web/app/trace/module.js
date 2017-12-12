@@ -87,10 +87,11 @@ define( function() {
           var data = this.$$getServiceData( type, columnRestrictLists );
           if( 'trace' == this.getSubjectFromState() && 'list' == this.getActionFromState() ) {
             if( angular.isUndefined( data.modifier.where ) ) data.modifier.where = [];
+            var all = CnSession.role.allSites;
             data.modifier.where.push( {
               column: 'trace_type.name',
-              operator: '!=',
-              value: null
+              operator: all ? '!=' : '=',
+              value: all ? null : 'local'
             } );
             data.modifier.where.push( {
               column: 'participant.exclusion_id',
