@@ -32,6 +32,17 @@ class database extends base_exception
   }
 
   /**
+   * Returns whether the exception was thrown because of a user-defined error
+   * 
+   * @return boolean
+   * @access public
+   */
+  public function is_user_defined_error()
+  {
+    return DATABASE_CENOZO_BASE_ERRNO + 1644 == $this->get_number();
+  }
+
+  /**
    * Returns whether the exception was thrown because of a duplicate entry error.
    * 
    * @return boolean

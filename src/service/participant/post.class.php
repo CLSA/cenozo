@@ -103,8 +103,26 @@ class post extends \cenozo\service\service
       { // add the given hold record
         $db_hold = lib::create( 'database\hold' );
         foreach( $file['hold'] as $column => $value ) $db_hold->$column = $value;
+        $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
+        $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
+        $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
+        $modifier->where( 'consent_type.name', '=', 'participation' );
+        $modifier->where( 'consent.accept', '=', true );
+
         $modifier->where( 'participant.exclusion_id', '=', NULL ); // only add holds to enrolled participants
-        $this->set_data( $db_hold->save_list( $select, $modifier ) );
+        try
+        {
+          $this->set_data( $db_hold->save_list( $select, $modifier ) );
+        }
+        catch( \cenozo\exception\database $e )
+        {
+          throw $e->is_user_defined_error() ?
+            lib::create( 'exception\notice',
+              'One or more holds cannot be added. '.
+              'Please check that all participants are not already in a hold which cannot be changed.',
+              __METHOD__,
+              $e ) : $e;
+        }
       }
       else if( array_key_exists( 'note', $file ) )
       { // add the given event record

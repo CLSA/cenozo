@@ -1523,7 +1523,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
               onError: CnModalMessageFactory.httpError
             } ).post().then( function( response ) {
               // some messages have a <TOTAL> in them, so fill it in (the number of records created)
-              messageObj.message.replace( '<TOTAL>', response );
+              messageObj.message = messageObj.message.replace( '<TOTAL>', response.data );
               var messageModal = CnModalMessageFactory.instance( messageObj );
               messageModal.show();
             } );
