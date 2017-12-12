@@ -66,7 +66,7 @@ CREATE PROCEDURE patch_trace()
 
       SELECT "Populating new trace table" AS "";
 
-      -- add in proxies based on states
+      -- add in traces based on states
       INSERT INTO trace( participant_id, trace_type_id, datetime, note )
       SELECT participant.id, trace_type.id, UTC_TIMESTAMP(), "Created when the trace module was installed."
       FROM participant

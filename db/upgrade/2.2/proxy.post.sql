@@ -3,7 +3,6 @@ DELIMITER $$
 DROP TRIGGER IF EXISTS proxy_AFTER_INSERT $$
 CREATE DEFINER = CURRENT_USER TRIGGER proxy_AFTER_INSERT AFTER INSERT ON proxy FOR EACH ROW
 BEGIN
-  CALL remove_duplicate_proxy( NEW.participant_id );
   CALL update_participant_last_proxy( NEW.participant_id );
 END$$
 

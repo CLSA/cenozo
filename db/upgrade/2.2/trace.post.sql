@@ -3,7 +3,6 @@ DELIMITER $$
 DROP TRIGGER IF EXISTS trace_AFTER_INSERT $$
 CREATE DEFINER = CURRENT_USER TRIGGER trace_AFTER_INSERT AFTER INSERT ON trace FOR EACH ROW
 BEGIN
-  CALL remove_duplicate_trace( NEW.participant_id );
   CALL update_participant_last_trace( NEW.participant_id );
 END$$
 

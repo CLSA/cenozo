@@ -3,7 +3,6 @@ DELIMITER $$
 DROP TRIGGER IF EXISTS hold_AFTER_INSERT $$
 CREATE DEFINER = CURRENT_USER TRIGGER hold_AFTER_INSERT AFTER INSERT ON hold FOR EACH ROW
 BEGIN
-  CALL remove_duplicate_hold( NEW.participant_id );
   CALL update_participant_last_hold( NEW.participant_id );
 END$$
 

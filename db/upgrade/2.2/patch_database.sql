@@ -13,11 +13,9 @@ SOURCE remove_duplicate_hold.sql
 
 SOURCE proxy_type.sql
 SOURCE proxy.sql
-SOURCE remove_duplicate_proxy.sql
 
 SOURCE trace_type.sql
 SOURCE trace.sql
-SOURCE remove_duplicate_trace.sql
 
 SOURCE participant.state.sql
 SOURCE overview.sql
