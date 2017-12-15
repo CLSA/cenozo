@@ -47,6 +47,32 @@ define( function() {
     }
   } );
 
+  module.addInputGroup( '', {
+    trace_type_id: {
+      title: 'Trace Type',
+      type: 'enum'
+    },
+    note: {
+      title: 'Note',
+      type: 'text'
+    }
+  } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnTraceAdd', [
+    'CnTraceModelFactory',
+    function( CnTraceModelFactory ) {
+      return {
+        templateUrl: module.getFileUrl( 'add.tpl.html' ),
+        restrict: 'E',
+        scope: { model: '=?' },
+        controller: function( $scope ) {
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnTraceModelFactory.root;
+        }
+      };
+    }
+  ] );
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnTraceList', [
     'CnTraceModelFactory',
@@ -63,6 +89,25 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnTraceAddFactory', [
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseAddFactory.construct( this, parentModel );
+
+        // extend onNew
+        this.onNew = function( record ) {
+          return this.$$onNew( record ).then( function() {
+            return self.parentModel.updateTraceTypeList();
+          } );
+        };
+      };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
+    }
+  ] );
+
+  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnTraceListFactory', [
     'CnBaseListFactory', '$q',
     function( CnBaseListFactory, $q ) {
@@ -73,14 +118,42 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnTraceModelFactory', [
-    'CnBaseModelFactory', 'CnTraceListFactory',
+    'CnBaseModelFactory', 'CnTraceAddFactory', 'CnTraceListFactory',
     'CnSession', 'CnHttpFactory', 'CnModalInputFactory', '$state', '$q',
-    function( CnBaseModelFactory, CnTraceListFactory,
+    function( CnBaseModelFactory, CnTraceAddFactory, CnTraceListFactory,
               CnSession, CnHttpFactory, CnModalInputFactory, $state, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
+        this.addModel = CnTraceAddFactory.instance( this );
         this.listModel = CnTraceListFactory.instance( this );
+
+        // extend getMetadata
+        this.getMetadata = function() {
+          return this.$$getMetadata().then( function() {
+            // make the trace type and note mandatory (since users cannot manually set trace type to empty)
+            self.metadata.columnList.trace_type_id.required = true;
+            self.metadata.columnList.note.required = true;
+
+            return CnHttpFactory.instance( {
+              path: 'trace_type',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name' }
+              }
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.trace_type_id.enumList = [];
+              response.data.forEach( function( item ) {
+                // only allow all-site roles to use the "unreachable" trace type
+                if( 'unreachable' != item.name || CnSession.role.allSites ) {
+                  self.metadata.columnList.trace_type_id.enumList.push( {
+                    value: item.id, name: item.name, disabled: false
+                  } );
+                }
+              } );
+            } );
+          } );
+        };
 
         // When in the trace.list state only show enrolled participants whose last trace_type is not empty
         this.getServiceData = function( type, columnRestrictLists ) {
@@ -110,6 +183,25 @@ define( function() {
         // When in the trace.list state transition to the participant when clicking the trace record
         this.transitionToViewState = function( record ) {
           $state.go( 'participant.view', { identifier: 'uid=' + record.uid } );
+        };
+
+        // special function to update the trace-type list based on the participant's current trace
+        this.updateTraceTypeList = function() {
+          var parent = self.getParentIdentifier();
+          return CnHttpFactory.instance( {
+            path: [ parent.subject, parent.identifier, 'trace' ].join( '/' ),
+            data: {
+              select: { column: [ 'trace_type_id' ] },
+              modifier: { order: { 'trace.datetime': true } }
+            }
+          } ).query().then( function success( response ) {
+            if( 0 < response.data.length ) {
+              // disable the last trace's type
+              self.metadata.columnList.trace_type_id.enumList.forEach( function( traceType ) {
+                traceType.disabled = traceType.value == response.data[0].trace_type_id;
+              } );
+            }
+          } );
         };
 
         // Pops up an input dialog to get the reason why a participant will be added to or removed from tracing

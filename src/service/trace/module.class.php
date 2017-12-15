@@ -66,18 +66,23 @@ class module extends \cenozo\service\site_restricted_participant_module
       if( $service_class_name::is_write_method( $this->get_method() ) )
       {
         $db_participant = lib::create( 'database\participant', $db_trace->participant_id );
-        $db_trace_type = is_null( $db_trace ) || is_null( $db_trace->trace_type_id )
-                      ? NULL
-                      : $db_trace->get_trace_type();
+        $trace_type_id = is_null( $db_trace ) ? NULL : $db_trace->trace_type_id;
         $db_last_trace = $db_participant->get_last_trace();
-        $db_last_trace_type = is_null( $db_last_trace ) || is_null( $db_last_trace->trace_type_id )
-                           ? NULL
-                           : $db_last_trace->get_trace_type();
+        $last_trace_type_id = is_null( $db_last_trace ) ? NULL : $db_last_trace->trace_type_id;
 
-        // make sure the last trace's type is not empty
-        if( is_null( $db_last_trace_type ) && is_null( $db_trace_type ) )
+        // do not allow manually setting trace type to null (this is done automatically when changing address or
+        // phone details
+        if( is_null( $trace_type_id ) )
         {
-          $this->set_data( 'The participant is not in a trace so there is no need to create an empty trace.' );
+          $this->set_data( 'To remove a participant\'s trace you must add missing contact details.' );
+          $this->get_status()->set_code( 306 );
+          return;
+        }
+
+        // do not write a trace which the participant is already in
+        if( $trace_type_id == $last_trace_type_id )
+        {
+          $this->set_data( 'The participant is already in the requested trace.' );
           $this->get_status()->set_code( 306 );
           return;
         }
