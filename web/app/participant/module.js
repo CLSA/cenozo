@@ -978,7 +978,9 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
 
             // don't allow excluded participants to be edited
             self.parentModel.getEditEnabled = function() {
-              return self.parentModel.$$getEditEnabled() && null == self.record.exclusion.match( /^No/ );
+              return self.parentModel.$$getEditEnabled() &&
+                     null != self.record.exclusion &&
+                     null == self.record.exclusion.match( /^No/ );
             };
           } );
           return this.onViewPromise;
