@@ -181,7 +181,7 @@ define( function() {
               column: 'type'
             } );
             data.modifier.where.push( {
-              column: 'hold_type.type',
+              column: 'IFNULL( hold_type.type, "" )',
               operator: '!=',
               value: 'final'
             } );
