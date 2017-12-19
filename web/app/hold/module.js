@@ -18,11 +18,11 @@ define( function() {
     columnList: {
       hold_type: {
         column: 'hold_type.type',
-        title: 'Hold Type'
+        title: 'Type'
       },
       hold_name: {
         column: 'hold_type.name',
-        title: 'Hold Name'
+        title: 'Name'
       },
       datetime: {
         title: 'Date & Time',
