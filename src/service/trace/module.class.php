@@ -109,6 +109,14 @@ class module extends \cenozo\service\site_restricted_participant_module
     $modifier->left_join( 'role', 'trace.role_id', 'role.id' );
     $modifier->left_join( 'application', 'trace.application_id', 'application.id' );
 
+    // join to the last hold and its hold type if requested
+    if( $select->has_table_column( 'hold' ) || $select->has_table_column( 'hold_type' ) )
+    {
+      $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
+      $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+      $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+    }
+
     // restrict to participants in this application
     if( $db_application->release_based )
     {

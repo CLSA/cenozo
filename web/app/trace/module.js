@@ -166,10 +166,24 @@ define( function() {
               operator: all ? '!=' : '=',
               value: all ? null : 'local'
             } );
+
+            // restrict so that excluded participants are not included
             data.modifier.where.push( {
               column: 'participant.exclusion_id',
               operator: '=',
               value: null
+            } );
+
+            // restrict so that participants in a final hold are not included
+            // note: we need to select the hold type in order for the service to join to the last hold type
+            data.select.column.push( {
+              table: 'hold_type',
+              column: 'type'
+            } );
+            data.modifier.where.push( {
+              column: 'hold_type.type',
+              operator: '!=',
+              value: 'final'
             } );
           }
           return data;
