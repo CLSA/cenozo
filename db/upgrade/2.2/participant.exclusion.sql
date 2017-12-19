@@ -32,7 +32,7 @@ CREATE PROCEDURE patch_participant()
       LEFT JOIN collection_has_participant ON participant.id = collection_has_participant.participant_id
        AND collection_has_participant.collection_id = ( SELECT id FROM collection WHERE name = "baseline" )
       SET participant.exclusion_id = exclusion.id
-      WHERE exclusion.name = "consent unavailable"
+      WHERE exclusion.name = "Consent Unavailable"
       AND IFNULL( consent.accept, 0 ) != 1
       AND collection_id IS NULL;
 
@@ -42,7 +42,7 @@ CREATE PROCEDURE patch_participant()
         AND collection_has_participant.collection_id = ( SELECT id FROM collection WHERE name = "baseline" )
       JOIN state ON participant.state_id = state.id
       JOIN exclusion ON LOWER( state.name ) = LOWER( exclusion.name )
-        OR state.name = "Out of DCS Area" AND exclusion.name = "out of study area"
+        OR state.name = "Out of DCS Area" AND exclusion.name = "Out of Study Area"
       SET participant.exclusion_id = exclusion.id, participant.state_id = NULL
       WHERE collection_id IS NULL;
 

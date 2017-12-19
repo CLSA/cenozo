@@ -19,7 +19,7 @@ BEGIN
             hold.hold_type_id = IF( NEW.accept, NULL, hold_type.id )
         WHERE hold.id = @hold_id
         AND hold_type.type = "final"
-        AND hold_type.name = "withdrawn";
+        AND hold_type.name = "Withdrawn";
         CALL remove_duplicate_hold( NEW.participant_id );
       END IF;
     END IF;

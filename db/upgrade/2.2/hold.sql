@@ -72,7 +72,7 @@ CREATE PROCEDURE patch_hold()
       FROM participant
       JOIN consent ON participant.id = consent.participant_id
       JOIN consent_type ON consent.consent_type_id = consent_type.id
-      LEFT JOIN hold_type ON consent.accept = 0 AND hold_type.type = "final" AND hold_type.name = "withdrawn"
+      LEFT JOIN hold_type ON consent.accept = 0 AND hold_type.type = "final" AND hold_type.name = "Withdrawn"
       WHERE participant.exclusion_id IS NULL
       AND consent_type.name = "participation";
 
@@ -87,7 +87,7 @@ CREATE PROCEDURE patch_hold()
       INSERT IGNORE INTO hold( participant_id, hold_type_id, datetime, note )
       SELECT participant.id, hold_type.id, UTC_TIMESTAMP(), "Created when the hold module was installed."
       FROM hold_type, participant
-      WHERE hold_type.type = "temporary" AND hold_type.name = "deactivated"
+      WHERE hold_type.type = "temporary" AND hold_type.name = "Deactivated"
       AND participant.active = 0
       AND participant.exclusion_id IS NULL;
 

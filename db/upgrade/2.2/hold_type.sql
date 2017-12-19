@@ -26,11 +26,11 @@ CREATE PROCEDURE patch_hold_type()
       
       -- final holds
       INSERT INTO hold_type( type, name, system, description ) VALUES
-      ( "final", "deceased", 0, "People who are deceased." ),
-      ( "final", "duplicate", 0, "People who already exist under a different record." ),
-      ( "final", "incarcerated", 0, "People who are incarcerated indefinitely." ),
-      ( "final", "noncompliant", 0, "People who are unable to comply with the study's policies." ),
-      ( "final", "withdrawn", 1, "People who have withdrawn from the study." );
+      ( "final", "Deceased", 0, "People who are deceased." ),
+      ( "final", "Duplicate", 0, "People who already exist under a different record." ),
+      ( "final", "Incarcerated", 0, "People who are incarcerated indefinitely." ),
+      ( "final", "Noncompliant", 0, "People who are unable to comply with the study's policies." ),
+      ( "final", "Withdrawn", 1, "People who have withdrawn from the study." );
 
       -- temporary holds (all remaining states not already defined
       CREATE TEMPORARY TABLE temp_hold_type (
@@ -43,13 +43,13 @@ CREATE PROCEDURE patch_hold_type()
       FROM state
       JOIN participant ON state.id = participant.state_id
       WHERE name NOT IN ( SELECT name FROM temp_hold_type )
-      AND name NOT IN ( 'local', 'global' ) -- don't include trace types
+      AND name NOT IN ( 'local', 'global', 'unreachable' ) -- don't include trace types
       AND name NOT LIKE ( 'ready%' ) -- don't include proxy types
       AND name NOT LIKE ( 'requires%' ) -- don't include proxy types
       GROUP BY state.name;
 
       INSERT INTO hold_type( type, name, system, description )
-      VALUES ( "temporary", "deactivated", 0, "The participant was deactivated for an unknown reason." );
+      VALUES ( "temporary", "Deactivated", 0, "The participant was deactivated for an unknown reason." );
 
     END IF;
 

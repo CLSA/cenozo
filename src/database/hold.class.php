@@ -54,7 +54,7 @@ class hold extends record
                            ? NULL
                            : $hold_type_class_name::get_unique_record(
                                array( 'type', 'name' ),
-                               array( 'final', 'withdrawn' ) )->id;
+                               array( 'final', 'Withdrawn' ) )->id;
     $db_hold->datetime = $db_consent->datetime;
     $db_hold->user_id = $session->get_user()->id;
     $db_hold->site_id = $session->get_site()->id;

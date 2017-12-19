@@ -27,6 +27,21 @@ CREATE PROCEDURE patch_rename_states()
       UPDATE state SET name = "local" WHERE name = "Sourcing Required";
       UPDATE state SET name = "global" WHERE name = "NCC Sourcing Required";
 
+      UPDATE state SET name = "Deaf" WHERE name = "deaf";
+      UPDATE state SET name = "Deceased" WHERE name = "deceased";
+      UPDATE state SET name = "Duplicate" WHERE name = "duplicate";
+      UPDATE state SET name = "Noncompliant" WHERE name = "noncompliant";
+      UPDATE state SET name = "Other" WHERE name = "other";
+      UPDATE state SET name = "Age Range" WHERE name = "age range";
+      UPDATE state SET name = "Armed Forces" WHERE name = "armed forces";
+      UPDATE state SET name = "Consent Unavailable" WHERE name = "consent unavailable";
+      UPDATE state SET name = "Federal Reserve" WHERE name = "federal reserve";
+      UPDATE state SET name = "Language Barrier" WHERE name = "language barrier";
+      UPDATE state SET name = "Not Canadian" WHERE name = "not canadian";
+      UPDATE state SET name = "Not Interested" WHERE name = "not interested";
+      UPDATE state SET name = "Not Low Education" WHERE name = "not low education";
+      UPDATE state SET name = "Enrollment Closed" WHERE name = "enrollment closed";
+
     END IF;
 
   END //
