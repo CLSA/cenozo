@@ -185,24 +185,6 @@ class module extends \cenozo\service\site_restricted_participant_module
       $modifier->left_join( 'site', 'participant_site.default_site_id', 'default_site.id', 'default_site' );
     }
 
-    if( $select->has_column( 'withdrawn' ) )
-    {
-      $db_participant = $this->get_resource();
-
-      // update the withdraw if needed
-      if( !is_null( $db_participant ) && !is_null( $db_participant->check_withdraw ) )
-      {
-        $survey_manager = lib::create( 'business\survey_manager' );
-        $survey_manager->process_withdraw( $db_participant );
-      }
-
-      $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
-      $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
-      $modifier->where( 'consent_type.name', '=', 'participation' );
-      $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
-      $select->add_column( 'consent.accept <=> false', 'withdrawn', false, 'boolean' );
-    }
-
     if( $select->has_table_columns( 'language' ) )
       $modifier->join( 'language', 'participant.language_id', 'language.id' );
 
