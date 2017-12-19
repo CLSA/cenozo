@@ -975,6 +975,11 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
               self.formattedRecord.date_of_birth = self.formattedRecord.date_of_birth.replace( / \(.*\)/, '' );
               self.formattedRecord.date_of_death += ' (' + age + ' year' + ( 1 == age ? '' : 's' ) + ' old)';
             }
+
+            // don't allow excluded participants to be edited
+            self.parentModel.getEditEnabled = function() {
+              return self.parentModel.$$getEditEnabled() && null == self.record.exclusion.match( /^No/ );
+            };
           } );
           return this.onViewPromise;
         };
