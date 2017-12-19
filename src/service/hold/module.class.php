@@ -122,7 +122,7 @@ class module extends \cenozo\service\site_restricted_participant_module
         if( !is_null( $db_last_hold_type ) && 'final' == $db_last_hold_type->type )
         {
           // final holds cannot be replaced with non-final holds
-          if( 'final' != $db_hold_type->type )
+          if( !is_null( $db_hold_type ) && 'final' != $db_hold_type->type )
           {
             $this->set_data( 'The participant must be removed from their final hold before you can proceed.' );
             $this->get_status()->set_code( 306 );
