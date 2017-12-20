@@ -31,7 +31,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
         title: 'Cohort'
       },
       status: {
-        title: 'Status'
+        title: 'Effective Status'
       },
       site: {
         column: 'site.name',
@@ -96,7 +96,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
     }
   } );
 
-  module.addInputGroup( 'Defining Details', {
+  module.addInputGroup( 'Status Details', {
     exclusion: {
       title: 'Enrolled',
       type: 'string',
@@ -104,6 +104,27 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
       help: 'Whether the participant has been enrolled into the study, and if not then the reason they have ' +
             'been excluded.'
     },
+    hold: {
+      title: 'Hold',
+      type: 'string',
+      constant: true,
+      help: 'Whether the participant is currently in a hold.'
+    },
+    trace: {
+      title: 'Trace',
+      type: 'string',
+      constant: true,
+      help: 'Whether the participant currently requires tracing.'
+    },
+    proxy: {
+      title: 'Proxy',
+      type: 'string',
+      constant: true,
+      help: 'Whether the participant requires a proxy, and if so then what their proxy status is.'
+    }
+  } );
+
+  module.addInputGroup( 'Defining Details', {
     source: {
       column: 'source.name',
       title: 'Source',

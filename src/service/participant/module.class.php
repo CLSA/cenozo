@@ -80,11 +80,29 @@ class module extends \cenozo\service\site_restricted_participant_module
       );
     }
 
-    if( $select->has_column( 'exclusion' ) )
+    if( $select->has_column( 'hold' ) )
     {
       $select->add_column(
-        'IF( participant.exclusion_id IS NULL, "Yes", CONCAT( "No: ", exclusion.name ) )',
-        'exclusion',
+        'IFNULL( CONCAT( hold_type.type, ": ", hold_type.name ), "none" )',
+        'hold',
+        false
+      );
+    }
+
+    if( $select->has_column( 'trace' ) )
+    {
+      $select->add_column(
+        'IFNULL( trace_type.name, "none" )',
+        'trace',
+        false
+      );
+    }
+
+    if( $select->has_column( 'proxy' ) )
+    {
+      $select->add_column(
+        'IFNULL( proxy_type.name, "none" )',
+        'proxy',
         false
       );
     }

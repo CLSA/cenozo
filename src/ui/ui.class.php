@@ -288,9 +288,9 @@ class ui extends \cenozo\base_object
       else if( 'participant' == $module->get_subject() )
       {
         if( $use_interview_module ) $module->add_child( 'interview' );
-        $module->add_child( 'hold' );
         $module->add_child( 'address' );
         $module->add_child( 'phone' );
+        $module->add_child( 'hold' );
         $module->add_child( 'trace' );
         $module->add_child( 'proxy' );
         $module->add_child( 'consent' );

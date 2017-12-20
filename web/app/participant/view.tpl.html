@@ -8,15 +8,20 @@
 <div class="vertical-spacer" ng-repeat="child in model.module.children">
   <cn-record-list ng-if="'application' != child.subject.snake &&
                          model.viewModel[child.subject.camel+'Model']"
+                  init-collapsed="'address' != child.subject.snake &&
+                                  'phone' != child.subject.snake &&
+                                  'interview' != child.subject.snake"
                   model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
 <div class="vertical-spacer" ng-repeat="child in model.module.choosing">
   <cn-record-list ng-if="'collection' != child.subject.snake &&
                          model.viewModel[child.subject.camel+'Model']"
+                  init-collapsed="true"
                   model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
 <div class="vertical-spacer">
   <cn-record-list ng-if="model.viewModel.collectionModel"
                   model="model.viewModel.collectionModel"
+                  init-collapsed="true"
                   remove-columns="active user_count"></cn-record-list>
 </div>

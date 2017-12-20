@@ -1488,7 +1488,7 @@ cenozo.directive( 'cnRecordList', [
       scope: {
         model: '=',
         removeColumns: '@',
-        initCollapsed: '@'
+        initCollapsed: '='
       },
       controller: [ '$scope', '$element', function( $scope, $element ) {
         $scope.directive = 'cnRecordList';
@@ -1616,7 +1616,7 @@ cenozo.directive( 'cnRecordView', [
         model: '=',
         footerAtTop: '@',
         removeInputs: '@',
-        initCollapsed: '@'
+        initCollapsed: '='
       },
       controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnRecordView';
@@ -3723,7 +3723,7 @@ cenozo.factory( 'CnBaseListFactory', [
             // Now that the query is done we can restore the pagination model's currentPage and remove
             // the "ignore" parameter
             delete self.paginationModel.ignore;
-            
+
             self.paginationModel.currentPage = currentPage;
             var offset = parseInt( response.headers( 'Offset' ) );
             if( null == self.minOffset || offset < self.minOffset ) self.minOffset = offset;
@@ -4270,7 +4270,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             identifier = String( record.id );
           } else {
             var columns = angular.isArray( column ) ? column : [column];
-            // for each column 
+            // for each column
             identifier = columns
               .map( col => valueOnly ? String( record[col] ) : ( col + '=' + record[col] ) )
               .join( ';' );
