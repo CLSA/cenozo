@@ -1,33 +1,17 @@
-// The following was added in order to integrate with Cenozo
-/* NOTE: for now this is dissabled because it was causing error in certain situations
-         (attempt to run compile-and-go script on a cleared scope)
-jQuery(document).ready( function() {
-  var $question = $( "div[id^=question]" );
-  var html = $question.html();
-
-  if( $question && html && -1 != html.indexOf( "{periodofday}" ) ) {
-    var now = new Date();
-    var hour = now.getHours();
-    var period = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
-    $question.html( $question.html().replace( /{periodofday}/gi, period ) );
-  }
-} );
-*/
-
-// numpad hotkeys
+// Custom functionality to allow answers to be selected using the number pad
 var compound_number = "";
-jQuery(document).ready( function() {
+$(document).ready(function() {
   $("*").keydown(function(event) {
     if( 13 == event.which ) {
       // enter key, click on the next button
       $( "#movenextbtn" ).click();
-    } else if ( 96 <= event.which && event.which <= 105 ) {
+    } else if( 96 <= event.which && event.which <= 105 ) {
       // translate from key code to number, then append to the compound number
       var num = event.which - 96;
       if( 1 == compound_number.length ) compound_number += num.toString();
       else compound_number = num.toString();
       num = parseInt( compound_number ) - 1;
-      
+
       // select either a special response (97, 98 and 99) or the Nth radio box
       var selector = "97" == compound_number
                    ? "input[value^=OT]"
@@ -37,7 +21,7 @@ jQuery(document).ready( function() {
                    ? "input[value^=RE]"
                    : "input[type=radio]:eq(" + num + ")";
       $( selector ).click();
-      
+
       // select either a special response (97, 98 and 99) or the Nth radio box
       var selector = "97" == compound_number
                    ? "input[name$=OT]"
@@ -50,3 +34,154 @@ jQuery(document).ready( function() {
     }
   });
 });
+
+// Custom functionality to allow additional runtime features to questions
+// expecting the input param as an object with:
+//   integer qid: the question ID (mandatory)
+//   string formElementType: the type of form element to affect (input, textarea, etc)
+//   string dontKnowCode: the answer to put if the user chooses "don't know"
+//   string refuseCode: the answer to put if the user chooses "refuse"
+//   boolean refuse: whether to add a drop-down with don't-know/refuse (optional, default false)
+//   function validateAnswer: A custom function which will be passed the answer and whether
+function configureQuestion( params ) {
+  [ 'qid', 'formElementType', 'dontKnowCode', 'refuseCode' ].forEach( function( paramName ) {
+    if( undefined === params[paramName] ) {
+      throw new Error( arguments.callee.name + ' expects ' + paramName + ' as an input parameter' );
+    }
+  } );
+  if( undefined === params.refuse ) params.refuse = false;
+  if( undefined === params.validateAnswer ) params.validateAnswer = function( answer, multi ) { return false; };
+
+  $(document).on('ready pjax:complete',function() {
+    if( params.refuse ) {
+      var inputList = $('#question' + params.qid + ' ' + params.formElementType);
+      var div1 = inputList.last().parent();
+      var div2 = div1.parent();
+      var div3 = div2.parent();
+      var labelClass = div3.find('label').attr('class');
+      var offsetClass = labelClass.match( 'hide' )
+                      ? ''
+                      : labelClass.match( /col-[a-z][a-z]-[0-9]+/g )
+                                  .filter( w => null == w.match( /12$/ ) )
+                                  .map( w => w.replace( /[0-9]+$/, 'offset-$&' ) )
+                                  .join(' ');
+
+      var otherOptions = $(
+        '<div class="' + div3.attr( 'class' ) + '">' +
+          '<div class="' + div2.attr( 'class' ) + '">' +
+            '<div class="' + div1.attr( 'class' ) + ' ' + offsetClass + '">' +
+              '<select id="otherOptions" class="form-control">' +
+                '<option value="" selected>(other options)</option>' +
+                '<option value="dontKnow">Don\'t Know</option>' +
+                '<option value="refuse">Refuse to Answer</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
+      otherOptions.find( 'select' ).change( function() {
+        var otherOption = this.options[this.selectedIndex].value;
+        var disabled = 'dontKnow' == otherOption || 'refuse' == otherOption;
+        inputList.prop( 'disabled', disabled );
+        if( disabled ) inputList.val('');
+      } );
+      div3.after( otherOptions );
+
+      if( params.dontKnowCode == inputList.last().val() ) {
+        otherOptions.find( 'select' ).val( 'dontKnow' ).trigger( 'change' );
+      } else if( params.refuseCode == inputList.last().val() ) {
+        otherOptions.find( 'select' ).val( 'refuse' ).trigger( 'change' );
+      }
+    }
+
+    function customValidate() {
+      var proceed = false;
+
+      var inputList = $('#question' + params.qid + ' ' + params.formElementType);
+      if( params.refuse ) {
+        // convert don't-know/refuse answers
+        var otherOption = otherOptions.find( 'select' ).find(':selected').val();
+        if( 'dontKnow' == otherOption ) {
+          inputList.val( params.dontKnowCode );
+          inputList.prop( 'disabled', false );
+          proceed = true;
+        } else if( 'refuse' == otherOption ) {
+          inputList.val( params.refuseCode );
+          inputList.prop( 'disabled', false );
+          proceed = true;
+        }
+      }
+
+      if( !proceed ) {
+        // check for invalid input
+        if( 0 == inputList.val().length ) {
+          var multi = 1 < inputList.length;
+          alert( 'Please provide a response' + ( multi ? ' for all questions.' : '.' ) );
+        } else {
+          var error = params.validateInput( inputList );
+          if( error ) {
+            alert( error );
+          } else {
+            proceed = true;
+          }
+        }
+      }
+
+      if( proceed && 'function' === typeof params.onSubmit ) proceed = params.onSubmit();
+      return proceed;
+    }
+
+    // do some validation when submitting the form
+    $('#movenextbtn, #movesubmitbtn').click( customValidate );
+    $('input').keypress(
+      function( event ) { if( event.which == '13' ) if( !customValidate() ) event.preventDefault(); }
+    );
+  } );
+}
+// Custom functionality to allow additional runtime features to questions
+// expecting the input param as an object with:
+//   integer qid: the question ID (mandatory)
+//   integer min: the minimum value allowed (mandatory)
+//   integer max: the maximum value allowed (mandatory)
+//   boolean refuse: whether to add a drop-down with don't-know/refuse (optional, default false)
+function configureNumberQuestion( params ) {
+  if( undefined === params.min ) throw new Error( 'configureQuestion expects min as an input parameter' );
+  if( undefined === params.max ) throw new Error( 'configureQuestion expects max as an input parameter' );
+  var digits = params.max.toString().length;
+
+  configureQuestion( {
+    qid: params.qid,
+    formElementType: 'input',
+    dontKnowCode: parseInt( ''.padEnd(digits,9) )-1, // ...98
+    refuseCode: parseInt( ''.padEnd(digits,9) ), // ...99
+    refuse: params.refuse,
+    validateInput: function( inputList ) {
+      var error = false;
+      var answer = parseFloat( inputList.val() );
+      var multi = 1 < inputList.length;
+      if( answer != inputList.val() ) {
+        error =
+          'Please specify your answer' + ( multi ? 's' : '' ) +
+          ' as ' + ( multi ? 'numbers' : 'a number' ) + ' only.';
+      } else if( answer < params.min ) {
+        error = 'Your answer' + ( multi ? 's' : '' ) + ' must be bigger than or equal to ' + params.min + '.';
+      } else if( answer > params.max ) {
+        error = 'Your answer' + ( multi ? 's' : '' ) + ' must be smaller than or equal to ' + params.max + '.';
+      }
+      return error;
+    }
+  } );
+}
+
+// Custom functionality to allow additional runtime features to questions
+// expecting the input param as an object with:
+//   integer qid: the question ID (mandatory)
+function configureTextQuestion( params ) {
+  configureQuestion( {
+    qid: params.qid,
+    formElementType: 'textarea',
+    dontKnowCode: 98,
+    refuseCode: 99,
+    refuse: true
+  } );
+}
