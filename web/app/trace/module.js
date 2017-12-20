@@ -160,6 +160,8 @@ define( function() {
           var data = this.$$getServiceData( type, columnRestrictLists );
           if( 'trace' == this.getSubjectFromState() && 'list' == this.getActionFromState() ) {
             if( angular.isUndefined( data.modifier.where ) ) data.modifier.where = [];
+
+            // restrict based on role's allSites parameter
             var all = CnSession.role.allSites;
             data.modifier.where.push( {
               column: 'trace_type.name',
