@@ -440,7 +440,7 @@ angular.extend( cenozo, {
   },
 
   isObjectEmpty: function( obj ) {
-    for( var property in obj ) if( obj.hasOwnProperty( key ) ) return false;
+    for( var property in obj ) if( obj.hasOwnProperty( property ) ) return false;
     return true;
   },
 

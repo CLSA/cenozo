@@ -303,6 +303,7 @@ class ui extends \cenozo\base_object
           '/{identifier}?{address}&{alternate}'.
           ( $use_interview_module ? '&{assignment}' : '' ).
           '&{consent}&{event}&{form}&{hold}&{note}&{phone}&{proxy}&{trace}' );
+        $module->add_action( 'notes', '/{identifier}?{search}' );
         // remove the add action it is used for utility purposes only
         $module->remove_action( 'add' );
       }
@@ -443,7 +444,7 @@ class ui extends \cenozo\base_object
         'query' => '/{identifier}',
         'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
     }
-    if( 2 <= $db_role->tier )
+    if( 2 <= $db_role->tier || 'helpline' == $db_role->name )
     {
       $list['Tracing'] = array(
         'subject' => 'trace',
