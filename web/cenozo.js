@@ -439,6 +439,11 @@ angular.extend( cenozo, {
     return ( a || b ) && !( a && b );
   },
 
+  isObjectEmpty: function( obj ) {
+    for( var property in obj ) if( obj.hasOwnProperty( key ) ) return false;
+    return true;
+  },
+
   getFileUrl: function( module, file, build ) {
     if( angular.isUndefined( build ) ) build = cenozo.build;
     var url = this.baseUrl + '/app/';
@@ -4462,12 +4467,20 @@ cenozo.factory( 'CnBaseModelFactory', [
             } );
           }
 
-          // add identifier data if it is missing
-          var column = angular.isDefined( self.module.identifier.column ) ? self.module.identifier.column : 'id';
-          var columns = angular.isArray( column ) ? column : [column];
-          columns.forEach( function( col ) {
-            if( angular.isUndefined( list[col] ) ) list[col] = { type: 'hidden' };
-          } );
+          // add identifier data if it is missing and the list is not empty
+          // Note: we don't add anything to an empty list because the web server will automatically return all
+          // columns in the main table if no columns are included in the selection.  This feature is used when
+          // reading calendar events, so adding an identifer column to an empty list will disrupt the expected
+          // results
+          if( !cenozo.isObjectEmpty( list ) ) {
+            var column = angular.isDefined( self.module.identifier.column )
+                       ? self.module.identifier.column
+                       : 'id';
+            var columns = angular.isArray( column ) ? column : [column];
+            columns.forEach( function( col ) {
+              if( angular.isUndefined( list[col] ) ) list[col] = { type: 'hidden' };
+            } );
+          }
 
           if( 'view' == type && angular.isDefined( self.module.identifier.parent ) ) {
             self.module.identifier.parent.forEach( function( item ) {
