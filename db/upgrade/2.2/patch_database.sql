@@ -4,6 +4,7 @@ SET AUTOCOMMIT=0;
 
 SOURCE application.sql
 SOURCE event_type.sql
+SOURCE site.sql
 
 SOURCE exclusion.sql
 SOURCE participant.exclusion.sql
