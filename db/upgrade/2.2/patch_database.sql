@@ -2,6 +2,9 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE application.sql
+SOURCE event_type.sql
+
 SOURCE exclusion.sql
 SOURCE participant.exclusion.sql
 SOURCE rename_states.sql

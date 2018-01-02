@@ -65,6 +65,7 @@ define( function() {
     release_based: {
       title: 'Release Based',
       type: 'boolean',
+      constant: true,
       help: 'Whether the application only has access to participants once they are released.'
     },
     update_queue: {
