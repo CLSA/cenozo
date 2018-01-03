@@ -15,7 +15,7 @@ try {
 
 // determine cenozo's base url
 var tempUrl = document.getElementById( 'cenozo' ).src;
-cenozo.baseUrl = tempUrl.substr( 0, tempUrl.indexOf( '/cenozo.js' ) );
+cenozo.baseUrl = tempUrl.substr( 0, tempUrl.indexOf( '/cenozo.' ) );
 
 // setup moment.timezone
 moment.tz.setDefault( 'UTC' );
@@ -101,10 +101,12 @@ angular.extend( cenozoApp, {
   moduleList: {},
 
   getFileUrl: function( module, file, build ) {
-    if( angular.isUndefined( build ) ) build = this.build;
-    var url = this.baseUrl + '/app/';
-    if( angular.isDefined( module ) ) url += module + '/';
-    if( angular.isDefined( file ) ) url += file + '?build=' + build;
+    var url = cenozo.getBaseUrl( this.baseUrl, module );
+    if( angular.isDefined( file ) ) {
+      if( angular.isUndefined( build ) ) build = this.build;
+      if( !cenozo.development ) file = file.replace( /\.js/, '.min.js' );
+      url += file + '?build=' + build;
+    }
     return url;
   },
 
@@ -156,10 +158,14 @@ angular.extend( cenozoApp, {
           },
           framework: framework,
           getFileUrl: function( file ) {
-            var build = this.framework ? cenozo.build : cenozoApp.build;
-            var url = ( this.framework ? cenozo.baseUrl : cenozoApp.baseUrl ) +
-                      '/app/' + this.subject.snake + '/';
-            if( angular.isDefined( file ) ) url += file + '?build=' + build;
+            var url = cenozo.getBaseUrl(
+              this.framework ? cenozo.baseUrl : cenozoApp.baseUrl, this.subject.snake
+            );
+            if( angular.isDefined( file ) ) {
+              var build = this.framework ? cenozo.build : cenozoApp.build;
+              if( !cenozo.development ) file = file.replace( /\.js/, '.min.js' );
+              url += file + '?build=' + build;
+            }
             return url;
           },
           inputGroupList: [],
@@ -400,8 +406,11 @@ angular.extend( cenozoApp, {
       subject: { snake: 'root', camel: 'root', Camel: 'Root' },
       framework: true,
       getFileUrl: function( file ) {
-        var url = cenozo.baseUrl + '/app/' + this.subject.snake + '/';
-        if( angular.isDefined( file ) ) url += file + '?build=' + cenozo.build;
+        var url = cenozo.getBaseUrl( cenozo.baseUrl, this.subject.snake );
+        if( angular.isDefined( file ) ) {
+          if( !cenozo.development ) file = file.replace( /\.js/, '.min.js' );
+          url += file + '?build=' + cenozo.build;
+        }
         return url;
       },
       getRequiredFiles: function() {
@@ -416,8 +425,11 @@ angular.extend( cenozoApp, {
       subject: { snake: 'error', camel: 'error', Camel: 'Error' },
       framework: true,
       getFileUrl: function( file ) {
-        var url = cenozo.baseUrl + '/app/' + this.subject.snake + '/';
-        if( angular.isDefined( file ) ) url += file + '?build=' + cenozo.build;
+        var url = cenozo.getBaseUrl( cenozo.baseUrl, this.subject.snake );
+        if( angular.isDefined( file ) ) {
+          if( !cenozo.development ) file = file.replace( /\.js/, '.min.js' );
+          url += file + '?build=' + cenozo.build;
+        }
         return url;
       },
       getRequiredFiles: function() {
@@ -444,11 +456,17 @@ angular.extend( cenozo, {
     return true;
   },
 
+  getBaseUrl: function( base, module ) {
+    return base + '/app/' + ( angular.isDefined( module ) ? ( module+'/' ) : '' );
+  },
+
   getFileUrl: function( module, file, build ) {
+    var url = cenozo.getBaseUrl( this.baseUrl, module );
+    if( angular.isDefined( file ) ) {
     if( angular.isUndefined( build ) ) build = cenozo.build;
-    var url = this.baseUrl + '/app/';
-    if( angular.isDefined( module ) ) url += module + '/';
-    if( angular.isDefined( file ) ) url += file + '?build=' + build;
+      if( !cenozo.development ) file = file.replace( /\.js/, '.min.js' );
+      url += file + '?build=' + build;
+    }
     return url;
   },
 

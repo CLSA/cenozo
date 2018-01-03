@@ -59,6 +59,7 @@ final class initial
       }
     }
 
+    define( 'DEVELOPMENT', $this->settings['general']['development_mode'] );
     define( 'CENOZO_BUILD', $this->settings['general']['cenozo_build'] );
     define( 'APP_BUILD', $this->settings['general']['build'] );
     define( 'APPLICATION', $this->settings['general']['application_name'] );

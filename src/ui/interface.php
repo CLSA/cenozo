@@ -1,4 +1,4 @@
-<!doctype html>
+<?php $min=DEVELOPMENT?'':'.min'; ?><!doctype html>
 <html lang="en" ng-app="cenozoApp">
 <head ng-controller="HeadCtrl">
   <meta charset="utf-8">
@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.min.css">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/css/colorpicker.min.css">
-  <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo.css?build=<?php print CENOZO_BUILD; ?>">
+  <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo<?php print $min; ?>.css?build=<?php print CENOZO_BUILD; ?>">
   <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css?_">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.min.js"></script>
@@ -23,8 +23,8 @@
   <script src="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
   <script src="<?php print LIB_URL; ?>/file-saver/FileSaver.min.js"></script>
 
-  <script src="<?php print CENOZO_URL; ?>/cenozo.js?build=<?php print CENOZO_BUILD; ?>" id="cenozo"></script>
-  <script src="<?php print ROOT_URL; ?>/app.js?build=<?php print APP_BUILD; ?>" id="app"></script>
+  <script src="<?php print CENOZO_URL; ?>/cenozo<?php print $min; ?>.js?build=<?php print CENOZO_BUILD; ?>" id="cenozo"></script>
+  <script src="<?php print ROOT_URL; ?>/app<?php print $min; ?>.js?build=<?php print APP_BUILD; ?>" id="app"></script>
   <script src="<?php print LIB_URL; ?>/requirejs/require.js"></script>
 </head>
 <body class="background">
@@ -32,10 +32,13 @@
     // define the framework and application build numbers
     window.cenozo.build = "<?php print CENOZO_BUILD; ?>";
     window.cenozoApp.build = "<?php print APP_BUILD; ?>";
-
-    // set the application's base url (the object is created for us in cenozo.js)
     window.cenozoApp.baseUrl = "<?php print ROOT_URL; ?>";
 
+    // determine whether we are in development mode
+    window.cenozo.development = <?php print DEVELOPMENT ? 'true' : 'false'; ?>;
+    if( window.cenozo.development ) console.info( 'Development mode' );
+
+    // set the application's base url (the object is created for us in cenozo.js)
     // define framework modules, set the applications module list then route them all
     window.cenozo.defineFrameworkModules( <?php print $framework_module_string; ?> );
     window.cenozoApp.setModuleList( <?php print $module_string; ?> );
