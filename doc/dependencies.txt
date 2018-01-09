@@ -1,0 +1,7 @@
+mysqli: apt-get install php-mysql
+mbstring: apt-get install php7.0-mbstring
+
+Modify the following mysql parameters:
+  query_cache_limit = 2M
+  innodb_log_file_size = 1G
+  innodb_log_buffer_size = 256M
