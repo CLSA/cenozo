@@ -54,6 +54,12 @@ CREATE PROCEDURE patch_participant()
       WHERE collection_id IS NULL
       AND exclusion_id IS NULL;
 
+      -- and now remove everyone from the enrollment closed state
+      UPDATE participant
+      JOIN state ON participant.state_id = state.id
+      SET state_id = NULL
+      WHERE state.name = "Enrollment Closed"
+      AND participant.exclusion_id IS NOT NULL;
     END IF;
 
   END //
