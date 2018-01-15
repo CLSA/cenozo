@@ -103,6 +103,25 @@
                     ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                     maxlength="{{ model.metadata.columnList[input.key].max_length }}"
                     ng-required="model.metadata.columnList[input.key].required"></input>
+                  <div ng-switch-when="percent" style="margin-top: 4px;">
+                    <div class="col-sm-1">
+                      <span ng-hide="nan==model.viewModel.record[input.key]">
+                        {{ 100*model.viewModel.record[input.key] | number:0 }}%
+                      </span>
+                    </div>
+                    <div class="col-sm-11">
+                      <cn-slider
+                        disabled="!model.getEditEnabled() ||
+                                  true === input.constant ||
+                                  'view' == input.constant"
+                        on-blur="patch( input.key )"
+                        ng-model="model.viewModel.record[input.key]"
+                        precision="2"
+                        floor="0.0"
+                        ceiling="1.0"
+                        step="0.01"></cn-slider>
+                    </div>
+                  </div>
                   <div ng-switch-when="size">
                     <div class="col-sm-8 col-slim">
                       <input ng-attr-id="{{ input.key }}"
@@ -112,7 +131,9 @@
                         class="form-control"
                         type="text"
                         autocomplete="off"
-                        ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
+                        ng-readonly="!model.getEditEnabled() ||
+                                     true === input.constant ||
+                                     'view' == input.constant"
                         maxlength="{{ model.metadata.columnList[input.key].max_length }}"
                         ng-required="model.metadata.columnList[input.key].required"></input>
                     </div>

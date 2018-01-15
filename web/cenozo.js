@@ -201,6 +201,8 @@ angular.extend( cenozoApp, {
            *     string: any string (use format for numbers, etc)
            *     text: any long string
            *     typeahead: like lookup-typeahead but values are not loaded (must be provided as an array)
+           *     size: A filesize selector (KB, MB, GB, etc)
+           *     percent: A percentage from 0% to 100%
            *   format: one of the following
            *     integer: will only accept integers
            *     float: will only accept float and integers
@@ -1916,10 +1918,12 @@ cenozo.directive( 'cnSlider', [
         precision: '@',
         buffer: '@',
         dragstop: '@',
+        disabled: '=?',
         ngModel: '=?',
         ngModelLow: '=?',
         ngModelHigh: '=?',
-        change: '&'
+        onChange: '&',
+        onBlur: '&'
       },
       templateUrl: cenozo.getFileUrl( 'cenozo', 'slider.tpl.html' ),
       compile: function( element, attributes ) {
@@ -1930,6 +1934,7 @@ cenozo.directive( 'cnSlider', [
         if( range ) watchables.push( high );
         return {
           post: function( scope, element, attributes ) {
+            if( angular.isUndefined( scope.disabled ) ) scope.disabled = false;
             var handleHalfWidth, barWidth, minOffset, maxOffset, minValue, maxValue, valueRange, offsetRange;
             var ngDocument = angular.element( document );
             var bound = false;
@@ -2029,7 +2034,8 @@ cenozo.directive( 'cnSlider', [
                   }
                   currentRef = ref;
                   scope.$apply();
-                  if( changed ) return scope.$eval( scope.change );
+                  scope.$eval( scope.onBlur );
+                  if( changed ) return scope.$eval( scope.onChange );
                 };
                 onMove = function( event ) {
                   var eventX, newOffset, newPercent, newValue;
@@ -2083,7 +2089,7 @@ cenozo.directive( 'cnSlider', [
                   setPointers();
                   if( !scope.dragstop ) {
                     scope[currentRef] = newValue;
-                    if( changed ) return scope.$eval( scope.change );
+                    if( changed ) return scope.$eval( scope.onChange );
                   }
                 };
                 onStart = function( event ) {
@@ -2100,7 +2106,7 @@ cenozo.directive( 'cnSlider', [
               }
 
               dimensions();
-              if( !bound ) {
+              if( !bound && !scope.disabled ) {
                 bind( minPtr, lowBubble, low, { start: 'touchstart', move: 'touchmove', end: 'touchend' } );
                 bind( maxPtr, highBubble, high, { start: 'touchstart', move: 'touchmove', end: 'touchend' } );
                 bind( minPtr, lowBubble, low, { start: 'mousedown', move: 'mousemove', end: 'mouseup' } );
