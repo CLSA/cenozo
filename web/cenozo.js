@@ -2430,7 +2430,7 @@ cenozo.filter( 'cnPercent', function() {
     if( angular.isUndefined( input ) || null === input || '' === input ) output = 'none';
     else {
       if( 'string' == cenozo.getType( input ) ) input = parseInt( input );
-      if( 'number' == cenozo.getType( input ) ) output = input + '%';
+      if( 'number' == cenozo.getType( input ) ) output = (100*input) + '%';
     }
     return output;
   };
