@@ -81,7 +81,8 @@ class export_restriction extends has_rank
    */
   public function get_table_alias()
   {
-    if( in_array( $this->table_name, array( 'hin', 'participant', 'phone' ) ) ) return $this->table_name;
+    if( in_array( $this->table_name, array( 'hin', 'hold', 'participant', 'phone', 'proxy', 'trace' ) ) )
+      return $this->table_name;
     else if( 'auxiliary' == $this->table_name ) return $this->column_name;
     else if( 'site' == $this->table_name || 'address' == $this->table_name )
       return $this->subtype.'_'.$this->table_name;

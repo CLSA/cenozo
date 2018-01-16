@@ -1,5 +1,5 @@
 define( [
-  'address', 'collection', 'consent', 'event', 'hin', 'participant', 'phone', 'site'
+  'address', 'collection', 'consent', 'event', 'hold', 'hin', 'participant', 'phone', 'proxy', 'site', 'trace'
 ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
@@ -149,10 +149,12 @@ define( [
     'CnBaseViewFactory',
     'CnParticipantModelFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory', 'CnSiteModelFactory',
     'CnCollectionModelFactory', 'CnConsentModelFactory', 'CnEventModelFactory', 'CnHinModelFactory',
+    'CnHoldModelFactory', 'CnProxyModelFactory', 'CnTraceModelFactory',
     'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalDatetimeFactory', '$q',
     function( CnBaseViewFactory,
               CnParticipantModelFactory, CnAddressModelFactory, CnPhoneModelFactory, CnSiteModelFactory,
               CnCollectionModelFactory, CnConsentModelFactory, CnEventModelFactory, CnHinModelFactory,
+              CnHoldModelFactory, CnProxyModelFactory, CnTraceModelFactory,
               CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory, $q ) {
       var object = function( parentModel, root ) {
         var self = this;
@@ -259,7 +261,10 @@ define( [
             collection: CnCollectionModelFactory.root,
             consent: CnConsentModelFactory.root,
             event: CnEventModelFactory.root,
-            hin: CnHinModelFactory.root
+            hin: CnHinModelFactory.root,
+            hold: CnHoldModelFactory.root,
+            proxy: CnProxyModelFactory.root,
+            trace: CnTraceModelFactory.root
           },
           extendedSiteSelection: 'mastodon' == CnSession.application.type,
           columnListIsLoading: true,
@@ -345,6 +350,21 @@ define( [
               isLoading: true,
               promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
+            },
+            hold: {
+              isLoading: true,
+              promise: null,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
+            proxy: {
+              isLoading: true,
+              promise: null,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
+            trace: {
+              isLoading: true,
+              promise: null,
+              list: [ { key: undefined, title: 'Loading...' } ]
             }
           },
           tableColumnList: {
@@ -388,6 +408,18 @@ define( [
               list: [ { key: undefined, title: 'Loading...' } ]
             },
             hin: {
+              isLoading: true,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
+            hold: {
+              isLoading: true,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
+            proxy: {
+              isLoading: true,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
+            trace: {
               isLoading: true,
               list: [ { key: undefined, title: 'Loading...' } ]
             }
@@ -864,6 +896,9 @@ define( [
           processMetadata( 'consent' ),
           processMetadata( 'event' ),
           processMetadata( 'hin' ),
+          processMetadata( 'hold' ),
+          processMetadata( 'proxy' ),
+          processMetadata( 'trace' ),
 
           CnHttpFactory.instance( {
             path: 'collection',
