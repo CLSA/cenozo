@@ -1322,9 +1322,9 @@ cenozo.directive( 'cnRecordAdd', [
             $scope.isAdding = true;
             $scope.model.addModel.onAdd( $scope.record ).then( function( response ) {
               // create a new record to be created (in case another record is added)
-              $scope.model.addModel.onNew( $scope.record );
               $scope.form.$setPristine();
               $scope.model.addModel.transitionOnSave( $scope.record );
+              $scope.model.addModel.onNew( $scope.record );
             } ).finally( function() { $scope.isAdding = false; } );
           }
         };
@@ -3080,7 +3080,7 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         cenozo.addExtendableFunction( object, 'transitionOnSave', function( record ) {
           var self = this;
-          CnSession.workingTransition( function() { self.parentModel.transitionToLastState( record ); } );
+          CnSession.workingTransition( function() { self.parentModel.transitionToLastState(); } );
         } );
 
         /**
