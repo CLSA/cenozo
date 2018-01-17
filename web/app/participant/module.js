@@ -108,18 +108,51 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
       title: 'Hold',
       type: 'string',
       constant: true,
+      action: {
+        title: 'Change',
+        isDisabled: function( $state, model ) {
+          return !( model.viewModel.holdModel && model.viewModel.holdModel.getAddEnabled() );
+        },
+        operation: function( $state, model ) {
+          model.viewModel.onViewPromise.then( function() {
+            $state.go( 'participant.add_hold', { parentIdentifier: model.viewModel.record.getIdentifier() } );
+          } );
+        }
+      },
       help: 'Whether the participant is currently in a hold.'
     },
     trace: {
       title: 'Trace',
       type: 'string',
       constant: true,
+      action: {
+        title: 'Change',
+        isDisabled: function( $state, model ) {
+          return !( model.viewModel.traceModel && model.viewModel.traceModel.getAddEnabled() );
+        },
+        operation: function( $state, model ) {
+          model.viewModel.onViewPromise.then( function() {
+            $state.go( 'participant.add_trace', { parentIdentifier: model.viewModel.record.getIdentifier() } );
+          } );
+        }
+      },
       help: 'Whether the participant currently requires tracing.'
     },
     proxy: {
       title: 'Proxy',
       type: 'string',
       constant: true,
+      action: {
+        title: 'Change',
+        isDisabled: function( $state, model ) {
+          return !( model.viewModel.proxyModel && model.viewModel.proxyModel.getAddEnabled() );
+        },
+        operation: function( $state, model ) {
+          model.viewModel.onViewPromise.then( function() {
+            $state.go( 'participant.add_proxy', { parentIdentifier: model.viewModel.record.getIdentifier() } );
+          } );
+        }
+      },
       help: 'Whether the participant requires a proxy, and if so then what their proxy status is.'
     }
   } );

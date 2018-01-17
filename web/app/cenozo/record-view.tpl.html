@@ -85,10 +85,12 @@
                      uib-tooltip="{{ input.help }}">
                 {{ input.title }}
               </label>
-              <div ng-class="model.getEditEnabled() &&
-                             true !== input.constant && 'view' != input.constant &&
-                             model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] ?
-                             'col-sm-8' : 'col-sm-9'">
+              <div ng-class="
+                model.getEditEnabled() &&
+                true !== input.constant && 'view' != input.constant &&
+                model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] ?
+                ( input.action && input.action.isIncluded( $state, model ) ? 'col-sm-6' : 'col-sm-8' ) :
+                ( input.action && input.action.isIncluded( $state, model ) ? 'col-sm-7' : 'col-sm-9' )">
                 <div class="input-group"
                      ng-switch="input.type|cnViewType"
                      ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
@@ -438,6 +440,15 @@
                           model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
                    class="col-sm-1 col-slim">
                 <button class="btn btn-warning" type="button" ng-click="undo( input.key )">Undo</button>
+              </div>
+              <div ng-if="input.action && input.action.isIncluded( $state, model )" class="col-sm-2">
+                <button
+                  class="btn btn-default full-width"
+                  type="button"
+                  id="{{ input.action.id }}"
+                  ng-class="input.action.classes"
+                  ng-disabled="input.action.isDisabled( $state, model )"
+                  ng-click="input.action.operation( $state, model )">{{ input.action.title }}</button>
               </div>
             </div>
           </ng-form>

@@ -224,9 +224,22 @@ angular.extend( cenozoApp, {
            *     where: an array of all columns in the table which can be matched
            *     forceEmptyOnNew: if set to true then the typeahead won't automatically pre-populate
            *     minLength: the minimum length before a search is performed (default 2)
+           *   }
            *   hourStep: when using the datetime type this can be used to define the hour step value
            *   minuteStep: when using the datetime type this can be used to define the minute step value
            *   secondStep: when using the datetime type this can be used to define the second step value
+           *   action: { adds an action button to the input
+           *     id: The id to give the button
+           *     title: The button's title
+           *     isIncluded: A function to determine if the button shound be shown
+           *       The function must return a boolean (default function returns true)
+           *       This function will be passed two arguments: $state and model
+           *     isDisabled: A function to determine if the button is disabled
+           *       The function must return a boolean (default function returns false)
+           *       This function will be passed two arguments: $state and model
+           *     classes: A space-separated list of css classes to apply to the button
+           *     operation: A function to be executed when the button is clicked.
+           *       This function will be passed two arguments: $state and model
            *   }
            * }
            */
@@ -246,6 +259,14 @@ angular.extend( cenozoApp, {
             } else {
               // add the key to the input
               input.key = key;
+
+              // process the action if one exists
+              if( angular.isDefined( input.action ) ) {
+                if( angular.isUndefined( input.action.isIncluded ) )
+                  input.action.isIncluded = function() { return true; }
+                if( angular.isUndefined( input.action.isDisabled ) )
+                  input.action.isDisabled = function() { return false; }
+              }
 
               // create the group if it doesn't exist
               var group = this.inputGroupList.findByProperty( 'title', groupTitle );
