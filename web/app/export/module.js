@@ -883,6 +883,9 @@ define( [
             columnList.list.findByProperty( 'key', undefined ).title =
               'Add a new ' + subject + ' column...';
             columnList.isLoading = false;
+
+            // add special meta columns
+            if( 'participant' == subject ) columnList.list.push( { key: 'status', title: 'Status' } );
           } );
         }
 
@@ -990,7 +993,9 @@ define( [
           );
         }
 
-        this.promise = $q.all( promiseList );
+        this.promise = $q.all( promiseList ).then( function() {
+          console.log( self.tableColumnList.participant );
+        } );
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

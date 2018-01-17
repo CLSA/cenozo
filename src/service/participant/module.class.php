@@ -55,6 +55,7 @@ class module extends \cenozo\service\site_restricted_participant_module
   {
     parent::prepare_read( $select, $modifier );
 
+    $participant_class_name = lib::get_class_name( 'database\participant' );
     $db_application = lib::create( 'business\session' )->get_application();
 
     $modifier->left_join( 'exclusion', 'participant.exclusion_id', 'exclusion.id' );
@@ -108,18 +109,7 @@ class module extends \cenozo\service\site_restricted_participant_module
     }
 
     if( $select->has_column( 'status' ) )
-    {
-      // this should be identical to what is returned by database\participant::get_status()
-      $select->add_column(
-        "IF( exclusion.name IS NOT NULL, 'not enrolled',\n".
-        "IF( hold_type.type = 'final', CONCAT( 'final: ', hold_type.name ),\n".
-        "IF( trace_type.name IS NOT NULL, CONCAT( 'trace: ', trace_type.name ),\n".
-        "IF( hold_type.type IS NOT NULL, CONCAT( hold_type.type, ': ', hold_type.name ),\n".
-        "IF( proxy_type.name IS NOT NULL, CONCAT( 'proxy: ', proxy_type.name ), 'active' )))))",
-        'status',
-        false
-      );
-    }
+      $select->add_column( $participant_class_name::get_status_column_sql(), 'status', false );
 
     // add the total number of addresss
     if( $select->has_column( 'active_address_count' ) ) 

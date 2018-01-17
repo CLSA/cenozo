@@ -21,6 +21,8 @@ class export_column extends has_rank
    */
   public function apply_select( $select )
   {
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+
     if( $this->include )
     {
       $table_name = $this->get_table_alias();
@@ -40,6 +42,12 @@ class export_column extends has_rank
           $column_name = sprintf( 'IF( %s.total, "yes", "no" )', $this->column_name );
           $table_prefix = false;
         }
+      }
+      else if( 'participant' == $this->table_name && 'status' == $column_name )
+      {
+        // participant.status is a pseudo-column
+        $column_name = $participant_class_name::get_status_column_sql();
+        $table_prefix = false;
       }
 
       // replace foreign key IDs with the name from the foreign table
@@ -67,7 +75,7 @@ class export_column extends has_rank
   public function apply_modifier( $modifier )
   {
     $application_id = lib::create( 'business\session' )->get_application()->id;
-    
+
     $table_name = $this->get_table_alias();
     if( 'address' == $this->table_name )
     {
@@ -193,31 +201,46 @@ class export_column extends has_rank
         $modifier->left_join( 'hin', 'participant_last_hin.hin_id', 'hin.id' );
       }
     }
-    else if( 'hold' == $this->table_name )
+    else if( 'hold' == $this->table_name ||
+             'proxy' == $this->table_name ||
+             'trace' == $this->table_name ||
+             ( 'participant' == $this->table_name && 'status' == $this->column_name ) )
     {
-      if( !$modifier->has_join( 'hold' ) )
+      if( 'participant' == $this->table_name )
+        if( !$modifier->has_join( 'exclusion' ) )
+          $modifier->left_join( 'exclusion', 'participant.exclusion_id', 'exclusion.id' );
+
+      if( 'hold' == $this->table_name || 'participant' == $this->table_name )
       {
-        if( !$modifier->has_join( 'participant_last_hold' ) )
-          $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
-        $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+        if( !$modifier->has_join( 'hold' ) )
+        {
+          if( !$modifier->has_join( 'participant_last_hold' ) )
+            $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
+          $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+          $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+        }
       }
-    }
-    else if( 'proxy' == $this->table_name )
-    {
-      if( !$modifier->has_join( 'proxy' ) )
+
+      if( 'proxy' == $this->table_name || 'participant' == $this->table_name )
       {
-        if( !$modifier->has_join( 'participant_last_proxy' ) )
-          $modifier->join( 'participant_last_proxy', 'participant.id', 'participant_last_proxy.participant_id' );
-        $modifier->left_join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
+        if( !$modifier->has_join( 'proxy' ) )
+        {
+          if( !$modifier->has_join( 'participant_last_proxy' ) )
+            $modifier->join( 'participant_last_proxy', 'participant.id', 'participant_last_proxy.participant_id' );
+          $modifier->left_join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
+          $modifier->left_join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
+        }
       }
-    }
-    else if( 'trace' == $this->table_name )
-    {
-      if( !$modifier->has_join( 'trace' ) )
+
+      if( 'trace' == $this->table_name || 'participant' == $this->table_name )
       {
-        if( !$modifier->has_join( 'participant_last_trace' ) )
-          $modifier->join( 'participant_last_trace', 'participant.id', 'participant_last_trace.participant_id' );
-        $modifier->left_join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
+        if( !$modifier->has_join( 'trace' ) )
+        {
+          if( !$modifier->has_join( 'participant_last_trace' ) )
+            $modifier->join( 'participant_last_trace', 'participant.id', 'participant_last_trace.participant_id' );
+          $modifier->left_join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
+          $modifier->left_join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
+        }
       }
     }
     else if( 'phone' == $this->table_name )
@@ -283,7 +306,7 @@ class export_column extends has_rank
         if( !$modifier->has_join( $joining_table_name ) )
         {
           $modifier->join(
-            $sub_table_name, 
+            $sub_table_name,
             $table_name.'.'.$this->column_name,
             $joining_table_name.'.id',
             'left',

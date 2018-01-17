@@ -24,6 +24,9 @@ SOURCE trace.sql
 SOURCE participant.state.sql
 SOURCE overview.sql
 
+SOURCE export_restriction.sql
+SOURCE export_column.sql
+
 SOURCE role_has_hold_type.sql
 SOURCE role_has_state.sql
 SOURCE state.sql

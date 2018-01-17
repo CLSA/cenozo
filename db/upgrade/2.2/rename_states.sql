@@ -12,6 +12,17 @@ CREATE PROCEDURE patch_rename_states()
 
       SELECT "Renaming some states in preperation for the new hold module" AS "";
 
+      DELETE FROM export_restriction
+      WHERE table_name = "participant"
+      AND column_name = "state_id"
+      AND value = ( SELECT id FROM state WHERE name = "FU1 Institutionalized" );
+
+      UPDATE export_restriction
+      SET value = ( SELECT id FROM state WHERE name = "Participant Requires Proxy" )
+      WHERE table_name = "participant"
+      AND column_name = "state_id"
+      AND value IN ( SELECT id FROM state WHERE name IN( "institutionalized", "FU1 Institutionalized" ) );
+
       UPDATE state AS new_state, participant
       JOIN state ON participant.state_id = state.id
       SET participant.state_id = new_state.id

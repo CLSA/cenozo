@@ -69,6 +69,22 @@ class participant extends record
   }
 
   /**
+   * Returns the SQL used to get the participant's status
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function get_status_column_sql()
+  {
+    return
+      "IF( exclusion.name IS NOT NULL, 'not enrolled',\n".
+      "IF( hold_type.type = 'final', CONCAT( 'final: ', hold_type.name ),\n".
+      "IF( trace_type.name IS NOT NULL, CONCAT( 'trace: ', trace_type.name ),\n".
+      "IF( hold_type.type IS NOT NULL, CONCAT( hold_type.type, ': ', hold_type.name ),\n".
+      "IF( proxy_type.name IS NOT NULL, CONCAT( 'proxy: ', proxy_type.name ), 'active' )))))";
+  }
+
+  /**
    * Get this participant's next_of_kin record
    * @return next_of_kin
    * @access public
