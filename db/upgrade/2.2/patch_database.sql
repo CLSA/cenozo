@@ -23,6 +23,7 @@ SOURCE trace.sql
 
 SOURCE participant.state.sql
 SOURCE overview.sql
+SOURCE role_has_overview.sql
 
 SOURCE export_restriction.sql
 SOURCE export_column.sql
