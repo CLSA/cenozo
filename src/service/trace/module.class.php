@@ -78,6 +78,27 @@ class module extends \cenozo\service\site_restricted_participant_module
           $this->get_status()->set_code( 306 );
           return;
         }
+        // do not allow manually setting trace type when current is null and the participant has at least one
+        // address and phone number
+        else
+        {
+          if( is_null( $last_trace_type_id ) )
+          {
+            $address_mod = lib::create( 'database\modifier' );
+            $address_mod->where( 'active', '=', true );
+            $phone_mod = lib::create( 'database\modifier' );
+            $phone_mod->where( 'active', '=', true );
+            if( 0 < $db_participant->get_address_count( $address_mod ) &&
+                0 < $db_participant->get_phone_count( $phone_mod ) )
+            {
+              $this->set_data(
+                'The participant has at least one valid address and phone number so they cannot be '.
+                'put into a trace.' );
+              $this->get_status()->set_code( 306 );
+              return;
+            }
+          }
+        }
 
         // do not write a trace which the participant is already in
         if( $trace_type_id == $last_trace_type_id )
