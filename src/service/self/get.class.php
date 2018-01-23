@@ -33,6 +33,7 @@ class get extends \cenozo\service\service
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $script_class_name = lib::get_class_name( 'database\script' );
     $webphone_class_name = lib::get_class_name( 'database\webphone' );
+    $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
@@ -109,6 +110,15 @@ class get extends \cenozo\service\service
     $script_mod->where( 'special', '=', true );
     $script_list = $script_class_name::select( $script_sel, $script_mod );
 
+    // get a list of all final holds
+    $hold_type_sel = lib::create( 'database\select' );
+    $hold_type_sel->from( 'hold_type' );
+    $hold_type_sel->add_column( 'id' );
+    $hold_type_sel->add_column( 'name' );
+    $hold_type_mod = lib::create( 'database\modifier' );
+    $hold_type_mod->where( 'type', '=', 'final' );
+    $final_hold_type_list = $hold_type_class_name::select( $hold_type_sel, $hold_type_mod );
+
     $pseudo_record = array(
       'application' => $db_application->get_column_values( $application_sel ),
       'role' => $db_role->get_column_values( $role_sel ),
@@ -118,6 +128,7 @@ class get extends \cenozo\service\service
       'module_list' => $module_list,
       'special_script_list' => $script_list,
       'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
+      'final_hold_type_list' => $final_hold_type_list,
       'session_list' => $session->get_session_list(),
       'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false );
 

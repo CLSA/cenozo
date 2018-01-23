@@ -2644,6 +2644,7 @@ cenozo.factory( 'CnSession', [
       this.role = {};
       this.setting = {};
       this.siteList = [];
+      this.finalHoldTypeList = [];
       this.moduleList = [];
       this.sessionList = [];
       this.messageList = [];
@@ -2747,6 +2748,9 @@ cenozo.factory( 'CnSession', [
             self.siteList.forEach( function( site ) {
               site.getIdentifier = function() { return 'name=' + this.name; };
             } );
+
+            // process hold-type records
+            self.finalHoldTypeList = response.data.final_hold_type_list;
 
             // process module list
             self.moduleList = response.data.module_list;

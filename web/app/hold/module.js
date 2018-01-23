@@ -124,9 +124,27 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnHoldAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+    'CnBaseAddFactory', 'CnSession', 'CnModalMessageFactory',
+    function( CnBaseAddFactory, CnSession, CnModalMessageFactory ) {
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseAddFactory.construct( this, parentModel );
+
+        this.onAdd = function( record ) {
+          return this.$$onAdd( record ).then( function() {
+            if( CnSession.finalHoldTypeList.findByProperty( 'name', 'Deceased' ).id == record.hold_type_id ) {
+              return CnModalMessageFactory.instance( {
+                title: 'Date of Death',
+                message:
+                  'You have choosen to put the participant in a "Deceased" hold and you will now be returned ' +
+                  'to the participant\'s file.  If you have any information about the participant\'s date of ' +
+                  'death please enter it in the participant\'s defining details including whether only the ' +
+                  'year, year and month, or full date is known.'
+              } ).show();
+            }
+          } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
