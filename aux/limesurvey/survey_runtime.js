@@ -44,6 +44,7 @@ $(document).ready(function() {
 //   boolean refuse: whether to add a drop-down with don't-know/refuse (optional, default false)
 //   function validateAnswer: A custom function which will be passed the answer and whether
 function configureQuestion( params ) {
+  var lang = $('html').attr('lang');
   [ 'qid', 'formElementType', 'dontKnowCode', 'refuseCode' ].forEach( function( paramName ) {
     if( undefined === params[paramName] ) {
       throw new Error( arguments.callee.name + ' expects ' + paramName + ' as an input parameter' );
@@ -71,9 +72,15 @@ function configureQuestion( params ) {
           '<div class="' + div2.attr( 'class' ) + '">' +
             '<div class="' + div1.attr( 'class' ) + ' ' + offsetClass + '">' +
               '<select id="otherOptions" class="form-control">' +
-                '<option value="" selected>(other options)</option>' +
-                '<option value="dontKnow">Don\'t Know</option>' +
-                '<option value="refuse">Refuse to Answer</option>' +
+                '<option value="" selected>(' +
+                  ( 'en' == lang ? 'other options' : 'TRANSLATION MISSING' ) +
+                ')</option>' +
+                '<option value="dontKnow">' +
+                  ( 'en' == lang ? 'Don\'t Know' : 'Ne sait pas' ) +
+                '</option>' +
+                '<option value="refuse">' +
+                  ( 'en' == lang ? 'Refuse' : 'Refus' ) +
+                '</option>' +
               '</select>' +
             '</div>' +
           '</div>' +
@@ -116,7 +123,11 @@ function configureQuestion( params ) {
         // check for invalid input
         if( 0 == inputList.val().length ) {
           var multi = 1 < inputList.length;
-          alert( 'Please provide a response' + ( multi ? ' for all questions.' : '.' ) );
+          alert(
+            'en' == lang
+            ? 'Please provide a response' + ( multi ? ' for all questions.' : '.' )
+            : 'TRANSLATION MISSING'
+          );
         } else {
           var error = params.validateInput( inputList );
           if( error ) {
@@ -145,6 +156,7 @@ function configureQuestion( params ) {
 //   integer max: the maximum value allowed (mandatory)
 //   boolean refuse: whether to add a drop-down with don't-know/refuse (optional, default false)
 function configureNumberQuestion( params ) {
+  var lang = $('html').attr('lang');
   if( undefined === params.min ) throw new Error( 'configureQuestion expects min as an input parameter' );
   if( undefined === params.max ) throw new Error( 'configureQuestion expects max as an input parameter' );
   var digits = params.max.toString().length;
@@ -160,13 +172,18 @@ function configureNumberQuestion( params ) {
       var answer = parseFloat( inputList.val() );
       var multi = 1 < inputList.length;
       if( answer != inputList.val() ) {
-        error =
-          'Please specify your answer' + ( multi ? 's' : '' ) +
-          ' as ' + ( multi ? 'numbers' : 'a number' ) + ' only.';
+        error = 'en' == lang
+              ? 'Please specify your answer' + ( multi ? 's' : '' ) +
+                ' as ' + ( multi ? 'numbers' : 'a number' ) + ' only.'
+              : 'TRANSLATION MISSING';
       } else if( answer < params.min ) {
-        error = 'Your answer' + ( multi ? 's' : '' ) + ' must be bigger than or equal to ' + params.min + '.';
+        error = 'en' == lang
+              ? 'Your answer' + ( multi ? 's' : '' ) + ' must be bigger than or equal to ' + params.min + '.'
+              : 'TRANSLATION MISSING';
       } else if( answer > params.max ) {
-        error = 'Your answer' + ( multi ? 's' : '' ) + ' must be smaller than or equal to ' + params.max + '.';
+        error = 'en' == lang
+              ? 'Your answer' + ( multi ? 's' : '' ) + ' must be smaller than or equal to ' + params.max + '.'
+              : 'TRANSLATION MISSING';
       }
       return error;
     }
