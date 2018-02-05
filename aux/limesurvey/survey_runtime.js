@@ -73,7 +73,7 @@ function configureQuestion( params ) {
             '<div class="' + div1.attr( 'class' ) + ' ' + offsetClass + '">' +
               '<select id="otherOptions" class="form-control">' +
                 '<option value="" selected>(' +
-                  ( 'en' == lang ? 'other options' : 'TRANSLATION MISSING' ) +
+                  ( 'en' == lang ? 'other options' : 'autres options' ) +
                 ')</option>' +
                 '<option value="dontKnow">' +
                   ( 'en' == lang ? 'Don\'t Know' : 'Ne sait pas' ) +
@@ -126,7 +126,7 @@ function configureQuestion( params ) {
           alert(
             'en' == lang
             ? 'Please provide a response' + ( multi ? ' for all questions.' : '.' )
-            : 'TRANSLATION MISSING'
+            : 'Veuillez fournir une réponse' + ( multi ? ' pour toutes les questions.' : '.' )
           );
         } else {
           var error = params.validateInput( inputList );
@@ -173,17 +173,31 @@ function configureNumberQuestion( params ) {
       var multi = 1 < inputList.length;
       if( answer != inputList.val() ) {
         error = 'en' == lang
-              ? 'Please specify your answer' + ( multi ? 's' : '' ) +
-                ' as ' + ( multi ? 'numbers' : 'a number' ) + ' only.'
-              : 'TRANSLATION MISSING';
+              ? (
+                multi
+                ? 'Please specify your answers as numbers only.'
+                : 'Please specify your answer as a number only.'
+              ) : (
+                multi
+                ? 'Veuillez donner des réponses sous forme de nombres seulement.'
+                : 'Veuillez donner une réponse sous forme de nombre seulement.'
+              );
       } else if( answer < params.min ) {
         error = 'en' == lang
               ? 'Your answer' + ( multi ? 's' : '' ) + ' must be bigger than or equal to ' + params.min + '.'
-              : 'TRANSLATION MISSING';
+              : (
+                multi
+                ? 'Vos réponses doivent être supérieures ou égales à ' + params.min + '.'
+                : 'Votre réponse doit être supérieure ou égale à ' + params.min + '.'
+              );
       } else if( answer > params.max ) {
         error = 'en' == lang
               ? 'Your answer' + ( multi ? 's' : '' ) + ' must be smaller than or equal to ' + params.max + '.'
-              : 'TRANSLATION MISSING';
+              : (
+                multi
+                ? 'Vos réponses doivent être inférieures ou égales à ' + params.max + '.'
+                : 'Votre réponse doit être inférieure ou égale à ' + params.max + '.'
+              );
       }
       return error;
     }
