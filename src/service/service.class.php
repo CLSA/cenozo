@@ -242,42 +242,28 @@ abstract class service extends \cenozo\base_object
   protected function finish()
   {
     // set the content type and length headers, if the service has produced output
-
-    $this->headers['Content-Type'] = $this->get_mime_type();
+    $mime_type = $this->get_mime_type();
+    $this->headers['Content-Type'] = $mime_type;
     $this->headers['Content-Length'] = strlen( $this->get_data() );
 
-    if( false !== strpos( $this->get_mime_type(), 'application/vnd' ) )
+    if( false !== strpos( $mime_type, 'application/' ) ||
+        false !== strpos( $mime_type, 'image/' ) ||
+        'text/csv' == $mime_type )
     {
-      $this->headers['Content-type'] = 'application/octet-stream';
-      $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
-      $this->headers['Content-Transfer-Encoding'] = 'binary';
-      $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-      $this->headers['Pragma'] = 'no-cache';
-      $this->headers['Expires'] = '0';
-    }
-    else if( 'text/csv' == $this->get_mime_type() )
-    {
-      $this->headers['Content-type'] = 'text/csv';
       $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
       $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
       $this->headers['Pragma'] = 'no-cache';
       $this->headers['Expires'] = '0';
-    }
-    else if( 'application/pdf' == $this->get_mime_type() )
-    {
-      $this->headers['Content-type'] = 'application/pdf';
-      $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
-      $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-      $this->headers['Pragma'] = 'no-cache';
-      $this->headers['Expires'] = '0';
-    }
-    else if( 'application/zip' == $this->get_mime_type() )
-    {
-      $this->headers['Content-type'] = 'application/octet-stream';
-      $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
-      $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-      $this->headers['Pragma'] = 'no-cache';
-      $this->headers['Expires'] = '0';
+
+      if( false !== strpos( $mime_type, 'application/vnd' ) )
+      {
+        $this->headers['Content-Type'] = 'application/octet-stream';
+        $this->headers['Content-Transfer-Encoding'] = 'binary';
+      }
+      else if( 'application/zip' == $mime_type )
+      {
+        $this->headers['Content-Type'] = 'application/octet-stream';
+      }
     }
 
     if( $this->temporary_login ) lib::create( 'business\session' )->logout();

@@ -5452,6 +5452,9 @@ cenozo.factory( 'CnHttpFactory', [
         if( 'csv' == self.format ) {
           object.responseType = 'arraybuffer';
           object.headers = { Accept: 'text/csv;charset=utf-8' };
+        } else if( 'jpeg' == self.format ) {
+          object.responseType = 'arraybuffer';
+          object.headers = { Accept: 'image/jpeg' };
         } else if( 'ods' == self.format ) {
           object.responseType = 'arraybuffer';
           object.headers = { Accept: 'application/vnd.oasis.opendocument.spreadsheet;charset=utf-8' };
