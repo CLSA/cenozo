@@ -27,19 +27,10 @@ CREATE PROCEDURE patch_export_restriction()
       WHERE table_name = "participant"
       AND column_name = "state_id";
 
-      -- convert participant.active = 0 to hold is hold-type
-      UPDATE export_restriction, hold_type
-      SET table_name = "hold", column_name = "hold_type_id", value = hold_type.id
-      WHERE table_name = "participant"
-      AND column_name = "active"
-      AND value = 1
-      AND hold_type.name = "Deactivated";
-
-      -- delete participant.active = 1
+      -- delete participant.active
       DELETE FROM export_restriction
       WHERE table_name = "participant"
-      AND column_name = "active"
-      AND value = 0;
+      AND column_name = "active";
 
       -- convert state is proxy-type to proxy is proxy-type
       UPDATE export_restriction

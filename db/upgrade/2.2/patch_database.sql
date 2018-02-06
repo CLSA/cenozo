@@ -9,6 +9,7 @@ SOURCE site.sql
 SOURCE exclusion.sql
 SOURCE participant.exclusion.sql
 SOURCE rename_states.sql
+SOURCE phone.pre.sql
 
 SOURCE hold_type.sql
 SOURCE hold.sql

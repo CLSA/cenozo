@@ -83,14 +83,6 @@ CREATE PROCEDURE patch_hold()
       JOIN state ON participant.state_id = state.id
       JOIN hold_type ON state.name = hold_type.name;
 
-      -- add in holds based on active bit
-      INSERT IGNORE INTO hold( participant_id, hold_type_id, datetime, note )
-      SELECT participant.id, hold_type.id, UTC_TIMESTAMP(), "Created when the hold module was installed."
-      FROM hold_type, participant
-      WHERE hold_type.type = "temporary" AND hold_type.name = "Deactivated"
-      AND participant.active = 0
-      AND participant.exclusion_id IS NULL;
-
     END IF;
 
   END //

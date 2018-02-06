@@ -48,9 +48,6 @@ CREATE PROCEDURE patch_hold_type()
       AND name NOT LIKE ( 'requires%' ) -- don't include proxy types
       GROUP BY state.name;
 
-      INSERT INTO hold_type( type, name, system, description )
-      VALUES ( "temporary", "Deactivated", 0, "The participant was deactivated for an unknown reason." );
-
     END IF;
 
   END //
