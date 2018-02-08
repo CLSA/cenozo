@@ -12,7 +12,6 @@ define( function() {
     },
     columnList: {
       record_id: { type: 'hidden' },
-      participant_id: { type: 'hidden' },
       hits: {
         title: 'Hits',
         type: 'number',
@@ -83,7 +82,7 @@ define( function() {
         this.getViewEnabled = function() { return true; };
 
         this.transitionToViewState = function( record ) {
-          $state.go( 'participant.view', { identifier: record.participant_id } );
+          $state.go( 'participant.view', { identifier: "uid="+record.uid } );
         };
 
         this.getServiceData = function( type, columnRestrictLists ) {
