@@ -1,0 +1,375 @@
+<ng-form name="innerForm">
+  <div class="form-group"
+       ng-class="{'first-form-group': first,
+                  'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
+    <label for="{{ input.key }}"
+           class="col-sm-3 control-label"
+           uib-tooltip-html="input.help"
+           ng-bind-html="input.title"></label>
+    <div ng-class="
+      model.getEditEnabled() &&
+      true !== input.constant && 'view' != input.constant &&
+      model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] ?
+      ( input.action && input.action.isIncluded( state, model ) ? 'col-sm-6' : 'col-sm-8' ) :
+      ( input.action && input.action.isIncluded( state, model ) ? 'col-sm-7' : 'col-sm-9' )">
+      <div class="input-group"
+           ng-switch="input.type|cnViewType"
+           ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
+        <input ng-switch-when="string"
+          ng-attr-id="{{ input.key }}"
+          name="name"
+          ng-model="model.viewModel.record[input.key]"
+          cn-change="patch( input.key )"
+          class="form-control"
+          type="text"
+          autocomplete="off"
+          ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
+          maxlength="{{ model.metadata.columnList[input.key].max_length }}"
+          ng-required="model.metadata.columnList[input.key].required"></input>
+        <div ng-switch-when="percent" style="margin-top: 4px;">
+          <div class="col-sm-1">
+            <span ng-hide="nan==model.viewModel.record[input.key]">
+              {{ 100*model.viewModel.record[input.key] | number:0 }}%
+            </span>
+          </div>
+          <div class="col-sm-11">
+            <cn-slider
+              disabled="!model.getEditEnabled() ||
+                        true === input.constant ||
+                        'view' == input.constant"
+              on-blur="patch( input.key )"
+              ng-model="model.viewModel.record[input.key]"
+              precision="2"
+              floor="0.0"
+              ceiling="1.0"
+              step="0.01"></cn-slider>
+          </div>
+        </div>
+        <div ng-switch-when="size">
+          <div class="col-sm-8 col-slim">
+            <input ng-attr-id="{{ input.key }}"
+              name="name"
+              ng-model="model.viewModel.formattedRecord[input.key][0]"
+              cn-change="patch( input.key )"
+              class="form-control"
+              type="text"
+              autocomplete="off"
+              ng-readonly="!model.getEditEnabled() ||
+                           true === input.constant ||
+                           'view' == input.constant"
+              maxlength="{{ model.metadata.columnList[input.key].max_length }}"
+              ng-required="model.metadata.columnList[input.key].required"></input>
+          </div>
+          <div class="col-sm-4 col-slim">
+            <select ng-attr-id="{{ input.key }}"
+                    name="name"
+                    ng-model="model.viewModel.formattedRecord[input.key][1]"
+                    ng-change="patch( input.key )"
+                    class="form-control"
+                    ng-disabled="!model.getEditEnabled() ||
+                                 true === input.constant ||
+                                 'view' == input.constant"
+                    ng-required="model.metadata.columnList[input.key].required">
+              <option ng-disabled="null === model.viewModel.record[input.key]" value="Bytes">Bytes</option>
+              <option ng-disabled="null === model.viewModel.record[input.key]" value="KB">KB</option>
+              <option ng-disabled="null === model.viewModel.record[input.key]" value="MB">MB</option>
+              <option ng-disabled="null === model.viewModel.record[input.key]" value="GB">GB</option>
+              <option ng-disabled="null === model.viewModel.record[input.key]" value="TB">TB</option>
+              <option ng-disabled="null === model.viewModel.record[input.key]" value="PB">PB</option>
+              <option ng-disabled="null === model.viewModel.record[input.key]" value="EB">EB</option>
+            </select>
+          </div>
+        </div>
+        <input ng-switch-when="typeahead"
+          ng-attr-id="{{ input.key }}"
+          name="name"
+          ng-model="model.viewModel.record[input.key]"
+          uib-typeahead="item for item in getTypeaheadValues( input, $viewValue )"
+          typeahead-editable="false"
+          typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
+          typeahead-min-length="input.typeahead.minLength"
+          cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
+          class="form-control"
+          ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
+          type="text"
+          placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
+                       }}type the first few letters to search possible values)"
+          autocomplete="off"
+          ng-readonly="!model.getEditEnabled()"></input>
+        <input ng-switch-when="lookup-typeahead"
+          ng-attr-id="{{ input.key }}"
+          name="name"
+          ng-model="model.viewModel.formattedRecord[input.key]"
+          uib-typeahead="item.id as item.value for item in getTypeaheadValues( input, $viewValue )"
+          typeahead-editable="false"
+          typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
+          typeahead-min-length="input.typeahead.minLength"
+          cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
+          class="form-control"
+          ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
+          type="text"
+          placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
+                       }}type the first few letters to search possible values)"
+          autocomplete="off"
+          ng-readonly="!model.getEditEnabled()"></input>
+        <input ng-switch-when="datetime"
+          ng-attr-id="{{ input.key }}"
+          name="name"
+          ng-model="model.viewModel.formattedRecord[input.key]"
+          class="form-control"
+          type="text"
+          ng-click="model.getEditEnabled() && true !== input.constant && 'view' != input.constant &&
+                    selectDatetime( input )"
+          ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
+          onkeydown="return false"></input>
+        <input ng-switch-when="color"
+          ng-attr-id="{{ input.key }}"
+          name="name"
+          ng-model="model.viewModel.record[input.key]"
+          cn-change="patch( input.key )"
+          class="form-control color-input"
+          ng-style="{'background-color':model.viewModel.record[input.key]}"
+          type="text"
+          colorpicker="hex"
+          colorpicker-size="200"
+          colorpicker-close-on-select
+          autocomplete="off"
+          spellcheck="false"
+          ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
+          maxlength="{{ model.metadata.columnList[input.key].max_length }}"
+          ng-required="model.metadata.columnList[input.key].required"
+          onkeydown="return false"></input>
+        <select ng-switch-when="select"
+          ng-attr-id="{{ input.key }}"
+          name="name"
+          ng-options="item.value as item.name for item in input.enumList"
+          cn-options-disabled="item.disabled for item in input.enumList"
+          ng-model="model.viewModel.record[input.key]"
+          ng-change="patch( input.key )"
+          class="form-control"
+          ng-disabled="true === input.constant || 'view' == input.constant ||
+                       !model.getEditEnabled() ||
+                       !input.enumList ||
+                       1 >= input.enumList.length"
+          ng-required="model.metadata.columnList[input.key].required"></select>
+        <textarea ng-switch-when="text"
+          cn-elastic
+          ng-attr-id="{{ input.key }}"
+          name="name"
+          ng-model="model.viewModel.record[input.key]"
+          cn-change="patch( input.key )"
+          class="form-control"
+          ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
+          ng-required="model.metadata.columnList[input.key].required"></textarea>
+        <div ng-switch-when="days" class="row">
+          <div class="col-sm-1" style="width: 14.28%">
+            <label class="checkbox" style="left: 20px" for="sunday">
+              <input id="sunday" name="name"
+                ng-model="model.viewModel.record.sunday"
+                ng-change="patch( 'sunday' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> Sunday
+            </label>
+          </div>
+          <div class="col-sm-1" style="width: 14.28%">
+            <label class="checkbox" style="left: 20px" for="monday">
+              <input id="monday" name="name"
+                ng-model="model.viewModel.record.monday"
+                ng-change="patch( 'monday' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> Monday
+            </label>
+          </div>
+          <div class="col-sm-1" style="width: 14.28%">
+            <label class="checkbox" style="left: 20px" for="tuesday">
+              <input id="tuesday" name="name"
+                ng-model="model.viewModel.record.tuesday"
+                ng-change="patch( 'tuesday' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> Tuesday
+            </label>
+          </div>
+          <div class="col-sm-1" style="width: 14.28%">
+            <label class="checkbox" style="left: 20px" for="wednesday">
+              <input id="wednesday" name="name"
+                ng-model="model.viewModel.record.wednesday"
+                ng-change="patch( 'wednesday' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> Wednesday
+            </label>
+          </div>
+          <div class="col-sm-1" style="width: 14.28%">
+            <label class="checkbox" style="left: 20px" for="thursday">
+              <input id="thursday" name="name"
+                ng-model="model.viewModel.record.thursday"
+                ng-change="patch( 'thursday' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> Thursday
+            </label>
+          </div>
+          <div class="col-sm-1" style="width: 14.28%">
+            <label class="checkbox" style="left: 20px" for="friday">
+              <input id="friday" name="name"
+                ng-model="model.viewModel.record.friday"
+                ng-change="patch( 'friday' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> Friday
+            </label>
+          </div>
+          <div class="col-sm-1" style="width: 14.28%">
+            <label class="checkbox" style="left: 20px" for="saturday">
+              <input id="saturday" name="name"
+                ng-model="model.viewModel.record.saturday"
+                ng-change="patch( 'saturday' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> Saturday
+            </label>
+          </div>
+        </div>
+        <div ng-switch-when="months" class="row">
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="january">
+              <input id="january" name="name"
+                ng-model="model.viewModel.record.january"
+                ng-change="patch( 'january' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> January
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="february">
+              <input id="february" name="name"
+                ng-model="model.viewModel.record.february"
+                ng-change="patch( 'february' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> February
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="march">
+              <input id="march" name="name"
+                ng-model="model.viewModel.record.march"
+                ng-change="patch( 'march' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> March
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="april">
+              <input id="april" name="name"
+                ng-model="model.viewModel.record.april"
+                ng-change="patch( 'april' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> April
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="may">
+              <input id="may" name="name"
+                ng-model="model.viewModel.record.may"
+                ng-change="patch( 'may' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> May
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="june">
+              <input id="june" name="name"
+                ng-model="model.viewModel.record.june"
+                ng-change="patch( 'june' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> June
+            </label>
+          </div>
+        </div>
+        <div ng-switch-when="months" class="row">
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="july">
+              <input id="july" name="name"
+                ng-model="model.viewModel.record.july"
+                ng-change="patch( 'july' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> July
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="august">
+              <input id="august" name="name"
+                ng-model="model.viewModel.record.august"
+                ng-change="patch( 'august' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> August
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="september">
+              <input id="september" name="name"
+                ng-model="model.viewModel.record.september"
+                ng-change="patch( 'september' )"
+                type="checkbox"></input> September
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="october">
+              <input id="october" name="name"
+                ng-model="model.viewModel.record.october"
+                ng-change="patch( 'october' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> October
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="november">
+              <input id="november" name="name"
+                ng-model="model.viewModel.record.november"
+                ng-change="patch( 'november' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> November
+            </label>
+          </div>
+          <div class="col-sm-2">
+            <label class="checkbox" style="left: 20px" for="december">
+              <input id="december" name="name"
+                ng-model="model.viewModel.record.december"
+                ng-change="patch( 'december' )"
+                ng-disabled="!model.getEditEnabled()"
+                type="checkbox"></input> December
+            </label>
+          </div>
+        </div>
+      </div>
+      <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+        <span class="help-block" ng-if="innerForm.name.$error.required">
+          Cannot be blank
+        </span>
+        <span class="help-block" ng-if="innerForm.name.$error.format">
+          Invalid format
+        </span>
+        <span class="help-block" ng-if="innerForm.name.$error.conflict">
+          Conflicts with existing record
+        </span>
+        <span class="help-block" ng-if="innerForm.name.$error.editable">
+          Must be chosen from type-ahead list
+        </span>
+        <span class="help-block" ng-if="innerForm.name.$error.custom">
+          {{ innerForm.name.$error.custom }}
+        </span>
+      </span>
+    </div>
+    <div ng-if="model.getEditEnabled() &&
+                true !== input.constant && 'view' != input.constant &&
+                model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
+         class="col-sm-1 col-slim">
+      <button class="btn btn-warning" type="button" ng-click="undo( input.key )">Undo</button>
+    </div>
+    <div ng-if="input.action && input.action.isIncluded( state, model )" class="col-sm-2">
+      <button
+        class="btn btn-default full-width"
+        type="button"
+        id="{{ input.action.id }}"
+        ng-class="input.action.classes"
+        ng-disabled="input.action.isDisabled( state, model )"
+        ng-click="input.action.operation( state, model )">{{ input.action.title }}</button>
+    </div>
+  </div>
+</ng-form>

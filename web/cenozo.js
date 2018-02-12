@@ -1316,25 +1316,6 @@ cenozo.directive( 'cnRecordAdd', [
 
         $scope.cancel = function() { $scope.model.addModel.transitionOnCancel(); };
 
-        $scope.check = function( property ) {
-          // convert size types and write record property from formatted record
-          var input = null;
-          $scope.dataArray.some( function( group ) {
-            input = group.inputArray.findByProperty( 'key', property );
-            if( null != input ) return true;
-          } );
-          if( null != input && 'size' == input.type )
-            $scope.record[property] =
-              $filter( 'cnSize' )( $scope.formattedRecord[property].join( ' ' ), true );
-
-          // test the format
-          var element = cenozo.getFormElement( property );
-          if( element ) {
-            element.$error.format = !$scope.model.testFormat( property, $scope.record[property] );
-            cenozo.updateFormElement( element, true );
-          }
-        };
-
         $scope.save = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
@@ -1347,6 +1328,75 @@ cenozo.directive( 'cnRecordAdd', [
               $scope.model.addModel.transitionOnSave( $scope.record );
               $scope.model.addModel.onNew( $scope.record );
             } ).finally( function() { $scope.isAdding = false; } );
+          }
+        };
+      } ],
+      link: function( scope, element, attrs ) {
+        if( angular.isUndefined( scope.model ) ) {
+          console.error( 'Cannot render cn-record-add, no model provided.' );
+        } else {
+          scope.$state = $state;
+          scope.isAdding = false;
+          scope.formattedRecord = {};
+
+          // watch the model's heading in case it changes
+          scope.$watch( 'model.addModel.heading', function( heading ) {
+            scope.heading = heading ? heading : 'Create ' + scope.model.module.name.singular.ucWords();
+          } );
+
+          // get the data array and add enum lists for boolean types
+          var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
+          scope.dataArray = scope.model.getDataArray( removeInputs, 'add' );
+          scope.dataArray.forEach( function( group ) {
+            group.inputArray.forEach( function( item ) {
+              if( 'boolean' == item.type ) {
+                item.enumList = [
+                  { value: undefined, name: '(Select Yes or No)' },
+                  { value: true, name: 'Yes' },
+                  { value: false, name: 'No' }
+                ];
+              }
+            } );
+          } );
+        }
+      }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.directive( 'cnAddInput', [
+  'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state', '$filter',
+  function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state, $filter ) {
+    return {
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'add-input.tpl.html' ),
+      restrict: 'E',
+      scope: {
+        record: '=',
+        formattedRecord: '=',
+        input: '=',
+        model: '=',
+        state: '=',
+        first: '='
+      },
+      controller: [ '$scope', function( $scope ) {
+        $scope.directive = 'cnViewInput';
+
+        $scope.check = function( property ) {
+          // convert size types and write record property from formatted record
+          if( 'size' == $scope.input.type )
+            $scope.record[property] =
+              $filter( 'cnSize' )( $scope.formattedRecord[property].join( ' ' ), true );
+
+          // test the format
+          var element = cenozo.getFormElement( property );
+          if( element ) {
+            element.$error.format = !$scope.model.testFormat( property, $scope.record[property] );
+            cenozo.updateFormElement( element, true );
           }
         };
 
@@ -1383,36 +1433,7 @@ cenozo.directive( 'cnRecordAdd', [
             } );
           } );
         };
-      } ],
-      link: function( scope, element, attrs ) {
-        if( angular.isUndefined( scope.model ) ) {
-          console.error( 'Cannot render cn-record-add, no model provided.' );
-        } else {
-          scope.$state = $state;
-          scope.isAdding = false;
-          scope.formattedRecord = {};
-
-          // watch the model's heading in case it changes
-          scope.$watch( 'model.addModel.heading', function( heading ) {
-            scope.heading = heading ? heading : 'Create ' + scope.model.module.name.singular.ucWords();
-          } );
-
-          // get the data array and add enum lists for boolean types
-          var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
-          scope.dataArray = scope.model.getDataArray( removeInputs, 'add' );
-          scope.dataArray.forEach( function( group ) {
-            group.inputArray.forEach( function( item ) {
-              if( 'boolean' == item.type ) {
-                item.enumList = [
-                  { value: undefined, name: '(Select Yes or No)' },
-                  { value: true, name: 'Yes' },
-                  { value: false, name: 'No' }
-                ];
-              }
-            } );
-          } );
-        }
-      }
+      } ]
     };
   }
 ] );
@@ -1738,6 +1759,80 @@ cenozo.directive( 'cnRecordView', [
           }
         };
 
+        $scope.onGroupClick = function( group, index ) {
+          // toggle the group's collapsed state
+          group.collapsed = !group.collapsed;
+          // trigger all elastic directives
+          if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'change' )
+        };
+      } ],
+      link: function( scope, element, attrs ) {
+        if( angular.isUndefined( scope.model ) ) {
+          console.error( 'Cannot render cn-record-view, no model provided.' );
+        } else {
+          scope.$state = $state;
+          scope.collapsed = scope.initCollapsed;
+          scope.isDeleting = false;
+
+          // watch the model's heading in case it changes
+          scope.$watch( 'model.viewModel.heading', function( heading ) {
+            scope.heading = heading ? heading : scope.model.module.name.singular.ucWords() + ' Details';
+          } );
+
+          if( angular.isDefined( attrs.viewTitle ) ) {
+            scope.viewTitle = attrs.viewTitle;
+          } else {
+            scope.viewTitle = angular.isDefined( scope.model.viewTitle )
+                            ? scope.model.viewTitle
+                            : 'View ' + scope.model.module.name.singular.ucWords() + ' List';
+          }
+
+          // watch the model's viewTitle in case it changes
+          scope.$watch( 'model.viewTitle', function( viewTitle ) {
+            scope.viewTitle = angular.isDefined( viewTitle )
+                            ? viewTitle
+                            : 'View ' + scope.model.module.name.singular.ucWords() + ' List';
+          } );
+
+          // when leaving turn off any activated toggle modes
+          scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
+            if( angular.isDefined( scope.model.viewModel ) ) {
+              scope.model.module.choosing.forEach( function( item ) {
+                var choosingModel = scope.model.viewModel[item.subject.camel+'Model'];
+                if( angular.isDefined( choosingModel ) && choosingModel.listModel.chooseMode )
+                  choosingModel.listModel.toggleChooseMode();
+              } );
+            }
+          } );
+
+          var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
+          scope.dataArray = scope.model.getDataArray( removeInputs, 'view' );
+        }
+      }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
+cenozo.directive( 'cnViewInput', [
+  'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state', '$filter',
+  function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state, $filter ) {
+    return {
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'view-input.tpl.html' ),
+      restrict: 'E',
+      scope: {
+        input: '=',
+        model: '=',
+        state: '=',
+        first: '='
+      },
+      controller: [ '$scope', function( $scope ) {
+        $scope.directive = 'cnViewInput';
+
         $scope.undo = function( property ) {
           if( $scope.model.getEditEnabled() ) {
             if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
@@ -1763,12 +1858,7 @@ cenozo.directive( 'cnRecordView', [
 
             if( valid ) {
               // convert size types and write record property from formatted record
-              var input = null;
-              $scope.dataArray.some( function( group ) {
-                input = group.inputArray.findByProperty( 'key', property );
-                if( null != input ) return true;
-              } );
-              if( null != input && 'size' == input.type )
+              if( null != $scope.input && 'size' == $scope.input.type )
                 $scope.model.viewModel.record[property] =
                   $filter( 'cnSize' )( $scope.model.viewModel.formattedRecord[property].join( ' ' ), true );
 
@@ -1851,57 +1941,8 @@ cenozo.directive( 'cnRecordView', [
           }
         };
 
-        $scope.onGroupClick = function( group, index ) {
-          // toggle the group's collapsed state
-          group.collapsed = !group.collapsed;
-          // trigger all elastic directives
-          if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'change' )
-        };
-      } ],
-      link: function( scope, element, attrs ) {
-        if( angular.isUndefined( scope.model ) ) {
-          console.error( 'Cannot render cn-record-view, no model provided.' );
-        } else {
-          scope.$state = $state;
-          scope.collapsed = scope.initCollapsed;
-          scope.isDeleting = false;
-
-          // watch the model's heading in case it changes
-          scope.$watch( 'model.viewModel.heading', function( heading ) {
-            scope.heading = heading ? heading : scope.model.module.name.singular.ucWords() + ' Details';
-          } );
-
-          if( angular.isDefined( attrs.viewTitle ) ) {
-            scope.viewTitle = attrs.viewTitle;
-          } else {
-            scope.viewTitle = angular.isDefined( scope.model.viewTitle )
-                            ? scope.model.viewTitle
-                            : 'View ' + scope.model.module.name.singular.ucWords() + ' List';
-          }
-
-          // watch the model's viewTitle in case it changes
-          scope.$watch( 'model.viewTitle', function( viewTitle ) {
-            scope.viewTitle = angular.isDefined( viewTitle )
-                            ? viewTitle
-                            : 'View ' + scope.model.module.name.singular.ucWords() + ' List';
-          } );
-
-          // when leaving turn off any activated toggle modes
-          scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
-            if( angular.isDefined( scope.model.viewModel ) ) {
-              scope.model.module.choosing.forEach( function( item ) {
-                var choosingModel = scope.model.viewModel[item.subject.camel+'Model'];
-                if( angular.isDefined( choosingModel ) && choosingModel.listModel.chooseMode )
-                  choosingModel.listModel.toggleChooseMode();
-              } );
-            }
-          } );
-
-          var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
-          scope.dataArray = scope.model.getDataArray( removeInputs, 'view' );
-        }
-      }
-    };
+      } ]
+    }
   }
 ] );
 
@@ -4667,14 +4708,25 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Transitions back to the previous state
          */
         cenozo.addExtendableFunction( self, 'transitionToLastState', function() {
-          var stateName = $state.last.name;
+          var stateName = angular.isDefined( $state.last ) ? $state.last.name : '';
           var params = $state.lastParams;
           if( 0 == stateName.length ) {
             var parent = self.getParentIdentifier();
             stateName = angular.isDefined( parent.subject )
                       ? parent.subject + '.view'
-                      : '^.' + self.listingState;
+                      : angular.isDefined( self.listingState )
+                      ? '^.' + self.listingState
+                      : null;
             params = angular.isDefined( parent.subject ) ? { identifier: parent.identifier } : undefined;
+          }
+
+          if( null == stateName ) {
+            if( angular.isDefined( self.module.identifier.parent ) ) {
+              var parent = self.getParentIdentifier();
+              return self.transitionToParentViewState( parent.subject, parent.identifier );
+            } else {
+              return self.transitionToListState();
+            }
           }
 
           return $state.go( stateName, params );
