@@ -135,7 +135,7 @@ angular.extend( cenozoApp, {
     var self = this;
     this.moduleList = list;
     for( var name in this.moduleList ) {
-      if( "note" == name ) {
+      if( 'note' == name ) {
         // notes are handled by the alternate and participant modules
         try {
           var alternateModule = cenozoApp.module( 'alternate' );
@@ -556,7 +556,7 @@ angular.extend( cenozo, {
     var S4 = function() {
       return( ( ( 1+Math.random() ) * 0x10000 ) | 0 ).toString( 16 ).substring( 1 );
     };
-    return( S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4() );
+    return( S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4() );
   },
 
   // get the type of a variable
@@ -748,7 +748,7 @@ angular.extend( cenozo, {
 
   // gets an array of scopes of any elements found using a query selector
   forEachFormElement: function( formName, fn ) {
-    var elementList = document.querySelectorAll( "[name=" + formName + "] [name=name]" );
+    var elementList = document.querySelectorAll( '[name=' + formName + '] [name=name]' );
     // note, we can't use array functions in the results of querySelectorAll()
     for( var i = 0; i < elementList.length; i++ ) {
       fn( cenozo.getFormElement( elementList[i].id ) );
@@ -1221,8 +1221,8 @@ cenozo.directive( 'cnReallyClick', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordAdd', [
-  '$filter', '$state', 'CnSession', 'CnModalDatetimeFactory', 'CnHttpFactory',
-  function( $filter, $state, CnSession, CnModalDatetimeFactory, CnHttpFactory ) {
+  '$filter', '$state', 'CnHttpFactory',
+  function( $filter, $state, CnHttpFactory ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'record-add.tpl.html' ),
       restrict: 'E',
@@ -1370,8 +1370,8 @@ cenozo.directive( 'cnRecordAdd', [
  * TODO: document
  */
 cenozo.directive( 'cnAddInput', [
-  'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state', '$filter',
-  function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state, $filter ) {
+  'CnModalDatetimeFactory', 'CnSession', '$filter',
+  function( CnModalDatetimeFactory, CnSession, $filter ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'add-input.tpl.html' ),
       restrict: 'E',
@@ -1384,7 +1384,7 @@ cenozo.directive( 'cnAddInput', [
         first: '='
       },
       controller: [ '$scope', function( $scope ) {
-        $scope.directive = 'cnViewInput';
+        $scope.directive = 'cnAddInput';
 
         $scope.check = function( property ) {
           // convert size types and write record property from formatted record
@@ -1954,7 +1954,7 @@ cenozo.directive( 'cnViewInput', [
 cenozo.directive( 'cnSlider', [
   '$timeout',
   function( $timeout ) {
-    function pixelize( pixels ) { return "" + pixels + "px"; }
+    function pixelize( pixels ) { return '' + pixels + 'px'; }
     function offset( element, position ) { return element.css( { left: position } ); }
     function contain( value ) { return isNaN( value ) ? value : Math.min( Math.max( 0, value ), 100 ); }
     function roundStep( value, precision, step, floor, ceiling ) {
@@ -2228,14 +2228,14 @@ cenozo.directive( 'cnTimer', [
           scope.duration.add( 1, 'second' );
           var days = Math.floor( scope.duration.asDays() );
           var negative = 0 > days;
-          scope.timeSign = 0 > days ? "-" : "+";
+          scope.timeSign = 0 > days ? '-' : '+';
           if( 0 > days ) days++; // adjust for negative durations
 
           if( 0 == days ) {
-            scope.dayStr = "";
-            if( "+" == scope.timeSign ) scope.timeSign = "";
+            scope.dayStr = '';
+            if( '+' == scope.timeSign ) scope.timeSign = '';
           } else {
-            scope.dayStr = days + ( 1 == Math.abs( days ) ? " day" : " days" );
+            scope.dayStr = days + ( 1 == Math.abs( days ) ? ' day' : ' days' );
           }
           scope.hourStr = Math.abs( scope.duration.hours() );
           scope.minuteStr = Math.abs( scope.duration.minutes() );
@@ -2626,7 +2626,7 @@ cenozo.filter( 'cnViewType', function() {
 cenozo.filter( 'cnYesNo', function() {
   return function( input ) {
     if( null === input ) return '(empty)';
-    if( "boolean" != cenozo.getType( input ) ) input = 0 != input;
+    if( 'boolean' != cenozo.getType( input ) ) input = 0 != input;
     return input ? 'yes' : 'no';
   };
 } );
