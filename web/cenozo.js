@@ -4698,10 +4698,14 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @param boolean reload Whether to force reload the state
          * @param boolean notify Whether to send notification of a state change
          */
-        cenozo.addExtendableFunction( self, 'reloadState', function( reload, notify ) {
+        cenozo.addExtendableFunction( self, 'reloadState', function( reload, notify, location ) {
           if( angular.isUndefined( reload ) ) reload = false;
           if( angular.isUndefined( notify ) ) notify = true;
-          return $state.transitionTo( $state.current, $state.params, { reload: reload, notify: notify } );
+          if( angular.isUndefined( location ) ) location = true;
+          return $state.transitionTo(
+            $state.current, $state.params,
+            { reload: reload, notify: notify, location: location }
+          );
         } );
 
         /**
@@ -5250,7 +5254,10 @@ cenozo.factory( 'CnBaseNoteFactory', [
           updateSearch: function() {
             var self = this;
             $state.params.search = this.search;
-            $state.transitionTo( $state.current, $state.params, { reload: false, notify: false } );
+            $state.transitionTo(
+              $state.current, $state.params,
+              { reload: false, notify: false, location: 'replace' }
+            );
             this.noteList = this.noteListCache.filter( function( note ) {
               if( 0 == self.search.length ) {
                 return true;
