@@ -5520,6 +5520,9 @@ cenozo.factory( 'CnHttpFactory', [
         } else if( 'pdf' == self.format ) {
           object.responseType = 'arraybuffer';
           object.headers = { Accept: 'application/pdf' };
+        } else if( 'unknown' == self.format ) {
+          object.responseType = 'arraybuffer';
+          object.headers = { Accept: 'application/octet-stream' };
         } else if( 'xlsx' == self.format ) {
           object.responseType = 'arraybuffer';
           object.headers = {
