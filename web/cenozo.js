@@ -1818,6 +1818,35 @@ cenozo.directive( 'cnRecordView', [
 /**
  * TODO: document
  */
+cenozo.directive( 'cnUpload', [
+  '$parse',
+  function( $parse ) {
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      link: function ( scope, element, attrs ) {
+        var model = $parse( attrs.ngModel ), modelSetter = model.assign;
+
+        element.bind( 'change', function( changeEvent ) {
+          var reader = new FileReader();
+          reader.onload = function( event ) {
+            scope.$apply( function () {
+              modelSetter( scope, element[0].files[0] );
+              scope.$eval( attrs.cnUpload );
+            } );
+          }
+          reader.readAsDataURL( element[0].files[0] );
+        } );
+      }
+    }
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * TODO: document
+ */
 cenozo.directive( 'cnViewInput', [
   'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state', '$filter',
   function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state, $filter ) {
@@ -5508,29 +5537,23 @@ cenozo.factory( 'CnHttpFactory', [
           else object.params = self.data;
         }
 
-        if( 'csv' == self.format ) {
-          object.responseType = 'arraybuffer';
-          object.headers = { Accept: 'text/csv;charset=utf-8' };
-        } else if( 'jpeg' == self.format ) {
-          object.responseType = 'arraybuffer';
-          object.headers = { Accept: 'image/jpeg' };
-        } else if( 'ods' == self.format ) {
-          object.responseType = 'arraybuffer';
-          object.headers = { Accept: 'application/vnd.oasis.opendocument.spreadsheet;charset=utf-8' };
-        } else if( 'pdf' == self.format ) {
-          object.responseType = 'arraybuffer';
-          object.headers = { Accept: 'application/pdf' };
-        } else if( 'unknown' == self.format ) {
-          object.responseType = 'arraybuffer';
-          object.headers = { Accept: 'application/octet-stream' };
-        } else if( 'xlsx' == self.format ) {
-          object.responseType = 'arraybuffer';
-          object.headers = {
-            Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'
-          };
-        } else if( 'zip' == self.format ) {
-          object.responseType = 'arraybuffer';
-          object.headers = { Accept: 'application/zip' };
+        if( 0 <= ['csv','jpeg','ods','pdf','unknown','xlsx','zip'].indexOf( self.format ) ) {
+          var format = null;
+          if( 'csv' == self.format ) format = 'text/csv;charset=utf-8';
+          else if( 'jpeg' == self.format ) format = 'image/jpeg';
+          else if( 'ods' == self.format ) format = 'application/vnd.oasis.opendocument.spreadsheet;charset=utf-8';
+          else if( 'pdf' == self.format ) format = 'application/pdf';
+          else if( 'unknown' == self.format ) format = 'application/octet-stream';
+          else if( 'xlsx' == self.format )
+            format = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8';
+          else if( 'zip' == self.format ) format = 'application/zip';
+
+          if( 'PATCH' == method ) {
+            object.headers = { 'Content-Type': format };
+          } else if( 'GET' == method ) {
+            object.headers = { 'Accept': format };
+            object.responseType = 'arraybuffer';
+          }
         } else {
           object.headers = {};
         }
@@ -5612,6 +5635,8 @@ cenozo.factory( 'CnHttpFactory', [
           );
         } );
       };
+      this.upload = function() {
+      }
     };
 
     return {

@@ -31,16 +31,20 @@ class patch extends write
     $leaf_record = $this->get_leaf_record();
     if( !is_null( $leaf_record ) )
     {
-      foreach( $this->get_file_as_array() as $key => $value )
+      $headers = apache_request_headers();
+      if( false !== strpos( $headers['Content-Type'], 'application/json' ) )
       {
-        try
+        foreach( $this->get_file_as_array() as $key => $value )
         {
-          $leaf_record->$key = $value;
-        }
-        catch( \cenozo\exception\argument $e )
-        {
-          $this->status->set_code( 400 );
-          throw $e;
+          try
+          {
+            $leaf_record->$key = $value;
+          }
+          catch( \cenozo\exception\argument $e )
+          {
+            $this->status->set_code( 400 );
+            throw $e;
+          }
         }
       }
     }
