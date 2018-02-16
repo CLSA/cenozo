@@ -30,6 +30,7 @@ class get extends \cenozo\service\service
    */
   protected function create_resource( $index )
   {
+    $user_class_name = lib::get_class_name( 'database\user' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $script_class_name = lib::get_class_name( 'database\script' );
     $webphone_class_name = lib::get_class_name( 'database\webphone' );
@@ -40,6 +41,13 @@ class get extends \cenozo\service\service
     $db_site = $session->get_site();
     $db_role = $session->get_role();
     $db_user = $session->get_user();
+
+    $user_sel = lib::create( 'database\select' );
+    $user_sel->add_column( 'id' );
+    $user_mod = lib::create( 'database\modifier' );
+    $user_mod->where( 'name', '=', $setting_manager->get_setting( 'utility', 'username' ) );
+    $user_list = $user_class_name::select( $user_sel, $user_mod );
+    $utility_user_id = $user_list[0]['id'];
 
     $application_sel = lib::create( 'database\select' );
     $application_sel->from( 'application' );
@@ -168,6 +176,7 @@ class get extends \cenozo\service\service
 
     // include the number of active users for the application and whether it is in development mode
     $activity_mod = lib::create( 'database\modifier' );
+    $activity_mod->where( 'user_id', '!=', $utility_user_id );
     $activity_mod->where( 'end_datetime', '=', NULL );
     $activity_mod->where( 'application_id', '=', $db_application->id );
     $pseudo_record['application']['active_users'] = $activity_class_name::count( $activity_mod );
@@ -195,7 +204,9 @@ class get extends \cenozo\service\service
 
     // include the number of active users for the site
     $activity_mod = lib::create( 'database\modifier' );
+    $activity_mod->where( 'user_id', '!=', $utility_user_id );
     $activity_mod->where( 'end_datetime', '=', NULL );
+    $activity_mod->where( 'application_id', '=', $db_application->id );
     $activity_mod->where( 'site_id', '=', $db_site->id );
     $pseudo_record['site']['active_users'] = $activity_class_name::count( $activity_mod );
 
