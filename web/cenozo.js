@@ -4549,6 +4549,10 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         cenozo.addExtendableFunction( self, 'getServiceResourcePath', function( resource ) {
           var identifier = angular.isUndefined( resource ) ? $state.params.identifier : resource;
+
+          if( self.getSubjectFromState() != self.module.subject.snake && !$state.params.parentIdentifier )
+            console.error( 'Tried to get a resource path that has a parent but no parent identifier!');
+
           return self.getServiceCollectionPath() + '/' + identifier;
         } );
 
