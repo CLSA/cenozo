@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE user_has_application.sql
 SOURCE application.sql
 SOURCE event_type.sql
 SOURCE site.sql
