@@ -61,7 +61,8 @@ define( function() {
       title: 'Login Failures',
       type: 'string',
       constant: true,
-      help: 'Every time an invalid password is used to log in as this user this counter will go up.'
+      help: 'Every time an invalid password is used to log in as this user this counter will go up.',
+      exclude: 'add'
     },
     name: {
       title: 'Username',
