@@ -1087,12 +1087,16 @@ cenozo.directive( 'cnElastic', [
  * Adds a group of buttons as defined by add/view/calendar/list extra operations
  */
 cenozo.directive( 'cnExtraOperationButtonGroup', [
-  function() {
+  '$state',
+  function( $state ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'extra-operation-button-group.tpl.html' ),
       restrict: 'E',
-      scope: { model: '=', state: '=', type: '@' },
-      controller: [ '$scope', function( $scope ) { $scope.directive = 'cnExtraOperationButtonGroup'; } ]
+      scope: { model: '=', type: '@' },
+      controller: [ '$scope', function( $scope ) {
+        $scope.directive = 'cnExtraOperationButtonGroup';
+        $scope.state = $state;
+      } ]
     };
   }
 ] );
@@ -1370,8 +1374,8 @@ cenozo.directive( 'cnRecordAdd', [
  * TODO: document
  */
 cenozo.directive( 'cnAddInput', [
-  'CnModalDatetimeFactory', 'CnSession', '$filter',
-  function( CnModalDatetimeFactory, CnSession, $filter ) {
+  'CnModalDatetimeFactory', 'CnSession', '$state', '$filter',
+  function( CnModalDatetimeFactory, CnSession, $state, $filter ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'add-input.tpl.html' ),
       restrict: 'E',
@@ -1380,11 +1384,11 @@ cenozo.directive( 'cnAddInput', [
         formattedRecord: '=',
         input: '=',
         model: '=',
-        state: '=',
         first: '='
       },
       controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnAddInput';
+        $scope.state = $state;
 
         $scope.check = function( property ) {
           // convert size types and write record property from formatted record
@@ -1856,11 +1860,23 @@ cenozo.directive( 'cnViewInput', [
       scope: {
         input: '=',
         model: '=',
-        state: '=',
-        first: '='
+        first: '=',
+        noCols: '='
       },
       controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnViewInput';
+        $scope.state = $state;
+
+        $scope.getColClass = function() {
+          //var width = $scope.noCols ? 12 : 9;
+          var width = 12;
+          if( $scope.input.action && $scope.input.action.isIncluded( $scope.state, $scope.model ) ) width -= 2;
+          if( $scope.model.getEditEnabled() &&
+              true !== $scope.input.constant && 'view' != $scope.input.constant &&
+              $scope.model.viewModel.record[$scope.input.key] !=
+                $scope.model.viewModel.backupRecord[$scope.input.key] ) width--;
+          return 12 > width ? 'col-slim-left col-sm-' + width : '';
+        };
 
         $scope.undo = function( property ) {
           if( $scope.model.getEditEnabled() ) {

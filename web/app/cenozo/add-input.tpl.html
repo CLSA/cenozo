@@ -3,10 +3,11 @@
        ng-class="{'first-form-group': first,
                   'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
     <label for="{{ input.key }}"
-           class="col-sm-3 control-label"
+           class="control-label"
+           ng-class="{ 'col-sm-3': !noCols }"
            uib-tooltip-html="input.help"
            ng-bind-html="input.title"></label>
-    <div class="col-sm-9">
+    <div ng-class="{ 'col-sm-9': !noCols }">
       <div class="input-group"
            ng-switch="input.type|cnViewType"
            ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
