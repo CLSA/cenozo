@@ -1868,13 +1868,15 @@ cenozo.directive( 'cnViewInput', [
         $scope.state = $state;
 
         $scope.getColClass = function() {
-          //var width = $scope.noCols ? 12 : 9;
+          var viewModel = $scope.model.viewModel;
+
           var width = 12;
           if( $scope.input.action && $scope.input.action.isIncluded( $scope.state, $scope.model ) ) width -= 2;
           if( $scope.model.getEditEnabled() &&
               true !== $scope.input.constant && 'view' != $scope.input.constant &&
-              $scope.model.viewModel.record[$scope.input.key] !=
-                $scope.model.viewModel.backupRecord[$scope.input.key] ) width--;
+              viewModel.record[$scope.input.key] != viewModel.backupRecord[$scope.input.key] &&
+              // and to protect against null != emptry string
+              !( !viewModel.record[$scope.input.key] && !viewModel.backupRecord[$scope.input.key] ) ) width--;
           return 12 > width ? 'col-slim-left col-sm-' + width : '';
         };
 

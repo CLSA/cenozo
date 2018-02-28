@@ -355,7 +355,8 @@
       </div>
       <div ng-if="model.getEditEnabled() &&
                   true !== input.constant && 'view' != input.constant &&
-                  model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key]"
+                  model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] &&
+                  !( !model.viewModel.record[input.key] && !model.viewModel.backupRecord[input.key] )"
            class="col-sm-1 col-slim">
         <button class="btn btn-warning" type="button" ng-click="undo( input.key )">Undo</button>
       </div>
