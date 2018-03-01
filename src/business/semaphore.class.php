@@ -59,7 +59,7 @@ class semaphore extends \cenozo\base_object
       $this->memory = shm_attach( $this->key, self::SHARED_MEMORY_SIZE );
       if( false === $this->memory )
       {
-        log::err( 'Unable to aquire shared memory' );
+        log::error( 'Unable to aquire shared memory' );
         throw lib::create( 'exception\notice',
           'The server is busy, please wait a few seconds then click the refresh button.',
           __METHOD__ );
@@ -74,7 +74,7 @@ class semaphore extends \cenozo\base_object
       $this->resource = sem_get( $this->key );
       if( false === $this->resource || false === sem_acquire( $this->resource ) )
       {
-        log::err( 'Unable to aquire semaphore' );
+        log::error( 'Unable to aquire semaphore' );
         throw lib::create( 'exception\notice',
           'The server is busy, please wait a few seconds then click the refresh button.',
           __METHOD__ );
@@ -114,7 +114,7 @@ class semaphore extends \cenozo\base_object
       $process_count = $this->get_variable( self::PROCESS_COUNT_INDEX );
       if( is_null( $process_count ) )
       {
-        log::err( 'Tried to decrement the process count for a semaphore but it '.
+        log::error( 'Tried to decrement the process count for a semaphore but it '.
                   'already has a value of 0' );
       }
       else
@@ -124,12 +124,12 @@ class semaphore extends \cenozo\base_object
 
       // detach the shared memory
       if( !shm_detach( $this->memory ) )
-        log::err( 'Unable to detach shared memory' );
+        log::error( 'Unable to detach shared memory' );
       $this->memory = NULL;
 
       // release the semaphore
       if( !sem_release( $this->resource ) )
-        log::err( 'Unable to release semaphore' );
+        log::error( 'Unable to release semaphore' );
       $this->resource = NULL;
     }
   }
@@ -152,7 +152,7 @@ class semaphore extends \cenozo\base_object
     $memory = shm_attach( $key, self::SHARED_MEMORY_SIZE );
     if( false === $memory )
     {
-      log::err( 'Unable to aquire shared memory' );
+      log::error( 'Unable to aquire shared memory' );
       throw lib::create( 'exception\notice',
         'The server is busy, please wait a few seconds then click the refresh button.',
         __METHOD__ );
@@ -164,7 +164,7 @@ class semaphore extends \cenozo\base_object
       $value = shm_get_var( $memory, self::PROCESS_COUNT_INDEX );
       if( false === $value )
       {
-        log::err( "Failed to retreive value from shared memory" );
+        log::error( "Failed to retreive value from shared memory" );
         throw lib::create( 'exception\notice',
           'The server is busy, please wait a few seconds then click the refresh button.',
           __METHOD__ );
@@ -203,7 +203,7 @@ class semaphore extends \cenozo\base_object
       $value = shm_get_var( $this->memory, $index );
       if( false === $value )
       {
-        log::err( "Failed to get variable from shared memory" );
+        log::error( "Failed to get variable from shared memory" );
         throw lib::create( 'exception\notice',
           'The server is busy, please wait a few seconds then click the refresh button.',
           __METHOD__ );
@@ -238,7 +238,7 @@ class semaphore extends \cenozo\base_object
     // (there no need to check if it exists since it will create itself if it doesn't)
     if( !shm_put_var( $this->memory, self::PROCESS_COUNT_INDEX, $value ) )
     {
-      log::err( "Failed to put variable in shared memory" );
+      log::error( "Failed to put variable in shared memory" );
       throw lib::create( 'exception\notice',
         'The server is busy, please wait a few seconds then click the refresh button.',
         __METHOD__ );

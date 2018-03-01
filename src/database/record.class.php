@@ -785,14 +785,14 @@ abstract class record extends \cenozo\base_object
     $relationship = static::get_relationship( $record_type );
     if( $relationship_class_name::NONE == $relationship )
     {
-      log::err(
+      log::error(
         sprintf( 'Tried to get a %s list from a %s, but there is no relationship between the two.',
                  $record_type,
                  $table_name ) );
     }
     else if( $relationship_class_name::ONE_TO_ONE == $relationship )
     {
-      log::err(
+      log::error(
         sprintf( 'Tried to get a %s list from a %s, but there is a '.
                  'one-to-one relationship between the two.',
                  $record_type,
@@ -840,7 +840,7 @@ abstract class record extends \cenozo\base_object
     else
     {
       // if we get here then the relationship type is unknown
-      log::crit( sprintf( 'Record %s has an unknown relationship to %s.', $table_name, $record_type ) );
+      log::critical( sprintf( 'Record %s has an unknown relationship to %s.', $table_name, $record_type ) );
     }
 
     return $return_value;
@@ -907,7 +907,7 @@ abstract class record extends \cenozo\base_object
     $relationship = static::get_relationship( $record_type );
     if( $relationship_class_name::MANY_TO_MANY != $relationship )
     {
-      log::err(
+      log::error(
         sprintf( 'Tried to add %s to a %s without a many-to-many relationship between the two.',
                  $util_class_name::prulalize( $record_type ),
                  $table_name ) );
@@ -980,14 +980,14 @@ abstract class record extends \cenozo\base_object
     $relationship = static::get_relationship( $record_type );
     if( $relationship_class_name::NONE == $relationship )
     {
-      log::err(
+      log::error(
         sprintf( 'Tried to remove a %s from a %s, but there is no relationship between the two.',
                  $record_type,
                  $table_name ) );
     }
     else if( $relationship_class_name::ONE_TO_ONE == $relationship )
     {
-      log::err(
+      log::error(
         sprintf( 'Tried to remove a %s from a %s, but there is a '.
                  'one-to-one relationship between the two.',
                  $record_type,
@@ -1027,7 +1027,7 @@ abstract class record extends \cenozo\base_object
     else
     {
       // if we get here then the relationship type is unknown
-      log::crit(
+      log::critical(
         sprintf( 'Record %s has an unknown relationship to %s.',
                  $table_name,
                  $record_type ) );

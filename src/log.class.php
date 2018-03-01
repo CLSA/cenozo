@@ -8,19 +8,13 @@
 namespace cenozo;
 
 /**
- * @category external
- */
-require_once 'Log.php';
-
-/**
  * log: handles all logging
  *
  * The log class is used to log to various outputs depending on the application's running mode.
  * There are several logging functions, each of which have their purpose.  Use this class as
  * follows:
  * <code>
- * log::err( "There is an error here." );
- * log::emerg( "The server is on fire!!" );
+ * log::error( "There is an error here." );
  * </code>
  */
 final class log extends singleton
@@ -37,61 +31,32 @@ final class log extends singleton
     // reserve some memory for emergency purposes (in case we run out)
     if( is_null( static::$emergency_memory ) ) static::$emergency_memory = str_repeat( '*', 1024*1024 );
 
-    $this->loggers['display'] = NULL;
-    $this->loggers['file'] = NULL;
-
     $this->policy_list = array(
-      PEAR_LOG_EMERG => array(
-        'log' => true,
+      'critical' => array(
         'convert' => false,
         'label' => true,
         'backtrace' => true,
         'condensed' => false
       ),
-      PEAR_LOG_ALERT => array(
-        'log' => true,
+      'error' => array(
         'convert' => false,
         'label' => true,
         'backtrace' => true,
         'condensed' => false
       ),
-      PEAR_LOG_CRIT => array(
-        'log' => true,
+      'warning' => array(
         'convert' => false,
         'label' => true,
         'backtrace' => true,
         'condensed' => false
       ),
-      PEAR_LOG_ERR => array(
-        'log' => true,
-        'convert' => false,
-        'label' => true,
-        'backtrace' => true,
-        'condensed' => false
-      ),
-      PEAR_LOG_WARNING => array(
-        'log' => true,
-        'convert' => false,
-        'label' => true,
-        'backtrace' => true,
-        'condensed' => false
-      ),
-      PEAR_LOG_NOTICE => array(
-        'log' => true,
-        'convert' => false,
-        'label' => true,
-        'backtrace' => false,
-        'condensed' => false
-      ),
-      PEAR_LOG_DEBUG => array(
-        'log' => true,
+      'debug' => array(
         'convert' => true,
         'label' => false,
         'backtrace' => false,
         'condensed' => true
       ),
-      PEAR_LOG_INFO => array(
-        'log' => true,
+      'info' => array(
         'convert' => true,
         'label' => false,
         'backtrace' => false,
@@ -101,26 +66,18 @@ final class log extends singleton
   }
 
   /**
-   * Logging method
+   * Destructor.
    * 
-   * This is the highest severity log.  It should be used to describe a major problem which needs
-   * to be brought to administrators' attention ASAP (ie: use it sparingly).
-   * @param string $message The message to log.
-   * @static
    * @access public
    */
-  public static function emerg( $message ) { self::self()->send( $message, PEAR_LOG_EMERG ); }
-
-  /**
-   * Logging method
-   * 
-   * This is the second highest severity log.  It should be used to describe a major problem which
-   * needs to be brought to administrators' attention in the near future (ie: use it sparingly).
-   * @param string $message The message to log.
-   * @static
-   * @access public
-   */
-  public static function alert( $message ) { self::self()->send( $message, PEAR_LOG_ALERT ); }
+  public function __destruct()
+  {
+    if( !is_null( $this->log_file_handler ) )
+    {
+      if( false !== $this->log_file_handler ) fclose( $this->log_file_handler );
+      $this->log_file_handler = NULL;
+    }
+  }
 
   /**
    * Logging method
@@ -131,18 +88,17 @@ final class log extends singleton
    * @static
    * @access public
    */
-  public static function crit( $message ) { self::self()->send( $message, PEAR_LOG_CRIT ); }
+  public static function critical( $message ) { self::self()->send( $message, 'critical' ); }
 
   /**
    * Logging method
    * 
-   * Use this type of log when there is an error.  For very severe errors see {@link crit},
-   * {@link alert} and {@link emerg}
+   * Use this type of log when there is an error.
    * @param string $message The message to log.
    * @static
    * @access public
    */
-  public static function err( $message ) { self::self()->send( $message, PEAR_LOG_ERR ); }
+  public static function error( $message ) { self::self()->send( $message, 'error' ); }
 
   /**
    * Logging method
@@ -152,25 +108,14 @@ final class log extends singleton
    * @static
    * @access public
    */
-  public static function warning( $message ) { self::self()->send( $message, PEAR_LOG_WARNING ); }
-
-  /**
-   * Logging method
-   * 
-   * Use this type of log to make note of complicated procedures.  Similar to {@link debug} but
-   * these should remain in the code after implementation is finished.
-   * @param string $message The message to log.
-   * @static
-   * @access public
-   */
-  public static function notice( $message ) { self::self()->send( $message, PEAR_LOG_NOTICE ); }
+  public static function warning( $message ) { self::self()->send( $message, 'warning' ); }
 
   /**
    * Logging method
    * 
    * Use this type of log to help debug a procedure.  After implementation is finished they should
    * be removed from the code.  For complicated procedures where it is helpful to keep debug logs
-   * use {@link notice} instead.
+   * use {@link info} instead.
    * @param string $message The message to log.
    * @static
    * @access public
@@ -179,7 +124,7 @@ final class log extends singleton
   {
     // if there is more than one argument then treat them all as an array
     $message = 1 < func_num_args() ? func_get_args() : $message;
-    self::self()->send( $message, PEAR_LOG_DEBUG );
+    self::self()->send( $message, 'debug' );
   }
 
   /**
@@ -191,7 +136,7 @@ final class log extends singleton
    * @static
    * @access public
    */
-  public static function info( $message ) { self::self()->send( $message, PEAR_LOG_INFO ); }
+  public static function info( $message ) { self::self()->send( $message, 'info' ); }
 
   /**
    * Logging method
@@ -243,7 +188,7 @@ final class log extends singleton
    * Master logging function.
    * 
    * @param string $message The message to log.
-   * @param int $type The PEAR Log type (PEAR_LOG_ERR, PEAR_LOG_WARNING, etc)
+   * @param string $type One of "critical", "error", "warning", "debug", "info"
    * @access private
    */
   private function send( $message, $type )
@@ -252,40 +197,28 @@ final class log extends singleton
     $session_class_name = lib::get_class_name( 'business\session' );
     if( !class_exists( $session_class_name ) || !$session_class_name::exists() ) return;
 
-    if( is_string( $message ) )
-    { // replace cenozo and application path strings with something smaller
-      /*
-      $message = str_replace(
-        array( CENOZO_PATH, APPLICATION_PATH ),
-        array( 'cenozo', APPLICATION ),
-        $message );
-      */
-    }
-    else if( is_bool( $message ) )
-    { // convert booleans to a string so that they display properly
-      $message = $message ? 'true' : 'false';
-    }
+    // convert booleans to a string so that they display properly
+    if( is_bool( $message ) ) $message = $message ? 'true' : 'false';
 
-    // log to file
-    if( $this->policy_list[$type]['log'] )
-    {
-      // convert the message
-      if( $this->policy_list[$type]['convert'] ) $message = static::convert_message( $message );
+    // process the message
+    if( $this->policy_list[$type]['convert'] ) $message = static::convert_message( $message );
+    if( $this->policy_list[$type]['label'] ) $message = static::label_message( $message );
+    if( $this->policy_list[$type]['backtrace'] ) $message = static::backtrace_message( $message );
 
-      // add a label
-      if( $this->policy_list[$type]['label'] ) $message = static::label_message( $message );
-
-      // add the backtrace
-      if( $this->policy_list[$type]['backtrace'] ) $message = static::backtrace_message( $message );
-
-      // log major stuff to an error log
-      $this->initialize_logger( 'file' );
-      $this->loggers[ 'file' ]->log( sprintf(
-        '%s%s',
+    // open the log file, lock it, write the message and unlock it
+    $this->open_log_file();
+    flock( $this->log_file_handler, LOCK_EX );
+    fwrite(
+      $this->log_file_handler,
+      sprintf(
+        "%s [%s] %s%s\n",
+        strftime( '%Y-%m-%d (%a) %H:%M:%S' ),
+        $type,
         preg_replace( '/\'?\n\'?/', "\n", $message ),
         $this->policy_list[$type]['condensed'] ? '' : "\n"
-      ), $type );
-    }
+      )
+    );
+    flock( $this->log_file_handler, LOCK_UN );
   }
 
   /**
@@ -346,77 +279,23 @@ final class log extends singleton
   }
 
   /**
-   * Initialize loggers if and when they are needed.
-   * 
-   * @param string $type The type of log ('err', 'warning', etc)
-   * @throws exception\runtime
+   * Opens the log file for writing (or does nothing if it is already open)
    * @access private
    */
-  private function initialize_logger( $type )
+  private function open_log_file()
   {
-    if( 'display' == $type )
+    if( is_null( $this->log_file_handler ) )
     {
-      if( NULL == $this->loggers[ 'display' ] )
-      {
-        // display means html, so let's pretty up the output a bit
-        $conf = array(
-          'lineFormat' => '<font color=red>%3$s in</font> '.
-                          '<font color=blue>%8$s::%7$s</font> '.
-                          '<font color=red>(%6$s):</font>'."\n".
-                          '%4$s',
-          'timeFormat' => '%H:%M:%S',
-          'error_prepend' => '<pre style="font-weight: bold; color: #B0B0B0; background: black">',
-          'error_append' => '</pre>',
-          'linebreak' => '',
-          'rawText' => true );
-        $this->loggers[ 'display' ] = \Log::singleton( 'display', '', '', $conf );
-      }
+      $new = !file_exists( LOG_FILE_PATH );
+      $this->log_file_handler = fopen( LOG_FILE_PATH, 'a' );
+      if( false === $this->log_file_handler )
+        die( sprintf( 'Error, unable to open log file "%s"', LOG_FILE_PATH ) );
+      if( $new ) chmod( LOG_FILE_PATH, 0644 ); // set permissions if file is new
     }
-    else if( 'file' == $type )
-    {
-      if( NULL == $this->loggers[ 'file' ] )
-      {
-        $conf = array(
-          'append' => true,
-          'locking' => true,
-          'timeFormat' => '%Y-%m-%d (%a) %H:%M:%S' );
-        $this->loggers[ 'file' ] = \Log::singleton( 'file', LOG_FILE_PATH, '', $conf );
-      }
-    }
-    else
-    {
-      throw lib::create( 'exception\runtime',
-        'Unable to create invalid logger type "'.$type.'"', __METHOD__ );
-    }
-  }
-
-  /**
-   * Returns a string representation of a pear log level constant
-   * 
-   * @param int $constant a PEAR_LOG_* constant
-   * @static
-   * @access private
-   */
-  private static function log_level_to_string( $constant )
-  {
-    $string = '';
-
-    if( PEAR_LOG_EMERG == $constant ) $string = 'emergency';
-    else if( PEAR_LOG_ALERT == $constant ) $string = 'alert';
-    else if( PEAR_LOG_CRIT == $constant ) $string = 'critical';
-    else if( PEAR_LOG_ERR == $constant ) $string = 'error';
-    else if( PEAR_LOG_WARNING == $constant ) $string = 'warning';
-    else if( PEAR_LOG_NOTICE == $constant ) $string = 'notice';
-    else if( PEAR_LOG_INFO == $constant ) $string = 'info';
-    else if( PEAR_LOG_DEBUG == $constant ) $string = 'debug';
-    else $string = 'unknown';
-
-    return $string;
   }
 
   /**
    * A error handling function that uses the log class as the error handler
-   * @throws exception\base_exception
    * @ignore
    */
   public static function error_handler( $level, $message, $file, $line )
@@ -438,7 +317,7 @@ final class log extends singleton
         E_CORE_ERROR == $level ||
         E_ERROR == $level )
     {
-      log::emerg( $message );
+      log::critical( $message );
 
       // try and set the current operations error code, if possible
       $session_class_name = lib::get_class_name( 'business\session' );
@@ -468,7 +347,7 @@ final class log extends singleton
              E_STRICT == $level ||
              E_RECOVERABLE_ERROR == $level )
     {
-      log::err( $message );
+      log::error( $message );
     }
     else if( E_NOTICE == $level ||
              E_USER_NOTICE == $level ||
@@ -500,11 +379,11 @@ final class log extends singleton
   }
 
   /**
-   * An array containing all the PEAR Log objects used by the class.
-   * @var array( Log )
+   * A handler to the log file
+   * @var resource
    * @access private
    */
-  private $loggers;
+  private $log_file_handler = NULL;
 
   /**
    * An array containing the logging policy for all message types.

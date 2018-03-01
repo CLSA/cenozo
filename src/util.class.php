@@ -319,7 +319,7 @@ class util
             $login_failure_limit = $setting_manager->get_setting( 'general', 'login_failure_limit' );
             if( $login_failure_limit <= $db_user->login_failures )
             {
-              log::notice( sprintf(
+              log::info( sprintf(
                 'Deactivating user "%s" since they have passed the login failure limit of %d.',
                 $db_user->name,
                 $login_failure_limit

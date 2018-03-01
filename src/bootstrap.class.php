@@ -142,7 +142,7 @@ final class bootstrap
 
       // log all but notice exceptions
       if( 'notice' != $e->get_type() )
-        log::err( sprintf( "When loading main UI:\n%s %s", ucwords( $e->get_type() ), $e ) );
+        log::error( sprintf( "When loading main UI:\n%s %s", ucwords( $e->get_type() ), $e ) );
     }
     catch( \Exception $e )
     {
@@ -156,7 +156,7 @@ final class bootstrap
       );
 
       if( class_exists( 'cenozo\log' ) )
-        log::err( sprintf( "When loading mainUI:\nLast minute %s", $e ) );
+        log::error( sprintf( "When loading mainUI:\nLast minute %s", $e ) );
     }
 
     ob_end_clean();
@@ -245,7 +245,7 @@ final class bootstrap
 
       // log all but notice exceptions
       if( 'notice' != $e->get_type() )
-        log::err( sprintf( "For service \"%s:%s\":\n%s %s",
+        log::error( sprintf( "For service \"%s:%s\":\n%s %s",
                            $this->method,
                            $this->path,
                            ucwords( $e->get_type() ),
@@ -256,7 +256,7 @@ final class bootstrap
       $status = lib::create( 'service\status', 500 );
 
       if( class_exists( 'cenozo\log' ) )
-        log::err( sprintf( "For service \"%s\":\nLast minute %s",
+        log::error( sprintf( "For service \"%s\":\nLast minute %s",
                            $this->path,
                            $e ) );
     }

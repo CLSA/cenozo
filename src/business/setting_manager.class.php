@@ -98,7 +98,7 @@ class setting_manager extends \cenozo\singleton
     }
 
     // if we get here then the setting doesn't exist
-    log::err( "Tried getting value for setting [$category][$name] which doesn't exist." );
+    log::error( "Tried getting value for setting [$category][$name] which doesn't exist." );
 
     return NULL;
   }

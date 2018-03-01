@@ -58,7 +58,7 @@ class report_schedule extends base_report
       $db_report->copy_report_schedule_restrictions();
       $db_report->get_executer()->generate();
 
-      log::notice( sprintf(
+      log::info( sprintf(
         'Finished creating %s report #%d for %s schedule #%d.',
         $db_report->get_report_type()->title,
         $db_report->id,

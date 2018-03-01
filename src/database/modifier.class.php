@@ -970,7 +970,7 @@ class modifier extends \cenozo\base_object
             else if( '!=' == $item['operator'] || '<>' == $item['operator'] )
               $statement = $item['column'].' IS NOT NULL';
             else if( '<=>' == $item['operator'] ) $statement = $item['column'].' <=> NULL';
-            else log::err( 'Tried to compare to NULL value with "'.$item['operator'].'" operator.' );
+            else log::error( 'Tried to compare to NULL value with "'.$item['operator'].'" operator.' );
           }
           else
           {
