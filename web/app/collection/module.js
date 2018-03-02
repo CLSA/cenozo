@@ -142,7 +142,6 @@ define( function() {
                 path: self.parentModel.getServiceResourcePath(),
                 onError: function( response ) {
                   if( 404 == response.status ) {
-                    console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
                     listModel.chooseMode = !listModel.chooseMode;
                     return self.parentModel.transitionToListState();
                   } else { CnModalMessageFactory.httpError( response ); }
@@ -180,7 +179,6 @@ define( function() {
               onError: function error( response ) {
                 if( 404 == response.status ) {
                   // 404 when searching for current user in collection means we should turn off editing
-                  console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
                 } else CnModalMessageFactory.httpError( response );
               }
             } ).get().then( function() { setAccess( true ); } );

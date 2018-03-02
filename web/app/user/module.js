@@ -230,7 +230,6 @@ define( function() {
         // catch user-already-exists errors and give the option to add access
         this.onAddError = function( response ) {
           if( 409 == response.status ) {
-            console.info( 'The "409 (Conflict)" error found above is normal and can be ignored.' );
             CnHttpFactory.instance( {
               path: 'user/name=' + newRecord.name,
               data: { select: { column: [ 'name', 'first_name', 'last_name' ] } }
