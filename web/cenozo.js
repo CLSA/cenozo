@@ -657,10 +657,20 @@ angular.extend( cenozo, {
       for( var action in module.actions ) {
         if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
           // the action's path is the action and the action's value which contains any variable parameters
+          var params = {};
+          if( module.actions[action] ) {
+            // make all parameters after the ? dynamic
+            module.actions[action].replace( /.*\?/, '' ).match( /{[^}]+}/g ).forEach( function( param ) {
+              param = param.slice( 1, -1 );
+              params[param] = { dynamic: true };
+            } );
+          }
+
           var url = '/' + action + module.actions[action];
           var directive = 'cn-' + module.subject.snake.replace( /_/g, '-' ) + '-' + action.replace( /_/g, '-' );
           stateProvider.state( name + '.' + action, {
             url: url,
+            params: params,
             template: '<' + directive + '></' + directive + '>',
             // require that all child modules have loaded
             resolve: {
@@ -898,10 +908,10 @@ cenozo.animation( '.fade-transition', function() {
  * Controller for the header/menu system
  */
 cenozo.service( 'CnBaseHeader', [
-  '$state', '$interval', '$window', 'CnSession', 'CnHttpFactory',
-  'CnModalAccountFactory', 'CnModalPasswordFactory', 'CnModalTimezoneFactory',
-  function( $state, $interval, $window, CnSession, CnHttpFactory,
-            CnModalAccountFactory, CnModalPasswordFactory, CnModalTimezoneFactory ) {
+  '$state', '$interval', '$window',
+  'CnSession', 'CnModalAccountFactory', 'CnModalPasswordFactory', 'CnModalTimezoneFactory',
+  function( $state, $interval, $window,
+            CnSession, CnModalAccountFactory, CnModalPasswordFactory, CnModalTimezoneFactory ) {
     return {
       construct: function( scope ) {
         // update the time once the session has finished loading
@@ -1371,7 +1381,7 @@ cenozo.directive( 'cnRecordAdd', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * An input field used to set a new record's property
  */
 cenozo.directive( 'cnAddInput', [
   'CnModalDatetimeFactory', 'CnSession', '$state', '$filter',
@@ -1551,8 +1561,8 @@ cenozo.directive( 'cnRecordCalendar', [
  * @attr removeColumns: An array of columns (by key) to remove from the list
  */
 cenozo.directive( 'cnRecordList', [
-  '$state', 'CnSession', 'CnModalRestrictFactory', 'CnHttpFactory',
-  function( $state, CnSession, CnModalRestrictFactory, CnHttpFactory ) {
+  '$state', 'CnSession', 'CnModalRestrictFactory',
+  function( $state, CnSession, CnModalRestrictFactory ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'record-list.tpl.html' ),
       restrict: 'E',
@@ -1678,8 +1688,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state', '$filter',
-  function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state, $filter ) {
+  'CnSession', '$state', '$transitions',
+  function( CnSession, $state, $transitions ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'record-view.tpl.html' ),
       restrict: 'E',
@@ -1799,7 +1809,7 @@ cenozo.directive( 'cnRecordView', [
           } );
 
           // when leaving turn off any activated toggle modes
-          scope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
+          $transitions.onExit( {}, function( transition ) {
             if( angular.isDefined( scope.model.viewModel ) ) {
               scope.model.module.choosing.forEach( function( item ) {
                 var choosingModel = scope.model.viewModel[item.subject.camel+'Model'];
@@ -1807,7 +1817,7 @@ cenozo.directive( 'cnRecordView', [
                   choosingModel.listModel.toggleChooseMode();
               } );
             }
-          } );
+          }, { invokeLimit: 1 } );
 
           var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
           scope.dataArray = scope.model.getDataArray( removeInputs, 'view' );
@@ -1820,7 +1830,7 @@ cenozo.directive( 'cnRecordView', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * Allows an input with type=file to upload a file to the server
  */
 cenozo.directive( 'cnUpload', [
   '$parse',
@@ -1849,11 +1859,11 @@ cenozo.directive( 'cnUpload', [
 /* ######################################################################################################## */
 
 /**
- * TODO: document
+ * An input field used when viewing/editing a record's property
  */
 cenozo.directive( 'cnViewInput', [
-  'CnModalDatetimeFactory', 'CnSession', 'CnHttpFactory', '$state', '$filter',
-  function( CnModalDatetimeFactory, CnSession, CnHttpFactory, $state, $filter ) {
+  'CnModalDatetimeFactory', '$state', '$filter',
+  function( CnModalDatetimeFactory, $state, $filter ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'view-input.tpl.html' ),
       restrict: 'E',
@@ -2683,31 +2693,28 @@ cenozo.filter( 'cnYesNo', function() {
 /**
  * Exception handler that will redirect the user to a 400 page
  */
-cenozo.factory( '$exceptionHandler', [
-  '$window',
-  function( $window ) {
-    return function( exception, cause ) {
-      // report the exception to the console and replace the view's inner html with a notification of the error
-      console.error( '%s', exception );
-      if( angular.isDefined( cause ) ) console.warn( '%s', cause );
-      document.getElementById( 'view' ).innerHTML =
-        '<div class="inner-view-frame">\n' +
-          '<div class="container-fluid bg-white">\n' +
-            '<h3 class="text-primary">User Interface Error</h3>\n' +
-            '<div class="container-fluid">\n' +
-              '<blockquote>\n' +
-                'Sorry, the client has experienced a user-interface error.\n' +
-                'Please <a onclick="window.location.reload(true)">reload</a> the page or\n' +
-                '<a onclick="window.history.back()">go back</a> to the previous page.\n' +
-                '<h4 class="text-warning">Error: ' + exception.message + '</h4>\n' +
-              '</blockquote>\n' +
-            '</div>\n' +
+cenozo.factory( '$exceptionHandler', function() {
+  return function( exception, cause ) {
+    // report the exception to the console and replace the view's inner html with a notification of the error
+    console.error( '%s', exception );
+    if( angular.isDefined( cause ) ) console.warn( '%s', cause );
+    document.getElementById( 'view' ).innerHTML =
+      '<div class="inner-view-frame">\n' +
+        '<div class="container-fluid bg-white">\n' +
+          '<h3 class="text-primary">User Interface Error</h3>\n' +
+          '<div class="container-fluid">\n' +
+            '<blockquote>\n' +
+              'Sorry, the client has experienced a user-interface error.\n' +
+              'Please <a onclick="window.location.reload(true)">reload</a> the page or\n' +
+              '<a onclick="window.history.back()">go back</a> to the previous page.\n' +
+              '<h4 class="text-warning">Error: ' + exception.message + '</h4>\n' +
+            '</blockquote>\n' +
           '</div>\n' +
         '</div>\n' +
-        '<div class="gradient-footer"></div>\n';
-    };
-  }
-] );
+      '</div>\n' +
+      '<div class="gradient-footer"></div>\n';
+  };
+} );
 
 /* ######################################################################################################## */
 
@@ -2721,7 +2728,6 @@ cenozo.factory( 'CnSession', [
             CnModalMessageFactory, CnModalPasswordFactory, CnModalAccountFactory, CnModalSiteRoleFactory ) {
     return new ( function() {
       var self = this;
-      this.pageTitle = '';
       this.promise = null;
       this.working = false;
       this.workingGUIDList = {};
@@ -4763,28 +4769,19 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Transitions back to the previous state
          */
         cenozo.addExtendableFunction( self, 'transitionToLastState', function() {
-          var stateName = angular.isDefined( $state.last ) ? $state.last.name : '';
-          var params = $state.lastParams;
-          if( 0 == stateName.length ) {
-            var parent = self.getParentIdentifier();
-            stateName = angular.isDefined( parent.subject )
-                      ? parent.subject + '.view'
-                      : angular.isDefined( self.listingState )
-                      ? '^.' + self.listingState
-                      : null;
-            params = angular.isDefined( parent.subject ) ? { identifier: parent.identifier } : undefined;
-          }
+          var parent = self.getParentIdentifier();
+          var stateName = angular.isDefined( parent.subject )
+                        ? parent.subject + '.view'
+                        : angular.isDefined( self.listingState )
+                        ? '^.' + self.listingState
+                        : null;
+          var params = angular.isDefined( parent.subject ) ? { identifier: parent.identifier } : undefined;
 
-          if( null == stateName ) {
-            if( angular.isDefined( self.module.identifier.parent ) ) {
-              var parent = self.getParentIdentifier();
-              return self.transitionToParentViewState( parent.subject, parent.identifier );
-            } else {
-              return self.transitionToListState();
-            }
-          }
-
-          return $state.go( stateName, params );
+          return null != stateName ?
+            $state.go( stateName, params ) :
+            angular.isDefined( self.module.identifier.parent ) ?
+            self.transitionToParentViewState( parent.subject, parent.identifier ) :
+            self.transitionToListState();
         } );
 
         /**
@@ -5202,8 +5199,8 @@ cenozo.factory( 'CnBaseModelFactory', [
  * The base factory for History factories
  */
 cenozo.factory( 'CnBaseHistoryFactory', [
-  'CnSession', 'CnHttpFactory', '$state', '$q',
-  function( CnSession, CnHttpFactory, $state, $q ) {
+  'CnHttpFactory', '$state', '$q',
+  function( CnHttpFactory, $state, $q ) {
     return {
       construct: function( object, module, model ) {
         angular.extend( object, {
@@ -6128,8 +6125,8 @@ cenozo.service( 'CnModalDatetimeFactory', [
  * A factory for showing a message dialog in a modal window
  */
 cenozo.service( 'CnModalMessageFactory', [
-  '$uibModal',
-  function( $uibModal ) {
+  '$uibModal', '$state',
+  function( $uibModal, $state ) {
     var object = function( params ) {
       var self = this;
       this.title = 'Title';
@@ -6164,6 +6161,10 @@ cenozo.service( 'CnModalMessageFactory', [
     return {
       instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); },
       httpError: function( response ) {
+        // do not show errors if we are already in an error state
+        var stateNameParts = $state.current.name.split( '.' );
+        if( 0 < stateNameParts.length && 'error' == stateNameParts[0] ) return;
+
         var type = angular.isDefined( response ) && angular.isDefined( response.status )
                  ? response.status : 500;
         var title = 'Error';
@@ -6767,7 +6768,6 @@ cenozo.factory( 'CnScriptLauncherFactory', [
           onError: function( response ) {
             // ignore 404
             if( 404 == response.status ) {
-              console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
               self.token = null;
               if( angular.isDefined( self.onReady ) ) self.onReady();
               self.deferred.resolve();
@@ -6873,57 +6873,29 @@ cenozo.config( [
  * Adds callbacks to various events, primarily for logging
  */
 cenozo.run( [
-  '$state', '$rootScope', 'CnSession',
-  function( $state, $rootScope, CnSession ) {
+  '$state', '$transitions', '$rootScope', 'CnSession',
+  function( $state, $transitions, $rootScope, CnSession ) {
     // track whether we're transitioning a state due to an error (to avoid infinite loops)
     var stateErrorTransition = false;
-
-    $rootScope.$on( '$stateChangeStart', function( event, toState, toParams, fromState, fromParams ) {
-      console.info(
-        'Changing state from %s to %s',
-        fromState.name ? fromState.name + angular.toJson( fromParams ) : '(none)',
-        toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
-      );
-      CnSession.setBreadcrumbTrail( [ { title: 'Loading\u2026' } ] );
-      if( 0 < CnSession.working ) CnSession.transitionWhileWorking = true;
-    } );
-    $rootScope.$on( '$stateChangeSuccess', function( event, toState, toParams, fromState, fromParams ) {
-      if( angular.isUndefined( toState ) ) {
-        CnSession.pageTitle = 'Home';
-      } else {
-        CnSession.pageTitle = toState.name.split( '.' ).filter( function( item ) {
-          return 'root' != item;
-        } ).map( function( item ) {
-          return item.replace( /_/, ' ' ).replace( /\b./g, function( match ) { return match.toUpperCase(); } );
-        } ).join( ' / ' );
+    $transitions.onStart( {}, function( transition ) {
+      if( !transition.dynamic() ) {
+        CnSession.setBreadcrumbTrail( [ { title: 'Loading\u2026' } ] );
+        if( 0 < CnSession.working ) CnSession.transitionWhileWorking = true;
       }
-
-      CnSession.pageTitle = ': ' + CnSession.pageTitle;
-      if( angular.isDefined( toParams ) && angular.isDefined( toParams.identifier ) )
-        CnSession.pageTitle += ' / ' + String( toParams.identifier ).split( '=' ).pop();
-
-      // store the last state and params in the state object
-      $state.last = fromState;
-      $state.lastParams = fromParams;
-
-      console.info( 'Completed state change to %s',
-        toState.name ? toState.name + angular.toJson( toParams ) : '(none)'
-      );
-
+    } );
+    $transitions.onSuccess( {}, function( transition ) {
       if( stateErrorTransition ) stateErrorTransition = false;
     } );
-    $rootScope.$on( '$stateNotFound', function( event, unfoundState, fromState, fromParams ) {
-      if( !stateErrorTransition ) {
-        stateErrorTransition = true;
-        CnSession.workingTransition( function() { $state.go( 'error.state' ) } );
+    $transitions.onError( {}, function( transition ) {
+      if( 5 != transition.error().type ) { // ignore "transition was ignored" errors
+        if( !stateErrorTransition ) {
+          stateErrorTransition = true;
+          CnSession.workingTransition( function() { $state.go( 'error.404' ) } );
+        }
       }
     } );
-    $rootScope.$on( '$stateChangeError', function( event, toState, toParams, fromState, fromParams, error ) {
-      if( !stateErrorTransition ) {
-        stateErrorTransition = true;
-        CnSession.workingTransition( function() { $state.go( 'error.404' ) } );
-      }
-    } );
+
+    // update the working GUID
     $rootScope.$on( 'httpRequest', function( event, guid, request ) {
       CnSession.updateWorkingGUID( guid, true );
     } );

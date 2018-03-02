@@ -18,7 +18,7 @@
   <script src="<?php print LIB_URL; ?>/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-animate/angular-animate.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-sanitize/angular-sanitize.min.js"></script>
-  <script src="<?php print LIB_URL; ?>/angular-ui-router/release/angular-ui-router.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/@uirouter/angularjs/release/angular-ui-router.min.js"></script>
   <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
   <script src="<?php print LIB_URL; ?>/file-saver/FileSaver.min.js"></script>

@@ -15,8 +15,8 @@
   "dependencies": {
     "angular": "1.5.*",
     "angular-ui-bootstrap": "latest",
-    "angular-ui-router": "latest",
-    "jquery": "2.x",
+    "@uirouter/angularjs": "latest",
+    "jquery": "3.x",
     "bootstrap": "3.x",
     "moment": "latest",
     "moment-timezone": "latest",
