@@ -321,7 +321,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
         this.onDelete = function() {
           var id = this.parentModel.getParentIdentifier().identifier;
-          return traceModel.checkForTraceRequiredAfterAddressRemoved().then( function( id, response ) {
+          return traceModel.checkForTraceRequiredAfterAddressRemoved().then( function( response ) {
             if( response ) {
               return self.$$onDelete().then( function() {
                 // start tracing with reason "response"
