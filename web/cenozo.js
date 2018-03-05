@@ -658,7 +658,7 @@ angular.extend( cenozo, {
         if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
           // the action's path is the action and the action's value which contains any variable parameters
           var params = {};
-          if( module.actions[action] ) {
+          if( module.actions[action] && -1 < module.actions[action].indexOf( '?' ) ) {
             // make all parameters after the ? dynamic
             module.actions[action].replace( /.*\?/, '' ).match( /{[^}]+}/g ).forEach( function( param ) {
               param = param.slice( 1, -1 );
