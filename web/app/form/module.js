@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'form',
       plural: 'forms',
-      possessive: 'form\'s',
-      pluralPossessive: 'forms\''
+      possessive: 'form\'s'
     },
     columnList: {
       form_type: {

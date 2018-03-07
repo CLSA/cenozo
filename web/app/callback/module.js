@@ -9,8 +9,7 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
     name: {
       singular: 'callback',
       plural: 'callbacks',
-      possessive: 'callback\'s',
-      pluralPossessive: 'callbacks\''
+      possessive: 'callback\'s'
     }
   } );
 

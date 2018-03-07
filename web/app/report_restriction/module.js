@@ -13,7 +13,6 @@ define( function() {
       singular: 'report restriction',
       plural: 'report restrictions',
       possessive: 'report restriction\'s',
-      pluralPossessive: 'report restrictions\'',
       friendlyColumn: 'rank'
     },
     columnList: {

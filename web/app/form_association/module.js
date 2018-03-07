@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'form association',
       plural: 'form associations',
-      possessive: 'form association\'s',
-      pluralPossessive: 'form associations\''
+      possessive: 'form association\'s'
     },
     columnList: {
       subject: {

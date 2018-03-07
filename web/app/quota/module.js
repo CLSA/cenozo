@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'quota',
       plural: 'quotas',
-      possessive: 'quota\'s',
-      pluralPossessive: 'quotas\''
+      possessive: 'quota\'s'
     },
     columnList: {
       site: {

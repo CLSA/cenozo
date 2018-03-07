@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'interview',
       plural: 'interviews',
-      possessive: 'interview\'s',
-      pluralPossessive: 'interviews\''
+      possessive: 'interview\'s'
     },
     columnList: {
       uid: {

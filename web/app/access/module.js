@@ -15,8 +15,7 @@ define( function() {
     name: {
       singular: 'access',
       plural: 'accesses',
-      possessive: 'access\'',
-      pluralPossessive: 'accesses\''
+      possessive: 'access\''
     },
     columnList: {
       username: {

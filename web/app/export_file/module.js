@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'export file',
       plural: 'export files',
-      possessive: 'export file\'s',
-      pluralPossessive: 'export files\''
+      possessive: 'export file\'s'
     },
     columnList: {
       export: {

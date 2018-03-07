@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'trace type',
       plural: 'trace types',
-      possessive: 'trace type\'s',
-      pluralPossessive: 'trace types\''
+      possessive: 'trace type\'s'
     },
     columnList: {
       name: { title: 'Name' },

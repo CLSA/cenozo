@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'search result',
       plural: 'search results',
-      possessive: 'search result\'s',
-      pluralPossessive: 'search results\''
+      possessive: 'search result\'s'
     },
     columnList: {
       record_id: { type: 'hidden' },

@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'role',
       plural: 'roles',
-      possessive: 'role\'s',
-      pluralPossessive: 'roles\''
+      possessive: 'role\'s'
     },
     columnList: {
       name: {

@@ -13,7 +13,6 @@ define( function() {
       singular: 'alternate',
       plural: 'alternates',
       possessive: 'alternate\'s',
-      pluralPossessive: 'alternates\'',
       friendlyColumn: 'association'
     },
     columnList: {

@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'form type',
       plural: 'form types',
-      possessive: 'form type\'s',
-      pluralPossessive: 'form types\''
+      possessive: 'form type\'s'
     },
     columnList: {
       title: { title: 'Title' },

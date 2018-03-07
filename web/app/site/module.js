@@ -8,7 +8,6 @@ define( function() {
       singular: 'site',
       plural: 'sites',
       possessive: 'site\'s',
-      pluralPossessive: 'sites\'',
       friendlyColumn: 'name'
     },
     columnList: {

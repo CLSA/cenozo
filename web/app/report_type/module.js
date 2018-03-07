@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'report type',
       plural: 'report types',
-      possessive: 'report type\'s',
-      pluralPossessive: 'report types\''
+      possessive: 'report type\'s'
     },
     columnList: {
       title: { title: 'Title' },

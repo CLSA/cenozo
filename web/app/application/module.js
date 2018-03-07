@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'application',
       plural: 'applications',
-      possessive: 'application\'s',
-      pluralPossessive: 'applications\''
+      possessive: 'application\'s'
     },
     columnList: {
       title: { title: 'Title' },

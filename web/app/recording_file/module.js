@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'recording file',
       plural: 'recording files',
-      possessive: 'recording file\'',
-      pluralPossessive: 'recording files\''
+      possessive: 'recording file\''
     },
     columnList: {
       language: {

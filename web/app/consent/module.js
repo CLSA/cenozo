@@ -13,7 +13,6 @@ define( function() {
       singular: 'consent',
       plural: 'consents',
       possessive: 'consent\'s',
-      pluralPossessive: 'consents\'',
       friendlyColumn: 'datetime'
     },
     columnList: {

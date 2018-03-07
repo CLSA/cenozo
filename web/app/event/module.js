@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'event',
       plural: 'events',
-      possessive: 'event\'s',
-      pluralPossessive: 'events\''
+      possessive: 'event\'s'
     },
     columnList: {
       event_type: {

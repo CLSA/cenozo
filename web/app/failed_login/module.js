@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'failed login',
       plural: 'failed logins',
-      possessive: 'failed login\'s',
-      pluralPossessive: 'failed logins\''
+      possessive: 'failed login\'s'
     },
     columnList: {
       user: {

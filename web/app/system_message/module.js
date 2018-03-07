@@ -8,7 +8,6 @@ define( function() {
       singular: 'system message',
       plural: 'system messages',
       possessive: 'system message\'s',
-      pluralPossessive: 'system messages\'',
       friendlyColumn: 'title'
     },
     columnList: {

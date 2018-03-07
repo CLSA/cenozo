@@ -18,7 +18,6 @@ define( [ 'trace' ].reduce( function( list, name ) {
       singular: 'address',
       plural: 'addresses',
       possessive: 'address\'',
-      pluralPossessive: 'addresses\'',
       friendlyColumn: 'rank'
     },
     columnList: {

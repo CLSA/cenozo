@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'recording',
       plural: 'recordings',
-      possessive: 'recording\'',
-      pluralPossessive: 'recordings\''
+      possessive: 'recording\''
     },
     columnList: {
       rank: {

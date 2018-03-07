@@ -10,8 +10,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
     name: {
       singular: 'participant',
       plural: 'participants',
-      possessive: 'participant\'s',
-      pluralPossessive: 'participants\''
+      possessive: 'participant\'s'
     },
     columnList: {
       uid: {

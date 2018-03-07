@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'webphone',
       plural: 'webphones',
-      possessive: 'webphone\'s',
-      pluralPossessive: 'webphones\''
+      possessive: 'webphone\'s'
     }
   } );
 

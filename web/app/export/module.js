@@ -12,8 +12,7 @@ define( [
     name: {
       singular: 'export',
       plural: 'exports',
-      possessive: 'export\'s',
-      pluralPossessive: 'exports\''
+      possessive: 'export\'s'
     },
     columnList: {
       title: { title: 'Title' },

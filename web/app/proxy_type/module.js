@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'proxy type',
       plural: 'proxy types',
-      possessive: 'proxy type\'s',
-      pluralPossessive: 'proxy types\''
+      possessive: 'proxy type\'s'
     },
     columnList: {
       name: { title: 'Name' },

@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'consent type',
       plural: 'consent types',
-      possessive: 'consent type\'s',
-      pluralPossessive: 'consent types\''
+      possessive: 'consent type\'s'
     },
     columnList: {
       name: { title: 'Name' },

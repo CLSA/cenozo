@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'hold type',
       plural: 'hold types',
-      possessive: 'hold type\'s',
-      pluralPossessive: 'hold types\''
+      possessive: 'hold type\'s'
     },
     columnList: {
       type: { title: 'Type' },

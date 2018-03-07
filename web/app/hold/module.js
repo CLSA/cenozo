@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'hold',
       plural: 'holds',
-      possessive: 'hold\'s',
-      pluralPossessive: 'holds\''
+      possessive: 'hold\'s'
     },
     columnList: {
       hold_type: {

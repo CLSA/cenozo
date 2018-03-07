@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'opal form template',
       plural: 'opal form templates',
-      possessive: 'opal form template\'s',
-      pluralPossessive: 'opal form templates\''
+      possessive: 'opal form template\'s'
     },
     columnList: {
       name: { title: 'Name' },

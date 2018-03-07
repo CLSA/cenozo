@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'phone call',
       plural: 'phone calls',
-      possessive: 'phone call\'s',
-      pluralPossessive: 'phone calls\''
+      possessive: 'phone call\'s'
     },
     columnList: {
       phone: {

@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'proxy',
       plural: 'proxies',
-      possessive: 'proxy\'s',
-      pluralPossessive: 'proxies\''
+      possessive: 'proxy\'s'
     },
     columnList: {
       proxy_type: {

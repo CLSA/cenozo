@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'trace',
       plural: 'traces',
-      possessive: 'trace\'',
-      pluralPossessive: 'traces\''
+      possessive: 'trace\''
     },
     columnList: {
       uid: {

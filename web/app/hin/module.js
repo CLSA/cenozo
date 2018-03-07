@@ -12,8 +12,7 @@ define( function() {
     name: {
       singular: 'HIN',
       plural: 'HINs',
-      possessive: 'HIN\'',
-      pluralPossessive: 'HINs\''
+      possessive: 'HIN\''
     },
     columnList: {
       region: {

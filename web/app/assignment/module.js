@@ -15,8 +15,7 @@ define( [], function() {
     name: {
       singular: 'assignment',
       plural: 'assignments',
-      possessive: 'assignment\'s',
-      pluralPossessive: 'assignments\''
+      possessive: 'assignment\'s'
     },
     columnList: {
       uid: {

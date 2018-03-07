@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'write operation',
       plural: 'write operations',
-      possessive: 'write operation\'s',
-      pluralPossessive: 'write operations\''
+      possessive: 'write operation\'s'
     },
     columnList: {
       user: {

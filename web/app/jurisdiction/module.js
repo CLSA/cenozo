@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'jurisdiction',
       plural: 'jurisdictions',
-      possessive: 'jurisdiction\'s',
-      pluralPossessive: 'jurisdictions\''
+      possessive: 'jurisdiction\'s'
     },
     columnList: {
       site: {

@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'cohort',
       plural: 'cohorts',
-      possessive: 'cohort\'s',
-      pluralPossessive: 'cohorts\''
+      possessive: 'cohort\'s'
     },
     columnList: {
       name: {

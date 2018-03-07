@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'region site',
       plural: 'region sites',
-      possessive: 'region site\'s',
-      pluralPossessive: 'region sites\''
+      possessive: 'region site\'s'
     },
     columnList: {
       site: {
