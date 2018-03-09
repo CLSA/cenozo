@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE study_phase.sql
 SOURCE user_has_application.sql
 SOURCE application.sql
 SOURCE event_type.sql

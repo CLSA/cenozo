@@ -13,6 +13,32 @@ use cenozo\lib, cenozo\log;
  */
 class interview extends \cenozo\database\record
 {
+  /** 
+   * Override parent method
+   */
+  public static function get_record_from_identifier( $identifier )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+
+    // convert qnaire_rank to qnaire_id
+    if( !$util_class_name::string_matches_int( $identifier ) &&
+        false === strpos( 'qnaire_rank=', $identifier ) )
+    {
+      // convert qnaire_rank to qnaire_id
+      $regex = '/qnaire_rank=([0-9]+)/';
+      $matches = array();
+      if( preg_match( $regex, $identifier, $matches ) )
+      {
+        $db_qnaire = $qnaire_class_name::get_unique_record( 'rank', $matches[1] );
+        if( !is_null( $db_qnaire ) )
+          $identifier = preg_replace( $regex, sprintf( 'qnaire_id=%d', $db_qnaire->id ), $identifier );
+      }
+    }
+
+    return parent::get_record_from_identifier( $identifier );
+  }
+
   /**
    * Get the interview's last (most recent) assignment.
    * @return assignment

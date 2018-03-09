@@ -64,6 +64,11 @@ define( function() {
       min: 'start_datetime',
       max: 'now',
       help: 'Will remain blank until the questionnaire is finished.'
+    },
+    note: {
+      column: 'interview.note',
+      title: 'Note',
+      type: 'text'
     }
   } );
 
