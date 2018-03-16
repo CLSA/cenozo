@@ -48,7 +48,7 @@ CREATE PROCEDURE patch_phone()
       WHERE has_contact.active_phone > 0
       AND has_contact.active_address > 0
       AND participant.exclusion_id IS NULL
-      AND state.name IN ( 'local', 'global', 'unreachable' );
+      AND state.name IN ( 'site', 'central', 'unreachable' );
 
     END IF;
 

@@ -35,8 +35,8 @@ CREATE PROCEDURE patch_rename_states()
       UPDATE state SET name = "requires form" WHERE name = "FU1 Mail Proxy Materials";
       UPDATE state SET name = "ready" WHERE name = "FU1 Proxy DM chosen";
       UPDATE state SET name = "ready, information provider only" WHERE name = "FU1 Proxy IP only chosen";
-      UPDATE state SET name = "local" WHERE name = "Sourcing Required";
-      UPDATE state SET name = "global" WHERE name = "NCC Sourcing Required";
+      UPDATE state SET name = "site" WHERE name = "Sourcing Required";
+      UPDATE state SET name = "central" WHERE name = "NCC Sourcing Required";
 
       UPDATE state SET name = "Deaf" WHERE name = "deaf";
       UPDATE state SET name = "Deceased" WHERE name = "deceased";

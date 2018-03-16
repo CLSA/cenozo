@@ -23,8 +23,8 @@ CREATE PROCEDURE patch_trace_type()
       ENGINE = InnoDB;
       
       INSERT INTO trace_type( name, description ) VALUES
-      ( "local", "People who are being traced by the local site." ),
-      ( "global", "People who are being traced by the head office." ),
+      ( "site", "People who are being traced by the local site." ),
+      ( "central", "People who are being traced by the head office." ),
       ( "unreachable", "People who failed to be traced." );
 
     END IF;

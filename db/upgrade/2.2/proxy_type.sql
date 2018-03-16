@@ -23,10 +23,10 @@ CREATE PROCEDURE patch_proxy_type()
       ENGINE = InnoDB;
       
       INSERT INTO proxy_type( name, description ) VALUES
-      ( "requires initiation", "The proxy initiation script must be completed before the participant can proceed using a proxy." ),
-      ( "requires form", "A signed proxy consent form must be provided before the participant can proceed using a proxy." ),
-      ( "ready", "The participant may proceed using a proxy." ),
-      ( "ready, information provider only", "The participant may proceed using a proxy information provider only." );
+      ( "contact required, central", "Follow-up is required to determine how the participant will move forward through the proxy process." ),
+      ( "consent form required", "A signed proxy consent form must be provided before the participant can proceed using a proxy." ),
+      ( "initiated", "The participant has chosen to use a full proxy." ),
+      ( "initiated, information provider only", "The participant has chosen to use an information provider only." );
 
     END IF;
 

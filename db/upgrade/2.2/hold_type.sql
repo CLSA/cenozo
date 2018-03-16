@@ -43,7 +43,7 @@ CREATE PROCEDURE patch_hold_type()
       FROM state
       JOIN participant ON state.id = participant.state_id
       WHERE name NOT IN ( SELECT name FROM temp_hold_type )
-      AND name NOT IN ( 'local', 'global', 'unreachable' ) -- don't include trace types
+      AND name NOT IN ( 'site', 'central', 'unreachable' ) -- don't include trace types
       AND name NOT LIKE ( 'ready%' ) -- don't include proxy types
       AND name NOT LIKE ( 'requires%' ) -- don't include proxy types
       GROUP BY state.name;

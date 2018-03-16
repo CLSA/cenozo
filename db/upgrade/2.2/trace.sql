@@ -94,7 +94,7 @@ CREATE PROCEDURE patch_trace()
       LEFT JOIN trace ON participant.id = trace.participant_id
       JOIN temp_address_count ON participant.id = temp_address_count.participant_id
       JOIN temp_phone_count ON participant.id = temp_phone_count.participant_id
-      WHERE trace_type.name = "local"
+      WHERE trace_type.name = "site"
       AND trace.id IS NULL
       AND ( temp_address_count.total = 0 OR temp_phone_count.total = 0 );
 

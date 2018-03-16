@@ -27,7 +27,7 @@ BEGIN
         SELECT proc_participant_id, trace_type.id, UTC_TIMESTAMP(),
                "Automatically added after address or phone changed."
         FROM trace_type
-        WHERE name = "local";
+        WHERE name = "site";
       END IF;
     ELSE
       IF @trace_type IS NOT NULL THEN
