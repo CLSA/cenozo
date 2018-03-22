@@ -3590,7 +3590,7 @@ cenozo.factory( 'CnBaseListFactory', [
               this.parentModel.setQueryParameter( 'order', column );
               this.parentModel.setQueryParameter( 'reverse', reverse );
               this.parentModel.setQueryParameter( 'page', 1 );
-              this.parentModel.reloadState();
+              this.parentModel.reloadState( true );
             } else {
               // do model-based sorting
               var promiseList = [];
