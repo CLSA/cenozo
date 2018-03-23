@@ -109,6 +109,15 @@ define( [], function() {
     }
   } );
 
+  if( angular.isDefined( cenozoApp.module( 'participant' ).actions.notes ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'Notes',
+      operation: function( $state, model ) {
+        $state.go( 'participant.notes', { identifier: 'uid=' + model.viewModel.record.participant } );
+      }
+    } );
+  }
+
   module.addExtraOperation( 'view', {
     title: 'Force Close',
     operation: function( $state, model ) { model.viewModel.forceClose(); },

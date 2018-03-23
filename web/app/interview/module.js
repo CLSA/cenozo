@@ -72,6 +72,15 @@ define( function() {
     }
   } );
 
+  if( angular.isDefined( cenozoApp.module( 'participant' ).actions.notes ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'Notes',
+      operation: function( $state, model ) {
+        $state.go( 'participant.notes', { identifier: 'uid=' + model.viewModel.record.participant } );
+      }
+    } );
+  }
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnInterviewList', [
     'CnInterviewModelFactory',
