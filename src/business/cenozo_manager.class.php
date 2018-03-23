@@ -63,6 +63,16 @@ class cenozo_manager extends \cenozo\base_object
         __METHOD__ );
     }
     
+    $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
+    if( 300 <= $code )
+    {
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Got response code %s when trying to connect to %s.',
+                 $code,
+                 $this->db_application->title ),
+        __METHOD__ );
+    }
+
     return json_decode( $response );
   }
 
