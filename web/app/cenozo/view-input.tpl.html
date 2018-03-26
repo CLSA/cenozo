@@ -360,14 +360,16 @@
            class="col-sm-1 col-slim">
         <button class="btn btn-warning" type="button" ng-click="undo( input.key )">Undo</button>
       </div>
-      <div ng-if="input.action && input.action.isIncluded( state, model )" class="col-sm-2">
+      <div ng-if="input.action && input.action.isIncluded( state, model )" class="col-sm-2 col-slim-right">
         <button
           class="btn btn-default full-width"
           type="button"
           id="{{ input.action.id }}"
           ng-class="input.action.classes"
           ng-disabled="input.action.isDisabled( state, model )"
-          ng-click="input.action.operation( state, model )">{{ input.action.title }}</button>
+          ng-click="input.action.operation( state, model )"
+          ng-bind-html="input.action.title">
+        </button>
       </div>
     </div>
   </div>
