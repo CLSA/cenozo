@@ -165,7 +165,7 @@ define( function() {
             data.modifier.where.push( {
               column: 'trace_type.name',
               operator: all ? '!=' : '=',
-              value: all ? null : 'local'
+              value: all ? null : 'site'
             } );
 
             // restrict so that excluded participants are not included
@@ -192,7 +192,15 @@ define( function() {
 
         // Only allow viewing a trace when in the trace.list state (which will go to the participant)
         this.getViewEnabled = function() {
-          return 'trace' == this.getSubjectFromState() && 'list' == this.getActionFromState();
+          return this.$$getViewEnabled() &&
+                 'trace' == this.getSubjectFromState() && 'list' == this.getActionFromState();
+        };
+
+        // Only allow viewing a trace when in the trace.list state (which will go to the participant)
+        this.getAddEnabled = function() {
+          return this.$$getAddEnabled() &&
+                 1 < CnSession.role.tier &&
+                 !( 'trace' == this.getSubjectFromState() && 'list' == this.getActionFromState() );
         };
 
         // When in the trace.list state transition to the participant when clicking the trace record
