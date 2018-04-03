@@ -1,5 +1,7 @@
+PHPExcel
 mysqli: apt-get install php-mysql
 mbstring: apt-get install php7.0-mbstring
+php-zip: apt-get install php-zip php7.0-zip (Used by PHPExcel)
 
 Modify the following mysql parameters:
   query_cache_limit = 2M

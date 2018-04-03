@@ -246,6 +246,9 @@ abstract class service extends \cenozo\base_object
     $this->headers['Content-Type'] = $mime_type;
     $this->headers['Content-Length'] = strlen( $this->get_data() );
 
+    // use Windows-1252 charset when returning a CSV file <sarcasm>Thanks Microsoft!</sarcasm>
+    if( 'text/csv' == $mime_type ) $this->headers['Content-Type'] .= '; charset=Windows-1252';
+
     if( false !== strpos( $mime_type, 'application/' ) ||
         false !== strpos( $mime_type, 'image/' ) ||
         'text/csv' == $mime_type )
