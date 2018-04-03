@@ -45,6 +45,34 @@ class patch extends \cenozo\service\service
   /**
    * Override parent method since self is a meta-resource
    */
+  protected function validate()
+  {
+    parent::validate();
+
+    if( 300 > $this->status->get_code() )
+    {
+      // check that a first address exists when trying to change to a participant's timezone
+      if( 'PATCH' == $this->get_method() )
+      {
+        $patch_array = $this->get_file_as_array();
+        $user_array = (array) $patch_array['user'];
+        if( array_key_exists( 'timezone', $user_array ) )
+        {
+          $timezone = $user_array['timezone'];
+          if( is_object( $timezone ) && property_exists( $timezone, 'participant_id' ) )
+          {
+            $db_participant = lib::create( 'database\participant', $timezone->participant_id );
+            $db_first_address = $db_participant->get_first_address();
+            if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Override parent method since self is a meta-resource
+   */
   protected function execute()
   {
     $util_class_name = lib::get_class_name( 'util' );
@@ -120,7 +148,7 @@ class patch extends \cenozo\service\service
               {
                 $db_participant = lib::create( 'database\participant', $value->participant_id );
                 $db_first_address = $db_participant->get_first_address();
-                if( !is_null( $db_first_address ) ) $value = $db_first_address->get_timezone_name();
+                $value = $db_first_address->get_timezone_name();
               }
             }
 

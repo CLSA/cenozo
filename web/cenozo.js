@@ -2994,7 +2994,16 @@ cenozo.factory( 'CnSession', [
           if( angular.isUndefined( use12hourClock ) ) use12hourClock = self.user.use12hourClock;
           return CnHttpFactory.instance( {
             path: 'self/0',
-            data: { user: { timezone: timezone, use_12hour_clock: use12hourClock  } }
+            data: { user: { timezone: timezone, use_12hour_clock: use12hourClock  } },
+            onError: function( response ) {
+              if( 409 == response.status ) {
+                CnModalMessageFactory.instance( {
+                  title: 'No Timezone Available',
+                  message: 'The participant does not currently have an active address. ' + 
+                    'Without an active address there is no way to determine which timezone they are in.'
+                } ).show();
+              } else { CnModalMessageFactory.httpError( response ); }
+            }
           } ).patch();
         },
 
