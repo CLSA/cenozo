@@ -55,15 +55,18 @@ class patch extends \cenozo\service\service
       if( 'PATCH' == $this->get_method() )
       {
         $patch_array = $this->get_file_as_array();
-        $user_array = (array) $patch_array['user'];
-        if( array_key_exists( 'timezone', $user_array ) )
+        if( array_key_exists( 'user', $patch_array ) )
         {
-          $timezone = $user_array['timezone'];
-          if( is_object( $timezone ) && property_exists( $timezone, 'participant_id' ) )
+          $user_array = (array) $patch_array['user'];
+          if( array_key_exists( 'timezone', $user_array ) )
           {
-            $db_participant = lib::create( 'database\participant', $timezone->participant_id );
-            $db_first_address = $db_participant->get_first_address();
-            if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
+            $timezone = $user_array['timezone'];
+            if( is_object( $timezone ) && property_exists( $timezone, 'participant_id' ) )
+            {
+              $db_participant = lib::create( 'database\participant', $timezone->participant_id );
+              $db_first_address = $db_participant->get_first_address();
+              if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
+            }
           }
         }
       }
