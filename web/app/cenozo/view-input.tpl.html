@@ -16,7 +16,7 @@
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
-            cn-change="patch( input.key )"
+            cn-change="patch()"
             class="form-control"
             type="text"
             autocomplete="off"
@@ -34,7 +34,7 @@
                 disabled="!model.getEditEnabled() ||
                           true === input.constant ||
                           'view' == input.constant"
-                on-blur="patch( input.key )"
+                on-blur="patch()"
                 ng-model="model.viewModel.record[input.key]"
                 precision="2"
                 floor="0.0"
@@ -47,7 +47,7 @@
               <input ng-attr-id="{{ input.key }}"
                 name="name"
                 ng-model="model.viewModel.formattedRecord[input.key][0]"
-                cn-change="patch( input.key )"
+                cn-change="patch()"
                 class="form-control"
                 type="text"
                 autocomplete="off"
@@ -61,7 +61,7 @@
               <select ng-attr-id="{{ input.key }}"
                       name="name"
                       ng-model="model.viewModel.formattedRecord[input.key][1]"
-                      ng-change="patch( input.key )"
+                      ng-change="patch()"
                       class="form-control"
                       ng-disabled="!model.getEditEnabled() ||
                                    true === input.constant ||
@@ -81,11 +81,11 @@
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
-            uib-typeahead="item for item in getTypeaheadValues( input, $viewValue )"
+            uib-typeahead="item for item in getTypeaheadValues( $viewValue )"
             typeahead-editable="false"
-            typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
+            typeahead-on-select="onSelectTypeahead( $item, $model, $label )"
             typeahead-min-length="input.typeahead.minLength"
-            cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
+            cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead()"
             class="form-control"
             ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
             type="text"
@@ -97,11 +97,11 @@
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.formattedRecord[input.key]"
-            uib-typeahead="item.id as item.value for item in getTypeaheadValues( input, $viewValue )"
+            uib-typeahead="item.id as item.value for item in getTypeaheadValues( $viewValue )"
             typeahead-editable="false"
-            typeahead-on-select="onSelectTypeahead( input, $item, $model, $label )"
+            typeahead-on-select="onSelectTypeahead( $item, $model, $label )"
             typeahead-min-length="input.typeahead.minLength"
-            cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead( input.key )"
+            cn-change="!model.viewModel.formattedRecord[input.key] && onEmptyTypeahead()"
             class="form-control"
             ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
             type="text"
@@ -116,14 +116,14 @@
             class="form-control"
             type="text"
             ng-click="model.getEditEnabled() && true !== input.constant && 'view' != input.constant &&
-                      selectDatetime( input )"
+                      selectDatetime()"
             ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
             onkeydown="return false"></input>
           <input ng-switch-when="color"
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
-            cn-change="patch( input.key )"
+            cn-change="patch()"
             class="form-control color-input"
             ng-style="{'background-color':model.viewModel.record[input.key]}"
             type="text"
@@ -142,7 +142,7 @@
             ng-options="item.value as item.name for item in input.enumList"
             cn-options-disabled="item.disabled for item in input.enumList"
             ng-model="model.viewModel.record[input.key]"
-            ng-change="patch( input.key )"
+            ng-change="patch()"
             class="form-control"
             ng-disabled="true === input.constant || 'view' == input.constant ||
                          !model.getEditEnabled() ||
@@ -154,7 +154,7 @@
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
-            cn-change="patch( input.key )"
+            cn-change="patch()"
             class="form-control"
             ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
             ng-required="model.metadata.columnList[input.key].required"></textarea>
@@ -358,7 +358,7 @@
                   model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] &&
                   !( !model.viewModel.record[input.key] && !model.viewModel.backupRecord[input.key] )"
            class="col-sm-1 col-slim">
-        <button class="btn btn-warning" type="button" ng-click="undo( input.key )">Undo</button>
+        <button class="btn btn-warning" type="button" ng-click="undo()">Undo</button>
       </div>
       <div ng-if="input.action && input.action.isIncluded( state, model )" class="col-sm-2 col-slim-right">
         <button

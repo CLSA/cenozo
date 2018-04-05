@@ -1330,6 +1330,21 @@ cenozo.directive( 'cnRecordAdd', [
 
         $scope.cancel = function() { $scope.model.addModel.transitionOnCancel(); };
 
+        $scope.check = function( property ) {
+          // convert size types and write record property from formatted record
+          var input = $scope.model.module.getInput( property );
+          if( 'size' == input.type )
+            $scope.record[property] =
+              $filter( 'cnSize' )( $scope.formattedRecord[property].join( ' ' ), true );
+
+          // test the format
+          var element = cenozo.getFormElement( property );
+          if( element ) {
+            element.$error.format = !$scope.model.testFormat( property, $scope.record[property] );
+            cenozo.updateFormElement( element, true );
+          }
+        };
+
         $scope.save = function() {
           if( !$scope.form.$valid ) {
             // dirty all inputs so we can find the problem
@@ -1400,49 +1415,40 @@ cenozo.directive( 'cnAddInput', [
         $scope.directive = 'cnAddInput';
         $scope.state = $state;
 
-        $scope.check = function( property ) {
-          // convert size types and write record property from formatted record
-          if( 'size' == $scope.input.type )
-            $scope.record[property] =
-              $filter( 'cnSize' )( $scope.formattedRecord[property].join( ' ' ), true );
+        $scope.check = function() { $scope.$parent.check( $scope.input.key ); }
 
-          // test the format
-          var element = cenozo.getFormElement( property );
-          if( element ) {
-            element.$error.format = !$scope.model.testFormat( property, $scope.record[property] );
-            cenozo.updateFormElement( element, true );
-          }
+        $scope.getTypeaheadValues = function( viewValue ) {
+          return $scope.model.getTypeaheadValues( $scope.input, viewValue );
         };
 
-        $scope.getTypeaheadValues = function( input, viewValue ) {
-          return $scope.model.getTypeaheadValues( input, viewValue );
-        };
-
-        $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
-          if( 'lookup-typeahead' == input.type ) {
-            $scope.formattedRecord[input.key] = $label;
-            $scope.record[input.key] = $model;
+        $scope.onSelectTypeahead = function( $item, $model, $label ) {
+          if( 'lookup-typeahead' == $scope.input.type ) {
+            $scope.formattedRecord[$scope.input.key] = $label;
+            $scope.record[$scope.input.key] = $model;
           } else {
-            $scope.record[input.key] = $item;
+            $scope.record[$scope.input.key] = $item;
           }
         };
 
-        $scope.selectDatetime = function( input ) {
+        $scope.selectDatetime = function() {
           $scope.model.metadata.getPromise().then( function() {
             CnModalDatetimeFactory.instance( {
-              title: input.title,
-              date: $scope.record[input.key],
-              minDate: angular.isDefined( $scope.record[input.min] ) ? $scope.record[input.min] : input.min,
-              maxDate: angular.isDefined( $scope.record[input.max] ) ? $scope.record[input.max] : input.max,
-              pickerType: input.type,
-              emptyAllowed: !$scope.model.metadata.columnList[input.key].required,
-              hourStep: angular.isDefined( input.hourStep ) ? input.hourStep : 1,
-              minuteStep: angular.isDefined( input.minuteStep ) ? input.minuteStep : 1,
-              secondStep: angular.isDefined( input.secondStep ) ? input.secondStep : 1
+              title: $scope.input.title,
+              date: $scope.record[$scope.input.key],
+              minDate: angular.isDefined( $scope.record[$scope.input.min] ) ?
+                $scope.record[$scope.input.min] : $scope.input.min,
+              maxDate: angular.isDefined( $scope.record[$scope.input.max] ) ?
+                $scope.record[$scope.input.max] : $scope.input.max,
+              pickerType: $scope.input.type,
+              emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
+              hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
+              minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
+              secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
             } ).show().then( function( response ) {
               if( false !== response ) {
-                $scope.record[input.key] = response;
-                $scope.formattedRecord[input.key] = CnSession.formatValue( response, input.type, true );
+                $scope.record[$scope.input.key] = response;
+                $scope.formattedRecord[$scope.input.key] =
+                  CnSession.formatValue( response, $scope.input.type, true );
               }
             } );
           } );
@@ -1741,6 +1747,50 @@ cenozo.directive( 'cnRecordView', [
           }
         };
 
+        $scope.patch = function( property ) {
+          if( $scope.model.getEditEnabled() ) {
+            var element = cenozo.getFormElement( property );
+            var valid = $scope.model.testFormat( property, $scope.model.viewModel.record[property] );
+
+            if( element ) {
+              element.$error.format = !valid;
+              cenozo.updateFormElement( element, true );
+            }
+
+            if( valid ) {
+              // convert size types and write record property from formatted record
+              if( null != $scope.input && 'size' == $scope.input.type )
+                $scope.model.viewModel.record[property] =
+                  $filter( 'cnSize' )( $scope.model.viewModel.formattedRecord[property].join( ' ' ), true );
+
+              // validation passed, proceed with patch
+              var data = {};
+              data[property] = $scope.model.viewModel.record[property];
+
+              $scope.model.viewModel.onPatch( data ).then( function() {
+                // if the data in the identifier was patched then reload with the new url
+                if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
+                  $scope.model.setQueryParameter( 'identifier', $scope.model.viewModel.record.getIdentifier() );
+                  $scope.model.reloadState();
+                } else {
+                  var currentElement = cenozo.getFormElement( property );
+                  if( currentElement ) {
+                    if( currentElement.$error.conflict ) {
+                      cenozo.forEachFormElement( 'form', function( element ) {
+                        element.$error.conflict = false;
+                        cenozo.updateFormElement( element, true );
+                      } );
+                    }
+                  }
+
+                  // update the formatted value
+                  $scope.model.viewModel.updateFormattedRecord( property );
+                }
+              } );
+            }
+          }
+        };
+
         $scope.getReport = function( format ) {
           $scope.model.viewModel.onReport( format ).then( function() {
             saveAs( $scope.model.viewModel.reportBlob, $scope.model.viewModel.reportFilename );
@@ -1890,8 +1940,9 @@ cenozo.directive( 'cnViewInput', [
           return 12 > width ? 'col-slim-left col-sm-' + width : '';
         };
 
-        $scope.undo = function( property ) {
+        $scope.undo = function() {
           if( $scope.model.getEditEnabled() ) {
+            var property = $scope.input.key;
             if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
               $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
               if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) ) {
@@ -1903,51 +1954,10 @@ cenozo.directive( 'cnViewInput', [
           }
         };
 
-        $scope.patch = function( property ) {
-          if( $scope.model.getEditEnabled() ) {
-            var element = cenozo.getFormElement( property );
-            var valid = $scope.model.testFormat( property, $scope.model.viewModel.record[property] );
+        $scope.patch = function() { $scope.$parent.patch( $scope.input.key ); }
 
-            if( element ) {
-              element.$error.format = !valid;
-              cenozo.updateFormElement( element, true );
-            }
-
-            if( valid ) {
-              // convert size types and write record property from formatted record
-              if( null != $scope.input && 'size' == $scope.input.type )
-                $scope.model.viewModel.record[property] =
-                  $filter( 'cnSize' )( $scope.model.viewModel.formattedRecord[property].join( ' ' ), true );
-
-              // validation passed, proceed with patch
-              var data = {};
-              data[property] = $scope.model.viewModel.record[property];
-
-              $scope.model.viewModel.onPatch( data ).then( function() {
-                // if the data in the identifier was patched then reload with the new url
-                if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
-                  $scope.model.setQueryParameter( 'identifier', $scope.model.viewModel.record.getIdentifier() );
-                  $scope.model.reloadState();
-                } else {
-                  var currentElement = cenozo.getFormElement( property );
-                  if( currentElement ) {
-                    if( currentElement.$error.conflict ) {
-                      cenozo.forEachFormElement( 'form', function( element ) {
-                        element.$error.conflict = false;
-                        cenozo.updateFormElement( element, true );
-                      } );
-                    }
-                  }
-
-                  // update the formatted value
-                  $scope.model.viewModel.updateFormattedRecord( property );
-                }
-              } );
-            }
-          }
-        };
-
-        $scope.onEmptyTypeahead = function( property ) {
+        $scope.onEmptyTypeahead = function() {
+          var property = $scope.input.key;
           $scope.model.metadata.getPromise().then( function() {
             // if the input isn't required then set the value to null
             if( !$scope.model.metadata.columnList[property].required ) {
@@ -1957,41 +1967,41 @@ cenozo.directive( 'cnViewInput', [
           } );
         };
 
-        $scope.getTypeaheadValues = function( input, viewValue ) {
-          return $scope.model.getEditEnabled() ? $scope.model.getTypeaheadValues( input, viewValue ) : []
+        $scope.getTypeaheadValues = function( viewValue ) {
+          return $scope.model.getEditEnabled() ? $scope.model.getTypeaheadValues( $scope.input, viewValue ) : []
         };
 
-        $scope.onSelectTypeahead = function( input, $item, $model, $label ) {
+        $scope.onSelectTypeahead = function( $item, $model, $label ) {
           if( $scope.model.getEditEnabled() ) {
-            if( 'lookup-typeahead' == input.type ) {
-              $scope.model.viewModel.formattedRecord[input.key] = $label;
-              $scope.model.viewModel.record[input.key] = $model;
+            if( 'lookup-typeahead' == $scope.input.type ) {
+              $scope.model.viewModel.formattedRecord[$scope.input.key] = $label;
+              $scope.model.viewModel.record[$scope.input.key] = $model;
             } else {
-              $scope.model.viewModel.record[input.key] = $item;
+              $scope.model.viewModel.record[$scope.input.key] = $item;
             }
-            $scope.patch( input.key );
+            $scope.patch( $scope.input.key );
           }
         };
 
-        $scope.selectDatetime = function( input ) {
+        $scope.selectDatetime = function() {
           if( $scope.model.getEditEnabled() ) {
             $scope.model.metadata.getPromise().then( function() {
               CnModalDatetimeFactory.instance( {
-                title: input.title,
-                date: $scope.model.viewModel.record[input.key],
-                minDate: angular.isDefined( $scope.model.viewModel.record[input.min] ) ?
-                         $scope.model.viewModel.record[input.min] : input.min,
-                maxDate: angular.isDefined( $scope.model.viewModel.record[input.max] ) ?
-                         $scope.model.viewModel.record[input.max] : input.max,
-                pickerType: input.type,
-                emptyAllowed: !$scope.model.metadata.columnList[input.key].required,
-                hourStep: angular.isDefined( input.hourStep ) ? input.hourStep : 1,
-                minuteStep: angular.isDefined( input.minuteStep ) ? input.minuteStep : 1,
-                secondStep: angular.isDefined( input.secondStep ) ? input.secondStep : 1
+                title: $scope.input.title,
+                date: $scope.model.viewModel.record[$scope.input.key],
+                minDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.min] ) ?
+                         $scope.model.viewModel.record[$scope.input.min] : $scope.input.min,
+                maxDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.max] ) ?
+                         $scope.model.viewModel.record[$scope.input.max] : $scope.input.max,
+                pickerType: $scope.input.type,
+                emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
+                hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
+                minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
+                secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
               } ).show().then( function( response ) {
                 if( false !== response ) {
-                  $scope.model.viewModel.record[input.key] = response;
-                  $scope.patch( input.key );
+                  $scope.model.viewModel.record[$scope.input.key] = response;
+                  $scope.patch( $scope.input.key );
                 }
               } );
             } );
