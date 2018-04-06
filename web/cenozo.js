@@ -1954,7 +1954,10 @@ cenozo.directive( 'cnViewInput', [
           }
         };
 
-        $scope.patch = function() { $scope.$parent.patch( $scope.input.key ); }
+        $scope.patch = function( property ) {
+          if( angular.isUndefined( property ) ) property = $scope.input.key;
+          $scope.$parent.patch( property );
+        }
 
         $scope.onEmptyTypeahead = function() {
           var property = $scope.input.key;
