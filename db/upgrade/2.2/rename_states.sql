@@ -31,10 +31,10 @@ CREATE PROCEDURE patch_rename_states()
 
       DELETE FROM state WHERE name = "FU1 Institutionalized";
 
-      UPDATE state SET name = "requires initiation" WHERE name = "Participant Requires Proxy";
-      UPDATE state SET name = "requires form" WHERE name = "FU1 Mail Proxy Materials";
-      UPDATE state SET name = "ready" WHERE name = "FU1 Proxy DM chosen";
-      UPDATE state SET name = "ready, information provider only" WHERE name = "FU1 Proxy IP only chosen";
+      UPDATE state SET name = "contact required, central" WHERE name = "Participant Requires Proxy";
+      UPDATE state SET name = "consent form required" WHERE name = "FU1 Mail Proxy Materials";
+      UPDATE state SET name = "initiated" WHERE name = "FU1 Proxy DM chosen";
+      UPDATE state SET name = "initiated, information provider only" WHERE name = "FU1 Proxy IP only chosen";
       UPDATE state SET name = "site" WHERE name = "Sourcing Required";
       UPDATE state SET name = "central" WHERE name = "NCC Sourcing Required";
 
