@@ -232,7 +232,9 @@ define( function() {
         // Note that this function should be called before making the change to the address or phone.  It will
         // return a promise once the reason has been entered by the user (or immediately of no change in trace
         // will occur as a result of the change in address/phone)
-        this.checkForTrace = function( participantIdentifier, required, type ) {
+        // 
+        // @var identifier is an object with identifer (id) and subject (participant or alternate) properties
+        this.checkForTrace = function( identifier, required, type ) {
           if( angular.isUndefined( required ) ) required = false;
           if( 'address' != type && 'phone' != type ) {
             throw new Error(
@@ -242,11 +244,11 @@ define( function() {
 
           // activate tracing if the contact belongs to a participant who only has one valid contact of the
           // requested type (address or phone) and the last trace is null
-          if( null != participantIdentifier ) {
+          if( null != identifier.identifier && 'participant' == identifier.subject ) {
             var changing_count_column = 'active_' + type + '_count';
             var other_count_column = 'active_' + ( 'address' == type ? 'phone' : 'address' ) + '_count';
             return CnHttpFactory.instance( {
-              path: 'participant/' + participantIdentifier,
+              path: identifier.subject + '/' + identifier.identifier,
               data: { select: { column: [
                 'active_address_count',
                 'active_phone_count',
@@ -299,11 +301,12 @@ define( function() {
         this.checkForTraceRequiredAfterPhoneRemoved = (id) => this.checkForTrace( id, true, 'phone' );
         this.checkForTraceResolvedAfterPhoneAdded = (id) => this.checkForTrace( id, false, 'phone' );
 
-        // used to update the last trace record with the provided reason
-        this.setTraceReason = function( participantIdentifier, reason ) {
-          if( null != participantIdentifier ) {
+        // used to update the last trace record with the provided reason (for participants only)
+        // @var identifier is an object with identifer (id) and subject (participant or alternate) properties
+        this.setTraceReason = function( identifier, reason ) {
+          if( null != identifier.identifier && 'participant' == identifier.subject ) {
             CnHttpFactory.instance( {
-              path: 'participant/' + participantIdentifier,
+              path: identifier.subject + '/' + identifier.identifier,
               data: {
                 explain_last_trace: {
                   user_id: CnSession.user.id,

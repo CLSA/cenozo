@@ -140,12 +140,13 @@ define( [ 'trace' ].reduce( function( list, name ) {
         };
 
         this.onAdd = function( record ) {
-          var id = this.parentModel.getParentIdentifier().identifier;
-          return traceModel.checkForTraceResolvedAfterPhoneAdded( id ).then( function( response ) {
+          var identifier = this.parentModel.getParentIdentifier();
+          console.log( this.parentModel.getParentIdentifier() );
+          return traceModel.checkForTraceResolvedAfterPhoneAdded( identifier ).then( function( response ) {
             if( response ) {
               return self.$$onAdd( record ).then( function() {
                 // end tracing with reason "response"
-                if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+                if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
               } );
             } else {
               return $q.reject();
@@ -167,12 +168,12 @@ define( [ 'trace' ].reduce( function( list, name ) {
         var traceModel = CnTraceModelFactory.root;
 
         this.onDelete = function( record ) {
-          var id = this.parentModel.getParentIdentifier().identifier;
-          return traceModel.checkForTraceRequiredAfterPhoneRemoved( id ).then( function( response ) {
+          var identifier = this.parentModel.getParentIdentifier();
+          return traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier ).then( function( response ) {
             if( response ) {
               return self.$$onDelete( record ).then( function() {
                 // start tracing with reason "response"
-                if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+                if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
               } );
             } else {
               return $q.reject();
@@ -201,25 +202,25 @@ define( [ 'trace' ].reduce( function( list, name ) {
         };
 
         this.onPatch = function( data ) {
-          var id = this.parentModel.getParentIdentifier().identifier;
+          var identifier = this.parentModel.getParentIdentifier();
           if( angular.isDefined( data.active ) ) {
             if( data.active ) {
-              return traceModel.checkForTraceResolvedAfterPhoneAdded( id ).then( function( response ) {
+              return traceModel.checkForTraceResolvedAfterPhoneAdded( identifier ).then( function( response ) {
                 if( response ) {
                   return self.$$onPatch( data ).then( function() {
                     // end tracing with reason "response"
-                    if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+                    if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
                   } );
                 } else {
                   return $q.reject();
                 }
               } );
             } else {
-              return traceModel.checkForTraceRequiredAfterPhoneRemoved( id ).then( function( response ) {
+              return traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier ).then( function( response ) {
                 if( response ) {
                   return self.$$onPatch( data ).then( function() {
                     // start tracing with reason "response"
-                    if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+                    if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
                   } );
                 } else {
                   return $q.reject();
@@ -232,12 +233,12 @@ define( [ 'trace' ].reduce( function( list, name ) {
         };
 
         this.onDelete = function() {
-          var id = this.parentModel.getParentIdentifier().identifier;
-          return traceModel.checkForTraceRequiredAfterPhoneRemoved( id ).then( function( response ) {
+          var identifier = this.parentModel.getParentIdentifier();
+          return traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier ).then( function( response ) {
             if( response ) {
               return self.$$onDelete().then( function() {
                 // start tracing with reason "response"
-                if( angular.isString( response ) ) return traceModel.setTraceReason( id, response );
+                if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
               } );
             } else {
               return $q.reject();
