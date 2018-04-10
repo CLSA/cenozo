@@ -4,7 +4,7 @@ $(document).ready(function() {
   $("*").keydown(function(event) {
     if( 13 == event.which ) {
       // enter key, click on the next button
-      $( "#movenextbtn" ).click();
+      $( "#ls-button-submit" ).click();
     } else if( 96 <= event.which && event.which <= 105 ) {
       // translate from key code to number, then append to the compound number
       var num = event.which - 96;
@@ -143,7 +143,7 @@ function configureQuestion( params ) {
     }
 
     // do some validation when submitting the form
-    $('#movenextbtn, #movesubmitbtn').click( customValidate );
+    $('#ls-button-submit').click( customValidate );
     $('input').keypress(
       function( event ) { if( event.which == '13' ) if( !customValidate() ) event.preventDefault(); }
     );
