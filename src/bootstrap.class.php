@@ -73,6 +73,8 @@ final class bootstrap
     ini_set( 'session.gc_divisor', 100 );
     ini_set( 'session.cookie_secure', false );
     ini_set( 'session.use_only_cookies', true );
+
+    session_name( 'CENOZO_SESSID' );
     session_start();
 
     // include the autoloader and error code files (search for app_path::util first)
@@ -186,10 +188,6 @@ final class bootstrap
       $this->session->initialize( $this->no_activity );
       $db = $this->session->get_database();
 
-      // if required then print the api address in the log
-      if( $this->settings['general']['show_api_calls'] )
-        log::info( sprintf( 'API call to %s:%s', $this->method, $this->path ) );
-
       // set up the identification headers
       if( !is_null( $this->session->get_site() ) )
         header( sprintf( 'Site: %s', $util_class_name::json_encode( $this->session->get_site()->name ) ) );
@@ -219,6 +217,10 @@ final class bootstrap
       $db->start_transaction();
       $service->process();
       $status = $service->get_status();
+
+      // if required then print the api address in the log
+      if( $this->settings['general']['show_api_calls'] )
+        log::info( sprintf( 'API call to %s:%s returned %s', $this->method, $this->path, $status->get_code() ) );
     }
     catch( exception\base_exception $e )
     {

@@ -87,6 +87,6 @@ class module extends \cenozo\service\module
     }
 
     if( $select->has_column( 'url' ) )
-      $select->add_column( sprintf( 'CONCAT( "%s/index.php?sid=", script.sid )', LIMESURVEY_URL ), 'url', false );
+      $select->add_column( sprintf( 'CONCAT( "%s/index.php/", script.sid )', LIMESURVEY_URL ), 'url', false );
   }
 }

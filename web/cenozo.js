@@ -6805,7 +6805,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
       }
 
       this.launch = function() {
-        var url = self.script.url + '&lang=' + self.lang + '&newtest=Y';
+        var url = self.script.url + '?lang=' + self.lang + '&newtest=Y';
 
         return this.deferred.promise.then( function() {
           if( null == self.token ) {

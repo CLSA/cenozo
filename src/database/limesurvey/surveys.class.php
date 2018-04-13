@@ -39,6 +39,8 @@ class surveys extends record
    */
   public function get_token_attribute_names()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // attribute descriptions are storred differently in limesurvey 1 and 2
     $attribute_list = array();
     if( is_null( $this->attributedescriptions ) )
@@ -59,7 +61,7 @@ class surveys extends record
     }
     else
     { // limesurvey 2 serializes attributes
-      $attribute_descriptions = unserialize( $this->attributedescriptions );
+      $attribute_descriptions = $util_class_name::json_decode( $this->attributedescriptions );
       if( false === $attribute_descriptions )
       {
         throw lib::create( 'exception\runtime',
@@ -67,7 +69,7 @@ class surveys extends record
       }
 
       foreach( $attribute_descriptions as $key => $attribute )
-        $attribute_list[$key] = $attribute['description'];
+        $attribute_list[$key] = $attribute->description;
     }
 
     return $attribute_list;

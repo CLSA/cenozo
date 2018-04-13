@@ -67,7 +67,6 @@ class database extends \cenozo\base_object
 
       $column_mod = lib::create( 'database\modifier' );
       $column_mod->where( 'table_schema', 'IN', $schema_list, false );
-      $column_mod->where( 'column_type', '!=', '"mediumtext"', false ); // ignore really big data types
       $column_mod->where( 'column_type', '!=', '"longtext"', false );
       $column_mod->where( 'column_type', '!=', '"mediumblob"', false );
       $column_mod->where( 'column_type', '!=', '"longblob"', false );
@@ -315,7 +314,7 @@ class database extends \cenozo\base_object
     $timestamp_types = array( 'timestamp' );
     $integer_types = array( 'bigint', 'int', 'mediumint', 'smallint' );
     $float_types = array( 'decimal', 'double', 'float', 'real' );
-    $string_types = array( 'blob', 'char', 'enum', 'longtext', 'text', 'varchar' );
+    $string_types = array( 'blob', 'char', 'enum', 'longtext', 'text', 'varchar', 'mediumtext' );
 
     $data_type = $this->get_column_data_type( $table_name, $column_name );
     if( in_array( $data_type, $string_types ) ) return 'string';

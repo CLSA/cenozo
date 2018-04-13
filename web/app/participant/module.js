@@ -1097,6 +1097,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
             // check for when the window gets focus back and update the participant details
             var win = angular.element( $window ).on( 'focus', function() {
               self.onView();
+              if( self.holdModel ) self.holdModel.listModel.onList( true );
               win.off( 'focus' );
             } );
           } );
