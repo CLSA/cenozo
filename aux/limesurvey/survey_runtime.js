@@ -56,34 +56,20 @@ function configureQuestion( params ) {
   $(document).on('ready pjax:complete',function() {
     if( params.refuse ) {
       var inputList = $('#question' + params.qid + ' ' + params.formElementType);
-      var div1 = inputList.last().parent();
-      var div2 = div1.parent();
-      var div3 = div2.parent();
-      var labelClass = div3.find('label').attr('class');
-      var offsetClass = labelClass.match( 'hide' )
-                      ? ''
-                      : labelClass.match( /col-[a-z][a-z]-[0-9]+/g )
-                                  .filter( w => null == w.match( /12$/ ) )
-                                  .map( w => w.replace( /[0-9]+$/, 'offset-$&' ) )
-                                  .join(' ');
 
       var otherOptions = $(
-        '<div class="' + div3.attr( 'class' ) + '">' +
-          '<div class="' + div2.attr( 'class' ) + '">' +
-            '<div class="' + div1.attr( 'class' ) + ' ' + offsetClass + '">' +
-              '<select id="otherOptions" class="form-control">' +
-                '<option value="" selected>(' +
-                  ( 'en' == lang ? 'other options' : 'autres options' ) +
-                ')</option>' +
-                '<option value="dontKnow">' +
-                  ( 'en' == lang ? 'Don\'t Know' : 'Ne sait pas' ) +
-                '</option>' +
-                '<option value="refuse">' +
-                  ( 'en' == lang ? 'Refuse' : 'Refus' ) +
-                '</option>' +
-              '</select>' +
-            '</div>' +
-          '</div>' +
+        '<div style="margin-bottom:1em">' +
+          '<select id="otherOptions" class="form-control">' +
+            '<option value="" selected>(' +
+              ( 'en' == lang ? 'other options' : 'autres options' ) +
+            ')</option>' +
+            '<option value="dontKnow">' +
+              ( 'en' == lang ? 'Don\'t Know' : 'Ne sait pas' ) +
+            '</option>' +
+            '<option value="refuse">' +
+              ( 'en' == lang ? 'Refuse' : 'Refus' ) +
+            '</option>' +
+          '</select>' +
         '</div>'
       );
       otherOptions.find( 'select' ).change( function() {
@@ -92,7 +78,7 @@ function configureQuestion( params ) {
         inputList.prop( 'disabled', disabled );
         if( disabled ) inputList.val('');
       } );
-      div3.after( otherOptions );
+      inputList.last().parent().after( otherOptions );
 
       if( params.dontKnowCode == inputList.last().val() ) {
         otherOptions.find( 'select' ).val( 'dontKnow' ).trigger( 'change' );
@@ -211,6 +197,19 @@ function configureTextQuestion( params ) {
   configureQuestion( {
     qid: params.qid,
     formElementType: 'textarea',
+    dontKnowCode: 98,
+    refuseCode: 99,
+    refuse: true
+  } );
+}
+
+// Custom functionality to allow additional runtime features to questions
+// expecting the input param as an object with:
+//   integer qid: the question ID (mandatory)
+function configureShortTextQuestion( params ) {
+  configureQuestion( {
+    qid: params.qid,
+    formElementType: 'input',
     dontKnowCode: 98,
     refuseCode: 99,
     refuse: true
