@@ -2862,8 +2862,10 @@ cenozo.factory( 'CnSession', [
             // process module list
             self.moduleList = response.data.module_list;
 
-            // add the special script list
-            self.specialScriptList = response.data.special_script_list;
+            if( 0 <= self.moduleList.indexOf( 'script' ) ) {
+              // add the special script list
+              self.specialScriptList = response.data.special_script_list;
+            }
 
             // process session records
             self.sessionList = response.data.session_list;
@@ -6765,6 +6767,9 @@ cenozo.factory( 'CnPaginationFactory',
 cenozo.factory( 'CnScriptLauncherFactory', [
   'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$q', '$window',
   function( CnSession, CnHttpFactory, CnModalMessageFactory, $q, $window ) {
+    if( 0 > CnSession.moduleList.indexOf( 'script' ) )
+      throw new Error( 'Tried to create script launcher but script module is not enabled' );
+
     var object = function( params ) {
       var self = this;
 

@@ -964,42 +964,78 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
           } );
         };
 
-        this.launchSpecialScript = function( type, language ) {
-          var foundLauncher = null;
-          Object.keys( self.scriptLaunchers ).some( function( name ) {
-            var re = new RegExp( type, 'i' );
-            if( name.match( re ) ) {
-              foundLauncher = self.scriptLaunchers[name];
-              return true;
-            }
-          } );
+        // only add script launching if the script module is activated
+        if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
+          this.launchSpecialScript = function( type, language ) {
+            var foundLauncher = null;
+            Object.keys( self.scriptLaunchers ).some( function( name ) {
+              var re = new RegExp( type, 'i' );
+              if( name.match( re ) ) {
+                foundLauncher = self.scriptLaunchers[name];
+                return true;
+              }
+            } );
 
-          if( null == foundLauncher )
-            throw new Error( 'Cannot launch special script type "' + type + '", script type not found.' );
+            if( null == foundLauncher )
+              throw new Error( 'Cannot launch special script type "' + type + '", script type not found.' );
 
-          if( language ) foundLauncher.lang = language.code;
-          foundLauncher.launch();
-        };
+            if( language ) foundLauncher.lang = language.code;
+            foundLauncher.launch();
+          };
+
+          // launches the proxy initiation script for the current participant
+          this.launchProxy = function() {
+            this.onViewPromise.then( function() {
+              var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
+                'value', self.record.language_id );
+              self.launchSpecialScript( 'proxy', language );
+
+              // check for when the window gets focus back and update the participant details
+              var win = angular.element( $window ).on( 'focus', function() {
+                self.onView();
+                win.off( 'focus' );
+              } );
+            } );
+          };
+
+          // launches the withdraw script for the current participant
+          this.launchWithdraw = function() {
+            this.onViewPromise.then( function() {
+              var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
+                'value', self.record.language_id );
+              self.launchSpecialScript( 'withdraw', language );
+
+              // check for when the window gets focus back and update the participant details
+              var win = angular.element( $window ).on( 'focus', function() {
+                self.onView();
+                if( self.holdModel ) self.holdModel.listModel.onList( true );
+                win.off( 'focus' );
+              } );
+            } );
+          };
+        }
 
         // track the promise returned by the onView function
         this.onView = function() {
-          // create launchers for each special script
-          CnSession.specialScriptList.forEach( function( script ) {
-            var data = {
-              script: script,
-              identifier: self.parentModel.getQueryParameter( 'identifier' ),
-            };
-            if( null != script.name.match( /withdraw/i ) ) {
-              data.onReady = function() {
-                self.hasWithdrawn =
-                  null != self.scriptLaunchers[script.name].token &&
-                  null != self.scriptLaunchers[script.name].token.completed.match(
-                    /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
-                  );
+          // only create launchers for each special script if the script module is activated
+          if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
+            CnSession.specialScriptList.forEach( function( script ) {
+              var data = {
+                script: script,
+                identifier: self.parentModel.getQueryParameter( 'identifier' ),
               };
-            }
-            self.scriptLaunchers[script.name] = CnScriptLauncherFactory.instance( data );
-          } );
+              if( null != script.name.match( /withdraw/i ) ) {
+                data.onReady = function() {
+                  self.hasWithdrawn =
+                    null != self.scriptLaunchers[script.name].token &&
+                    null != self.scriptLaunchers[script.name].token.completed.match(
+                      /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
+                    );
+                };
+              }
+              self.scriptLaunchers[script.name] = CnScriptLauncherFactory.instance( data );
+            } );
+          }
 
           // set a special heading
           this.onViewPromise = this.$$onView().then( function() {
@@ -1069,37 +1105,6 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
             // refresh the data if date-of-death information has changed
             return angular.isDefined( data.date_of_death ) || angular.isDefined( data.date_of_death_accuracy ) ?
               self.onView() : $q.all();
-          } );
-        };
-
-        // launches the proxy initiation script for the current participant
-        this.launchProxy = function() {
-          this.onViewPromise.then( function() {
-            var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
-              'value', self.record.language_id );
-            self.launchSpecialScript( 'proxy', language );
-
-            // check for when the window gets focus back and update the participant details
-            var win = angular.element( $window ).on( 'focus', function() {
-              self.onView();
-              win.off( 'focus' );
-            } );
-          } );
-        };
-
-        // launches the withdraw script for the current participant
-        this.launchWithdraw = function() {
-          this.onViewPromise.then( function() {
-            var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
-              'value', self.record.language_id );
-            self.launchSpecialScript( 'withdraw', language );
-
-            // check for when the window gets focus back and update the participant details
-            var win = angular.element( $window ).on( 'focus', function() {
-              self.onView();
-              if( self.holdModel ) self.holdModel.listModel.onList( true );
-              win.off( 'focus' );
-            } );
           } );
         };
 

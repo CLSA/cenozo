@@ -376,6 +376,14 @@ class data_manager extends \cenozo\singleton
     }
     else if( 'limesurvey' == $subject )
     {
+      $setting_manager = lib::create( 'business\setting_manager' );
+      if( !$setting_manager->get_setting( 'module', 'script' ) )
+      {
+        throw lib::create( 'exception\runtime',
+          'Tried to get limesurvey value but the script module is not enabled.',
+          __METHOD__ );
+      }
+
       $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
       $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
 

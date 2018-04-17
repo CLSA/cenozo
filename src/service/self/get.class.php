@@ -105,18 +105,7 @@ class get extends \cenozo\service\service
     $module_list = array();
     if( $setting_manager->get_setting( 'module', 'interview' ) ) $module_list[] = 'interview';
     if( $setting_manager->get_setting( 'module', 'recording' ) ) $module_list[] = 'recording';
-
-    // get a list of all special scripts
-    $script_sel = lib::create( 'database\select' );
-    $script_sel->from( 'script' );
-    $script_sel->add_column( 'id' );
-    $script_sel->add_column( 'name' );
-    $script_sel->add_column( 'repeated' );
-    $script_sel->add_column(
-      sprintf( 'CONCAT( "%s/index.php/", script.sid )', LIMESURVEY_URL ), 'url', false );
-    $script_mod = lib::create( 'database\modifier' );
-    $script_mod->where( 'special', '=', true );
-    $script_list = $script_class_name::select( $script_sel, $script_mod );
+    if( $setting_manager->get_setting( 'module', 'script' ) ) $module_list[] = 'script';
 
     // get a list of all final holds
     $hold_type_sel = lib::create( 'database\select' );
@@ -134,11 +123,25 @@ class get extends \cenozo\service\service
       'user' => $db_user->get_column_values( $user_sel ),
       'access' => $db_user->get_access_list( $access_sel, $access_mod ),
       'module_list' => $module_list,
-      'special_script_list' => $script_list,
       'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
       'final_hold_type_list' => $final_hold_type_list,
       'session_list' => $session->get_session_list(),
       'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false );
+
+    if( $setting_manager->get_setting( 'module', 'script' ) )
+    {
+      // get a list of all special scripts
+      $script_sel = lib::create( 'database\select' );
+      $script_sel->from( 'script' );
+      $script_sel->add_column( 'id' );
+      $script_sel->add_column( 'name' );
+      $script_sel->add_column( 'repeated' );
+      $script_sel->add_column(
+        sprintf( 'CONCAT( "%s/index.php/", script.sid )', LIMESURVEY_URL ), 'url', false );
+      $script_mod = lib::create( 'database\modifier' );
+      $script_mod->where( 'special', '=', true );
+      $pseudo_record['special_script_list'] = $script_class_name::select( $script_sel, $script_mod );
+    }
 
     // add the application type name
     $pseudo_record['application']['type'] = $db_application->get_application_type()->name;

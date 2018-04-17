@@ -121,8 +121,8 @@ class ui extends \cenozo\base_object
       'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
       'jurisdiction', 'language', 'opal_form_template', 'overview', 'participant', 'phone', 'proxy',
       'proxy_type','quota', 'region', 'region_site', 'role', 'report', 'report_restriction', 'report_schedule',
-      'report_type', 'script', 'search_result', 'site', 'source', 'system_message', 'trace', 'trace_type',
-      'user', 'webphone', 'writelog'
+      'report_type', 'search_result', 'site', 'source', 'system_message', 'trace', 'trace_type', 'user',
+      'webphone', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -130,6 +130,9 @@ class ui extends \cenozo\base_object
 
     if( $setting_manager->get_setting( 'module', 'recording' ) )
       $list = array_merge( $list, array( 'recording', 'recording_file' ) );
+
+    if( $setting_manager->get_setting( 'module', 'script' ) )
+      $list = array_merge( $list, array( 'script' ) );
 
     return $list;
   }
@@ -146,6 +149,7 @@ class ui extends \cenozo\base_object
     $setting_manager = lib::create( 'business\setting_manager' );
     $use_interview_module = $setting_manager->get_setting( 'module', 'interview' );
     $use_recording_module = $setting_manager->get_setting( 'module', 'recording' );
+    $use_script_module = $setting_manager->get_setting( 'module', 'script' );
     $db_role = lib::create( 'business\session' )->get_role();
 
     $select = lib::create( 'database\select' );
@@ -183,6 +187,14 @@ class ui extends \cenozo\base_object
         if( !$use_recording_module )
           throw lib::create( 'exception\runtime',
             sprintf( 'Application has %s service but it\'s parent module, recording, is not activated.',
+                     $module->get_subject() ),
+            __METHOD__ );
+      }
+      if( in_array( $module->get_subject(), array( 'script' ) ) )
+      {
+        if( !$use_script_module )
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Application has %s service but it\'s parent module, script, is not activated.',
                      $module->get_subject() ),
             __METHOD__ );
       }

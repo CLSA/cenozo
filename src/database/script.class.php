@@ -85,6 +85,14 @@ class script extends record
   public static function add_all_event_types(
     $db_participant, $db_script = NULL, $started_events = true, $finished_events = true )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( !$setting_manager->get_setting( 'module', 'script' ) )
+    {
+      throw lib::create( 'exception\runtime',
+        'Tried to add script event types but the script module is not enabled.',
+        __METHOD__ );
+    }
+
     $util_class_name = lib::get_class_name( 'util' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );

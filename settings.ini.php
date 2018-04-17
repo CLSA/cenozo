@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.2';
-$settings['general']['cenozo_build'] = '3c46f0f';
+$settings['general']['cenozo_build'] = 'f99d14a';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -47,6 +47,7 @@ $settings['general']['withdraw_timeout'] = 60;
 // list of all optional modules (off by default)
 $settings['module']['interview'] = false;
 $settings['module']['recording'] = false;
+$settings['module']['script'] = false;
 
 // the maximum time allowed for a report to finish (in seconds)
 $settings['report']['time_limit'] = 180;
@@ -95,10 +96,6 @@ $settings['path']['OPAL_FORM_TEMPLATE'] = str_replace( 'settings.ini.php', 'doc/
 $settings['path']['TEMP'] =
   '/tmp/'.$this->settings['general']['framework_name'].$this->settings['path']['APPLICATION'];
 $settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
-
-// the url of limesurvey and database information found in application/config/config.php
-$settings['path']['LIMESURVEY'] = '/var/www/limesurvey';
-$settings['url']['LIMESURVEY'] = '../limesurvey';
 
 // the url of PHPExcel
 $settings['path']['PHPEXCEL'] = str_replace( 'settings.ini.php', '../PHPExcel', __FILE__ );

@@ -20,7 +20,16 @@ class survey_manager extends \cenozo\singleton
    * use the {@link singleton} method.
    * @access protected
    */
-  protected function __construct() {}
+  protected function __construct()
+  {
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( !$setting_manager->get_setting( 'module', 'script' ) )
+    {
+      throw lib::create( 'exception\runtime',
+        'Tried to create the survey-manager but the script module is not enabled.',
+        __METHOD__ );
+    }
+  }
 
   /**
    * Writes all columns of a token for the given script and participant

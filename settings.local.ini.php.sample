@@ -25,7 +25,7 @@ else if( array_key_exists( 'HTTP_HOST', $_SERVER ) )
   $host = $_SERVER['HTTP_HOST'];
 if( !is_null( $host ) ) $settings['url']['CENOZO'] = sprintf( 'https://%s/url/to/cenozo', $host );
 
-// the url of limesurvey and database information found in application/config/config.php
+// the path and url of Limesurvey (only add if using the script module)
 $settings['path']['LIMESURVEY'] = '/path/to/limesurvey';
 $settings['url']['LIMESURVEY'] = '../limesurvey';
 

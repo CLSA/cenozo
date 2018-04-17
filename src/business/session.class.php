@@ -145,6 +145,14 @@ class session extends \cenozo\singleton
    */
   public function get_survey_database()
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( !$setting_manager->get_setting( 'module', 'script' ) )
+    {
+      throw lib::create( 'exception\runtime',
+        'Tried to get the limesurvey database but the script module is not enabled.',
+        __METHOD__ );
+    }
+
     // create the database if it doesn't exist yet
     if( is_null( $this->survey_database ) )
     {
