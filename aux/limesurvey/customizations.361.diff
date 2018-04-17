@@ -72,6 +72,12 @@
 ---
 >         $answerwidth = 33;
 
+## application/views/admin/survey/Question/answerOptions_view.php #############################################
+105c105
+<                                             <th class='col-md-3'><?php eT("Code"); ?></th>
+---
+>                                             <th class='col-md-1'><?php eT("Code"); ?></th>
+
 ## application/views/admin/survey/Question/subquestionsAndAnswers/_subquestion.php ############################
 39,40c39,40
 <                 maxlength='50'
