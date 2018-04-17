@@ -51,26 +51,31 @@ class activity extends record
     $modifier->or_where( 'role_id', '!=', $db_role->id );
     $modifier->where_bracket( false );
 
-    static::db()->execute( sprintf(
-      'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
-      $modifier->get_sql() ) );
-
-    // create a new activity if there isn't already one open
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'application_id', '=', $db_application->id );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', $db_role->id );
-    $modifier->where( 'end_datetime', '=', NULL );
-    if( 0 == $db_user->get_activity_count( $modifier ) )
+    try
     {
-      $db_activity = new static();
-      $db_activity->application_id = $db_application->id;
-      $db_activity->user_id = $db_user->id;
-      $db_activity->site_id = $db_site->id;
-      $db_activity->role_id = $db_role->id;
-      $db_activity->start_datetime = $util_class_name::get_datetime_object();
-      $db_activity->save();
+      // the following often causes deadlocks but the are safe to ignore (caught and ignored below)
+      static::db()->execute( sprintf(
+        'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
+        $modifier->get_sql() ) );
+
+      // create a new activity if there isn't already one open
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'application_id', '=', $db_application->id );
+      $modifier->where( 'site_id', '=', $db_site->id );
+      $modifier->where( 'role_id', '=', $db_role->id );
+      $modifier->where( 'end_datetime', '=', NULL );
+      if( 0 == $db_user->get_activity_count( $modifier ) )
+      {
+        $db_activity = new static();
+        $db_activity->application_id = $db_application->id;
+        $db_activity->user_id = $db_user->id;
+        $db_activity->site_id = $db_site->id;
+        $db_activity->role_id = $db_role->id;
+        $db_activity->start_datetime = $util_class_name::get_datetime_object();
+        $db_activity->save();
+      }
     }
+    catch( \cenozo\exception\notice $e ) {} // ignore notices
   }
 
   /**
