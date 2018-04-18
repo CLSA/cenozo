@@ -23,6 +23,14 @@ class voip_manager extends \cenozo\singleton
   protected function __construct()
   {
     $setting_manager = lib::create( 'business\setting_manager' );
+    if( !$setting_manager->get_setting( 'module', 'voip' ) )
+    {
+      throw lib::create( 'exception\runtime',
+        'Tried to create the voip-manager but the voip module is not enabled.',
+        __METHOD__ );
+    }
+
+    $setting_manager = lib::create( 'business\setting_manager' );
     $this->enabled = true === $setting_manager->get_setting( 'voip', 'enabled' );
     $this->url = sprintf(
       'http://%s:%d/mxml',

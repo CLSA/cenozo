@@ -123,9 +123,7 @@ define( [], function() {
     operation: function( $state, model ) { model.viewModel.forceClose(); },
     isDisabled: function( $state, model ) { return null !== model.viewModel.record.end_datetime; },
     isIncluded: function( $state, model ) { return model.viewModel.forceCloseAllowed; },
-    help: 'Closes the interview along with any open calls. ' +
-          'Note that this will not disconnect active VoIP calls, nor will it prevent the user from continuing ' +
-          'to answer questionnaires.'
+    help: 'Closes the interview along with any open calls'
   } );
 
   /* ######################################################################################################## */
@@ -178,9 +176,12 @@ define( [], function() {
         this.forceClose = function() {
           CnModalConfirmFactory.instance( {
             title: 'Force Close Assignment?',
-            message: 'Are you sure you wish to force-close the assignment?\n\n' +
-                     'Note that this will not disconnect active VoIP calls, nor will it prevent the user from ' +
-                     'continuing to answer questionnaires.'
+            message: 'Are you sure you wish to force-close the assignment?' + (
+              CnSession.application.voipEnabled ?
+                '\n\nNote that this will not disconnect active VoIP calls, nor will it prevent the user from ' +
+                'continuing to answer questionnaires.' :
+                ''
+            )
           } ).show().then( function( response ) {
             function refreshView() {
               // the assignment may no longer exist, so go back to the interview if it's gone

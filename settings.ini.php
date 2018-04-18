@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.2';
-$settings['general']['cenozo_build'] = 'ce48877';
+$settings['general']['cenozo_build'] = '7f9034f';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -49,6 +49,7 @@ $settings['module']['interview'] = false;
 $settings['module']['pdf'] = false;
 $settings['module']['recording'] = false;
 $settings['module']['script'] = false;
+$settings['module']['voip'] = false;
 
 // the maximum time allowed for a report to finish (in seconds)
 $settings['report']['time_limit'] = 180;
@@ -101,9 +102,6 @@ $settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
 // the url of PHPExcel
 $settings['path']['PHPEXCEL'] = str_replace( 'settings.ini.php', '../PHPExcel', __FILE__ );
 
-// the location of the Shift8 Asterisk library
-$settings['path']['SHIFT8'] = str_replace( 'settings.ini.php', '../shift8', __FILE__ );
-
 // utility account
 $settings['utility']['username'] = 'cenozo';
 $settings['utility']['password'] = '';
@@ -138,12 +136,3 @@ $settings['failover_opal']['port'] = 8843;
 $settings['failover_opal']['username'] = '';
 $settings['failover_opal']['password'] = '';
 $settings['failover_opal']['timeout'] = 5;
-
-// voip settings
-$settings['voip']['enabled'] = false;
-$settings['voip']['domain'] = 'localhost';
-$settings['voip']['mxml_port'] = 8088;
-$settings['voip']['username'] = '';
-$settings['voip']['password'] = '';
-$settings['voip']['prefix'] = '';
-$settings['voip']['monitor'] = '/var/local/recordings';

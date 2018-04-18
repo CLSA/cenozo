@@ -121,7 +121,7 @@ class ui extends \cenozo\base_object
       'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
       'jurisdiction', 'language', 'overview', 'participant', 'phone', 'proxy', 'proxy_type','quota', 'region',
       'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'search_result',
-      'site', 'source', 'system_message', 'trace', 'trace_type', 'user', 'webphone', 'writelog'
+      'site', 'source', 'system_message', 'trace', 'trace_type', 'user', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -132,6 +132,9 @@ class ui extends \cenozo\base_object
 
     if( $setting_manager->get_setting( 'module', 'script' ) )
       $list = array_merge( $list, array( 'script' ) );
+
+    if( $setting_manager->get_setting( 'module', 'voip' ) )
+      $list = array_merge( $list, array( 'webphone' ) );
 
     return $list;
   }
@@ -441,7 +444,7 @@ class ui extends \cenozo\base_object
       'subject' => 'user',
       'action' => 'overview',
       'query' => '?{page}&{restrict}&{order}&{reverse}' );
-    if( $setting_manager->get_setting( 'voip', 'enabled' ) )
+    if( $setting_manager->get_setting( 'module', 'voip' ) && $setting_manager->get_setting( 'voip', 'enabled' ) )
       $list['Webphone'] = array(
         'subject' => 'webphone',
         'action' => 'status',

@@ -28,6 +28,9 @@ if( !is_null( $host ) ) $settings['url']['CENOZO'] = sprintf( 'https://%s/url/to
 // the location of the PDF-writing mikehaertl libraries (only add if using the pdf module)
 $settings['path']['MIKEHAERTL'] = '/path/to/mikehaertl';
 
+// the location of the Shift8 Asterisk library (only add if using the voip module)
+$settings['path']['SHIFT8'] = 'path/to/shift8';
+
 // the path and url of Limesurvey (only add if using the script module)
 $settings['path']['LIMESURVEY'] = '/path/to/limesurvey';
 $settings['url']['LIMESURVEY'] = '../limesurvey';
@@ -62,7 +65,7 @@ $settings['failover_opal']['username'] = '';
 $settings['failover_opal']['password'] = '';
 $settings['failover_opal']['timeout'] = 5;
 
-// the Asterisk AJAM url, username and password
+// the Asterisk AJAM url, username and password (only use if the voip module is enabled)
 $settings['voip']['enabled'] = false;
 $settings['voip']['domain'] = 'localhost';
 $settings['voip']['mxml_port'] = 8088;

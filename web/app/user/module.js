@@ -292,7 +292,10 @@ define( function() {
 
         this.afterView( function() {
           CnSession.promise.then( function() {
-            self.listenToCallIncluded = 1 < CnSession.role.tier && CnSession.voip.enabled && self.record.in_call;
+            self.listenToCallIncluded =
+              1 < CnSession.role.tier &&
+              CnSession.application.voipEnabled &&
+              self.record.in_call;
             self.listenToCallDisabled =
               !CnSession.voip.info ||
               !CnSession.voip.info.status ||

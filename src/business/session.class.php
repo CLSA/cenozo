@@ -119,7 +119,8 @@ class session extends \cenozo\singleton
     if( 'initialized' != $this->state ) return;
 
     // shut down the voip manager (this only has an effect if voip was initialized)
-    lib::create( 'business\voip_manager' )->shutdown();
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( $setting_manager->get_setting( 'module', 'voip' ) ) lib::create( 'business\voip_manager' )->shutdown();
 
     session_write_close();
 

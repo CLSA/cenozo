@@ -23,6 +23,14 @@ class voip_call extends \cenozo\base_object
    */
   public function __construct( $s8_event, $manager )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
+    if( !$setting_manager->get_setting( 'module', 'voip' ) )
+    {
+      throw lib::create( 'exception\runtime',
+        'Tried to create a voip-call but the voip module is not enabled.',
+        __METHOD__ );
+    }
+
     // check that the shift8 event is valid
     if( is_null( $s8_event ) ||
         !is_object( $s8_event ) ||
