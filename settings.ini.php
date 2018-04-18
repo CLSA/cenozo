@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.2';
-$settings['general']['cenozo_build'] = 'f99d14a';
+$settings['general']['cenozo_build'] = 'ce48877';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -46,6 +46,7 @@ $settings['general']['withdraw_timeout'] = 60;
 
 // list of all optional modules (off by default)
 $settings['module']['interview'] = false;
+$settings['module']['pdf'] = false;
 $settings['module']['recording'] = false;
 $settings['module']['script'] = false;
 
@@ -99,9 +100,6 @@ $settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
 
 // the url of PHPExcel
 $settings['path']['PHPEXCEL'] = str_replace( 'settings.ini.php', '../PHPExcel', __FILE__ );
-
-// the location of the mikehaertl libraries (for writing PDF files)
-$settings['path']['MIKEHAERTL'] = str_replace( 'settings.ini.php', '../mikehaertl', __FILE__ );
 
 // the location of the Shift8 Asterisk library
 $settings['path']['SHIFT8'] = str_replace( 'settings.ini.php', '../shift8', __FILE__ );

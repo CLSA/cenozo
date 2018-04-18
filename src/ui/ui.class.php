@@ -119,10 +119,9 @@ class ui extends \cenozo\base_object
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'callback', 'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export',
       'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
-      'jurisdiction', 'language', 'opal_form_template', 'overview', 'participant', 'phone', 'proxy',
-      'proxy_type','quota', 'region', 'region_site', 'role', 'report', 'report_restriction', 'report_schedule',
-      'report_type', 'search_result', 'site', 'source', 'system_message', 'trace', 'trace_type', 'user',
-      'webphone', 'writelog'
+      'jurisdiction', 'language', 'overview', 'participant', 'phone', 'proxy', 'proxy_type','quota', 'region',
+      'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'search_result',
+      'site', 'source', 'system_message', 'trace', 'trace_type', 'user', 'webphone', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -399,7 +398,6 @@ class ui extends \cenozo\base_object
     if( $extended && in_array( 'jurisdiction', $grouping_list ) )
     $this->add_listitem( 'Jurisdictions', 'jurisdiction' );
     if( $extended ) $this->add_listitem( 'Languages', 'language' );
-    if( 3 <= $db_role->tier ) $this->add_listitem( 'Opal Form Template', 'opal_form_template' );
     if( 2 <= $db_role->tier ) $this->add_listitem( 'Overviews', 'overview' );
     $this->add_listitem( 'Participants', 'participant' );
     $this->add_listitem( 'Proxy Types', 'proxy_type' );
