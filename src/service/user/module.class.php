@@ -178,31 +178,31 @@ class module extends \cenozo\service\site_restricted_module
       $select->add_column( 'IFNULL( participant.uid, "none" )', 'assignment_uid', false );
     }
 
-    // add the webphone column from voip information
-    if( $select->has_column( 'in_call' ) || $select->has_column( 'webphone' ) )
+    if( $select->has_column( 'in_call' ) )
     {
-      $voip_manager = lib::create( 'business\voip_manager' );
-      if( $select->has_column( 'in_call' ) )
+      try
       {
-        try
-        {
-          $voip_manager->rebuild_call_list();
-          $user_list = array_reduce( $voip_manager->get_call_list(), function( $list, $voip_call ) {
-            if( 'Up' == $voip_call->get_state() ) array_push( $list, $voip_call->get_user() );
-            return $list;
-          }, array() );
-          sort( $user_list );
-          $in_call_list = 0 < count( $user_list ) ? implode( ',', $user_list ) : '0';
-          $select->add_column( sprintf( 'user.id IN ( %s )', $in_call_list ), 'in_call', false );
-        }
-        catch( \cenozo\exception\runtime $e )
-        {
-          $select->add_constant( NULL, 'in_call' );
-        }
+        $voip_manager = lib::create( 'business\voip_manager' );
+        $voip_manager->rebuild_call_list();
+        $user_list = array_reduce( $voip_manager->get_call_list(), function( $list, $voip_call ) {
+          if( 'Up' == $voip_call->get_state() ) array_push( $list, $voip_call->get_user() );
+          return $list;
+        }, array() );
+        sort( $user_list );
+        $in_call_list = 0 < count( $user_list ) ? implode( ',', $user_list ) : '0';
+        $select->add_column( sprintf( 'user.id IN ( %s )', $in_call_list ), 'in_call', false );
       }
-
-      if( $select->has_column( 'webphone' ) )
+      catch( \cenozo\exception\runtime $e )
       {
+        $select->add_constant( NULL, 'in_call' );
+      }
+    }
+
+    if( $select->has_column( 'webphone' ) )
+    {
+      try
+      {
+        $voip_manager = lib::create( 'business\voip_manager' );
         $user_list = array_reduce( $voip_manager->get_sip_info_list(), function( $list, $sip_info ) {
           if( 'OK' == substr( $sip_info['status'], 0, 2 ) ) array_push( $list, $sip_info['user'] );
           return $list;
@@ -210,6 +210,10 @@ class module extends \cenozo\service\site_restricted_module
         sort( $user_list );
         $webphone_list = 0 < count( $user_list ) ? implode( ',', $user_list ) : '0';
         $select->add_column( sprintf( 'user.id IN ( %s )', $webphone_list ), 'webphone', false );
+      }
+      catch( \cenozo\exception\runtime $e )
+      {
+        $select->add_constant( NULL, 'webphone' );
       }
     }
   }
