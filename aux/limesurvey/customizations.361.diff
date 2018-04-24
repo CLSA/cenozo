@@ -127,6 +127,11 @@
 < <?php if($eqrow['title']) {$sPattern="^([a-zA-Z][a-zA-Z0-9_]*|{$eqrow['title']})$";}else{$sPattern="^[a-zA-Z][a-zA-Z0-9_]*$";} ?>
 ---
 > <?php if($eqrow['title']) {$sPattern="^([a-zA-Z][a-zA-Z0-9]*|{$eqrow['title']})$";}else{$sPattern="^[a-zA-Z][a-zA-Z0-9]*$";} ?>
+39c39
+<                     <?php echo CHtml::textField("title",$eqrow['title'],array('class'=>'form-control','size'=>"20",'maxlength'=>'50','pattern'=>$sPattern,"autofocus"=>"autofocus",'id'=>"title")); ?>
+---
+>                     <?php echo CHtml::textField("title",$eqrow['title'],array('class'=>'form-control','size'=>"20",'maxlength'=>'20','pattern'=>$sPattern,"autofocus"=>"autofocus",'id'=>"title")); ?>
+
 
 ## application/views/admin/labels/_labelviewtabcontent_view.php ############################
 47c47
