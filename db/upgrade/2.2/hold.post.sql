@@ -9,7 +9,7 @@ BEGIN
   FROM hold_type
   WHERE id = NEW.hold_type_id;
 
-  SELECT exclusion_id, hold_type.type INTO @exclusion_id, @last_hold_type
+  SELECT exclusion_id, hold_type.type, hold_type.id INTO @exclusion_id, @last_hold_type, @last_hold_type_id
   FROM participant
   JOIN participant_last_hold ON participant.id = participant_last_hold.participant_id
   LEFT JOIN hold ON participant_last_hold.hold_id = hold.id
@@ -20,7 +20,7 @@ BEGIN
     SIGNAL SQLSTATE '45000'
     SET MESSAGE_TEXT = "Cannot add row: participant.excluded_id is not null";
   ELSE
-    IF ( @hold_type <=> @last_hold_type ) OR
+    IF ( NEW.hold_type_id <=> @last_hold_type_id ) OR
        ( @hold_type IS NOT NULL AND 'final' != @hold_type AND 'final' <=> @last_hold_type ) THEN
       SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = "Cannot add row: conflict with last hold type";
