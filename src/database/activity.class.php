@@ -56,7 +56,7 @@ class activity extends record
       // the following often causes deadlocks but the are safe to ignore (caught and ignored below)
       static::db()->execute( sprintf(
         'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
-        $modifier->get_sql() ) );
+        $modifier->get_sql() ), true, true );
 
       // create a new activity if there isn't already one open
       $modifier = lib::create( 'database\modifier' );
