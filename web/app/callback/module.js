@@ -24,8 +24,10 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
       // adjust the appointment for daylight savings time
       if( date.tz( timezone ).isDST() ) offset += -60;
 
+      // get the identifier now and not in the getIdentifier() function below
+      var identifier = participant.getIdentifier();
       return {
-        getIdentifier: function() { return participant.getIdentifier(); },
+        getIdentifier: function() { return identifier; },
         title: participant.uid,
         start: moment( participant.callback ).subtract( offset, 'minutes' ),
         end: moment( participant.callback ).subtract( offset - 60, 'minutes' )
