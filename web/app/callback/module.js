@@ -19,7 +19,7 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
       return participant;
     } else {
       var date = moment( participant.callback );
-      var offset = moment.tz.zone( timezone ).offset( date.unix() );
+      var offset = moment.tz.zone( timezone ).utcOffset( date.unix() );
 
       // adjust the appointment for daylight savings time
       if( date.tz( timezone ).isDST() ) offset += -60;
