@@ -5,9 +5,10 @@ mbstring: apt-get install php7.0-mbstring
 php-zip: apt-get install php-zip php7.0-zip (Used by PHPExcel)
 
 Modify the following mysql parameters:
-  query_cache_limit = 2M
+  innodb_stats_on_metadata = 0
   innodb_log_file_size = 1G
   innodb_log_buffer_size = 256M
+  query_cache_limit = 2M
 
 Load timezone information into mysql:
   mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql

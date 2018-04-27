@@ -1,3 +1,4 @@
+
 // Custom functionality to allow answers to be selected using the number pad
 var compound_number = "";
 $(document).ready(function() {
@@ -135,6 +136,7 @@ function configureQuestion( params ) {
     );
   } );
 }
+
 // Custom functionality to allow additional runtime features to questions
 // expecting the input param as an object with:
 //   integer qid: the question ID (mandatory)
