@@ -1084,8 +1084,8 @@ cenozo.directive( 'cnElastic', [
           if( height > 700 ) height = 700; // maximum height of 700 pixels
           element[0].style.height = height + 'px';
         };
-        element.on( 'blur focus keyup mouseup change', function() { $timeout( resize, 400 ) } );
-        $timeout( resize, 400 );
+        element.on( 'blur focus keyup mouseup change', function() { $timeout( resize, 250 ) } );
+        $timeout( resize, 250 );
       }
     };
   }
@@ -1694,8 +1694,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  'CnSession', '$state', '$transitions',
-  function( CnSession, $state, $transitions ) {
+  'CnSession', '$state', '$transitions', '$q',
+  function( CnSession, $state, $transitions, $q ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'record-view.tpl.html' ),
       restrict: 'E',
@@ -1706,6 +1706,7 @@ cenozo.directive( 'cnRecordView', [
         initCollapsed: '='
       },
       controller: [ '$scope', function( $scope ) {
+        var patchPromise = $q.all();
         $scope.directive = 'cnRecordView';
         $scope.isComplete = false;
         $scope.showTimestamps = 2 < CnSession.role.tier;
@@ -1736,13 +1737,15 @@ cenozo.directive( 'cnRecordView', [
         $scope.refresh = function() {
           if( $scope.isComplete ) {
             $scope.isComplete = false;
-            $scope.model.viewModel.onView().finally( function() {
-              // reset the error status
-              cenozo.forEachFormElement( 'form', function( element ) {
-                element.$error = {};
-                cenozo.updateFormElement( element, true );
+            patchPromise.then( function() {
+              $scope.model.viewModel.onView().finally( function() {
+                // reset the error status
+                cenozo.forEachFormElement( 'form', function( element ) {
+                  element.$error = {};
+                  cenozo.updateFormElement( element, true );
+                } );
+                $scope.isComplete = true;
               } );
-              $scope.isComplete = true;
             } );
           }
         };
@@ -1767,7 +1770,7 @@ cenozo.directive( 'cnRecordView', [
               var data = {};
               data[property] = $scope.model.viewModel.record[property];
 
-              $scope.model.viewModel.onPatch( data ).then( function() {
+              patchPromise = $scope.model.viewModel.onPatch( data ).then( function() {
                 // if the data in the identifier was patched then reload with the new url
                 if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
                   $scope.model.setQueryParameter( 'identifier', $scope.model.viewModel.record.getIdentifier() );
@@ -2781,12 +2784,12 @@ cenozo.factory( 'CnSession', [
           }
 
           if( 0 < Object.keys( this.workingGUIDList ).length ) {
-            if( null === workingPromise ) workingPromise = $timeout( watchWorkingCount, 1000 );
+            if( null === workingPromise ) workingPromise = $timeout( watchWorkingCount, 250 );
           } else {
             this.working = false;
             // reset the transitionWhileWorking property after a short wait so that any pending
             // transitions can be ignored before the property is reset
-            $timeout( function() { self.transitionWhileWorking = false; }, 400 );
+            $timeout( function() { self.transitionWhileWorking = false; }, 250 );
             if( null !== workingPromise ) {
               $timeout.cancel( workingPromise );
               workingPromise = null;
@@ -5629,7 +5632,7 @@ cenozo.factory( 'CnHttpFactory', [
                   'error.' + ( angular.isDefined( response ) ? response.status : 500 ),
                   response
                 ).then( function() {
-                  $timeout( function() { hasRedirectedOnError = false; }, 1000 );
+                  $timeout( function() { hasRedirectedOnError = false; }, 500 );
                 } );
               }
             } else {
