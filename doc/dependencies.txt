@@ -10,5 +10,8 @@ Modify the following mysql parameters:
   innodb_log_buffer_size = 256M
   query_cache_limit = 2M
 
+Modify the following php parameters:
+  memory_limit = 256M
+
 Load timezone information into mysql:
   mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql
