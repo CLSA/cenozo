@@ -176,6 +176,12 @@
 ---
 >                                             <th class='col-md-3'><?php eT("Code"); ?></th>
 
+## application/controllers/admin/conditionsaction.php #########################
+667c667
+<     if (isset($p_cquestions) && $p_cquestions != '') {
+---
+>     if( isset($p_cqid) && 0 < $p_cqid ) { // if (isset($p_cquestions) && $p_cquestions != '')
+
 ## application/controllers/admin/tokens.php ##########################
 1076c1076
 <             Yii::app()->db->createCommand(Yii::app()->db->getSchema()->addColumn("{{tokens_".intval($iSurveyId)."}}", 'attribute_'.$i, 'string(255)'))->execute();
