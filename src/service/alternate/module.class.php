@@ -184,7 +184,7 @@ class module extends \cenozo\service\site_restricted_participant_module
           if( array_key_exists( 'address_international', $post_array ) )
             $db_address->international = $post_array['address_international'];
           $db_address->address1 = $post_array['address_address1'];
-          if( array_key_exists( 'address2', $post_array ) )
+          if( array_key_exists( 'address_address2', $post_array ) )
             $db_address->address2 = $post_array['address_address2'];
           $db_address->city = $post_array['address_city'];
           $db_address->postcode = $post_array['address_postcode'];
