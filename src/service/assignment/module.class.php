@@ -235,6 +235,18 @@ class module extends \cenozo\service\site_restricted_participant_module
           // mark the interview as complete if the survey is complete
           if( $this->is_survey_complete ) $record->get_interview()->complete();
         }
+
+        // Process any pending withdraw
+        // Note: if a user launches the withdraw script and goes back to the web application before completing
+        // the script then the web app's triggers will not have processed the withdraw (so do it now just in case)
+        if( is_null( $this->db_participant ) )
+          throw lib::create( 'exception\argument', 'db_participant', $db_participant, __METHOD__ );
+
+        if( !is_null( $this->db_participant->check_withdraw ) )
+        {
+          $survey_manager = lib::create( 'business\survey_manager' );
+          $survey_manager->process_withdraw( $this->db_participant );
+        }
       }
     }
   }
