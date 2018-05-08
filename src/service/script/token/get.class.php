@@ -70,6 +70,10 @@ class get extends \cenozo\service\get
           foreach( $record->get_survey_list() as $db_survey ) $db_survey->delete();
           $record->delete();
           $record = NULL;
+
+          // also remove the withdraw check
+          $db_participant->check_withdraw = NULL;
+          $db_participant->save();
         }
       }
 
