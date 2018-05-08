@@ -1959,7 +1959,13 @@ cenozo.directive( 'cnViewInput', [
 
         $scope.patch = function( property ) {
           if( angular.isUndefined( property ) ) property = $scope.input.key;
-          $scope.$parent.patch( property );
+          var parentScope = $scope.$parent;
+          while( parentScope ) {
+            if( angular.isDefined( parentScope.patch ) ) return parentScope.patch( property );
+            parentScope = parentScope.$parent;
+          }
+
+          console.error( 'Couldn\'t find the patch() function in any of the scope\'s ancestors.' );
         }
 
         $scope.onEmptyTypeahead = function() {
@@ -6787,7 +6793,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
       this.token = undefined;
       this.deferred = $q.defer();
 
-      // if the script is not repeated determine the token
+      // if the script is repeated determine the token
       if( self.script.repeated ) {
         if( angular.isDefined( this.onReady ) ) this.onReady();
         this.deferred.resolve();
