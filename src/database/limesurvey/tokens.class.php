@@ -145,29 +145,6 @@ class tokens extends sid_record
   }
 
   /**
-   * Override parent method
-   */
-  public static function get_unique_record( $column, $value )
-  {
-    // column and value may be arrays
-    if( is_array( $column ) && 1 == count( $column ) ) $column = $column[0];
-    if( is_array( $value ) && 1 == count( $value ) ) $value = $value[0];
-
-    if( 'token' == $column || 'uid' == $column )
-    {
-      $select = lib::create( 'database\select' );
-      $select->from( static::get_table_name() );
-      $select->add_column( static::$primary_key_name );
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'token', '=', $value );
-      $id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
-      return !is_null( $id ) ? new static( $id ) : NULL;
-    }
-
-    return parent::get_unique_record( $column, $value );
-  }
-
-  /**
    * The name of the table's primary key column.
    * @var string
    * @access protected

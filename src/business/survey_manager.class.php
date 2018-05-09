@@ -476,6 +476,83 @@ class survey_manager extends \cenozo\singleton
   }
 
   /**
+   * Resolves the withdraw status of all participants who need their withdraw status checked
+   */
+  public function process_pending_withdraw()
+  {
+    $total = 0;
+    $util_class_name = lib::get_class_name( 'util' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+
+    $withdraw_sid = $this->get_withdraw_sid();
+    if( $withdraw_sid )
+    {
+      $old_tokens_sid = $tokens_class_name::get_sid();
+      $old_survey_sid = $survey_class_name::get_sid();
+      $tokens_class_name::set_sid( $withdraw_sid );
+      $survey_class_name::set_sid( $withdraw_sid );
+      $database_name = lib::create( 'business\session' )->get_survey_database()->get_name();
+
+      $select = lib::create( 'database\select' );
+      $select->from( 'participant' );
+      $select->add_column( 'id' );
+      $select->add_column( 'uid' );
+      $select->add_column( 'check_withdraw', NULL, true, 'datetime' );
+      $select->add_table_column( 'survey', 'id', 'survey_id' );
+      $select->add_table_column( 'survey', 'submitdate IS NOT NULL', 'completed' );
+
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->left_join(
+        sprintf( '%s.%s', $database_name, $survey_class_name::get_table_name() ),
+        'participant.uid',
+        'survey.token',
+        'survey'
+      );
+      $modifier->where( 'participant.check_withdraw', '!=', NULL );
+
+      // get the check-withdraw timeout datetime
+      $timeout = $setting_manager->get_setting( 'general', 'withdraw_timeout' );
+      $now = $util_class_name::get_datetime_object();
+      $now->sub( new \DateInterval( sprintf( 'PT%dM', $timeout ) ) );
+
+      foreach( $participant_class_name::select( $select, $modifier ) as $row )
+      {
+        $db_participant = lib::create( 'database\participant', $row['id'] );
+        if( is_null( $row['survey_id'] ) )
+        { // there is no survey so remove the check
+          $db_participant->check_withdraw = NULL;
+          $db_participant->save();
+        }
+        else if( $row['completed'] )
+        { // the survey is complete, process it
+          $this->process_withdraw( $db_participant );
+        }
+        else
+        { // check if the survey is out of date and delete it if it is
+          $check_datetime_obj = $util_class_name::get_datetime_object( $row['check_withdraw'] );
+          if( $now > $check_datetime_obj )
+          {
+            $survey_class_name::get_unique_record( 'token', $row['uid'] )->delete();
+            $db_participant->check_withdraw = NULL;
+            $db_participant->save();
+          }
+        }
+
+        $total++;
+      }
+
+      $tokens_class_name::set_sid( $old_tokens_sid );
+      $survey_class_name::set_sid( $old_survey_sid );
+    }
+
+    return $total;
+  }
+
+
+  /**
    * A cache of the withdraw SID
    * @var integer
    * @access private
