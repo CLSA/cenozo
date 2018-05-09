@@ -732,25 +732,6 @@ angular.extend( cenozo, {
     element.$invalid = invalid;
   },
 
-  // searches a scope's child scopes for a particular directive
-  findChildDirectiveScope: function( scope, directiveName ) {
-    var childScope = scope.$$childHead;
-    while( null != childScope && directiveName != childScope.directive )
-      childScope = childScope.$$nextSibling;
-    if( null != childScope && directiveName != childScope.directive ) childScope = null;
-    return childScope;
-  },
-
-  // executes a function on all child scopes for a given scope
-  // the function will be passed the child scope as an argument
-  forAllChildDirectiveScopes: function( scope, fn ) {
-    var childScope = scope.$$childHead;
-    while( null !== childScope ) {
-      fn( childScope );
-      childScope = childScope.$$nextSibling;
-    }
-  },
-
   // gets the scope of any element found using a query selector
   getScopeByQuerySelector: function( selector ) {
     return angular.element( angular.element( document.querySelector( selector ) ) ).scope();
@@ -1359,6 +1340,9 @@ cenozo.directive( 'cnRecordAdd', [
             } ).finally( function() { $scope.isAdding = false; } );
           }
         };
+
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -1453,6 +1437,9 @@ cenozo.directive( 'cnAddInput', [
             } );
           } );
         };
+
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
       } ]
     };
   }
@@ -1514,6 +1501,9 @@ cenozo.directive( 'cnRecordCalendar', [
             return true; // stop processing
           }
         } );
+
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -1642,6 +1632,9 @@ cenozo.directive( 'cnRecordList', [
             }
           }
         };
+
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -1832,6 +1825,9 @@ cenozo.directive( 'cnRecordView', [
           // trigger all elastic directives
           if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'change' )
         };
+
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -2020,6 +2016,8 @@ cenozo.directive( 'cnViewInput', [
           }
         };
 
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
       } ]
     }
   }

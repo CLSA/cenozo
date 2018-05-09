@@ -130,28 +130,29 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAddressAdd', [
-    'CnAddressModelFactory', '$timeout',
-    function( CnAddressModelFactory, $timeout ) {
+    'CnAddressModelFactory',
+    function( CnAddressModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAddressModelFactory.root;
-        },
-        link: function( scope ) {
-          // add/remove inputs based on whether international is set to true or false
-          $timeout( function() {
-            var mainInputGroup = scope.model.module.inputGroupList.findByProperty( 'title', '' );
-            var cnRecordAdd = cenozo.findChildDirectiveScope( scope, 'cnRecordAdd' );
-            var checkFunction = cnRecordAdd.check;
-            cnRecordAdd.check = function( property ) {
+
+          var cnRecordAddScope = null;
+          $scope.$on( 'cnRecordAdd ready', function( event, data ) {
+            cnRecordAddScope = data;
+
+            // add/remove inputs based on whether international is set to true or false
+            var mainInputGroup = $scope.model.module.inputGroupList.findByProperty( 'title', '' );
+            var checkFunction = cnRecordAddScope.check;
+            cnRecordAddScope.check = function( property ) {
               // run the original check function first
               checkFunction( property );
 
               if( 'international' == property ) {
-                mainInputGroup.inputList.international_region.exclude = !cnRecordAdd.record.international;
-                mainInputGroup.inputList.international_country.exclude = !cnRecordAdd.record.international;
+                mainInputGroup.inputList.international_region.exclude = !cnRecordAddScope.record.international;
+                mainInputGroup.inputList.international_country.exclude = !cnRecordAddScope.record.international;
               }
             };
           }, 500 );

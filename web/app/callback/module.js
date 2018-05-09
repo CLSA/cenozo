@@ -51,8 +51,9 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
           $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Callback Calendar';
 
           // never show the callback list (there is no such thing)
-          $scope.model.calendarModel.afterCalendar( function() {
-            var cnRecordCalendarScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordCalendar' );
+          var cnRecordCalendarScope = null;
+          $scope.$on( 'cnRecordCalendar ready', function( event, data ) {
+            cnRecordCalendarScope = data;
             cnRecordCalendarScope.viewList = false;
           } );
         }

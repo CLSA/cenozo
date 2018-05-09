@@ -127,8 +127,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportAdd', [
-    'CnReportModelFactory', 'CnHttpFactory', '$timeout',
-    function( CnReportModelFactory, CnHttpFactory, $timeout ) {
+    'CnReportModelFactory', 'CnHttpFactory',
+    function( CnReportModelFactory, CnHttpFactory ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
@@ -137,18 +137,21 @@ define( function() {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportModelFactory.root;
           $scope.model.setupBreadcrumbTrail();
 
-          $timeout( function() {
+          var cnRecordAddScope = null;
+          $scope.$on( 'cnRecordAdd ready', function( event, data ) {
+            cnRecordAddScope = data;
+
             $scope.model.getMetadata().then( function() {
-              var cnRecordAdd = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
-              cnRecordAdd.dataArray = $scope.model.getDataArray( [], 'add' );
-              var parameters = cnRecordAdd.dataArray.findByProperty( 'title', 'Parameters' );
+              cnRecordAddScope.dataArray = $scope.model.getDataArray( [], 'add' );
+              var parameters = cnRecordAddScope.dataArray.findByProperty( 'title', 'Parameters' );
               if( null != parameters && angular.isArray( parameters.inputArray ) ) {
                 parameters.inputArray.forEach( function( input ) {
-                  if( cenozo.isDatetimeType( input.type ) ) cnRecordAdd.formattedRecord[input.key] = '(empty)';
+                  if( cenozo.isDatetimeType( input.type ) )
+                    cnRecordAddScope.formattedRecord[input.key] = '(empty)';
                 } );
               }
             } );
-          }, 500 );
+          } );
 
           // change the heading to the form's title
           CnHttpFactory.instance( {
@@ -179,8 +182,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportView', [
-    'CnReportModelFactory', 'CnHttpFactory', '$interval', '$timeout',
-    function( CnReportModelFactory, CnHttpFactory, $interval, $timeout ) {
+    'CnReportModelFactory', 'CnHttpFactory', '$interval',
+    function( CnReportModelFactory, CnHttpFactory, $interval ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
@@ -189,12 +192,14 @@ define( function() {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportModelFactory.root;
           var afterViewCompleted = false;
 
-          $timeout( function() {
+          var cnRecordViewScope = null;
+          $scope.$on( 'cnRecordView ready', function( event, data ) {
+            cnRecordViewScope = data;
+
             $scope.model.getMetadata().then( function() {
-              var cnRecordView = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
-              cnRecordView.dataArray = $scope.model.getDataArray( [], 'view' );
+              cnRecordViewScope.dataArray = $scope.model.getDataArray( [], 'view' );
             } );
-          }, 200 );
+          } );
 
           // keep reloading the data until the report is either completed or failed (or the UI goes away)
           var promise = $interval( function() {
