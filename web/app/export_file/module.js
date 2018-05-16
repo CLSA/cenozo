@@ -103,8 +103,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnExportFileView', [
-    'CnExportFileModelFactory', 'CnHttpFactory', '$interval', '$timeout',
-    function( CnExportFileModelFactory, CnHttpFactory, $interval, $timeout ) {
+    'CnExportFileModelFactory', 'CnHttpFactory', '$interval',
+    function( CnExportFileModelFactory, CnHttpFactory, $interval ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
