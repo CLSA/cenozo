@@ -413,12 +413,12 @@ define( function() {
           // trigger the elastic directive when adding a note or undoing
           $scope.addNote = function() {
             $scope.model.addNote();
-            $timeout( function() { angular.element( '#newNote' ).trigger( 'change' ) }, 100 );
+            $timeout( function() { angular.element( '#newNote' ).trigger( 'blur' ) }, 100 );
           };
 
           $scope.undo = function( id ) {
             $scope.model.undo( id );
-            $timeout( function() { angular.element( '#note' + id ).trigger( 'change' ) }, 100 );
+            $timeout( function() { angular.element( '#note' + id ).trigger( 'blur' ) }, 100 );
           };
 
           $scope.refresh = function() { $scope.model.onView(); };
