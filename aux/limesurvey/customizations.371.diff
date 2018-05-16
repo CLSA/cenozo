@@ -2,11 +2,11 @@
 6c6
 <   `code` varchar(5) NOT NULL default '',
 ---
->   `code` varchar(50) NOT NULL default '',
+>   `code` varchar(24) NOT NULL default '',
 113c113
 <   `code` varchar(5) NOT NULL default '',
 ---
->   `code` varchar(50) NOT NULL default '',
+>   `code` varchar(24) NOT NULL default '',
 276c276
 <   `title` varchar(20) NOT NULL default '',
 ---
@@ -16,11 +16,11 @@
 6c6
 <   `code` varchar(5) NOT NULL default '',
 ---
->   `code` varchar(50) NOT NULL default '',
+>   `code` varchar(24) NOT NULL default '',
 99c99
 <   `code` varchar(5) NOT NULL default '',
 ---
->   `code` varchar(50) NOT NULL default '',
+>   `code` varchar(24) NOT NULL default '',
 186c186
 <   `title` varchar(20) NOT NULL default '',
 ---
@@ -30,11 +30,11 @@
 6c6
 <   `code` varchar(5) NOT NULL default '',
 ---
->   `code` varchar(50) NOT NULL default '',
+>   `code` varchar(24) NOT NULL default '',
 113c113
 <   `code` varchar(5) NOT NULL default '',
 ---
->   `code` varchar(50) NOT NULL default '',
+>   `code` varchar(24) NOT NULL default '',
 277c277
 <   `title` varchar(20) NOT NULL default '',
 ---
@@ -58,15 +58,25 @@
 ---
 >             thisrow[0]=thisrow[0].replace(/[^A-Za-z0-9_]/g, "").substr(0,50);
 
+## installer/create-database.php 
+30c30
+<             'code' => 'string(5) NOT NULL',
+---
+>             'code' => 'string(24) NOT NULL',
+142c142
+<             'code' =>  "string(5) NOT NULL default ''",
+---
+>             'code' =>  "string(24) NOT NULL default ''",
+
 ## installer/sql-old/create-mssql.sql ##########################
 9c9
 < [code] varchar(5) NOT NULL default '',
 ---
-> [code] varchar(50) NOT NULL default '',
+> [code] varchar(24) NOT NULL default '',
 114c114
 < [code] nvarchar(5) NOT NULL default '',
 ---
-> [code] nvarchar(50) NOT NULL default '',
+> [code] nvarchar(24) NOT NULL default '',
 276c276
 < [title] nvarchar(20) NOT NULL default '',
 ---
@@ -76,11 +86,11 @@
 6c6
 <   `code` varchar(5) NOT NULL default '',
 ---
->   `code` varchar(50) NOT NULL default '',
+>   `code` varchar(24) NOT NULL default '',
 113c113
 <   `code` varchar(5) NOT NULL default '',
 ---
->   `code` varchar(50) NOT NULL default '',
+>   `code` varchar(24) NOT NULL default '',
 278c278
 <   `title` varchar(20) NOT NULL default '',
 ---
@@ -90,11 +100,11 @@
 14c14
 <     "code" character varying(5) DEFAULT '' NOT NULL,
 ---
->     "code" character varying(50) DEFAULT '' NOT NULL,
+>     "code" character varying(24) DEFAULT '' NOT NULL,
 121c121
 <     "code" character varying(5) DEFAULT '' NOT NULL,
 ---
->     "code" character varying(50) DEFAULT '' NOT NULL,
+>     "code" character varying(24) DEFAULT '' NOT NULL,
 281c281
 <     "title" character varying(20) DEFAULT '' NOT NULL,
 ---
@@ -110,11 +120,11 @@
 47c47
 <                                     <input type='text'  class='codeval  form-control  ' id='code_<?php echo $row['sortorder'] ?>' name='code_<?php echo $row['sortorder'] ?>' maxlength='5' size='6' value='<?php echo $row['code'] ?>'/>
 ---
->                                     <input type='text'  class='codeval  form-control  ' id='code_<?php echo $row['sortorder'] ?>' name='code_<?php echo $row['sortorder'] ?>' maxlength='50' size='15' value='<?php echo $row['code'] ?>'/>
+>                                     <input type='text'  class='codeval  form-control  ' id='code_<?php echo $row['sortorder'] ?>' name='code_<?php echo $row['sortorder'] ?>' maxlength='24' size='15' value='<?php echo $row['code'] ?>'/>
 51c51
 <                                     <input type="number" class='assessmentval  form-control  ' id='assessmentvalue_<?php echo $row['sortorder'] ?>' style='text-align: right;' name='assessmentvalue_<?php echo $row['sortorder'] ?>' maxlength='5' size='6' value='<?php echo $row['assessment_value'] ?>' />
 ---
->                                     <input type="number" class='assessmentval  form-control  ' id='assessmentvalue_<?php echo $row['sortorder'] ?>' style='text-align: right;' name='assessmentvalue_<?php echo $row['sortorder'] ?>' maxlength='50' size='15' value='<?php echo $row['assessment_value'] ?>' />
+>                                     <input type="number" class='assessmentval  form-control  ' id='assessmentvalue_<?php echo $row['sortorder'] ?>' style='text-align: right;' name='assessmentvalue_<?php echo $row['sortorder'] ?>' maxlength='24' size='15' value='<?php echo $row['assessment_value'] ?>' />
 
 ## application/views/admin/survey/Question/subquestionsAndAnswers/_subquestion.php ##########################
 39,40c39,40
@@ -144,17 +154,17 @@
 54c54
 <                 maxlength='5'
 ---
->                 maxlength='50'
+>                 maxlength='24'
 83,84c83,84
 <                 maxlength='5'
 <                 size='5'
 ---
->                 maxlength='50'
+>                 maxlength='24'
 >                 size='15'
 95c95
 <                 value="<?php echo $assessment_value; ?>" maxlength='5' size='5'
 ---
->                 value="<?php echo $assessment_value; ?>" maxlength='50' size='15'
+>                 value="<?php echo $assessment_value; ?>" maxlength='24' size='15'
 113c113
 <                 size='20'
 ---
@@ -187,6 +197,26 @@
 <             Yii::app()->db->createCommand(Yii::app()->db->getSchema()->addColumn("{{tokens_".intval($iSurveyId)."}}", 'attribute_'.$i, 'string(255)'))->execute();
 ---
 >             Yii::app()->db->createCommand(Yii::app()->db->getSchema()->addColumn("{{tokens_".intval($iSurveyId)."}}", 'attribute_'.$i, 'string(127)'))->execute();
+
+## application/helpers/update/updatedb_helper.php 
+390c390
+<             alterColumn('{{labels}}','code',"string(5)",false , '');
+---
+>             alterColumn('{{labels}}','code',"string(24)",false , '');
+
+## application/helpers/admin/activate_helper.php 
+308c308
+<                     $aTableDefinition[$aRow['fieldname']] = "string(5)";
+---
+>                     $aTableDefinition[$aRow['fieldname']] = "string(24)";
+380c380
+<                 $aTableDefinition[$aRow['fieldname']] = "string(5)";
+---
+>                 $aTableDefinition[$aRow['fieldname']] = "string(24)";
+383c383
+<                 $aTableDefinition[$aRow['fieldname']] = "string(5)";
+---
+>                 $aTableDefinition[$aRow['fieldname']] = "string(24)";
 
 ## application/helpers/qanda_helper.php ##########################
 1765c1765
@@ -246,7 +276,7 @@
 75c75
 <             array('code', 'length', 'min' => 1, 'max'=>5),
 ---
->             array('code', 'length', 'min' => 1, 'max'=>50),
+>             array('code', 'length', 'min' => 1, 'max'=>24),
 
 ## application/models/Question.php ##########################
 99c99
