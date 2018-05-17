@@ -1706,8 +1706,8 @@ cenozo.directive( 'cnRecordView', [
         $scope.model.viewModel.onView().then( function() {
           if( 'view' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
 
-          // trigger a blur to get cn-elastic to fire
-          angular.element( 'textarea[cn-elastic]' ).trigger( 'blur' )
+          // trigger a keyup to get cn-elastic to fire
+          angular.element( 'textarea[cn-elastic]' ).trigger( 'keyup' )
 
           // build enum lists
           for( var key in $scope.model.metadata.columnList ) {
@@ -1735,8 +1735,8 @@ cenozo.directive( 'cnRecordView', [
             $scope.isComplete = false;
             patchPromise.then( function() {
               $scope.model.viewModel.onView().then( function() {
-                // trigger a blur to get cn-elastic to fire
-                angular.element( 'textarea[cn-elastic]' ).trigger( 'blur' );
+                // trigger a keyup to get cn-elastic to fire
+                angular.element( 'textarea[cn-elastic]' ).trigger( 'keyup' );
               } ).finally( function() {
                 // reset the error status
                 cenozo.forEachFormElement( 'form', function( element ) {
@@ -1828,8 +1828,8 @@ cenozo.directive( 'cnRecordView', [
         $scope.onGroupClick = function( group, index ) {
           // toggle the group's collapsed state
           group.collapsed = !group.collapsed;
-          // trigger a blur to get cn-elastic to fire
-          if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'blur' )
+          // trigger a keyup to get cn-elastic to fire
+          if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'keyup' )
         };
 
         // emit that the directive is ready
