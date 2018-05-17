@@ -1065,7 +1065,7 @@ cenozo.directive( 'cnElastic', [
           if( height > 700 ) height = 700; // maximum height of 700 pixels
           element[0].style.height = height + 'px';
         };
-        element.on( 'blur focus keyup mouseup change', function() { $timeout( resize, 250 ) } );
+        element.on( 'blur focus keyup mouseup change elastic', function() { $timeout( resize, 250 ) } );
         $timeout( resize, 250 );
       }
     };
@@ -1707,7 +1707,7 @@ cenozo.directive( 'cnRecordView', [
           if( 'view' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
 
           // trigger a keyup to get cn-elastic to fire
-          angular.element( 'textarea[cn-elastic]' ).trigger( 'keyup' )
+          angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' )
 
           // build enum lists
           for( var key in $scope.model.metadata.columnList ) {
@@ -1736,7 +1736,7 @@ cenozo.directive( 'cnRecordView', [
             patchPromise.then( function() {
               $scope.model.viewModel.onView().then( function() {
                 // trigger a keyup to get cn-elastic to fire
-                angular.element( 'textarea[cn-elastic]' ).trigger( 'keyup' );
+                angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' );
               } ).finally( function() {
                 // reset the error status
                 cenozo.forEachFormElement( 'form', function( element ) {
@@ -1829,7 +1829,7 @@ cenozo.directive( 'cnRecordView', [
           // toggle the group's collapsed state
           group.collapsed = !group.collapsed;
           // trigger a keyup to get cn-elastic to fire
-          if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'keyup' )
+          if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' )
         };
 
         // emit that the directive is ready

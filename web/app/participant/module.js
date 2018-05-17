@@ -883,7 +883,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
           // trigger the elastic directive when confirming the participant selection
           $scope.confirm = function() {
             $scope.model.confirm()
-            $timeout( function() { angular.element( '#uidListString' ).trigger( 'keyup' ) }, 100 );
+            $timeout( function() { angular.element( '#uidListString' ).trigger( 'elastic' ) }, 100 );
           };
         }
       };
@@ -903,12 +903,12 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
           // trigger the elastic directive when adding a note or undoing
           $scope.addNote = function() {
             $scope.model.addNote();
-            $timeout( function() { angular.element( '#newNote' ).trigger( 'keyup' ) }, 100 );
+            $timeout( function() { angular.element( '#newNote' ).trigger( 'elastic' ) }, 100 );
           };
 
           $scope.undo = function( id ) {
             $scope.model.undo( id );
-            $timeout( function() { angular.element( '#note' + id ).trigger( 'keyup' ) }, 100 );
+            $timeout( function() { angular.element( '#note' + id ).trigger( 'elastic' ) }, 100 );
           };
 
           $scope.refresh = function() { $scope.model.onView(); };
