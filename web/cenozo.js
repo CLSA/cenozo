@@ -6780,10 +6780,10 @@ cenozo.factory( 'CnPaginationFactory',
 cenozo.factory( 'CnScriptLauncherFactory', [
   'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$q', '$window',
   function( CnSession, CnHttpFactory, CnModalMessageFactory, $q, $window ) {
-    if( 0 > CnSession.moduleList.indexOf( 'script' ) )
-      throw new Error( 'Tried to create script launcher but script module is not enabled' );
-
     var object = function( params ) {
+      if( 0 > CnSession.moduleList.indexOf( 'script' ) )
+        throw new Error( 'Tried to create script launcher but script module is not enabled' );
+
       var self = this;
 
       this.lang = 'en';
