@@ -1769,10 +1769,12 @@ cenozo.directive( 'cnRecordView', [
               var data = {};
               data[property] = $scope.model.viewModel.record[property];
 
+              // get the identifier now (in case it is changed before it is used below)
+              var identifier = $scope.model.viewModel.record.getIdentifier();
               patchPromise = $scope.model.viewModel.onPatch( data ).then( function() {
                 // if the data in the identifier was patched then reload with the new url
-                if( 0 <= $scope.model.viewModel.record.getIdentifier().split( /[;=]/ ).indexOf( property ) ) {
-                  $scope.model.setQueryParameter( 'identifier', $scope.model.viewModel.record.getIdentifier() );
+                if( 0 <= identifier.split( /[;=]/ ).indexOf( property ) ) {
+                  $scope.model.setQueryParameter( 'identifier', identifier );
                   $scope.model.reloadState();
                 } else {
                   var currentElement = cenozo.getFormElement( property );
@@ -3346,8 +3348,7 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             CnModalMessageFactory.instance( {
               title: 'Unable to delete ' + this.parentModel.module.name.singular + ' event',
               message: 'It is not possible to delete this ' + this.parentModel.module.name.singular +
-                       ' event because it is being referenced by "' + response.data +
-                       '" in the database.',
+                       ' event because it is being referenced by ' + response.data + ' in the database.',
               error: true
             } ).show();
           } else { CnModalMessageFactory.httpError( response ); }
@@ -3806,8 +3807,7 @@ cenozo.factory( 'CnBaseListFactory', [
             CnModalMessageFactory.instance( {
               title: 'Unable to delete ' + this.parentModel.module.name.singular + ' record',
               message: 'It is not possible to delete this ' + this.parentModel.module.name.singular +
-                       ' record because it is being referenced by "' + response.data +
-                       '" in the database.',
+                       ' record because it is being referenced by ' + response.data + ' in the database.',
               error: true
             } ).show();
           } else { CnModalMessageFactory.httpError( response ); }
@@ -4180,8 +4180,7 @@ cenozo.factory( 'CnBaseViewFactory', [
             CnModalMessageFactory.instance( {
               title: 'Unable to delete ' + this.parentModel.module.name.singular + ' record',
               message: 'It is not possible to delete this ' + this.parentModel.module.name.singular +
-                       ' record because it is being referenced by "' + response.data +
-                       '" in the database.',
+                       ' record because it is being referenced by ' + response.data + ' in the database.',
               error: true
             } ).show();
           } else { CnModalMessageFactory.httpError( response ); }
