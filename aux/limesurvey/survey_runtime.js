@@ -1,37 +1,19 @@
 
 // Custom functionality to allow answers to be selected using the number pad
-var compound_number = "";
 $(document).ready(function() {
   $("*").keydown(function(event) {
-    if( 13 == event.which ) {
-      // enter key, click on the next button
-      $( "#ls-button-submit" ).click();
-    } else if( 96 <= event.which && event.which <= 105 ) {
-      // translate from key code to number, then append to the compound number
-      var num = event.which - 96;
-      if( 1 == compound_number.length ) compound_number += num.toString();
-      else compound_number = num.toString();
-      num = parseInt( compound_number ) - 1;
-
-      // select either a special response (97, 98 and 99) or the Nth radio box
-      var selector = "97" == compound_number
-                   ? "input[value^=OT]"
-                   : "98" == compound_number
-                   ? "input[value^=DK]"
-                   : "99" == compound_number
-                   ? "input[value^=RE]"
-                   : "input[type=radio]:eq(" + num + ")";
-      $( selector ).click();
-
-      // select either a special response (97, 98 and 99) or the Nth radio box
-      var selector = "97" == compound_number
-                   ? "input[name$=OT]"
-                   : "98" == compound_number
-                   ? "input[name$=DK]"
-                   : "99" == compound_number
-                   ? "input[name$=RF]"
-                   : "input[type=checkbox]:eq(" + num + ")";
-      $( selector ).click();
+    // This will get fired twice on every keypress, one from a target with no parent element and another time
+    // from a target with a parent element.  So to prevent double-processing we'll ignore when the target has
+    // a parent elemtn
+    if( null == event.currentTarget.parentElement ) {
+      if( 13 == event.which ) {
+        // enter key, click on the next button
+        $( "#ls-button-submit" ).click();
+      } else if( 96 <= event.which && event.which <= 105 ) {
+        // translate from key code to number then click the appropriate radio/checkbox
+        var num = event.which - 97;
+        $( "input[type=radio]:eq(" + num + "), input[type=checkbox]:eq(" + num + ")" ).click();
+      }
     }
   });
 });
