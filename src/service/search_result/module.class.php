@@ -43,11 +43,30 @@ class module extends \cenozo\service\site_restricted_module
     }
 
     // add a little search_result ranking magic
+    $result_join_sel = lib::create( 'database\select' );
+    $result_join_sel->from( 'search_result' );
+    $result_join_sel->add_column( 'participant_id' );
+    $result_join_sel->add_column( 'search_id' );
+    $result_join_sel->add_column(
+      'GROUP_CONCAT( CONCAT( search_result.subject, ".", column_name, ": \"", value, "\"" ) SEPARATOR "\n" )',
+      'result',
+      false
+    );
+    $result_join_mod = lib::create( 'database\modifier' );
+    $result_join_mod->group( 'participant_id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'result.participant_id', false );
+    $join_mod->where( 'search.id', '=', 'result.search_id', false );
+    $modifier->join_modifier(
+      sprintf( '( %s %s )', $result_join_sel->get_sql(), $result_join_mod->get_sql() ),
+      $join_mod,
+      '',
+      'result'
+    );
+
     $modifier->group( 'search_result.participant_id' );
     $select->add_column( 'COUNT( DISTINCT CONCAT( search_result.subject, ".", column_name ) )', 'hits', false );
-    $select->add_column(
-      'GROUP_CONCAT( CONCAT( search_result.subject, ".", column_name, ": \"", value, "\"" ) SEPARATOR "\n" )',
-      'value', false );
+    $select->add_column( 'result', NULL, false );
 
     // make sure the user has access to the participant related to the search_result result
     if( $db_application->release_based )

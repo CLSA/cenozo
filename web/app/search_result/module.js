@@ -26,7 +26,7 @@ define( function() {
         title: 'Participant Name',
         width: '20%',
       },
-      value: {
+      result: {
         title: 'Search Matches',
         type: 'string',
         filter: 'cnNewlines'
