@@ -435,8 +435,9 @@ class data_manager extends \cenozo\singleton
             {
               // participant.opal.<datasource>.<table>.<variable>.label (returns label) or
               // opal.<datasource>.<table>.<variable>.label (returns label)
+              $label_value = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
               $value = $opal_manager->get_label(
-                $datasource, $table, $variable, $value, $db_participant->get_language() );
+                $datasource, $table, $variable, $label_value, $db_participant->get_language() );
             }
             else if( 'cache' == $parts[4] )
             {
