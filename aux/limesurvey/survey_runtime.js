@@ -1,4 +1,3 @@
-
 // Custom functionality to allow answers to be selected using the number pad
 $(document).ready(function() {
   $("*").keydown(function(event) {
@@ -25,7 +24,8 @@ $(document).ready(function() {
 //   string dontKnowCode: the answer to put if the user chooses "don't know"
 //   string refuseCode: the answer to put if the user chooses "refuse"
 //   boolean refuse: whether to add a drop-down with don't-know/refuse (optional, default false)
-//   function validateAnswer: A custom function which will be passed the answer and whether
+//   integer minAnswers: the minimum number of questions that must be answered (optional, default all)
+//   function validateInput: A custom function which will be passed the answer and whether
 function configureQuestion( params ) {
   var lang = $('html').attr('lang');
   [ 'qid', 'formElementType', 'dontKnowCode', 'refuseCode' ].forEach( function( paramName ) {
@@ -34,7 +34,8 @@ function configureQuestion( params ) {
     }
   } );
   if( undefined === params.refuse ) params.refuse = false;
-  if( undefined === params.validateAnswer ) params.validateAnswer = function( answer, multi ) { return false; };
+  if( undefined === params.minAnswers ) params.minAnswers = null;
+  if( undefined === params.validateInput ) params.validateInput = function( answer, multi ) { return false; };
 
   $(document).on('ready pjax:complete',function() {
     if( params.refuse ) {
@@ -89,13 +90,23 @@ function configureQuestion( params ) {
       }
 
       if( !proceed ) {
-        // check for invalid input
-        if( 0 == inputList.val().length ) {
+        // check for valid input
+        var answers = 0;
+        for( var i = 0; i < inputList.length; i++ ) // can't use array functions since inputList isn't an array
+          if( 0 < inputList[i].value.length ) answers++;
+
+        if( null == params.minAnswers && inputList.length > answers ) {
           var multi = 1 < inputList.length;
           alert(
             'en' == lang
             ? 'Please provide a response' + ( multi ? ' for all questions.' : '.' )
             : 'Veuillez fournir une réponse' + ( multi ? ' pour toutes les questions.' : '.' )
+          );
+        } else if( null != params.minAnswers && params.minAnswers > answers ) {
+          alert(
+            'en' == lang
+            ? 'Please provide a response for at least ' + params.minAnswers + ' question(s).'
+            : 'Veuillez fournir une réponse pour au moins ' + params.minAnswers + ' question(s).'
           );
         } else {
           var error = params.validateInput( inputList );
@@ -124,7 +135,9 @@ function configureQuestion( params ) {
 //   integer qid: the question ID (mandatory)
 //   integer min: the minimum value allowed (mandatory)
 //   integer max: the maximum value allowed (mandatory)
+//   integer minAnswers: the minimum number of questions that must be answered (optional, default all)
 //   boolean refuse: whether to add a drop-down with don't-know/refuse (optional, default false)
+//   
 function configureNumberQuestion( params ) {
   var lang = $('html').attr('lang');
   if( undefined === params.min ) throw new Error( 'configureQuestion expects min as an input parameter' );
@@ -134,41 +147,33 @@ function configureNumberQuestion( params ) {
   configureQuestion( {
     qid: params.qid,
     formElementType: 'input',
-    dontKnowCode: parseInt( ''.padEnd(digits,9) )-1, // ...98
-    refuseCode: parseInt( ''.padEnd(digits,9) ), // ...99
+    dontKnowCode: '9'.repeat( digits )-1,
+    refuseCode: '9'.repeat( digits ),
     refuse: params.refuse,
+    minAnswers: params.minAnswers,
     validateInput: function( inputList ) {
       var error = false;
-      var answer = parseFloat( inputList.val() );
-      var multi = 1 < inputList.length;
-      if( answer != inputList.val() ) {
-        error = 'en' == lang
-              ? (
-                multi
-                ? 'Please specify your answers as numbers only.'
-                : 'Please specify your answer as a number only.'
-              ) : (
-                multi
-                ? 'Veuillez donner des réponses sous forme de nombres seulement.'
-                : 'Veuillez donner une réponse sous forme de nombre seulement.'
-              );
-      } else if( answer < params.min ) {
-        error = 'en' == lang
-              ? 'Your answer' + ( multi ? 's' : '' ) + ' must be bigger than or equal to ' + params.min + '.'
-              : (
-                multi
-                ? 'Vos réponses doivent être supérieures ou égales à ' + params.min + '.'
-                : 'Votre réponse doit être supérieure ou égale à ' + params.min + '.'
-              );
-      } else if( answer > params.max ) {
-        error = 'en' == lang
-              ? 'Your answer' + ( multi ? 's' : '' ) + ' must be smaller than or equal to ' + params.max + '.'
-              : (
-                multi
-                ? 'Vos réponses doivent être inférieures ou égales à ' + params.max + '.'
-                : 'Votre réponse doit être inférieure ou égale à ' + params.max + '.'
-              );
+
+      for( var i = 0; i < inputList.length; i++ ) { // can't use array functions since inputList isn't an array
+        if( 0 < inputList[i].value.length ) {
+          var answer = parseFloat( inputList[i].value );
+
+          if( answer != inputList[i].value ) {
+            error = 'en' == lang
+                  ?  'Please specify your answer as a number only.'
+                  : 'Veuillez donner une réponse sous forme de nombre seulement.';
+          } else if( answer < params.min ) {
+            error = 'en' == lang
+                  ? 'Your answer must be bigger than or equal to ' + params.min + '.'
+                  : 'Votre réponse doit être supérieure ou égale à ' + params.min + '.';
+          } else if( answer > params.max ) {
+            error = 'en' == lang
+                  ? 'Your answer must be smaller than or equal to ' + params.max + '.'
+                  : 'Votre réponse doit être inférieure ou égale à ' + params.max + '.';
+          }
+        }
       }
+
       return error;
     }
   } );
@@ -196,6 +201,7 @@ function configureShortTextQuestion( params ) {
     formElementType: 'input',
     dontKnowCode: 98,
     refuseCode: 99,
-    refuse: true
+    refuse: true,
+    minAnswers: params.minAnswers
   } );
 }
