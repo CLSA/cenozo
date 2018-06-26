@@ -77,6 +77,17 @@ class pdf_writer extends \cenozo\base_object
   }
 
   /**
+   * Returns the last error as reported by the PDF library
+   * 
+   * @return string
+   * @access public
+   */
+  public function get_error()
+  {
+    return $this->pdf->getError();
+  }
+
+  /**
    * The PDF resource which does all the work
    * @var \mikehaertl\pdftk\Pdf
    * @access protected
