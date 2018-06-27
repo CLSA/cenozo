@@ -31,9 +31,7 @@
             </div>
             <div class="col-sm-11">
               <cn-slider
-                disabled="!model.getEditEnabled() ||
-                          true === input.constant ||
-                          'view' == input.constant"
+                disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                 on-blur="patch()"
                 ng-model="model.viewModel.record[input.key]"
                 precision="2"
@@ -51,9 +49,7 @@
                 class="form-control"
                 type="text"
                 autocomplete="off"
-                ng-readonly="!model.getEditEnabled() ||
-                             true === input.constant ||
-                             'view' == input.constant"
+                ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                 maxlength="{{ model.metadata.columnList[input.key].max_length }}"
                 ng-required="model.metadata.columnList[input.key].required"></input>
             </div>
@@ -63,9 +59,7 @@
                       ng-model="model.viewModel.formattedRecord[input.key][1]"
                       ng-change="patch()"
                       class="form-control"
-                      ng-disabled="!model.getEditEnabled() ||
-                                   true === input.constant ||
-                                   'view' == input.constant"
+                      ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                       ng-required="model.metadata.columnList[input.key].required">
                 <option ng-disabled="null === model.viewModel.record[input.key]" value="Bytes">Bytes</option>
                 <option ng-disabled="null === model.viewModel.record[input.key]" value="KB">KB</option>
@@ -92,7 +86,7 @@
             placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
                          }}type the first few letters to search possible values)"
             autocomplete="off"
-            ng-readonly="!model.getEditEnabled()"></input>
+            ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"></input>
           <input ng-switch-when="lookup-typeahead"
             ng-attr-id="{{ input.key }}"
             name="name"
@@ -108,7 +102,7 @@
             placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
                          }}type the first few letters to search possible values)"
             autocomplete="off"
-            ng-readonly="!model.getEditEnabled()"></input>
+            ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"></input>
           <input ng-switch-when="datetime"
             ng-attr-id="{{ input.key }}"
             name="name"
@@ -145,9 +139,7 @@
             ng-change="patch()"
             class="form-control"
             ng-disabled="true === input.constant || 'view' == input.constant ||
-                         !model.getEditEnabled() ||
-                         !input.enumList ||
-                         1 >= input.enumList.length"
+                         !model.getEditEnabled() || !input.enumList || 1 >= input.enumList.length"
             ng-required="model.metadata.columnList[input.key].required"></select>
           <textarea ng-switch-when="text"
             cn-elastic
@@ -164,7 +156,7 @@
                 <input id="sunday" name="name"
                   ng-model="model.viewModel.record.sunday"
                   ng-change="patch( 'sunday' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> Sunday
               </label>
             </div>
@@ -173,7 +165,7 @@
                 <input id="monday" name="name"
                   ng-model="model.viewModel.record.monday"
                   ng-change="patch( 'monday' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> Monday
               </label>
             </div>
@@ -182,7 +174,7 @@
                 <input id="tuesday" name="name"
                   ng-model="model.viewModel.record.tuesday"
                   ng-change="patch( 'tuesday' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> Tuesday
               </label>
             </div>
@@ -191,7 +183,7 @@
                 <input id="wednesday" name="name"
                   ng-model="model.viewModel.record.wednesday"
                   ng-change="patch( 'wednesday' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> Wednesday
               </label>
             </div>
@@ -200,7 +192,7 @@
                 <input id="thursday" name="name"
                   ng-model="model.viewModel.record.thursday"
                   ng-change="patch( 'thursday' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> Thursday
               </label>
             </div>
@@ -209,7 +201,7 @@
                 <input id="friday" name="name"
                   ng-model="model.viewModel.record.friday"
                   ng-change="patch( 'friday' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> Friday
               </label>
             </div>
@@ -218,7 +210,7 @@
                 <input id="saturday" name="name"
                   ng-model="model.viewModel.record.saturday"
                   ng-change="patch( 'saturday' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> Saturday
               </label>
             </div>
@@ -229,7 +221,7 @@
                 <input id="january" name="name"
                   ng-model="model.viewModel.record.january"
                   ng-change="patch( 'january' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> January
               </label>
             </div>
@@ -238,7 +230,7 @@
                 <input id="february" name="name"
                   ng-model="model.viewModel.record.february"
                   ng-change="patch( 'february' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> February
               </label>
             </div>
@@ -247,7 +239,7 @@
                 <input id="march" name="name"
                   ng-model="model.viewModel.record.march"
                   ng-change="patch( 'march' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> March
               </label>
             </div>
@@ -256,7 +248,7 @@
                 <input id="april" name="name"
                   ng-model="model.viewModel.record.april"
                   ng-change="patch( 'april' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> April
               </label>
             </div>
@@ -265,7 +257,7 @@
                 <input id="may" name="name"
                   ng-model="model.viewModel.record.may"
                   ng-change="patch( 'may' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> May
               </label>
             </div>
@@ -274,7 +266,7 @@
                 <input id="june" name="name"
                   ng-model="model.viewModel.record.june"
                   ng-change="patch( 'june' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> June
               </label>
             </div>
@@ -285,7 +277,7 @@
                 <input id="july" name="name"
                   ng-model="model.viewModel.record.july"
                   ng-change="patch( 'july' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> July
               </label>
             </div>
@@ -294,7 +286,7 @@
                 <input id="august" name="name"
                   ng-model="model.viewModel.record.august"
                   ng-change="patch( 'august' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> August
               </label>
             </div>
@@ -311,7 +303,7 @@
                 <input id="october" name="name"
                   ng-model="model.viewModel.record.october"
                   ng-change="patch( 'october' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> October
               </label>
             </div>
@@ -320,7 +312,7 @@
                 <input id="november" name="name"
                   ng-model="model.viewModel.record.november"
                   ng-change="patch( 'november' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> November
               </label>
             </div>
@@ -329,7 +321,7 @@
                 <input id="december" name="name"
                   ng-model="model.viewModel.record.december"
                   ng-change="patch( 'december' )"
-                  ng-disabled="!model.getEditEnabled()"
+                  ng-disabled="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
                   type="checkbox"></input> December
               </label>
             </div>
@@ -353,8 +345,7 @@
           </span>
         </span>
       </div>
-      <div ng-if="model.getEditEnabled() &&
-                  true !== input.constant && 'view' != input.constant &&
+      <div ng-if="model.getEditEnabled() && true !== input.constant && 'view' != input.constant &&
                   model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] &&
                   !( !model.viewModel.record[input.key] && !model.viewModel.backupRecord[input.key] )"
            class="col-sm-1 col-slim">
