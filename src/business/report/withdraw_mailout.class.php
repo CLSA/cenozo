@@ -57,7 +57,10 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $join_mod->where( 'participant.id', '=', 'event.participant_id', false );
     $join_mod->where( 'event.event_type_id', '=', $db_withdraw_mailed_event_type->id );
     $modifier->join_modifier( 'event', $join_mod, 'left' );
+    $modifier->where_bracket( true );
     $modifier->where( 'event.id', '=', NULL );
+    $modifier->or_where( 'event.datetime', '<', 'consent.datetime', false );
+    $modifier->where_bracket( false );
 
     // add the special withdraw option column
     $survey_manager->add_withdraw_option_column( $select, $modifier, 'Option' );
