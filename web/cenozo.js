@@ -605,7 +605,23 @@ angular.extend( cenozo, {
       files: [ '$q', function( $q ) {
         if( null == module.deferred ) {
           module.deferred = $q.defer();
-          require( module.getRequiredFiles(), function() { module.deferred.resolve(); } );
+          require( module.getRequiredFiles(), function() {
+            // also require the parent(s) module's files
+            if( angular.isDefined( module.identifier ) && angular.isDefined( module.identifier.parent ) ) {
+              var parentModules = angular.isArray( module.identifier.parent )
+                                ? module.identifier.parent.map( p => p.subject )
+                                : [ module.identifier.parent.subject ];
+              var requiredParentFiles = [];
+              parentModules.forEach( function( parentModuleName ) {
+                requiredParentFiles = requiredParentFiles.concat( cenozoApp.module( parentModuleName ).getRequiredFiles() );
+              } );
+              require( requiredParentFiles, function() {
+                module.deferred.resolve();
+              } );
+            } else {
+              module.deferred.resolve();
+            }
+          } );
         }
         return module.deferred.promise;
       } ],
@@ -1811,7 +1827,8 @@ cenozo.directive( 'cnRecordView', [
         };
 
         $scope.parentName = function( subject ) {
-          return subject.replace( /_/g, ' ' ).ucWords();
+          // get the name from the parent module
+          return cenozoApp.module( subject ).name.singular.ucWords();
         };
 
         $scope.viewParent = function( subject ) {
