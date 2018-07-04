@@ -6225,7 +6225,7 @@ cenozo.service( 'CnModalMessageFactory', [
 
         if( 306 == type && angular.isDefined( response.data ) ) {
           title = 'Please Note';
-          message = response.data;
+          message = angular.fromJson( response.data );
         } else if( 403 == type ) {
           title = 'Permission Denied';
           message += 'because you do not have access to the requested resource.';
@@ -6242,11 +6242,11 @@ cenozo.service( 'CnModalMessageFactory', [
           title = 'Server Error';
           message += 'due to a server-based error. Please provide the resource and error code to support.';
         }
-        if( type ) title += ' (' + type + ')';
+        if( type && 306 != type ) title += ' (' + type + ')';
         message += '\n';
 
         var small = '';
-        if( angular.isDefined( response.config ) ) {
+        if( angular.isDefined( response.config ) && 306 != type ) {
           // add the url as a small message
           var re = new RegExp( '^' + cenozoApp.baseUrl + '/(api/?)?' );
           small = '    Resource: "' + response.config.method + ':'
