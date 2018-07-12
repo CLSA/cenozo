@@ -600,31 +600,31 @@ angular.extend( cenozo, {
     if( angular.isUndefined( name ) ) throw new Error( 'routeModule requires exactly 3 parameters.' );
     if( angular.isUndefined( module ) ) throw new Error( 'routeModule requires exactly 3 parameters.' );
 
+    function requireModule( $q, module ) {
+      if( null == module.deferred ) {
+        module.deferred = $q.defer();
+        require( module.getRequiredFiles(), function() {
+          // also require the module's parent's files
+          if( angular.isDefined( module.identifier ) && angular.isDefined( module.identifier.parent ) ) {
+            var parentModules = angular.isArray( module.identifier.parent )
+                              ? module.identifier.parent.map( p => p.subject )
+                              : [ module.identifier.parent.subject ];
+            var requiredParentFiles = [];
+            parentModules.forEach( function( parentModuleName ) {
+              requiredParentFiles = requiredParentFiles.concat( cenozoApp.module( parentModuleName ).getRequiredFiles() );
+            } );
+            require( requiredParentFiles, function() { module.deferred.resolve(); } );
+          } else {
+            module.deferred.resolve();
+          }
+        } );
+      }
+      return module.deferred;
+    }
+
     var resolve = {
       // resolve the required files
-      files: [ '$q', function( $q ) {
-        if( null == module.deferred ) {
-          module.deferred = $q.defer();
-          require( module.getRequiredFiles(), function() {
-            // also require the parent(s) module's files
-            if( angular.isDefined( module.identifier ) && angular.isDefined( module.identifier.parent ) ) {
-              var parentModules = angular.isArray( module.identifier.parent )
-                                ? module.identifier.parent.map( p => p.subject )
-                                : [ module.identifier.parent.subject ];
-              var requiredParentFiles = [];
-              parentModules.forEach( function( parentModuleName ) {
-                requiredParentFiles = requiredParentFiles.concat( cenozoApp.module( parentModuleName ).getRequiredFiles() );
-              } );
-              require( requiredParentFiles, function() {
-                module.deferred.resolve();
-              } );
-            } else {
-              module.deferred.resolve();
-            }
-          } );
-        }
-        return module.deferred.promise;
-      } ],
+      files: [ '$q', function( $q ) { return requireModule( $q, module ).promise; } ],
       // resolve the session
       session: function( CnSession ) { return CnSession.promise; }
     };
@@ -692,16 +692,7 @@ angular.extend( cenozo, {
             resolve: {
               childFiles: [ '$q', function( $q ) {
                 // require that all child modules have loaded
-                var promiseList = [];
-                module.children.forEach( function( action ) {
-                  var childModule = cenozoApp.module( action.subject.snake );
-                  if( null == childModule.deferred ) {
-                    childModule.deferred = $q.defer();
-                    require( childModule.getRequiredFiles(), function() { childModule.deferred.resolve(); } );
-                  }
-                  promiseList.push( childModule.deferred );
-                } );
-                return $q.all( promiseList );
+                return $q.all( module.children.map( action => requireModule( $q, cenozoApp.module( action.subject.snake ) ) ) );
               } ]
             }
           } );
@@ -720,16 +711,8 @@ angular.extend( cenozo, {
           stateProvider.state( name + '.add_' + child.subject.snake, {
             url: baseAddUrl + '/' + child.subject.snake + childModule.actions.add,
             template: '<' + directive + '></' + directive + '>',
-            resolve: {
-              childFiles: [ '$q', function( $q ) {
-                // require that the action module has loaded
-                if( null == childModule.deferred ) {
-                  childModule.deferred = $q.defer();
-                  require( childModule.getRequiredFiles(), function() { childModule.deferred.resolve(); } );
-                }
-                return childModule.deferred.promise;
-              } ]
-            }
+            // require that the action module has loaded
+            resolve: { childFiles: [ '$q', function( $q ) { return requireModule( $q, childModule ).promise; } ] }
           } );
         }
       } );
