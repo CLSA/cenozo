@@ -5770,7 +5770,7 @@ cenozo.service( 'CnModalConfirmFactory', [
   function( $uibModal ) {
     var object = function( params ) {
       var self = this;
-      this.title = 'Confirm';
+      this.title = 'Please Confirm';
       this.message = 'Are you sure?';
       angular.extend( this, params );
 
