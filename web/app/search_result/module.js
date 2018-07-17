@@ -86,7 +86,7 @@ define( function() {
 
         this.getServiceData = function( type, columnRestrictLists ) {
           var data = this.$$getServiceData( type, columnRestrictLists );
-          if( 'list' == type ) data.q = $state.params.q;
+          if( 'list' == type || 'report' == type ) data.q = $state.params.q;
           return data;
         };
       };
