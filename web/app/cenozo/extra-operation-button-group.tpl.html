@@ -16,11 +16,10 @@
       <span class="caret" ng-if="op.operations"></span>
     </button>
     <ul class="dropdown-menu full-width" ng-if="op.operations" aria-labelledby="{{ op.id }}">
-      <li ng-repeat="subOp in op.operations">
+      <li ng-repeat="subOp in op.operations"
+          ng-if="subOp.isIncluded( state, model )"
+          ng-class="subOp.classes + ( subOp.isDisabled( state, model ) ? ' disabled' : '' )">
         <a id="{{ subOp.id }}"
-           ng-if="subOp.isIncluded( state, model )"
-           ng-disabled="subOp.isDisabled( state, model )"
-           ng-class="subOp.classes"
            uib-tooltip="{{ subOp.help }}"
            tooltip-placement="right"
            ng-click="subOp.operation( state, model )">{{ subOp.title }}</a>
