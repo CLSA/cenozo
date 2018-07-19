@@ -21,8 +21,8 @@
           ng-class="subOp.classes + ( subOp.isDisabled( state, model ) ? ' disabled' : '' )">
         <a id="{{ subOp.id }}"
            uib-tooltip="{{ subOp.help }}"
-           tooltip-placement="right"
-           ng-click="subOp.operation( state, model )">{{ subOp.title }}</a>
+           ng-click="subOp.isDisabled( state, model ) ? $event.stopPropagation() : subOp.operation( state, model )"
+           tooltip-placement="right">{{ subOp.title }}</a>
       </li>
     </ul>
   </div>
