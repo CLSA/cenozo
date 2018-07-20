@@ -65,9 +65,9 @@
         $scope.utilities = <?php print $utility_item_string; ?>;
         $scope.reports = <?php print $report_item_string; ?>;
 
-        $scope.splitLists = $scope.lists && 20 <= Object.keys( $scope.lists ).length;
-        $scope.halfListLength = Math.ceil( Object.keys( $scope.lists ).length / 2 );
-        $scope.splitOdd = Object.keys( $scope.lists ).length % 2;
+        $scope.splitLists = null != $scope.lists && $scope.lists && 20 <= Object.keys( $scope.lists ).length;
+        $scope.halfListLength = null == $scope.lists ? 0 : Math.ceil( Object.keys( $scope.lists ).length / 2 );
+        $scope.splitOdd = null != $scope.lists && Object.keys( $scope.lists ).length % 2;
         var subMenuCount = ( $scope.lists ? ( $scope.splitLists ? 2 : 1 ) : 0 )
                          + ( $scope.utilities ? 1 : 0 )
                          + ( $scope.reports ? 1 : 0 );
