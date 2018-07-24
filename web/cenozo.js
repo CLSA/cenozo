@@ -4882,7 +4882,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           // check the module for parents
           if( angular.isDefined( parent.subject ) ) {
             trail = trail.concat( [ {
-              title: parent.subject.replace( /_/g, ' ' ).ucWords(),
+              title: cenozoApp.module( parent.subject ).name.singular.ucWords(),
               go: function() { return self.transitionToParentListState( parent.subject ); }
             }, {
               title: self.getBreadcrumbParentTitle(),
