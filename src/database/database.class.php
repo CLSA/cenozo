@@ -773,7 +773,14 @@ class database extends \cenozo\base_object
              'FOR', 'ON' );
 
     // split the sql based on the words above, then process each piece one at a time
-    $pieces = preg_split( sprintf( '/\b(%s)\b|(\')|(")/i', implode( '|', $split_words ) ),
+    // note on the regular expression:
+    // \b(%s)\b: matches any keyword surrounded by word boundaries
+    // (\\\\\\\\): matches any double-backslash \\
+    // (\\\\\'): matches any escaped single-quote \'
+    // (\\\"): matches any escaped double-quote \"
+    // (\'): matches any single-quote which is not escaped
+    // ("): matches any double-quote which is not escaped
+    $pieces = preg_split( sprintf( '/\b(%s)\b|(\\\\\\\\)|(\\\\\')|(\\\")|(\')|(")/i', implode( '|', $split_words ) ),
                           $input,
                           -1,
                           PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
