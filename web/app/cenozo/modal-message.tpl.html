@@ -1,13 +1,13 @@
 <form ng-submit="close()" class="noselect">
   <div class="modal-header bg-primary">
-    <h4 class="modal-title">{{ title }}</h4>
+    <h4 class="modal-title">{{ model.title }}</h4>
   </div>
   <div class="modal-body allow-select" ng-class="{ 'text-danger': error }">
-    <span style="white-space: pre-wrap;">{{ message }}</span>
-    <small ng-if="small" style="white-space: pre-wrap;"><br>{{ small }}</small>
+    <span style="white-space: pre-wrap;">{{ model.message }}</span>
+    <small ng-if="small" style="white-space: pre-wrap;"><br>{{ model.small }}</small>
   </div>
   <div class="modal-footer bg-info" ng-if="!block">
-    <button type="submit" cn-autofocus class="btn btn-primary">Close</button>
+    <button type="submit" cn-autofocus class="btn btn-primary">{{ model.closeText }}</button>
   </div>
   <uib-progressbar ng-if="block"
                class="progress-striped active rounded-bottom"

@@ -5770,8 +5770,12 @@ cenozo.service( 'CnModalConfirmFactory', [
   function( $uibModal ) {
     var object = function( params ) {
       var self = this;
-      this.title = 'Please Confirm';
-      this.message = 'Are you sure?';
+      angular.extend( this, {
+        title: 'Please Confirm',
+        message: 'Are you sure?',
+        noText: 'No',
+        yesText: 'Yes'
+      } );
       angular.extend( this, params );
 
       this.show = function() {
@@ -5781,8 +5785,7 @@ cenozo.service( 'CnModalConfirmFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-confirm.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            $scope.title = self.title;
-            $scope.message = self.message;
+            $scope.model = self;
             $scope.yes = function() { $uibModalInstance.close( true ); };
             $scope.no = function() { $uibModalInstance.close( false ); };
           } ]
@@ -6165,11 +6168,14 @@ cenozo.service( 'CnModalMessageFactory', [
   function( $uibModal, $state ) {
     var object = function( params ) {
       var self = this;
-      this.title = 'Title';
-      this.message = 'Message';
-      this.small = null;
-      this.error = false;
-      this.block = false;
+      angular.extend( this, {
+        title: 'Title',
+        message: 'Message',
+        small: null,
+        closeText: 'Close',
+        error: false,
+        block: false
+      } );
       angular.extend( this, params );
 
       this.show = function() {
@@ -6179,11 +6185,7 @@ cenozo.service( 'CnModalMessageFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-message.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            $scope.title = self.title;
-            $scope.message = self.message;
-            $scope.small = self.small;
-            $scope.error = self.error;
-            $scope.block = self.block;
+            $scope.model = self;
             $scope.close = function() { $uibModalInstance.close( false ); };
           } ]
         } );

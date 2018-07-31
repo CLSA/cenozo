@@ -1,12 +1,12 @@
 <form ng-submit="yes()" class="noselect">
   <div class="modal-header bg-primary">
-    <h4 class="modal-title">{{ title }}</h4>
+    <h4 class="modal-title">{{ model.title }}</h4>
   </div>
   <div class="modal-body allow-select">
-    <span style="white-space: pre-wrap;">{{ message }}</span>
+    <span style="white-space: pre-wrap;">{{ model.message }}</span>
   </div>
   <div class="modal-footer bg-info">
-    <button type="button" class="btn btn-default" ng-click="no()">&#x2718 No</button>
-    <button type="submit" class="btn btn-primary" cn-autofocus>&#x2714 Yes</button>
+    <button type="button" class="btn btn-default" ng-click="no()">&#x2718 {{ model.noText }}</button>
+    <button type="submit" class="btn btn-primary" cn-autofocus>&#x2714 {{ model.yesText }}</button>
   </div>
 </form>
