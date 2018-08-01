@@ -5587,6 +5587,11 @@ cenozo.factory( 'CnHttpFactory', [
           )
         };
 
+        // If a canceller is set the connect it to the http object
+        if( angular.isDefined( self.canceller ) ) {
+          object.timeout = self.canceller.promise;
+        }
+
         if( null !== self.data ) {
           if( 'POST' == method || 'PATCH' == method ) object.data = self.data;
           else object.params = self.data;
@@ -5647,7 +5652,17 @@ cenozo.factory( 'CnHttpFactory', [
             } else {
               // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
               // don't want to bother showing a non-redirecting error message
-              $timeout( function() { if( !hasRedirectedOnError ) self.onError( response ); }, 400 );
+              $timeout( function() {
+                if( !hasRedirectedOnError ) {
+                  // do not send cancelled requests to the error handler
+                  var cancelReason = angular.isDefined( object.timeout ) ? object.timeout.$$state.value : false;
+                  if( cancelReason ) {
+                    console.warn( 'Cancelling http call to "' + object.url + '" for reason "' + cancelReason + '"' );
+                  } else {
+                    self.onError( response );
+                  }
+                }
+              }, 400 );
             }
           }
         } );
