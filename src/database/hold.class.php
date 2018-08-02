@@ -64,5 +64,7 @@ class hold extends record
     try { $db_hold->save(); }
     // ignore duplicates (the hold already exists so we don't need to create it)
     catch( \cenozo\exception\database $e ) { if( !$e->is_duplicate_entry() ) throw $e; }
+    // ignore runtime error about adding ducplicate holds
+    catch( \cenozo\exception\runtime $e ) { if( RUNTIME__CENOZO_DATABASE_HOLD__SAVE__ERRNO != $e->get_number() ) throw $e; }
   }
 }
