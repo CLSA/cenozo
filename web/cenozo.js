@@ -687,6 +687,16 @@ angular.extend( cenozo, {
           stateProvider.state( name + '.' + action, {
             url: url,
             params: params,
+            reloadOnSearch: false,
+            controller: [ '$state', function( $state ) {
+              // This method is called whenever the state parameters have been changed (without changing states)
+              // We can then detect whether this change was caused by the browser's forward/backward buttons by checking
+              // whether the transition's source is "url".  When it is we must reload the page, otherwise the change to
+              // state parameters will not be applied.
+              this.uiOnParamsChanged = function( changedParams, transition ) {
+                if( 'url' == transition.options().source ) $state.reload();
+              };
+            } ],
             template: '<' + directive + '></' + directive + '>',
             // require that all child modules have loaded
             resolve: {
@@ -5499,8 +5509,8 @@ cenozo.factory( 'CnBaseNoteFactory', [
  * All requests to the server's web API is done by creating an instance from this factory.
  */
 cenozo.factory( 'CnHttpFactory', [
-  'CnModalMessageFactory', '$http', '$state', '$rootScope', '$timeout', '$window',
-  function( CnModalMessageFactory, $http, $state, $rootScope, $timeout, $window ) {
+  'CnModalMessageFactory', '$http', '$state', '$rootScope', '$timeout', '$window', '$q',
+  function( CnModalMessageFactory, $http, $state, $rootScope, $timeout, $window, $q ) {
     function appendTransform( defaults, transform ) {
       defaults = angular.isArray(defaults) ? defaults : [defaults];
       return defaults.concat( transform );
@@ -5514,6 +5524,9 @@ cenozo.factory( 'CnHttpFactory', [
 
     // used to track how to handle errors below
     var hasRedirectedOnError = false;
+
+    // used to cancel http requests when transitioning away from state which spawned them
+    var transitionCanceller = null;
 
     var object = function( params ) {
       if( angular.isUndefined( params.path ) )
@@ -5530,7 +5543,8 @@ cenozo.factory( 'CnHttpFactory', [
       angular.extend( this, params );
 
       var self = this;
-      function http( method, url ) {
+      function http( method, url, cancelOnTransition ) {
+        if( angular.isUndefined( cancelOnTransition ) ) cancelOnTransition = false;
         var object = {
           url: cenozoApp.baseUrl + '/' + url,
           method: method,
@@ -5545,41 +5559,46 @@ cenozo.factory( 'CnHttpFactory', [
           transformResponse: appendTransform(
             $http.defaults.transformResponse,
             function( data, getHeader, status ) {
-              var site = angular.fromJson( getHeader( 'Site' ) );
-              var user = angular.fromJson( getHeader( 'User' ) );
-              var role = angular.fromJson( getHeader( 'Role' ) );
-
-              if( null == user ) {
-                // our session has expired, reloading the page will bring us back to the login screen
-                document.getElementById( 'view' ).innerHTML = '';
-                $window.location.reload();
+              // ignore a status of -1 (cancelled requests get a status of -1)
+              if( -1 == status ) {
+                $rootScope.$broadcast( 'httpCancel', self.guid, data );
               } else {
-                // assert login
-                if( ( null != login.site && site != login.site ) ||
-                    ( null != login.user && user != login.user ) ||
-                    ( null != login.role && role != login.role ) ) {
-                  var err = new Error;
-                  err.name = 'Login Mismatch',
-                  err.message =
-                    'The server reports that you are no longer logged in as:\n' +
-                    '\n' +
-                    '        site: ' + login.site + '\n' +
-                    '        user: ' + login.user + '\n' +
-                    '        role: ' + login.role + '\n' +
-                    '\n' +
-                    'The application will now be reloaded after which you will be logged in as:\n' +
-                    '\n' +
-                    '        site: ' + site + '\n' +
-                    '        user: ' + user + '\n' +
-                    '        role: ' + role + '\n' +
-                    '\n' +
-                    'This should only happen as a result of accessing the application from a different ' +
-                    'browser window.  If this message persists then please contact support as someone ' +
-                    'else may be logged into your account.';
-                  throw err;
-                }
+                var site = angular.fromJson( getHeader( 'Site' ) );
+                var user = angular.fromJson( getHeader( 'User' ) );
+                var role = angular.fromJson( getHeader( 'Role' ) );
 
-                $rootScope.$broadcast( 'httpResponse', self.guid, data );
+                if( null == user ) {
+                  // our session has expired, reloading the page will bring us back to the login screen
+                  document.getElementById( 'view' ).innerHTML = '';
+                  $window.location.reload();
+                } else {
+                  // assert login
+                  if( ( null != login.site && site != login.site ) ||
+                      ( null != login.user && user != login.user ) ||
+                      ( null != login.role && role != login.role ) ) {
+                    var err = new Error;
+                    err.name = 'Login Mismatch',
+                    err.message =
+                      'The server reports that you are no longer logged in as:\n' +
+                      '\n' +
+                      '        site: ' + login.site + '\n' +
+                      '        user: ' + login.user + '\n' +
+                      '        role: ' + login.role + '\n' +
+                      '\n' +
+                      'The application will now be reloaded after which you will be logged in as:\n' +
+                      '\n' +
+                      '        site: ' + site + '\n' +
+                      '        user: ' + user + '\n' +
+                      '        role: ' + role + '\n' +
+                      '\n' +
+                      'This should only happen as a result of accessing the application from a different ' +
+                      'browser window.  If this message persists then please contact support as someone ' +
+                      'else may be logged into your account.';
+                    throw err;
+                  }
+
+                  $rootScope.$broadcast( 'httpResponse', self.guid, data );
+                }
               }
 
               return data;
@@ -5587,10 +5606,9 @@ cenozo.factory( 'CnHttpFactory', [
           )
         };
 
-        // If a canceller is set the connect it to the http object
-        if( angular.isDefined( self.canceller ) ) {
-          object.timeout = self.canceller.promise;
-        }
+        // Set this http request's timeout to the transition's canceller.
+        // We do this so that we can cancel requests should the user transition away from this state.
+        if( cancelOnTransition && transitionCanceller ) object.timeout = transitionCanceller.promise;
 
         if( null !== self.data ) {
           if( 'POST' == method || 'PATCH' == method ) object.data = self.data;
@@ -5638,31 +5656,26 @@ cenozo.factory( 'CnHttpFactory', [
               if( hasLoginMismatch ) $window.location.assign( cenozoApp.baseUrl );
             } );
           } else {
-            if( self.redirectOnError ) {
-              // only redirect once, afterwords ignore any additional error redirect requests
-              if( !hasRedirectedOnError && null == $state.current.name.match( /^error\./ ) ) {
-                hasRedirectedOnError = true;
-                $state.go(
-                  'error.' + ( angular.isDefined( response ) ? response.status : 500 ),
-                  response
-                ).then( function() {
-                  $timeout( function() { hasRedirectedOnError = false; }, 500 );
-                } );
-              }
-            } else {
-              // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
-              // don't want to bother showing a non-redirecting error message
-              $timeout( function() {
-                if( !hasRedirectedOnError ) {
-                  // do not send cancelled requests to the error handler
-                  var cancelReason = angular.isDefined( object.timeout ) ? object.timeout.$$state.value : false;
-                  if( cancelReason ) {
-                    console.warn( 'Cancelling http call to "' + object.url + '" for reason "' + cancelReason + '"' );
-                  } else {
-                    self.onError( response );
-                  }
+            // do not send cancelled requests to the error handler
+            if( -1 != response.status ) {
+              if( self.redirectOnError ) {
+                // only redirect once, afterwords ignore any additional error redirect requests
+                if( !hasRedirectedOnError && null == $state.current.name.match( /^error\./ ) ) {
+                  hasRedirectedOnError = true;
+                  $state.go(
+                    'error.' + ( angular.isDefined( response ) ? response.status : 500 ),
+                    response
+                  ).then( function() {
+                    $timeout( function() { hasRedirectedOnError = false; }, 500 );
+                  } );
                 }
-              }, 400 );
+              } else {
+                // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
+                // don't want to bother showing a non-redirecting error message
+                $timeout( function() {
+                  if( !hasRedirectedOnError ) self.onError( response );
+                }, 400 );
+              }
             }
           }
         } );
@@ -5670,12 +5683,12 @@ cenozo.factory( 'CnHttpFactory', [
         return promise;
       };
 
-      this.delete = function() { return http( 'DELETE', 'api/' + this.path ); };
-      this.get = function() { return http( 'GET', 'api/' + this.path ); };
-      this.head = function() { return http( 'HEAD', 'api/' + this.path ); };
-      this.patch = function() { return http( 'PATCH', 'api/' + this.path ); };
-      this.post = function() { return http( 'POST', 'api/' + this.path ); };
-      this.query = function() { return http( 'GET', 'api/' + this.path ); };
+      this.delete = function() { return http( 'DELETE', 'api/' + this.path, false ); };
+      this.get = function() { return http( 'GET', 'api/' + this.path, true ); };
+      this.head = function() { return http( 'HEAD', 'api/' + this.path, true ); };
+      this.patch = function() { return http( 'PATCH', 'api/' + this.path, false ); };
+      this.post = function() { return http( 'POST', 'api/' + this.path, false ); };
+      this.query = function() { return http( 'GET', 'api/' + this.path, true ); };
       this.count = function() {
         this.path += ( 0 <= this.path.indexOf( '?' ) ? '&' : '?' ) + 'count=true';
         return this.query();
@@ -5705,8 +5718,6 @@ cenozo.factory( 'CnHttpFactory', [
           );
         } );
       };
-      this.upload = function() {
-      }
     };
 
     return {
@@ -5715,6 +5726,12 @@ cenozo.factory( 'CnHttpFactory', [
         login.user = user;
         login.role = role;
       },
+
+      processTransition: function() {
+        if( transitionCanceller ) transitionCanceller.resolve( 'Transitioning away from parent state' );
+        transitionCanceller = $q.defer();
+      },
+
       instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); }
     };
   }
@@ -6929,8 +6946,8 @@ cenozo.config( [
  * Adds callbacks to various events, primarily for logging
  */
 cenozo.run( [
-  '$state', '$transitions', '$rootScope', 'CnSession',
-  function( $state, $transitions, $rootScope, CnSession ) {
+  '$state', '$location', '$transitions', '$rootScope', 'CnSession', 'CnHttpFactory',
+  function( $state, $location, $transitions, $rootScope, CnSession, CnHttpFactory ) {
     // track whether we're transitioning a state due to an error (to avoid infinite loops)
     var stateErrorTransition = false;
     $transitions.onStart( {}, function( transition ) {
@@ -6951,11 +6968,19 @@ cenozo.run( [
       }
     } );
 
+    // stop certain working http requests since we no longer need them
+    $transitions.onBefore( {}, function( transition ) {
+      CnHttpFactory.processTransition();
+    } );
+
     // update the working GUID
     $rootScope.$on( 'httpRequest', function( event, guid, request ) {
       CnSession.updateWorkingGUID( guid, true );
     } );
     $rootScope.$on( 'httpResponse', function( event, guid, response ) {
+      CnSession.updateWorkingGUID( guid, false );
+    } );
+    $rootScope.$on( 'httpCancel', function( event, guid, response ) {
       CnSession.updateWorkingGUID( guid, false );
     } );
   }
