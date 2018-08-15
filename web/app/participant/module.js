@@ -273,6 +273,14 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
       module.addExtraOperationGroup( 'view', {
         title: 'Scripts',
         operations: [ {
+          title: 'Decedent',
+          operation: function( $state, model ) { model.viewModel.launchDecedent(); },
+          isIncluded: function( $state, model ) { return model.viewModel.allowDecedent && false === model.viewModel.hasDecedent; },
+        }, {
+          title: 'Decedent Complete',
+          isIncluded: function( $state, model ) { return model.viewModel.allowDecedent && true === model.viewModel.hasDecedent; },
+          isDisabled: function( $state, model ) { return true; }
+        }, {
           title: 'Proxy Initiation',
           operation: function( $state, model ) { model.viewModel.launchProxy(); }
         }, {
@@ -956,6 +964,8 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
         this.onViewPromise = null;
         this.scriptLaunchers = {};
         this.hasWithdrawn = null;
+        this.hasDecedent = null;
+        this.allowDecedent = false;
         this.allowReverseWithdraw = 3 <= CnSession.role.tier;
 
         this.useTimezone = function() {
@@ -998,6 +1008,22 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
             } );
           };
 
+          // launches the decedent script for the current participant
+          this.launchDecedent = function() {
+            this.onViewPromise.then( function() {
+              var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
+                'value', self.record.language_id );
+              self.launchSpecialScript( 'decedent', language );
+
+              // check for when the window gets focus back and update the participant details
+              var win = angular.element( $window ).on( 'focus', function() {
+                self.onView();
+                if( self.holdModel ) self.holdModel.listModel.onList( true );
+                win.off( 'focus' );
+              } );
+            } );
+          };
+
           // launches the withdraw script for the current participant
           this.launchWithdraw = function() {
             this.onViewPromise.then( function() {
@@ -1017,23 +1043,43 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
 
         // track the promise returned by the onView function
         this.onView = function() {
+          // always assume that the decedent script is not allowed (until more details are found below)
+          var mayLaunchDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
+          self.hasDecedent = null;
+          self.hasWithdrawn = null;
+          self.allowDecedent = false;
+
           // only create launchers for each special script if the script module is activated
           if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
             CnSession.specialScriptList.forEach( function( script ) {
-              var data = {
-                script: script,
-                identifier: self.parentModel.getQueryParameter( 'identifier' ),
-              };
-              if( null != script.name.match( /withdraw/i ) ) {
-                data.onReady = function() {
-                  self.hasWithdrawn =
-                    null != self.scriptLaunchers[script.name].token &&
-                    null != self.scriptLaunchers[script.name].token.completed.match(
-                      /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
-                    );
-                };
+              if( null != script.name.match( /decedent/i ) ) {
+                // only check for the decedent token if we're allowed to launch the script
+                if( mayLaunchDecedent ) {
+                  self.scriptLaunchers[script.name] = CnScriptLauncherFactory.instance( {
+                    script: script,
+                    identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                    onReady: function() {
+                      self.hasDecedent =
+                        null != self.scriptLaunchers[script.name].token &&
+                        null != self.scriptLaunchers[script.name].token.completed.match(
+                          /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
+                        );
+                    }
+                  } );
+                }
+              } else if( null != script.name.match( /withdraw/i ) ) {
+                self.scriptLaunchers[script.name] = CnScriptLauncherFactory.instance( {
+                  script: script,
+                  identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                  onReady: function() {
+                    self.hasWithdrawn =
+                      null != self.scriptLaunchers[script.name].token &&
+                      null != self.scriptLaunchers[script.name].token.completed.match(
+                        /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
+                      );
+                  }
+                } );
               }
-              self.scriptLaunchers[script.name] = CnScriptLauncherFactory.instance( data );
             } );
           }
 
@@ -1050,6 +1096,9 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
               .inputList.date_of_death_accuracy.constant = null == self.record.date_of_death;
 
             if( null != self.record.date_of_death ) {
+              // only allow the decedent script when the date-of-death is set (and we have the correct role)
+              self.allowDecedent = mayLaunchDecedent;
+
               // only display the accurate parts of the date-of-death
               if( 'day unknown' == self.record.date_of_death_accuracy ) {
                 self.formattedRecord.date_of_death =

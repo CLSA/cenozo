@@ -7,6 +7,7 @@ SOURCE user_has_application.sql
 SOURCE application.sql
 SOURCE event_type.sql
 SOURCE site.sql
+SOURCE script.sql
 
 SOURCE exclusion.sql
 SOURCE participant.exclusion.sql
