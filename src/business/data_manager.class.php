@@ -137,13 +137,29 @@ class data_manager extends \cenozo\singleton
         'emergency' == $subject ||
         'proxy' == $subject )
     {
+      $alternate_mod = lib::create( 'database\modifier' );
+      $alternate_mod->where( $subject, '=', true );
+
       if( 'count()' == $parts[1] )
       {
         // participant.<alternate|decedent|emergency|informant|proxy>.count() or
         //             <alternate|decedent|emergency|informant|proxy>.count()
-        $alternate_mod = lib::create( 'database\modifier' );
-        $alternate_mod->where( $subject, '=', true );
         $value = $db_participant->get_alternate_count( $alternate_mod );
+      }
+      else
+      {
+        // participant.<alternate|decedent|emergency|informant|proxy>.<column> or
+        //             <alternate|decedent|emergency|informant|proxy>.<column>
+
+        $alternate_mod->limit( 1 );
+        $db_alternate = current( $db_participant->get_object_list( $alternate_mod ) );
+        if( $db_alternate )
+        {
+          $column = $parts[1];
+          if( !$db_alternate->column_exists( $column ) )
+            throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+          $value = $db_alternate->$column;
+        }
       }
     }
     else if( 'address' == $subject ||
