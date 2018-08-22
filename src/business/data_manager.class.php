@@ -152,7 +152,7 @@ class data_manager extends \cenozo\singleton
         //             <alternate|decedent|emergency|informant|proxy>.<column>
 
         $alternate_mod->limit( 1 );
-        $db_alternate = current( $db_participant->get_object_list( $alternate_mod ) );
+        $db_alternate = current( $db_participant->get_alternate_object_list( $alternate_mod ) );
         if( $db_alternate )
         {
           $column = $parts[1];
