@@ -34,16 +34,13 @@ class delete extends write
     $leaf_subject = $this->get_leaf_subject();
     if( !is_null( $leaf_subject ) )
     {
-      $many_to_many = false;
       // check for n-to-n relationships between parent and child
       if( $relationship_class_name::MANY_TO_MANY === $this->get_leaf_parent_relationship() )
       {
         $method = sprintf( 'remove_%s', $leaf_subject );
         $this->get_parent_record()->$method( $leaf_record->id );
-        $many_to_many = true;
       }
-
-      if( !$many_to_many )
+      else
       {
         try
         {

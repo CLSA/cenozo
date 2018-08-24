@@ -97,9 +97,6 @@ class post extends write
     {
       if( $relationship_class_name::MANY_TO_MANY === $this->get_leaf_parent_relationship() )
       {
-        $add_list = array();
-        $remove_list = array();
-
         $parent_record = $this->get_parent_record();
         $post_object = $this->get_file_as_object();
         if( is_int( $post_object ) )
