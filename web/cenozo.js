@@ -6970,7 +6970,7 @@ cenozo.run( [
 
     // stop certain working http requests since we no longer need them
     $transitions.onBefore( {}, function( transition ) {
-      CnHttpFactory.processTransition();
+      if( transition.success ) CnHttpFactory.processTransition();
     } );
 
     // update the working GUID
