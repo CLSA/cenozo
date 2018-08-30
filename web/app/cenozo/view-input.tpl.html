@@ -150,6 +150,26 @@
             class="form-control"
             ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
             ng-required="model.metadata.columnList[input.key].required"></textarea>
+          <div ng-switch-when="file"
+               class="vertical-spacer"
+               ng-init="file=model.viewModel.fileList.findByProperty( 'key', input.key )">
+            <div ng-if="model.viewModel.isFileListLoading">(Loading&hellip;)</div>
+            <div ng-if="!model.viewModel.isFileListLoading">
+              <span class="horizontal-spacer" ng-if="0 < file.size">
+                <a href="#" ng-click="file.download()" ng-bind-html="model.viewModel.record[input.key]"></a>
+              </span>
+              <span class="horizontal-spacer" ng-if="0 < file.size">({{ file.size | cnSize }})</span>
+              <button class="btn btn-default"
+                      style="margin-top: -6px"
+                      ng-if="model.getEditEnabled() && 0 < file.size"
+                      ng-class="{ 'pull-right':0 < file.size }"
+                      ng-click="file.remove()">Remove</button>
+              <label class="btn btn-default" style="margin-top: -6px" ng-disabled="file.uploading" ng-if="!file.size">
+                {{ file.uploading ? 'uploading' : 'upload' }}...
+                <input type="file" ng-model="file.file" cn-upload="file.upload()" style="display:none;"></input>
+              </label>
+            </div>
+          </div>
           <div ng-switch-when="days" class="row">
             <div class="col-sm-1" style="width: 14.28%">
               <label class="checkbox" style="left: 20px" for="sunday">
@@ -345,7 +365,7 @@
           </span>
         </span>
       </div>
-      <div ng-if="model.getEditEnabled() && true !== input.constant && 'view' != input.constant &&
+      <div ng-if="model.getEditEnabled() && true !== input.constant && 'view' != input.constant && 'file' != input.type &&
                   model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] &&
                   !( !model.viewModel.record[input.key] && !model.viewModel.backupRecord[input.key] )"
            class="col-sm-1 col-slim">

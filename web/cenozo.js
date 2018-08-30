@@ -203,6 +203,7 @@ angular.extend( cenozoApp, {
            *     typeahead: like lookup-typeahead but values are not loaded (must be provided as an array)
            *     size: A filesize selector (KB, MB, GB, etc)
            *     percent: A percentage from 0% to 100%
+           *     file: A file which can be attached to the record
            *   format: one of the following
            *     integer: will only accept integers
            *     float: will only accept float and integers
@@ -4067,10 +4068,12 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.record = {};
         object.formattedRecord = {};
         object.backupRecord = {};
+        object.fileList = [];
         object.isReportLoading = false;
         object.reportBlob = null;
         object.reportFilename = null;
         object.isLoading = false;
+        object.isFileListLoading = false;
         object.deferred = $q.defer();
 
         // for all dependencies require its files, inject and set up the model
@@ -4311,14 +4314,19 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'onView', function( force ) {
           if( angular.isUndefined( force ) ) force = false;
-          this.isLoading = true;
           var self = this;
           if( !this.parentModel.getViewEnabled() ) throw new Error( 'Calling onView() but view is not enabled.' );
+
+          this.isLoading = true;
+          this.isFileListLoading = true;
 
           // first clear the record
           for( var column in this.record )
             if( this.record.hasOwnProperty( column ) )
               this.record[column] = null;
+
+          // update all file sizes
+          $q.all( this.fileList.map( file => file.updateFileSize() ) ).finally( function() { self.isFileListLoading = false; } );
 
           // get the record's data and metadata
           return !force && this.parentModel.module.subject.snake != this.parentModel.getSubjectFromState() ?
@@ -4399,6 +4407,73 @@ cenozo.factory( 'CnBaseViewFactory', [
                 self.afterViewFunctions.forEach( function( fn ) { fn(); } );
               } ).finally( function() { self.isLoading = false; } );
             } );
+        } );
+
+        /**
+         * Configures file-type inputs for the view
+         */
+        cenozo.addExtendableFunction( object, 'configureFileInput', function( key ) {
+          var self = this;
+
+          // replace any existing file details
+          var index = this.fileList.findIndexByProperty( 'key', key );
+          if( null != index ) this.fileList.splice( index, 1 );
+
+          this.fileList.push( {
+            key: key,
+            size: null,
+            file: null,
+            uploading: false,
+            updateFileSize: function() {
+              var obj = this;
+              obj.size = null;
+              return CnHttpFactory.instance( {
+                path: self.parentModel.getServiceResourcePath() + '?file=' + obj.key
+              } ).get().then( function( response ) {
+                obj.size = response.data;
+              } );
+            },
+            download: function() {
+              var obj = this;
+              return CnHttpFactory.instance( {
+                path: self.parentModel.getServiceResourcePath() + '?file=' + obj.key,
+                format: 'unknown'
+              } ).file();
+            },
+            remove: function() {
+              var obj = this;
+
+              // remove the file
+              var patchObj = {};
+              patchObj[obj.key] = null;
+              return self.onPatch( patchObj ).then( function() { return obj.updateFileSize(); } ); 
+            },
+            upload: function() {
+              var obj = this;
+              obj.uploading = true;
+              var data = new FormData();
+              data.append( 'file', obj.file );
+              var fileDetails = data.get( 'file' );
+
+              // update the filename
+              var patchObj = {};
+              patchObj[obj.key] = fileDetails.name;
+              return CnHttpFactory.instance( {
+                path: self.parentModel.getServiceResourcePath(),
+                data: patchObj
+              } ).patch().then( function() {
+                self.record[obj.key] = fileDetails.name;
+
+                // upload the file
+                return CnHttpFactory.instance( {
+                  path: self.parentModel.getServiceResourcePath() + '?file=' + obj.key,
+                  data: obj.file,
+                  format: 'unknown'
+                } ).patch()
+              } ).then( function() { return obj.updateFileSize(); } )
+                 .finally( function() { obj.uploading = false; } ); 
+            }
+          } );
         } );
 
         /**
