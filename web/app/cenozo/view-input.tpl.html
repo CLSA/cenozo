@@ -155,19 +155,26 @@
                ng-init="file=model.viewModel.fileList.findByProperty( 'key', input.key )">
             <div ng-if="model.viewModel.isFileListLoading">(Loading&hellip;)</div>
             <div ng-if="!model.viewModel.isFileListLoading">
-              <span class="horizontal-spacer" ng-if="0 < file.size">
-                <a href="#" ng-click="file.download()" ng-bind-html="model.viewModel.record[input.key]"></a>
+              <span ng-if="0 < file.size">
+                <span class="horizontal-spacer">
+                  <a href="#" ng-click="file.download()" ng-bind-html="model.viewModel.record[input.key]"></a>
+                </span>
+                <span class="horizontal-spacer">({{ file.size | cnSize }})</span>
+                <button class="btn btn-default pull-right"
+                        style="margin-top: -6px"
+                        ng-if="model.getEditEnabled() && true !== input.constant && 'view' !== input.constant"
+                        ng-click="file.remove()">Remove</button>
               </span>
-              <span class="horizontal-spacer" ng-if="0 < file.size">({{ file.size | cnSize }})</span>
-              <button class="btn btn-default"
-                      style="margin-top: -6px"
-                      ng-if="model.getEditEnabled() && 0 < file.size"
-                      ng-class="{ 'pull-right':0 < file.size }"
-                      ng-click="file.remove()">Remove</button>
-              <label class="btn btn-default" style="margin-top: -6px" ng-disabled="file.uploading" ng-if="!file.size">
-                {{ file.uploading ? 'uploading' : 'upload' }}...
-                <input type="file" ng-model="file.file" cn-upload="file.upload()" style="display:none;"></input>
-              </label>
+              <span ng-if="!file.size">
+                <label
+                  class="btn btn-default"
+                  style="margin-top: -6px"
+                  ng-if="model.getEditEnabled() && true !== input.constant && 'view' !== input.constant">
+                  {{ file.uploading ? 'uploading' : 'upload' }}...
+                  <input type="file" ng-model="file.file" cn-upload="file.upload()" style="display:none;"></input>
+                </label>
+                <span ng-if="!model.getEditEnabled() || true == input.constant || 'view' == input.constant">(empty)</span>
+              </span>
             </div>
           </div>
           <div ng-switch-when="days" class="row">
