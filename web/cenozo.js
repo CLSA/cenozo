@@ -2616,6 +2616,7 @@ cenozo.filter( 'cnRange', function() {
 cenozo.filter( 'cnRestrictType', function() {
   return function( input ) {
     if( cenozo.isDatetimeType( input ) ) input = 'datetime';
+    else if( 'rank' == input ) input = 'number';
     return input;
   };
 } );
