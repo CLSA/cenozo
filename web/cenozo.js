@@ -7007,7 +7007,7 @@ cenozo.config( [
     } );
 
     // set the default tooltip delay
-    $uibTooltipProvider.options( { popupDelay: 500, placement: 'auto top' } );
+    $uibTooltipProvider.options( { popupDelay: 500, placement: 'auto top', appendToBody: true } );
 
     // turn on html5 mode
     $locationProvider.html5Mode( { enabled: true, requireBase: false } );
