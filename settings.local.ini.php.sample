@@ -74,5 +74,6 @@ $settings['voip']['password'] = '';
 $settings['voip']['prefix'] = '';
 
 // default mail settings
+$settings['mail']['enabled'] = true;
 $settings['mail']['default_from_name'] = 'put default from email name here';
 $settings['mail']['default_from_address'] = 'put default from email address here';

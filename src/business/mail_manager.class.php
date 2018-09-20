@@ -103,6 +103,7 @@ class mail_manager extends \cenozo\base_object
    */
   public function send()
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
     $headers = array();
 
     // validate mandatory fields
@@ -112,8 +113,6 @@ class mail_manager extends \cenozo\base_object
     $from = $this->from_email;
     if( is_null( $from ) )
     {
-      $setting_manager = lib::create( 'business\setting_manager' );
-
       // if there is no "from" email then use the default
       $from = array(
         'address' => $setting_manager->get_setting( 'mail', 'default_from_address' ),
@@ -149,20 +148,18 @@ class mail_manager extends \cenozo\base_object
                  : sprintf( 'Bcc: %s <%s>', $email['name'], $email['address'] );
     }
 
-    if( DEVELOPMENT )
+    if( !$setting_manager->get_setting( 'mail', 'enabled' ) )
     {
       log::info( sprintf(
-        'Request to send mail "%s" to "%s" not being sent since system is in development mode.',
+        'Request to send mail "%s" to "%s" not being sent since the mail system is disabled.',
         $this->title,
         implode( ', ', $to_list )
       ) );
 
       return true;
     }
-    else
-    {
-      return mail( implode( ', ', $to_list ), $this->title, $this->body, implode( "\r\n", $headers ) );
-    }
+
+    return mail( implode( ', ', $to_list ), $this->title, $this->body, implode( "\r\n", $headers ) );
   }
 
   /**
