@@ -72,3 +72,7 @@ $settings['voip']['mxml_port'] = 8088;
 $settings['voip']['username'] = '';
 $settings['voip']['password'] = '';
 $settings['voip']['prefix'] = '';
+
+// default mail settings
+$settings['mail']['default_from_name'] = 'put default from email name here';
+$settings['mail']['default_from_address'] = 'put default from email address here';

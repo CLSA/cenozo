@@ -136,3 +136,7 @@ $settings['failover_opal']['port'] = 8843;
 $settings['failover_opal']['username'] = '';
 $settings['failover_opal']['password'] = '';
 $settings['failover_opal']['timeout'] = 5;
+
+// default mail settings
+$settings['mail']['default_from_name'] = NULL;
+$settings['mail']['default_from_address'] = 'noreply@noreply.com';
