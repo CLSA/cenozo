@@ -430,8 +430,6 @@ abstract class base_report extends \cenozo\base_object
       array( 'title' => $title,
              'header' => $header,
              'contents' => $contents,
-             'fixed' => array(), // TODO: to implement or remove
-             'blanks' => array(), // TODO: to implement or remove
              'footer' => $footer ) );
   }
 

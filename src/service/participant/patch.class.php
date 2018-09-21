@@ -78,7 +78,7 @@ class patch extends \cenozo\service\patch
   }
 
   /**
-   * TODO: document
+   * Set's the participants preferred site
    */
   protected function set_preferred_site()
   {
@@ -88,7 +88,7 @@ class patch extends \cenozo\service\patch
   }
 
   /**
-   * TODO: document
+   * Reverses the participant's withdraw state
    */
   protected function reverse_withdraw()
   {
@@ -97,7 +97,7 @@ class patch extends \cenozo\service\patch
   }
 
   /**
-   * TODO: document
+   * Sets the reason for the last trace
    */
   protected function explain_last_trace()
   {

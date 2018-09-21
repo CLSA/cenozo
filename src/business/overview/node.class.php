@@ -38,7 +38,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Determines whether the node has no children
    */
   public function is_leaf()
   {
@@ -46,7 +46,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Gets the node's label
    */
   public function get_label()
   {
@@ -54,7 +54,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Sets the node's label
    */
   public function set_label( $label )
   {
@@ -62,7 +62,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Gets the node's value
    */
   public function get_value()
   {
@@ -72,7 +72,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Sets the node's value
    */
   public function set_value( $value )
   {
@@ -82,7 +82,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Adds a child to the node
    */
   public function add_child( $node, $first = false )
   {
@@ -95,7 +95,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Removes a child from the node
    */
   public function remove_child( $index )
   {
@@ -106,7 +106,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Removes a child from the node based on the child's label
    */
   public function remove_child_by_label( $label )
   {
@@ -120,7 +120,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Removes all empty children
    */
   public function remove_empty_children()
   {
@@ -136,7 +136,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Finds a node based on its label
    */
   public function find_node( $search_label )
   {
@@ -152,7 +152,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Sorts the node's children based on a provided function
    */
   public function sort_children( $function )
   {
@@ -163,7 +163,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Runs the provided function on all child nodes
    */
   public function each( $function )
   {
@@ -180,7 +180,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Generates and returns this node's summary node
    */
   public function get_summary_node()
   {
@@ -210,7 +210,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Returns this node's data
    */
   public function get_data()
   {
@@ -233,7 +233,7 @@ class node
   }
 
   /**
-   * TODO: document
+   * Internal method
    */
   private function add_values( $node )
   {
@@ -270,12 +270,12 @@ class node
   }
 
   /**
-   * TODO: document
+   * The node's label
    */
   private $label = NULL;
 
   /**
-   * TODO: document
+   * The node's value
    */
   private $value = NULL;
 }
