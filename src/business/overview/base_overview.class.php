@@ -34,7 +34,7 @@ abstract class base_overview
   }
 
   /**
-   * TODO: document
+   * Used to render the overview
    */
   public function get_data( $flat = false )
   {
@@ -100,8 +100,11 @@ abstract class base_overview
   abstract protected function build();
 
   /**
-   * TODO: document
-   * leave parent_id null when adding a root item
+   * Adds a child item to a node (or adds a root node if no parent is provided)
+   * 
+   * @param business\overview\node $parent_node The parent node (set to NULL when adding a root item)
+   * @param string $label The item's label
+   * @param mixed $value The item's value
    */
   protected function add_item( $parent_node, $label, $value = NULL )
   {
@@ -119,7 +122,7 @@ abstract class base_overview
   }
 
   /**
-   * TODO: document
+   * The overview's root node
    */
   protected $root_node = NULL;
 

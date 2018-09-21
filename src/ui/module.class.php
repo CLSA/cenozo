@@ -13,7 +13,9 @@ use cenozo\lib, cenozo\log;
 class module extends \cenozo\base_object
 {
   /**
-   * TODO: document
+   * Constructor
+   * 
+   * @param string $subject The module's subject
    */
   public function __construct( $subject )
   {
@@ -21,7 +23,7 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Gets the module's subject
    */
   public function get_subject()
   {
@@ -29,7 +31,9 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Determines whether the module has a particular action
+   * 
+   * @param string $name The name of the action to search for
    */
   public function has_action( $name )
   {
@@ -37,7 +41,10 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Adds a new action to the module (replacing if one by the same name already exists)
+   * 
+   * @param string $name The name of the action
+   * @param string $query The action's query parameter(s)
    */
   public function add_action( $name, $query = '' )
   {
@@ -45,7 +52,9 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Removes an action from the module by name
+   * 
+   * @param string $name The name of the action
    */
   public function remove_action( $name )
   {
@@ -53,7 +62,7 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Removes all actions from the module
    */
   public function remove_all_actions()
   {
@@ -61,7 +70,9 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Gets an action's query parameter(s)
+   * 
+   * @param string $name The name of the action
    */
   public function get_action_query( $name )
   {
@@ -69,7 +80,10 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Prepends a query parameter to an existing action
+   * 
+   * @param string $name The name of the action
+   * @param string $prepend The query parameter to prepend to the action
    */
   public function prepend_action_query( $name, $prepend )
   {
@@ -77,7 +91,10 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Appends a query parameter to an existing action
+   * 
+   * @param string $name The name of the action
+   * @param string $append The query parameter to append to the action
    */
   public function append_action_query( $name, $append )
   {
@@ -85,7 +102,8 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Adds (or replaces) a child to the module
+   * 
    * @param string|int $before May be the name of an existing child or an index
    */
   public function add_child( $name, $before = NULL )
@@ -129,7 +147,8 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Adds (or replaces) a choose to the module
+   * 
    * @param string|int $before May be the name of an existing choose or an index
    */
   public function add_choose( $name, $before = NULL )
@@ -173,7 +192,9 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Sets whether to show the module in the main list menu
+   * 
+   * @param boolean $list_menu
    */
   public function set_list_menu( $list_menu )
   {
@@ -181,7 +202,7 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Gets whether the module will show in the main list menu
    */
   public function get_list_menu()
   {
@@ -189,7 +210,7 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Returns the module as an associative array
    */
   public function as_array()
   {
@@ -202,27 +223,31 @@ class module extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * The module's subject
+   * @var string
    */
   private $subject;
 
   /**
-   * TODO: document
+   * The module's action list
+   * @var array
    */
   private $action_list = array();
 
   /**
-   * TODO: document
+   * The module's child list
+   * @var array
    */
   private $child_list = array();
 
   /**
-   * TODO: document
+   * The module's choose list
+   * @var array
    */
   private $choose_list = array();
 
   /**
-   * TODO: document
+   * The module's list menu
    */
   private $list_menu = false;
 }

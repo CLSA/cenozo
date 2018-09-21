@@ -25,7 +25,7 @@ class export_file extends record
   }
 
   /**
-   * TODO: document
+   * Generates the export file
    */
   public function generate()
   {

@@ -99,7 +99,7 @@ class mail_manager extends \cenozo\base_object
   public function set_body( $body ) { $this->body = $body; }
 
   /**
-   * TODO: document
+   * Sends the email to the provided recipient(s)
    */
   public function send()
   {
@@ -122,6 +122,14 @@ class mail_manager extends \cenozo\base_object
     $headers[] = is_null( $from['name'] )
                ? sprintf( 'From: %s', $from['address'] )
                : sprintf( 'From: %s <%s>', $from['name'], $from['address'] );
+
+    // include the reply-to argument
+    if( !is_null( $this->reply_to_email ) )
+    {
+      $headers[] = is_null( $this->reply_to_email['name'] )
+                 ? sprintf( 'Reply-To: %s', $this->reply_to_email['address'] )
+                 : sprintf( 'Reply-To: %s <%s>', $this->reply_to_email['name'], $this->reply_to_email['address'] );
+    }
 
     // process the "to" email list
     $to_list = array();
@@ -199,7 +207,10 @@ class mail_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Used internally to validate email arguments
+   * 
+   * @param string/array $email Either an email address or an associative array with address => the email address and name => (optional)
+   *        Note that email addresses should never include angle brackets <>
    */
   protected static function get_email( $email )
   {
@@ -220,37 +231,37 @@ class mail_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * The email that the mail is from
    */
   protected $from_email = NULL;
 
   /**
-   * TODO: document
+   * The reply-to address to include in the email message
    */
   protected $reply_to_email = NULL;
 
   /**
-   * TODO: document
+   * The list of recipients to address the mail to
    */
   protected $to_list = array();
 
   /**
-   * TODO: document
+   * The list of recipients to carbon-copy the mail to
    */
   protected $cc_list = array();
 
   /**
-   * TODO: document
+   * The list of recipients to blind carbon-copy the mail to
    */
   protected $bcc_list = array();
 
   /**
-   * TODO: document
+   * The title of the mail
    */
   protected $title = NULL;
 
   /**
-   * TODO: document
+   * the body of the mail
    */
   protected $body = NULL;
 }

@@ -495,7 +495,9 @@ class ui extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Get a module by its name
+   * 
+   * @param string $subject The name of the module to search for
    */
   protected function get_module( $subject )
   {
@@ -503,7 +505,9 @@ class ui extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Make sure a module has been created
+   * 
+   * @param string $subject The name of the module
    */
   protected function assert_module( $subject )
   {
@@ -513,7 +517,7 @@ class ui extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Adds or removes all modules to the main list menu
    */
   protected function set_all_list_menu( $list_menu )
   {
@@ -521,7 +525,7 @@ class ui extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Adds a listitem
    */
   protected function add_listitem( $title, $subject )
   {
@@ -533,7 +537,7 @@ class ui extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Removes a listitem
    */
   protected function remove_listitem( $title )
   {
@@ -541,7 +545,7 @@ class ui extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Determines whether a listitem exists
    */
   protected function has_listitem( $title )
   {
@@ -549,12 +553,14 @@ class ui extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * The UI's module list
+   * @var array
    */
   private $module_list = array();
 
   /**
-   * TODO: document
+   * The UI's listtiem list
+   * @var array
    */
   private $listitem_list = array();
 }
