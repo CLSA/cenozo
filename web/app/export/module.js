@@ -15,18 +15,22 @@ define( [
       possessive: 'export\'s'
     },
     columnList: {
-      title: { title: 'Title' },
+      title: {
+        column: 'export.title',
+        title: 'Title'
+      },
       user: {
         column: 'user.name',
         title: 'Owner'
       },
       description: {
+        column: 'export.description',
         title: 'Description',
         align: 'left'
       }
     },
     defaultOrder: {
-      column: 'title',
+      column: 'export.title',
       reverse: false
     }
   } );
@@ -992,9 +996,7 @@ define( [
           );
         }
 
-        this.promise = $q.all( promiseList ).then( function() {
-          console.log( self.tableColumnList.participant );
-        } );
+        this.promise = $q.all( promiseList );
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

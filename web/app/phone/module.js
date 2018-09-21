@@ -141,7 +141,6 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
         this.onAdd = function( record ) {
           var identifier = this.parentModel.getParentIdentifier();
-          console.log( this.parentModel.getParentIdentifier() );
           return traceModel.checkForTraceResolvedAfterPhoneAdded( identifier ).then( function( response ) {
             if( response ) {
               return self.$$onAdd( record ).then( function() {
