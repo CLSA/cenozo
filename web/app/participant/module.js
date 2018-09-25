@@ -1044,17 +1044,16 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
         // track the promise returned by the onView function
         this.onView = function() {
           // always assume that the decedent script is not allowed (until more details are found below)
-          var mayLaunchDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
           self.hasDecedent = null;
           self.hasWithdrawn = null;
-          self.allowDecedent = false;
+          self.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
 
           // only create launchers for each special script if the script module is activated
           if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
             CnSession.specialScriptList.forEach( function( script ) {
               if( null != script.name.match( /decedent/i ) ) {
                 // only check for the decedent token if we're allowed to launch the script
-                if( mayLaunchDecedent ) {
+                if( self.allowDecedent ) {
                   self.scriptLaunchers[script.name] = CnScriptLauncherFactory.instance( {
                     script: script,
                     identifier: self.parentModel.getQueryParameter( 'identifier' ),
@@ -1096,9 +1095,6 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
               .inputList.date_of_death_accuracy.constant = null == self.record.date_of_death;
 
             if( null != self.record.date_of_death ) {
-              // only allow the decedent script when the date-of-death is set (and we have the correct role)
-              self.allowDecedent = mayLaunchDecedent;
-
               // only display the accurate parts of the date-of-death
               if( 'day unknown' == self.record.date_of_death_accuracy ) {
                 self.formattedRecord.date_of_death =
