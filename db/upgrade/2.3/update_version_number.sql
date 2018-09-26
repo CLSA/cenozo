@@ -1,2 +1,2 @@
 SELECT "Upgrading cenozo version number" AS "";
-UPDATE application SET cenozo = "2.2";
+UPDATE application SET cenozo = "2.3";

@@ -17,8 +17,8 @@ define( function() {
       survey_title: {
         title: 'Name'
       },
-      special: {
-        title: 'Special',
+      supporting: {
+        title: 'Supporting',
         type: 'boolean'
       },
       repeated: {
@@ -49,10 +49,10 @@ define( function() {
       title: 'Repeated',
       type: 'boolean'
     },
-    special: {
-      title: 'Special',
+    supporting: {
+      title: 'Supporting',
       type: 'boolean',
-      help: 'Identifies the script as special (launched in the "Scripts" dropdown when viewing a participant)'
+      help: 'Identifies this as a supporting script (launched in the "Scripts" dropdown when viewing a participant)'
     },
     description: {
       title: 'Description',
