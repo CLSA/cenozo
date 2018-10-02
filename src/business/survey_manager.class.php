@@ -346,7 +346,7 @@ class survey_manager extends \cenozo\singleton
         '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
         '  %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
         '  %s = "REFUSED" OR %s = "REFUSED",'."\n".
-        '  true,'."\n".
+        '  false,'."\n".
         '  IF('."\n".
         '    %s = "YES" OR %s = "YES" OR %s = "YES" OR %s = "YES",'."\n".
         '    false,'."\n".
