@@ -976,7 +976,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
 
         // only add script launching if the script module is activated
         if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
-          this.launchSpecialScript = function( type, language ) {
+          this.launchSupportingScript = function( type, language ) {
             var foundLauncher = null;
             Object.keys( self.scriptLaunchers ).some( function( name ) {
               var re = new RegExp( type, 'i' );
@@ -987,7 +987,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
             } );
 
             if( null == foundLauncher )
-              throw new Error( 'Cannot launch special script type "' + type + '", script type not found.' );
+              throw new Error( 'Cannot launch supporting script type "' + type + '", script type not found.' );
 
             if( language ) foundLauncher.lang = language.code;
             foundLauncher.launch();
@@ -998,7 +998,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
             this.onViewPromise.then( function() {
               var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
                 'value', self.record.language_id );
-              self.launchSpecialScript( 'proxy', language );
+              self.launchSupportingScript( 'proxy', language );
 
               // check for when the window gets focus back and update the participant details
               var win = angular.element( $window ).on( 'focus', function() {
@@ -1013,7 +1013,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
             this.onViewPromise.then( function() {
               var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
                 'value', self.record.language_id );
-              self.launchSpecialScript( 'decedent', language );
+              self.launchSupportingScript( 'decedent', language );
 
               // check for when the window gets focus back and update the participant details
               var win = angular.element( $window ).on( 'focus', function() {
@@ -1029,7 +1029,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
             this.onViewPromise.then( function() {
               var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
                 'value', self.record.language_id );
-              self.launchSpecialScript( 'withdraw', language );
+              self.launchSupportingScript( 'withdraw', language );
 
               // check for when the window gets focus back and update the participant details
               var win = angular.element( $window ).on( 'focus', function() {
@@ -1048,9 +1048,9 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
           self.hasWithdrawn = null;
           self.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
 
-          // only create launchers for each special script if the script module is activated
+          // only create launchers for each supporting script if the script module is activated
           if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
-            CnSession.specialScriptList.forEach( function( script ) {
+            CnSession.supportingScriptList.forEach( function( script ) {
               if( null != script.name.match( /decedent/i ) ) {
                 // only check for the decedent token if we're allowed to launch the script
                 if( self.allowDecedent ) {
