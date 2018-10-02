@@ -45,14 +45,22 @@ define( function() {
       title: 'Survey',
       type: 'enum'
     },
-    repeated: {
-      title: 'Repeated',
-      type: 'boolean'
-    },
     supporting: {
       title: 'Supporting',
       type: 'boolean',
       help: 'Identifies this as a supporting script (launched in the "Scripts" dropdown when viewing a participant)'
+    },
+    repeated: {
+      title: 'Repeated',
+      type: 'boolean'
+    },
+    started_event_type_id: {
+      title: 'Started Event Type',
+      type: 'enum'
+    },
+    finished_event_type_id: {
+      title: 'Finished Event Type',
+      type: 'enum'
     },
     description: {
       title: 'Description',
@@ -134,10 +142,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnScriptModelFactory', [
-    'CnBaseModelFactory', 'CnScriptAddFactory', 'CnScriptListFactory', 'CnScriptViewFactory',
-    'CnHttpFactory',
-    function( CnBaseModelFactory, CnScriptAddFactory, CnScriptListFactory, CnScriptViewFactory,
-              CnHttpFactory ) {
+    'CnBaseModelFactory', 'CnScriptAddFactory', 'CnScriptListFactory', 'CnScriptViewFactory', 'CnHttpFactory', '$q',
+    function( CnBaseModelFactory, CnScriptAddFactory, CnScriptListFactory, CnScriptViewFactory, CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -148,18 +154,35 @@ define( function() {
         // extend getMetadata
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'survey',
-              data: {
-                select: { column: [ 'sid', 'title' ] },
-                modifier: { order: { title: false } }
-              }
-            } ).query().then( function( response ) {
-              self.metadata.columnList.sid.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.sid.enumList.push( { value: item.sid, name: item.title } );
-              } );
-            } );
+            return $q.all( [
+              CnHttpFactory.instance( {
+                path: 'survey',
+                data: {
+                  select: { column: [ 'sid', 'title' ] },
+                  modifier: { order: { title: false } }
+                }
+              } ).query().then( function( response ) {
+                self.metadata.columnList.sid.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.sid.enumList.push( { value: item.sid, name: item.title } );
+                } );
+              } ),
+
+              CnHttpFactory.instance( {
+                path: 'event_type',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function( response ) {
+                self.metadata.columnList.started_event_type_id.enumList = [];
+                self.metadata.columnList.finished_event_type_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.started_event_type_id.enumList.push( { value: item.id, name: item.name } );
+                  self.metadata.columnList.finished_event_type_id.enumList.push( { value: item.id, name: item.name } );
+                } );
+              } )
+            ] );
           } );
         };
       };

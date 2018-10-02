@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.3';
-$settings['general']['cenozo_build'] = 'f36511c';
+$settings['general']['cenozo_build'] = '802001d';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -42,7 +42,7 @@ $settings['general']['search_timeout'] = 10;
 $settings['general']['activity_timeout'] = 60;
 
 // how much inactivity before withdraw scripts are considered abandoned (in minutes)
-$settings['general']['withdraw_timeout'] = 60;
+$settings['general']['supporting_script_timeout'] = 60;
 
 // list of all optional modules (off by default)
 $settings['module']['interview'] = false;

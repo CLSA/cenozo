@@ -68,6 +68,7 @@ class post extends \cenozo\service\post
     parent::finish();
 
     $util_class_name = lib::get_class_name( 'util' );
+    $supporting_script_check_class_name = lib::get_class_name( 'database\supporting_script_check' );
 
     // if the script doesn't repeat and the participant doesn't have its start event yet, then create it
     if( !$this->db_script->repeated )
@@ -94,12 +95,8 @@ class post extends \cenozo\service\post
       }
     }
 
-    // if this is the withdraw script the mark the participant for withdraw processing
-    if( $this->db_script->is_withdraw_type() )
-    {
-      $this->db_participant->check_withdraw = $util_class_name::get_datetime_object();
-      $this->db_participant->save();
-    }
+    // if this is a supporting script then add a check for it
+    if( $this->db_script->supporting ) $supporting_script_check_class_name::update_check( $this->db_participant, $this->db_script );
   }
 
   /**

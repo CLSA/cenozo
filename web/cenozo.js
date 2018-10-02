@@ -2890,8 +2890,8 @@ cenozo.factory( 'CnSession', [
             self.moduleList = response.data.module_list;
 
             if( 0 <= self.moduleList.indexOf( 'script' ) ) {
-              // add the special script list
-              self.specialScriptList = response.data.special_script_list;
+              // add the supporting script list
+              self.supportingScriptList = response.data.supporting_script_list;
             }
 
             // process session records
