@@ -147,7 +147,7 @@ class survey_manager extends \cenozo\singleton
           $db_consent->save();
         }
 
-        if( 1 != $withdraw['option'] )
+        if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
         {
           // make sure the most recent HIN access consent is not negative
           $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
@@ -326,7 +326,7 @@ class survey_manager extends \cenozo\singleton
         $db_consent->note = 'Added as part of the withdraw process.';
         $db_consent->save();
 
-        if( 1 != $withdraw['option'] )
+        if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
         {
           // Add consent HIN access verbal deny
           $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
