@@ -340,7 +340,11 @@ class survey_manager extends \cenozo\singleton
           $db_consent->save();
         }
 
-        if( $withdraw['delink'] ) $db_participant->delink = true;
+        if( $withdraw['delink'] )
+        {
+          $db_participant->delink = true;
+          $db_participant->save();
+        }
       }
     }
   }
