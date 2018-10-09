@@ -147,10 +147,11 @@ class survey_manager extends \cenozo\singleton
           $db_consent->save();
         }
 
+        // Make sure the most recent HIN access consent is not negative if options 2 or 3 were selected
         if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
         {
-          // make sure the most recent HIN access consent is not negative
           $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
+
           $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
           if( !is_null( $db_last_consent ) && !$db_last_consent->accept )
           {
@@ -326,18 +327,24 @@ class survey_manager extends \cenozo\singleton
         $db_consent->note = 'Added as part of the withdraw process.';
         $db_consent->save();
 
+        // Add consent HIN access verbal deny if options 2 or 3 were selected
         if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
         {
-          // Add consent HIN access verbal deny
           $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
-          $db_consent = lib::create( 'database\consent' );
-          $db_consent->participant_id = $db_participant->id;
-          $db_consent->consent_type_id = $db_consent_type->id;
-          $db_consent->accept = false;
-          $db_consent->written = false;
-          $db_consent->datetime = $withdraw['datetime'];
-          $db_consent->note = 'Added as part of the withdraw process.';
-          $db_consent->save();
+
+          // Only add a negative consent if the last consent exists and is positive
+          $db_last_consent = $db_participant->get_last_consent( $db_last_consent_type );
+          if( !is_null( $db_last_consent ) && $db_last_consent->accept )
+          {
+            $db_consent = lib::create( 'database\consent' );
+            $db_consent->participant_id = $db_participant->id;
+            $db_consent->consent_type_id = $db_consent_type->id;
+            $db_consent->accept = false;
+            $db_consent->written = false;
+            $db_consent->datetime = $withdraw['datetime'];
+            $db_consent->note = 'Added as part of the withdraw process.';
+            $db_consent->save();
+          }
         }
 
         if( $withdraw['delink'] )
