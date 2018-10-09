@@ -151,7 +151,6 @@ class survey_manager extends \cenozo\singleton
         if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
         {
           $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
-
           $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
           if( !is_null( $db_last_consent ) && !$db_last_consent->accept )
           {
@@ -330,10 +329,9 @@ class survey_manager extends \cenozo\singleton
         // Add consent HIN access verbal deny if options 2 or 3 were selected
         if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
         {
-          $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
-
           // Only add a negative consent if the last consent exists and is positive
-          $db_last_consent = $db_participant->get_last_consent( $db_last_consent_type );
+          $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
+          $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
           if( !is_null( $db_last_consent ) && $db_last_consent->accept )
           {
             $db_consent = lib::create( 'database\consent' );
