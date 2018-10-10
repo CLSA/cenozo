@@ -52,8 +52,8 @@ class get extends \cenozo\service\get
           array( $db_participant->id, $db_script->id )
         );
 
-        // Remove the survey(s) if there is no check or the check has expired
-        if( is_null( $db_supporting_script_check ) || $db_supporting_script_check->is_expired() )
+        // Remove the survey(s) if there is an expired check
+        if( !is_null( $db_supporting_script_check ) && $db_supporting_script_check->is_expired() )
         {
           foreach( $record->get_survey_list() as $db_survey ) $db_survey->delete();
           $record->delete();
