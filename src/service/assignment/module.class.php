@@ -242,7 +242,7 @@ class module extends \cenozo\service\site_restricted_participant_module
         if( is_null( $this->db_participant ) )
           throw lib::create( 'exception\argument', 'db_participant', $this->db_participant, __METHOD__ );
 
-        foreach( $this->db_participant->get_supporting_script_check_list() as $db_supporting_script_check )
+        foreach( $this->db_participant->get_supporting_script_check_object_list() as $db_supporting_script_check )
           $db_supporting_script_check->process();
       }
     }
