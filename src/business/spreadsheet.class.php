@@ -327,9 +327,8 @@ class spreadsheet extends \cenozo\base_object
         $col = 'A';
         foreach( $table['header'] as $header )
         {
-          $autosize = !in_array( $col, $table['fixed'] );
           $this->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-          $this->set_cell( $col.$row, $header, $autosize );
+          $this->set_cell( $col.$row, $header );
           $col++;
         }
         $this->set_bold( false );
@@ -350,9 +349,8 @@ class spreadsheet extends \cenozo\base_object
           $col = 'A';
           foreach( $contents as $content )
           {
-            $autosize = !in_array( $col, $table['fixed'] );
             $this->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
-            $this->set_cell( $col.$row, $content, $autosize );
+            $this->set_cell( $col.$row, $content );
             if( !array_key_exists( $col, $contents_are_numeric ) )
               $contents_are_numeric[$col] = false;
             $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
