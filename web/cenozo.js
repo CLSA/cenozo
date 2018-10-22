@@ -1726,14 +1726,19 @@ cenozo.directive( 'cnRecordView', [
               group.inputArray.filter( function( input ) {
                 return input.key == key;
               } ).forEach( function( input ) {
-                if( null != input && 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
-                  input.enumList = 'boolean' === input.type
-                                 ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
-                                 : angular.copy( $scope.model.metadata.columnList[key].enumList );
-                  // add the empty option if input is not required
-                  if( angular.isArray( input.enumList ) && !$scope.model.metadata.columnList[key].required )
-                    if( null == input.enumList.findByProperty( 'name', '(empty)' ) )
-                      input.enumList.unshift( { value: '', name: '(empty)' } );
+                if( null != input ) {
+                  if( angular.isDefined( input.typeahead ) ) {
+                    // make the default typeahead min-length 2
+                    if( angular.isUndefined( input.typeahead.minLength ) ) input.typeahead.minLength = 2;
+                  } else if( 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
+                    input.enumList = 'boolean' === input.type
+                                   ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
+                                   : angular.copy( $scope.model.metadata.columnList[key].enumList );
+                    // add the empty option if input is not required
+                    if( angular.isArray( input.enumList ) && !$scope.model.metadata.columnList[key].required )
+                      if( null == input.enumList.findByProperty( 'name', '(empty)' ) )
+                        input.enumList.unshift( { value: '', name: '(empty)' } );
+                  }
                 }
               } );
             } );
