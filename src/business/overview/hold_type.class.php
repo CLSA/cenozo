@@ -56,21 +56,21 @@ class hold_type extends \cenozo\business\overview\base_overview
     $participant_mod->merge( $base_mod );
     $total = $participant_class_name::count( $participant_mod );
 
-    $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
     
-    $hold_type_sel = lib::create( 'database\select' );
-    $hold_type_sel->add_column( 'type' );
-    $hold_type_sel->add_column( 'name' );
-    $hold_type_sel->add_column( 'COUNT(*)', 'total', false );
-    $hold_type_mod = lib::create( 'database\modifier' );
-    $hold_type_mod->join( 'hold', 'hold_type.id', 'hold.hold_type_id' );
-    $hold_type_mod->join( 'participant_last_hold', 'hold.participant_id', 'participant_last_hold.participant_id' );
-    $hold_type_mod->join( 'participant', 'participant_last_hold.participant_id', 'participant.id' );
-    $hold_type_mod->merge( $base_mod );
-    $hold_type_mod->group( 'hold_type.id' );
-    $hold_type_mod->order( 'hold_type.type' );
-    $hold_type_mod->order( 'hold_type.name' );
-    foreach( $hold_type_class_name::select( $hold_type_sel, $hold_type_mod ) as $hold_type )
+    $participant_sel = lib::create( 'database\select' );
+    $participant_sel->add_table_column( 'hold_type', 'type' );
+    $participant_sel->add_table_column( 'hold_type', 'name' );
+    $participant_sel->add_column( 'COUNT(*)', 'total', false );
+    $participant_mod = lib::create( 'database\modifier' );
+    $participant_mod->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
+    $participant_mod->join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+    $participant_mod->join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+    $participant_mod->merge( $base_mod );
+    $participant_mod->group( 'hold_type.id' );
+    $participant_mod->order( 'hold_type.type' );
+    $participant_mod->order( 'hold_type.name' );
+    foreach( $participant_class_name::select( $participant_sel, $participant_mod ) as $hold_type )
     {
       $this->add_root_item(
         $hold_type['type'].': '.$hold_type['name'],
