@@ -246,12 +246,12 @@ abstract class service extends \cenozo\base_object
     $this->headers['Content-Type'] = $mime_type;
     $this->headers['Content-Length'] = strlen( $this->get_data() );
 
-    // use Windows-1252 charset when returning a CSV file <sarcasm>Thanks Microsoft!</sarcasm>
-    if( 'text/csv' == $mime_type ) $this->headers['Content-Type'] .= '; charset=Windows-1252';
+    $is_text = 1 === preg_match( '#^text/#', $mime_type );
 
-    if( false !== strpos( $mime_type, 'application/' ) ||
-        false !== strpos( $mime_type, 'image/' ) ||
-        'text/csv' == $mime_type )
+    // use Windows-1252 charset when returning a CSV file <sarcasm>Thanks Microsoft!</sarcasm>
+    if( $is_text ) $this->headers['Content-Type'] .= '; charset=Windows-1252';
+
+    if( false !== strpos( $mime_type, 'application/' ) || false !== strpos( $mime_type, 'image/' ) || $is_text )
     {
       $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
       $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
@@ -675,7 +675,8 @@ abstract class service extends \cenozo\base_object
       'application/pdf',
       'application/vnd.oasis.opendocument.spreadsheet',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/csv'
+      'text/csv',
+      'text/plain'
     );
   }
 
@@ -710,7 +711,7 @@ abstract class service extends \cenozo\base_object
           if( 3 > $index ) $parsed_accept[$index][] = $media;
         }
 
-        // now find the highest-ranking accept which matches one fo the available mime types
+        // now find the highest-ranking accept which matches one of the available mime types
         $this->mime_type = NULL;
         foreach( $parsed_accept as $accept_list )
         {
@@ -761,6 +762,7 @@ abstract class service extends \cenozo\base_object
     else if( 'application/vnd.oasis.opendocument.spreadsheet' == $mime_type )
       $filename .= '.ods';
     else if( 'text/csv' == $mime_type ) $filename .= '.csv';
+    else if( 'text/plain' == $mime_type ) $filename .= '.txt';
 
     return $filename;
   }
@@ -806,6 +808,10 @@ abstract class service extends \cenozo\base_object
         else if( 'text/csv' == $mime_type )
         {
           $this->encoded_data = $util_class_name::get_data_as_csv( $this->encoded_data );
+        }
+        else if( 'text/plain' == $mime_type )
+        {
+          $this->encoded_data = iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->encoded_data );
         }
         else // 'application/json' == $encoding
         {

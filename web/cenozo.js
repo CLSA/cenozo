@@ -5696,12 +5696,13 @@ cenozo.factory( 'CnHttpFactory', [
           else object.params = self.data;
         }
 
-        if( 0 <= ['csv','jpeg','ods','pdf','unknown','xlsx','zip'].indexOf( self.format ) ) {
+        if( 0 <= ['csv','jpeg','ods','pdf','txt','unknown','xlsx','zip'].indexOf( self.format ) ) {
           var format = null;
           if( 'csv' == self.format ) format = 'text/csv;charset=utf-8';
           else if( 'jpeg' == self.format ) format = 'image/jpeg';
           else if( 'ods' == self.format ) format = 'application/vnd.oasis.opendocument.spreadsheet;charset=utf-8';
           else if( 'pdf' == self.format ) format = 'application/pdf';
+          else if( 'txt' == self.format ) format = 'text/plain';
           else if( 'unknown' == self.format ) format = 'application/octet-stream';
           else if( 'xlsx' == self.format )
             format = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8';
