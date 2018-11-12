@@ -141,7 +141,7 @@ class spreadsheet extends \cenozo\base_object
       $max = is_array( $temp ) ? count( $temp ) : 2;
 
       // add in the title
-      $max_col = 1 < $max ? chr( 64 + $max ) : false;
+      $max_col = static::get_column_name( $max );
 
       $this->set_size( 16 );
       $this->set_bold( true );
@@ -249,7 +249,7 @@ class spreadsheet extends \cenozo\base_object
     {
       $width = max(
         is_array( $table['header'] ) ? count( $table['header'] ) : 0,
-        is_array( $table['contents'] ) ? count( $table['contents'] ) : 0,
+        is_array( $table['contents'] && is_array( $table['contents'][0] ) ) ? count( $table['contents'][0] ) : 0,
         is_array( $table['footer'] ) ? count( $table['footer'] ) : 0 );
       if( $max < $width ) $max = $width;
     }
@@ -267,7 +267,7 @@ class spreadsheet extends \cenozo\base_object
     }
 
     $row = 1;
-    $max_col = 1 < $max ? chr( 64 + $max ) : false;
+    $max_col = static::get_column_name( $max );
 
     // add in the title
     if( !is_null( $title ) )
@@ -299,7 +299,7 @@ class spreadsheet extends \cenozo\base_object
       $width = max(
         count( $table['header'] ),
         count( $table['footer'] ) );
-      $max_col = 1 < $max ? chr( 64 + $width ) : false;
+      $max_col = static::get_column_name( $width );
 
       // always skip a row before each table
       $row++;
@@ -343,7 +343,6 @@ class spreadsheet extends \cenozo\base_object
       if( count( $table['contents'] ) )
       {
         $content_row = 0;
-        $insert_row = count( $table['blanks'] ) > 0 ? true : false;
         foreach( $table['contents'] as $contents )
         {
           $col = 'A';
@@ -356,8 +355,6 @@ class spreadsheet extends \cenozo\base_object
             $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
             $col++;
           }
-
-          if( $insert_row && in_array( $content_row, $table['blanks'] ) ) $row++;
 
           $cell_count += count( $contents );
           $content_row++;
@@ -611,6 +608,18 @@ class spreadsheet extends \cenozo\base_object
       $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE;
 
     $this->php_excel->getActiveSheet()->getPageSetup()->setOrientation( $type );
+  }
+
+  /**
+   * Used to convert a number to a column (up to the maximum column name ZZZ)
+   */
+  protected static function get_column_name( $number )
+  {
+    $col = '';
+    if( 26*27 < $number ) $col .= chr( 65 + floor( ($number-703) / 26 / 26 ) );
+    if( 26 < $number ) $col .= chr( 65 + floor( ($number-27) / 26 ) % 26 );
+    if( 0 < $number ) $col .= chr( 65 + ($number-1) % 26 );
+    return 0 < strlen( $col ) ? $col : false;
   }
 
   /**
