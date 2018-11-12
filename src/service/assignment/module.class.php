@@ -157,6 +157,17 @@ class module extends \cenozo\service\site_restricted_participant_module
           'last_phone_call.id IS NOT NULL AND last_phone_call.end_datetime IS NULL',
           'call_active', false, 'boolean' );
     }
+
+    // add whether the participant has consented to provide HIN but has no HIN on file
+    if( $select->has_column( 'missing_hin' ) )
+    {
+      $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
+      $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
+      $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
+      $modifier->join( 'participant_last_hin', 'participant.id', 'participant_last_hin.participant_id' );
+      $modifier->where( 'consent_type.name', '=', 'HIN access' );
+      $select->add_column( 'IFNULL( consent.accept, false ) AND participant_last_hin.hin_id IS NULL', 'missing_hin', false, 'boolean' );
+    }
   }
 
   /**
