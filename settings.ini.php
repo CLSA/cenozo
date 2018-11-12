@@ -52,7 +52,7 @@ $settings['module']['script'] = false;
 $settings['module']['voip'] = false;
 
 // the maximum time allowed for a report to finish (in seconds)
-$settings['report']['time_limit'] = 180;
+$settings['report']['time_limit'] = 300;
 
 // the maximum number of cells allowed in a non-csv report
 $settings['report']['max_cells'] = 20000;
