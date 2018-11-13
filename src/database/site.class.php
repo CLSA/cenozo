@@ -198,4 +198,13 @@ class site extends record
       if( !is_null( $db_postcode ) ) $this->region_id = $db_postcode->region_id;
     }
   }
+
+  /**
+   * Returns the site's timezone as a DateTimeZone object
+   * @access public
+   */
+  public function get_timezone_object()
+  {
+    return new \DateTimeZone( $this->timezone );
+  }
 }

@@ -184,4 +184,13 @@ class user extends record
       log::warning( sprintf( 'User %d (%s) has more than one open phone call!', $this->id, $this->name ) );
     return 0 < count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
   }
+
+  /**
+   * Returns the user's timezone as a DateTimeZone object
+   * @access public
+   */
+  public function get_timezone_object()
+  {
+    return new \DateTimeZone( $this->timezone );
+  }
 }
