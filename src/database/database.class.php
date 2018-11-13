@@ -208,6 +208,43 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Create a new database savepoint
+   * 
+   * All transactions which happen after this savepoint can be reversed by calling rollback_savepoint()
+   * @param string $name The name of the savepoint
+   * @return boolean
+   */
+  public function savepoint( $name )
+  {
+    if( true === self::$debug ) log::debug( sprintf( '(DB) adding savepoint "%s"', $name ) );
+    return $this->connection->savepoint( $name );
+  }
+
+  /**
+   * Remove a database savepoint
+   * @param string $name The name of the savepoint
+   * @return boolean
+   */
+  public function release_savepoint( $name )
+  {
+    if( true === self::$debug ) log::debug( sprintf( '(DB) releasing savepoint "%s"', $name ) );
+    return $this->connection->release_savepoint( $name );
+  }
+
+  /**
+   * Remove a database savepoint
+   * 
+   * Reverses all database operations back to when the named savepoint was created
+   * @param string $name The name of the savepoint
+   * @return boolean
+   */
+  public function rollback_savepoint( $name )
+  {
+    if( true === self::$debug ) log::debug( sprintf( '(DB) rolling back to savepoint "%s"', $name ) );
+    return $this->connection->rollback( MYSQLI_TRANS_COR_AND_CHAIN, $name );
+  }
+
+  /**
    * Get's the name of the database.
    * @return string
    * @access public

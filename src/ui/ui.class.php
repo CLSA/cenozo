@@ -432,6 +432,8 @@ class ui extends \cenozo\base_object
 
     $list = array();
 
+    if( 3 <= $db_role->tier && $setting_manager->get_setting( 'general', 'participant_import' ) )
+      $list['Participant Import'] = array( 'subject' => 'participant', 'action' => 'import' );
     if( 3 <= $db_role->tier )
       $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
     if( 3 <= $db_role->tier )

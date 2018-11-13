@@ -208,10 +208,11 @@ class util
    * Returns a DateTime object
    * 
    * @param string $datetime A date string in any valid PHP date time format.
+   * @param string|DateTimeZone $timezone Used to define new datetime object timezone (default is UTC)
    * @return DateTime
    * @access public
    */
-  public static function get_datetime_object( $datetime = NULL )
+  public static function get_datetime_object( $datetime = NULL, $timezone = NULL )
   {
     if( is_object( $datetime ) )
     {
@@ -222,9 +223,19 @@ class util
     else if( is_string( $datetime ) || is_null( $datetime ) )
     {
       if( 'CURRENT_TIMESTAMP' == $datetime ) $datetime = NULL;
-      $timezone = new \DateTimeZone( 'UTC' );
-      $datetime_obj = new \DateTime( $datetime, $timezone );
-      $datetime_obj->setTimezone( $timezone );
+      $timezone_obj = NULL;
+      if( is_object( $timezone ) )
+      {
+        if( 'DateTimeZone' != get_class( $timezone ) )
+          throw lib::create( 'exception\argument', 'timezone', $timezone, __METHOD__ );
+        $timezone_obj = $timezone;
+      }
+      else
+      {
+        $timezone_obj = new \DateTimeZone( is_null( $timezone ) ? 'UTC' : $timezone );
+      }
+      $datetime_obj = new \DateTime( $datetime, $timezone_obj );
+      $datetime_obj->setTimezone( $timezone_obj );
       return $datetime_obj;
     }
 
