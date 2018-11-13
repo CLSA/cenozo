@@ -5,7 +5,7 @@ DROP PROCEDURE IF EXISTS update_participant_last_written_consents;
 DELIMITER $$
 CREATE PROCEDURE update_participant_last_written_consents(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
-  REPLACE INTO participant_last_written_consents( participant_id, consent_type_id, consent_id )
+  REPLACE INTO participant_last_written_consent( participant_id, consent_type_id, consent_id )
   SELECT participant.id, consent_type.id, consent.id
   FROM participant
   CROSS JOIN consent_type
