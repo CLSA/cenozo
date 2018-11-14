@@ -217,7 +217,9 @@ class database extends \cenozo\base_object
   public function savepoint( $name )
   {
     if( true === self::$debug ) log::debug( sprintf( '(DB) adding savepoint "%s"', $name ) );
-    return $this->connection->savepoint( $name );
+    $success = $this->connection->savepoint( $name );
+    if( !$success ) log::warning( sprintf( 'Unable to create savepoint %s', $name ) );
+    return $success;
   }
 
   /**
@@ -228,7 +230,9 @@ class database extends \cenozo\base_object
   public function release_savepoint( $name )
   {
     if( true === self::$debug ) log::debug( sprintf( '(DB) releasing savepoint "%s"', $name ) );
-    return $this->connection->release_savepoint( $name );
+    $success = $this->connection->release_savepoint( $name );
+    if( !$success ) log::warning( sprintf( 'Unable to release savepoint %s', $name ) );
+    return $success;
   }
 
   /**
@@ -241,7 +245,9 @@ class database extends \cenozo\base_object
   public function rollback_savepoint( $name )
   {
     if( true === self::$debug ) log::debug( sprintf( '(DB) rolling back to savepoint "%s"', $name ) );
-    return $this->connection->rollback( MYSQLI_TRANS_COR_AND_CHAIN, $name );
+    $success = $this->connection->rollback( MYSQLI_TRANS_COR_AND_CHAIN, $name );
+    if( !$success ) log::warning( sprintf( 'Unable to rollback savepoint %s', $name ) );
+    return $success;
   }
 
   /**
