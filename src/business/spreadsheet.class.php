@@ -249,7 +249,7 @@ class spreadsheet extends \cenozo\base_object
     {
       $width = max(
         is_array( $table['header'] ) ? count( $table['header'] ) : 0,
-        is_array( $table['contents'] && is_array( $table['contents'][0] ) ) ? count( $table['contents'][0] ) : 0,
+        is_array( $table['contents'] ) && is_array( $table['contents'][0] ) ? count( $table['contents'][0] ) : 0,
         is_array( $table['footer'] ) ? count( $table['footer'] ) : 0 );
       if( $max < $width ) $max = $width;
     }
