@@ -545,13 +545,75 @@ class participant extends record
    */
   public static function import( $data )
   {
+    // used to add addresses to imported participants (below)
+    $add_address_func = function( $participant_id, $rank, $address )
+    {
+      $address_class_name = lib::get_class_name( 'database\address' );
+
+      $db_address = lib::create( 'database\address' );
+      $db_address->participant_id = $participant_id;
+      $db_address->rank = $rank;
+      $db_address->address1 = array_key_exists( 'address1', $address ) && !is_null( $address['address1'] )
+                            ? $address['address1'] : 'Unknown';
+      if( array_key_exists( 'address2', $address ) && !is_null( $address['address2'] ) )
+        $db_address->address2 = $address['address2'];
+      $db_address->city = array_key_exists( 'city', $address ) && !is_null( $address['city'] )
+                        ? $address['city'] : 'Unknown';
+      $db_address->postcode = array_key_exists( 'postcode', $address ) && !is_null( $address['postcode'] )
+                            ? $address['postcode'] : 'T1A 1A1';
+      if( array_key_exists( 'address_note', $address ) && !is_null( $address['address_note'] ) )
+        $db_address->note = $address['address_note'];
+
+      try { $db_address->save(); }
+      catch( \cenozo\exception\notice $e ) { return sprintf( 'Invalid postcode "%s".', $db_address->postcode ); }
+
+      // delete any trace records created as a result of adding the address
+      $trace_mod = lib::create( 'database\modifier' );
+      $trace_mod->where( 'participant_id', '=', $participant_id );
+      $address_class_name::db()->execute( sprintf( 'DELETE FROM trace %s', $trace_mod->get_sql() ) );
+
+      return $db_address->id;
+    };
+
+    // used to add phone numbers to imported participants (below)
+    $add_phone_func = function( $participant_id, $rank, $phone )
+    {
+      $phone_class_name = lib::get_class_name( 'database\phone' );
+
+      $db_phone = lib::create( 'database\phone' );
+      $db_phone->participant_id = $participant_id;
+      $db_phone->rank = $rank;
+      if( array_key_exists( 'phone_type', $phone ) && !is_null( $phone['phone_type'] ) )
+      {
+        if( !in_array( $phone['phone_type'], $phone_class_name::get_enum_values( 'type' ) ) )
+          return sprintf( 'Invalid phone type "%s".', $phone['phone_type'] );
+        $db_phone->type = $phone['phone_type'];
+      }
+      else $db_phone->type = 'home';
+
+      $db_phone->number = array_key_exists( 'phone_number', $phone ) && !is_null( $phone['phone_number'] ) ?
+        $phone['phone_number'] : '555-555-5555';
+      if( array_key_exists( 'link_phone_to_address', $phone ) && !is_null( $phone['link_phone_to_address'] ) )
+        $db_phone->address_id = $new_address_id_list['first'];
+      if( array_key_exists( 'phone_note', $phone ) && !is_null( $phone['phone_note'] ) ) $db_phone->note = $phone['phone_note'];
+      $db_phone->save();
+
+      // delete any trace records created as a result of adding the phone
+      $trace_mod = lib::create( 'database\modifier' );
+      $trace_mod->where( 'participant_id', '=', $participant_id );
+      $phone_class_name::db()->execute( sprintf( 'DELETE FROM trace %s', $trace_mod->get_sql() ) );
+
+      return $db_phone->id;
+    };
+
     $util_class_name = lib::get_class_name( 'util' );
     $source_class_name = lib::get_class_name( 'database\source' );
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
     $language_class_name = lib::get_class_name( 'database\language' );
     $availability_type_class_name = lib::get_class_name( 'database\availability_type' );
-    $postcode_class_name = lib::get_class_name( 'database\postcode' );
-    $db_user = lib::create( 'business\session' )->get_user();
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_user = $session->get_user();
 
     // cast objects as arrays
     if( is_object( $data ) ) $data = (array) $data;
@@ -595,7 +657,7 @@ class participant extends record
 
     if( array_key_exists( 'sex', $data ) && !is_null( $data['sex'] ) )
     {
-      if( !in_array( $data['sex'], array( 'male', 'female' ) ) ) return sprintf( 'Invalid sex "%s".', $data['sex'] );
+      if( !in_array( $data['sex'], static::get_enum_values( 'sex' ) ) ) return sprintf( 'Invalid sex "%s".', $data['sex'] );
       $db_participant->sex = $data['sex'];
     }
     else $db_participant->sex = 'male';
@@ -674,32 +736,22 @@ class participant extends record
     if( array_key_exists( 'global_note', $data ) && !is_null( $data['global_note'] ) )
       $db_participant->global_note = $data['global_note'];
 
-    // create a savepoint so we can rollback if there is an error below
-    static::db()->savepoint( 'participant_import' );
+    // Create a savepoint so we can rollback the participant insert if an error occurs while adding address/phone records
+    $savepoint_name = sprintf( 'participant_import %s', $db_participant->uid );
+    static::db()->savepoint( $savepoint_name );
 
     $db_participant->save();
 
     // now create the address record(s)
+    $current_address_rank = 1;
     $new_address_id_list = array();
-    $db_address = lib::create( 'database\address' );
-    $db_address->participant_id = $db_participant->id;
-    $db_address->address1 = array_key_exists( 'address1', $data ) && !is_null( $data['address1'] ) ?
-      $data['address1'] : 'Unknown';
-    if( array_key_exists( 'address2', $data ) && !is_null( $data['address2'] ) ) $db_address->address2 = $data['address2'];
-    $db_address->city = array_key_exists( 'city', $data ) && !is_null( $data['city'] ) ?
-      $data['city'] : 'Unknown';
-    $db_address->postcode = array_key_exists( 'postcode', $data ) && !is_null( $data['postcode'] ) ?
-      $data['postcode'] : 'T1A 1A1';
-    if( array_key_exists( 'address_note', $data ) && !is_null( $data['address_note'] ) ) $db_address->note = $data['address_note'];
-
-    try { $db_address->save(); }
-    catch( \cenozo\exception\notice $e )
+    $result = $add_address_func( $db_participant->id, $current_address_rank++, $data );
+    if( is_string( $result ) )
     {
-      static::db()->rollback_savepoint( 'participant_import' );
-      return sprintf( 'Invalid postcode "%s".', $db_address->postcode );
+      static::db()->rollback_savepoint( $savepoint_name );
+      return $result;
     }
-
-    $new_address_id_list['first'] = $db_address->id;
+    else $new_address_id_list['first'] = $result;
 
     // check for additional addresses
     $address_list = array();
@@ -715,48 +767,30 @@ class participant extends record
 
     foreach( $address_list as $index => $address )
     {
-      $db_address = lib::create( 'database\address' );
-      $db_address->participant_id = $db_participant->id;
-      $db_address->address1 = array_key_exists( 'address1', $address ) && !is_null( $address['address1'] ) ?
-        $address['address1'] : 'Unknown';
-      if( array_key_exists( 'address2', $address ) && !is_null( $address['address2'] ) ) $db_address->address2 = $address['address2'];
-      $db_address->city = array_key_exists( 'city', $address ) && !is_null( $address['city'] ) ?
-        $address['city'] : 'Unknown';
-      $db_address->postcode = array_key_exists( 'postcode', $address ) && !is_null( $address['postcode'] ) ?
-        $address['postcode'] : 'T1A 1A1';
-      if( array_key_exists( 'address_note', $address ) && !is_null( $address['address_note'] ) )
-        $db_address->note = $address['address_note'];
-      $db_address->save();
-      $new_address_id_list[$index] = $db_address->id;
+      $result = $add_address_func( $db_participant->id, $current_address_rank++, $address );
+      if( is_string( $result ) )
+      {
+        static::db()->rollback_savepoint( $savepoint_name );
+        return $result;
+      }
+      else $new_address_id_list[$index] = $result;
     }
 
     // now create the phone record(s)
-    $db_phone = lib::create( 'database\phone' );
-    $db_phone->participant_id = $db_participant->id;
-    if( array_key_exists( 'phone_type', $data ) && !is_null( $data['phone_type'] ) )
+    $current_phone_rank = 1;
+    $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $data );
+    if( is_string( $result ) )
     {
-      if( !in_array( $data['phone_type'], array( 'male', 'female' ) ) )
-      {
-        static::db()->rollback_savepoint( 'participant_import' );
-        return sprintf( 'Invalid phone type "%s".', $data['phone_type'] );
-      }
-      $db_phone->type = $data['phone_type'];
+      static::db()->rollback_savepoint( $savepoint_name );
+      return $result;
     }
-    else $db_phone->type = 'home';
-
-    $db_phone->number = array_key_exists( 'phone_number', $data ) && !is_null( $data['phone_number'] ) ?
-      $data['phone_number'] : '555-555-5555';
-    if( array_key_exists( 'link_phone_to_address', $data ) && !is_null( $data['link_phone_to_address'] ) )
-      $db_phone->address_id = $new_address_id_list['first'];
-    if( array_key_exists( 'phone_note', $data ) && !is_null( $data['phone_note'] ) ) $db_phone->note = $data['phone_note'];
-    $db_phone->save();
 
     // check for additional phonees
     $phone_list = array();
     foreach( array_keys( $data ) as $column )
     {
       $matches = array();
-      if( 1 === preg_match( '/(phone1|phone2|city|postcode|phone_note)_([0-9]+)/', $column, $matches ) )
+      if( 1 === preg_match( '/(phone_type|phone_number|link_phone_to_address|phone_note|phone_note)_([0-9]+)/', $column, $matches ) )
       {
         if( !array_key_exists( $matches[2], $phone_list ) ) $phone_list[$matches[2]] = array();
         $phone_list[$matches[2]][$matches[1]] = $data[$column];
@@ -765,26 +799,24 @@ class participant extends record
 
     foreach( $phone_list as $index => $phone )
     {
-      $db_phone = lib::create( 'phonebase\phone' );
-      $db_phone->participant_id = $db_participant->id;
-      if( array_key_exists( 'phone_type', $phone ) && !is_null( $phone['phone_type'] ) )
+      $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $phone );
+      if( is_string( $result ) )
       {
-        if( !in_array( $phone['phone_type'], array( 'male', 'female' ) ) )
-        {
-          static::db()->rollback_savepoint( 'participant_import' );
-          return sprintf( 'Invalid phone type "%s".', $phone['phone_type'] );
-        }
-        $db_phone->type = $phone['phone_type'];
+        static::db()->rollback_savepoint( $savepoint_name );
+        return $result;
       }
-      else $db_phone->type = 'home';
-
-      $db_phone->number = array_key_exists( 'phone_number', $phone ) && !is_null( $phone['phone_number'] ) ?
-        $phone['phone_number'] : '555-555-5555';
-      if( array_key_exists( 'link_phone_to_address', $phone ) && !is_null( $phone['link_phone_to_address'] ) )
-        $db_phone->address_id = $new_address_id_list[ array_key_exists( $index, $new_address_id_list ) ? $index : 'first' ];
-      if( array_key_exists( 'phone_note', $phone ) && !is_null( $phone['phone_note'] ) ) $db_phone->note = $phone['phone_note'];
-      $db_phone->save();
     }
+
+    // now add this participant to mastodon
+    static::db()->execute( sprintf(
+      'INSERT INTO application_has_participant '.
+      'SET application_id = %s, participant_id = %s, create_timestamp = %s',
+      static::db()->format_string( $db_application->id ),
+      static::db()->format_string( $db_participant->id ),
+      static::db()->format_string( NULL )
+    ) );
+
+    static::db()->commit_savepoint( $savepoint_name );
   }
 
   /**

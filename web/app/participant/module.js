@@ -1412,7 +1412,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                   // assume the first line is a header
                   var columnLookup = csv.shift().map( column => column.trim().toLowerCase().replace( ' ', '_' ) );
                   columnLookup.forEach( function( column, index ) {
-                    if( -1 === validColumnList.indexOf( column ) ) {
+                    // check for regular column names and multi (address and phone) column names
+                    if( -1 === validColumnList.indexOf( column ) &&
+                        -1 === validMultiColumnList.indexOf( column.replace( /_[0-9]+$/, '' ) ) ) {
                       columnLookup[index] = null;
                     } else {
                       validColumnCount++;
@@ -1425,9 +1427,11 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                     csv.filter( line => line.length ).forEach( function( line ) {
                       var participant = {};
                       line.forEach( function( value, index ) {
-                        if( null !== columnLookup[index] ) participant[columnLookup[index]] = value;
+                        if( null !== columnLookup[index] && null !== value ) participant[columnLookup[index]] = value;
                       } );
-                      participantList.push( participant );
+
+                      // don't add participants which only have empty values
+                      if( Object.keys( participant ).length ) participantList.push( participant );
                     } );
 
                     // now send the list of participants to the server
@@ -1478,7 +1482,10 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           'email',
           'mass_email',
           'low_education',
-          'global_note',
+          'global_note'
+        ];
+
+        var validMultiColumnList = [
           'address1',
           'address2',
           'city',
