@@ -681,6 +681,7 @@ class participant extends record
     else
     {
       $language_mod = lib::create( 'database\modifier' );
+      $language_mod->where( 'active', '=', true );
       $language_mod->order( 'code' );
       $language_mod->limit( 1 );
       $db_language = current( $language_class_name::select_objects( $language_mod ) );

@@ -76,7 +76,7 @@ class post extends \cenozo\service\service
     {
       // This is a special service since participants cannot be added to the system through the web interface.
       // Instead, this service provides participant-based utility functions.
-      if( property_exists( 'uid_list', $file ) )
+      if( property_exists( $file, 'uid_list' ) )
       {
         $uid_list = $participant_class_name::get_valid_uid_list( $file->uid_list );
         $select = lib::create( 'database\select' );
@@ -85,17 +85,17 @@ class post extends \cenozo\service\service
         $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'uid', 'IN', $uid_list );
 
-        if( property_exists( 'input_list', $file ) )
+        if( property_exists( $file, 'input_list' ) )
         { // change each column/value pair in the uid-list
           $this->set_data( $participant_class_name::multiedit( $modifier, (array) $file->input_list ) );
         }
-        else if( property_exists( 'consent', $file ) )
+        else if( property_exists( $file, 'consent' ) )
         { // add the given consent record to all participants in the uid_list
           $db_consent = lib::create( 'database\consent' );
           foreach( $file->consent as $column => $value ) $db_consent->$column = $value;
           $this->set_data( $db_consent->save_list( $select, $modifier ) );
         }
-        else if( property_exists( 'collection', $file ) )
+        else if( property_exists( $file, 'collection' ) )
         { // add/remove participants from the given collection
           try
           {
@@ -130,13 +130,13 @@ class post extends \cenozo\service\service
             $this->status->set_code( 404 ); // collection doesn't exist
           }
         }
-        else if( property_exists( 'event', $file ) )
+        else if( property_exists( $file, 'event' ) )
         { // add the given event record
           $db_event = lib::create( 'database\event' );
           foreach( $file->event as $column => $value ) $db_event->$column = $value;
           $this->set_data( $db_event->save_list( $select, $modifier ) );
         }
-        else if( property_exists( 'hold', $file ) )
+        else if( property_exists( $file, 'hold' ) )
         { // add the given hold record
           $db_hold = lib::create( 'database\hold' );
           foreach( $file->hold as $column => $value ) $db_hold->$column = $value;
@@ -161,7 +161,7 @@ class post extends \cenozo\service\service
                 $e ) : $e;
           }
         }
-        else if( property_exists( 'note', $file ) )
+        else if( property_exists( $file, 'note' ) )
         { // add the given event record
           $db_note = lib::create( 'database\note' );
           foreach( $file->note as $column => $value ) $db_note->$column = $value;
