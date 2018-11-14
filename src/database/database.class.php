@@ -251,6 +251,21 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Commits a database savepoint
+   * 
+   * Commits all database statements which have occurred since the savepoint was created
+   * @param string $name The name of the savepoint
+   * @return boolean
+   */
+  public function commit_savepoint( $name )
+  {
+    if( true === self::$debug ) log::debug( sprintf( '(DB) commiting savepoint "%s"', $name ) );
+    $success = $this->connection->commit( MYSQLI_TRANS_COR_AND_CHAIN, $name );
+    if( !$success ) log::warning( sprintf( 'Unable to commit savepoint %s', $name ) );
+    return $success;
+  }
+
+  /**
    * Get's the name of the database.
    * @return string
    * @access public
