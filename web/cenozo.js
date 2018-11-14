@@ -122,6 +122,9 @@ angular.extend( String.prototype, {
         }
       }
 
+      // don't forget the last value
+      current.push( 0 < value.length ? value : null );
+
       if( 0 < current.length ) data.push( current );
     } );
 
