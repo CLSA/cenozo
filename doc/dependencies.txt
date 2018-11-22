@@ -16,3 +16,7 @@ Modify the following php parameters:
 
 Load timezone information into mysql:
   mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql
+
+Apache Mod Rewrite:
+  sudo a2enmod rewrite
+  edit /etc/apache2/apache2.conf, change AllowOverride from None to All in <Directory /var/www/></Directory>
