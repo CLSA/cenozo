@@ -1,4 +1,4 @@
-define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list, name ) {
+define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -305,6 +305,14 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
       title: 'Search',
       isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
       operation: function( $state, model ) { $state.go( 'search_result.list' ); }
+    } );
+  }
+
+  if( angular.isDefined( module.actions.import ) ) {
+    module.addExtraOperation( 'list', {
+      title: 'Import',
+      isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
+      operation: function( $state, model ) { $state.go( 'participant.import' ); }
     } );
   }
 
@@ -870,6 +878,35 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
   ] );
 
   /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnParticipantImport', [
+    'CnParticipantImportFactory', 'CnSession', '$state', '$timeout',
+    function( CnParticipantImportFactory, CnSession, $state, $timeout ) {
+      return {
+        templateUrl: module.getFileUrl( 'import.tpl.html' ),
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnParticipantImportFactory.instance();
+          $scope.tab = 'participant';
+          CnSession.setBreadcrumbTrail(
+            [ {
+              title: 'Participants',
+              go: function() { $state.go( 'participant.list' ); }
+            }, {
+              title: 'Multi-Edit'
+            } ]
+          );
+
+          // trigger the elastic directive when confirming the participant selection
+          $scope.confirm = function() {
+            $scope.model.confirm()
+            $timeout( function() { angular.element( '#uidListString' ).trigger( 'elastic' ) }, 100 );
+          };
+        }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantMultiedit', [
     'CnParticipantMultieditFactory', 'CnSession', '$state', '$timeout',
     function( CnParticipantMultieditFactory, CnSession, $state, $timeout ) {
@@ -1214,6 +1251,7 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
           } );
         }
       };
+
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
@@ -1330,6 +1368,198 @@ define( [ 'consent', 'event', 'hold', 'proxy', 'trace' ].reduce( function( list,
       return { instance: function() { return new object( false ); } };
     }
   ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnParticipantImportFactory', [
+    'CnParticipantModelFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory',
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
+    function( CnParticipantModelFactory, CnAddressModelFactory, CnPhoneModelFactory,
+    CnSession, CnHttpFactory, CnModalMessageFactory, $q ) {
+      var object = function() {
+        var self = this;
+        angular.extend( this, {
+          parentModel: CnParticipantModelFactory.root,
+          addressModel: CnAddressModelFactory.root,
+          phoneModel: CnPhoneModelFactory.root,
+          sourceList: [],
+          cohortList: [],
+          sexList: [],
+          languageList: [],
+          availabilityTypeList: [],
+          phoneTypeList: [],
+          importFile: {
+            file: null,
+            size: null,
+            processing: false,
+            model: null,
+            download: function() {},
+            remove: function() {},
+            upload: function() {
+              var obj = this;
+              obj.processing = true;
+              var data = new FormData();
+              data.append( 'file', obj.file );
+              var fileDetails = data.get( 'file' );
+
+              var read = new FileReader();
+              read.readAsText( fileDetails );
+              read.onloadend = function() {
+                var promiseList = [];
+                var validColumnCount = 0;
+                var csv = read.result.parseCSV();
+
+                if( 0 < csv.length ) {
+                  // assume the first line is a header
+                  var columnLookup = csv.shift().map( column => column.trim().toLowerCase().replace( ' ', '_' ) );
+                  columnLookup.forEach( function( column, index ) {
+                    // check for regular column names and multi (address and phone) column names
+                    if( -1 === validColumnList.indexOf( column ) &&
+                        -1 === validMultiColumnList.indexOf( column.replace( /_[0-9]+$/, '' ) ) ) {
+                      columnLookup[index] = null;
+                    } else {
+                      validColumnCount++;
+                    }
+                  } );
+
+                  var participantList = [];
+                  if( validColumnCount ) {
+                    // go through all lines which aren't empty
+                    csv.filter( line => line.length ).forEach( function( line ) {
+                      var participant = {};
+                      line.forEach( function( value, index ) {
+                        if( null !== columnLookup[index] && null !== value ) participant[columnLookup[index]] = value;
+                      } );
+
+                      // don't add participants which only have empty values
+                      if( Object.keys( participant ).length ) participantList.push( participant );
+                    } );
+
+                    // now send the list of participants to the server
+                    promiseList.push(
+                      CnHttpFactory.instance( {
+                        path: 'participant',
+                        data: participantList
+                      } ).post().then( response => response.data )
+                    );
+                  }
+                }
+
+                $q.all( promiseList ).then( function( response ) {
+                  var message = 'There were no valid columns in the first line of the file. ' +
+                    'Please check that the first line of the CSV file contains the column names from the list above.';
+                  if( validColumnCount ) {
+                    response = response[0];
+                    message = 'A total of ' + ( participantList.length - response.length ) + ' out of ' + participantList.length +
+                      ' participants have been imported.' + ( 0 < response.length ? '\n\n' + response.join( '\n' ) : '' );
+                  }
+
+                  CnModalMessageFactory.instance( {
+                    title: validColumnCount ? 'Import Results' : 'Unable to Parse File',
+                    message: message,
+                    error: !validColumnCount
+                  } ).show();
+                } ).finally( function() { obj.processing = false; } );
+              };
+            }
+          },
+          loading: true
+        } );
+
+        var validColumnList = [
+          'source',
+          'cohort',
+          'grouping',
+          'honorific',
+          'first_name',
+          'other_name',
+          'last_name',
+          'sex',
+          'date_of_birth',
+          'language',
+          'availability_type',
+          'callback',
+          'override_quota',
+          'email',
+          'mass_email',
+          'low_education',
+          'global_note'
+        ];
+
+        var validMultiColumnList = [
+          'address1',
+          'address2',
+          'city',
+          'postcode',
+          'address_note',
+          'phone_type',
+          'phone_number',
+          'link_phone_to_address',
+          'phone_note'
+        ];
+
+        $q.all( [
+          this.parentModel.getMetadata().then( function() {
+            self.sexList = self.parentModel.metadata.columnList.sex.enumList.map( row => row.name );
+          } ),
+
+          this.addressModel.getMetadata(),
+
+          this.phoneModel.getMetadata().then( function() {
+            self.phoneTypeList = self.phoneModel.metadata.columnList.type.enumList.map( row => row.name );
+          } ),
+
+          // get the source list
+          CnHttpFactory.instance( {
+            path: 'source',
+            data: {
+              select: { column: 'name' },
+              modifier: { order: 'name' }
+            }
+          } ).query().then( function( response ) {
+            self.sourceList = response.data.map( row => row.name );
+          } ),
+
+          // get the cohort list
+          CnHttpFactory.instance( {
+            path: 'cohort',
+            data: {
+              select: { column: 'name' },
+              modifier: { order: 'name' }
+            }
+          } ).query().then( function( response ) {
+            self.cohortList = response.data.map( row => row.name );
+          } ),
+
+          // get the language list
+          CnHttpFactory.instance( {
+            path: 'language',
+            data: {
+              select: { column: 'code' },
+              modifier: { where: { column: 'active', operator: '=', value: true }, order: 'code' }
+            }
+          } ).query().then( function( response ) {
+            self.languageList = response.data.map( row => row.code );
+          } ),
+
+          // get the availability_type list
+          CnHttpFactory.instance( {
+            path: 'availability_type',
+            data: {
+              select: { column: 'name' },
+              modifier: { order: 'name' }
+            }
+          } ).query().then( function( response ) {
+            self.availabilityTypeList = response.data.map( row => row.name );
+          } ),
+        ] ).then( function() {
+          self.loading = false;
+        } );
+      };
+
+      return { instance: function() { return new object( false ); } };
+    }
+  ] );
+
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantMultieditFactory', [

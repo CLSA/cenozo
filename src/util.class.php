@@ -201,18 +201,18 @@ class util
   {
     $datetime = static::get_datetime_object( $datetime );
     if( is_null( $db_site ) ) $db_site = lib::create( 'business\session' )->get_site();
-    $time_zone_obj = new \DateTimeZone( $db_site->timezone );
-    return $time_zone_obj->getOffset( $datetime ) / 3600;
+    return $db_site->get_timezone_object()->getOffset( $datetime ) / 3600;
   }
 
   /**
    * Returns a DateTime object
    * 
    * @param string $datetime A date string in any valid PHP date time format.
+   * @param string|DateTimeZone $timezone Used to define new datetime object timezone (default is UTC)
    * @return DateTime
    * @access public
    */
-  public static function get_datetime_object( $datetime = NULL )
+  public static function get_datetime_object( $datetime = NULL, $timezone = NULL )
   {
     if( is_object( $datetime ) )
     {
@@ -223,9 +223,19 @@ class util
     else if( is_string( $datetime ) || is_null( $datetime ) )
     {
       if( 'CURRENT_TIMESTAMP' == $datetime ) $datetime = NULL;
-      $timezone = new \DateTimeZone( 'UTC' );
-      $datetime_obj = new \DateTime( $datetime, $timezone );
-      $datetime_obj->setTimezone( $timezone );
+      $timezone_obj = NULL;
+      if( is_object( $timezone ) )
+      {
+        if( 'DateTimeZone' != get_class( $timezone ) )
+          throw lib::create( 'exception\argument', 'timezone', $timezone, __METHOD__ );
+        $timezone_obj = $timezone;
+      }
+      else
+      {
+        $timezone_obj = new \DateTimeZone( is_null( $timezone ) ? 'UTC' : $timezone );
+      }
+      $datetime_obj = new \DateTime( $datetime, $timezone_obj );
+      $datetime_obj->setTimezone( $timezone_obj );
       return $datetime_obj;
     }
 
@@ -457,6 +467,20 @@ class util
   }
 
   /**
+   * Validates whether a datetime is in YYYY-MM-DD hh:mm[:ss] format.
+   * @param string $date
+   * @return boolean
+   * @static
+   * @access public
+   */
+  public static function validate_datetime( $datetime )
+  {
+    return preg_match(
+      '/^(19|20)\d\d-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01]) ([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/',
+      $datetime );
+  }
+
+  /**
    * Validates a north-american phone number in XXX-XXX-XXXX format.
    * @param string $number
    * @param boolean $numeric_only Whether to ignore all non-numeric characters during check
@@ -580,7 +604,7 @@ class util
     $session = lib::create( 'business\session' );
     if( is_null( $db_user ) ) $db_user = $session->get_user();
     $now = static::get_datetime_object();
-    if( !is_null( $db_user ) ) $now->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+    if( !is_null( $db_user ) ) $now->setTimezone( $db_user->get_timezone_object() );
     $tz = $now->format( 'T' );
     $time_format = is_null( $db_user ) || !$db_user->use_12hour_clock ? 'H:i:s' : 'h:i:s a';
 
@@ -615,7 +639,7 @@ class util
               if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
               {
                 $datetime_obj = static::get_datetime_object( $sub_value );
-                $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+                $datetime_obj->setTimezone( $db_user->get_timezone_object() );
                 $sub_value = $datetime_obj->format( 'Y-m-d '.$time_format );
 
                 // and add the timezone to the header
@@ -639,7 +663,7 @@ class util
             if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
             {
               $datetime_obj = static::get_datetime_object( $value );
-              $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+              $datetime_obj->setTimezone( $db_user->get_timezone_object() );
               $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
             }
             else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';

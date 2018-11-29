@@ -87,6 +87,48 @@ angular.extend( String.prototype, {
   },
   ucWords: function() {
     return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
+  },
+  parseCSV: function( fieldDelim, stringDelim ) {
+    if( angular.isUndefined( fieldDelim ) ) fieldDelim = ',';
+    if( angular.isUndefined( stringDelim ) ) stringDelim = '"';
+
+    var data = [];
+    this.split( /\r?\n/ ).forEach( function( line ) {
+      var current = [];
+      var inString = false;
+      var value = '';
+      for( var i = 0; i < line.length; i++ ) {
+        if( !inString ) {
+          if( line[i] === stringDelim ) {
+            inString = true;
+          } else if( line[i] === fieldDelim ) {
+            current.push( 0 < value.length ? value : null );
+            value = '';
+          } else {
+            value += line[i];
+          }
+        } else { // we're in a string
+          if( line[i] === stringDelim ) {
+            // if the next character is also a string deliminator then consider it escaped
+            if( angular.isDefined( line[i+1] ) && line[i+1] === stringDelim ) {
+              i++; // skip the escape character
+              value += line[i];
+            } else {
+              inString = false;
+            }
+          } else { // not a string delim
+            value += line[i];
+          }
+        }
+      }
+
+      // don't forget the last value
+      current.push( 0 < value.length ? value : null );
+
+      if( 0 < current.length ) data.push( current );
+    } );
+
+    return data;
   }
 } );
 

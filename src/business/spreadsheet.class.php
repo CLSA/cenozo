@@ -129,7 +129,7 @@ class spreadsheet extends \cenozo\base_object
     $session = lib::create( 'business\session' );
     $db_user = is_null( $this->db_user ) ? $session->get_user() : $this->db_user;
     $now = $util_class_name::get_datetime_object();
-    if( !is_null( $db_user ) ) $now->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+    if( !is_null( $db_user ) ) $now->setTimezone( $db_user->get_timezone_object() );
     $tz = $now->format( 'T' );
     $time_format = is_null( $db_user ) || !$db_user->use_12hour_clock ? 'H:i:s' : 'h:i:s a';
 
@@ -184,7 +184,7 @@ class spreadsheet extends \cenozo\base_object
             if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
             {
               $datetime_obj = $util_class_name::get_datetime_object( $sub_value );
-              if( !is_null( $db_user ) ) $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+              if( !is_null( $db_user ) ) $datetime_obj->setTimezone( $db_user->get_timezone_object() );
               $sub_value = $datetime_obj->format( 'Y-m-d '.$time_format );
 
               // and add the timezone to the header
@@ -207,7 +207,7 @@ class spreadsheet extends \cenozo\base_object
           if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
           {
             $datetime_obj = $util_class_name::get_datetime_object( $value );
-            if( !is_null( $db_user ) ) $datetime_obj->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+            if( !is_null( $db_user ) ) $datetime_obj->setTimezone( $db_user->get_timezone_object() );
             $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
           }
           else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';

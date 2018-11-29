@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.3';
-$settings['general']['cenozo_build'] = '97db47b';
+$settings['general']['cenozo_build'] = '92fdbcc';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -43,6 +43,9 @@ $settings['general']['activity_timeout'] = 60;
 
 // how much inactivity before withdraw scripts are considered abandoned (in minutes)
 $settings['general']['supporting_script_timeout'] = 60;
+
+// whether to allow CSV importing of new participants
+$settings['general']['participant_import'] = false;
 
 // list of all optional modules (off by default)
 $settings['module']['interview'] = false;

@@ -1,0 +1,261 @@
+<div class="utility-view rounded">
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>Participant Import</h4>
+  </div>
+  <div class="container-fluid">
+    <cn-loading ng-if="isLoading"></cn-loading>
+    <div class="spacer" ng-if="!isLoading">
+      <p class="text-info" style="margin-top: 1em;">
+        This utility allows one or more participants to be imported from a CSV file.
+        The file must be encoded using the "Unicode UTF-8" character set, using a comma (,) as the field delimiter
+        and double-quote (") string delimiter.
+        The first row must be a list of column headers.
+        Any column which has a header not found in the follow list will be ignored.
+        Any column which is not included in the following list will be given the default value as listed below.
+        If a duplicate column is detected the import will not proceed.
+        Columns can be in any order.
+      </p>
+      <h4>Participant Details</h4>
+      <table class="table table-striped">
+        <thead class="bg-info">
+          <tr>
+            <td>Column Name</td>
+            <td>Default</td>
+            <td>Notes</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="allow-select">source</td>
+            <td>(empty)</td>
+            <td class="text-left">Must either be empty or one of the following: {{ model.sourceList.join( ', ' ) }}</td>
+          </tr>
+          <tr>
+            <td class="allow-select">cohort</td>
+            <td>"{{ model.cohortList[0] }}"</td>
+            <td class="text-left">Must be one of the following: {{ model.cohortList.join( ', ' ) }}</td>
+          </tr>
+          <tr>
+            <td class="allow-select">grouping</td>
+            <td>(empty)</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.parentModel.metadata.columnList.grouping.max_length }} characters long.
+            </td>
+          </tr>
+          <tr>
+            <td class="allow-select">honorific</td>
+            <td>(empty)</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.parentModel.metadata.columnList.honorific.max_length }} characters long.
+            </td>
+          </tr>
+          <tr>
+            <td class="allow-select">first_name</td>
+            <td>"Unknown"</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.parentModel.metadata.columnList.first_name.max_length }} characters long.
+            </td>
+          </tr>
+          <tr>
+            <td class="allow-select">other_name</td>
+            <td>(empty)</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.parentModel.metadata.columnList.other_name.max_length }} characters long.
+            </td>
+          </tr>
+          <tr>
+            <td class="allow-select">last_name</td>
+            <td>"Unknown"</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.parentModel.metadata.columnList.last_name.max_length }} characters long.
+            </td>
+          </tr>
+          <tr>
+            <td class="allow-select">sex</td>
+            <td>{{ model.sexList[0] }}</td>
+            <td class="text-left">Must be one of the following: {{ model.sexList.join( ', ' ) }}</td>
+          </tr>
+          <tr>
+            <td class="allow-select">date_of_birth</td>
+            <td>(empty)</td>
+            <td class="text-left">Can be empty or a date in YYYY-MM-DD format.</td>
+          </tr>
+          <tr>
+            <td class="allow-select">language</td>
+            <td>{{ model.languageList[0] }}</td>
+            <td class="text-left">Must be one of the following: {{ model.languageList.join( ', ' ) }}</td>
+          </tr>
+          <tr>
+            <td class="allow-select">availability_type</td>
+            <td>(empty)</td>
+            <td class="text-left">Can be empty or one of the following: {{ model.availabilityTypeList.join( ', ' ) }}</td>
+          </tr>
+          <tr>
+            <td class="allow-select">callback</td>
+            <td>(empty)</td>
+            <td class="text-left">Can be empty or a datetime in YYYY-MM-DD HH:MM:SS format.</td>
+          </tr>
+          <tr>
+            <td class="allow-select">override_quota</td>
+            <td>false</td>
+            <td class="text-left">Must either be true or false.</td>
+          </tr>
+          <tr>
+            <td class="allow-select">email</td>
+            <td>(empty)</td>
+            <td class="text-left">
+              Can be empty or have no spaces or commas, exactly on @ symbol and at least one period (.) after the @ symbol.
+            </td>
+          </tr>
+          <tr>
+            <td class="allow-select">mass_email</td>
+            <td>true</td>
+            <td class="text-left">Must either be true or false.</td>
+          </tr>
+          <tr>
+            <td class="allow-select">low_education</td>
+            <td>false</td>
+            <td class="text-left">Must either be true or false.</td>
+          </tr>
+          <tr>
+            <td class="allow-select">global_note</td>
+            <td>(empty)</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.parentModel.metadata.columnList.global_note.max_length }} characters long.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <hr/>
+      <h4>Address Details</h4>
+      <p class="text-info" style="margin-top: 1em;">
+        More than one address can be added by including a numbered suffix at the end of all address columns (e.g.: address1_2, city_2
+        etc...)  When using numbered suffixes numbering should start with 1 and continue sequentially without missing any numbers.
+      </p>
+      <table class="table table-striped">
+        <thead class="bg-info">
+          <tr>
+            <td>Column Name</td>
+            <td>Default</td>
+            <td>Notes</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="allow-select">address1</td>
+            <td>"Unknown"</td>
+            <td class="text-left">
+              Any string up to {{ model.addressModel.metadata.columnList.address1.max_length }} characters long.
+            </td>
+          </tr>
+          <tr>
+            <td class="allow-select">address2</td>
+            <td>(empty)</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.addressModel.metadata.columnList.address2.max_length }} characters long.
+            </td>
+          </tr>
+          <tr>
+            <td class="allow-select">city</td>
+            <td>"Unknown"</td>
+            <td class="text-left">
+              Any string up to {{ model.addressModel.metadata.columnList.city.max_length }} characters long.
+            </td>
+          </tr>
+          <tr>
+            <td class="allow-select">postcode</td>
+            <td>"T1A 1A1"</td>
+            <td class="text-left">Any postal code in A1A 1A1 format or zip code in 00000 format.</td>
+          </tr>
+          <tr>
+            <td class="allow-select">address_note</td>
+            <td>(empty)</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.addressModel.metadata.columnList.note.max_length }} characters long.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <hr/>
+      <h4>Phone Details</h4>
+      <p class="text-info" style="margin-top: 1em;">
+        More than one phone number can be added by including a numbered suffix at the end of all phone columns (e.g.: phone_type_2,
+        phone_number_2, etc...)  When using numbered suffixes numbering should start with 1 and continue sequentially without missing
+        any numbers.
+        If link_phone_to_address is true then the phone number will be linked to the address with the same number, or the first
+        address if there is no matching address with the same number.
+      </p>
+      <table class="table table-striped">
+        <thead class="bg-info">
+          <tr>
+            <td>Column Name</td>
+            <td>Default</td>
+            <td>Notes</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="allow-select">phone_type</td>
+            <td>{{ model.phoneTypeList[0] }}</td>
+            <td class="text-left">Must be one of the following: {{ model.phoneTypeList.join( ', ' ) }}</td>
+          </tr>
+          <tr>
+            <td class="allow-select">phone_number</td>
+            <td>555-555-5555</td>
+            <td class="text-left">Must be any string with exactly 10 digits (without a leading 0 or 1).</td>
+          </tr>
+          <tr>
+            <td class="allow-select">link_phone_to_address</td>
+            <td>true</td>
+            <td class="text-left">Whether to link the phone number to the given address.  Must be true or false.</td>
+          </tr>
+          <tr>
+            <td class="allow-select">phone_note</td>
+            <td>(empty)</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.phoneModel.metadata.columnList.note.max_length }} characters long.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <hr />
+      <div class="panel panel-default">
+        <div class="panel-heading">Import File</div>
+        <div class="panel-body">
+          <form name="importFile" class="form-horizontal" novalidate>
+            <div class="vertical-spacer">
+              <div ng-if="model.isFileListLoading">(Loading&hellip;)</div>
+              <div ng-if="!model.isFileListLoading">
+                <span ng-if="0 < model.importFile.size">
+                  <span class="horizontal-spacer">
+                    <a href="#" ng-click="model.importFile.download()">Select Import File</a>
+                  </span>
+                  <span class="horizontal-spacer">({{ model.importFile.size | cnSize }})</span>
+                  <button class="btn btn-default pull-right"
+                          style="margin-top: -6px"
+                          ng-click="model.importFile.remove()">Remove</button>
+                </span>
+                <span ng-if="!model.importFile.size">
+                  <label
+                    class="btn btn-default"
+                    style="margin-top: -6px">
+                    {{ model.importFile.processing ? 'Processing...' : 'Select CSV File' }}
+                    <input type="file"
+                           ng-model="model.importFile.file"
+                           cn-upload="model.importFile.upload()"
+                           style="display:none;"></input>
+                  </label>
+                </span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div ng-if="model.confirmedCount">
+      </div>
+    </div>
+  </div>
+  <div class="form-footer text-right rounded-bottom bg-info">
+    <a href="#" ui-sref="participant.list" class="btn btn-default">View Participant List</a>
+  </div>
+</div>

@@ -208,6 +208,64 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Create a new database savepoint
+   * 
+   * All transactions which happen after this savepoint can be reversed by calling rollback_savepoint()
+   * @param string $name The name of the savepoint
+   * @return boolean
+   */
+  public function savepoint( $name )
+  {
+    if( true === self::$debug ) log::debug( sprintf( '(DB) adding savepoint "%s"', $name ) );
+    $success = $this->connection->savepoint( $name );
+    if( !$success ) log::warning( sprintf( 'Unable to create savepoint %s', $name ) );
+    return $success;
+  }
+
+  /**
+   * Remove a database savepoint
+   * @param string $name The name of the savepoint
+   * @return boolean
+   */
+  public function release_savepoint( $name )
+  {
+    if( true === self::$debug ) log::debug( sprintf( '(DB) releasing savepoint "%s"', $name ) );
+    $success = $this->connection->release_savepoint( $name );
+    if( !$success ) log::warning( sprintf( 'Unable to release savepoint %s', $name ) );
+    return $success;
+  }
+
+  /**
+   * Remove a database savepoint
+   * 
+   * Reverses all database operations back to when the named savepoint was created
+   * @param string $name The name of the savepoint
+   * @return boolean
+   */
+  public function rollback_savepoint( $name )
+  {
+    if( true === self::$debug ) log::debug( sprintf( '(DB) rolling back to savepoint "%s"', $name ) );
+    $success = $this->connection->rollback( MYSQLI_TRANS_COR_AND_CHAIN, $name );
+    if( !$success ) log::warning( sprintf( 'Unable to rollback savepoint %s', $name ) );
+    return $success;
+  }
+
+  /**
+   * Commits a database savepoint
+   * 
+   * Commits all database statements which have occurred since the savepoint was created
+   * @param string $name The name of the savepoint
+   * @return boolean
+   */
+  public function commit_savepoint( $name )
+  {
+    if( true === self::$debug ) log::debug( sprintf( '(DB) commiting savepoint "%s"', $name ) );
+    $success = $this->connection->commit( MYSQLI_TRANS_COR_AND_CHAIN, $name );
+    if( !$success ) log::warning( sprintf( 'Unable to commit savepoint %s', $name ) );
+    return $success;
+  }
+
+  /**
    * Get's the name of the database.
    * @return string
    * @access public

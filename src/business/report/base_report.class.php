@@ -490,7 +490,7 @@ abstract class base_report extends \cenozo\base_object
 
     // get the timezone abbreviation
     $date = $util_class_name::get_datetime_object();
-    $date->setTimezone( new \DateTimeZone( $this->db_user->timezone ) );
+    $date->setTimezone( $this->db_user->get_timezone_object() );
 
     $format = '';
     if( 'date' == $type )

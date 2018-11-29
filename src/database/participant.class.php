@@ -531,6 +531,296 @@ class participant extends record
   }
 
   /**
+   * Imports a new participant
+   * 
+   * @param array $data An associative array of the following data.  Possible values include:
+   *        participant columns:
+   *          source cohort grouping honorific first_name other_name last_name sex date_of_birth language availability_type
+   *          callback override_quota email mass_email low_education global_note
+   *        address columns: (may have _1, _2, etc, suffixes)
+   *          address1 address2 city postcode address_note
+   *        phone coluns: ( may have _1, _2, etc, suffixes)
+   *          phone_type phone_number link_phone_to_address phone_note
+   * @return string (NULL if there are no errors, otherwise a description of why the participant couldn't be imported)
+   */
+  public static function import( $data )
+  {
+    // used to add addresses to imported participants (below)
+    $add_address_func = function( $participant_id, $rank, $address )
+    {
+      $address_class_name = lib::get_class_name( 'database\address' );
+
+      $db_address = lib::create( 'database\address' );
+      $db_address->participant_id = $participant_id;
+      $db_address->rank = $rank;
+      $db_address->address1 = array_key_exists( 'address1', $address ) && !is_null( $address['address1'] )
+                            ? $address['address1'] : 'Unknown';
+      if( array_key_exists( 'address2', $address ) && !is_null( $address['address2'] ) )
+        $db_address->address2 = $address['address2'];
+      $db_address->city = array_key_exists( 'city', $address ) && !is_null( $address['city'] )
+                        ? $address['city'] : 'Unknown';
+      $db_address->postcode = array_key_exists( 'postcode', $address ) && !is_null( $address['postcode'] )
+                            ? $address['postcode'] : 'T1A 1A1';
+      if( array_key_exists( 'address_note', $address ) && !is_null( $address['address_note'] ) )
+        $db_address->note = $address['address_note'];
+
+      try { $db_address->save(); }
+      catch( \cenozo\exception\notice $e ) { return sprintf( 'Invalid postcode "%s".', $db_address->postcode ); }
+
+      // delete any trace records created as a result of adding the address
+      $trace_mod = lib::create( 'database\modifier' );
+      $trace_mod->where( 'participant_id', '=', $participant_id );
+      $address_class_name::db()->execute( sprintf( 'DELETE FROM trace %s', $trace_mod->get_sql() ) );
+
+      return $db_address->id;
+    };
+
+    // used to add phone numbers to imported participants (below)
+    $add_phone_func = function( $participant_id, $rank, $phone )
+    {
+      $phone_class_name = lib::get_class_name( 'database\phone' );
+
+      $db_phone = lib::create( 'database\phone' );
+      $db_phone->participant_id = $participant_id;
+      $db_phone->rank = $rank;
+      if( array_key_exists( 'phone_type', $phone ) && !is_null( $phone['phone_type'] ) )
+      {
+        if( !in_array( $phone['phone_type'], $phone_class_name::get_enum_values( 'type' ) ) )
+          return sprintf( 'Invalid phone type "%s".', $phone['phone_type'] );
+        $db_phone->type = $phone['phone_type'];
+      }
+      else $db_phone->type = 'home';
+
+      $db_phone->number = array_key_exists( 'phone_number', $phone ) && !is_null( $phone['phone_number'] ) ?
+        $phone['phone_number'] : '555-555-5555';
+      if( array_key_exists( 'link_phone_to_address', $phone ) && !is_null( $phone['link_phone_to_address'] ) )
+        $db_phone->address_id = $new_address_id_list['first'];
+      if( array_key_exists( 'phone_note', $phone ) && !is_null( $phone['phone_note'] ) ) $db_phone->note = $phone['phone_note'];
+      $db_phone->save();
+
+      // delete any trace records created as a result of adding the phone
+      $trace_mod = lib::create( 'database\modifier' );
+      $trace_mod->where( 'participant_id', '=', $participant_id );
+      $phone_class_name::db()->execute( sprintf( 'DELETE FROM trace %s', $trace_mod->get_sql() ) );
+
+      return $db_phone->id;
+    };
+
+    $util_class_name = lib::get_class_name( 'util' );
+    $source_class_name = lib::get_class_name( 'database\source' );
+    $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $language_class_name = lib::get_class_name( 'database\language' );
+    $availability_type_class_name = lib::get_class_name( 'database\availability_type' );
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_user = $session->get_user();
+
+    // cast objects as arrays
+    if( is_object( $data ) ) $data = (array) $data;
+
+    $valid_boolean_list = array( true, false, 'true', 'false', 'yes', 'no', 'y', 'n', 1, 0 );
+    $valid_positive_list = array( true, 'true', 'yes', 'y', 1 );
+
+    // create the new participant record
+    $db_participant = new static();
+    $db_participant->uid = static::get_new_uid();
+
+    if( array_key_exists( 'source', $data ) && !is_null( $data['source'] ) )
+    {
+      $db_source = $source_class_name::get_unique_record( 'name', $data['source'] );
+      if( is_null( $db_source ) ) return sprintf( 'Source "%s" does not exist.', $data['source'] );
+      $db_participant->source_id = $db_source->id;
+    }
+
+    $db_cohort = NULL;
+    if( array_key_exists( 'cohort', $data ) && !is_null( $data['cohort'] ) )
+    {
+      $db_cohort = $cohort_class_name::get_unique_record( 'name', $data['cohort'] );
+      if( is_null( $db_cohort ) ) return sprintf( 'Cohort "%s" does not exist.', $data['cohort'] );
+    }
+    else
+    {
+      $cohort_mod = lib::create( 'database\modifier' );
+      $cohort_mod->order( 'name' );
+      $cohort_mod->limit( 1 );
+      $db_cohort = current( $cohort_class_name::select_objects( $cohort_mod ) );
+    }
+    $db_participant->cohort_id = $db_cohort->id;
+
+    if( array_key_exists( 'grouping', $data ) && !is_null( $data['grouping'] ) ) $db_participant->grouping = $data['grouping'];
+    if( array_key_exists( 'honorific', $data ) && !is_null( $data['honorific'] ) ) $db_participant->honorific = $data['honorific'];
+    $db_participant->first_name = array_key_exists( 'first_name', $data ) && !is_null( $data['first_name'] ) ?
+      $data['first_name'] : 'Unknown';
+    if( array_key_exists( 'other_name', $data ) && !is_null( $data['other_name'] ) ) $db_participant->other_name = $data['other_name'];
+    $db_participant->last_name = array_key_exists( 'last_name', $data ) && !is_null( $data['last_name'] ) ?
+      $data['last_name'] : 'Unknown';
+
+    if( array_key_exists( 'sex', $data ) && !is_null( $data['sex'] ) )
+    {
+      if( !in_array( $data['sex'], static::get_enum_values( 'sex' ) ) ) return sprintf( 'Invalid sex "%s".', $data['sex'] );
+      $db_participant->sex = $data['sex'];
+    }
+    else $db_participant->sex = 'male';
+
+    if( array_key_exists( 'date_of_birth', $data ) && !is_null( $data['date_of_birth'] ) )
+    {
+      if( !$util_class_name::validate_date( $data['date_of_birth'] ) )
+        return sprintf( 'Invalid date format for date-of-birth "%s".', $data['date_of_birth'] );
+      $db_participant->date_of_birth = $util_class_name::get_datetime_object( $data['date_of_birth'] );
+    }
+
+    $db_language = NULL;
+    if( array_key_exists( 'language', $data ) && !is_null( $data['language'] ) )
+    {
+      // look for language code and name
+      $db_language = $language_class_name::get_unique_record( 'code', $data['language'] );
+      if( is_null( $db_language ) ) $db_language = $language_class_name::get_unique_record( 'name', $data['language'] );
+      if( is_null( $db_language ) ) return sprintf( 'Language "%s" does not exist.', $data['language'] );
+      if( !$db_language->active ) return sprintf( 'Language "%s" is not active.', $data['language'] );
+    }
+    else
+    {
+      $language_mod = lib::create( 'database\modifier' );
+      $language_mod->where( 'active', '=', true );
+      $language_mod->order( 'code' );
+      $language_mod->limit( 1 );
+      $db_language = current( $language_class_name::select_objects( $language_mod ) );
+    }
+    $db_participant->language_id = $db_language->id;
+
+    if( array_key_exists( 'availability_type', $data ) && !is_null( $data['availability_type'] ) )
+    {
+      $db_availability_type = $availability_type_class_name::get_unique_record( 'name', $data['availability_type'] );
+      if( is_null( $db_availability_type ) ) return sprintf( 'Availability type "%s" does not exist.', $data['availability_type'] );
+      $db_participant->availability_type_id = $db_availability_type->id;
+    }
+
+    if( array_key_exists( 'callback', $data ) && !is_null( $data['callback'] ) )
+    {
+      if( !$util_class_name::validate_datetime( $data['callback'] ) )
+        return sprintf( 'Invalid datetime format for callback "%s".', $data['callback'] );
+      $datetime = $util_class_name::get_datetime_object( $data['callback'], $db_user->get_timezone_object() );
+      $datetime->setTimezone( new \DateTimeZone( 'UTC' ) );
+      $db_participant->callback = $datetime;
+    }
+
+    if( array_key_exists( 'override_quota', $data ) && !is_null( $data['override_quota'] ) )
+    {
+      $value = is_string( $data['override_quota'] ) ? strtolower( $data['override_quota'] ) : $data['override_quota'];
+      if( !in_array( $value, $valid_boolean_list, true ) )
+        return sprintf( 'Invalid boolean format for override-quota "%s".', $data['override_quota'] );
+      $db_participant->override_quota = in_array( $value, $valid_positive_list, true );
+    }
+
+    if( array_key_exists( 'email', $data ) && !is_null( $data['email'] ) )
+    {
+      if( !$util_class_name::validate_email( $data['email'] ) ) return sprintf( 'Invalid email format "%s".', $data['email'] );
+      $db_participant->email = $data['email'];
+    }
+
+    if( array_key_exists( 'mass_email', $data ) && !is_null( $data['mass_email'] ) )
+    {
+      $value = is_string( $data['mass_email'] ) ? strtolower( $data['mass_email'] ) : $data['mass_email'];
+      if( !in_array( $value, $valid_boolean_list, true ) )
+        return sprintf( 'Invalid boolean format for mass-email "%s".', $data['mass_email'] );
+      $db_participant->mass_email = in_array( $value, $valid_positive_list, true );
+    }
+
+    if( array_key_exists( 'low_education', $data ) && !is_null( $data['low_education'] ) )
+    {
+      $value = is_string( $data['low_education'] ) ? strtolower( $data['low_education'] ) : $data['low_education'];
+      if( !in_array( $value, $valid_boolean_list, true ) )
+        return sprintf( 'Invalid boolean format for low-education "%s".', $data['low_education'] );
+      $db_participant->low_education = in_array( $value, $valid_positive_list, true );
+    }
+
+    if( array_key_exists( 'global_note', $data ) && !is_null( $data['global_note'] ) )
+      $db_participant->global_note = $data['global_note'];
+
+    // Create a savepoint so we can rollback the participant insert if an error occurs while adding address/phone records
+    $savepoint_name = sprintf( 'participant_import %s', $db_participant->uid );
+    static::db()->savepoint( $savepoint_name );
+
+    $db_participant->save();
+
+    // now create the address record(s)
+    $current_address_rank = 1;
+    $new_address_id_list = array();
+    $result = $add_address_func( $db_participant->id, $current_address_rank++, $data );
+    if( is_string( $result ) )
+    {
+      static::db()->rollback_savepoint( $savepoint_name );
+      return $result;
+    }
+    else $new_address_id_list['first'] = $result;
+
+    // check for additional addresses
+    $address_list = array();
+    foreach( array_keys( $data ) as $column )
+    {
+      $matches = array();
+      if( 1 === preg_match( '/(address1|address2|city|postcode|address_note)_([0-9]+)/', $column, $matches ) )
+      {
+        if( !array_key_exists( $matches[2], $address_list ) ) $address_list[$matches[2]] = array();
+        $address_list[$matches[2]][$matches[1]] = $data[$column];
+      }
+    }
+
+    foreach( $address_list as $index => $address )
+    {
+      $result = $add_address_func( $db_participant->id, $current_address_rank++, $address );
+      if( is_string( $result ) )
+      {
+        static::db()->rollback_savepoint( $savepoint_name );
+        return $result;
+      }
+      else $new_address_id_list[$index] = $result;
+    }
+
+    // now create the phone record(s)
+    $current_phone_rank = 1;
+    $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $data );
+    if( is_string( $result ) )
+    {
+      static::db()->rollback_savepoint( $savepoint_name );
+      return $result;
+    }
+
+    // check for additional phonees
+    $phone_list = array();
+    foreach( array_keys( $data ) as $column )
+    {
+      $matches = array();
+      if( 1 === preg_match( '/(phone_type|phone_number|link_phone_to_address|phone_note|phone_note)_([0-9]+)/', $column, $matches ) )
+      {
+        if( !array_key_exists( $matches[2], $phone_list ) ) $phone_list[$matches[2]] = array();
+        $phone_list[$matches[2]][$matches[1]] = $data[$column];
+      }
+    }
+
+    foreach( $phone_list as $index => $phone )
+    {
+      $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $phone );
+      if( is_string( $result ) )
+      {
+        static::db()->rollback_savepoint( $savepoint_name );
+        return $result;
+      }
+    }
+
+    // now add this participant to mastodon
+    static::db()->execute( sprintf(
+      'INSERT INTO application_has_participant '.
+      'SET application_id = %s, participant_id = %s, create_timestamp = %s',
+      static::db()->format_string( $db_application->id ),
+      static::db()->format_string( $db_participant->id ),
+      static::db()->format_string( NULL )
+    ) );
+
+    static::db()->commit_savepoint( $savepoint_name );
+  }
+
+  /**
    * Returns a list of UIDs which the application and current role has access to
    * 
    * @param array|string $uid_list An array or string of UIDs
