@@ -48,6 +48,7 @@ class ui extends \cenozo\base_object
       $setting_manager = lib::create( 'business\setting_manager' );
       $chrome_minimum_version = $setting_manager->get_setting( 'general', 'chrome_minimum_version' );
       $firefox_minimum_version = $setting_manager->get_setting( 'general', 'firefox_minimum_version' );
+      $admin_email = $setting_manager->get_setting( 'general', 'admin_email' );
       include( dirname( __FILE__ ).'/login.php' );
       $interface = ob_get_clean();
     }

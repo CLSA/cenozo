@@ -194,6 +194,9 @@
               </div>
             </form>
           </div>
+          <div ng-if="'<?php print $admin_email; ?>'" class="text-info">
+            Please contact <a href="mailto:<?php print $admin_email; ?>"><?php print $admin_email; ?></a> if you require assistance logging in.
+          </div>
         </div>
       </div>
     </div>

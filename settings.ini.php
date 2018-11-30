@@ -47,6 +47,9 @@ $settings['general']['supporting_script_timeout'] = 60;
 // whether to allow CSV importing of new participants
 $settings['general']['participant_import'] = false;
 
+// the administrator's email (if left NULL this will not be used)
+$settings['general']['admin_email'] = NULL;
+
 // list of all optional modules (off by default)
 $settings['module']['interview'] = false;
 $settings['module']['pdf'] = false;
