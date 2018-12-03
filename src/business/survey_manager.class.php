@@ -195,6 +195,7 @@ class survey_manager extends \cenozo\singleton
       $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
       $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
 
+      $withdraw_sid = $this->get_withdraw_sid();
       $old_tokens_sid = $tokens_class_name::get_sid();
       $old_survey_sid = $survey_class_name::get_sid();
       $tokens_class_name::set_sid( $withdraw_sid );
@@ -209,9 +210,10 @@ class survey_manager extends \cenozo\singleton
       $select->add_table_column( 'survey', 'submitdate IS NOT NULL', 'completed' );
 
       $modifier = lib::create( 'database\modifier' );
+      $modifier->join( 'participant', 'supporting_script_check.participant_id', 'participant.id' );
       static::join_survey_and_token_tables( $db_script->sid, $modifier );
 
-      foreach( $supporting_script_check::select( $select, $modifier ) as $row )
+      foreach( $supporting_script_check_class_name::select( $select, $modifier ) as $row )
       {
         $db_participant = lib::create( 'database\participant', $row['participant_id'] );
         if( is_null( $row['survey_id'] ) )

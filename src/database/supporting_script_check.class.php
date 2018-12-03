@@ -78,8 +78,8 @@ class supporting_script_check extends record
     if( $expired )
     {
       $setting_manager = lib::create( 'business\setting_manager' );
-      $timeout = $setting_manager->get_setting( 'genera', 'supporting_script_timeout' );
-      $modifier->where( 'datetime', '<', sprintf( 'UTC_TIMESTAMP() - INTERVAL %d MINUTE', $timeout ) );
+      $timeout = $setting_manager->get_setting( 'general', 'supporting_script_timeout' );
+      $modifier->where( 'datetime', '<', sprintf( 'UTC_TIMESTAMP() - INTERVAL %d MINUTE', $timeout ), false );
     }
     return static::db()->execute( sprintf( 'DELETE FROM supporting_script_check %s', $modifier->get_sql() ) );
   }
