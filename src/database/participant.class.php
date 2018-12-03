@@ -821,6 +821,62 @@ class participant extends record
   }
 
   /**
+   * Re-determines the first address for all participants
+   * 
+   * @return integer (the number of affected participants)
+   * @static 
+   * @access public
+   */
+  public static function update_all_first_address()
+  {
+    $sub_sel = lib::create( 'database\select' );
+    $sub_sel->from( 'address' );
+    $sub_sel->add_column( 'MIN( address.rank )', 'max_rank', false );
+    $sub_mod = lib::create( 'database\modifier' );
+    $sub_mod->where( 'address.active', '=', true );
+    $sub_mod->where( 'participant.id', '=', 'address.participant_id', false );
+    $sub_mod->where(
+      "CASE MONTH( CURRENT_DATE() )\n".
+      "  WHEN 1 THEN address.january\n".
+      "  WHEN 2 THEN address.february\n".
+      "  WHEN 3 THEN address.march\n".
+      "  WHEN 4 THEN address.april\n".
+      "  WHEN 5 THEN address.may\n".
+      "  WHEN 6 THEN address.june\n".
+      "  WHEN 7 THEN address.july\n".
+      "  WHEN 8 THEN address.august\n".
+      "  WHEN 9 THEN address.september\n".
+      "  WHEN 10 THEN address.october\n".
+      "  WHEN 11 THEN address.november\n".
+      "  WHEN 12 THEN address.december\n".
+      "ELSE 0 END", "=", 1
+    );
+    $sub_mod->group( 'address.participant_id' );
+
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'address.participant_id', false );
+    $join_mod->where( 'address.rank', '<=>', sprintf( '( %s%s )', $sub_sel->get_sql(), $sub_mod->get_sql() ), false );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->join_modifier( 'address', $join_mod, 'left' );
+
+    $select = lib::create( 'database\select' );
+    $select->from( 'participant' );
+    $select->add_table_column( 'participant', 'id', 'participant_id' );
+    $select->add_table_column( 'address', 'id', 'address_id' );
+
+    static::db()->execute( sprintf(
+      "INSERT INTO participant_first_address( participant_id, address_id )\n".
+      "%s%s\n".
+      "ON DUPLICATE KEY UPDATE address_id = VALUES( address_id )",
+      $select->get_sql(),
+      $modifier->get_sql()
+    ) );
+
+    // divide affected rows by 2 since every row that gets changed will count as 2 rows
+    return static::db()->affected_rows() / 2;
+  }
+
+  /**
    * Returns a list of UIDs which the application and current role has access to
    * 
    * @param array|string $uid_list An array or string of UIDs

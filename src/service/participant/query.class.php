@@ -8,9 +8,6 @@
 namespace cenozo\service\participant;
 use cenozo\lib, cenozo\log;
 
-/**
- * The base class of all query (collection-based get) services
- */
 class query extends \cenozo\service\query
 {
   /**
@@ -119,17 +116,25 @@ class query extends \cenozo\service\query
    */
   protected function execute()
   {
-    parent::execute();
-
-    // get the list of the LAST collection
-    $leaf_subject = $this->get_leaf_subject();
-    if( !is_null( $leaf_subject ) )
+    if( $this->get_argument( 'update_first_address', false ) )
     {
-      $record_class_name = $this->get_leaf_record_class_name();
-      $this->headers['Limit'] = $this->modifier->get_limit();
-      $this->headers['Offset'] = $this->modifier->get_offset();
-      $this->headers['Total'] = $this->get_record_count();
-      if( !$this->get_argument( 'count', false ) ) $this->set_data( $this->get_record_list() );
+      $participant_class_name = lib::get_class_name( 'database\participant' );
+      $this->set_data( $participant_class_name::update_all_first_address() );
+    }
+    else
+    {
+      parent::execute();
+
+      // get the list of the LAST collection
+      $leaf_subject = $this->get_leaf_subject();
+      if( !is_null( $leaf_subject ) )
+      {
+        $record_class_name = $this->get_leaf_record_class_name();
+        $this->headers['Limit'] = $this->modifier->get_limit();
+        $this->headers['Offset'] = $this->modifier->get_offset();
+        $this->headers['Total'] = $this->get_record_count();
+        if( !$this->get_argument( 'count', false ) ) $this->set_data( $this->get_record_list() );
+      }
     }
   }
 }
