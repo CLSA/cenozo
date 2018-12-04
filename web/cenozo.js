@@ -2598,7 +2598,7 @@ cenozo.filter( 'cnMetaFilter', [
  * Replaces newlines with HTML line breaks <br>
  */
 cenozo.filter( 'cnNewlines', function () {
-  return function( text ) { return text.replace( /\r?\n/g, '<br/>' ); }
+  return function( text ) { return text ? text.replace( /\r?\n/g, '<br/>' ) : text; }
 } );
 
 /* ######################################################################################################## */
