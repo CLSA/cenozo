@@ -29,12 +29,15 @@ abstract class has_rank extends record
       return;
     }
 
-    $rank_parent_key = is_null( static::$rank_parent ) ? false : static::$rank_parent.'_id';
+    $rank_parent_key_list = array();
+    if( !is_null( static::$rank_parent ) )
+      $rank_parent_key_list = is_array( static::$rank_parent ) ? static::$rank_parent : array( static::$rank_parent );
+    foreach( $rank_parent_key_list as $index => $rank_parent ) $rank_parent_key_list[$index] = $rank_parent.'_id';
 
     // see if there is already another record at the new rank
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'id', '!=', $this->id );
-    if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
+    foreach( $rank_parent_key_list as $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
     $modifier->where( 'rank', '=', $this->rank );
 
     // if a record is found then there is already a record in this slot
@@ -55,7 +58,7 @@ abstract class has_rank extends record
 
         // get all records which are between the record's current and new rank
         $modifier = lib::create( 'database\modifier' );
-        if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
+        foreach( $rank_parent_key_list as $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
         $modifier->where( 'rank', $forward ? '>'  : '<' , $current_rank );
         $modifier->where( 'rank', $forward ? '<=' : '>=', $this->rank );
         $modifier->order( 'rank', !$forward );
@@ -78,7 +81,7 @@ abstract class has_rank extends record
       { // adding the record, make room
         // get all records at this rank and afterwards
         $modifier = lib::create( 'database\modifier' );
-        if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
+        foreach( $rank_parent_key_list as $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
         $modifier->where( 'rank', '>=', $this->rank );
         $modifier->order_desc( 'rank' );
         $records = static::select_objects( $modifier );
@@ -115,11 +118,14 @@ abstract class has_rank extends record
     // delete the current record
     parent::delete();
 
-    $rank_parent_key = is_null( static::$rank_parent ) ? false : static::$rank_parent.'_id';
-
+    $rank_parent_key_list = array();
+    if( !is_null( static::$rank_parent ) )
+      $rank_parent_key_list = is_array( static::$rank_parent ) ? static::$rank_parent : array( static::$rank_parent );
+    foreach( $rank_parent_key_list as $index => $rank_parent ) $rank_parent_key_list[$index] = $rank_parent.'_id';
+    
     // now get a list of all records that come after this one
     $modifier = lib::create( 'database\modifier' );
-    if( $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
+    foreach( $rank_parent_key_list as $rank_parent_key ) $modifier->where( $rank_parent_key, '=', $this->$rank_parent_key );
     $modifier->where( 'rank', '>=', $this->rank );
     $modifier->order( 'rank' );
     $records = static::select_objects( $modifier );
@@ -133,8 +139,8 @@ abstract class has_rank extends record
   }
 
   /**
-   * The type of record which the record has a rank for.  Leave null if there is no parent.
-   * @var string
+   * The type of record(s) which the record has a rank for.  Leave null if there is no parent.
+   * @var string|array(string) A string for one column, an array of strings for multiple columns
    * @access protected
    * @static
    */
