@@ -35,8 +35,10 @@ class post extends \cenozo\service\service
     {
       if( is_array( $this->get_file_as_object() ) );
       {
+        $file = $this->get_file_as_object();
+
         // make sure only administrators can import participants (and that the feature is on)
-        if( 3 > $db_role->tier || !$setting_manager->get_setting( 'general', 'participant_import' ) )
+        if( 3 > $db_role->tier || ( is_array( $file ) && !$setting_manager->get_setting( 'general', 'participant_import' ) ) )
           $this->status->set_code( 403 );
       }
     }
