@@ -1808,6 +1808,23 @@ cenozo.directive( 'cnRecordView', [
 
         $scope.patch = function( property ) {
           if( $scope.model.getEditEnabled() ) {
+            // This function is sometimes called when it shouldn't with the record having all null or undefined values.
+            // When this happens we ignore the request since it doesn't seem to have been called as a legitimate user request
+            if( angular.isUndefined( $scope.model.viewModel.record[property] ) ) {
+              var valid = false;
+              for( var prop in $scope.model.viewModel.record ) {
+                if( angular.isDefined( $scope.model.viewModel.record[prop] ) && null !== $scope.model.viewModel.record[prop] ) {
+                  valid = true;
+                  break;
+                }
+              }
+
+              if( !valid ) {
+                console.warn( 'Invalid call to patch() detected and ignored.' );
+                return;
+              }
+            }
+
             var element = cenozo.getFormElement( property );
             var valid = $scope.model.testFormat( property, $scope.model.viewModel.record[property] );
 
