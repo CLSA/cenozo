@@ -139,6 +139,8 @@ class get extends \cenozo\service\service
       $script_sel->add_column(
         sprintf( 'CONCAT( "%s/index.php/", script.sid )', LIMESURVEY_URL ), 'url', false );
       $script_mod = lib::create( 'database\modifier' );
+      $script_mod->join( 'application_has_script', 'script.id', 'application_has_script.script_id' );
+      $script_mod->where( 'application_id', '=', $db_application->id );
       $script_mod->where( 'supporting', '=', true );
       $pseudo_record['supporting_script_list'] = $script_class_name::select( $script_sel, $script_mod );
     }
