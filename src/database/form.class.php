@@ -51,7 +51,10 @@ class form extends record
   {
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
 
+    // Determine the datetime: note that if the time is midnight then we only have the date and not the time so we
+    // must advance by 12 hours so that UTC conversion doesn't cause the date to show on the wrong day
     $datetime = array_key_exists( 'datetime', $consent ) ? $consent['datetime'] : $this->date;
+    if( '00:00:00' == $datetime->format( 'H:i:s' ) ) $datetime->setTime( 12, 0 );
 
     $db_consent_type = $consent_type_class_name::get_unique_record( 'name', $type );
     $consent_mod = lib::create( 'database\modifier' );
