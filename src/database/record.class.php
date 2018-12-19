@@ -154,6 +154,26 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * Copies all column values from the given record (not including primary key or timestamp columns)
+   * 
+   * @param record $record Must be the same record type as this record
+   */
+  public function copy( $record )
+  {
+    if( $this->get_class_name() != $record->get_class_name() )
+      throw lib::create( 'exception\argument', 'record', $record, __METHOD__ );
+
+    $table_name = static::get_table_name();
+    $ignore_columns = $primary_key_names = static::db()->get_primary_key( $table_name );
+    $ignore_columns[] = 'update_timestamp';
+    $ignore_columns[] = 'create_timestamp';
+
+    foreach( $this->get_column_names() as $column )
+      if( !in_array( $column, $ignore_columns ) )
+        $this->$column = $record->$column;
+  }
+
+  /**
    * Used internally when saving records to the database
    * 
    * @param boolean $new Whether we are creating a new record or not
