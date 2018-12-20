@@ -123,22 +123,7 @@ class module extends \cenozo\service\site_restricted_participant_module
       $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
 
     if( $select->has_column( 'phone_call_count' ) )
-    {
-      $join_sel = lib::create( 'database\select' );
-      $join_sel->from( 'assignment' );
-      $join_sel->add_column( 'id', 'assignment_id' );
-      $join_sel->add_column( 'IF( phone_call.id IS NULL, 0, COUNT( * ) )', 'phone_call_count', false );
-
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->left_join( 'phone_call', 'assignment.id', 'phone_call.assignment_id' );
-      $join_mod->group( 'assignment.id' );
-
-      $modifier->join(
-        sprintf( '( %s %s ) AS assignment_join_phone_call', $join_sel->get_sql(), $join_mod->get_sql() ),
-        'assignment.id',
-        'assignment_join_phone_call.assignment_id' );
-      $select->add_table_column( 'assignment_join_phone_call', 'phone_call_count' );
-    }
+      $this->add_count_column( 'phone_call', $select, $modifier );
 
     // add the assignment's last call's status column
     if( $select->has_table_columns( 'last_phone_call' ) ||

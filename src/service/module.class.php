@@ -191,6 +191,60 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
+   * Adds the total number of child records as a column
+   * 
+   * @param string $table The table that the child records belong to
+   * @param database\select The select used by the read service
+   * @param database\modifier The modifier used by the read service
+   * @param string $joining_table Used to force a many-to-many relationship with the provided table name
+   * @access public
+   */
+  protected function add_count_column( $table, $select, $modifier, $joining_table = NULL )
+  {
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
+
+    $subject = $this->get_subject();
+    $record_class_name = $this->service->get_record_class_name( $this->index );
+    $relationship = $record_class_name::get_relationship( $table );
+    if( $relationship_class_name::MANY_TO_MANY === $relationship || !is_null( $joining_table ) )
+    {
+      if( is_null( $joining_table ) ) $joining_table = sprintf( '%s_has_%s', $subject, $table );
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( $subject );
+      $join_sel->add_column( 'id', $subject.'_id' );
+      $join_sel->add_column( 'IF( '.$joining_table.'.'.$table.'_id IS NOT NULL, COUNT(*), 0 )', $table.'_count', false );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->left_join( $joining_table, $subject.'.id', $joining_table.'.'.$subject.'_id' );
+      $join_mod->group( $subject.'.id' );
+
+      $modifier->left_join(
+        sprintf( '( %s %s ) AS '.$subject.'_join_'.$table, $join_sel->get_sql(), $join_mod->get_sql() ),
+        $subject.'.id',
+        $subject.'_join_'.$table.'.'.$subject.'_id' );
+      $select->add_column( 'IFNULL( '.$table.'_count, 0 )', $table.'_count', false );
+    }
+    else
+    {
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( $subject );
+      $join_sel->add_column( 'id', $subject.'_id' );
+      $join_sel->add_column( 'IF( '.$table.'.id IS NULL, 0, COUNT( * ) )', $table.'_count', false );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->left_join( $table, $subject.'.id', $table.'.'.$subject.'_id' );
+      $join_mod->group( $subject.'.id' );
+
+      $modifier->join(
+        sprintf( '( %s %s ) AS '.$subject.'_join_'.$table, $join_sel->get_sql(), $join_mod->get_sql() ),
+        $subject.'.id',
+        $subject.'_join_'.$table.'.'.$subject.'_id'
+      );
+      $select->add_table_column( $subject.'_join_'.$table, $table.'_count' );
+    }
+  }
+
+  /**
    * The module's index
    * @var integer
    * @access private

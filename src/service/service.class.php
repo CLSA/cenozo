@@ -413,9 +413,9 @@ abstract class service extends \cenozo\base_object
    * @param integer $index
    * @param boolean $relative Whether to return the relative class name (without full path)
    * @return string
-   * @access protected
+   * @access public
    */
-  protected function get_record_class_name( $index, $relative = false )
+  public function get_record_class_name( $index, $relative = false )
   {
     $subject = $this->get_subject( $index );
     if( is_null( $subject ) )
