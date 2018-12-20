@@ -2003,7 +2003,8 @@ cenozo.directive( 'cnViewInput', [
         input: '=',
         model: '=',
         first: '=',
-        noCols: '='
+        noCols: '=',
+        condensed: '='
       },
       controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnViewInput';

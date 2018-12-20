@@ -1,6 +1,7 @@
 <ng-form name="innerForm">
   <div class="form-group"
-       ng-class="{'first-form-group': first,
+       ng-class="{'form-group-condensed': condensed,
+                  'first-form-group': first,
                   'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
     <label for="{{ input.key }}"
            class="control-label"

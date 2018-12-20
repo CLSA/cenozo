@@ -22,7 +22,8 @@ pre { white-space: pre-wrap; }
 .input-group { width: 100%; }
 .checkbox { display: inline-block; font-weight: normal; }
 .form-body { padding-top: 1em; }
-.form-horizontal .form-group { margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
+.form-horizontal .form-group { margin-left: -15px; margin-right: -5px; margin-bottom: 0px; padding-bottom: 15px; }
+.form-group-condensed { padding-bottom: 0px !important; }
 .first-form-group { padding-top: 15px } /* has to be padding and not margin for header to work right */
 .form-footer { padding: 1em; line-height: 33px; }
 .footer-total { line-height: 32px; }
