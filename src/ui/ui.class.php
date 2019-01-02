@@ -336,7 +336,6 @@ class ui extends \cenozo\base_object
         if( 3 <= $db_role->tier )
         {
           $module->add_child( 'report_schedule' );
-          $module->add_child( 'report_restriction' );
           $module->add_choose( 'application_type' );
           $module->add_choose( 'role' );
         }
