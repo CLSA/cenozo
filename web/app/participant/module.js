@@ -274,26 +274,49 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         title: 'Scripts',
         operations: [ {
           title: 'Decedent',
-          operation: function( $state, model ) { model.viewModel.launchDecedent(); },
-          isIncluded: function( $state, model ) { return model.viewModel.allowDecedent && false === model.viewModel.hasDecedent; },
+          operation: function( $state, model ) { model.viewModel.launchSupportingScript( 'Decedent' ); },
+          isDisabled: function( $state, model ) { return !model.getEditEnabled(); },
+          isIncluded: function( $state, model ) {
+            return model.viewModel.allowDecedent && false === model.viewModel.hasDecedent;
+          },
         }, {
           title: 'Decedent Complete',
-          isIncluded: function( $state, model ) { return model.viewModel.allowDecedent && true === model.viewModel.hasDecedent; },
-          isDisabled: function( $state, model ) { return true; }
+          isDisabled: function( $state, model ) { return !model.getEditEnabled(); },
+          isIncluded: function( $state, model ) {
+            return model.viewModel.allowDecedent && true === model.viewModel.hasDecedent;
+          }
+        }, {
+          title: 'Quality Control',
+          operation: function( $state, model ) { model.viewModel.launchSupportingScript( 'Quality Control' ); },
+          isDisabled: function( $state, model ) { return !model.getEditEnabled(); },
+          isIncluded: function( $state, model ) {
+            return model.viewModel.allowQualityControl && false === model.viewModel.hasQualityControl;
+          },
+        }, {
+          title: 'Quality Control Complete',
+          isDisabled: function( $state, model ) { return !model.getEditEnabled(); },
+          isIncluded: function( $state, model ) {
+            return model.viewModel.allowQualityControl && true === model.viewModel.hasQualityControl;
+          },
         }, {
           title: 'Proxy Initiation',
-          operation: function( $state, model ) { model.viewModel.launchProxy(); }
+          operation: function( $state, model ) { model.viewModel.launchSupportingScript( 'Proxy Initiation' ); },
+          isDisabled: function( $state, model ) { return !model.getEditEnabled(); },
+          isIncluded: function( $state, model ) { return model.viewModel.allowProxyInitiation; }
         }, {
           title: 'Withdraw',
-          operation: function( $state, model ) { model.viewModel.launchWithdraw(); },
-          isIncluded: function( $state, model ) { return false === model.viewModel.hasWithdrawn; }
+          operation: function( $state, model ) { model.viewModel.launchSupportingScript( 'Withdraw' ); },
+          isDisabled: function( $state, model ) { return !model.getEditEnabled(); },
+          isIncluded: function( $state, model ) {
+            return model.viewModel.allowWithdraw && false === model.viewModel.hasWithdrawn;
+          }
         }, {
           title: 'Reverse Withdraw',
           operation: function( $state, model ) { model.viewModel.reverseWithdraw(); },
+          isDisabled: function( $state, model ) { return !model.getEditEnabled() && model.viewModel.reverseWithdrawDisabled; },
           isIncluded: function( $state, model ) {
-            return true === model.viewModel.hasWithdrawn && model.viewModel.allowReverseWithdraw;
-          },
-          isDisabled: function( $state, model ) { return model.viewModel.reverseWithdrawDisabled; }
+            return model.viewModel.allowWithdraw && true === model.viewModel.hasWithdrawn && model.viewModel.allowReverseWithdraw;
+          }
         } ]
       } );
     }
@@ -1000,9 +1023,13 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         CnBaseViewFactory.construct( this, parentModel, root );
         this.onViewPromise = null;
         this.scriptLaunchers = {};
-        this.hasWithdrawn = null;
         this.hasDecedent = null;
+        this.hasQualityControl = null;
+        this.hasWithdrawn = null;
         this.allowDecedent = false;
+        this.allowProxyInitiation = false;
+        this.allowQualityControl = false;
+        this.allowWithdraw = false;
         this.allowReverseWithdraw = 3 <= CnSession.role.tier;
 
         this.useTimezone = function() {
@@ -1013,67 +1040,22 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
         // only add script launching if the script module is activated
         if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
-          this.launchSupportingScript = function( type, language ) {
+          this.launchSupportingScript = function( scriptName ) {
             var foundLauncher = null;
-            Object.keys( self.scriptLaunchers ).some( function( name ) {
-              var re = new RegExp( type, 'i' );
-              if( name.match( re ) ) {
-                foundLauncher = self.scriptLaunchers[name];
-                return true;
-              }
-            } );
+            if( angular.isUndefined( self.scriptLaunchers[scriptName] ) )
+              throw new Error( 'Cannot launch supporting script "' + scriptName + '", script not found.' );
+            
+            var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
+              'value', self.record.language_id
+            );
+            if( language ) self.scriptLaunchers[scriptName].lang = language.code;
+            self.scriptLaunchers[scriptName].launch();
 
-            if( null == foundLauncher )
-              throw new Error( 'Cannot launch supporting script type "' + type + '", script type not found.' );
-
-            if( language ) foundLauncher.lang = language.code;
-            foundLauncher.launch();
-          };
-
-          // launches the proxy initiation script for the current participant
-          this.launchProxy = function() {
-            this.onViewPromise.then( function() {
-              var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
-                'value', self.record.language_id );
-              self.launchSupportingScript( 'proxy', language );
-
-              // check for when the window gets focus back and update the participant details
-              var win = angular.element( $window ).on( 'focus', function() {
-                self.onView();
-                win.off( 'focus' );
-              } );
-            } );
-          };
-
-          // launches the decedent script for the current participant
-          this.launchDecedent = function() {
-            this.onViewPromise.then( function() {
-              var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
-                'value', self.record.language_id );
-              self.launchSupportingScript( 'decedent', language );
-
-              // check for when the window gets focus back and update the participant details
-              var win = angular.element( $window ).on( 'focus', function() {
-                self.onView();
-                if( self.holdModel ) self.holdModel.listModel.onList( true );
-                win.off( 'focus' );
-              } );
-            } );
-          };
-
-          // launches the withdraw script for the current participant
-          this.launchWithdraw = function() {
-            this.onViewPromise.then( function() {
-              var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
-                'value', self.record.language_id );
-              self.launchSupportingScript( 'withdraw', language );
-
-              // check for when the window gets focus back and update the participant details
-              var win = angular.element( $window ).on( 'focus', function() {
-                self.onView();
-                if( self.holdModel ) self.holdModel.listModel.onList( true );
-                win.off( 'focus' );
-              } );
+            // check for when the window gets focus back and update the participant details
+            var win = angular.element( $window ).on( 'focus', function() {
+              self.onView();
+              if( self.holdModel ) self.holdModel.listModel.onList( true );
+              win.off( 'focus' );
             } );
           };
         }
@@ -1082,37 +1064,64 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         this.onView = function() {
           // always assume that the decedent script is not allowed (until more details are found below)
           self.hasDecedent = null;
+          self.hasQualityControl = null;
           self.hasWithdrawn = null;
           self.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
+          self.allowQualityControl = false;
+          self.allowWithdraw = false;
 
           // only create launchers for each supporting script if the script module is activated
           if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
             CnSession.supportingScriptList.forEach( function( script ) {
-              if( null != script.name.match( /decedent/i ) ) {
+              if( null != script.name.match( /Decedent/ ) ) {
                 // only check for the decedent token if we're allowed to launch the script
+                self.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
                 if( self.allowDecedent ) {
-                  self.scriptLaunchers[script.name] = CnScriptLauncherFactory.instance( {
+                  var name = 'Decedent';
+                  self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
                     script: script,
                     identifier: self.parentModel.getQueryParameter( 'identifier' ),
                     onReady: function() {
                       self.hasDecedent =
-                        null != self.scriptLaunchers[script.name].token &&
-                        null != self.scriptLaunchers[script.name].token.completed.match(
-                          /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
-                        );
+                        null != this.token &&
+                        null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
                     }
                   } );
                 }
-              } else if( null != script.name.match( /withdraw/i ) ) {
-                self.scriptLaunchers[script.name] = CnScriptLauncherFactory.instance( {
+              } else if( null != script.name.match( /Proxy Initiation/ ) ) {
+                var name = 'Proxy Initiation';
+                self.allowProxyInitiation = true;
+                self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                  script: script,
+                  identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                  onReady: function() {
+                    self.hasProxyInitiation =
+                      null != this.token &&
+                      null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
+                  }
+                } );
+              } else if( null != script.name.match( /Quality Control/ ) ) {
+                var name = 'Quality Control';
+                self.allowQualityControl = true;
+                self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                  script: script,
+                  identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                  onReady: function() {
+                    self.hasQualityControl =
+                      null != this.token &&
+                      null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
+                  }
+                } );
+              } else if( null != script.name.match( /Withdraw/ ) ) {
+                var name = 'Withdraw';
+                self.allowWithdraw = true;
+                self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
                   script: script,
                   identifier: self.parentModel.getQueryParameter( 'identifier' ),
                   onReady: function() {
                     self.hasWithdrawn =
-                      null != self.scriptLaunchers[script.name].token &&
-                      null != self.scriptLaunchers[script.name].token.completed.match(
-                        /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
-                      );
+                      null != this.token &&
+                      null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
                   }
                 } );
               }
