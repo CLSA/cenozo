@@ -195,6 +195,8 @@ class get extends \cenozo\service\service
     $pseudo_record['application']['voip_enabled'] =
       $setting_manager->get_setting( 'module', 'voip' ) &&
       $setting_manager->get_setting( 'voip', 'enabled' );
+    $pseudo_record['application']['check_for_missing_hin'] =
+      $setting_manager->get_setting( 'general', 'check_for_missing_hin' );
 
     if( $pseudo_record['application']['voip_enabled'] )
     {

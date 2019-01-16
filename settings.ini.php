@@ -47,6 +47,9 @@ $settings['general']['supporting_script_timeout'] = 60;
 // whether to allow CSV importing of new participants
 $settings['general']['participant_import'] = false;
 
+// optional setting to turn on HIN checking during assignments
+$settings['general']['check_for_missing_hin'] = false;
+
 // the administrator's email (if left NULL this will not be used)
 $settings['general']['admin_email'] = NULL;
 
