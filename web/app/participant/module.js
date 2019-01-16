@@ -1061,7 +1061,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         }
 
         // track the promise returned by the onView function
-        this.onView = function() {
+        this.onView = function( force ) {
           // always assume that the decedent script is not allowed (until more details are found below)
           self.hasDecedent = null;
           self.hasQualityControl = null;
@@ -1129,7 +1129,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
 
           // set a special heading
-          this.onViewPromise = this.$$onView().then( function() {
+          this.onViewPromise = this.$$onView( force ).then( function() {
             // put the participant's full name in the heading
             var nameList = [ self.record.first_name, self.record.last_name ];
             if( self.record.other_name ) nameList.splice( 1, 0, '(' + self.record.other_name + ')' );

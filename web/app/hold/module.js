@@ -166,8 +166,8 @@ define( function() {
         CnBaseViewFactory.construct( this, parentModel, root );
 
         // extend onView
-        this.onView = function() {
-          return this.$$onView().then( function() {
+        this.onView = function( force ) {
+          return this.$$onView( force ).then( function() {
             // Since the international column is read-only and belongs to a different table we can fake
             // the expected Yes/No value by changing it here
             if( null != self.record.international )

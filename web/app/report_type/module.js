@@ -128,8 +128,8 @@ define( function() {
         this.onViewPromise = null;
 
         // track the promise returned by the onView function
-        this.onView = function() {
-          this.onViewPromise = this.$$onView();
+        this.onView = function( force ) {
+          this.onViewPromise = this.$$onView( force );
           return this.onViewPromise;
         };
 
