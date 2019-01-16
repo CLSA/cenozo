@@ -273,8 +273,8 @@ define( [ 'trace' ].reduce( function( list, name ) {
         };
 
         // once we have loaded the record show/hide the international inputs
-        this.onView = function() {
-          this.onViewPromise = this.$$onView().then( function() {
+        this.onView = function( force ) {
+          this.onViewPromise = this.$$onView( force ).then( function() {
             var mainInputGroup = parentModel.module.inputGroupList.findByProperty( 'title', '' );
             if( mainInputGroup ) {
               mainInputGroup.inputList.region_id.exclude = self.record.international ? true : 'add';

@@ -184,9 +184,9 @@ define( function() {
           }
         };
 
-        this.onView = function() {
+        this.onView = function( force ) {
           // update the access after onView has completed
-          return this.$$onView().then( function() { updateAccess(); } );
+          return this.$$onView( force ).then( function() { updateAccess(); } );
         };
 
         this.onPatch = function( data ) {

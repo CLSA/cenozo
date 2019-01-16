@@ -194,8 +194,8 @@ define( [ 'trace' ].reduce( function( list, name ) {
         var traceModel = CnTraceModelFactory.root;
 
         // extend onView
-        this.onView = function() {
-          return this.$$onView().then( function() {
+        this.onView = function( force ) {
+          return this.$$onView( force ).then( function() {
             return self.parentModel.updateAssociatedAddressList();
           } );
         };
