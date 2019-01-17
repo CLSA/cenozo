@@ -22,6 +22,8 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $event_type_class_name = lib::get_class_name( 'database\event_type' );
     $survey_manager = lib::create( 'business\survey_manager' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $withdraw_option_and_delink = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
 
     $db_withdraw_mailed_event_type = $event_type_class_name::get_unique_record( 'name', 'withdraw mailed' );
 
@@ -63,7 +65,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->where_bracket( false );
 
     // add the special withdraw option column
-    $survey_manager->add_withdraw_option_column( $select, $modifier, 'Option' );
+    if( $withdraw_option_and_delink ) $survey_manager->add_withdraw_option_column( $select, $modifier, 'Option' );
 
     // add the hin and samples withdraw option columns
     $select->add_column( '0 < tokens.attribute_1', 'hin', false );

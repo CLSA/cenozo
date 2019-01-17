@@ -105,6 +105,8 @@ class survey_manager extends \cenozo\singleton
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $withdraw_option_and_delink = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
 
     $withdraw_sid = $this->get_withdraw_sid();
     if( $withdraw_sid )
@@ -113,7 +115,8 @@ class survey_manager extends \cenozo\singleton
       $withdraw_sel->from( 'participant' );
       $withdraw_mod = lib::create( 'database\modifier' );
       $withdraw_mod->where( 'participant.id', '=', $db_participant->id );
-      $this->add_withdraw_option_column( $withdraw_sel, $withdraw_mod );
+      if( $withdraw_option_and_delink ) $this->add_withdraw_option_column( $withdraw_sel, $withdraw_mod );
+      else static::join_survey_and_token_tables( $withdraw_sid, $withdraw_mod );
       $list = $participant_class_name::select( $withdraw_sel, $withdraw_mod );
       if( 0 < count( $list ) )
       {
@@ -147,21 +150,24 @@ class survey_manager extends \cenozo\singleton
           $db_consent->save();
         }
 
-        // Make sure the most recent HIN access consent is not negative if options 2 or 3 were selected
-        if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
+        if( $withdraw_option_and_delink )
         {
-          $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
-          $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
-          if( !is_null( $db_last_consent ) && !$db_last_consent->accept )
+          // Make sure the most recent HIN access consent is not negative if options 2 or 3 were selected
+          if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
           {
-            $db_consent = lib::create( 'database\consent' );
-            $db_consent->participant_id = $db_participant->id;
-            $db_consent->consent_type_id = $db_consent_type->id;
-            $db_consent->accept = true;
-            $db_consent->written = false;
-            $db_consent->datetime = $util_class_name::get_datetime_object();
-            $db_consent->note = 'Added as part of reversing the withdraw process.';
-            $db_consent->save();
+            $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
+            $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
+            if( !is_null( $db_last_consent ) && !$db_last_consent->accept )
+            {
+              $db_consent = lib::create( 'database\consent' );
+              $db_consent->participant_id = $db_participant->id;
+              $db_consent->consent_type_id = $db_consent_type->id;
+              $db_consent->accept = true;
+              $db_consent->written = false;
+              $db_consent->datetime = $util_class_name::get_datetime_object();
+              $db_consent->note = 'Added as part of reversing the withdraw process.';
+              $db_consent->save();
+            }
           }
         }
 
@@ -301,8 +307,11 @@ class survey_manager extends \cenozo\singleton
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $withdraw_option_and_delink = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
 
-    if( $this->get_withdraw_sid() )
+    $withdraw_sid = $this->get_withdraw_sid();
+    if( $withdraw_sid )
     {
       $withdraw_sel = lib::create( 'database\select' );
       $withdraw_sel->from( 'participant' );
@@ -310,8 +319,12 @@ class survey_manager extends \cenozo\singleton
       $withdraw_mod = lib::create( 'database\modifier' );
       $withdraw_mod->where( 'participant.id', '=', $db_participant->id );
       $withdraw_mod->where( 'survey.submitdate', '!=', NULL );
-      $this->add_withdraw_option_column( $withdraw_sel, $withdraw_mod );
-      $this->add_withdraw_delink_column( $withdraw_sel, $withdraw_mod );
+      if( $withdraw_option_and_delink )
+      {
+        $this->add_withdraw_option_column( $withdraw_sel, $withdraw_mod );
+        $this->add_withdraw_delink_column( $withdraw_sel, $withdraw_mod );
+      }
+      else static::join_survey_and_token_tables( $withdraw_sid, $withdraw_mod );
       $list = $participant_class_name::select( $withdraw_sel, $withdraw_mod );
       if( 0 < count( $list ) )
       {
@@ -328,29 +341,32 @@ class survey_manager extends \cenozo\singleton
         $db_consent->note = 'Added as part of the withdraw process.';
         $db_consent->save();
 
-        // Add consent HIN access verbal deny if options 2 or 3 were selected
-        if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
+        if( $withdraw_option_and_delink )
         {
-          // Only add a negative consent if the last consent exists and is positive
-          $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
-          $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
-          if( !is_null( $db_last_consent ) && $db_last_consent->accept )
+          // Add consent HIN access verbal deny if options 2 or 3 were selected
+          if( 2 == $withdraw['option'] || 3 == $withdraw['option'] )
           {
-            $db_consent = lib::create( 'database\consent' );
-            $db_consent->participant_id = $db_participant->id;
-            $db_consent->consent_type_id = $db_consent_type->id;
-            $db_consent->accept = false;
-            $db_consent->written = false;
-            $db_consent->datetime = $withdraw['datetime'];
-            $db_consent->note = 'Added as part of the withdraw process.';
-            $db_consent->save();
+            // Only add a negative consent if the last consent exists and is positive
+            $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
+            $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
+            if( !is_null( $db_last_consent ) && $db_last_consent->accept )
+            {
+              $db_consent = lib::create( 'database\consent' );
+              $db_consent->participant_id = $db_participant->id;
+              $db_consent->consent_type_id = $db_consent_type->id;
+              $db_consent->accept = false;
+              $db_consent->written = false;
+              $db_consent->datetime = $withdraw['datetime'];
+              $db_consent->note = 'Added as part of the withdraw process.';
+              $db_consent->save();
+            }
           }
-        }
 
-        if( $withdraw['delink'] )
-        {
-          $db_participant->delink = true;
-          $db_participant->save();
+          if( $withdraw['delink'] )
+          {
+            $db_participant->delink = true;
+            $db_participant->save();
+          }
         }
       }
     }
