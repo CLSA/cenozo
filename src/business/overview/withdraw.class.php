@@ -20,6 +20,8 @@ class withdraw extends \cenozo\business\overview\base_overview
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $withdraw_option_and_delink = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
     $survey_manager = lib::create( 'business\survey_manager' );
     $session = lib::create( 'business\session' );
     $db = $session->get_database();
@@ -66,8 +68,11 @@ class withdraw extends \cenozo\business\overview\base_overview
       }
     }
 
-    $survey_manager->add_withdraw_option_column( $select, $modifier, 'option', true );
-    $survey_manager->add_withdraw_delink_column( $select, $modifier, 'delink', true );
+    if( $withdraw_option_and_delink )
+    {
+      $survey_manager->add_withdraw_option_column( $select, $modifier, 'option', true );
+      $survey_manager->add_withdraw_delink_column( $select, $modifier, 'delink', true );
+    }
 
     $node = NULL;
     foreach( $participant_class_name::select( $select, $modifier ) as $row )
@@ -79,28 +84,34 @@ class withdraw extends \cenozo\business\overview\base_overview
         $this->add_item( $node, 'Total', 0 );
         $this->add_item( $node, 'Delink', 0 );
         $this->add_item( $node, 'Have been delinked', 0 );
-        $option_node = $this->add_item( $node, 'Withdraw Option' );
-        $this->add_item( $option_node, 'Option #1', 0 );
-        $this->add_item( $option_node, 'Option #2', 0 );
-        $this->add_item( $option_node, 'Option #3', 0 );
-        $this->add_item( $option_node, 'Default (no option selected)', 0 );
+        if( $withdraw_option_and_delink )
+        {
+          $option_node = $this->add_item( $node, 'Withdraw Option' );
+          $this->add_item( $option_node, 'Option #1', 0 );
+          $this->add_item( $option_node, 'Option #2', 0 );
+          $this->add_item( $option_node, 'Option #3', 0 );
+          $this->add_item( $option_node, 'Default (no option selected)', 0 );
+        }
         $total = 0;
       }
 
-      if( $row['delink'] )
+      if( $withdraw_option_and_delink )
       {
-        $child_node = $node->find_node( 'Delink' );
-        $child_node->set_value( $child_node->get_value() + $row['total'] );
-        if( $row['delinked'] )
+        if( $row['delink'] )
         {
-          $child_node = $node->find_node( 'Have been delinked' );
+          $child_node = $node->find_node( 'Delink' );
           $child_node->set_value( $child_node->get_value() + $row['total'] );
+          if( $row['delinked'] )
+          {
+            $child_node = $node->find_node( 'Have been delinked' );
+            $child_node->set_value( $child_node->get_value() + $row['total'] );
+          }
         }
-      }
 
-      $name = 'default' == $row['option'] ? 'Default (no option selected)' : 'Option #'.$row['option'];
-      $child_node = $node->find_node( 'Withdraw Option' )->find_node( $name );
-      $child_node->set_value( $child_node->get_value() + $row['total'] );
+        $name = 'default' == $row['option'] ? 'Default (no option selected)' : 'Option #'.$row['option'];
+        $child_node = $node->find_node( 'Withdraw Option' )->find_node( $name );
+        $child_node->set_value( $child_node->get_value() + $row['total'] );
+      }
       $total += $row['total'];
     }
     if( !is_null( $node ) ) $node->find_node( 'Total' )->set_value( $total );

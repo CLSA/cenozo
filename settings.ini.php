@@ -50,6 +50,9 @@ $settings['general']['participant_import'] = false;
 // optional setting to turn on HIN checking during assignments
 $settings['general']['check_for_missing_hin'] = false;
 
+// optional setting to turn on withdraw option and delink processing
+$settings['general']['withdraw_option_and_delink'] = false;
+
 // the administrator's email (if left NULL this will not be used)
 $settings['general']['admin_email'] = NULL;
 
