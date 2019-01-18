@@ -578,6 +578,7 @@ class participant extends record
     // used to add phone numbers to imported participants (below)
     $add_phone_func = function( $participant_id, $rank, $phone )
     {
+      $util_class_name = lib::get_class_name( 'util' );
       $phone_class_name = lib::get_class_name( 'database\phone' );
 
       $db_phone = lib::create( 'database\phone' );
@@ -591,8 +592,11 @@ class participant extends record
       }
       else $db_phone->type = 'home';
 
-      $db_phone->number = array_key_exists( 'phone_number', $phone ) && !is_null( $phone['phone_number'] ) ?
-        $phone['phone_number'] : '555-555-5555';
+      // convert to nnn-nnn-nnnn format
+      $db_phone->number = array_key_exists( 'phone_number', $phone ) && !is_null( $phone['phone_number'] )
+                        ? $util_class_name::convert_north_american_phone_number( $phone['phone_number'] )
+                        : '555-555-5555';
+
       if( array_key_exists( 'link_phone_to_address', $phone ) && !is_null( $phone['link_phone_to_address'] ) )
         $db_phone->address_id = $new_address_id_list['first'];
       if( array_key_exists( 'phone_note', $phone ) && !is_null( $phone['phone_note'] ) ) $db_phone->note = $phone['phone_note'];
@@ -617,6 +621,35 @@ class participant extends record
 
     // cast objects as arrays
     if( is_object( $data ) ) $data = (array) $data;
+
+    // first check to make sure the participant doesn't already exist
+    $first_name = array_key_exists( 'first_name', $data ) && !is_null( $data['first_name'] ) ?
+      $data['first_name'] : 'Unknown';
+    $last_name = array_key_exists( 'last_name', $data ) && !is_null( $data['last_name'] ) ?
+      $data['last_name'] : 'Unknown';
+    $phone_number = array_key_exists( 'phone_number', $data ) && !is_null( $data['phone_number'] )
+                  ? $util_class_name::convert_north_american_phone_number( $data['phone_number'] )
+                  : '555-555-5555';
+
+    $participant_mod = lib::create( 'database\modifier' );
+    $participant_mod->where( 'first_name', '=', $first_name );
+    $participant_mod->where( 'last_name', '=', $last_name );
+    $participant_list = static::select_objects( $participant_mod );
+    if( 0 < count( $participant_list ) )
+    {
+      $db_participant = current( $participant_list );
+      $phone_mod = lib::create( 'database\modifier' );
+      $phone_mod->where( 'number', '=', $phone_number );
+      if( 0 < $db_participant->get_phone_count( $phone_mod ) )
+      {
+        return sprintf(
+          'Participant named "%s %s" already exists with phone number "%s".',
+          $first_name,
+          $last_name,
+          $phone_number
+        );
+      }
+    }
 
     $valid_boolean_list = array( true, false, 'true', 'false', 'yes', 'no', 'y', 'n', 1, 0 );
     $valid_positive_list = array( true, 'true', 'yes', 'y', 1 );
@@ -649,11 +682,9 @@ class participant extends record
 
     if( array_key_exists( 'grouping', $data ) && !is_null( $data['grouping'] ) ) $db_participant->grouping = $data['grouping'];
     if( array_key_exists( 'honorific', $data ) && !is_null( $data['honorific'] ) ) $db_participant->honorific = $data['honorific'];
-    $db_participant->first_name = array_key_exists( 'first_name', $data ) && !is_null( $data['first_name'] ) ?
-      $data['first_name'] : 'Unknown';
+    $db_participant->first_name = $first_name;
     if( array_key_exists( 'other_name', $data ) && !is_null( $data['other_name'] ) ) $db_participant->other_name = $data['other_name'];
-    $db_participant->last_name = array_key_exists( 'last_name', $data ) && !is_null( $data['last_name'] ) ?
-      $data['last_name'] : 'Unknown';
+    $db_participant->last_name = $last_name;
 
     if( array_key_exists( 'sex', $data ) && !is_null( $data['sex'] ) )
     {
