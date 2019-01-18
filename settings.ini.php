@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.3';
-$settings['general']['cenozo_build'] = '8dd63e3';
+$settings['general']['cenozo_build'] = '6f3b7c7';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -52,6 +52,9 @@ $settings['general']['check_for_missing_hin'] = false;
 
 // optional setting to turn on withdraw option and delink processing
 $settings['general']['withdraw_option_and_delink'] = false;
+
+// defines the regular expression pattern that all UIDs must match (leave NULL for any)
+$settings['general']['uid_regex'] = '^[A-Z][0-9]{6}$';
 
 // the administrator's email (if left NULL this will not be used)
 $settings['general']['admin_email'] = NULL;

@@ -885,6 +885,9 @@ class participant extends record
    */
   public static function get_valid_uid_list( $uid_list, $modifier = NULL )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $uid_regex = $setting_manager->get_setting( 'general', 'uid_regex' );
+
     $output_uid_list = array();
 
     if( !is_array( $uid_list ) )
@@ -898,7 +901,7 @@ class participant extends record
 
     // match UIDs (eg: A123456)
     $uid_list = array_filter( $uid_list, function( $string ) {
-      return 1 == preg_match( '/^[A-Z][0-9]{6}$/', $string );
+      return 1 == preg_match( sprintf( '/%s/', $uid_regex ), $string );
     } );
 
     if( 0 < count( $uid_list ) )
