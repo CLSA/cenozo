@@ -1729,6 +1729,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         this.confirm = function() {
           this.confirmInProgress = true;
           this.confirmedCount = null;
+          var uidRegex = new RegExp( CnSession.application.uidRegex );
 
           // clean up the uid list
           var fixedList =
@@ -1737,7 +1738,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                         .replace( /[^a-zA-Z0-9 ]/g, '' ) // remove anything that isn't a letter, number of space
                         .split( ' ' ) // delimite string by spaces and create array from result
                         .filter( function( uid ) { // match UIDs (eg: A123456)
-                          return null != uid.match( /^[A-Z][0-9]{6}$/ );
+                          return null != uid.match( uidRegex );
                         } )
                         .filter( function( uid, index, array ) { // make array unique
                           return index <= array.indexOf( uid );
