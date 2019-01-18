@@ -901,6 +901,7 @@ class participant extends record
 
     // match UIDs (eg: A123456)
     $uid_list = array_filter( $uid_list, function( $string ) {
+      global $uid_regex;
       return 1 == preg_match( sprintf( '/%s/', $uid_regex ), $string );
     } );
 
