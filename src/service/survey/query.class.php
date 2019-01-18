@@ -26,7 +26,7 @@ class query extends \cenozo\service\query
   /**
    * Extends parent method
    */
-  protected function get_record_class_name( $index, $relative = false )
+  public function get_record_class_name( $index, $relative = false )
   {
     $subject = $this->get_subject( $index );
     if( is_null( $subject ) )

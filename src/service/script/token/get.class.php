@@ -13,7 +13,7 @@ class get extends \cenozo\service\get
   /**
    * Override parent method
    */
-  protected function get_record_class_name( $index, $relative = false )
+  public function get_record_class_name( $index, $relative = false )
   {
     $subject = $this->get_subject( $index );
     if( 'token' != $subject ) return parent::get_record_class_name( $index, $relative );
