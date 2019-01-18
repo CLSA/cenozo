@@ -481,6 +481,23 @@ class util
   }
 
   /**
+   * Converts any string into a north-american phone number: XXX-XXX-XXXX format
+   * @param string $number
+   * @return string
+   */
+  public static function convert_north_american_phone_number( $number )
+  {
+    $number = preg_replace( '/[^0-9]/', '', $number );
+    $number = sprintf(
+      '%s-%s-%s',
+      substr( $number, 0, 3 ),
+      substr( $number, 3, 3 ),
+      substr( $number, 6 )
+    );
+    return $number;
+  }
+
+  /**
    * Validates a north-american phone number in XXX-XXX-XXXX format.
    * @param string $number
    * @param boolean $numeric_only Whether to ignore all non-numeric characters during check
