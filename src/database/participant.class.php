@@ -549,6 +549,7 @@ class participant extends record
     $add_address_func = function( $participant_id, $rank, $address )
     {
       $address_class_name = lib::get_class_name( 'database\address' );
+      $setting_manager = lib::create( 'business\setting_manager' );
 
       $db_address = lib::create( 'database\address' );
       $db_address->participant_id = $participant_id;
@@ -560,7 +561,7 @@ class participant extends record
       $db_address->city = array_key_exists( 'city', $address ) && !is_null( $address['city'] )
                         ? $address['city'] : 'Unknown';
       $db_address->postcode = array_key_exists( 'postcode', $address ) && !is_null( $address['postcode'] )
-                            ? $address['postcode'] : 'T1A 1A1';
+                            ? $address['postcode'] : $setting_manager->get_setting( 'general', 'default_postcode' );
       if( array_key_exists( 'address_note', $address ) && !is_null( $address['address_note'] ) )
         $db_address->note = $address['address_note'];
 

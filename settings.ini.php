@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.3';
-$settings['general']['cenozo_build'] = '6f3b7c7';
+$settings['general']['cenozo_build'] = '5453691';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -46,6 +46,9 @@ $settings['general']['supporting_script_timeout'] = 60;
 
 // whether to allow CSV importing of new participants
 $settings['general']['participant_import'] = false;
+
+// the default postcode used when importing participants
+$settings['general']['default_postcode'] = 'T1A 1A1';
 
 // optional setting to turn on HIN checking during assignments
 $settings['general']['check_for_missing_hin'] = false;

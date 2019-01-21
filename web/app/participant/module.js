@@ -1396,6 +1396,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           languageList: [],
           availabilityTypeList: [],
           phoneTypeList: [],
+          defaultPostcode: CnSession.application.defaultPostcode,
           importFile: {
             file: null,
             size: null,
