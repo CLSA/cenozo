@@ -47,6 +47,9 @@ $settings['general']['supporting_script_timeout'] = 60;
 // whether to allow CSV importing of new participants
 $settings['general']['participant_import'] = false;
 
+// the default postcode used when importing participants
+$settings['general']['default_postcode'] = 'T1A 1A1';
+
 // optional setting to turn on HIN checking during assignments
 $settings['general']['check_for_missing_hin'] = false;
 
