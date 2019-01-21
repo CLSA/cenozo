@@ -89,8 +89,11 @@ class node
     if( $this->is_leaf() )
       throw lib::create( 'exception\runtime', 'Tried to add a child to a leaf node.', __METHOD__ );
 
-    if( $first ) array_unshift( $this->value, $node );
-    else array_push( $this->value, $node );
+    if( !is_null( $node ) )
+    {
+      if( $first ) array_unshift( $this->value, $node );
+      else array_push( $this->value, $node );
+    }
     return $node;
   }
 

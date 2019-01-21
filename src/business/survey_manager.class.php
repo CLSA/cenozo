@@ -116,7 +116,11 @@ class survey_manager extends \cenozo\singleton
       $withdraw_mod = lib::create( 'database\modifier' );
       $withdraw_mod->where( 'participant.id', '=', $db_participant->id );
       if( $withdraw_option_and_delink ) $this->add_withdraw_option_column( $withdraw_sel, $withdraw_mod );
-      else static::join_survey_and_token_tables( $withdraw_sid, $withdraw_mod );
+      else
+      {
+        $withdraw_sel->add_column( 'id' );
+        static::join_survey_and_token_tables( $withdraw_sid, $withdraw_mod );
+      }
       $list = $participant_class_name::select( $withdraw_sel, $withdraw_mod );
       if( 0 < count( $list ) )
       {
@@ -616,7 +620,7 @@ class survey_manager extends \cenozo\singleton
    * @param database\modifier $modifier
    * @access public
    */
-  protected static function join_survey_and_token_tables( $sid, $modifier )
+  public static function join_survey_and_token_tables( $sid, $modifier )
   {
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
