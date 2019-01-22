@@ -493,7 +493,7 @@ define( function() {
         this.viewModel = CnAlternateViewFactory.instance( this, root );
 
         var mainInputGroup = module.inputGroupList.findByProperty( 'title', '' );
-        if( 2 < CnSession.role.tier ) mainInputGroup.inputList.decedent.constant = false;
+        if( 2 < CnSession.role.tier || 'curator' == CnSession.role.name ) mainInputGroup.inputList.decedent.constant = false;
 
         // extend getMetadata
         this.getMetadata = function() {
