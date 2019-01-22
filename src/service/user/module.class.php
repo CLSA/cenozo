@@ -99,18 +99,20 @@ class module extends \cenozo\service\site_restricted_module
     }
 
     // add the total number of related records
-    if( $select->has_column( 'role_count' ) ||
-        $select->has_column( 'site_count' ) ||
+    if( $select->has_column( 'roles' ) ||
+        $select->has_column( 'sites' ) ||
         $select->has_column( 'last_access_datetime' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'access' );
       $join_sel->add_column( 'user_id' );
-      $join_sel->add_column( 'COUNT( DISTINCT access.role_id )', 'role_count', false );
-      $join_sel->add_column( 'COUNT( DISTINCT access.site_id )', 'site_count', false );
+      $join_sel->add_column( 'GROUP_CONCAT( DISTINCT role.name ORDER BY role.name SEPARATOR ", " )', 'roles', false );
+      $join_sel->add_column( 'GROUP_CONCAT( DISTINCT site.name ORDER BY site.name SEPARATOR ", " )', 'sites', false );
       $join_sel->add_column( 'MAX( access.datetime )', 'last_access_datetime', false );
 
       $join_mod = lib::create( 'database\modifier' );
+      $join_mod->join( 'role', 'access.role_id', 'role.id' );
+      $join_mod->join( 'site', 'access.site_id', 'site.id' );
       $join_mod->group( 'user_id' );
 
       // restrict to roles belonging to this application
@@ -124,10 +126,10 @@ class module extends \cenozo\service\site_restricted_module
         'user_join_access.user_id' );
 
       // override columns so that we can fake these columns being in the user table
-      if( $select->has_column( 'role_count' ) )
-        $select->add_column( 'IFNULL( role_count, 0 )', 'role_count', false );
-      if( $select->has_column( 'site_count' ) )
-        $select->add_column( 'IFNULL( site_count, 0 )', 'site_count', false );
+      if( $select->has_column( 'roles' ) )
+        $select->add_column( 'IFNULL( roles, 0 )', 'roles', false );
+      if( $select->has_column( 'sites' ) )
+        $select->add_column( 'IFNULL( sites, 0 )', 'sites', false );
       if( $select->has_column( 'last_access_datetime' ) )
         $select->add_column( 'user_join_access.last_access_datetime', 'last_access_datetime', false );
     }

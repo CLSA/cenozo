@@ -27,15 +27,11 @@ define( function() {
         column: 'user.last_name',
         title: 'Last'
       },
-      role_count: {
-        title: 'Roles',
-        type: 'number',
-        help: 'The number of roles the user has access to for this application.'
+      roles: {
+        title: 'Roles'
       },
-      site_count: {
-        title: 'Sites',
-        type: 'number',
-        help: 'The number of sites the user has access to for this application.'
+      sites: {
+        title: 'Sites'
       },
       last_access_datetime: {
         title: 'Last Used',
@@ -477,8 +473,8 @@ define( function() {
               CnSession, CnHttpFactory, $q ) {
       var overviewModule = angular.copy( module );
       delete overviewModule.columnList.active;
-      delete overviewModule.columnList.role_count;
-      delete overviewModule.columnList.site_count;
+      delete overviewModule.columnList.roles;
+      delete overviewModule.columnList.sites;
       delete overviewModule.columnList.last_access_datetime;
 
       var columnList = {
