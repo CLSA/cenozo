@@ -1252,10 +1252,10 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
             // only allow adding a hold or proxy if the participant is enrolled
             self.holdModel.getAddEnabled = function() {
-              return self.holdModel.$$getAddEnabled && 'Yes' == self.record.exclusion;
+              return self.holdModel.$$getAddEnabled() && 'Yes' == self.record.exclusion;
             };
             self.proxyModel.getAddEnabled = function() {
-              return self.proxyModel.$$getAddEnabled && 'Yes' == self.record.exclusion;
+              return self.proxyModel.$$getAddEnabled() && 'Yes' == self.record.exclusion;
             };
           } );
         }
