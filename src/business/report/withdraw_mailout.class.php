@@ -26,6 +26,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $withdraw_option_and_delink = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
 
     $db_withdraw_mailed_event_type = $event_type_class_name::get_unique_record( 'name', 'withdraw mailed' );
+    $db_withdraw_not_mailed_event_type = $event_type_class_name::get_unique_record( 'name', 'withdraw not mailed' );
 
     $select = lib::create( 'database\select' );
     $select->from( 'participant' );
@@ -57,7 +58,10 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     // make sure they haven't been mailed to already
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where( 'participant.id', '=', 'event.participant_id', false );
+    $join_mod->where_bracket( true );
     $join_mod->where( 'event.event_type_id', '=', $db_withdraw_mailed_event_type->id );
+    $join_mod->or_where( 'event.event_type_id', '=', $db_withdraw_not_mailed_event_type->id );
+    $join_mod->where_bracket( false );
     $modifier->join_modifier( 'event', $join_mod, 'left' );
     $modifier->where_bracket( true );
     $modifier->where( 'event.id', '=', NULL );
