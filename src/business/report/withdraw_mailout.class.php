@@ -20,13 +20,9 @@ class withdraw_mailout extends \cenozo\business\report\base_report
   protected function build()
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
-    $event_type_class_name = lib::get_class_name( 'database\event_type' );
     $survey_manager = lib::create( 'business\survey_manager' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $withdraw_option_and_delink = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
-
-    $db_withdraw_mailed_event_type = $event_type_class_name::get_unique_record( 'name', 'withdraw mailed' );
-    $db_withdraw_not_mailed_event_type = $event_type_class_name::get_unique_record( 'name', 'withdraw not mailed' );
 
     $select = lib::create( 'database\select' );
     $select->from( 'participant' );
@@ -55,17 +51,58 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->where( 'consent_type.name', '=', 'participation' );
     $modifier->where( 'consent.accept', '=', false );
 
+    $modifier->join(
+      'participant_last_event',
+      'participant.id',
+      'participant_last_mailed_event.participant_id',
+      '',
+      'participant_last_mailed_event'
+    );
+    $modifier->join(
+      'event_type',
+      'participant_last_mailed_event.event_type_id',
+      'mailed_event_type.id',
+      '',
+      'mailed_event_type'
+    );
+    $modifier->left_join(
+      'event',
+      'participant_last_mailed_event.event_id',
+      'mailed_event.id',
+      'mailed_event'
+    );
+    $modifier->where( 'mailed_event_type.name', '=', 'withdraw mailed' );
+
+    $modifier->join(
+      'participant_last_event',
+      'participant.id',
+      'participant_last_not_mailed_event.participant_id',
+      '',
+      'participant_last_not_mailed_event'
+    );
+    $modifier->left_join(
+      'event',
+      'participant_last_not_mailed_event.event_id',
+      'not_mailed_event.id',
+      'not_mailed_event'
+    );
+    $modifier->join(
+      'event_type',
+      'participant_last_not_mailed_event.event_type_id',
+      'not_mailed_event_type.id',
+      '',
+      'not_mailed_event_type'
+    );
+    $modifier->where( 'not_mailed_event_type.name', '=', 'withdraw not mailed' );
+
     // make sure they haven't been mailed to already
-    $join_mod = lib::create( 'database\modifier' );
-    $join_mod->where( 'participant.id', '=', 'event.participant_id', false );
-    $join_mod->where_bracket( true );
-    $join_mod->where( 'event.event_type_id', '=', $db_withdraw_mailed_event_type->id );
-    $join_mod->or_where( 'event.event_type_id', '=', $db_withdraw_not_mailed_event_type->id );
-    $join_mod->where_bracket( false );
-    $modifier->join_modifier( 'event', $join_mod, 'left' );
     $modifier->where_bracket( true );
-    $modifier->where( 'event.id', '=', NULL );
-    $modifier->or_where( 'event.datetime', '<', 'consent.datetime', false );
+    $modifier->where( 'mailed_event.id', '=', NULL );
+    $modifier->or_where( 'mailed_event.datetime', '<', 'consent.datetime', false );
+    $modifier->where_bracket( false );
+    $modifier->where_bracket( true );
+    $modifier->where( 'not_mailed_event.id', '=', NULL );
+    $modifier->or_where( 'not_mailed_event.datetime', '<', 'consent.datetime', false );
     $modifier->where_bracket( false );
 
     // add the special withdraw option column
