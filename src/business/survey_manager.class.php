@@ -413,33 +413,39 @@ class survey_manager extends \cenozo\singleton
    * @param database\select $select
    * @param database\modifier $modifier
    * @param string $alias What alias to use for the column
+   * @param boolean $group Whether to group by the withdraw option column
+   * @param boolean $left Whether to left join to the Limesurvey tables
    * @access public
    */
-  public function add_withdraw_option_column( $select, $modifier, $alias = 'option', $group = false )
+  public function add_withdraw_option_column( $select, $modifier, $alias = 'option', $group = false, $left = false )
   {
     $withdraw_sid = $this->get_withdraw_sid();
     if( $withdraw_sid )
     {
-      static::join_survey_and_token_tables( $withdraw_sid, $modifier );
+      static::join_survey_and_token_tables( $withdraw_sid, $modifier, $left );
       $column_name_list = $this->get_withdraw_column_name_list();
 
       $column = sprintf(
         'IF('."\n".
-        '  %s = "REFUSED" OR'."\n".
-        '  %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
-        '  %s = "YES" OR %s = "YES" OR %s = "YES" OR %s = "YES" OR'."\n".
-        '  %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED",'."\n".
-        '  "default",'."\n".
+        '  tokens.token IS NULL,'."\n".
+        '  NULL,'."\n".
         '  IF('."\n".
-        '    %s = "YES" OR %s = "YES" OR %s = "YES" OR %s = "YES",'."\n".
-        '    1,'."\n".
-        '    COALESCE('."\n".
-        '      SUBSTRING('."\n".
-        '        IF( 0 < tokens.attribute_1,'."\n".
-        '          IF( 0 < tokens.attribute_2, %s, %s ),'."\n".
-        '          IF( 0 < tokens.attribute_2, %s, %s )'."\n".
-        '        ), 7'."\n".
-        '      ), 1'."\n".
+        '    %s = "REFUSED" OR'."\n".
+        '    %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED" OR'."\n".
+        '    %s = "YES" OR %s = "YES" OR %s = "YES" OR %s = "YES" OR'."\n".
+        '    %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED" OR %s = "REFUSED",'."\n".
+        '    "default",'."\n".
+        '    IF('."\n".
+        '      %s = "YES" OR %s = "YES" OR %s = "YES" OR %s = "YES",'."\n".
+        '      1,'."\n".
+        '      COALESCE('."\n".
+        '        SUBSTRING('."\n".
+        '          IF( 0 < tokens.attribute_1,'."\n".
+        '            IF( 0 < tokens.attribute_2, %s, %s ),'."\n".
+        '            IF( 0 < tokens.attribute_2, %s, %s )'."\n".
+        '          ), 7'."\n".
+        '        ), 1'."\n".
+        '      )'."\n".
         '    )'."\n".
         '  )'."\n".
         ')',
@@ -618,9 +624,10 @@ class survey_manager extends \cenozo\singleton
    * 
    * @param integer $sid The limesurvey SID (survey ID) of the survey to link to
    * @param database\modifier $modifier
+   * @param boolean $left Whether to left join to the Limesurvey tables
    * @access public
    */
-  public static function join_survey_and_token_tables( $sid, $modifier )
+  public static function join_survey_and_token_tables( $sid, $modifier, $left = false )
   {
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
@@ -637,7 +644,7 @@ class survey_manager extends \cenozo\singleton
         sprintf( '%s.%s', $database_name, $tokens_class_name::get_table_name() ),
         'participant.uid',
         'tokens.token',
-        '',
+        $left ? 'left' : '',
         'tokens'
       );
     }
@@ -648,7 +655,7 @@ class survey_manager extends \cenozo\singleton
         sprintf( '%s.%s', $database_name, $survey_class_name::get_table_name() ),
         'tokens.token',
         'survey.token',
-        '',
+        $left ? 'left' : '',
         'survey'
       );
     }

@@ -20,12 +20,21 @@ class withdraw_mailout extends \cenozo\business\report\base_report
   protected function build()
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
+    $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
     $survey_manager = lib::create( 'business\survey_manager' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $withdraw_option_and_delink = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
 
+    $db_participation_consent_type = $consent_type_class_name::get_unique_record( 'name', 'participation' );
+    $db_withdrawn_3rd_party_hold_type = $hold_type_class_name::get_unique_record(
+      array( 'type', 'name' ),
+      array( 'final', 'Withdrawn by 3rd party' )
+    );
+
     $select = lib::create( 'database\select' );
     $select->from( 'participant' );
+    $select->add_column( 'IF( hold.id IS NULL, "no", "yes" )', '3rd Party', false );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
     $select->add_column( 'honorific', 'Honorific' );
@@ -37,19 +46,34 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $select->add_column( 'region.name', 'Province/State', false );
     $select->add_column( 'address.postcode', 'Postcode', false );
     $select->add_column( 'region.country', 'Country', false );
+    $select->add_column( 'IF( survey.submitdate IS NULL, "no", "yes" )', 'Script', false );
 
     $modifier = lib::create( 'database\modifier' );
+    $modifier->order( 'IF( hold.id IS NULL, "no", "yes" )' );
+    $modifier->order( 'uid' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
     $modifier->join( 'address', 'participant_first_address.address_id', 'address.id' );
     $modifier->join( 'region', 'address.region_id', 'region.id' );
+    $modifier->where( 'exclusion_id', '=', NULL );
 
-    // make sure the current consent is negative
-    $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
-    $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
-    $modifier->join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
-    $modifier->where( 'consent_type.name', '=', 'participation' );
-    $modifier->where( 'consent.accept', '=', false );
+    // make sure the current consent is negative or the participant has been withdrawn by a 3rd party
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'participant_last_consent.participant_id', false );
+    $join_mod->where( 'participant_last_consent.consent_type_id', '=', $db_participation_consent_type->id );
+    $modifier->join_modifier( 'participant_last_consent', $join_mod );
+    $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
+
+    $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant_last_hold.hold_id', '=', 'hold.id', false );
+    $join_mod->where( 'hold.hold_type_id', '=', $db_withdrawn_3rd_party_hold_type->id );
+    $modifier->join_modifier( 'hold', $join_mod, 'left' );
+
+    $modifier->where_bracket( true );
+    $modifier->where( 'IFNULL( consent.accept, true )', '=', false );
+    $modifier->or_where( 'hold.id', '!=', NULL );
+    $modifier->where_bracket( false );
 
     $modifier->join(
       'participant_last_event',
@@ -105,8 +129,9 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->or_where( 'not_mailed_event.datetime', '<', 'consent.datetime', false );
     $modifier->where_bracket( false );
 
-    // add the special withdraw option column
-    if( $withdraw_option_and_delink ) $survey_manager->add_withdraw_option_column( $select, $modifier, 'Option' );
+    // add the special withdraw option column using a left join
+    if( $withdraw_option_and_delink )
+      $survey_manager->add_withdraw_option_column( $select, $modifier, 'Option', false, true );
 
     // add the hin and samples withdraw option columns
     $select->add_column( '0 < tokens.attribute_1', 'hin', false );
