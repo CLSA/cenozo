@@ -233,8 +233,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnReportAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
+    'CnBaseAddFactory', '$q',
+    function( CnBaseAddFactory, $q ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -243,7 +243,10 @@ define( function() {
         this.transitionOnSave = function( record ) { parentModel.transitionToViewState( record ); };
 
         this.onNew = function( record ) {
-          return this.$$onNew( record ).then( function() {
+          return $q.all( [
+            this.$$onNew( record ),
+            this.parentModel.getMetadata()
+          ] ).then( function() {
             for( var column in self.parentModel.metadata.columnList ) {
               var meta = self.parentModel.metadata.columnList[column];
               if( angular.isDefined( meta.restriction_type ) ) {

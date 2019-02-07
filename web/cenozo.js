@@ -4641,9 +4641,9 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         cenozo.addExtendableFunction( self, 'getBreadcrumbParentTitle', function() {
           var parent = self.getParentIdentifier();
-          return angular.isDefined( parent.friendly )
-               ? self.viewModel.record[parent.friendly]
-               : String( parent.identifier ).split( '=' ).pop();
+          return ( angular.isDefined( parent.friendly ) ?
+            self.viewModel.record[parent.friendly] : String( parent.identifier ).split( '=' ).pop()
+          ).replace( '_', ' ' ).ucWords();
         } );
 
         /**
