@@ -221,7 +221,7 @@ class survey_manager extends \cenozo\singleton
 
       $modifier = lib::create( 'database\modifier' );
       $modifier->join( 'participant', 'supporting_script_check.participant_id', 'participant.id' );
-      static::join_survey_and_token_tables( $db_script->sid, $modifier );
+      static::join_survey_and_token_tables( $db_script->sid, $modifier, true );
 
       foreach( $supporting_script_check_class_name::select( $select, $modifier ) as $row )
       {
