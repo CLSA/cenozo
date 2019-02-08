@@ -183,21 +183,15 @@ class survey_manager extends \cenozo\singleton
 
   /**
    * Resolves the supporting status of all participants who need a supporting script's status checked
-   * 
-   * @param database\script $db_script The script to process
    */
-  public function process_all_supporting_script_checks( $db_script )
+  public function process_all_supporting_script_checks()
   {
     $total = 0;
 
-    if( !$db_script->supporting )
-    {
-      log::warning( sprintf(
-        'Tried to process non-supporting script "%s" as a supporting script (request ignored).',
-        $db_script->name
-      ) );
-    }
-    else
+    $script_class_name = lib::create( 'database\script' );
+    $script_mod = lib::create( 'database\modifier' );
+    $script_mod->where( 'supporting', '=', true );
+    foreach( $script_class_name::select_objects( $script_mod ) as $db_script )
     {
       $participant_class_name = lib::get_class_name( 'database\participant' );
       $supporting_script_check_class_name = lib::get_class_name( 'database\supporting_script_check' );
@@ -205,11 +199,10 @@ class survey_manager extends \cenozo\singleton
       $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
       $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
 
-      $withdraw_sid = $this->get_withdraw_sid();
       $old_tokens_sid = $tokens_class_name::get_sid();
       $old_survey_sid = $survey_class_name::get_sid();
-      $tokens_class_name::set_sid( $withdraw_sid );
-      $survey_class_name::set_sid( $withdraw_sid );
+      $tokens_class_name::set_sid( $db_script->sid );
+      $survey_class_name::set_sid( $db_script->sid );
 
       $select = lib::create( 'database\select' );
       $select->add_column( 'id' );
@@ -608,15 +601,6 @@ class survey_manager extends \cenozo\singleton
     }
 
     return $this->withdraw_column_name_list;
-  }
-
-  /**
-   * Convenience method that processes all withdraw scripts
-   */
-  public function process_pending_withdraw()
-  {
-    $db_withdraw_script = $this->get_withdraw_script();
-    return $db_withdraw_script ? $this->process_all_supporting_script_checks( $db_withdraw_script ) : 0;
   }
 
   /**

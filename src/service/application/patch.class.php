@@ -26,8 +26,8 @@ class patch extends \cenozo\service\patch
 
       $db_role = lib::create( 'business\session' )->get_role();
 
-      // make sure that only tier 2+ roles can process pending withdraw records
-      if( $this->get_argument( 'process_pending_withdraw', false ) && 2 > $db_role->tier )
+      // make sure that only tier 2+ roles can process pending scripts
+      if( $this->get_argument( 'process_pending_scripts', false ) && 2 > $db_role->tier )
         $this->status->set_code( 403 );
     }
   }
@@ -39,11 +39,11 @@ class patch extends \cenozo\service\patch
   {
     parent::execute();
 
-    // process all pending withdraw records, if needed
-    if( $this->get_argument( 'process_pending_withdraw', false ) )
+    // process all pending scripts, if needed
+    if( $this->get_argument( 'process_pending_scripts', false ) )
     {
       $survey_manager = lib::create( 'business\survey_manager' );
-      $this->set_data( $survey_manager->process_pending_withdraw() );
+      $this->set_data( $survey_manager->process_all_supporting_script_checks() );
     }
   }
 }
