@@ -80,14 +80,15 @@ class module extends \cenozo\service\site_restricted_module
     }
 
     // add the total number of roles
-    if( $select->has_column( 'role_count' ) )
+    if( $select->has_column( 'roles' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'role_has_hold_type' );
       $join_sel->add_column( 'hold_type_id' );
-      $join_sel->add_column( 'COUNT(*)', 'role_count', false );
+      $join_sel->add_column( 'GROUP_CONCAT( role.name ORDER BY role.name SEPARATOR ", " )', 'roles', false );
 
       $join_mod = lib::create( 'database\modifier' );
+      $join_mod->join( 'role', 'role_has_hold_type.role_id', 'role.id' );
       $join_mod->group( 'hold_type_id' );
 
       // restrict to roles belonging to this application
@@ -101,7 +102,7 @@ class module extends \cenozo\service\site_restricted_module
         sprintf( '( %s %s ) AS hold_type_join_role', $join_sel->get_sql(), $join_mod->get_sql() ),
         'hold_type.id',
         'hold_type_join_role.hold_type_id' );
-      $select->add_column( 'IFNULL( role_count, 0 )', 'role_count', false );
+      $select->add_column( 'hold_type_join_role.roles', 'roles', false );
     }
   }
 }

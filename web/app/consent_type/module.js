@@ -19,6 +19,9 @@ define( function() {
         title: 'Denies',
         type: 'number'
       },
+      roles: {
+        title: 'Roles'
+      },
       description: {
         title: 'Description',
         align: 'left'
@@ -108,7 +111,16 @@ define( function() {
   cenozo.providers.factory( 'CnConsentTypeViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        // allow add/delete of roles and participants
+        this.deferred.promise.then( function() {
+          if( angular.isDefined( self.roleModel ) )
+            self.roleModel.getChooseEnabled = function() { return parentModel.getEditEnabled(); };
+        } );
+      };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );

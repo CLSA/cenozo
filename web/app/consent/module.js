@@ -53,7 +53,8 @@ define( function() {
     written: {
       title: 'Written',
       type: 'boolean',
-      constant: 'view'
+      constant: true,
+      exclude: true
     },
     datetime: {
       title: 'Date & Time',
@@ -141,9 +142,9 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentModelFactory', [
     'CnBaseModelFactory', 'CnConsentListFactory', 'CnConsentAddFactory', 'CnConsentViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', 'CnSession',
     function( CnBaseModelFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, CnSession ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -159,19 +160,25 @@ define( function() {
           return consentType ? consentType.name : 'unknown';
         };
 
+        // only allow administrators to add written consent records
+        var mainInputGroup = self.module.inputGroupList.findByProperty( 'title', '' );
+        mainInputGroup.inputList.written.exclude = 3 > CnSession.role.tier;
+
         // extend getMetadata
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
             return CnHttpFactory.instance( {
               path: 'consent_type',
               data: {
-                select: { column: [ 'id', 'name' ] },
+                select: { column: [ 'id', 'name', 'access' ] },
                 modifier: { order: 'name' }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.consent_type_id.enumList = [];
               response.data.forEach( function( item ) {
-                self.metadata.columnList.consent_type_id.enumList.push( { value: item.id, name: item.name } );
+                self.metadata.columnList.consent_type_id.enumList.push( {
+                  value: item.id, name: item.name, disabled: !item.access
+                } );
               } );
             } );
           } );

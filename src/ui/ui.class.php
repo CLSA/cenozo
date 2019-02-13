@@ -269,6 +269,7 @@ class ui extends \cenozo\base_object
       }
       else if( 'consent_type' == $module->get_subject() )
       {
+        $module->add_child( 'role' );
         $module->add_child( 'participant' );
       }
       else if( 'event' == $module->get_subject() )

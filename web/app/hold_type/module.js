@@ -16,9 +16,8 @@ define( function() {
         title: 'Participants',
         type: 'number'
       },
-      role_count: {
-        title: 'Roles',
-        type: 'number'
+      roles: {
+        title: 'Roles'
       }
     },
     defaultOrder: {
