@@ -53,7 +53,7 @@ define( function() {
     written: {
       title: 'Written',
       type: 'boolean',
-      constant: true,
+      constant: 'view',
       exclude: true
     },
     datetime: {
