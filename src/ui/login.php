@@ -11,6 +11,7 @@
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.min.js"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular/angular.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-sanitize/angular-sanitize.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
 
   <meta http-equiv="Pragma" content="no-cache">
@@ -18,7 +19,7 @@
 </head>
 <body class="background">
   <script>
-    var loginApp = angular.module( 'loginApp', [] );
+    var loginApp = angular.module( 'loginApp', [ 'ngSanitize' ] );
     loginApp.controller( 'LoginCtrl', [
       '$scope', '$http', '$window',
       function( $scope, $http, $window ) {
@@ -26,6 +27,15 @@
         $scope.processing = false;
         $scope.baseUrl = '<?php print ROOT_URL; ?>';
         $scope.loginChanged = function() { $scope.state = 'ready'; };
+
+        $scope.loginFooter = `<?php print nl2br( $login_footer ); ?>`;
+        console.log( $scope.loginFooter );
+        var adminEmail = '<?php print $admin_email; ?>';
+        if( adminEmail ) {
+          $scope.loginFooter +=
+            ( 0 < $scope.loginFooter.length ? '<br/>\n' : '' ) +
+            'Please contact <a href="' + adminEmail + '">' + adminEmail + '</a> if you require assistance logging in.';
+        }
 
         $scope.browser = null;
         $scope.badVersion = false;
@@ -91,12 +101,12 @@
   <div class="container-fluid noselect outer-view-frame">
     <div class="inner-view-frame">
       <div class="container-fluid bg-white" style="padding-top: 1em; padding-bottom:4em;">
-        <div class="container">
+        <div class="container" ng-controller="LoginCtrl">
           <img src="<?php print CENOZO_URL; ?>/img/branding.png"
                class="img-responsive"
                onerror="this.style.display='none'"
                alt="" />
-          <div class="record-view rounded vertical-spacer" ng-controller="LoginCtrl">
+          <div class="record-view rounded vertical-spacer">
             <div ng-show="null == browser || badVersion">
               <div class="container-fluid bg-primary rounded-top"><h4>
                 Incompatible Web Browser
@@ -194,9 +204,7 @@
               </div>
             </form>
           </div>
-          <div ng-if="'<?php print $admin_email; ?>'" class="text-info">
-            Please contact <a href="mailto:<?php print $admin_email; ?>"><?php print $admin_email; ?></a> if you require assistance logging in.
-          </div>
+          <div ng-if="loginFooter" class="text-right" ng-bind-html="loginFooter"></div>
         </div>
       </div>
     </div>

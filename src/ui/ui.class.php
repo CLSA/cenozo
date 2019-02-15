@@ -26,6 +26,9 @@ class ui extends \cenozo\base_object
   public function get_interface( $maintenance = false, $error = NULL )
   {
     $util_class_name = lib::get_class_name( 'util' );
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_user = $session->get_user();
 
     $interface = '';
     if( $maintenance || !is_null( $error ) )
@@ -42,13 +45,14 @@ class ui extends \cenozo\base_object
       include( dirname( __FILE__ ).'/error.php' );
       $interface = ob_get_clean();
     }
-    else if( is_null( lib::create( 'business\session' )->get_user() ) )
+    else if( is_null( $db_user ) )
     { // no user means we haven't logged in, so show the login interface
       ob_start();
       $setting_manager = lib::create( 'business\setting_manager' );
       $chrome_minimum_version = $setting_manager->get_setting( 'general', 'chrome_minimum_version' );
       $firefox_minimum_version = $setting_manager->get_setting( 'general', 'firefox_minimum_version' );
       $admin_email = $setting_manager->get_setting( 'general', 'admin_email' );
+      $login_footer = $db_application->login_footer;
       include( dirname( __FILE__ ).'/login.php' );
       $interface = ob_get_clean();
     }

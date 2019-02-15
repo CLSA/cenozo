@@ -82,6 +82,11 @@ define( function() {
       type: 'color',
       help: 'The secondary colour to use for the application\'s user interface.'
     },
+    login_footer: {
+      title: 'Login Footer',
+      type: 'text',
+      help: 'A message which is added after the login box.  This text may contain HTML markup.'
+    },
     country: {
       title: 'Country',
       type: 'string'
