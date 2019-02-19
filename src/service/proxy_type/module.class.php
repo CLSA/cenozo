@@ -21,7 +21,18 @@ class module extends \cenozo\service\site_restricted_module
     parent::prepare_read( $select, $modifier );
 
     $session = lib::create( 'business\session' );
+    $db_role = $session->get_role();
     $db_application = $session->get_application();
+
+    // add the access column (whether the role has access)
+    if( $select->has_column( 'access' ) )
+    {
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'proxy_type.id', '=', 'role_has_proxy_type.proxy_type_id', false );
+      $join_mod->where( 'role_has_proxy_type.role_id', '=', $db_role->id );
+      $modifier->join_modifier( 'role_has_proxy_type', $join_mod, 'left' );
+      $select->add_column( 'role_has_proxy_type.proxy_type_id IS NOT NULL', 'access', false, 'boolean' );
+    }
 
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )
@@ -40,26 +51,26 @@ class module extends \cenozo\service\site_restricted_module
 
       // restrict to participants in this application
       if( $db_application->release_based )
-      {   
+      {
         $sub_mod = lib::create( 'database\modifier' );
         $sub_mod->where( 'participant_last_proxy.participant_id', '=',
                          'application_has_participant.participant_id', false );
         $sub_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
         $sub_mod->where( 'application_has_participant.datetime', '!=', NULL );
         $join_mod->join_modifier( 'application_has_participant', $sub_mod );
-      }   
+      }
 
       // restrict by site
       $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) ) 
-      {   
+      if( !is_null( $db_restrict_site ) )
+      {
         $sub_mod = lib::create( 'database\modifier' );
         $sub_mod->where( 'participant_last_proxy.participant_id', '=',
                          'participant_site.participant_id', false );
         $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
         $sub_mod->where( 'participant_site.site_id', '=', $db_restrict_site->id );
         $join_mod->join_modifier( 'participant_site', $sub_mod );
-      }   
+      }
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS proxy_type_join_participant', $join_sel->get_sql(), $join_mod->get_sql() ),
