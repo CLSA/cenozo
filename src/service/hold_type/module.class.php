@@ -24,7 +24,7 @@ class module extends \cenozo\service\site_restricted_module
     $db_application = $session->get_application();
     $db_role = $session->get_role();
 
-    // add the access column (wether the role has access)
+    // add the access column (whether the role has access)
     if( $select->has_column( 'access' ) )
     {
       $join_mod = lib::create( 'database\modifier' );
