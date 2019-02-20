@@ -19,7 +19,7 @@ define( function() {
         title: 'Denies',
         type: 'number'
       },
-      roles: {
+      role_list: {
         title: 'Roles'
       },
       description: {

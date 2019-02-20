@@ -193,54 +193,146 @@ abstract class module extends \cenozo\base_object
   /**
    * Adds the total number of child records as a column
    * 
+   * @param string $column_name The name of the added column
    * @param string $table The table that the child records belong to
    * @param database\select The select used by the read service
    * @param database\modifier The modifier used by the read service
    * @param string $joining_table Used to force a many-to-many relationship with the provided table name
    * @access public
    */
-  protected function add_count_column( $table, $select, $modifier, $joining_table = NULL )
+  protected function add_count_column( $column_name, $table, $select, $modifier, $joining_table = NULL )
   {
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
 
     $subject = $this->get_subject();
     $record_class_name = $this->service->get_record_class_name( $this->index );
+    $join_table_name = sprintf( '%s_join_%s', $subject, $table );
+    $table_primary_key = sprintf( '%s.id', $table );
+    $subject_primary_key = sprintf( '%s.id', $subject );
+
     $relationship = $record_class_name::get_relationship( $table );
     if( $relationship_class_name::MANY_TO_MANY === $relationship || !is_null( $joining_table ) )
     {
-      if( is_null( $joining_table ) ) $joining_table = sprintf( '%s_has_%s', $subject, $table );
+      if( is_null( $joining_table ) )
+      {
+        $joining_table = sprintf( '%s_has_%s', $subject, $table );
+        if( !$db->table_exists( $joining_table ) )
+          $joining_table = sprintf( '%s_has_%s', $table, $subject );
+      }
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( $subject );
       $join_sel->add_column( 'id', $subject.'_id' );
-      $join_sel->add_column( 'IF( '.$joining_table.'.'.$table.'_id IS NOT NULL, COUNT(*), 0 )', $table.'_count', false );
+      $join_sel->add_column( 'IF( '.$joining_table.'.'.$table.'_id IS NOT NULL, COUNT(*), 0 )', $column_name, false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->left_join( $joining_table, $subject.'.id', $joining_table.'.'.$subject.'_id' );
-      $join_mod->group( $subject.'.id' );
+      $join_mod->left_join( $joining_table, $subject_primary_key, $joining_table.'.'.$subject.'_id' );
+      $join_mod->group( $subject_primary_key );
 
       $modifier->left_join(
-        sprintf( '( %s %s ) AS '.$subject.'_join_'.$table, $join_sel->get_sql(), $join_mod->get_sql() ),
-        $subject.'.id',
-        $subject.'_join_'.$table.'.'.$subject.'_id' );
-      $select->add_column( 'IFNULL( '.$table.'_count, 0 )', $table.'_count', false );
+        sprintf( '( %s %s ) AS '.$join_table_name, $join_sel->get_sql(), $join_mod->get_sql() ),
+        $subject_primary_key,
+        $join_table_name.'.'.$subject.'_id' );
+      $select->add_column( 'IFNULL( '.$column_name.', 0 )', $column_name, false );
     }
     else
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( $subject );
       $join_sel->add_column( 'id', $subject.'_id' );
-      $join_sel->add_column( 'IF( '.$table.'.id IS NULL, 0, COUNT( * ) )', $table.'_count', false );
+      $join_sel->add_column( 'IF( '.$table_primary_key.' IS NULL, 0, COUNT( * ) )', $column_name, false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->left_join( $table, $subject.'.id', $table.'.'.$subject.'_id' );
-      $join_mod->group( $subject.'.id' );
+      $join_mod->left_join( $table, $subject_primary_key, $table.'.'.$subject.'_id' );
+      $join_mod->group( $subject_primary_key );
 
       $modifier->join(
-        sprintf( '( %s %s ) AS '.$subject.'_join_'.$table, $join_sel->get_sql(), $join_mod->get_sql() ),
-        $subject.'.id',
-        $subject.'_join_'.$table.'.'.$subject.'_id'
+        sprintf( '( %s %s ) AS '.$join_table_name, $join_sel->get_sql(), $join_mod->get_sql() ),
+        $subject_primary_key,
+        $join_table_name.'.'.$subject.'_id'
       );
-      $select->add_table_column( $subject.'_join_'.$table, $table.'_count' );
+      $select->add_table_column( $join_table_name, $column_name );
+    }
+  }
+
+  /**
+   * Adds a list of child records as a column
+   * 
+   * @param string $column_name The name of the added column
+   * @param string $table The table that the child records belong to
+   * @param string $column Which column name in the $table to get a list of
+   * @param database\select The select used by the read service
+   * @param database\modifier The modifier used by the read service
+   * @param string $joining_table Used to force a many-to-many relationship with the provided table name
+   * @param string $order Which column to sort the list by (defaults to the $column value)
+   * @access public
+   */
+  protected function add_list_column(
+    $column_name, $table, $column, $select, $modifier, $joining_table = NULL, $join_mod = NULL, $order = NULL )
+  {
+    $db = lib::create( 'business\session' )->get_database();
+    $relationship_class_name = lib::get_class_name( 'database\relationship' );
+
+    $subject = $this->get_subject();
+    $record_class_name = $this->service->get_record_class_name( $this->index );
+    $join_table_name = sprintf( '%s_join_%s', $subject, $table );
+    $table_primary_key = sprintf( '%s.id', $table );
+    $subject_primary_key = sprintf( '%s.id', $subject );
+
+    $relationship = $record_class_name::get_relationship( $table );
+    if( $relationship_class_name::MANY_TO_MANY === $relationship || !is_null( $joining_table ) )
+    {
+      if( is_null( $joining_table ) )
+      {
+        $joining_table = sprintf( '%s_has_%s', $subject, $table );
+        if( !$db->table_exists( $joining_table ) )
+          $joining_table = sprintf( '%s_has_%s', $table, $subject );
+      }
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( $joining_table );
+      $join_sel->add_column( $subject.'_id' );
+      $join_sel->add_column(
+        sprintf(
+          'GROUP_CONCAT( %s.%s ORDER BY %s.%s SEPARATOR ", " )',
+          $table,
+          $column,
+          $table,
+          is_null( $order ) ? $column : $order
+        ),
+        $column_name,
+        false
+      );
+
+      if( is_null( $join_mod ) ) $join_mod = lib::create( 'database\modifier' );
+      $join_mod->join( $table, $joining_table.'.'.$table.'_id', $table_primary_key );
+      $join_mod->group( $subject.'_id' );
+
+      $modifier->left_join(
+        sprintf( '( %s %s ) AS '.$join_table_name, $join_sel->get_sql(), $join_mod->get_sql() ),
+        $subject_primary_key,
+        $join_table_name.'.'.$subject.'_id' );
+      $select->add_table_column( $join_table_name, $column_name );
+    }
+    else
+    {
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( $subject );
+      $join_sel->add_column( 'id', $subject.'_id' );
+      $join_sel->add_column(
+        sprintf( 'GROUP_CONCAT( %s.%s ORDER BY %s.%s SEPARATOR ", " )', $table, $column, $table, $column ),
+        $column_name,
+        false
+      );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->left_join( $table, $subject_primary_key, $table.'.'.$subject.'_id' );
+      $join_mod->group( $subject_primary_key );
+
+      $modifier->join(
+        sprintf( '( %s %s ) AS '.$join_table_name, $join_sel->get_sql(), $join_mod->get_sql() ),
+        $subject_primary_key,
+        $join_table_name.'.'.$subject.'_id'
+      );
+      $select->add_table_column( $join_table_name, $column_name );
     }
   }
 

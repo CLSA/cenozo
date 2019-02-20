@@ -16,7 +16,7 @@ define( function() {
         title: 'Participants',
         type: 'number'
       },
-      roles: {
+      role_list: {
         title: 'Roles'
       }
     },

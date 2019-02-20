@@ -123,7 +123,7 @@ class module extends \cenozo\service\site_restricted_participant_module
       $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
 
     if( $select->has_column( 'phone_call_count' ) )
-      $this->add_count_column( 'phone_call', $select, $modifier );
+      $this->add_count_column( 'phone_call_count', 'phone_call', $select, $modifier );
 
     // add the assignment's last call's status column
     if( $select->has_table_columns( 'last_phone_call' ) ||

@@ -27,10 +27,10 @@ define( function() {
         column: 'user.last_name',
         title: 'Last'
       },
-      roles: {
+      role_list: {
         title: 'Roles'
       },
-      sites: {
+      site_list: {
         title: 'Sites'
       },
       last_access_datetime: {
@@ -473,8 +473,8 @@ define( function() {
               CnSession, CnHttpFactory, $q ) {
       var overviewModule = angular.copy( module );
       delete overviewModule.columnList.active;
-      delete overviewModule.columnList.roles;
-      delete overviewModule.columnList.sites;
+      delete overviewModule.columnList.role_list;
+      delete overviewModule.columnList.site_list;
       delete overviewModule.columnList.last_access_datetime;
 
       var columnList = {

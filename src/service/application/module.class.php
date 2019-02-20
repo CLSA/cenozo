@@ -45,7 +45,7 @@ class module extends \cenozo\service\module
     }
 
     // add the total number of sites
-    if( $select->has_column( 'site_count' ) ) $this->add_count_column( 'site', $select, $modifier );
+    if( $select->has_column( 'site_count' ) ) $this->add_count_column( 'site_count', 'site', $select, $modifier );
 
     // include participant release details
     if( 'participant' == $this->get_parent_subject() )

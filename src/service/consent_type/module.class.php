@@ -113,30 +113,17 @@ class module extends \cenozo\service\site_restricted_module
       $select->add_column( 'IFNULL( deny_count, 0 )', 'deny_count', false );
     }
 
-    // add the total number of roles
-    if( $select->has_column( 'roles' ) )
+    // add the list of roles
+    if( $select->has_column( 'role_list' ) )
     {
-      $join_sel = lib::create( 'database\select' );
-      $join_sel->from( 'role_has_consent_type' );
-      $join_sel->add_column( 'consent_type_id' );
-      $join_sel->add_column( 'GROUP_CONCAT( role.name ORDER BY role.name SEPARATOR ", " )', 'roles', false );
-
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->join( 'role', 'role_has_consent_type.role_id', 'role.id' );
-      $join_mod->group( 'consent_type_id' );
-
       // restrict to roles belonging to this application
-      $sub_mod = lib::create( 'database\modifier' );
+      $join_mod = lib::create( 'database\modifier' );
       $join_mod->join(
         'application_type_has_role', 'role_has_consent_type.role_id', 'application_type_has_role.role_id' );
       $join_mod->where(
         'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
 
-      $modifier->left_join(
-        sprintf( '( %s %s ) AS consent_type_join_role', $join_sel->get_sql(), $join_mod->get_sql() ),
-        'consent_type.id',
-        'consent_type_join_role.consent_type_id' );
-      $select->add_column( 'consent_type_join_role.roles', 'roles', false );
+      $this->add_list_column( 'role_list', 'role', 'name', $select, $modifier, NULL, $join_mod );
     }
   }
 }
