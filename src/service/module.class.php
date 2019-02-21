@@ -202,6 +202,7 @@ abstract class module extends \cenozo\base_object
    */
   protected function add_count_column( $column_name, $table, $select, $modifier, $joining_table = NULL )
   {
+    $db = lib::create( 'business\session' )->get_database();
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
 
     $subject = $this->get_subject();
