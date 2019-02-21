@@ -48,23 +48,28 @@ class hold extends record
         sprintf( 'Tried to create withdraw hold for %s consent record.', $consent_type ),
         __METHOD__ );
 
-    $db_hold = new static();
-    $db_hold->participant_id = $db_consent->participant_id;
-    $db_hold->hold_type_id = $db_consent->accept
-                           ? NULL
-                           : $hold_type_class_name::get_unique_record(
-                               array( 'type', 'name' ),
-                               array( 'final', 'Withdrawn' ) )->id;
-    $db_hold->datetime = $db_consent->datetime;
-    $db_hold->user_id = $session->get_user()->id;
-    $db_hold->site_id = $session->get_site()->id;
-    $db_hold->role_id = $session->get_role()->id;
-    $db_hold->application_id = $session->get_application()->id;
+    // only add the hold if the current hold isn't already a withdrawn or withdrawn by 3rd party hold
+    $db_last_hold = $db_consent->get_participant()->get_last_hold();
+    if( is_null( $db_last_hold ) || false === strpos( $db_last_hold->get_hold_type()->name, 'Withdrawn' ) )
+    {
+      $db_hold = new static();
+      $db_hold->participant_id = $db_consent->participant_id;
+      $db_hold->hold_type_id = $db_consent->accept
+                             ? NULL
+                             : $hold_type_class_name::get_unique_record(
+                                 array( 'type', 'name' ),
+                                 array( 'final', 'Withdrawn' ) )->id;
+      $db_hold->datetime = $db_consent->datetime;
+      $db_hold->user_id = $session->get_user()->id;
+      $db_hold->site_id = $session->get_site()->id;
+      $db_hold->role_id = $session->get_role()->id;
+      $db_hold->application_id = $session->get_application()->id;
 
-    try { $db_hold->save(); }
-    // ignore duplicates (the hold already exists so we don't need to create it)
-    catch( \cenozo\exception\database $e ) { if( !$e->is_duplicate_entry() ) throw $e; }
-    // ignore runtime error about adding ducplicate holds
-    catch( \cenozo\exception\runtime $e ) { if( RUNTIME__CENOZO_DATABASE_HOLD__SAVE__ERRNO != $e->get_number() ) throw $e; }
+      try { $db_hold->save(); }
+      // ignore duplicates (the hold already exists so we don't need to create it)
+      catch( \cenozo\exception\database $e ) { if( !$e->is_duplicate_entry() ) throw $e; }
+      // ignore runtime error about adding ducplicate holds
+      catch( \cenozo\exception\runtime $e ) { if( RUNTIME__CENOZO_DATABASE_HOLD__SAVE__ERRNO != $e->get_number() ) throw $e; }
+    }
   }
 }
