@@ -237,7 +237,7 @@ abstract class base_report extends \cenozo\base_object
           $settings[] = array( 'Parameter' => $setting['title'], 'Value' => $value );
         }
 
-        $spreadsheet->load_data( $settings, NULL, 'Parameters' );
+        if( 0 < count( $settings ) ) $spreadsheet->load_data( $settings, NULL, 'Parameters' );
 
         $data = $spreadsheet->get_file( $this->get_mime_type() );
       }

@@ -66,9 +66,12 @@ class spreadsheet extends \cenozo\base_object
     }
     else if( is_array( $data ) )
     {
-      if( array_key_exists( 'contents', current( $data ) ) )
-        $this->load_data_from_table_list( $data, $title, $worksheet );
-      else $this->load_data_from_array( $data, $title, $worksheet );
+      if( 0 < count( $data ) )
+      {
+        if( array_key_exists( 'contents', current( $data ) ) )
+          $this->load_data_from_table_list( $data, $title, $worksheet );
+        else $this->load_data_from_array( $data, $title, $worksheet );
+      }
     }
     else throw lib::create( 'exception\runtime',
       'Tried to load spreadsheet data using unrecognized input data type.',
