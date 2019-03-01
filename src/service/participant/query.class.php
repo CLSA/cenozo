@@ -45,14 +45,17 @@ class query extends \cenozo\service\query
         'last_consent', 'IFNULL( last_consent.accept, "" )', 'last_consent', false );
       $this->select->add_table_column(
         'last_consent', 'IFNULL( last_consent.datetime, "" )', 'last_consent_date', false );
-      
+
       $this->select->add_table_column(
         'written_consent', 'IFNULL( written_consent.accept, "" )', 'written_consent', false );
       $this->select->add_table_column(
         'written_consent', 'IFNULL( written_consent.datetime, "" )', 'written_consent_date', false );
-      
+
       $this->select->add_table_column(
         'collection', 'IFNULL( GROUP_CONCAT( collection.name ), "" )', 'collections', false );
+
+      $this->select->add_table_column( 'participant', 'date_of_death_accuracy' );
+      $this->select->add_table_column( 'participant', 'date_of_death' );
 
       $this->modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
       $this->modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
@@ -66,7 +69,7 @@ class query extends \cenozo\service\query
         'participant_primary_address', 'participant.id', 'participant_primary_address.participant_id' );
       $this->modifier->left_join( 'address', 'participant_primary_address.address_id', 'address.id' );
       $this->modifier->left_join( 'region', 'address.region_id', 'region.id' );
-      
+
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'participant_last_consent.participant_id', '=', 'participant.id', false );
       $join_mod->where( 'participant_last_consent.consent_type_id', '=', $db_consent->id );
