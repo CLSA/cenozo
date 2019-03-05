@@ -802,7 +802,20 @@ angular.extend( cenozo, {
   // gets a dynamic form's element (it assumes that each input is embedded into an innerForm)
   getFormElement: function( property ) {
     var scope = cenozo.getScopeByQuerySelector( '#' + property );
-    return scope ? scope.$parent.innerForm.name : null;
+    if( scope ) {
+      // fake the innerForm name property if the element is a filename
+      if( property.match( '_filename' ) && angular.isUndefined( scope.$parent.innerForm.name ) ) {
+        scope.$parent.innerForm.name = {
+          $dirty: false,
+          $invalid: false,
+          $error: {}
+        };
+      }
+
+      return scope.$parent.innerForm.name;
+    }
+
+    return null;
   },
 
   // returns the column-type from a restriction (used by report* modules)
@@ -4537,11 +4550,19 @@ cenozo.factory( 'CnBaseViewFactory', [
                   data: obj.file,
                   format: 'unknown'
                 } ).patch()
-              } ).then( function() { return obj.updateFileSize(); } )
-                 .finally( function() { obj.uploading = false; } ); 
+              } ).then( function() {
+                return obj.updateFileSize().then( function() {
+                  var element = cenozo.getFormElement( key );
+                  if( element ) {
+                    element.$error.required = false;
+                    cenozo.updateFormElement( element, true );
+                  }
+                } );
+              } ).finally( function() { obj.uploading = false; } ); 
             }
           } );
         } );
+
 
         /**
          * The state transition to execute after clicking the view parent button (may have multiple)

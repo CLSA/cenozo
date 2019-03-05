@@ -151,6 +151,8 @@
             ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
             ng-required="model.metadata.columnList[input.key].required"></textarea>
           <div ng-switch-when="file"
+               ng-attr-id="{{ input.key }}"
+               name="name"
                class="vertical-spacer"
                ng-init="file=model.viewModel.fileList.findByProperty( 'key', input.key )">
             <div ng-if="model.viewModel.isFileListLoading">(Loading&hellip;)</div>
