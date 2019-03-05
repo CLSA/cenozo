@@ -94,9 +94,6 @@ class post extends \cenozo\service\post
         }
       }
     }
-
-    // if this is a supporting script then add a check for it
-    if( $this->db_script->supporting ) $supporting_script_check_class_name::update_check( $this->db_participant, $this->db_script );
   }
 
   /**

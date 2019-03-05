@@ -74,7 +74,26 @@ class get extends \cenozo\service\get
     return $record;
   }
 
-  /** 
+  /**
+   * Override parent method
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $supporting_script_check_class_name = lib::get_class_name( 'database\supporting_script_check' );
+
+    if( $this->get_argument( 'update_check', false ) )
+    {
+      // if this is a supporting script then add a check for it
+      $db_script = $this->get_parent_record();
+      $db_participant = $this->get_leaf_record()->get_participant();
+      if( $db_script->supporting ) $supporting_script_check_class_name::update_check( $db_participant, $db_script );
+      else log::warning( sprintf( 'Tried to add update check to non supporting script "%s"', $db_script->name ) );
+    }
+  }
+
+  /**
    * Override parent method
    */
   protected function finish()

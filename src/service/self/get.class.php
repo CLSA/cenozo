@@ -136,6 +136,7 @@ class get extends \cenozo\service\service
       $script_sel->add_column( 'id' );
       $script_sel->add_column( 'name' );
       $script_sel->add_column( 'repeated' );
+      $script_sel->add_column( 'supporting' );
       $script_sel->add_column(
         sprintf( 'CONCAT( "%s/index.php/", script.sid )', LIMESURVEY_URL ), 'url', false );
       $script_mod = lib::create( 'database\modifier' );

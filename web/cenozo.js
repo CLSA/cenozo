@@ -6997,9 +6997,19 @@ cenozo.factory( 'CnScriptLauncherFactory', [
         } );
       }
 
-      this.launch = function() {
+      // used by the launch function to open the script and add an update-check if necessary
+      function launchScript() {
+        // add a check to supporting scripts
+        if( self.script.supporting && !self.script.repeated ) CnHttpFactory.instance ( {
+          path: 'script/' + self.script.id + '/token/' + self.identifier + '?update_check=1'
+        } ).get();
+        // launch the script
         var url = self.script.url + '?lang=' + self.lang + '&newtest=Y';
+        CnSession.scriptWindowHandler =
+          $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
+      }
 
+      this.launch = function() {
         return this.deferred.promise.then( function() {
           if( null == self.token ) {
             // the token doesn't exist so create it
@@ -7026,16 +7036,11 @@ cenozo.factory( 'CnScriptLauncherFactory', [
                 path: 'script/' + self.script.id + '/token/' + response.data
               } ).get().then( function( response ) {
                 self.token = { token: response.data.token, completed: 'N' };
-
-                // launch the script
-                CnSession.scriptWindowHandler =
-                  $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
+                launchScript();
               } );
             } );
           } else {
-            // launch the script
-            CnSession.scriptWindowHandler =
-              $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
+            launchScript();
           }
         } );
       }
