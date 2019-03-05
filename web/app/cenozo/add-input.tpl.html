@@ -19,6 +19,7 @@
           class="form-control"
           type="text"
           autocomplete="off"
+          maxlength="{{ input.maxLength }}"
           ng-readonly="true === input.constant || 'add' == input.constant"
           ng-required="model.metadata.columnList[input.key].required"></input>
         <div ng-switch-when="size">
@@ -129,6 +130,7 @@
           ng-model="record[input.key]"
           cn-change="check()"
           class="form-control"
+          maxlength="{{ input.maxLength }}"
           ng-readonly="true === input.constant || 'add' == input.constant"
           ng-required="model.metadata.columnList[input.key].required"></textarea>
         <div ng-switch-when="days" class="row">

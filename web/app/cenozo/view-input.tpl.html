@@ -21,8 +21,8 @@
             class="form-control"
             type="text"
             autocomplete="off"
+            maxlength="{{ input.maxLength ? input.maxLength : model.metadata.columnList[input.key].max_length }}"
             ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
-            maxlength="{{ model.metadata.columnList[input.key].max_length }}"
             ng-required="model.metadata.columnList[input.key].required"></input>
           <div ng-switch-when="percent" style="margin-top: 4px;">
             <div class="col-sm-1">
@@ -51,7 +51,6 @@
                 type="text"
                 autocomplete="off"
                 ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
-                maxlength="{{ model.metadata.columnList[input.key].max_length }}"
                 ng-required="model.metadata.columnList[input.key].required"></input>
             </div>
             <div class="col-sm-4 col-slim">
@@ -128,7 +127,6 @@
             autocomplete="off"
             spellcheck="false"
             ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
-            maxlength="{{ model.metadata.columnList[input.key].max_length }}"
             ng-required="model.metadata.columnList[input.key].required"
             onkeydown="return false"></input>
           <select ng-switch-when="select"
@@ -149,6 +147,7 @@
             ng-model="model.viewModel.record[input.key]"
             cn-change="model.getEditEnabled() && true !== input.constant && 'view' !== input.constant && patch()"
             class="form-control"
+            maxlength="{{ input.maxLength ? input.maxLength : model.metadata.columnList[input.key].max_length }}"
             ng-readonly="!model.getEditEnabled() || true === input.constant || 'view' == input.constant"
             ng-required="model.metadata.columnList[input.key].required"></textarea>
           <div ng-switch-when="file"

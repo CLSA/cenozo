@@ -253,6 +253,7 @@ angular.extend( cenozoApp, {
            *     alpha_num: will only accept numbers, letters and underscores
            *     email: requires a valid email address (<name>@<domain>.<type>)
            *   regex: A regular expression that the input must match
+           *   maxLength: The maximum number of characters allowed 
            *   constant: one of the following:
            *     true: makes the input immutable when adding or viewing
            *     'add': makes the input immutable when adding but not viewing
