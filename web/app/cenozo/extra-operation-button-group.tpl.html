@@ -19,6 +19,7 @@
       <li ng-repeat="subOp in op.operations"
           style="width: 50%"
           ng-if="subOp.isIncluded( state, model )"
+          class="full-width"
           ng-class="subOp.classes + ( subOp.isDisabled( state, model ) ? ' disabled' : '' )">
         <a id="{{ subOp.id }}"
            uib-tooltip="{{ subOp.help }}"
