@@ -53,13 +53,11 @@ class query extends \cenozo\service\query
     $modifier->remove_join( 'user_has_system_message' );
     $modifier->remove_join( 'user' );
     $modifier->remove_where( 'user.id' );
-    $modifier->left_join(
-      'user_has_system_message',
-      'system_message.id',
-      'user_has_system_message.system_message_id'
-    );
-    $modifier->left_join( 'user', 'user_has_system_message.user_id', 'user.id' );
-    $modifier->where( sprintf( 'IFNULL( user.id, %s )', $db_user->id ), '=', $db_user->id );
+
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'system_message.id', '=', 'user_has_system_message.system_message_id', false );
+    $join_mod->where( 'user_has_system_message.user_id', '=', $db_user->id );
+    $modifier->join_modifier( 'user_has_system_message', $join_mod, 'left' );
 
     // restrict to messages for this role
     $modifier->where( sprintf( 'IFNULL( system_message.role_id, %s )', $db_role->id ), '=', $db_role->id );
