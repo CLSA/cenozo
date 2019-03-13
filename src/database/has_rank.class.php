@@ -32,7 +32,8 @@ abstract class has_rank extends record
     $rank_parent_key_list = array();
     if( !is_null( static::$rank_parent ) )
       $rank_parent_key_list = is_array( static::$rank_parent ) ? static::$rank_parent : array( static::$rank_parent );
-    foreach( $rank_parent_key_list as $index => $rank_parent ) $rank_parent_key_list[$index] = $rank_parent.'_id';
+    foreach( $rank_parent_key_list as $index => $rank_parent )
+      $rank_parent_key_list[$index] = static::column_exists( $rank_parent.'_id' ) ? $rank_parent.'_id' : $rank_parent;
 
     // see if there is already another record at the new rank
     $modifier = lib::create( 'database\modifier' );
@@ -121,7 +122,8 @@ abstract class has_rank extends record
     $rank_parent_key_list = array();
     if( !is_null( static::$rank_parent ) )
       $rank_parent_key_list = is_array( static::$rank_parent ) ? static::$rank_parent : array( static::$rank_parent );
-    foreach( $rank_parent_key_list as $index => $rank_parent ) $rank_parent_key_list[$index] = $rank_parent.'_id';
+    foreach( $rank_parent_key_list as $index => $rank_parent )
+      $rank_parent_key_list[$index] = static::column_exists( $rank_parent.'_id' ) ? $rank_parent.'_id' : $rank_parent;
     
     // now get a list of all records that come after this one
     $modifier = lib::create( 'database\modifier' );
