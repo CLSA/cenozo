@@ -29,7 +29,6 @@
         $scope.loginChanged = function() { $scope.state = 'ready'; };
 
         $scope.loginFooter = `<?php print nl2br( $login_footer ); ?>`;
-        console.log( $scope.loginFooter );
         var adminEmail = '<?php print $admin_email; ?>';
         if( adminEmail ) {
           $scope.loginFooter +=
