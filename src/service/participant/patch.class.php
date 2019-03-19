@@ -33,6 +33,12 @@ class patch extends \cenozo\service\patch
       unset( $patch_array['reverse_withdraw'] );
     }
 
+    if( array_key_exists( 'reverse_proxy_initiation', $patch_array ) )
+    {
+      $this->reverse_proxy_initiation = true;
+      unset( $patch_array['reverse_proxy_initiation'] );
+    }
+
     if( array_key_exists( 'explain_last_trace', $patch_array ) )
     {
       $this->explain_last_trace = $patch_array['explain_last_trace'];
@@ -57,6 +63,9 @@ class patch extends \cenozo\service\patch
 
       // make sure that only tier 2+ roles can reverse a withdraw
       if( $this->reverse_withdraw && 2 > $db_role->tier ) $this->status->set_code( 403 );
+
+      // make sure that only tier 2+ roles can reverse a proxy initiation
+      if( $this->reverse_proxy_initiation && 2 > $db_role->tier ) $this->status->set_code( 403 );
     }
   }
 
@@ -72,6 +81,9 @@ class patch extends \cenozo\service\patch
 
     // reverse the participant's withdraw, if needed
     if( $this->reverse_withdraw ) $this->reverse_withdraw();
+
+    // reverse the participant's proxy, if needed
+    if( $this->reverse_proxy_initiation ) $this->reverse_proxy_initiation();
 
     // explain the participant's last trace, if needed
     if( $this->explain_last_trace ) $this->explain_last_trace();
@@ -94,6 +106,15 @@ class patch extends \cenozo\service\patch
   {
     $survey_manager = lib::create( 'business\survey_manager' );
     $survey_manager->reverse_withdraw( $this->get_leaf_record() );
+  }
+
+  /**
+   * Reverses the participant's proxy state
+   */
+  protected function reverse_proxy_initiation()
+  {
+    $survey_manager = lib::create( 'business\survey_manager' );
+    $survey_manager->reverse_proxy_initiation( $this->get_leaf_record() );
   }
 
   /**
@@ -127,6 +148,13 @@ class patch extends \cenozo\service\patch
    * @access protected
    */
   protected $reverse_withdraw;
+
+  /**
+   * Whether to reverse a participant's proxy
+   * @var boolean
+   * @access protected
+   */
+  protected $reverse_proxy_initiation;
 
   /**
    * Used to define the reason for this participant's last trace

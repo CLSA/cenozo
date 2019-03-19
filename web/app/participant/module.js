@@ -302,20 +302,37 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           title: 'Proxy Initiation',
           operation: function( $state, model ) { model.viewModel.launchSupportingScript( 'Proxy Initiation' ); },
           isDisabled: function( $state, model ) { return !model.getEditEnabled(); },
-          isIncluded: function( $state, model ) { return model.viewModel.allowProxyInitiation; }
+          isIncluded: function( $state, model ) {
+            return model.viewModel.allowProxyInitiation && false === model.viewModel.hasProxyInitiation;
+          }
+        }, {
+          title: 'Reverse Proxy Initiation',
+          operation: function( $state, model ) { model.viewModel.reverseProxyInitiation(); },
+          isDisabled: function( $state, model ) {
+            return !model.getEditEnabled() && model.viewModel.reverseProxyInitiationDisabled;
+          },
+          isIncluded: function( $state, model ) {
+            return model.viewModel.allowProxyInitiation &&
+                   true === model.viewModel.hasProxyInitiation &&
+                   model.viewModel.allowReverseProxyInitiation;
+          }
         }, {
           title: 'Withdraw',
           operation: function( $state, model ) { model.viewModel.launchSupportingScript( 'Withdraw' ); },
           isDisabled: function( $state, model ) { return !model.getEditEnabled(); },
           isIncluded: function( $state, model ) {
-            return model.viewModel.allowWithdraw && false === model.viewModel.hasWithdrawn;
+            return model.viewModel.allowWithdraw && false === model.viewModel.hasWithdraw;
           }
         }, {
           title: 'Reverse Withdraw',
           operation: function( $state, model ) { model.viewModel.reverseWithdraw(); },
-          isDisabled: function( $state, model ) { return !model.getEditEnabled() && model.viewModel.reverseWithdrawDisabled; },
+          isDisabled: function( $state, model ) {
+            return !model.getEditEnabled() && model.viewModel.reverseWithdrawDisabled;
+          },
           isIncluded: function( $state, model ) {
-            return model.viewModel.allowWithdraw && true === model.viewModel.hasWithdrawn && model.viewModel.allowReverseWithdraw;
+            return model.viewModel.allowWithdraw &&
+                   true === model.viewModel.hasWithdraw &&
+                   model.viewModel.allowReverseWithdraw;
           }
         } ]
       } );
@@ -1025,12 +1042,13 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         this.scriptLaunchers = {};
         this.hasDecedent = null;
         this.hasQualityControl = null;
-        this.hasWithdrawn = null;
+        this.hasWithdraw = null;
         this.allowDecedent = false;
         this.allowProxyInitiation = false;
         this.allowQualityControl = false;
         this.allowWithdraw = false;
         this.allowReverseWithdraw = 3 <= CnSession.role.tier;
+        this.allowReverseProxyInitiation = 3 <= CnSession.role.tier;
 
         this.useTimezone = function() {
           CnSession.setTimezone( { 'participant_id': this.record.id } ).then( function() {
@@ -1054,6 +1072,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             // check for when the window gets focus back and update the participant details
             var win = angular.element( $window ).on( 'focus', function() {
               self.onView();
+              if( self.consentModel ) self.consentModel.listModel.onList( true );
+              if( self.proxyModel ) self.proxyModel.listModel.onList( true );
               if( self.holdModel ) self.holdModel.listModel.onList( true );
               win.off( 'focus' );
             } );
@@ -1065,7 +1085,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           // always assume that the decedent script is not allowed (until more details are found below)
           self.hasDecedent = null;
           self.hasQualityControl = null;
-          self.hasWithdrawn = null;
+          self.hasWithdraw = null;
           self.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
           self.allowQualityControl = false;
           self.allowWithdraw = false;
@@ -1119,7 +1139,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                   script: script,
                   identifier: self.parentModel.getQueryParameter( 'identifier' ),
                   onReady: function() {
-                    self.hasWithdrawn =
+                    self.hasWithdraw =
                       null != this.token &&
                       null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
                   }
@@ -1215,10 +1235,36 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                 data: { reverse_withdraw: true }
               } ).patch().then( function() {
                 self.onView();
+                if( self.consentModel ) self.consentModel.listModel.onList( true );
               } ).finally( function() {
                 self.reverseWithdrawDisabled = false;
               } );
             } else self.reverseWithdrawDisabled = false;
+          } );
+        };
+
+        // reverses the participant's proxy initiation status
+        this.reverseProxyInitiationDisabled = false;
+        this.reverseProxyInitiation = function() {
+          this.reverseProxyInitiationDisabled = true;
+          CnModalConfirmFactory.instance( {
+            title: 'Reverse Proxy Initiation',
+            message: 'Are you sure you wish to reverse this participant\'s proxy status?\n\n' +
+                     'By selecting yes you are confirming that the participant has decided to re-consider ' +
+                     'their proxy status.'
+          } ).show().then( function( response ) {
+            if( response ) {
+              CnHttpFactory.instance( {
+                path: self.parentModel.getServiceResourcePath(),
+                data: { reverse_proxy_initiation: true }
+              } ).patch().then( function() {
+                self.onView();
+                if( self.consentModel ) self.consentModel.listModel.onList( true );
+                if( self.proxyModel ) self.proxyModel.listModel.onList( true );
+              } ).finally( function() {
+                self.reverseProxyInitiationDisabled = false;
+              } );
+            } else self.reverseProxyInitiationDisabled = false;
           } );
         };
 

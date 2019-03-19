@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.4';
-$settings['general']['cenozo_build'] = '54142c8';
+$settings['general']['cenozo_build'] = '495f03f';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -55,6 +55,9 @@ $settings['general']['check_for_missing_hin'] = false;
 
 // optional setting to turn on withdraw option and delink processing
 $settings['general']['withdraw_option_and_delink'] = false;
+
+// optional setting to turn on proxy_initiation use-proxy processing
+$settings['general']['proxy_initiation_use_proxy'] = false;
 
 // defines the regular expression pattern that all UIDs must match (leave NULL for any)
 $settings['general']['uid_regex'] = '^[A-Z][0-9]{6}$';
