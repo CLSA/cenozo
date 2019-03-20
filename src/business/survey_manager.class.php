@@ -495,7 +495,7 @@ class survey_manager extends \cenozo\singleton
           {
             // set the proxy type based on the consent column
             $db_proxy_type = $proxy_type_class_name::get_unique_record(
-              'name', $proxy_initiation['consent'] ? 'initiated' : 'consent form required' );
+              'name', $proxy_initiation['consent'] ? 'ready to contact proxy' : 'consent form required' );
 
             $db_proxy = lib::create( 'database\proxy' );
             $db_proxy->participant_id = $db_participant->id;
