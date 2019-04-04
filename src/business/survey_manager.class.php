@@ -213,7 +213,7 @@ class survey_manager extends \cenozo\singleton
         $old_tokens_sid = $tokens_class_name::get_sid();
         $tokens_class_name::set_sid( $proxy_initiation_sid );
 
-        // delete the token
+        // delete the token and survey
         $tokens_mod = lib::create( 'database\modifier' );
         $tokens_mod->where( 'token', '=', $db_participant->uid );
         foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens )
@@ -443,6 +443,7 @@ class survey_manager extends \cenozo\singleton
    */
   public function process_proxy_initiation( $db_participant )
   {
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
     $proxy_type_class_name = lib::get_class_name( 'database\proxy_type' );
@@ -477,20 +478,6 @@ class survey_manager extends \cenozo\singleton
 
         if( !is_null( $proxy_initiation_use_proxy ) )
         {
-          if( !is_null( $proxy_initiation['use_proxy'] ) )
-          {
-            // set whether to use a decision maker based on the use_proxy column
-            $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'Use Decision Maker' );
-            $db_consent = lib::create( 'database\consent' );
-            $db_consent->participant_id = $db_participant->id;
-            $db_consent->consent_type_id = $db_consent_type->id;
-            $db_consent->accept = $proxy_initiation['use_proxy'];
-            $db_consent->written = false;
-            $db_consent->datetime = $proxy_initiation['datetime'];
-            $db_consent->note = 'Added as part of the proxy initiation process.';
-            $db_consent->save();
-          }
-
           if( !is_null( $proxy_initiation['consent'] ) )
           {
             // set the proxy type based on the consent column
@@ -507,6 +494,37 @@ class survey_manager extends \cenozo\singleton
             $db_proxy->application_id = $db_application->id;
             $db_proxy->note = 'Added as part of the proxy initiation process.';
             $db_proxy->save();
+
+            if( !is_null( $proxy_initiation['use_proxy'] ) )
+            {
+              // set whether to use a decision maker based on the use_proxy column
+              $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'Use Decision Maker' );
+              $db_consent = lib::create( 'database\consent' );
+              $db_consent->participant_id = $db_participant->id;
+              $db_consent->consent_type_id = $db_consent_type->id;
+              $db_consent->accept = $proxy_initiation['use_proxy'];
+              $db_consent->written = false;
+              $db_consent->datetime = $proxy_initiation['datetime'];
+              $db_consent->note = 'Added as part of the proxy initiation process.';
+              $db_consent->save();
+            }
+          }
+          else
+          {
+            // if proxy is not accepted then delete the proxy survey
+            $old_tokens_sid = $tokens_class_name::get_sid();
+            $tokens_class_name::set_sid( $proxy_initiation_sid );
+
+            // delete the token and survey
+            $tokens_mod = lib::create( 'database\modifier' );
+            $tokens_mod->where( 'token', '=', $db_participant->uid );
+            foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens )
+            {
+              foreach( $db_tokens->get_survey_list() as $db_survey ) $db_survey->delete();
+              $db_tokens->delete();
+            }
+
+            $tokens_class_name::set_sid( $old_tokens_sid );
           }
         }
       }
