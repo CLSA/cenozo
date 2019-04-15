@@ -478,7 +478,7 @@ class survey_manager extends \cenozo\singleton
 
         if( !is_null( $proxy_initiation_use_proxy ) )
         {
-          if( !is_null( $proxy_initiation['consent'] ) )
+          if( 'REFUSED' != $proxy_initiation['consent'] && 'NO' != $proxy_initiation['consent'] )
           {
             // set the proxy type based on the consent column
             $db_proxy_type = $proxy_type_class_name::get_unique_record(
@@ -525,6 +525,16 @@ class survey_manager extends \cenozo\singleton
             }
 
             $tokens_class_name::set_sid( $old_tokens_sid );
+
+            // now add a note to the participant's file
+            $db_note = lib::create( 'database\note' );
+            $db_note->participant_id = $db_participant->id;
+            $db_note->user_id = $db_user->id;
+            $db_note->datetime = $proxy_initiation['datetime'];
+            $db_note->note = 'REFUSED' == $proxy_initiation['consent']
+                           ? 'Proxy script launched - Participant refused to continue with the proxy script.'
+                           : 'Proxy script launched - Participant wants to continue on their own.';
+            $db_note->save();
           }
         }
       }
@@ -860,10 +870,15 @@ class survey_manager extends \cenozo\singleton
 
       $column = sprintf(
         'IF('."\n".
-        '  "YES" = survey.%s,'."\n".
-        '  0 < ( tokens.attribute_2 + tokens.attribute_3 ),'."\n".
-        '  NULL'."\n".
+        '  survey.%s IS NOT NULL,'."\n".
+        '  "REFUSED",'."\n".
+        '  IF('."\n".
+        '    "YES" = survey.%s,'."\n".
+        '    0 < ( tokens.attribute_2 + tokens.attribute_3 ),'."\n".
+        '    "NO"'."\n".
+        '  )'.
         ')',
+        $column_name_list['proxy_refuse'],
         $column_name_list['use_proxy']
       );
 
@@ -895,6 +910,7 @@ class survey_manager extends \cenozo\singleton
         // get the survey column names for various question codes
         $this->proxy_initiation_column_name_list = array(
           'use_proxy' => $survey_class_name::get_column_name_for_question_code( 'USE_PRXY' ),
+          'proxy_refuse' => $survey_class_name::get_column_name_for_question_code( 'PRXY_REFUSE' ),
           'proxy_yes' => $survey_class_name::get_column_name_for_question_code( 'PRXY_YES' ),
           'proxy_yes_2' => $survey_class_name::get_column_name_for_question_code( 'PRXY_YES_2' )
         );
