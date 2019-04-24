@@ -44,6 +44,7 @@ class query extends \cenozo\service\query
    */
   private function get_custom_modifier()
   {
+    $db_site = lib::create( 'business\session' )->get_site();
     $db_role = lib::create( 'business\session' )->get_role();
     $db_user = lib::create( 'business\session' )->get_user();
 
@@ -59,7 +60,8 @@ class query extends \cenozo\service\query
     $join_mod->where( 'user_has_system_message.user_id', '=', $db_user->id );
     $modifier->join_modifier( 'user_has_system_message', $join_mod, 'left' );
 
-    // restrict to messages for this role
+    // restrict to messages for this site and role
+    $modifier->where( sprintf( 'IFNULL( system_message.site_id, %s )', $db_site->id ), '=', $db_site->id );
     $modifier->where( sprintf( 'IFNULL( system_message.role_id, %s )', $db_role->id ), '=', $db_role->id );
 
     return $modifier;
