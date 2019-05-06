@@ -180,8 +180,10 @@ class ui extends \cenozo\base_object
     {
       $module = $this->assert_module( $service['subject'] );
 
-      // check that modules are activated before using them
-      if( in_array( $module->get_subject(), array( 'assignment', 'interview', 'phone_call' ) ) )
+      // Check that modules are activated before using them
+      // Note that we ignore the subject "interview" since it is a common enough term that it may be used
+      // distinct from the interview module.
+      if( in_array( $module->get_subject(), array( 'assignment', 'phone_call' ) ) )
       {
         if( !$use_interview_module )
           throw lib::create( 'exception\runtime',

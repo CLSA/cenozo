@@ -235,6 +235,7 @@ angular.extend( cenozoApp, {
            *     date: date (with no time)
            *     datetime: date and time (with no seconds)
            *     datetimesecond: date, time and seconds
+           *     time: time represented by hours, minutes, seconds (where hours will grow beyond 24)
            *     enum: set list of values (dropdown)
            *     hidden: download view data but does not show in the interface (for when it is used elsewhere)
            *     lookup-typeahead: list of typeahead values which are downloaded dynamically
@@ -1762,7 +1763,8 @@ cenozo.directive( 'cnRecordView', [
         model: '=',
         footerAtTop: '@',
         removeInputs: '@',
-        initCollapsed: '='
+        initCollapsed: '=',
+        noRefresh: '@'
       },
       controller: [ '$scope', function( $scope ) {
         var patchPromise = $q.all();

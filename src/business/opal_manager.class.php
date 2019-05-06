@@ -27,6 +27,7 @@ class opal_manager extends \cenozo\singleton
     $this->username = $setting_manager->get_setting( 'opal', 'username' );
     $this->password = $setting_manager->get_setting( 'opal', 'password' );
     $this->timeout = $setting_manager->get_setting( 'opal', 'timeout' );
+    $this->limit = $setting_manager->get_setting( 'opal', 'limit' );
     $this->failover_enabled = true === $setting_manager->get_setting( 'failover_opal', 'enabled' );
     $this->failover_server = $setting_manager->get_setting( 'failover_opal', 'server' );
     $this->failover_port = $setting_manager->get_setting( 'failover_opal', 'port' );
@@ -99,25 +100,64 @@ class opal_manager extends \cenozo\singleton
         1 != count( $object->valueSets ) )
     {
       throw lib::create( 'exception\runtime',
-        sprintf( 'Unrecognized response from Opal service for url "%s"', $url ),
+        sprintf( 'Unrecognized response from Opal service for datasource "%s" and table "%s"', $datasource, $table ),
         __METHOD__ );
     }
 
-    // Opal should have returned the data in the following format:
-    // {
-    //   "variables": [ "CCT_OAKNEE_TRM", "CCT_OAHAND_TRM", ...  ],
-    //   "valueSets": [ {
-    //     "identifier": "A003019",
-    //     "values": [ {"value": "NO"}, {"value": "NO"}, ...  ],
-    //   } ]
-    // }
-    $values = array();
-    foreach( $object->variables as $index => $variable )
+    return self::get_data( $object->variables, $valueSet->values );
+  }
+
+  /**
+   * Returns all values in a table or view
+   * 
+   * @param string $datasource The datasource to get a value from
+   * @param string $table The table or view to get the values from
+   * @return string
+   * @throws exception\argument, exception\runtime
+   * @access public
+   */
+  public function get_all_values( $datasource, $table )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $offset = 0;
+    $arguments = array(
+      'datasource' => $datasource,
+      'table' => $table,
+      'limit' => $this->limit,
+      'valueSets' => NULL,
+      'offset' => 0
+    );
+
+    $object = NULL;
+    $variables = NULL;
+    $valueSets = array();
+    do
     {
-      $values[$variable] = is_object( $object->valueSets[0]->values[$index] ) &&
-                           property_exists( $object->valueSets[0]->values[$index], 'value' )
-                         ? $object->valueSets[0]->values[$index]->value
-                         : NULL;
+      $arguments['offset'] = $offset;
+      $response = $this->send( $arguments );
+
+      $object = $util_class_name::json_decode( $response );
+      if( !is_object( $object ) ||
+          !property_exists( $object, 'variables' ) ||
+          !is_array( $object->variables ) )
+      {
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Unrecognized response from Opal service for datasource "%s" and table "%s"', $datasource, $table ),
+          __METHOD__ );
+      }
+      
+      $variables = $object->variables;
+      if( property_exists( $object, 'valueSets' ) ) $valueSets = array_merge( $valueSets, $object->valueSets );
+
+      $offset += $this->limit;
+    } while( property_exists( $object, 'valueSets' ) && $this->limit == count( $object->valueSets ) );
+
+    $values = array();
+    foreach( $valueSets as $valueSet )
+    {
+      $identifier = $valueSet->identifier;
+      $values[$identifier] = self::get_data( $object->variables, $valueSet->values );
     }
 
     return $values;
@@ -157,9 +197,12 @@ class opal_manager extends \cenozo\singleton
     // find the variable in the response
     $object = $util_class_name::json_decode( $response );
     if( !is_object( $object ) || !property_exists( $object, 'categories' ) )
+    {
+      $url = sprintf( 'https://%s:%d/ws', $this->server, $this->port );
       throw lib::create( 'exception\runtime',
         sprintf( 'Unrecognized response from Opal service for url "%s"', $url ),
         __METHOD__ );
+    }
 
     $label = NULL;
     foreach( $object->categories as $category )
@@ -184,14 +227,87 @@ class opal_manager extends \cenozo\singleton
   }
 
   /**
+   * Overwrites an existing view
+   * 
+   * @param string $datasource The datasource to get a value from
+   * @param string $view The view to set
+   * @param resource $data The data to overwrite the view with
+   * @return string
+   * @throws exception\argument, exception\runtime
+   * @access public
+   */
+  public function write_view( $datasource, $view, $data )
+  {
+    if( 0 == strlen( $data ) )
+      throw lib::create( 'exception\argument', 'view', $data, __METHOD__ );
+
+    $response = $this->send(
+      array(
+        'datasource' => $datasource,
+        'view' => $view
+      ),
+      fopen( 'data://text/plain,' . $data, 'r' )
+    );
+
+    return $response;
+  }
+
+  /**
+   * Returns a the data from a returned opal valueSet
+   * 
+   * @param array $variables The variables property returned by a query to Opal
+   * @param array $values The values property in a valueSet return by a query to Opal
+   * @return array associated array
+   * @access private
+   * @static
+   */
+  private static function get_data( $variables, $values )
+  {
+    // Opal should have returned the data in the following format:
+    // {
+    //   "variables": [ "CCT_OAKNEE_TRM", "CCT_OAHAND_TRM", ...  ],
+    //   "valueSets": [ {
+    //     "identifier": "A003019",
+    //     "values": [ {"value": "NO"}, {"value": "NO"}, {"values": [ { "value": "NO" }, { "value": "NO" } ] }...  ],
+    //   } ]
+    // }
+    $row = array();
+    foreach( $variables as $index => $variable )
+    {
+      if( is_object( $values[$index] ) )
+      {
+        if( property_exists( $values[$index], 'values' ) )
+        {
+          $row[$variable] = array();
+          foreach( $values[$index]->values as $value )
+            if( property_exists( $value, 'value' ) )
+              $row[$variable][] = $value->value;
+        }
+        else
+        {
+          $row[$variable] = property_exists( $values[$index], 'value' )
+                          ? $values[$index]->value
+                          : NULL;
+        }
+      }
+      else
+      {
+        $row[$variable] = NULL;
+      }
+    }
+
+    return $row;
+  }
+
+  /**
    * Sends a curl request to the opal server(s)
    * 
    * @param array(key->value) $arguments The url arguments as key->value pairs (value may be null)
-   * @param database\participant $db_participant The participant record when
+   * @param resource $file_handle When not null the contents of the file pointed to by this handle will be sent as a PUT request
    * @return curl resource
    * @access private
    */
-  private function send( $arguments )
+  private function send( $arguments, $file_handle = NULL )
   {
     $curl = curl_init();
 
@@ -207,15 +323,31 @@ class opal_manager extends \cenozo\singleton
         'Accept: application/json' );
 
       $url = sprintf( 'https://%s:%d/ws', $this->server, $this->port );
+      $postfix = array();
       foreach( $arguments as $key => $value )
-        $url .= is_null( $value ) ? sprintf( '/%s', $key ) : sprintf( '/%s/%s', $key, rawurlencode( $value ) );
+      {
+        if( in_array( $key, array( 'offset', 'limit' ) ) ) $postfix[] = sprintf( '%s=%s', $key, $value );
+        else $url .= is_null( $value ) ? sprintf( '/%s', $key ) : sprintf( '/%s/%s', $key, rawurlencode( $value ) );
+      }
+
+      if( 0 < count( $postfix ) ) $url .= sprintf( '?%s', implode( '&', $postfix ) );
 
       // set URL and other appropriate options
       curl_setopt( $curl, CURLOPT_URL, $url );
-      curl_setopt( $curl, CURLOPT_HTTPHEADER, $headers );
       curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, false );
       curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
       curl_setopt( $curl, CURLOPT_CONNECTTIMEOUT, $this->timeout );
+
+      if( !is_null( $file_handle ) )
+      {
+        //curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'PUT' );
+        curl_setopt( $curl, CURLOPT_PUT, true );
+        curl_setopt( $curl, CURLOPT_INFILE, $file_handle );
+        curl_setopt( $curl, CURLOPT_INFILESIZE, fstat( $file_handle )['size'] );
+        $headers[] = 'Content-Type: application/json';
+      }
+
+      curl_setopt( $curl, CURLOPT_HTTPHEADER, $headers );
 
       $response = curl_exec( $curl );
       $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );

@@ -368,7 +368,8 @@ class database extends \cenozo\base_object
   public function get_column_variable_type( $table_name, $column_name )
   {
     $boolean_types = array( 'tinyint' );
-    $datetime_types = array( 'date', 'datetime', 'time' );
+    $datetime_types = array( 'date', 'datetime' );
+    $time_types = array( 'time' );
     $timestamp_types = array( 'timestamp' );
     $integer_types = array( 'bigint', 'int', 'mediumint', 'smallint' );
     $float_types = array( 'decimal', 'double', 'float', 'real' );
@@ -378,6 +379,7 @@ class database extends \cenozo\base_object
     if( in_array( $data_type, $string_types ) ) return 'string';
     if( in_array( $data_type, $integer_types ) ) return 'integer';
     if( in_array( $data_type, $datetime_types ) ) return 'datetime';
+    if( in_array( $data_type, $time_types ) ) return 'time';
     if( in_array( $data_type, $timestamp_types ) ) return 'timestamp';
     if( in_array( $data_type, $boolean_types ) ) return 'boolean';
     if( in_array( $data_type, $float_types ) ) return 'float';

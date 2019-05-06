@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.4';
-$settings['general']['cenozo_build'] = '495f03f';
+$settings['general']['cenozo_build'] = '9e1b9c3';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -149,6 +149,7 @@ $settings['opal']['port'] = 8843;
 $settings['opal']['username'] = '';
 $settings['opal']['password'] = '';
 $settings['opal']['timeout'] = 5;
+$settings['opal']['limit'] = 200;
 
 // failover opal settings (used if opal times out)
 $settings['failover_opal']['enabled'] = false;
@@ -157,6 +158,7 @@ $settings['failover_opal']['port'] = 8843;
 $settings['failover_opal']['username'] = '';
 $settings['failover_opal']['password'] = '';
 $settings['failover_opal']['timeout'] = 5;
+// note that the failover will use the same limit as above
 
 // default mail settings
 $settings['mail']['enabled'] = false;
