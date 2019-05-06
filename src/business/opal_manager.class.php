@@ -104,7 +104,7 @@ class opal_manager extends \cenozo\singleton
         __METHOD__ );
     }
 
-    return self::get_data( $object->variables, $valueSet->values );
+    return self::get_data( $object->variables, $object->valueSets[0]->values );
   }
 
   /**
