@@ -52,7 +52,7 @@ abstract class record extends \cenozo\base_object
           // convert timestamps from server to UTC time
           if( 'timestamp' == $type && !is_null( $default ) ) $default->setTimezone( new \DateTimeZone( 'UTC' ) );
         }
-        else if( 'string' != $type ) settype( $default, $type );
+        else if( 'time' != $type && 'string' != $type ) settype( $default, $type );
         $this->active_column_values[$column] = $default;
       }
     }
