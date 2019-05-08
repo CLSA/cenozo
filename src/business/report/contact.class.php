@@ -32,7 +32,7 @@ class contact extends \cenozo\business\report\base_report
     $select->add_column( 'address.address1', 'Address1', false );
     $select->add_column( 'address.address2', 'Address2', false );
     $select->add_column( 'address.city', 'City', false );
-    $select->add_column( 'region.name', 'Province/State', false );
+    $select->add_column( 'region.abbreviation', 'Province/State', false );
     $select->add_column( 'address.postcode', 'Postcode', false );
     $select->add_column( 'region.country', 'Country', false );
     $select->add_column( 'IFNULL( email, "" )', 'Email', false );
