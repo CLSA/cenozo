@@ -178,6 +178,8 @@ class mail_manager extends \cenozo\base_object
    */
   protected function set_email_list( $type, $list )
   {
+    if( !is_array( $list ) ) $list = array( $list );
+
     // determine the list type
     $list_type = sprintf( '%s_list', $type );
     if( !property_exists( $this, $list_type ) ) throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
