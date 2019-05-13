@@ -145,7 +145,7 @@ abstract class record extends \cenozo\base_object
                 $parts = explode( ':', $value );
                 $value = (int) $parts[2] + (int) $parts[1] * 60 + (int) $parts[0] * 60 * 24;
               }
-              else if( 'string' != $type ) settype( $value, $type );
+              else if( 'time' != $type && 'string' != $type ) settype( $value, $type );
             }
 
             $this->passive_column_values[$column] = $value;
@@ -1243,8 +1243,11 @@ abstract class record extends \cenozo\base_object
                 else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
               }
 
-              if( !is_null( $type ) && 'string' != $type && 'datetime' != $type && 'timestamp' != $type )
-                settype( $return_value[$index][$column], $type );
+              if( !is_null( $type ) &&
+                  'string' != $type &&
+                  'time' != $type &&
+                  'datetime' != $type &&
+                  'timestamp' != $type ) settype( $return_value[$index][$column], $type );
             }
           }
         }
