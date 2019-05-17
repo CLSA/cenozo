@@ -173,7 +173,7 @@ abstract class base_report extends \cenozo\base_object
           $data .= "\n";
         }
 
-        $data = iconv( 'UTF-8', 'Windows-1252', $data );
+        $data = iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $data );
       }
       else
       {
