@@ -126,7 +126,7 @@ class ui extends \cenozo\base_object
       'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
       'jurisdiction', 'language', 'overview', 'participant', 'phone', 'proxy', 'proxy_type','quota', 'region',
       'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'search_result',
-      'site', 'source', 'system_message', 'trace', 'trace_type', 'user', 'writelog'
+      'site', 'source', 'study_phase', 'system_message', 'trace', 'trace_type', 'user', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
