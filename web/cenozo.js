@@ -254,7 +254,7 @@ angular.extend( cenozoApp, {
            *     alpha_num: will only accept numbers, letters and underscores
            *     email: requires a valid email address (<name>@<domain>.<type>)
            *   regex: A regular expression that the input must match
-           *   maxLength: The maximum number of characters allowed 
+           *   maxLength: The maximum number of characters allowed
            *   constant: one of the following:
            *     true: makes the input immutable when adding or viewing
            *     'add': makes the input immutable when adding but not viewing
@@ -3122,7 +3122,7 @@ cenozo.factory( 'CnSession', [
               if( 409 == response.status ) {
                 CnModalMessageFactory.instance( {
                   title: 'No Timezone Available',
-                  message: 'The participant does not currently have an active address. ' + 
+                  message: 'The participant does not currently have an active address. ' +
                     'Without an active address there is no way to determine which timezone they are in.'
                 } ).show();
               } else { CnModalMessageFactory.httpError( response ); }
@@ -4528,7 +4528,7 @@ cenozo.factory( 'CnBaseViewFactory', [
               // remove the file
               var patchObj = {};
               patchObj[obj.key] = null;
-              return self.onPatch( patchObj ).then( function() { return obj.updateFileSize(); } ); 
+              return self.onPatch( patchObj ).then( function() { return obj.updateFileSize(); } );
             },
             upload: function() {
               var obj = this;
@@ -4560,7 +4560,7 @@ cenozo.factory( 'CnBaseViewFactory', [
                     cenozo.updateFormElement( element, true );
                   }
                 } );
-              } ).finally( function() { obj.uploading = false; } ); 
+              } ).finally( function() { obj.uploading = false; } );
             }
           } );
         } );
@@ -6362,8 +6362,8 @@ cenozo.service( 'CnModalDatetimeFactory', [
  * A factory for showing a message dialog in a modal window
  */
 cenozo.service( 'CnModalMessageFactory', [
-  '$uibModal', '$state',
-  function( $uibModal, $state ) {
+  '$uibModal', '$state', '$window', '$filter',
+  function( $uibModal, $state, $window, $filter ) {
     var object = function( params ) {
       var self = this;
       angular.extend( this, {
@@ -6372,7 +6372,8 @@ cenozo.service( 'CnModalMessageFactory', [
         small: null,
         closeText: 'Close',
         error: false,
-        block: false
+        block: false,
+        print: false
       } );
       angular.extend( this, params );
 
@@ -6385,6 +6386,21 @@ cenozo.service( 'CnModalMessageFactory', [
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             $scope.model = self;
             $scope.close = function() { $uibModalInstance.close( false ); };
+            $scope.printMessage = function() {
+              var printWindow = $window.open(
+                '',
+                '_blank',
+                'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no'
+              );
+              printWindow.document.open();
+              printWindow.document.write(
+                '<html><body onload="window.print()">' +
+                  '<h3>' + $scope.model.title + '</h3>' +
+                  '<div>' + $filter( 'cnNewlines' )( $scope.model.message ) + '</div>' +
+                '</body></html>'
+              );
+              printWindow.document.close();
+            }
           } ]
         } );
 

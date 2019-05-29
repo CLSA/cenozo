@@ -7,6 +7,7 @@
     <small ng-if="small" style="white-space: pre-wrap;"><br>{{ model.small }}</small>
   </div>
   <div class="modal-footer bg-info" ng-if="!block">
+    <button type="button" class="btn btn-default pull-left" ng-if="model.print" ng-click="printMessage()">Print</button>
     <button type="submit" cn-autofocus class="btn btn-primary">{{ model.closeText }}</button>
   </div>
   <uib-progressbar ng-if="block"
