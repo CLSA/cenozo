@@ -112,15 +112,16 @@ class opal_manager extends \cenozo\singleton
    * 
    * @param string $datasource The datasource to get a value from
    * @param string $table The table or view to get the values from
+   * @param int $limit Limit the total number of rows returned (total limit, not the fetch limit)
+   * @param int $offset The offset to start reading rows from
    * @return string
    * @throws exception\argument, exception\runtime
    * @access public
    */
-  public function get_all_values( $datasource, $table )
+  public function get_all_values( $datasource, $table, $limit = NULL, $offset = 0 )
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    $offset = 0;
     $arguments = array(
       'datasource' => $datasource,
       'table' => $table,
@@ -129,6 +130,7 @@ class opal_manager extends \cenozo\singleton
       'offset' => 0
     );
 
+    $count = 0;
     $object = NULL;
     $variables = NULL;
     $valueSets = array();
@@ -151,13 +153,16 @@ class opal_manager extends \cenozo\singleton
       if( property_exists( $object, 'valueSets' ) ) $valueSets = array_merge( $valueSets, $object->valueSets );
 
       $offset += $this->limit;
-    } while( property_exists( $object, 'valueSets' ) && $this->limit == count( $object->valueSets ) );
+    } while( property_exists( $object, 'valueSets' ) && // no values returned
+             $this->limit == count( $object->valueSets ) && // less than the fetch limit
+             ( is_null( $limit ) || $limit > count( $valueSets ) ) ); // past the desired limit
 
     $values = array();
     foreach( $valueSets as $valueSet )
     {
       $identifier = $valueSet->identifier;
       $values[$identifier] = self::get_data( $object->variables, $valueSet->values );
+      if( !is_null( $limit ) && $limit <= count( $values ) ) break; // ignore anything past the limit
     }
 
     return $values;
