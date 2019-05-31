@@ -31,7 +31,8 @@ define( function() {
         title: 'Roles'
       },
       site_list: {
-        title: 'Sites'
+        title: 'Sites',
+        isIncluded: function( $state, model ) { return model.showSiteList(); }
       },
       last_access_datetime: {
         title: 'Last Used',
@@ -391,6 +392,8 @@ define( function() {
         this.addModel = CnUserAddFactory.instance( this );
         this.listModel = CnUserListFactory.instance( this );
         this.viewModel = CnUserViewFactory.instance( this, root );
+
+        this.showSiteList = function() { return CnSession.role.allSites; }
 
         // add additional details to some of the help text
         module.inputGroupList.findByProperty( 'title', '' ).inputList.login_failures.help +=

@@ -43,7 +43,10 @@ class module extends \cenozo\service\site_restricted_module
     parent::prepare_read( $select, $modifier );
 
     $setting_manager = lib::create( 'business\setting_manager' );
-    $db_application = lib::create( 'business\session' )->get_application();
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_site = $session->get_site();
+    $db_role = $session->get_role();
 
     // don't include special users
     $join_sel = lib::create( 'database\select' );
@@ -122,6 +125,9 @@ class module extends \cenozo\service\site_restricted_module
       $sub_mod = lib::create( 'database\modifier' );
       $join_mod->join( 'application_type_has_role', 'access.role_id', 'application_type_has_role.role_id' );
       $join_mod->where( 'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
+
+      // restrict to current site if role is not all-sites based
+      if( !$db_role->all_sites ) $join_mod->where( 'access.site_id', '=', $db_site->id );
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS user_join_access', $join_sel->get_sql(), $join_mod->get_sql() ),
