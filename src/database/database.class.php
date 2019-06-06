@@ -50,7 +50,7 @@ class database extends \cenozo\base_object
   {
     $filename = sprintf( '%s/%s.schema.ser', TEMPORARY_FILES_PATH, $this->name );
 
-    if( !lib::in_development_mode() && file_exists( $filename ) && 0 < filesize( $filename ) )
+    if( file_exists( $filename ) && 0 < filesize( $filename ) )
     {
       $this->tables = unserialize( file_get_contents( $filename ) );
     }
@@ -132,15 +132,12 @@ class database extends \cenozo\base_object
       }
 
       // write cache of schema to disk
-      if( !lib::in_development_mode() )
+      $result = file_put_contents( $filename, serialize( $this->tables ) );
+      if( false === $result )
       {
-        $result = file_put_contents( $filename, serialize( $this->tables ) );
-        if( false === $result )
-        {
-          log::warning(
-            sprintf( 'Unable to write schema cache to "%s", make sure permissions are set correctly.',
-                     $filename ) );
-        }
+        log::warning(
+          sprintf( 'Unable to write schema cache to "%s", make sure permissions are set correctly.',
+                   $filename ) );
       }
     }
   }
