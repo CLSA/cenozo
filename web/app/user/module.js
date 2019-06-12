@@ -226,8 +226,9 @@ define( function() {
         // catch user-already-exists errors and give the option to add access
         this.onAddError = function( response ) {
           if( 409 == response.status ) {
+            var column = response.data[0];
             CnHttpFactory.instance( {
-              path: 'user/name=' + newRecord.name,
+              path: 'user/' + column + '=' + newRecord[column],
               data: { select: { column: [ 'name', 'first_name', 'last_name' ] } }
             } ).get().then( function( response ) {
               var user = response.data;
