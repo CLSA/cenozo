@@ -14,7 +14,7 @@ use cenozo\lib, cenozo\log;
 class participant extends record
 {
   /**
-   * Audit changs to email address by overriding the magic __set method
+   * Audit changes to email and email2 fielcs by overriding the magic __set method
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
    * @throws exception\argument
@@ -23,6 +23,7 @@ class participant extends record
   public function __set( $column_name, $value )
   {
     $old_email = $this->email;
+    $old_email2 = $this->email2;
 
     parent::__set( $column_name, $value );
 
@@ -31,6 +32,12 @@ class participant extends record
       $util_class_name = lib::get_class_name( 'util' );
       $this->email_datetime = $util_class_name::get_datetime_object();
       $this->email_old = $old_email;
+    }
+    if( 'email2' == $column_name && $old_email2 != $this->email2 )
+    {
+      $util_class_name = lib::get_class_name( 'util' );
+      $this->email2_datetime = $util_class_name::get_datetime_object();
+      $this->email2_old = $old_email2;
     }
     else if( 'date_of_death' == $column_name )
     {
@@ -693,6 +700,8 @@ class participant extends record
       $db_participant->sex = $data['sex'];
     }
     else $db_participant->sex = 'male';
+
+    $db_participant->current_sex = $db_participant->sex;
 
     if( array_key_exists( 'date_of_birth', $data ) && !is_null( $data['date_of_birth'] ) )
     {

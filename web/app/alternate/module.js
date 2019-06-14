@@ -85,6 +85,12 @@ define( function() {
       format: 'email',
       help: 'Must be in the format "account@domain.name".'
     },
+    email2: {
+      title: 'Alternate Email',
+      type: 'string',
+      format: 'email2',
+      help: 'Must be in the format "account@domain.name".'
+    },
     alternate: {
       title: 'Alternate Contact',
       type: 'boolean'

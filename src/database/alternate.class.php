@@ -14,7 +14,7 @@ use cenozo\lib, cenozo\log;
 class alternate extends has_note
 {
   /**
-   * Audit changs to email address by overriding the magic __set method
+   * Audit changes to email and email 2 fields by overriding the magic __set method
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
    * @throws exception\argument
@@ -23,6 +23,7 @@ class alternate extends has_note
   public function __set( $column_name, $value )
   {
     $old_email = $this->email;
+    $old_email2 = $this->email2;
 
     parent::__set( $column_name, $value );
 
@@ -31,6 +32,12 @@ class alternate extends has_note
       $util_class_name = lib::get_class_name( 'util' );
       $this->email_datetime = $util_class_name::get_datetime_object();
       $this->email_old = $old_email;
+    }
+    else if( 'email2' == $column_name && $old_email2 != $this->email2 )
+    {
+      $util_class_name = lib::get_class_name( 'util' );
+      $this->email2_datetime = $util_class_name::get_datetime_object();
+      $this->email2_old = $old_email2;
     }
   }
 

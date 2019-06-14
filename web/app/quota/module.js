@@ -18,7 +18,7 @@ define( function() {
         column: 'region.name',
         title: 'Region'
       },
-      sex: { title: 'Gender' },
+      sex: { title: 'Sex' },
       age_group_range: { title: 'Age Group' },
       population: {
         title: 'Population',

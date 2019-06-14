@@ -164,7 +164,12 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       constant: true
     },
     sex: {
-      title: 'Sex',
+      title: 'Sex at Birth',
+      type: 'enum',
+      constant: true
+    },
+    current_sex: {
+      title: 'Current Sex',
       type: 'enum'
     },
     date_of_birth: {
@@ -227,6 +232,12 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       title: 'Email',
       type: 'string',
       format: 'email',
+      help: 'Must be in the format "account@domain.name".'
+    },
+    email2: {
+      title: 'Alternate Email',
+      type: 'string',
+      format: 'email2',
       help: 'Must be in the format "account@domain.name".'
     },
     mass_email: {
@@ -1324,7 +1335,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         if( 3 > CnSession.role.tier ) {
           var definingInputGroup = module.inputGroupList.findByProperty( 'title', 'Defining Details' );
           if( definingInputGroup ) {
-            definingInputGroup.inputList.sex.constant = true;
             definingInputGroup.inputList.age_group_id.constant = true;
           }
         }
@@ -1701,8 +1711,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         // populate the participant input list once the participant's metadata has been loaded
         CnParticipantModelFactory.root.metadata.getPromise().then( function() {
           self.participantInputList = processInputList( [
-              'honorific', 'sex', 'language_id', 'availability_type_id',
-              'preferred_site_id', 'out_of_area', 'email', 'mass_email', 'note'
+              'honorific', 'sex', 'current_sex', 'language_id', 'availability_type_id',
+              'preferred_site_id', 'out_of_area', 'email', 'email2', 'mass_email', 'note'
             ],
             self.module,
             CnParticipantModelFactory.root.metadata.columnList

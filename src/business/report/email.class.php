@@ -33,11 +33,20 @@ class email extends \cenozo\business\report\base_report
     $select->add_column(
       sprintf( 'IFNULL( %s, "" )', $this->get_datetime_column( 'email_datetime', 'date' ) ),
       'Date Changed',
-      false );
+      false
+    );
+    $select->add_column( 'IFNULL( email2_old, "" )', 'Previous Alt Email', false );
+    $select->add_column( 'IFNULL( email2, "" )', 'Alt Email', false );
+    $select->add_column(
+      sprintf( 'IFNULL( %s, "" )', $this->get_datetime_column( 'email2_datetime', 'date' ) ),
+      'Alt Date Changed',
+      false
+    );
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->where( 'email_datetime', '!=', NULL );
+    $modifier->or_where( 'email2_datetime', '!=', NULL );
 
     // set up requirements
     $this->apply_restrictions( $modifier );

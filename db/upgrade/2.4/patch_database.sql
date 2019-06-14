@@ -11,6 +11,8 @@ SOURCE proxy.sql
 SOURCE proxy_type.sql
 SOURCE script.sql
 SOURCE limesurvey_proxy_initiation.sql
+SOURCE participant.sql
+SOURCE alternate.sql
 
 SOURCE update_version_number.sql
 
