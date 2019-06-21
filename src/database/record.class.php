@@ -212,7 +212,7 @@ abstract class record extends \cenozo\base_object
           $value = static::db()->format_datetime( $value );
         }
         else if( 'date' == $type ) $value = static::db()->format_date( $value );
-        else if( 'time' == $type ) $value = sprintf( 'SEC_TO_TIME( %d )', $value );
+        else if( 'time' == $type && $util_class_name::string_matches_int( $value ) ) $value = sprintf( 'SEC_TO_TIME( %d )', $value );
         else $value = static::db()->format_string( $value );
 
         $set_list[$column] = $value;
