@@ -1440,6 +1440,9 @@ cenozo.directive( 'cnRecordAdd', [
               }
             } );
           } );
+
+          // emit that the directive is ready
+          scope.$emit( scope.directive + ' linked', scope );
         }
       }
     };
@@ -1509,7 +1512,11 @@ cenozo.directive( 'cnAddInput', [
 
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
-      } ]
+      } ],
+      link: function( scope, element, attrs ) {
+        // emit that the directive is ready
+        scope.$emit( scope.directive + ' linked', scope );
+      }
     };
   }
 ] );
@@ -1612,6 +1619,9 @@ cenozo.directive( 'cnRecordCalendar', [
           el.find( '.fc-left' ).css( 'width', '33%' );
           el.find( '.fc-right' ).css( 'width', '33%' ).children().css( 'float', 'right' );
           el.find( '.fc-button-group' ).addClass( 'btn-group' );
+
+          // emit that the directive is ready
+          scope.$emit( scope.directive + ' linked', scope );
         }
       }
     };
@@ -1742,6 +1752,9 @@ cenozo.directive( 'cnRecordList', [
 
           // get the total number of columns in the table
           scope.numColumns = scope.dataArray.length;
+
+          // emit that the directive is ready
+          scope.$emit( scope.directive + ' linked', scope );
         }
       }
     };
@@ -1971,6 +1984,9 @@ cenozo.directive( 'cnRecordView', [
 
           var removeInputs = angular.isDefined( scope.removeInputs ) ? scope.removeInputs.split( ' ' ) : []
           scope.dataArray = scope.model.getDataArray( removeInputs, 'view' );
+
+          // emit that the directive is ready
+          scope.$emit( scope.directive + ' linked', scope );
         }
       }
     };
@@ -2120,7 +2136,11 @@ cenozo.directive( 'cnViewInput', [
 
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
-      } ]
+      } ],
+      link: function( scope, element, attrs ) {
+        // emit that the directive is ready
+        scope.$emit( scope.directive + ' linked', scope );
+      }
     }
   }
 ] );
