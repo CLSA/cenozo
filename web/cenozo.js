@@ -67,7 +67,9 @@ angular.extend( Array.prototype, {
       }
       return list;
     }, [] );
-  }
+  },
+  // array.includes only exists in browsers after mid-2015, so we'll implement it here since we support earlier browsers
+  includes: function( item ) { return 0 <= this.indexOf( item ); }
 } );
 
 // Extend the String prototype with extra functions
@@ -392,7 +394,7 @@ angular.extend( cenozoApp, {
            *          This function will be passed two arguments: $state and model
            */
           addExtraOperation: function( type, extraObject ) {
-            if( 0 > ['add','calendar','list','view'].indexOf( type ) )
+            if( !['add','calendar','list','view'].includes( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
             if( angular.isUndefined( extraObject.isIncluded ) )
               extraObject.isIncluded = function() { return true; }
@@ -420,7 +422,7 @@ angular.extend( cenozoApp, {
            *          which is to be included in a drop-down list when the group button is clicked
            */
           addExtraOperationGroup: function( type, extraGroup ) {
-            if( 0 > ['add','calendar','list','view'].indexOf( type ) )
+            if( !['add','calendar','list','view'].includes( type ) )
               throw new Error( 'Adding extra operation group with invalid type "' + type + '".' );
             if( angular.isUndefined( extraGroup.id ) ) extraGroup.id = extraGroup.title;
             if( angular.isUndefined( extraGroup.isIncluded ) )
@@ -580,7 +582,7 @@ angular.extend( cenozo, {
   defineFrameworkModules: function( list ) { this.frameworkModules = list; },
 
   // returns whether a module belongs to the framework or not
-  isFrameworkModule: function( moduleName ) { return 0 <= this.frameworkModules.indexOf( moduleName ); },
+  isFrameworkModule: function( moduleName ) { return this.frameworkModules.includes( moduleName ); },
 
   objectsAreEqual: function( obj1, obj2 ) {
     if( !angular.isObject( obj1 ) ) {
@@ -631,7 +633,7 @@ angular.extend( cenozo, {
       ];
     }
 
-    return 0 <= typeList.indexOf( type );
+    return typeList.includes( type );
   },
 
   // parse an enum list returned as column metadata
@@ -716,10 +718,10 @@ angular.extend( cenozo, {
 
       // add action states
       for( var action in module.actions ) {
-        if( 0 > ['delete', 'edit'].indexOf( action ) ) { // ignore delete and edit actions
+        if( !['delete', 'edit'].includes( action ) ) { // ignore delete and edit actions
           // the action's path is the action and the action's value which contains any variable parameters
           var params = {};
-          if( module.actions[action] && -1 < module.actions[action].indexOf( '?' ) ) {
+          if( module.actions[action] && module.actions[action].includes( '?' ) ) {
             // make all parameters after the ? dynamic
             module.actions[action].replace( /.*\?/, '' ).match( /{[^}]+}/g ).forEach( function( param ) {
               param = param.slice( 1, -1 );
@@ -1666,7 +1668,7 @@ cenozo.directive( 'cnRecordList', [
 
         $scope.deleteRecord = function( record ) {
           if( $scope.model.getDeleteEnabled() ) {
-            if( 0 > $scope.isDeleting.indexOf( record.id ) ) $scope.isDeleting.push( record.id );
+            if( !$scope.isDeleting.includes( record.id ) ) $scope.isDeleting.push( record.id );
             var index = $scope.isDeleting.indexOf( record.id );
             $scope.model.listModel.onDelete( record ).finally(
               function() { if( 0 <= index ) $scope.isDeleting.splice( index, 1 ); }
@@ -1718,7 +1720,7 @@ cenozo.directive( 'cnRecordList', [
 
           // add site to removeColumns if role doesn't allow for all sites
           var removeColumns = angular.isDefined( scope.removeColumns ) ? scope.removeColumns.split( ' ' ) : []
-          if( !CnSession.role.allSites && 0 > removeColumns.indexOf( 'site' ) ) removeColumns.push( 'site' );
+          if( !CnSession.role.allSites && !removeColumns.includes( 'site' ) ) removeColumns.push( 'site' );
           scope.dataArray = scope.model.getDataArray( removeColumns, 'list' );
 
           scope.setRestrictList = function( key ) {
@@ -1788,7 +1790,7 @@ cenozo.directive( 'cnRecordView', [
                   if( angular.isDefined( input.typeahead ) ) {
                     // make the default typeahead min-length 2
                     if( angular.isUndefined( input.typeahead.minLength ) ) input.typeahead.minLength = 2;
-                  } else if( 0 <= ['boolean', 'enum', 'rank'].indexOf( input.type ) ) {
+                  } else if( ['boolean', 'enum', 'rank'].includes( input.type ) ) {
                     input.enumList = 'boolean' === input.type
                                    ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
                                    : angular.copy( $scope.model.metadata.columnList[key].enumList );
@@ -1863,7 +1865,7 @@ cenozo.directive( 'cnRecordView', [
               var identifier = $scope.model.viewModel.record.getIdentifier();
               patchPromise = $scope.model.viewModel.onPatch( data ).then( function() {
                 // if the data in the identifier was patched then reload with the new url
-                if( 0 <= identifier.split( /[;=]/ ).indexOf( property ) ) {
+                if( identifier.split( /[;=]/ ).includes( property ) ) {
                   $scope.model.setQueryParameter( 'identifier', identifier );
                   $scope.model.reloadState();
                 } else {
@@ -2970,7 +2972,7 @@ cenozo.factory( 'CnSession', [
             // process module list
             self.moduleList = response.data.module_list;
 
-            if( 0 <= self.moduleList.indexOf( 'script' ) ) {
+            if( self.moduleList.includes( 'script' ) ) {
               // add the supporting script list
               self.supportingScriptList = response.data.supporting_script_list;
             }
@@ -4471,7 +4473,7 @@ cenozo.factory( 'CnBaseViewFactory', [
                 for( var column in group.inputList ) {
                   var input = group.inputList[column];
                   if( 'view' != input.exclude &&
-                      0 <= ['boolean','enum','rank'].indexOf( input.type ) &&
+                      ['boolean','enum','rank'].includes( input.type ) &&
                       null === self.record[column] ) {
                     var metadata = self.parentModel.metadata.columnList[column];
                     if( angular.isDefined( metadata ) && !metadata.required ) {
@@ -4695,7 +4697,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          */
         cenozo.addExtendableFunction( self, 'hasQueryParameter', function( name ) {
           return angular.isDefined( $state.current.url ) &&
-                 0 <= $state.current.url.indexOf( '{' + name + '}' ) &&
+                 $state.current.url.includes( '{' + name + '}' ) &&
                  self.getSubjectFromState() == self.queryParameterSubject;
         } );
 
@@ -4798,7 +4800,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @param array columnRestrictLists Column restrictions
          */
         cenozo.addExtendableFunction( self, 'getServiceData', function( type, columnRestrictLists ) {
-          if( angular.isUndefined( type ) || 0 > ['calendar','list','report','view'].indexOf( type ) )
+          if( angular.isUndefined( type ) || !['calendar','list','report','view'].includes( type ) )
             throw new Error(
               'getServiceData expects an argument which is either "calendar", "list", "report" or "view".'
             );
@@ -4924,7 +4926,7 @@ cenozo.factory( 'CnBaseModelFactory', [
                   // LIKE "" is meaningless, so search for <=> "" instead
                   if( 0 == value.length ) test = '<=>';
                   // LIKE without % is meaningless, so add % at each end of the string
-                  else if( 0 > value.indexOf( '%' ) ) value = '%' + value + '%';
+                  else if( !value.includes( '%' ) ) value = '%' + value + '%';
                 }
 
                 // convert units
@@ -5121,7 +5123,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           var data = [];
           if( 'list' == type ) {
             for( var key in self.columnList ) {
-              if( 0 > removeList.indexOf( key ) &&
+              if( !removeList.includes( key ) &&
                   // don't include hidden columns
                   'hidden' != self.columnList[key].type &&
                   // for child lists, don't include parent columns
@@ -5136,7 +5138,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               var inputArray = Object.keys( group.inputList ).map( function( key ) {
                 return group.inputList[key];
               } ).filter( function( input ) {
-                return 0 > removeList.indexOf( input.key ) &&
+                return !removeList.includes( input.key ) &&
                        stateSubject+'_id' != input.key &&
                        type != input.exclude;
               } );
@@ -5201,7 +5203,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           // sanity checking
           if( angular.isUndefined( input ) )
             throw new Error( 'Typeahead used without a valid input key (' + key + ').' );
-          if( 0 > ['typeahead','lookup-typeahead'].indexOf( input.type ) )
+          if( !['typeahead','lookup-typeahead'].includes( input.type ) )
             throw new Error( 'Tried getting typeahead values for input of type "' + input.type + '".' );
           if( 'typeahead' == input.type ) {
             if( !angular.isArray( input.typeahead ) )
@@ -5780,7 +5782,7 @@ cenozo.factory( 'CnHttpFactory', [
           else object.params = self.data;
         }
 
-        if( 0 <= ['csv','jpeg','ods','pdf','txt','unknown','xlsx','zip'].indexOf( self.format ) ) {
+        if( ['csv','jpeg','ods','pdf','txt','unknown','xlsx','zip'].includes( self.format ) ) {
           var format = null;
           if( 'csv' == self.format ) format = 'text/csv;charset=utf-8';
           else if( 'jpeg' == self.format ) format = 'image/jpeg';
@@ -5856,7 +5858,7 @@ cenozo.factory( 'CnHttpFactory', [
       this.post = function() { return http( 'POST', 'api/' + this.path, false ); };
       this.query = function() { return http( 'GET', 'api/' + this.path, true ); };
       this.count = function() {
-        this.path += ( 0 <= this.path.indexOf( '?' ) ? '&' : '?' ) + 'count=true';
+        this.path += ( this.path.includes( '?' ) ? '&' : '?' ) + 'count=true';
         return this.query();
       }
       this.file = function() {
@@ -6169,7 +6171,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
                            this.date.isSame( cellDate, 'month' ) &&
                            this.date.isSame( cellDate, 'day' ),
                   offMonth: !this.viewingDate.isSame( cellDate, 'month' ),
-                  weekend: 0 <= [0,6].indexOf( cellDate.day() ),
+                  weekend: [0,6].includes( cellDate.day() ),
                   disabled: !this.isDateAllowed( cellDate, 'day' )
                 } );
               }
@@ -6187,7 +6189,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
                            this.date.isSame( cellDate, 'month' ) &&
                            this.date.isSame( cellDate, 'day' ),
                   offMonth: !this.viewingDate.isSame( cellDate, 'month' ),
-                  weekend: 0 <= [0,6].indexOf( cellDate.day() ),
+                  weekend: [0,6].includes( cellDate.day() ),
                   disabled: !this.isDateAllowed( cellDate, 'day' )
                 } );
               }
@@ -6677,7 +6679,7 @@ cenozo.service( 'CnModalRestrictFactory', [
           this.emptyList[index].oldValue = this.restrictList[index].value;
           this.restrictList[index].value = null;
           // make sure to select <=> or <>
-          if( 0 > ['<=>','<>'].indexOf( this.restrictList[index].test ) )
+          if( !['<=>','<>'].includes( this.restrictList[index].test ) )
             this.restrictList[index].test = '<=>';
         } else {
           this.restrictList[index].value = angular.isUndefined( this.emptyList[index].oldValue )
@@ -6996,7 +6998,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
   'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$q', '$window',
   function( CnSession, CnHttpFactory, CnModalMessageFactory, $q, $window ) {
     var object = function( params ) {
-      if( 0 > CnSession.moduleList.indexOf( 'script' ) )
+      if( !CnSession.moduleList.includes( 'script' ) )
         throw new Error( 'Tried to create script launcher but script module is not enabled' );
 
       var self = this;

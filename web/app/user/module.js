@@ -507,7 +507,7 @@ define( function() {
       };
 
       // add the user's assignment uid (if the interview module is turned on)
-      if( 0 <= CnSession.moduleList.indexOf( 'interview' ) )
+      if( CnSession.moduleList.includes( 'interview' ) )
         cenozo.insertPropertyAfter( columnList, 'role', 'assignment_uid', { title: 'Assignment' } );
 
       angular.extend( overviewModule.columnList, columnList );

@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.4';
-$settings['general']['cenozo_build'] = '6255e8b';
+$settings['general']['cenozo_build'] = '96cc05c';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -26,7 +26,7 @@ $settings['general']['development_mode'] = false;
 $settings['general']['show_api_calls'] = false;
 
 // define the minimum version of all supported browsers
-$settings['general']['chrome_minimum_version'] = 40;
+$settings['general']['chrome_minimum_version'] = 41;
 $settings['general']['firefox_minimum_version'] = 40;
 
 // the default password given to all new users

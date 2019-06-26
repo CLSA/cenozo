@@ -1068,7 +1068,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         };
 
         // only add script launching if the script module is activated
-        if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
+        if( CnSession.moduleList.includes( 'script' ) ) {
           this.launchSupportingScript = function( scriptName ) {
             var foundLauncher = null;
             if( angular.isUndefined( self.scriptLaunchers[scriptName] ) )
@@ -1102,7 +1102,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           self.allowWithdraw = false;
 
           // only create launchers for each supporting script if the script module is activated
-          if( 0 <= CnSession.moduleList.indexOf( 'script' ) ) {
+          if( CnSession.moduleList.includes( 'script' ) ) {
             CnSession.supportingScriptList.forEach( function( script ) {
               if( null != script.name.match( /Decedent/ ) ) {
                 // only check for the decedent token if we're allowed to launch the script
@@ -1479,8 +1479,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                   var columnLookup = csv.shift().map( column => column.trim().toLowerCase().replace( ' ', '_' ) );
                   columnLookup.forEach( function( column, index ) {
                     // check for regular column names and multi (address and phone) column names
-                    if( -1 === validColumnList.indexOf( column ) &&
-                        -1 === validMultiColumnList.indexOf( column.replace( /_[0-9]+$/, '' ) ) ) {
+                    if( !validColumnList.includes( column ) &&
+                        !validMultiColumnList.includes( column.replace( /_[0-9]+$/, '' ) ) ) {
                       columnLookup[index] = null;
                     } else {
                       validColumnCount++;

@@ -451,7 +451,7 @@ define( [
           addRestriction: function( tableName, key ) {
             // get a list of all subtypes from columns for this table
             var subtypeList = this.columnList.reduce( function( subtypeList, column ) {
-              if( column.table_name == tableName && 0 > subtypeList.indexOf( column.subtype ) )
+              if( column.table_name == tableName && !subtypeList.includes( column.subtype ) )
                 subtypeList.push( column.subtype );
               return subtypeList;
             }, [] ).sort();
@@ -468,7 +468,7 @@ define( [
 
             if( 'boolean' == item.restriction.type ) {
               item.value = true;
-            } else if( 0 <= ['dob','dod','datetime'].indexOf( item.restriction.type ) ) {
+            } else if( ['dob','dod','datetime'].includes( item.restriction.type ) ) {
               var datetime = moment();
               if( 'dob' == item.restriction.type ) datetime.subtract( 50, 'years' );
               item.value = datetime.format( 'datetime' != item.restriction.type ? 'YYYY-MM-DD' : null );
@@ -534,7 +534,7 @@ define( [
 
           selectDatetime: function( index ) {
             var item = this.restrictionList[index];
-            if( -1 == ['dob','dod','datetime'].indexOf( item.restriction.type ) ) {
+            if( !['dob','dod','datetime'].includes( item.restriction.type ) ) {
               console.error( 'Tried to select datetime for restriction type "' + item.restriction.type + '".' );
             } else {
               CnModalDatetimeFactory.instance( {
@@ -750,7 +750,7 @@ define( [
           // define functions which populate the restriction lists
           loadRestrictionList: function( tableName ) {
             // application restrictions are handled specially
-            if( 0 <= [ 'application' ].indexOf( tableName ) ) return;
+            if( [ 'application' ].includes( tableName ) ) return;
 
             var ignoreColumnList = [
               'check_withdraw',
@@ -765,7 +765,7 @@ define( [
               restrictionType.promise = metadata.getPromise().then( function() {
                 for( var column in metadata.columnList ) {
                   var item = metadata.columnList[column];
-                  if( -1 == ignoreColumnList.indexOf( column ) ) {
+                  if( !ignoreColumnList.includes( column ) ) {
                     var restrictionItem = {
                       key: column,
                       title: 'id' == column || 'uid' == column ?
@@ -872,7 +872,7 @@ define( [
             var columnList = self.tableColumnList[subject];
             for( var column in self.modelList[subject].metadata.columnList ) {
               // ignore certain columns
-              if( 0 > ignoreColumnList.indexOf( column ) ) {
+              if( !ignoreColumnList.includes( column ) ) {
                 columnList.list.push( {
                   key: column,
                   title: 'uid' == column ?

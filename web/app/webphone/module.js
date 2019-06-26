@@ -45,7 +45,7 @@ define( function() {
         this.webphone = '(disabled)';
         this.voip = CnSession.voip;
         this.webphoneUrl = CnSession.application.webphoneUrl;
-        this.useRecording = 0 <= CnSession.moduleList.indexOf( 'recording' );
+        this.useRecording = CnSession.moduleList.includes( 'recording' );
         if( this.useRecording ) {
           this.recordingList = [];
           this.activeRecording = null;
