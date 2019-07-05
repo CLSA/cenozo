@@ -268,7 +268,8 @@ angular.extend( cenozoApp, {
            *     select: what is shown when selected (may be a CONCAT statement)
            *     where: an array of all columns in the table which can be matched
            *     forceEmptyOnNew: if set to true then the typeahead won't automatically pre-populate
-           *     minLength: the minimum length before a search is performed (default 2)
+           *     minLength: the minimum length before a search is performed (default 2),
+           *     modifier: a pre-defined modifier that will be combined with the where array
            *   }
            *   hourStep: when using the datetime type this can be used to define the hour step value
            *   minuteStep: when using the datetime type this can be used to define the minute step value
@@ -5159,27 +5160,33 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Returns an array of possible values for typeahead inputs
          */
         cenozo.addExtendableFunction( self, 'getTypeaheadData', function( input, viewValue ) {
-          // create the where statement
-          var where = {};
+          // create the modifier
+          var modifier = angular.isDefined( input.typeahead.modifier ) ? angular.copy( input.typeahead.modifier ) : {};
+          if( angular.isUndefined( modifier.where ) ) modifier.where = [];
+          else if( !angular.isArray( modifier.where ) ) modifier.where = [ modifier.where ];
+
           if( angular.isUndefined( input.typeahead.where ) ) {
-            where = {
+            modifier.where.push( {
               column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.select,
               operator: 'like',
               value: viewValue + '%'
-            };
+            } );
           } else {
-            where = [];
             var whereList = angular.isArray( input.typeahead.where )
                           ? input.typeahead.where
                           : [ input.typeahead.where ];
+
+            // combine all where items using OR and enclose in brackets
+            modifier.where.push( { bracket: true, open: true } );
             whereList.forEach( function( item ) {
-              where.push( {
+              modifier.where.push( {
                 column: item,
                 operator: 'like',
                 value: viewValue + '%',
                 or: true
               } );
             } );
+            modifier.where.push( { bracket: true, open: false } );
           }
 
           return {
@@ -5190,7 +5197,7 @@ cenozo.factory( 'CnBaseModelFactory', [
                 table_prefix: false
               } ]
             },
-            modifier: { where: where }
+            modifier: modifier
           };
         } );
 
