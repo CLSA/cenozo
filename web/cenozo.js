@@ -76,19 +76,19 @@ angular.extend( Array.prototype, {
 angular.extend( String.prototype, {
   snakeToCamel: function( first ) {
     if( angular.isUndefined( first ) ) first = false;
-    var output = this.replace( /(\_\w)/g, function( $1 ) { return angular.uppercase( $1[1] ); } );
-    if( first ) output = angular.uppercase( output.charAt(0) ) + output.slice(1);
+    var output = this.replace( /(\_\w)/g, function( $1 ) { return $1[1].toUpperCase(); } );
+    if( first ) output = output.charAt(0).toUpperCase() + output.slice(1);
     return output;
   },
   endsWith: function( suffix ) {
     return this.indexOf( suffix, this.length - suffix.length ) !== -1;
   },
   camelToSnake: function() {
-    return this.replace( /([A-Z])/g, function( $1 ) { return '_' + angular.lowercase( $1 ); } )
+    return this.replace( /([A-Z])/g, function( $1 ) { return '_' + $1.toLowerCase(); } )
                .replace( /^_/, '' );
   },
   ucWords: function() {
-    return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return angular.uppercase( $1 ); } );
+    return this.replace( /(^[a-z]| [a-z])/g, function( $1 ) { return $1.toUpperCase(); } );
   },
   parseCSV: function( fieldDelim, stringDelim ) {
     if( angular.isUndefined( fieldDelim ) ) fieldDelim = ',';
@@ -2790,7 +2790,7 @@ cenozo.filter( 'cnStub', function() {
 cenozo.filter( 'cnUCWords', function() {
   return function( input ) {
     if( 'string' == cenozo.getType( input ) )
-      input = input.replace( /(?:^|\s)\S/g, function( a ) { return angular.uppercase( a ); } );
+      input = input.replace( /(?:^|\s)\S/g, function( a ) { return a.toUpperCase(); } );
     return input;
   };
 } );
@@ -4921,10 +4921,10 @@ cenozo.factory( 'CnBaseModelFactory', [
             // now add the column details to the selectList
             if( 'months' == list[key].type ) {
               for( var month = 0; month < 12; month++ )
-                selectList.push( angular.lowercase( moment().month( month ).format( 'MMMM' ) ) );
+                selectList.push( moment().month( month ).format( 'MMMM' ).toLowerCase() );
             } else if( 'days' == list[key].type ) {
               for( var day = 0; day < 7; day++ )
-                selectList.push( angular.lowercase( moment().day( day ).format( 'dddd' ) ) );
+                selectList.push( moment().day( day ).format( 'dddd' ).toLowerCase() );
             } else {
               // add column to the select list
               var select = { column: columnName, alias: key };
@@ -5244,8 +5244,8 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
 
           if( 'typeahead' == input.type ) {
-            var re = new RegExp( angular.lowercase( viewValue ) );
-            return input.typeahead.filter( function( value ) { return re.test( angular.lowercase( value ) ); } );
+            var re = new RegExp( viewValue.toLowerCase() );
+            return input.typeahead.filter( function( value ) { return re.test( value.toLowerCase() ); } );
           } else { // 'lookup-typeahead' == input.type
             // make note that we are loading the typeahead values
             input.typeahead.isLoading = true;
@@ -6962,9 +6962,9 @@ cenozo.service( 'CnModalTimezoneFactory', [
             $scope.timezoneList = moment.tz.names();
 
             $scope.getTypeaheadValues = function( viewValue ) {
-              var re = new RegExp( angular.lowercase( viewValue ) );
+              var re = new RegExp( viewValue.toLowerCase() );
               return $scope.timezoneList.filter( function( value ) {
-                return re.test( angular.lowercase( value ) );
+                return re.test( value.toLowerCase() );
               } );
             };
 
