@@ -56,6 +56,8 @@ class status extends \cenozo\base_object
     }
 
     $this->code = $code;
+
+    if( DEVELOPMENT && 300 <= $this->code ) log::warning( sprintf( 'Setting status code to %d', $this->code ) );
   }
 
   /**
