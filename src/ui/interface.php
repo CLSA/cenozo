@@ -21,6 +21,8 @@
   <script src="<?php print LIB_URL; ?>/@uirouter/angularjs/release/angular-ui-router.min.js"></script>
   <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/chart.js/dist/Chart.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/angular-chart.js/dist/angular-chart.min.js"></script>
   <script src="<?php print LIB_URL; ?>/file-saver/FileSaver.min.js"></script>
 
   <script src="<?php print CENOZO_URL; ?>/cenozo<?php print $min; ?>.js?build=<?php print CENOZO_BUILD; ?>" id="cenozo"></script>

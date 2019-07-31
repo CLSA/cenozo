@@ -1,0 +1,36 @@
+<div class="record-view rounded">
+  <div class="container-fluid bg-primary rounded-top"
+           data-toggle="collapse"
+           data-target="#{{ identifier }}Chart"
+           ng-click="collapsed = !collapsed"
+           style="cursor:pointer;">
+    <h4>
+      <div class="pull-right">
+        <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
+           ng-if="!noRefresh && isComplete"
+           ng-click="refresh(); $event.stopPropagation()"
+           uib-tooltip="Click to refresh data"
+           tooltip-placement="left"></i>
+        <i class="glyphicon glyph-hover btn-primary btn-header"
+           ng-class="collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
+           uib-tooltip="Click to expand chart"
+           tooltip-placement="left"></i>
+      </div>
+      {{ heading }}
+    </h4>
+  </div>
+  <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ identifier }}Chart" style="padding: 1em;">
+    <cn-loading ng-show="loading"></cn-loading>
+    <canvas ng-show="!loading"
+            class="chart chart-bar"
+            chart-data="plot.data"
+            chart-series="plot.series"
+            chart-labels="plot.labels"
+            chart-options="plot.options"
+            chart-hover="plot.hover"
+            chart-colors="plot.colors"
+            chart-click="plot.click"></canvas>
+  </div>
+  <div class="form-footer text-right rounded-bottom bg-info">
+  </div>
+</div>

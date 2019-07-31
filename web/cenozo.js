@@ -10,7 +10,7 @@ try {
   console.warn( 'Trying to load cenozo.js more than once.' );
   return;
 } catch( err ) {
-  var cenozo = angular.module( 'cenozo', ['ngAnimate','ngSanitize','colorpicker.module'] );
+  var cenozo = angular.module( 'cenozo', ['ngAnimate','ngSanitize','colorpicker.module','chart.js'] );
 }
 
 // determine cenozo's base url
@@ -1113,6 +1113,32 @@ cenozo.directive( 'cnChange', [
         }
       }
     };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * A directive wrapper for chart.js
+ */
+cenozo.directive( 'cnChart', [
+  'CnHttpFactory',
+  function( CnHttpFactory ) {
+    return {
+      template: '<div ng-include="templateUrl"></div>', // set below in the link function
+      restrict: 'E',
+      scope: {
+        type: '=',
+        plot: '=',
+        loading: '=',
+        identifier: '=',
+        heading: '@'
+      },
+      link: function( scope, element, attrs ) {
+        scope.templateUrl = cenozo.getFileUrl( 'cenozo', 'chart-' + attrs.type + '.tpl.html' );
+      },
+      controller: [ '$scope', '$element', function( $scope, $element ) { $scope.directive = 'cnChart'; } ]
+    }
   }
 ] );
 
