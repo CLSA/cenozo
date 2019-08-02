@@ -1131,13 +1131,18 @@ cenozo.directive( 'cnChart', [
         type: '=',
         plot: '=',
         loading: '=',
-        identifier: '=',
+        identifier: '@',
         heading: '@'
       },
       link: function( scope, element, attrs ) {
         scope.templateUrl = cenozo.getFileUrl( 'cenozo', 'chart-' + attrs.type + '.tpl.html' );
       },
-      controller: [ '$scope', '$element', function( $scope, $element ) { $scope.directive = 'cnChart'; } ]
+      controller: [ '$scope', '$element', function( $scope, $element ) {
+        $scope.directive = 'cnChart';
+
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
+      } ]
     }
   }
 ] );

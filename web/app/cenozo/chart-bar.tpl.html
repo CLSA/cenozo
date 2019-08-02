@@ -19,7 +19,7 @@
       {{ heading }}
     </h4>
   </div>
-  <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ identifier }}Chart" style="padding: 1em;">
+  <div class="form-body collapse" ng-class="{'in':!initCollapsed}" ng-attr-id="{{ identifier }}Chart" style="padding: 1em;">
     <cn-loading ng-show="loading"></cn-loading>
     <canvas ng-show="!loading"
             class="chart chart-bar"

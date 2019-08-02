@@ -1,7 +1,7 @@
 <div class="record-view rounded">
   <div class="container-fluid bg-primary rounded-top"
            data-toggle="collapse"
-           data-target="#{{ identifier }}Chart"
+           data-target="#{{ identifier }}"
            ng-click="collapsed = !collapsed"
            style="cursor:pointer;">
     <h4>
@@ -19,7 +19,7 @@
       {{ heading }}
     </h4>
   </div>
-  <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ identifier }}Chart" style="padding: 1em;">
+  <div class="form-body collapse" ng-class="{'in':!initCollapsed}" ng-attr-id="{{ identifier }}" style="padding: 1em;">
     <cn-loading ng-show="loading"></cn-loading>
     <canvas ng-show="!loading"
             class="chart chart-line"
