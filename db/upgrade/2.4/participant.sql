@@ -56,6 +56,32 @@ CREATE PROCEDURE patch_participant()
       ADD COLUMN email2_old VARCHAR(255) NULL DEFAULT NULL AFTER email2_datetime;
     END IF;
 
+    SELECT "Adding new date_of_death_ministry column to participant table" AS "";
+
+    SELECT COUNT(*) INTO @total
+    FROM information_schema.COLUMNS
+    WHERE table_schema = DATABASE()
+    AND table_name = "participant"
+    AND column_name = "date_of_death_ministry";
+
+    IF 0 = @total THEN
+      ALTER TABLE participant
+      ADD COLUMN date_of_death_ministry TINYINT(1) NULL DEFAULT NULL AFTER date_of_death_accuracy;
+    END IF;
+
+    SELECT "Adding new withdraw_third_party column to participant table" AS "";
+
+    SELECT COUNT(*) INTO @total
+    FROM information_schema.COLUMNS
+    WHERE table_schema = DATABASE()
+    AND table_name = "participant"
+    AND column_name = "withdraw_third_party";
+
+    IF 0 = @total THEN
+      ALTER TABLE participant
+      ADD COLUMN withdraw_third_party TINYINT(1) NULL DEFAULT NULL AFTER delink;
+    END IF;
+
   END //
 DELIMITER ;
 

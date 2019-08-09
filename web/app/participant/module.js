@@ -188,6 +188,11 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       type: 'enum',
       help: 'Defines how accurate the date of death is.'
     },
+    date_of_death_ministry: {
+      title: 'Death Confirmed by Ministry',
+      type: 'boolean',
+      help: 'Determines whether information about the participant\'s death is confirmed by a ministry'
+    },
     age_group_id: {
       title: 'Age Group',
       type: 'enum',
@@ -1167,9 +1172,10 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             if( self.record.honorific ) nameList.unshift( self.record.honorific );
             self.heading = 'Participant Details for ' + nameList.join( ' ' );
 
-            // don't allow date-of-death-accuracy to be set unless the date-of-death is defined
-            var dodInput = self.parentModel.module.inputGroupList.findByProperty( 'title', 'Defining Details' )
-              .inputList.date_of_death_accuracy.constant = null == self.record.date_of_death;
+            // don't allow date-of-death-accuracy and -ministry to be set unless the date-of-death is defined
+            var definingInputGroup = self.parentModel.module.inputGroupList.findByProperty( 'title', 'Defining Details' );
+            definingInputGroup.inputList.date_of_death_accuracy.constant = null == self.record.date_of_death;
+            definingInputGroup.inputList.date_of_death_ministry.constant = null == self.record.date_of_death;
 
             if( null != self.record.date_of_death ) {
               // only display the accurate parts of the date-of-death
