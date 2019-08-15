@@ -463,3 +463,12 @@ cn-slider div.bubble, [cn-slider] div.bubble {
 }
 cn-slider div.bubble.active, [cn-slider] div.bubble.active { display: inline-block; }
 cn-slider div.bubble.limit, [cn-slider] div.bubble.limit { color: #777; }
+
+.maximize {
+  position: fixed;
+  z-index: 2;
+  top: 60px;
+  left: 6px;
+  width: 99.5%;
+  background: white;
+}

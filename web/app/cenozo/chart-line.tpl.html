@@ -1,8 +1,6 @@
-<div class="record-view rounded">
+<div class="record-view rounded" ng-class="{ 'maximize': maximized }">
   <div class="container-fluid bg-primary rounded-top"
-           data-toggle="collapse"
-           data-target="#{{ identifier }}"
-           ng-click="collapsed = !collapsed"
+           ng-click="maximized = !maximized"
            style="cursor:pointer;">
     <h4>
       <div class="pull-right">
@@ -12,14 +10,14 @@
            uib-tooltip="Click to refresh data"
            tooltip-placement="left"></i>
         <i class="glyphicon glyph-hover btn-primary btn-header"
-           ng-class="collapsed ? 'glyphicon-collapse-down' : 'glyphicon-collapse-up'"
-           uib-tooltip="Click to expand chart"
+           ng-class="maximized ? 'glyphicon-resize-small' : 'glyphicon-resize-full'"
+           uib-tooltip="Click to maximize chart"
            tooltip-placement="left"></i>
       </div>
       {{ heading }}
     </h4>
   </div>
-  <div class="form-body collapse" ng-class="{'in':!initCollapsed}" ng-attr-id="{{ identifier }}" style="padding: 1em;">
+  <div class="form-body" ng-attr-id="{{ identifier }}" style="padding: 1em;">
     <cn-loading ng-show="loading"></cn-loading>
     <canvas ng-show="!loading"
             class="chart chart-line"

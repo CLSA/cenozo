@@ -1139,6 +1139,7 @@ cenozo.directive( 'cnChart', [
       },
       controller: [ '$scope', '$element', function( $scope, $element ) {
         $scope.directive = 'cnChart';
+        $scope.maximized = false;
 
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
