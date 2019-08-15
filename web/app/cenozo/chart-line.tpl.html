@@ -1,23 +1,18 @@
 <div class="record-view rounded" ng-class="{ 'maximize': maximized }">
-  <div class="container-fluid bg-primary rounded-top"
-           ng-click="maximized = !maximized"
-           style="cursor:pointer;">
+  <div class="container-fluid bg-primary rounded-top">
     <h4>
       <div class="pull-right">
-        <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
-           ng-if="!noRefresh && isComplete"
-           ng-click="refresh(); $event.stopPropagation()"
-           uib-tooltip="Click to refresh data"
-           tooltip-placement="left"></i>
         <i class="glyphicon glyph-hover btn-primary btn-header"
            ng-class="maximized ? 'glyphicon-resize-small' : 'glyphicon-resize-full'"
+           style="cursor:pointer;"
+           ng-click="maximized = !maximized"
            uib-tooltip="Click to maximize chart"
            tooltip-placement="left"></i>
       </div>
       {{ heading }}
     </h4>
   </div>
-  <div class="form-body" ng-attr-id="{{ identifier }}" style="padding: 1em;">
+  <div class="form-body" ng-attr-id="{{ identifier }}ChartLine" style="padding: 1em;">
     <cn-loading ng-show="loading"></cn-loading>
     <canvas ng-show="!loading"
             class="chart chart-line"
