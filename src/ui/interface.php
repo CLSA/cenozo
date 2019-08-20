@@ -23,7 +23,7 @@
   <script src="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
   <script src="<?php print LIB_URL; ?>/chart.js/dist/Chart.min.js"></script>
   <script src="<?php print LIB_URL; ?>/angular-chart.js/dist/angular-chart.min.js"></script>
-  <script src="<?php print LIB_URL; ?>/file-saver/FileSaver.min.js"></script>
+  <script src="<?php print LIB_URL; ?>/file-saver/dist/FileSaver.min.js"></script>
 
   <script src="<?php print CENOZO_URL; ?>/cenozo<?php print $min; ?>.js?build=<?php print CENOZO_BUILD; ?>" id="cenozo"></script>
   <script src="<?php print ROOT_URL; ?>/app<?php print $min; ?>.js?build=<?php print APP_BUILD; ?>" id="app"></script>

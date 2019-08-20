@@ -7158,9 +7158,9 @@ cenozo.factory( 'CnScriptLauncherFactory', [
  */
 cenozo.config( [
   '$controllerProvider', '$compileProvider', '$filterProvider', '$locationProvider',
-  '$provide', '$uibTooltipProvider', '$urlRouterProvider', '$httpProvider',
+  '$provide', '$uibTooltipProvider', '$urlRouterProvider', '$httpProvider', '$qProvider',
   function( $controllerProvider, $compileProvider, $filterProvider, $locationProvider,
-            $provide, $uibTooltipProvider, $urlRouterProvider, $httpProvider ) {
+            $provide, $uibTooltipProvider, $urlRouterProvider, $httpProvider, $qProvider ) {
     // create an object containing all providers
     cenozo.providers.controller = $controllerProvider.register;
     cenozo.providers.directive = $compileProvider.directive;
@@ -7183,6 +7183,9 @@ cenozo.config( [
 
     // turn on html5 mode
     $locationProvider.html5Mode( { enabled: true, requireBase: false } );
+
+    // we need to ignore unhandled rejections because of the way that CnHttpFactory handles errors (onError)
+    $qProvider.errorOnUnhandledRejections(false);
 
     $httpProvider.defaults.headers.common.Accept = 'application/json;charset=utf-8';
   }
