@@ -121,14 +121,18 @@ class mail_manager extends \cenozo\base_object
     }
     $headers[] = is_null( $from['name'] )
                ? sprintf( 'From: %s', $from['address'] )
-               : sprintf( 'From: %s <%s>', $from['name'], $from['address'] );
+               : sprintf( 'From: %s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $from['name'] ), $from['address'] );
 
     // include the reply-to argument
     if( !is_null( $this->reply_to_email ) )
     {
       $headers[] = is_null( $this->reply_to_email['name'] )
                  ? sprintf( 'Reply-To: %s', $this->reply_to_email['address'] )
-                 : sprintf( 'Reply-To: %s <%s>', $this->reply_to_email['name'], $this->reply_to_email['address'] );
+                 : sprintf(
+                     'Reply-To: %s <%s>',
+                     iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->reply_to_email['name'] ),
+                     $this->reply_to_email['address']
+                   );
     }
 
     // process the "to" email list
@@ -137,7 +141,7 @@ class mail_manager extends \cenozo\base_object
     {
       $to_list[] = is_null( $email['name'] )
                  ? sprintf( '%s', $email['address'] )
-                 : sprintf( '%s <%s>', $email['name'], $email['address'] );
+                 : sprintf( '%s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $email['name'] ), $email['address'] );
     }
 
     // process the "cc" email list
@@ -145,7 +149,7 @@ class mail_manager extends \cenozo\base_object
     {
       $headers[] = is_null( $email['name'] )
                  ? sprintf( 'Cc: %s', $email['address'] )
-                 : sprintf( 'Cc: %s <%s>', $email['name'], $email['address'] );
+                 : sprintf( 'Cc: %s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $email['name'] ), $email['address'] );
     }
 
     // process the "bcc" email list
@@ -153,7 +157,7 @@ class mail_manager extends \cenozo\base_object
     {
       $headers[] = is_null( $email['name'] )
                  ? sprintf( 'Bcc: %s', $email['address'] )
-                 : sprintf( 'Bcc: %s <%s>', $email['name'], $email['address'] );
+                 : sprintf( 'Bcc: %s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $email['name'] ), $email['address'] );
     }
 
     if( !$setting_manager->get_setting( 'mail', 'enabled' ) )
@@ -167,7 +171,12 @@ class mail_manager extends \cenozo\base_object
       return true;
     }
 
-    return mail( implode( ', ', $to_list ), $this->title, $this->body, implode( "\r\n", $headers ) );
+    return mail(
+      implode( ', ', $to_list ),
+      iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->title ),
+      iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->body ),
+      implode( "\r\n", $headers )
+    );
   }
 
   /**
