@@ -15,7 +15,7 @@
   "dependencies": {
     "angular": "latest",
     "angular-ui-bootstrap": "latest",
-    "@uirouter/angularjs": "latest",
+    "@uirouter/angularjs": "1.0.18",
     "jquery": "latest",
     "bootstrap": "3.x",
     "moment": "latest",
