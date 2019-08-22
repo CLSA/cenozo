@@ -2645,6 +2645,22 @@ cenozo.filter( 'cnDatetime', [
 /* ######################################################################################################## */
 
 /**
+ * Used as a sort filter to put empty values at the end of the list
+ */
+cenozo.filter( 'cnEmptyToEnd', [
+  function() {
+    return function( array, key ) {
+      if( !angular.isArray( array ) ) return;
+      var present = array.filter( function( item ) { return null != item[key]; } );
+      var empty = array.filter( function( item ) { return null == item[key]; } );
+      return present.concat( empty );
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * Determines whether the input is an array
  */
 cenozo.filter( 'cnIsArray', [
