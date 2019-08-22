@@ -28,6 +28,7 @@
   <script src="<?php print CENOZO_URL; ?>/cenozo<?php print $min; ?>.js?build=<?php print CENOZO_BUILD; ?>" id="cenozo"></script>
   <script src="<?php print ROOT_URL; ?>/app<?php print $min; ?>.js?build=<?php print APP_BUILD; ?>" id="app"></script>
   <script src="<?php print LIB_URL; ?>/requirejs/require.js?build=<?php print CENOZO_BUILD; ?>"></script>
+  <base href="/"></base>
 </head>
 <body class="background">
   <script>
@@ -40,7 +41,6 @@
     window.cenozo.development = <?php print DEVELOPMENT ? 'true' : 'false'; ?>;
     if( window.cenozo.development ) console.info( 'Development mode' );
 
-    // set the application's base url (the object is created for us in cenozo.js)
     // define framework modules, set the applications module list then route them all
     window.cenozo.defineFrameworkModules( <?php print $framework_module_string; ?> );
     window.cenozoApp.setModuleList( <?php print $module_string; ?> );
