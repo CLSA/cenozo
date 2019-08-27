@@ -2887,6 +2887,9 @@ cenozo.filter( 'cnYesNo', function() {
  */
 cenozo.factory( '$exceptionHandler', function() {
   return function( exception, cause ) {
+    // angular sends "possible" errors which we want to ignore
+    if( angular.isString( exception ) && null != exception.match( /^Possibly unhandled rejection/ ) ) return;
+
     // report the exception to the console and replace the view's inner html with a notification of the error
     console.error( '%s', exception );
     if( angular.isDefined( cause ) ) console.warn( '%s', cause );
@@ -7199,9 +7202,6 @@ cenozo.config( [
 
     // turn on html5 mode
     $locationProvider.html5Mode( { enabled: true, requireBase: false } );
-
-    // we need to ignore unhandled rejections because of the way that CnHttpFactory handles errors (onError)
-    $qProvider.errorOnUnhandledRejections(false);
 
     $httpProvider.defaults.headers.common.Accept = 'application/json;charset=utf-8';
   }
