@@ -125,7 +125,7 @@
         <tr ng-if="!model.listModel.isLoading"
             ng-repeat="record in model.listModel.cache
                        | orderBy: model.listModel.order.column:model.listModel.order.reverse
-                       | cnEmptyToEnd: model.listModel.order.column
+                       | cnEmptyToEnd: ( disableEmptyToEnd ? '' : model.listModel.order.column )
                        | limitTo: model.listModel.paginationModel.getLimitTo(
                                     model.listModel.minOffset, model.listModel.cache.length )
                        | limitTo: model.listModel.paginationModel.itemsPerPage"

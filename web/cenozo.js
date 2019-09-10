@@ -1677,7 +1677,8 @@ cenozo.directive( 'cnRecordList', [
       scope: {
         model: '=',
         removeColumns: '@',
-        initCollapsed: '='
+        initCollapsed: '=',
+        disableEmptyToEnd: '='
       },
       controller: [ '$scope', '$element', function( $scope, $element ) {
         $scope.directive = 'cnRecordList';
