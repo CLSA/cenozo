@@ -158,8 +158,8 @@
             <div ng-if="model.viewModel.isFileListLoading">(Loading&hellip;)</div>
             <div ng-if="!model.viewModel.isFileListLoading">
               <span ng-if="0 < file.size">
-                <span class="horizontal-spacer">
-                  <a href="#" ng-click="file.download()" ng-bind-html="model.viewModel.record[input.key]"></a>
+                <span class="horizontal-spacer" style="cursor: pointer">
+                  <a ng-click="file.download()" ng-bind-html="model.viewModel.record[input.key]"></a>
                 </span>
                 <span class="horizontal-spacer">({{ file.size | cnSize }})</span>
                 <button class="btn btn-default pull-right"
