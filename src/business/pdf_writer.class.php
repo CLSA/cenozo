@@ -88,6 +88,23 @@ class pdf_writer extends \cenozo\base_object
   }
 
   /**
+   * Merges 2 or more PDF files into a single file
+   * 
+   * @param array $filename_list A list of filenames to read and merge into a single file
+   * @access public
+   */
+  public function merge( $filename_list )
+  {
+    $letter = 'A';
+    foreach( $filename_list as $filename )
+    {
+      $this->pdf->addFile( $filename, $letter );
+      $this->pdf->cat( null, null, $letter );
+      $letter++;
+    }
+  }
+
+  /**
    * The PDF resource which does all the work
    * @var \mikehaertl\pdftk\Pdf
    * @access protected
