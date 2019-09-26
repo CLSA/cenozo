@@ -11,8 +11,8 @@
             data-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
-            ng-click="op.operation( state, model )">
-      {{ op.title }}
+            ng-click="op.operation( state, model )"
+            ng-bind-html="op.title">
       <span class="caret" ng-if="op.operations"></span>
     </button>
     <ul class="dropdown-menu" ng-if="op.operations" aria-labelledby="{{ op.id }}">
@@ -24,7 +24,8 @@
         <a id="{{ subOp.id }}"
            uib-tooltip="{{ subOp.help }}"
            ng-click="subOp.isDisabled( state, model ) ? $event.stopPropagation() : subOp.operation( state, model )"
-           tooltip-placement="right">{{ subOp.title }}</a>
+           tooltip-placement="right"
+           ng-bind-html="subOp.title"></a>
       </li>
     </ul>
   </div>
