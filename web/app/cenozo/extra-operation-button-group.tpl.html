@@ -12,14 +12,11 @@
             aria-haspopup="true"
             aria-expanded="false"
             ng-click="op.operation( state, model )"
-            ng-bind-html="op.title">
-      <span class="caret" ng-if="op.operations"></span>
+            ng-bind-html="op.title + ( op.operations ? ' <span class=\'caret\'></span>' : '' )">
     </button>
     <ul class="dropdown-menu" ng-if="op.operations" aria-labelledby="{{ op.id }}">
       <li ng-repeat="subOp in op.operations"
-          style="width: 50%"
           ng-if="subOp.isIncluded( state, model )"
-          class="full-width"
           ng-class="subOp.classes + ( subOp.isDisabled( state, model ) ? ' disabled' : '' )">
         <a id="{{ subOp.id }}"
            uib-tooltip="{{ subOp.help }}"
