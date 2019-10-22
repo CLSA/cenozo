@@ -47,6 +47,12 @@ class module extends \cenozo\service\site_restricted_module
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->join( 'proxy', 'proxy_type.id', 'proxy.proxy_type_id' );
       $join_mod->join( 'participant_last_proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
+      $join_mod->join( 'participant', 'proxy.participant_id', 'participant.id' );
+      $join_mod->join( 'participant_last_hold', 'participant_last_hold.participant_id', 'participant.id' );
+      $join_mod->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+      $join_mod->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+      $join_mod->where( 'exclusion_id', '=', NULL );
+      $join_mod->where( 'IFNULL( hold_type.type, "" )', '!=', 'final' );
       $join_mod->group( 'proxy_type.id' );
 
       // restrict to participants in this application
