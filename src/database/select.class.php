@@ -82,10 +82,10 @@ class select extends \cenozo\base_object
    * @param string $type A hint at what type the column is (doesn't have to be provided)
    * @access public
    */
-  public function add_table_column( $table, $column, $alias = NULL, $table_prefix = true, $type = NULL )
+  public function add_table_column( $table, $column, $alias = NULL, $table_prefix = true, $type = NULL, $format = false )
   {
     // sanitize
-    if( is_null( $column ) || 0 == strlen( $column ) )
+    if( !$format && ( $format && is_null( $column ) || 0 == strlen( $column ) ) )
       throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
     if( !is_null( $alias ) && 0 == strlen( $alias ) )
       throw lib::create( 'exception\argument', 'alias', $alias, __METHOD__ );
@@ -102,7 +102,10 @@ class select extends \cenozo\base_object
     $this->column_list[$table][$alias] = array(
       'column' => $column,
       'table_prefix' => $table_prefix,
-      'type' => $type );
+      'type' => $type,
+      'format' => $format,
+      'constant' => false
+    );
   }
 
   /**
@@ -116,12 +119,8 @@ class select extends \cenozo\base_object
    */
   public function add_constant( $constant, $alias = NULL, $type = NULL, $format = true )
   {
-    if( $format )
-    {
-      $db = lib::create( 'business\session' )->get_database();
-      $constant = $db->format_string( $constant );
-    }
-    $this->add_table_column( '', $constant, $alias, false, $type );
+    $this->add_table_column( '', $constant, $alias, false, $type, $format );
+    $this->column_list[''][$alias]['constant'] = true;
   }
 
   /**
@@ -405,6 +404,19 @@ class select extends \cenozo\base_object
   }
 
   /**
+   * Returns whether the given alias refers to a constant
+   * 
+   * @param string $alias The name of the alias (may be identical to the column name)
+   * @return boolean
+   * @access public
+   */
+  public function is_constant( $alias )
+  {
+    $details = $this->get_alias_details( $alias );
+    return $details['constant'];
+  }
+
+  /**
    * Returns a list of all aliases in the select
    * 
    * @return array
@@ -473,7 +485,11 @@ class select extends \cenozo\base_object
       // now add the alias or table.column to the list of columns
       foreach( $column_details as $alias => $item )
       {
-        $column = sprintf( '%s%s', $item['table_prefix'] ? $table_prefix : '', $item['column'] );
+        $column = sprintf(
+          '%s%s',
+          $item['table_prefix'] ? $table_prefix : '',
+          $item['format'] ? $db->format_string( $item['column'] ) : $item['column']
+        );
 
         // try and get the column type if it hasn't already been hinted
         $type = $item['type'];

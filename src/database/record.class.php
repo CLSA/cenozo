@@ -553,9 +553,28 @@ abstract class record extends \cenozo\base_object
         }
         else
         {
+          // add requested table columns
           foreach( array_keys( $this->passive_column_values ) as $column )
             if( $select->has_column( $column ) || $select->has_table_column( $table_name, $column ) )
               $columns[$column] = $this->passive_column_values[$column];
+        }
+
+        // add constants
+        foreach( $select->get_alias_list() as $alias )
+        {
+          if( $select->is_constant( $alias ) )
+          {
+            $alias_details = $select->get_alias_details( $alias );
+            $columns[$alias] = $alias_details['column'];
+
+            $type = $alias_details['type'];
+            if( !is_null( $columns[$alias] ) &&
+                !is_null( $type ) &&
+                'string' != $type &&
+                'time' != $type &&
+                'datetime' != $type &&
+                'timestamp' != $type ) settype( $columns[$alias], $type );
+          }
         }
       }
     }
