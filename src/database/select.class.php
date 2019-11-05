@@ -80,6 +80,7 @@ class select extends \cenozo\base_object
    * @param string $alias The optional alias for the column (must be unique)
    * @param boolean $table_prefix Whether to prefix the column with the table name
    * @param string $type A hint at what type the column is (doesn't have to be provided)
+   * @return string The new column's alias
    * @access public
    */
   public function add_table_column( $table, $column, $alias = NULL, $table_prefix = true, $type = NULL, $format = false )
@@ -106,6 +107,8 @@ class select extends \cenozo\base_object
       'format' => $format,
       'constant' => false
     );
+
+    return $alias;
   }
 
   /**
@@ -119,7 +122,7 @@ class select extends \cenozo\base_object
    */
   public function add_constant( $constant, $alias = NULL, $type = NULL, $format = true )
   {
-    $this->add_table_column( '', $constant, $alias, false, $type, $format );
+    $alias = $this->add_table_column( '', $constant, $alias, false, $type, $format );
     $this->column_list[''][$alias]['constant'] = true;
   }
 
