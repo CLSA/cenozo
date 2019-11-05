@@ -48,9 +48,11 @@ class hold extends record
         sprintf( 'Tried to create withdraw hold for %s consent record.', $consent_type ),
         __METHOD__ );
 
-    // only add the hold if the current hold isn't already a withdrawn or withdrawn by 3rd party hold
+    // only add the hold if the last hold does not agree with the new consent record
+    // (withdrawn but accepting or not withdrawn and not accepting)
     $db_last_hold = $db_consent->get_participant()->get_last_hold();
-    if( is_null( $db_last_hold ) || false === strpos( $db_last_hold->get_hold_type()->name, 'Withdrawn' ) )
+    $last_is_withdrawn = is_null( $db_last_hold ) ? false : ( false !== strpos( $db_last_hold->get_hold_type()->name, 'Withdrawn' ) );
+    if( $last_is_withdrawn == $db_consent->accept )
     {
       $db_hold = new static();
       $db_hold->participant_id = $db_consent->participant_id;
