@@ -35,6 +35,7 @@ class database extends \cenozo\base_object
     // set up the database connection
     $this->connection = new \mysqli( $this->server, $this->username, $this->password, $this->name );
     $this->connection->set_charset( 'utf8mb4' );
+    $this->execute( 'SET SESSION group_concat_max_len = 1000000' );
     if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
 
     $this->read_schema();
